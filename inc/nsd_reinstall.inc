@@ -14,7 +14,7 @@ nsdreinstall() {
     cd nsd-${NSD_VERSION}
     make clean
     ./configure
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
 
 NSDUSERCHECK=`grep 'nsd' /etc/passwd`

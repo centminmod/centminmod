@@ -104,15 +104,15 @@ if [[ ! -z "$OLDMYSQLSERVER" ]]; then
     rpm -e -nodeps $OLDMYSQLSERVER
 fi
 
-echo ""
-echo "MariaDB 5.5 check available packages"
-echo "yum -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test"
-yum -q list --disablerepo=CentALT MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test
+# echo ""
+# echo "MariaDB 5.5 check available packages"
+# echo "yum${CACHESKIP} -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
+# yum${CACHESKIP} -q list --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
 echo ""
 echo "MariaDB 5.5 YUM install..."
-echo "yum -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test"
-yum -q -y --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test
+echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
+time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
 #cp -a /etc/my.cnf /etc/my.cnf-newold
 #cp -f /etc/my.cnf.rpmorig /etc/my.cnf
@@ -123,7 +123,10 @@ sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.
 
 echo ""
 
+mysqltmpdir
+
 mysqlinitfix
+
 service mysql restart
 service mysql stop
 # remove default innodb tablespace and log files that are incompatible with
@@ -150,7 +153,7 @@ fi
 	fi #unattended
 echo ""
 
-yum -q -y install perl-DBD-MySQL
+yum${CACHESKIP} -q -y install perl-DBD-MySQL
 
 # make sure MariaDB 5.5 is updated from only one repo
 echo ""
@@ -176,12 +179,12 @@ then
 
 service mysqld stop
 
-yum -y remove mysql mysql-libs
+yum${CACHESKIP} -y remove mysql mysql-libs
 
 if [ ! -d /home/mysqltmp ]; then
 mkdir /home/mysqltmp
 chmod 1777 /home/mysqltmp
-#chown mysql:mysql /home/mysqltmp/
+CHOWNMYSQL=y
 fi
 
 if [ -f /etc/my.cnf ]; then
@@ -205,7 +208,7 @@ if [[ "$MDB_DEBUG" = [yY] ]]; then
 exit
 fi
 
-yum -y install perl-DBD-MySQL
+yum${CACHESKIP} -y install perl-DBD-MySQL
 
 service mysqld stop
 
@@ -270,8 +273,8 @@ chown -R mysql:mysql /var/lib/mysql/mysql/
 #echo "rpm -i MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
     #rpm -i MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
 
-    yum -y install perl-DBD-MySQL
-    yum -q clean all
+    yum${CACHESKIP} -y install perl-DBD-MySQL
+    yum${CACHESKIP} -q clean all
 
 #download mysqltuner mysqlreport
 

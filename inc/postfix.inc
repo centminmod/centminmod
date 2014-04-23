@@ -1,6 +1,7 @@
 postfixsetup() {
 
 	yum -q -y install postfix-perl-scripts
+	yum -q -y update postfix --disableplugin=priorities
 
 	CHECKSENDMAILPATH=$(grep sendmail_path /usr/local/lib/php.ini)
 	if [ "$CHECKSENDMAILPATH" == ';sendmail_path =' ]; then
@@ -22,6 +23,11 @@ CHECKMBOXSIZELIMIT=$(grep mailbox_size_limit /etc/postfix/main.cf)
 #fi
 
 postconf -e mailbox_size_limit=$INCLIMIT
+postconf -e smtpd_client_connection_count_limit=50
+# postconf -e smtpd_client_connection_rate_limit=60
+postconf -e smtpd_recipient_limit=2000
+postconf -e smtpd_recipient_overshoot_limit=2000
+postconf -e default_destination_recipient_limit=10000
 /etc/init.d/postfix reload
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 

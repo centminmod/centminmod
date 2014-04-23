@@ -8,6 +8,8 @@ then
     echo "*************************************************"
     echo "Installing..."
 
+# subshell background process
+(
     cd $DIR_TMP
 
 #download siege
@@ -20,7 +22,10 @@ then
     mkdir /usr/local/var/
 
     sed -i 's/# failures =/failures = 2048/g' /usr/local/etc/siegerc
+) &
 
+# subshell background process
+(
     cd $DIR_TMP
 
     #tar -xzf sproxy-latest.tar.gz
@@ -28,7 +33,8 @@ then
     ./configure
     make$MAKETHREADS
     make install
-
+) &
+wait
     echo "*************************************************"
     cecho "* Siege Benchmark installed " $boldgreen
     echo "*************************************************"

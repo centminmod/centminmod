@@ -16,13 +16,15 @@ checkphpext
     cecho "* Installing imagick PHP Extension" $boldgreen
     echo "*************************************************"
 
+    pwd
+    echo "cd $DIR_TMP"
     cd $DIR_TMP
 
 cd imagick-${IMAGICKPHP_VER}
 make clean
 /usr/local/bin/phpize
 ./configure --with-php-config=/usr/local/bin/php-config
-make
+make${MAKETHREADS}
 make install
 
 #######################################################

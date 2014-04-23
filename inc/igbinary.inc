@@ -2,7 +2,7 @@ function funct_igbinaryinstall {
 
 if [ "$IGBINARYGIT" == 'y' ]; then
 
-    cd /svr-setup
+    cd $DIR_TMP
 
     echo "Compiling igbinary..."
     if [ -s igbinary-igbinary-1.1.2-dev.tar.gz ]; then
@@ -12,18 +12,27 @@ if [ "$IGBINARYGIT" == 'y' ]; then
     fi
 
 tar -xzvf igbinary-igbinary-1.1.2-dev.tar.gz
-cd igbinary-igbinary-*/
+
+    export PHP_AUTOCONF=/usr/bin/autoconf
+    export PHP_AUTOHEADER=/usr/bin/autoheader
+
+cd ${DIR_TMP}/igbinary-igbinary-*/
 make clean
+autoconf -V | head -n1
 /usr/local/bin/phpize -clean
 /usr/local/bin/phpize
+pwd
 ./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
-make
+make${MAKETHREADS}
 #make test
 make install 
 
 else
 
-    cd /svr-setup
+    cd $DIR_TMP
+
+    export PHP_AUTOCONF=/usr/bin/autoconf
+    export PHP_AUTOHEADER=/usr/bin/autoheader
 
     echo "Compiling igbinary..."
     if [ -s igbinary-${IGBINARY_VERSION}.tgz ]; then
@@ -33,12 +42,14 @@ else
     fi
 
 tar -xzvf igbinary-${IGBINARY_VERSION}.tgz
-cd igbinary-${IGBINARY_VERSION}/
+cd ${DIR_TMP}/igbinary-${IGBINARY_VERSION}/
 make clean
+autoconf -V | head -n1
 /usr/local/bin/phpize -clean
 /usr/local/bin/phpize
+pwd
 ./configure CFLAGS="-O2 -g" --enable-igbinary --with-php-config=/usr/local/bin/php-config
-make
+make${MAKETHREADS}
 #make test
 make install 
 

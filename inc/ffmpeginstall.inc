@@ -29,7 +29,7 @@ phpize
 
 sed -i 's/PIX_FMT_RGBA32/PIX_FMT_RGB32/g' ffmpeg_frame.c
 
-make
+make${MAKETHREADS}
 make install
 
 FFMPEGCHECK=`grep 'extension=ffmpeg.so' /usr/local/lib/php.ini `

@@ -17,7 +17,7 @@ fi
 checknginxmodules() {
 
 cecho "Check for missing nginx modules" $boldyellow
-if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-2.1.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" ]]; then
+if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-2.1.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/headers-more-v0.25.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" ]]; then
 ngxmoduletarball
 openssldownload
 fi
@@ -66,6 +66,9 @@ fi
 
 echo ""
 read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
+echo ""
+read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+echo ""
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
@@ -111,7 +114,7 @@ then
     cd libunwind-${LIBUNWIND_VERSION}
     make clean
     ./configure
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
 
     # Install google-perftools
@@ -128,16 +131,16 @@ then
     cd google-perftools-${GPERFTOOLS_VERSION}
     make clean
     ./configure --enable-frame-pointers
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
     #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
     #/sbin/ldconfig
 
 fi # GPERFTOOL_SOURCEINSTALL
 
-echo ""
-read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL [y/n]: " recompileopenssl 
-echo ""
+# echo ""
+# read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+# echo ""
 
 if [ "$recompileopenssl" == 'y' ]; then
 
@@ -164,17 +167,39 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
         $DOWNLOADAPP http://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz $WGETRETRY
     fi
 
-    tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
-    cd openssl-${OPENSSL_VERSION}
-    make clean
-    ./config --prefix=/usr/local --openssldir=/usr/local/ssl
-    make
-    make install
+    if [ ! -f /usr/bin/makedepend ]; then
+        yum -q -y install imake
+    fi
 
-    ./config shared enable-tlsext --prefix=/usr/local --openssldir=/usr/local/ssl
+    echo "Compiling OpenSSL..."
+#download openssl centos 6.x
+
+# from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
+export BPATH=$DIR_TMP
+export STATICLIBSSL="${BPATH}/staticlibssl"
+
+    tar xzf openssl-${OPENSSL_VERSION}.tar.gz
+    #-- Build static openssl
+    cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+    rm -rf "$STATICLIBSSL"
+    mkdir -p "$STATICLIBSSL"
     make clean
-    make
-    make install
+    ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128 \
+    && make depend \
+    && make${MAKETHREADS} \
+    && make install
+
+    # tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
+    # cd openssl-${OPENSSL_VERSION}
+    # # make clean
+    # # ./config --prefix=/usr/local --openssldir=/usr/local/ssl
+    # # make
+    # # make install
+
+    # ./config shared enable-tlsext --prefix=/usr/local --openssldir=/usr/local/ssl
+    # make clean
+    # time make${MAKETHREADS}
+    # make install
 fi # openssl centos 6
 
 fi # recompileopenssl
@@ -199,7 +224,7 @@ then
     cd pcre-${PCRE_VERSION}
     make clean
     ./configure
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
 
 fi
@@ -265,7 +290,7 @@ funct_showtempfile
 # error check
 ################
 
-    make
+    time make
 
 ################
 # error check
@@ -294,6 +319,12 @@ funct_showtempfile
 ################
 
 /etc/init.d/nginx stop
+
+    # speed up nginx wait time if not many vhosts are on server
+    if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
+        NGINXUPGRADESLEEP=8
+    fi
+
 sleep $NGINXUPGRADESLEEP
 
 NGINXPSCHECK=`ps --no-heading -C nginx`
@@ -306,7 +337,7 @@ echo ""
 sleep $NGINXUPGRADESLEEP
 fi
 
-    make install
+    time make install
 
 ################
 # error check
@@ -327,6 +358,11 @@ funct_showtempfile
 	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
 
     /etc/init.d/nginx start
+
+    # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
+    # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
+    # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
+    # echo $OPENSSLVER_CHECK
 
 funct_showtempfile
 	cleanup_msg

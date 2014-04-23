@@ -19,13 +19,13 @@ then
 #######################################################
 # check if custom open file descriptor limits already exist
 
-LIMITSCONFCHECK=`grep '* hard nofile 65536' /etc/security/limits.conf`
+LIMITSCONFCHECK=`grep '* hard nofile 131072' /etc/security/limits.conf`
 
 if [[ -z $LIMITSCONFCHECK ]]; then
 
     # Set VPS hard/soft limits
-    echo "* soft nofile 65536" >>/etc/security/limits.conf
-    echo "* hard nofile 65536" >>/etc/security/limits.conf
+    echo "* soft nofile 131072" >>/etc/security/limits.conf
+    echo "* hard nofile 131072" >>/etc/security/limits.conf
 
 fi # check if custom open file descriptor limits already exist
 
@@ -68,12 +68,13 @@ fi # GPERFTOOLS_SOURCE INSTALL
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
 
 	if [ "$NOSOURCEOPENSSL" == 'n' ]; then
-	installopenssl
+	   installopenssl
+    else
+       installopenssl
 	fi
 else
-
-	installopenssl
-
+    installopenssl
+    # echo "NOSOURCEOPENSSL=y"
 fi # for centos 6.x only
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
@@ -124,8 +125,8 @@ else
 funct_nginxconfigure
 fi
 
-    make$MAKETHREADS
-    make install
+    time make$MAKETHREADS
+    time make install
     mimefix
     groupadd nginx
     useradd -g nginx -d /home/nginx -s /sbin/nologin nginx
@@ -134,22 +135,22 @@ fi
 #######################################################
 # check if custom open file descriptor limits already exist
 
-NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 65536' /etc/security/limits.conf`
+NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 131072' /etc/security/limits.conf`
 
 if [[ -z $NGXLIMITSCONFCHECK ]]; then
 
     # Set user nginx hard/soft limits
-    echo "nginx soft nofile 65536" >>/etc/security/limits.conf
-    echo "nginx hard nofile 65536" >>/etc/security/limits.conf
-    ulimit -n 65536
+    echo "nginx soft nofile 131072" >>/etc/security/limits.conf
+    echo "nginx hard nofile 131072" >>/etc/security/limits.conf
+    ulimit -n 131072
 
 fi # check if custom open file descriptor limits already exist
 
     mkdir /home/nginx/domains
     #chmod 0771 /home/nginx/domains/
-    mkdir -p /home/nginx/domains/demo.com/{public,private,log,backup}
-    cp -R $CUR_DIR/htdocs/demo.com/* /home/nginx/domains/demo.com/public
-    cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/demo.com/public
+    mkdir -p /home/nginx/domains/demodomain.com/{public,private,log,backup}
+    cp -R $CUR_DIR/htdocs/demodomain.com/* /home/nginx/domains/demodomain.com/public
+    cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/demodomain.com/public
     chown -R nginx:nginx /home/nginx
 
     mkdir -p /usr/local/nginx/html

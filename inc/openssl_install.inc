@@ -13,19 +13,36 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     # Install OpenSSL
     cd $DIR_TMP
 
+    if [ ! -f /usr/bin/makedepend ]; then
+        yum -q -y install imake
+    fi
+
     echo "Compiling OpenSSL..."
 #download openssl centos 6.x
 
-    tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
-    cd openssl-${OPENSSL_VERSION}
-    ./config --prefix=/usr/local --openssldir=/usr/local/ssl
-    make
-    make install
+# from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
+export BPATH=$DIR_TMP
+export STATICLIBSSL="${BPATH}/staticlibssl"
 
-    ./config shared enable-tlsext --prefix=/usr/local --openssldir=/usr/local/ssl
+    tar xzf openssl-${OPENSSL_VERSION}.tar.gz
+    #-- Build static openssl
+    cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+    rm -rf "$STATICLIBSSL"
+    mkdir -p "$STATICLIBSSL"
     make clean
-    make
-    make install
+    ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128 \
+    && make depend \
+    && make${MAKETHREADS} \
+    && make install
+
+    # ./config --prefix=/usr/local --openssldir=/usr/local/ssl
+    # make${MAKETHREADS}
+    # make install
+
+    # ./config shared enable-tlsext enable-ec_nistp_64_gcc_128 --prefix=/usr/local --openssldir=/usr/local/ssl
+    # make clean
+    # make${MAKETHREADS}
+    # make install
 fi # openssl centos 6
 
 }

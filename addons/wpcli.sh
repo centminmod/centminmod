@@ -13,6 +13,7 @@
 # cd /usr/local/src/centmin-v1.2.3mod/addons
 # ./wpcli.sh install
 ###############################################
+DT=`date +"%d%m%y-%H%M%S"`
 WPCLIDIR='/root/wpcli'
 
 # functions
@@ -72,7 +73,7 @@ if [[ -z "$WPCLICHECK" ]]; then
 fi
 
 echo "-------------------------------------------------------------"
-/usr/bin/wp --info
+/usr/bin/wp --info --allow-root
 echo "-------------------------------------------------------------"
 
 echo ""
@@ -84,7 +85,7 @@ echo ""
 echo "-------------------------------------------------------------"
 echo "Please log out of SSH session and log back in"
 echo "You can then call wp-cli via command: wp"
-echo "i.e. wp --info"
+echo "i.e. wp --info --allow-root"
 echo "-------------------------------------------------------------"
 
 fi
@@ -95,8 +96,17 @@ fi
 
 case "$1" in
 install)
+starttime=$(date +%s.%N)
+{
 echo "installing..."
 installwpcli
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
+
+endtime=$(date +%s.%N)
+
+INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+echo "" >> ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
+echo "Total WPCLI Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
 ;;
 *)
 echo "$0 install"

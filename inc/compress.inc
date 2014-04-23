@@ -9,18 +9,18 @@ echo "*************************************************"
 
 cd /svr-setup
 
-if [ -s pigz-2.3.tar.gz ]; then
-  echo "pigz-2.3.tar.gz [found]"
+if [ -s pigz-2.3.1.tar.gz ]; then
+  echo "pigz-2.3.1.tar.gz [found]"
   else
-  echo "Error: pigz-2.3.tar.gz not found!!! download now......"
-  wget -c --no-check-certificate https://github.com/madler/pigz/tarball/v2.3 -O pigz-2.3.tar.gz --tries=3
+  echo "Error: pigz-2.3.1.tar.gz not found!!! download now......"
+  wget -c --no-check-certificate http://zlib.net/pigz/pigz-2.3.1.tar.gz --tries=3
 fi
 
-tar xvzf pigz-2.3.tar.gz
-#cd pigz-2.3
-cd madler-pigz*
-rm -rf Makefile
-wget -c --no-check-certificate https://raw.github.com/madler/pigz/5316bf3440025ca37d84d7580a8f616c0127668a/Makefile -O Makefile
+tar xvzf pigz-2.3.1.tar.gz
+#cd pigz-2.3.1
+cd pigz-2.3.1
+# rm -rf Makefile
+# wget -c --no-check-certificate https://raw.github.com/madler/pigz/5316bf3440025ca37d84d7580a8f616c0127668a/Makefile -O Makefile
 make
 cp pigz unpigz /usr/bin
 ls -lh /usr/bin | grep pigz
@@ -40,15 +40,15 @@ echo "*************************************************"
 
 cd /svr-setup
 
-if [ -s pbzip2-1.1.6.tar.gz ]; then
-  echo "pbzip2-1.1.6.tar.gz [found]"
+if [ -s pbzip2-1.1.8.tar.gz ]; then
+  echo "pbzip2-1.1.8.tar.gz [found]"
   else
-  echo "Error: pbzip2-1.1.6.tar.gz not found!!!download now......"
-  wget -c http://compression.ca/pbzip2/pbzip2-1.1.6.tar.gz --tries=3
+  echo "Error: pbzip2-1.1.8.tar.gz not found!!!download now......"
+  wget -c http://compression.ca/pbzip2/pbzip2-1.1.8.tar.gz --tries=3
 fi
 
-tar xvzf pbzip2-1.1.6.tar.gz
-cd pbzip2-1.1.6
+tar xvzf pbzip2-1.1.8.tar.gz
+cd pbzip2-1.1.8
 make
 cp pbzip2 /usr/bin
 
@@ -67,15 +67,15 @@ echo "*************************************************"
 
 cd /svr-setup
 
-if [ -s lbzip2-2.2.tar.gz ]; then
-  echo "lbzip2-2.2.tar.gz [found]"
+if [ -s lbzip2-2.3.tar.gz ]; then
+  echo "lbzip2-2.3.tar.gz [found]"
   else
-  echo "Error: lbzip2-2.2.tar.gz not found!!!download now......"
-  wget -c --no-check-certificate https://github.com/downloads/kjn/lbzip2/lbzip2-2.2.tar.gz --tries=3
+  echo "Error: lbzip2-2.3.tar.gz not found!!!download now......"
+  wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-2.3.tar.gz --tries=3
 fi
 
-tar xvzf lbzip2-2.2.tar.gz
-cd lbzip2-2.2
+tar xvzf lbzip2-2.3.tar.gz
+cd lbzip2-2.3
 ./configure
 make
 make install
@@ -95,15 +95,15 @@ echo "*************************************************"
 
 cd /svr-setup
 
-if [ -s lzip-1.14.tar.gz ]; then
-  echo "lzip-1.14.tar.gz [found]"
+if [ -s lzip-1.15.tar.gz ]; then
+  echo "lzip-1.15.tar.gz [found]"
   else
-  echo "Error: lzip-1.14.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/lzip-1.14.tar.gz --tries=3
+  echo "Error: lzip-1.15.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz --tries=3
 fi
 
-tar xvzf lzip-1.14.tar.gz
-cd lzip-1.14
+tar xvzf lzip-1.15.tar.gz
+cd lzip-1.15
 ./configure
 make
 make install
@@ -123,30 +123,30 @@ echo "*************************************************"
 
 cd /svr-setup
 
-if [ -s lzlib-1.4.tar.gz ]; then
-  echo "lzlib-1.4.tar.gz [found]"
+if [ -s lzlib-1.5.tar.gz ]; then
+  echo "lzlib-1.5.tar.gz [found]"
   else
-  echo "Error: lzlib-1.4.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/lzlib-1.4.tar.gz --tries=3
+  echo "Error: lzlib-1.5.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/lzlib-1.5.tar.gz --tries=3
 fi
 
-if [ -s plzip-1.0.tar.gz ]; then
-  echo "plzip-1.0.tar.gz [found]"
+if [ -s plzip-1.1.tar.gz ]; then
+  echo "plzip-1.1.tar.gz [found]"
   else
-  echo "Error: plzip-1.0.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/plzip-1.0.tar.gz --tries=3
+  echo "Error: plzip-1.1.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/plzip-1.1.tar.gz --tries=3
 fi
 
-tar xvzf lzlib-1.4.tar.gz
-cd lzlib-1.4
+tar xvzf lzlib-1.5.tar.gz
+cd lzlib-1.5
 ./configure
 make
 make install
 
 cd ../
 
-tar xvzf plzip-1.0.tar.gz
-cd plzip-1.0
+tar xvzf plzip-1.1.tar.gz
+cd plzip-1.1
 ./configure
 make
 make install

@@ -58,9 +58,30 @@ if [ -f /usr/${LIBDIR}/sa/sa2 ]; then
 	fi
 fi
 
-NANOCHECK=`grep nano /root/.bash_profile`
-if [ -z "$NANOCHECK" ]; then
-sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' /root/.bash_profile
+if [[ -f /root/.bash_profile ]]; then
+    NANOCHECK=`grep nano /root/.bash_profile`
+    if [ -z "$NANOCHECK" ]; then
+    sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' /root/.bash_profile
+    fi
+else
+    cat > /root/.bash_profile <<EOF
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f ~/.bashrc ]; then
+        . ~/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=\$PATH:\$HOME/bin
+
+export PATH
+export EDITOR=nano
+export HISTTIMEFORMAT="%a %h %d – %r "
+EOF
+
+# cat /root/.bash_profile
 fi
 
 if [ -f /root/.screenrc ]; then

@@ -38,7 +38,7 @@ sed -i 's/PHP_APC_VERSION \"3.1.9\"/PHP_APC_VERSION \"3.1.10\"/' php_apc.h
 fi
 
 ./configure --with-php-config=/usr/local/bin/php-config
-make
+make${MAKETHREADS}
 make install
 
 if [ -f ${CONFIGSCANDIR}/xcache.ini ]; then
@@ -109,7 +109,7 @@ cecho "Important instructions next to protect your apc.php page" $boldgreen
 	if [ "$UNATTENDED" == 'n' ]; then
 	sleep 30
 	else
-	sleep 10
+	sleep 3
 	fi #unattended
 
 apcprotect

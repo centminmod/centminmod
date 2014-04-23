@@ -2,6 +2,12 @@ nsdinstall() {
 
 if [[ "$NSD_INSTALL" = [yY] ]]; 
 then
+
+if [[ -f /etc/init.d/named ]]; then
+    service named stop
+    chkconfig named off
+fi
+
     echo "*************************************************"
     cecho "* Installing NSD" $boldgreen
     echo "*************************************************"
@@ -13,18 +19,18 @@ then
     #tar xzvf nsd-${NSD_VERSION}.tar.gz
     cd nsd-${NSD_VERSION}
     ./configure
-    make
+    make${MAKETHREADS}
     make install
     echo "Creating user and group for nsd..."
     groupadd nsd
     useradd -g nsd -s /sbin/nologin -M nsd
     echo "Setting up directories..."
-    mkdir /var/run/nsd
+    mkdir -p /var/run/nsd
     chown -R nsd:nsd /var/run/nsd/
     chown -R nsd:nsd /var/db/nsd/
-    mkdir /etc/nsd
-    mkdir /etc/nsd/master
-    mkdir /etc/nsd/slave
+    mkdir -p /etc/nsd
+    mkdir -p /etc/nsd/master
+    mkdir -p /etc/nsd/slave
     chown -R nsd:nsd /etc/nsd/
     cp -R $CUR_DIR/config/nsd/* /etc/nsd/
     cd /etc/sysconfig/

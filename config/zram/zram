@@ -1,0 +1,175 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: zram
+# Required-Start:
+# Required-Stop:
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Increased Performance In Linux With zRam (Virtual Swap Compressed in RAM)
+# Description: Adapted from systemd scripts at https://github.com/mystilleef/FedoraZram
+# Combined stats code: Adapted from Nitin Gupta
+# Modified by George Liu (eva2000) vbtechsupport.com for CentminMod.com
+### END INIT INFO
+
+KERNEL_VER=$(uname -r | awk -F '-' '{print $1}' | sed 's/\.//g')
+VERCOMPARE=`expr $KERNEL_VER \< 2632`
+
+if [[ "$VERCOMPARE" = "1"  ]]; then
+	echo "unsupported kernel.. aborting script"
+	exit
+fi
+
+if [[ -f /proc/user_beancounters ]]; then
+	echo "OpenVZ detected.. aborting script"
+	exit
+fi
+
+start() {
+    # get the number of CPUs
+    num_cpus=$(grep -c processor /proc/cpuinfo)
+    # if something goes wrong, assume we have 1
+    [ "$num_cpus" != 0 ] || num_cpus=1
+
+    # set decremented number of CPUs
+    decr_num_cpus=$((num_cpus - 1))
+
+    # get the amount of memory in the machine
+    mem_total_kb=$(grep MemTotal /proc/meminfo | grep -E --only-matching '[[:digit:]]+')
+    #we will only assign 33% of system memory to zram
+    mem_total_kb=$((mem_total_kb / 3))
+
+    mem_total=$((mem_total_kb * 1024))
+
+    # load dependency modules
+    modprobe zram num_devices=$num_cpus
+
+    # initialize the devices
+    for i in $(seq 0 $decr_num_cpus); do
+    echo $((mem_total / num_cpus)) > /sys/block/zram$i/disksize
+    done
+
+    # Creating swap filesystems
+    for i in $(seq 0 $decr_num_cpus); do
+    mkswap /dev/zram$i
+    done
+
+    # Switch the swaps on
+    for i in $(seq 0 $decr_num_cpus); do
+    swapon -p 100 /dev/zram$i
+    done
+}
+
+stop() {
+for i in $(grep '^/dev/zram' /proc/swaps | awk '{ print $1 }'); do
+swapoff "$i"
+done
+
+if grep -q "^zram " /proc/modules; then
+sleep 1
+rmmod zram
+fi
+}
+
+status() {
+        ls /sys/block/zram* > /dev/null 2>&1 || exit 0
+        echo -e "-------\nzram Compression Stats:\n-------"
+        for i in /sys/block/zram*; do
+                compr=$(< $i/compr_data_size)
+                orig=$(< $i/orig_data_size)
+                ratio=0
+                if [ $compr -gt 0 ]; then
+                        ratio=$(echo "scale=2; $orig*100/$compr" | bc -q)
+                fi
+                echo -e "/dev/${i/*\/}:\t$ratio% ($orig -> $compr)"
+        done
+        echo -e "-------\nSWAP Stats:\n-------"
+        swapon -s | grep zram
+        echo -e "-------\nMemory Stats:\n-------"
+        free -m -l -t
+}
+
+##############################################
+
+stats=(
+    "disksize"
+    "num_reads"
+    "num_writes"
+    "invalid_io"
+#   "discard"
+    "notify_free"
+    "zero_pages"
+    "orig_data_size"
+    "compr_data_size"
+    "mem_used_total"
+)
+
+get_stat() {
+    local _dev=$1
+    local _stat=$2
+    cat $dev/$_stat
+}
+
+show_stat() {
+    local _name=$1
+    local _val=$2
+    local _unit=$3
+    printf "%-16s %11d %s\n" "$_name:" "$_val" "$_unit"
+}
+
+zramstats() {
+
+#for dev in `find /sys/block -name 'zram*'`; do
+find /sys/block -name 'zram*' | while read dev; do
+    orig=0
+    compr=0
+    total=0
+    is_init=$(get_stat $dev initstate)
+
+    # Show stats only for initialized devices
+    [ "$is_init" == 1 ] || continue
+
+    echo "$dev"
+    for stat in "${stats[@]}"; do
+        val=$(get_stat $dev $stat)
+        eval __$stat=$val   # ex: __disksize=$disksize
+        show_stat $stat $val
+    done
+
+    [ "$__orig_data_size" == "0" ] && continue; 
+
+    cratio=$(echo $__compr_data_size*100/$__orig_data_size | bc)
+    show_stat "avg_compr_ratio" $cratio "%"
+
+    # Memory wasted due to fragmentation, metadata overhead etc.
+    ovhd=$(echo "($__mem_used_total - $__compr_data_size) * 100 / \
+                        $__compr_data_size" | bc)
+    show_stat "mem_overhead" $ovhd "%"
+    echo
+done
+
+}
+
+##############################################
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        stop
+        sleep 3
+        start
+        ;;
+    status)
+        status
+        ;;
+    stats)
+        zramstats
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|status|stats}"
+        RETVAL=1
+esac

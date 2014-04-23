@@ -18,7 +18,7 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
 <title>$vhostname</title>
 </head>
 <body>
-<p>Welcome to $vhostname. This index page can be removed.</p>
+<p>Welcome to $vhostname. This index.html page can be removed.</p>
 
 <p>Useful Centmin Mod info and links to bookmark.</p>
 
@@ -45,6 +45,14 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # Setting up Nginx mapping
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf" <<END
+# redirect from non-www to www 
+# uncomment, save file and restart Nginx to enable
+#server {
+#            listen   80;
+#            server_name $vhostname;
+#            return 301 $scheme://www.${vhostname}$request_uri;
+#       }
+
 server {
   server_name $vhostname www.$vhostname;
 

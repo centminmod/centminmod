@@ -23,6 +23,8 @@ if [[ -z "$$TTFCHECK" && -z "$$OTTCHECK" && -z "$WOFFCHECK" ]]; then
 	    application/x-font-ttf                  ttf;
 	    font/opentype                           ott;
 	    application/font-woff                   woff;
+	    text/cache.manifest       manifest;
+	    text/cache.manifest       appcache;
 	}
 EOF
 
