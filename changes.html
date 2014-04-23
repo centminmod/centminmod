@@ -1,0 +1,535 @@
+<b>v1.2.3-eva2000.06 27/12/2013</b>
+<ul>
+  <li>Added Oracle Linux 6.x support https://blogs.oracle.com/wim/entry/oracle_linux_6_5. Centmin Mod users will now have option to install Centmin Mod on Oracle Linux 6.x series allowing Centmin Mod users to take advantage of more recent Linux kernels e.g. Oracle Linux 6.5 and 2.6.39 and 3.8.13 UEK - Unbreakable Enterprise Kernels. More info on Oracle Linux UEK3 release https://blogs.oracle.com/linux/entry/announcing_the_unbreakable_enterprise_kernel</li>
+  <li>Updated Nginx from v1.5.7 to v1.5.8 release http://nginx.org/en/CHANGES</li>
+  <li>Updated PCRE version compiled for Nginx 8.33 to 8.34 http://www.pcre.org/changelog.txt</li>
+  <li>Updated Memcached server from 1.4.15 to 1.4.17 http://code.google.com/p/memcached/wiki/ReleaseNotes1417</li>
+  <li>Updated default ngx_pagespeed module from 1.6.29.5 beta to 1.7.30.1 beta using Github master branch to workaround Nginx 1.5.8 + ngx_pagespeed bug at <a href="https://github.com/pagespeed/ngx_pagespeed/issues/578" target="_blank">https://github.com/pagespeed/ngx_pagespeed/issues/578</a>. How to upgrade ngx_pagespeed module http://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade</li>
+  <li>Added pflogsumm (Postfix Log Entry Summarizer) at /usr/bin/pflogsumm if Postfix install detected http://linxnet.com/downloads/ChangeLog-1.1.5</li>
+</ul>
+
+<b>v1.2.3-eva2000.05 04/12/2013</b>
+<ul>
+  <li>Updated Nginx from v1.5.5 to v1.5.7 release http://nginx.org/en/CHANGES</li>
+  <li>Updated to support CentOS 6.5 OS</li>
+  <li>Updated ImageMagicK from 3.1.0RC2 to 3.1.2 stable http://pecl.php.net/package/imagick</li>
+  <li>Updated Siege v3.0.3 to v3.0.5 http://www.joedog.org/pub/siege/ChangeLog</li>
+  <li>Fixed Percona YUM repository broken download routine for 32bit CentOS 6.x OSes</li>
+  <li>Fixed Varnish Cache YUM repository changed download url</li>
+  <li>Fixed SENDMAIL_INSTALL install routine and PHP sendmail_path definition if Postfix is detected. If Postfix is detected, Sendmail install routine is aborted leaving Postfix in place. Sendmail only installs if Postfix is not installed/detected</li>
+</ul>
+
+<b>v1.2.3-eva2000.04 19/09/2013</b>
+<ul>
+  <li> Updated Nginx from v1.4.2 to v1.5.5 release http://nginx.org/en/CHANGES</li>
+  <li> Updated PCRE version compiled for Nginx 8.32 to 8.33 http://www.pcre.org/changelog.txt</li>
+  <li> Updated CSF tweaks to enable CSF 6.26 Outgoing UDP Flood Protection (UDPFLOOD = 1). This option limits outbound UDP packet floods. These typically originate from exploit scripts uploaded through vulnerable web scripts http://configserver.com/free/csf/changelog.txt</li>
+  <li> Updated PHP download url as us.php.net is no longer in use switched to www.php.net</li>
+  <li> Updated PHP upgrade routine for PHP 5.5 and Zend OPCode cache ini file check</li>
+  <li> Updated php-fpm conf at /usr/local/etc/php-fpm.conf and added proper error log definition to default pool php_admin_value[error_log] = /var/log/php-fpm/www-php.error.log.</li>
+  <li> Updated php.ini default settings</li>
+  <li> Updated default ngx_pagespeed module from 1.6.29.3 beta to 1.6.29.5 beta. How to upgrade ngx_pagespeed module http://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade</li>
+  <li> Updated Nginx mime.types file for proper eot, ttf, ott, woff webfont support</li>
+  <li> Updated Nginx add vhost function</li>
+  <li> Updated NSD v3.2.15 to v3.2.16 http://www.nlnetlabs.nl/projects/nsd/index.html#releases</li>
+  <li> Updated Siege v3.0.1 to v3.0.3 http://www.joedog.org/pub/siege/ChangeLog</li>
+  <li> Updated yum.conf excludes function</li>
+  <li> Updated /etc/init.d/memcached start/stop script with optional logging via LOGGING='n' which defaults to being turned off as it's very verbose and only intended for troubleshooting.</li>
+  <li> Added dynamic cpu worker_processes allocation based on cpu thread count</li>
+  <li> Fixed Centmin Mod release and version tracking files /etc/centminmod-release and /etc/centminmod-versionlog</li>
+  <li> Added default /etc/motd SSH log in message on install</li>
+  <li> Added additional sshd_config tweaks to prevent SSH session timeouts for long sessions</li>
+  <li> Add yum-plugin-downloadonly and yum-downloadonly support for CentOS 6 and 5 respectively</li>
+  <li> Added only for fresh Centmin Mod v1.2.3-eva2000.04+ and higher installs, Percona YUM repository in disabled state (enable = 0) and priority = 11 and exclude all Percona Server prefix packages for now. To install new YUM repository for existing installs, you will need to either run menu option to recompile/upgrade Nginx or PHP and when prompted to run YUM check first, answer YES. This ensures YUM changes are synced with any new Centmin Mod version's YUM changes. Initial ground work for Centmin Mod support for Percona YUM packages. Note: MariaDB will always be default MySQL server version though. So to specifically install a Percona package you need to enable repo first i.e.
+
+<pre>
+  yum -q list percona-xtrabackup                     
+Error: No matching Packages to list
+</pre>
+
+
+<pre>
+  yum -q list --enablerepo=percona percona-xtrabackup
+Available Packages
+percona-xtrabackup.x86_64	2.1.4-656.rhel6	percona
+</pre>
+
+
+</li>
+
+  <li> Added only for fresh Centmin Mod v1.2.3-eva2000.04+ and higher installs, Varnish Cache YUM repository https://www.varnish-cache.org/installation/redhat in disabled state (enable = 0) and priority = 2 above EPEL YUM repository's Varnish 2.1.5.x. This will make Varnish Cache available to folks who know how to install and configure Varnish for their specific web app.  To install new YUM repository for existing installs, you will need to either run menu option to recompile/upgrade Nginx or PHP and when prompted to run YUM check first, answer YES. This ensures YUM changes are synced with any new Centmin Mod version's YUM changes. For example:
+
+<pre>
+  yum -q list varnish
+Error: No matching Packages to list
+</pre>
+
+
+<pre>
+  yum -q list varnish --disableexcludes=epel --disableplugin=priorities
+Available Packages
+varnish.x86_64	2.1.5-1.el6	epel
+</pre>
+
+
+<pre>
+  yum -q list varnish --disableexcludes=epel --enablerepo=varnish-3.0
+Available Packages
+varnish.x86_64	3.0.4-1.el6	varnish-3.0
+</pre>
+
+
+<pre>
+  yum -q list varnish --enablerepo=varnish-3.0
+varnish.x86_64	3.0.4-1.el6	varnish-3.0
+</pre>
+
+
+</li>
+</ul>
+
+<b>v1.2.3-eva2000.03 19/07/2013</b>
+<ul>
+  <li> Updated Nginx from v1.4.1 to v1.4.2 stable release <a href="http://nginx.org/en/CHANGES" target="_blank">http://nginx.org/en/CHANGES</a></li>
+  <li> Updated default ngx_pagespeed module from 1.5.27.3 beta to 1.6.29.3 beta. <a href="http://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade" target="_blank">How to upgrade ngx_pagespeed module</a></li>
+  <li> Updated ngx_pagespeed pscontrol file, pagespeed.conf and pagespeedhandler.conf files.</li>
+  <li> Added pagespeedstatslog.conf file for ngx_pagespeed 1.6.29.3 added PageSpeed console stats <a href="https://developers.google.com/speed/pagespeed/module/console" target="_blank">https://developers.google.com/speed/pagespeed/module/console</a>. Example <a href="http://centminmod.com/nginx_ngx_pagespeed.html#pagespeedconsole" target="_blank">http://centminmod.com/nginx_ngx_pagespeed.html#pagespeedconsole</a></li>
+  <li> Updated WP-CLI from 0.10.0 to 0.10.2 changed /addons/wpcli.sh addon paths.</li>
+  <li> Updated Memcached server install/reinstall configure option to correct the libevent version used to the newer <a href="https://raw.github.com/libevent/libevent/release-2.0.21-stable/ChangeLog" target="_blank">libevent 2.0.x branch</a> as opposed to system older libevent 1.4.x branch. For existing users, running menu option #10 will recompile Memcached server to use the correct version.</li>
+</ul>
+
+<b>v1.2.3-eva2000.02 15/07/2013</b>
+<ul>
+  <li> Updated PHP from v5.3.26 to v5.3.27 <a href="http://php.net/ChangeLog-5.php" target="_blank">http://php.net/ChangeLog-5.php</a></li>
+  <li>Updated rpmforge repo download RPM</li>
+  <li>Updated MariaDB 5.5 my.cnf templates with optional MySQL variable to switch from default character set and collation latin1 to utf8 which you can enable following guide at <a href="http://centminmod.com/mysql.html#charset" target="_blank">http://centminmod.com/mysql.html#charset</a></li>
+  <li>Added preliminary support for PHP 5.5 and Zend OPCache (Zend Optimizer+ opcode cache) for PHP upgrades only via menu option #5. Not fully tested yet.</li>
+  <li>AVG Anti-Virus Add on included at /addons/avginstall.sh</li>
+</ul>
+
+<b>v1.2.3-eva2000.01 26/06/2013</b>
+<ul>
+  <li>Updated centmin.sh menu option #17 for multi threaded compression tools (see <a href="http://vbtechsupport.com/1614/" target="_blank">http://vbtechsupport.com/1614/</a> for examples of their benefits for faster file compression)</li>
+  <li>Fixed potential low memory issue for PHP compile by raising ISLOWMEMPHP variable threshold to 530000 bytes. So if physically installed memory is less than 530000 bytes, PHP configure will opt for a lower memory configuration by using --disable-fileinfo.</li>
+  <li>Fix php configuration as mysqlnd native driver ignores mysql.sock path if not specifically defined.</li>
+  <li>MariaDB my.cnf templates added default mysql.sock to settings for some servers i.e. Amazon EC2</li>
+  <li>Lower the minimum memory requirements for install on CentOS server from 256MB min to 128MB min. Full details on my test Wordpress blog at Google SPDY enabled https version at <a href="https://blog.centminmod.com/" target="_blank">https://blog.centminmod.com/</a></li>
+  <li> Add Google SPDY module support <a href="http://nginx.org/en/docs/http/ngx_http_spdy_module.html" target="_blank">http://nginx.org/en/docs/http/ngx_http_spdy_module.html</a></li>
+  <li> Add ngx_pagespeed module support <a href="http://centminmod.com/nginx_ngx_pagespeed.html">http://centminmod.com/nginx_ngx_pagespeed.html</a></li>
+  <li> Add Nginx custom server string = nginx centminmod. Can be disabled in centmin.sh</li>
+  <li> Updated Nginx from v1.2.4 to v1.4.1 stable release http://nginx.org/en/CHANGES</li>
+  <li> Switched default install from MariaDB 5.2.12 115 RPM install to MariaDB official YUM repo for MariaDB 5.5.x branch with MariaDB 5.5.30 <a href="https://kb.askmonty.org/en/mariadb-5530-release-notes/" target="_blank">https://kb.askmonty.org/en/mariadb-5530-release-notes/</a></li>
+  <li> Added MariaDB 5.2.x to MariaDB 5.5.x upgrade menu option</li>
+  <li> Updated menu option #16 for 'Change SSHD Port Number' function</li>
+  <li> Updated Siege v2.72 to v3.0.1 <a href="http://www.joedog.org/pub/siege/ChangeLog" target="_blank">http://www.joedog.org/pub/siege/ChangeLog</a></li>
+  <li> Updated PHP from v5.3.17 to v5.3.26 <a href="http://php.net/ChangeLog-5.php" target="_blank">http://php.net/ChangeLog-5.php</a></li>
+  <li> Updated PHP-FPM configure options to change mysqli extension to using the <a href="http://www.php.net/manual/en/mysqli.overview.php#mysqli.overview.mysqlnd" target="_blank">MySQL Native Driver</a> as PHP-FPM 5.3.21 source compile against MariaDB 5.5.29-1 test install failed configure stage. </li>
+  <li> Updated PHP-FPM configure options and added --with-config-file-scan-dir=${CONFIGSCANDIR} defined by 2 variables in centmin.sh CONFIGSCANBASE='/root/centminmod' and CONFIGSCANDIR="${CONFIGSCANBASE}/php.d" to allow separate PHP extension config files for APC Cache, Xcache, Memcached and Memcache.
+</li>
+  <li> Updated APC Cache from v3.1.12 beta to v3.1.13 beta <a href="http://pecl.php.net/package-changelog.php?package=APC" target="_blank">http://pecl.php.net/package-changelog.php?package=APC</a></li>
+  <li> Updated Python from 2.7.2 to 2.7.3 <a href="http://hg.python.org/cpython/file/d46c1973d3c4/Misc/NEWS" target="_blank">http://hg.python.org/cpython/file/d46c1973d3c4/Misc/NEWS</a></li>
+  <li> Updated NSD v3.2.13 to v3.2.15</li>
+  <li> Updated libevent from v2.0.20 stable to v2.0.21 stable <a href="https://raw.github.com/libevent/libevent/release-2.0.21-stable/ChangeLog" target="_blank">https://raw.github.com/libevent/libevent/release-2.0.21-stable/ChangeLog</a></li>
+  <li> Fixed YUM repo priorities</li>
+  <li> Add CentALT YUM repository set at priority=9 <a href="http://pkgs.org/download/centalt-release" target="_blank">http://pkgs.org/download/centalt-release</a>.  You can use --enablerepo=CentALT and --disablerepo= to select more updated package versions i.e. redis 2.4.10 in epel vs redis 2.6.7 in centalt i.e. epel repo has priority=3, so to select redis 2.6.7, yum install gperftools-devel; yum install redis --disablerepo=epel</li>
+  <li>Add optional libatomic support to Nginx via centmin.sh set option NGINX_LIBATOMIC=y. Setting it to NGINX_LIBATOMIC=n disables libatomic support when you install or re-install, upgrade or download Nginx via centmin.sh menu option #4.</li>
+  <li>Add option PCRE-JIT support for Nginx via centmin.sh set options NGINX_PCREJIT=y and NGINX_PCREVER='8.32. Setting NGINX_PCREJIT=n will disable PCRE-JIT support for Nginx when you install or re-install, upgrade or download Nginx via centmin.sh menu option #4.</li>
+  <li>Add optional <a href="http://wiki.nginx.org/HttpDavModule" target="_blank">--with-http_dav_module</a> and <a href="https://github.com/arut/nginx-dav-ext-module" target="_blank">nginx-dav-ext-module-XXX module</a> support to Nginx. Controlled by centmin.sh set options for NGINX_WEBDAV=y and NGINX_EXTWEBDAVVER='0.0.2'. Setting NGINX_WEBDAV=y enables Nginx to be installed with WebDAV support. Setting NGINX_WEBDAV=n disables WebDAV support when you install or re-install, upgrade or download Nginx via centmin.sh menu option #4.</li>
+  <li> Add nginx-http-concat module to Nginx <a href="https://github.com/taobao/nginx-http-concat" target="_blank">https://github.com/taobao/nginx-http-concat</a></li>
+  <li> Add libmemcached <a href="http://libmemcached.org/Release_Information.html" target="_blank">http://libmemcached.org/Release_Information.html</a></li>
+  <li> Add imagick PHP extension http://pecl.php.net/package/imagick</li>
+  <li> Add memcached PHP extension http://pecl.php.net/package/memcached</li>
+  <li> Add twemperf - twitter memcached benchmarking tool <a href="https://github.com/twitter/twemperf" target="_blank">https://github.com/twitter/twemperf</a></li>
+  <li> Added ccache <a href="http://ccache.samba.org/" target="_blank">http://ccache.samba.org/</a> - compiler caching support to speed up source recompiles by as much as 60%  for recompiling Nginx or PHP i.e. when upgrading or downgrading a previously installed Nginx (from 170 seconds reduced to 67 seconds) or PHP version (from 350 seconds reduced to 158 seconds). By default cache directory is located at /home/.ccache and with a 2 Gigabyte disk cache size set. Automated logging of Centmin Mod menu options <a href="http://centminmod.com/faq.html#loginstall" target="_blank">http://centminmod.com/faq.html#loginstall</a> now also includes ccache stats output for each menu option run as well as run time stats outlining how many seconds the option took to complete. For example, if you run menu option to upgrade PHP, the automated log saved at /root/centminlogs/ will include how many seconds it took to run PHP upgrade and the ccache statistics.</li>
+  <li> Added /etc/centminmod-release & /etc/centminmod-versionlog files. From v1.2.3-eva2000.01 onwards, each install and upgrade will have it's version numbers written to these files so as to be able to keep track of installed versions. This will make future major feature additions easier to handle for compatibility with older Centmin Mod versions. For example, when MariaDB 5.5 support is added.</li>
+  <li> Faster Centmin Mod installation - up to 40% faster than v1.2.2. Migrating code almost to fully unattented install mode.</li>
+  <li> Rewritten source download file functions. Moving majority of the download process to the top of the script before actual Centmin Mod Install routine. This allows for broken download links to be detected and compressed tarball downloads to be validated before installation proceeds. Failed downloads or invalid compressed tarball downloads (incomplete downloads) will abort the the script allowing you to correct the download links before re-running install. When failed download or invalid compressed tarball package errors occur, you can check Centmin Mod log for specific details at /root/centminlogs/. Download routines have been moved to inc/downloads.inc file.</li>
+</ul>
+
+
+<b>v1.2.2-eva2000.20 -11/10/2012</b>
+<ul>
+  <li>Updated Nginx from v1.2.3 to v1.2.4 stable release http://nginx.org/en/CHANGES</li>
+  <li>Updated PHP from v5.3.16 to v5.3.17 http://php.net/ChangeLog-5.php</li>
+  <li>Updated APC Cache from v3.1.12 beta to v3.1.13 beta http://pecl.php.net/package-changelog.php?package=APC</li>
+  <li>Updated igbinary from 1.1.1 to 1.1.2 dev build https://github.com/igbinary/igbinary</li>
+  <li>Updated Memcached server from v1.4.14 to v1.4.15 http://code.google.com/p/memcached/wiki/ReleaseNotes1415</li>
+  <li>Updated libevent from v2.0.19 stable to v2.0.20 stable https://raw.github.com/libevent/libevent/release-2.0.20-stable/ChangeLog</li>
+  <li>Updated wget command options</li>
+  <li>Update staticfiles.conf adding mime types font support for eot, svg, ttf and woff</li>
+  <li>Updated PHP download mirror URL, php.net folks changed the format of the URL breaking PHP downloads. Corrected PHP download mirror URL.</li>
+  <li>Updated Nginx upgrade function to prompt for skipping OpenSSL recompile to speed up Nginx upgrades.</li>
+</ul>
+
+<b>v1.2.2-eva2000.19 -25/08/2012</b>
+<ul>
+  <li>Updated Nginx from v1.2.2 to v1.2.3 stable release http://nginx.org/en/CHANGES</li>
+  <li>Updated PHP from v5.3.14 to v5.3.16 http://php.net/ChangeLog-5.php</li>
+  <li>Updated Memcached server from v1.4.13 to v1.4.14</li>
+  <li>Updated NSD v3.2.10 to v3.2.13</li>
+  <li>Updated APC Cache from v3.1.10 beta to v3.1.12 beta http://pecl.php.net/package-changelog.php?package=APC</li>
+  <li>Added igbinary support http://pecl.php.net/package/igbinary to APC Cache for apc.serializer=igbinary (improve APC cache performance)</li>
+  <li>Updated nginx.conf with server_names_hash_bucket_size 64; setting</li>
+  <li>Updated memcached server startup file configuration settings</li>
+</ul>
+
+<b>v1.2.2-eva2000.18 -15/07/2012</b>
+<ul>
+  <li>Updated Nginx from v1.1.20 to v1.2.2 stable release http://nginx.org/en/CHANGES</li>
+  <li>Updated PHP from v5.3.13 to v5.3.14 http://php.net/ChangeLog-5.php</li>
+  <li>Updated NSD config file with hide-version: yes option to prevent NSD from replying with the version string on CHAOS class queries</li>
+  <li>Updated Xcache from v2.0.0. to v2.0.1 http://xcache.lighttpd.net/browser/tags/2.0.1/ChangeLog</li>
+  <li>Updated pigz, lzip, plzip, lbzip2 and lzib versions</li>
+  <li>Updated CentOS 6.x YUM EPEL Repo version download url from epel-release-6-6 to epel-release-6-7</li>
+  <li>Added detection support during installation for CentOS 6.x updated /switched to Oracle Unbreakable Enterprise Kernel R2 - 2.6.32-300.25.1 and 2.6.39-100.7.1 (based on 3.0.16 Kernel) https://blogs.oracle.com/linux/entry/oracle_unbreakable_enterprise_kernel_release</li>
+</ul>
+
+<pre>
+[root@]# uname -r
+2.6.32-300.25.1.el6uek.x86_64
+
+[root@]# uname -r       
+2.6.39-100.7.1.el6uek.x86_64
+</pre>
+
+<b>v1.2.2-eva2000.17 -19/05/2012</b>
+<ul>
+  <li>Updated PHP from v5.3.11 to v5.3.13 http://php.net/ChangeLog-5.php</li>
+  <li>Updated libevent from v2.0.18 stable to v2.0.19 stable</li>
+  <li>Updated Xcache re-install routine to detect from 1.3.2 to 2.0.0 upgrade to update xcache admin directory. Manual instructions are provided during upgrade to properly update xcache admin directory</li>
+  <li>Updated MariaDB 5.2 Upgrade menu option to detect for MariaDB 5.3 being the existing version on server and to abort when MariaDB 5.3 server already detected. The MariaDB 5.2 Upgrade menu option is for MariaDB 5.2.x based upgrades only. Centmin Mod will have an official MariaDB 5.3 Upgrade menu option added separately in future Centmin Mod versions.</li>
+  <li>Updated EPEL release YUM install</li>
+  <li>Updated Nginx and PHP upgrade routines to to allow skipping YUM checks, end user will be prompted if they want to skip YUM checks prior to upgrading Nginx or PHP to speed up upgrade times</li>
+  <li>Updated CSF tweaks to raise both DENY_IP_LIMIT & DENY_TEMP_IP_LIMIT from 100 to 1000 entries in /etc/csf/csf.conf</li>
+  <li>Updated MariaDB 5.2 upgrade routine's download mirror to main MariaDB download mirror as it's quickest to get new MariaDB MySQL updated versions uploaded to</li>
+  <li>Added MariaDB 5.3 upgrade routine (not active right now), currently doing internal tests for probable release for Centmin Mod v1.2.3 series</li>
+  <li>Added server memory installed check, to make sure you have at least 256MB of memory to run centmin.sh installation successfully</li>
+</ul>
+
+<h3>v1.2.2-eva2000.16 -29/04/2012</h3>
+<ul>
+  <li>Updated PHP from v5.3.10 to v5.3.11 <a href="http://php.net/ChangeLog-5.php" target="_blank">http://php.net/ChangeLog-5.php</a></li>
+  <li>Updated Nginx from v1.1.19 to v1.2.0 stable release <a href="http://nginx.org/en/CHANGES" target="_blank">http://nginx.org/en/CHANGES</a></li>
+  <li>Updated Xcache from v1.3.2 to v2.0.0 for PHP 5.4 support <a href="http://xcache.lighttpd.net/wiki/Release-2.0.0" target="_blank">http://xcache.lighttpd.net/wiki/Release-2.0.0</a></li>
+  <li>Updated APC Cache from v3.1.9 to v3.1.10 beta for PHP 5.4 support <a href="http://pecl.php.net/package-changelog.php?package=APC" target="_blank">http://pecl.php.net/package-changelog.php?package=APC</a> (<b>note:</b> v3.1.10 beta retains v3.1.9 version name in PHPINFO so I modified the APC files to correct version number to v3.1.10 etc)</li>
+  <li>Updated APC configuration template files with additional settings you will need to manually add these to your <b>/usr/local/lib/php.ini</b>. You can compare using download zip's copy at <b>config/apc/apc-min.ini</b> or <b>apc.ini</b></li>
+  <li>Updated staticfiles.conf nginx includes file. You can find updated file in zip dowload <b>config/nginx/staticfiles.conf</b> which you can replace and overwrite the one on server at <b>/usr/local/nginx/conf/staticfiles.conf</b></li>
+  <li>Updated nginx.conf and vhost template to add a 32K buffer to access_log logging. Changes aren't updated automatically, you will need to update the <b>/usr/local/nginx/conf/nginx.conf</b> manually to remove line <b>log_format bytes_log "$msec $bytes_sent .";</b> and add the line <b>access_log logs/access.log combined buffer=32k;</b>. You can compare using download zip's copy at <b>config/nginx/nginx.conf</b> to compare against your live servers copy</li>
+  <li>Added optional Nginx modules from Agentzh's Openresty bundle, memc-nginx-module and srcache-nginx-module. These modules are disabled by default but can be enabled by setting 'y' for new variable named NGINX_OPENRESTY=n. For more details read <a href="https://github.com/agentzh/memc-nginx-module" target="_blank">https://github.com/agentzh/memc-nginx-module</a> and <a href="https://github.com/agentzh/srcache-nginx-module" target="_blank">https://github.com/agentzh/srcache-nginx-module</a>. No support is provided by me, optional modules are provided as is</li>
+</ul>
+
+<h3>v1.2.2-eva2000.15 -14/04/2012</h3>
+<ul>
+  <li>Updated Nginx from v1.1.18 to v1.1.19 <a href="http://nginx.org/en/CHANGES" target="_blank">http://nginx.org/en/CHANGES</a></li>
+  <li>Updated MariaDB 5.2.11-115 MySQL to MariaDB 5.2.12-115 MySQL <a href="http://kb.askmonty.org/en/mariadb-5212-release-notes" target="_blank">http://kb.askmonty.org/en/mariadb-5212-release-notes</a></li>
+  <li>Updated APC Cache install and re-install routine including setting up password protected file using htpasswd.py tool</li>
+  <li>Updated YUM Install routine to be smarter in checking each package whether it's already installed and needs updating or whether it's not installed and needs installing</li>
+  <li>Updated php-fpm.conf files and vhost virtual.conf with pm.status and ping settings. PHP-FPM status/ping is disabled by default, uncomment setting #include /usr/local/nginx/conf/phpstatus.conf; in vhost virtual.conf and restart nginx and php-fpm services to enable. For folks upgrading Centmin Mod, ensure /usr/local/nginx/conf/phpstatus.conf exists, you can find a copy of it in v1.2.2-eva2000.15 zip file's config/nginx/phpstatus.conf location.</li>
+  <li>Fixed CentOS 6.x EPEL Repo link</li>
+  <li>Fixed NSD v3.2.10 install/reinstall issue by moving NSD install routine further down the order for installation, seems v3.2.10 complains it can't find the SSL libraries for some reason and fails to compile, so no /etc/nsd directory is created.</li>
+  <li>Add logging support to menu options. Log directory defined by variable CENTMINLOGDIR='/root/centminlogs' in inc/centminlogs.inc. When run menu option, the entire process will be logged to a time stamped text log file named ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_*.log so you can review the logs for error messages etc.</li>
+</ul>
+
+<h3>v1.2.2-eva2000.14 - 3/04/2012</h3>
+<ul>
+  <li>Updated memcached init.d stop/start files with $SERVERIP variable</li>
+  <li>Updated Nginx from v1.1.17 to v1.1.18 <a href="http://nginx.org/en/CHANGES" target="_blank">http://nginx.org/en/CHANGES</a></li>
+  <li>Updated libevent from v2.0.17 stable to v2.0.18 stable</li>
+  <li>Updated MariaDB 5.2.10-107 MySQL to MariaDB 5.2.11-115 MySQL <a href="http://kb.askmonty.org/en/mariadb-5211-release-notes" target="_blank">http://kb.askmonty.org/en/mariadb-5211-release-notes</a></li>
+  <li>Updated php-fpm upgrade routine to prompt for php-fpm.conf overwrite with latest version and backup existing php-fpm.conf</li>
+  <li>Updated php-fpm.conf templates with additional settings and changing from dynamic to ondemand PHP process manager with pm.process_idle_timeout defaulting to 10 seconds</li>
+  <li>Updated YUM install/checks for CentOS 5.8 detection</li>
+  <li>Updated MariaDB 5.2.x upgrade routine</li>
+</ul>
+
+<h3>v1.2.2-eva2000.13 - 16/03/2012</h3>
+<ul>
+  <li>Updated Nginx from v1.1.16 to v1.1.17 http://nginx.org/en/CHANGES</li>
+  <li>Updated Nginx upgrade routine, it automatically backs up CONF/ directory before running upgrade and is controlled via 3 variables in centmin.sh NGINXBACKUP='y', NGINXCONFDIR='/usr/local/nginx/conf', NGINXBACKUPDIR='/usr/local/nginxbackup'</li>
+</ul>
+
+<h3>v1.2.2-eva2000.12 - 12/03/2012</h3>
+<ul>
+  <li>Updated Nginx from v1.1.14 to v1.1.16 http://nginx.org/en/CHANGES</li>
+  <li>Updated libevent from v2.0.16 to v2.0.17 https://raw.github.com/libevent/libevent/release-2.0.17-stable/ChangeLog</li>
+  <li>Updated NSD from v3.2.8 to v3.2.10</li>
+  <li>Fixed PHP 5.4.0 upgrade error however PHP 5.4.0 seems to be currently incompatible with APC, Suhosin and FFMPEG extensions right now, so please stick with PHP 5.3.10</li>
+  <li>Fixed Memcache PHP extension reinstall routine</li>
+  <li>Added NSD re-install routine</li>
+  <li>Revised csftweaks.inc settings</li>
+</ul>
+
+<h3>v1.2.2-eva2000.11 - 06/02/2012</h3>
+<ul>
+  <li>Updated PHP from v5.3.9 to v5.3.10 http://www.php.net/archive/2012.php#id2012-02-02-1</li>
+  <li>Updated Nginx from v1.1.11 to v1.1.14 http://nginx.org/en/CHANGES</li>
+  <li>Updated Memcached server from v1.4.10 to v1.4.13</li>
+  <li>Updated MariaDB my.cnf templates adding skip-pbxt_statistics & skip-archive</li>
+  <li>Updated Pigz v2.2.2 to v2.2.3</li>
+  <li>Updated Nginx upgrade routine with NGINXUPGRADESLEEP='20' variable to customise how long between Nginx stop command and when source upgrade's make command is run. On some systems Nginx service shutdown doesn't immediately or cleanly shutdown Nginx processes, causing Nginx upgrade to fail. The upgrade routine for Nginx will now have a NGINXUPGRADESLEEP =20 second initial delay after Nginx service is shutdown before make is run. The upgrade routine then will check if Nginx processes are still running and if so, trigger a 2nd NGINXUPGRADESLEEP = 20 second delay before running make. You can adjust the delay via NGINXUPGRADESLEEP='20'.</li>
+  <li>Fixed plzip download url</li>
+  <li>Fixed lzip download url</li>
+  <li>Fixed autoconf/autoconf-2.1.3 PHP-FPM compile on CentOS 5.7</li>
+  <li>Increased nginx.conf gzip level from default 1 to 7</li>
+  <li>Added ImageMagicK via YUM install</li>
+  <li>Added Suhosin PHP Extension Menu Install option for php-fpm</li>
+  <li>Added FFMPEG via YUM install + FFMPEG PHP extension for php-fpm</li>
+</ul>
+
+<h3>v1.2.2-eva2000.10 - 15/01/2012</h3>
+<ul>
+  <li>Added check for wget which maybe missing on CentOS 6.x minimal install ISO CD images (<a href="http://julianyap.com/2011/08/10/centos-6-minimal-install-cd-you-may-not-want-to-bother-with-it.html" target="_blank">read</a>)
+</li>
+  <li>Added more checks for yum install prerequisites prior to Nginx and PHP upgrades to make sure updated changes to Nginx and PHP upgrade routines have the required dependencies etc</li>
+  <li>Fixed command shortcuts to detect if memcached and CSF are actually installed before installing their respective command shortcuts</li>
+</ul>
+
+<h3>v1.2.2-eva2000.09 - 12/01/2012</h3>
+<ul>
+  <li>Updated PHP from 5.3.8 to 5.3.9 for security and bug fixes, including DoS hash fix <a href="http://www.php.net/archive/2012.php#id2012-01-11-1" target="_blank">http://www.php.net/archive/2012.php#id2012-01-11-1</a></li>
+  <li>Tuned CSF firewall settings</li>
+  <li>Fixed Sproxy install - missing perl-ExtUtils-MakeMaker</li>
+  <li>Added via yum install <a href="http://guichaz.free.fr/iotop/" target="_blank">iotop</a>, <a href="http://www.ex-parrot.com/pdw/iftop/" target="_blank">iftop</a> and <a href="http://jeremy.zawodny.com/mysql/mytop/" target="_blank">mytop</a></li>
+  <li>Added diskalert.sh script to cron.daily cronjob to alert when system partitions reach >90% full. Default email alerts sent to root unless you edit EMAIL='' variable in /etc/cron.daily/diskalert</li>
+  <li>Added alternative download option for CentOS versions greater than >6.x to use <a href="http://axel.alioth.debian.org/" target="_blank">Axel download accelerator</a> instead of wget to download apps. Axel download accelerator uses multiple connections to speed up downloads</li>
+</ul>
+
+<h3>v1.2.2-eva2000.08 - 20/12/2011</h3>
+<ul>
+  <li>Checks for latest working & tested CentOS version</li>
+</ul>
+
+<h3>v1.2.2-eva2000.07 - 13/12/2011</h3>
+<ul>
+  <li>Updated Nginx from v1.1.8 to v1.1.11 http://nginx.org/en/CHANGES</li>
+  <li>Updated MariaDB MySQL from 5.2.9-102 to 5.2.10-107</li>
+  <li>Fix ngx_cache_purge-1.4.tar.gz download</li>
+  <li>Fix PHP upgrade configure error for older pre-menu Centmin Mod releases: 'configure: error: utf8_mime2text() has new signature'</li>
+</ul>
+
+<h3>v1.2.2-eva2000.06 - 27/11/2011</h3>
+<ul>
+  <li>Updated Nginx from v1.1.7 to v1.1.8</li>
+  <li>Updated Memcached server from v1.4.9 to v1.4.10</li>
+  <li>Updated libevent from v2.0.15 stable to v2.0.16 stable</li>
+  <li>Updated nginx.conf for Nginx v1.1.8 changes from limit_zone to limit_conn_zone syntax</li>
+  <li>Added new menu option to install multi-threaded compression tools, <a href="http://vbtechsupport.com/1614/" target="_blank">pigz, pbzip2, lbzip2, p7zip</a> etc. Choose between better compression ratios (smaller file sizes) vs faster compression speed.</li>
+  <li>Added control panel checks for incompatible control panels ie. WHM/Cpanel, Plesk and DirectAdmin</li>
+  <li>Added Nginx upgrade check for older Centmin mod releases to ensure nginx.conf client_body_in_file_only option is disabled</li>
+  <li>Fixed libevent download</li>
+</ul>
+
+<h3>v1.2.2-eva2000.05 - 05/11/2011</h3>
+<ul>
+  <li>Updated Nginx from v1.1.6 to v1.1.7</li>
+  <li>Updated Memcached server from v1.4.8 to v1.4.9</li>
+  <li>Updated Nginx virtual.conf settings</li>
+  <li>Updated nginx.conf turn off client_body_in_file_only</li>
+  <li>Updated php-fpm.conf, php-fpm-2pools.conf, php-fpm-min-2pools.conf and php-fpm-min.conf settings</li>
+  <li>Fixed nsdsetup.inc for missing zone: entry when adding domain zone to /etc/nsd/nsd.conf</li>
+  <li>Added inc/sendmail.inc to configure sendmail when detected/installed</li>
+</ul>
+
+<h3>v1.2.2-eva2000.04 - 18/10/2011</h3>
+<ul>
+  <li>Updated Nginx from v1.1.5 to v1.1.6</li>
+  <li>Updated libevent from v2.0.14 stable to v2.0.15 stable</li>
+  <li>Updated Nginx vhost and template with SSI option you can enable via uncommenting</li>
+  <li>Updated checks for CentOS 5.7 for php configuration and mcrypt support</li>
+  <li>Fixed possible openssl update conflict with previous version of openssl</li>
+</ul>
+
+<h3>v1.2.2-eva2000.03 - 09/10/2011</h3>
+<ul>
+  <li>Switched default MariaDB MySQL install back to RPM manual install method due to MariaDB YUM REPO issues. Complaints of MariaDB-server-5.2.9-102.el5 public key issues causing MariaDB server install failure.</li>
+</ul>
+
+<h3>v1.2.2-eva2000.02 - 08/10/2011</h3>
+<ul>
+  <li>Centmin Mod project gets own domain name: <a href="http://centminmod.com/" target="_blank"><b>centminmod.com</b></a> (runs on 3x load balanced Centmin Mod Nginx based web servers :) )</li>
+  <li>Included Centmin Mod logo (I used the same Denmark font type :) )</li>
+  <li>Updated Nginx from v1.1.4 to v1.1.5</li>
+  <li>Updated Memcached server from v1.4.7 to v1.4.8</li>
+  <li>Updated ngx_cache_purge nginx module from v1.3 to v1.4. Change log http://labs.frickle.com/nginx_ngx_cache_purge/CHANGES</li>
+  <li>Updated drop.conf setting favicon.ico expires header</li>
+  <li>Added optional custom 404/50x html pages via #include /usr/local/nginx/conf/errorpage.conf; uncomment in vhost file & restart nginx to enable.</li>
+</ul>
+
+<h3>v1.2.2-eva2000.01 - 03/10/2011</h3>
+<ul>
+  <li>Updated Nginx from v1.0.6 to v1.1.4 for default installs</li>
+  <li>Updated libevent from v2.0.13 stable to v2.0.14 stable</li>
+  <li>Updated libevent download url from http://www.monkey.org/~provos/libevent-${LIBEVENT_VERSION}-stable.tar.gz to https://github.com/downloads/libevent/libevent/libevent-${LIBEVENT_VERSION}-stable.tar.gz</li>
+  <li>Add to nginx.conf & vhost template commented out option for rate limiting connections per IP</li>
+  <li>Added Change SSHD Port number menu option to change from default SSHD Port 22</li>
+  <li>Added openvz_stack.inc for correct service init.d start up scripts stack size on OpenVZ systems</li>
+  <li>Streamlined php-fpm.conf and php-fpm-min.conf settings.</li>
+  <li>Split Nginx add vhost and MariaDB upgrade functions from centmin.sh to own includes files "inc/nginx_addvhost.inc" & "inc/mariadb_upgrade.inc"</li>
+  <li>Fixed nsdsetup.inc missing escape on $TTL for domain zone template</li>
+</ul>
+
+<h3>v1.2.1-eva2000.14 - 24/09/2011</h3>
+<ul>
+  <li>centminfullmenu2.sh renamed to centmin.sh for public release</li>
+  <li>Tune centminfullmenu2.sh - reduce memcached server default memory allocation rom 16MB to 8MB per instance</li>
+  <li>Add to centminfullmenu2.sh a nginx & php-fpm logrotate functions</li>
+  <li>Updated OpenSSL to v1.0.0e</li>
+  <li>Updated MariaDB 5.2.9 if you manual RPM install (set MDB_INSTALL=y and MDB_YUMREPOINSTALL=n). If you use default YUM REPO install (set MDB_INSTALL=n and MDB_YUMREPOINSTALL=y), then you're at mercy of frequency of REPO's updates, but currently YUM REPO is still on MariaDB 5.2.7.</li>
+</ul>
+
+<h3>v1.2.1-eva2000.13 PRIVATE BETA - 14/09/2011</h3>
+<ul>
+  <li>Tune centminfullmenu2.sh Nginx networking settings</li>
+  <li>Tuned centminfullmenu2.sh init.d for memcached, nginx, php-fpm to reduce stack size when OpenVZ systems detected</li>
+  <li>Added centminfullmenu2.sh MariaDB mysql my-mdb-min.cnf and my-mdb-4gb.conf for <256MB and 4GB memory systems</LI>
+  <li>Added centminfullmenu2.sh php-fpm-min.conf for <256MB memory systems</LI>
+  <li>Added centminfullmenu2.sh apc-min.ini for <256MB memory systems</LI>
+  <li>Added centminfullmenu2.sh xcache-min.ini for <256MB memory systems</LI>
+</ul>
+
+<h3>v1.2.1-eva2000.12 PRIVATE BETA  - 08/09/2011</h3>
+<ul>
+  <li>Hide script cleanup/deletion routine when centminfullmenu2.sh is in Menu Mode (ENABLE_MENU=y)</li>
+  <li>Add to centminfullmenu2.sh NSD domain/ip/nameserver setup menu</li>
+  <li>Add to centminfullmenu2.sh sendmail YUM install routine a check for Postfix existence. If Postfix exists, sendmail YUM install aborts</li>
+  <li>Add to centminfullmenu2.sh Nginx and PHP upgrade menus, error check logging at configure, make and make install stages. Will abort if errors occur at each of the 3 stages.</li>
+  <li>Revised centminfullmenu2.sh Memcached server install to prompt for 1 or 2 memcached server instances to be installed. Previous releases had defaulted to 2x 16MB memcached server instances.</li>
+  <li>Revised centminfullmenu2.sh install routines with added check if custom conf, or file or install already exist or have already been run before. Prevents duplicate config settings from existing if folks accidentally re-run the main install routine again.</li>
+</ul>
+
+<h3>v1.2.1-eva2000.11 PRIVATE BETA  - 06/09/2011</h3>
+<ul>
+  <li>Extended script menu centminfullmenu2.sh with Nginx add vhost & ioping.sh support</li>
+  <li>Updated to Google Perf Tools v1.8.3</li>
+</ul>
+
+<h3>v1.2.1-eva2000.10 PRIVATE BETA  - 04/09/2011</h3>
+<ul>
+  <li>Added script menu support via experimental centminfullmenu2.sh script</li>
+</ul>
+
+<h3>v1.2.1-eva2000.09 - 01/09/2011</h3>
+<ul>
+	<li>Updated Extras/nginx-vhost domain setup tool</li>
+	<li>Updated Nginx from v1.0.5 to v1.0.6 <a href="http://nginx.org/en/CHANGES-1.0">http://nginx.org/en/CHANGES-1.0</a></li>
+	<li>Updated Libevent from v2.0.12 to v2.0.13</li>
+	<li>Optimised default MariaDB 5.2 MySQL my.cnf for lower memory usage for low memory based VPS (note: you'll need more memory for better performance)</li>
+</ul>
+
+<h3>v1.2.1-eva2000.08 - 26/08/2011</h3>
+<ul>
+	<li>Updated to Google Perf Tools v1.8.2</li>
+	<li>Updated PHP compile options added <strong>--with-xpm-dir=${LIBDIR}</strong> and IMAP support <strong>--with-imap --with-imap-ssl --with-kerberos</strong></li>
+	<li>Added <strong>yum install mlocate</strong> to CentOS 6.0 detection rountine as slocate doesn't work</li>
+</ul>
+
+<h3>v1.2.1-eva2000.07 - 24/08/2011</h3>
+<ul>
+	<li>Updated PHP from PHP 5.3.7 to PHP 5.3.8</li>
+	<li>Updated to <a href="http://code.google.com/p/memcached/wiki/ReleaseNotes147">Memcached server from v1.4.5 to v1.4.7</a></li>
+</ul>
+
+<h3>v1.2.1-eva2000.06 - 22/08/2011</h3>
+<ul>
+	<li>Updated to <a href="http://kb.askmonty.org/en/mariadb-528-release-notes">MariaDB 5.2.8 http://kb.askmonty.org/en/mariadb-528-release-notes</a> (default YUM repo might not be updated frequently so maybe MariaDB 5.2.7)</li>
+</ul>
+
+<h3>v1.2.1-eva2000.05 - 19/08/2011</h3>
+<ul>
+	<li>Updated to PHP 5.3.7</li>
+	<li>Updated PHP compile options with libjpeg/libpng/freetype & PDO support</li>
+	<li>Added option for MariaDB 5.2.x CentOS YUM REPO installation via <strong>MDB_YUMREPOINSTALL=y</strong> option enabled by default, with <strong>MDB_INSTALL=n</strong> & <strong>MYSQL_INSTALL=n</strong> by default. So you will use <strong>yum update MariaDB-*</strong> to update MariaDB 5.2.x mysql server.
+<pre lang="bash">
+[root@localhost ~]# yum list MariaDB-*
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.averse.net
+ * extras: mirror.averse.net
+ * updates: mirror.averse.net
+Excluding Packages in global exclude list
+Finished
+Installed Packages
+MariaDB-client.x86_64  5.2.7-101.el5  installed         
+MariaDB-devel.x86_64   5.2.7-101.el5  installed         
+MariaDB-server.x86_64  5.2.7-101.el5  installed         
+MariaDB-shared.x86_64  5.2.7-101.el5  installed         
+MariaDB-test.x86_64  5.2.7-101.el5  installed         
+Available Packages
+MariaDB-debuginfo.x86_64  5.2.7-101.el5  ourdelta-mariadb52
+</pre>
+</li>
+</ul>
+
+<h3>v1.2.1-eva2000.04 - 10/08/2011</h3>
+<ul>
+	<li>Update for CentOS 6.0 if detected will install EPEL 6 repo for missing libmycrypt related rpms</li>
+	<li>Updated Python from v2.7.1 to v2.7.2 but still leaving default CentOS 5/6 python versions intact</li>
+	<li>Fix MariaDB 5.2.x server unable to start</li>
+</ul>
+
+<h3>v1.2.1-eva2000.03 - 2/08/2011</h3>
+<ul>
+	<li>Updated Nginx compile config and nginx-update.sh script</li>
+	<li>Added --with-mcrypt if CentOS 5.6/6.0 is detected. Error with CentOS 5.5 hasn't been resolved so mcrypt not compiled with CentOS 5.5 version.</li>
+	<li>Temporarily removed Nginx v1.0.5 compile option --with-ld-opt='-ltcmalloc_minimal' as seem to get an error if compiled via centmin.sh script but manually compiling is fine. Haven't figured it out yet but only started occuring with Nginx v1.0.5.
+
+If compiled via script get error&nbsp;
+<pre lang="bash">checking for --with-ld-opt="-ltcmalloc_minimal" ... not found
+./configure: error: the invalid value in --with-ld-opt="-ltcmalloc_minimal"</pre>
+If compiled manually it detects fine
+<pre lang="bash">checking for --with-ld-opt="-ltcmalloc_minimal" ... found</pre>
+</li>
+</ul>
+<h3>v1.2.1-eva2000.02 - 31/07/2011</h3>
+<ul>
+	<li>Updated Nginx to default to v1.0.5</li>
+	<li>Fixed MariaDB 5.2 install for CentOS 5.6 <a href="#comment-113">http://vbtechsupport.com/920/#comment-113</a></li>
+	<li>Revised my.cnf backup of old my.cnf before installing updated MySQL/MariaDB versions</li>
+</ul>
+<h3>v1.2.1-eva2000.01 - 18/06/2011</h3>
+<ul>
+	<li>Synced changes with official Centmin v1.2.1 i.e. add --tries=3 to wget downloads</li>
+	<li>Added Centmin v1.2.1 official release nginx-vhost.sh setup script</li>
+	<li>Fixed broken Seige benchmark and SPROXY download links</li>
+</ul>
+
+<ul>
+	<li>Updated MariaDB MySQL from 5.2.6-101 to 5.2.7-101. <a title="MariaDB 5.2.7 MySQL server release notes" href="http://kb.askmonty.org/en/mariadb-527-release-notes" target="_blank">MariaDB 5.2.7 Release Notes</a>.</li>
+	<li>Fixed MariaDB download links by adding ${MDB_VERONLY} and ${MDB_BUILD} variables and changing MDB_VERSION variable to "${MDB_VERONLY}-${MDB_BUILD}"</li>
+	<li>Updated Libevent from v2.0.10 to v2.0.12</li>
+	<li>Added <strong>config/htpasswdgen/htpasswd.py</strong> python based htpasswd encoding generator to create passwords for systems without Apache. Original author of htpasswd.py, <a href="http://trac.edgewall.org/browser/trunk/contrib/htpasswd.py" target="_blank">Eli Carter</a>.  To encode a password for htpasswd protection run command: <strong>python /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/htpasswd yourusername yourpassword</strong>. Or if you have htpasswd from apache, set password up with command: <strong>htpasswd -s /usr/local/nginx/conf/htpasswd yourusername</strong></li>
+</ul>
+<h3>v1.2.0-eva2000.04 - 13/06/2011</h3>
+<ul>
+	<li>Additional php-fpm optimisations</li>
+	<li>Fixed command shortcuts for mysqlstop, mysqlstart, mysqlrestart to take into account MySQL community versions chosen during install instead of MariaDB MySQL</li>
+	<li>Updated MySQL Community default server &amp; MariaDB MySQL my.cnf settings</li>
+</ul>
+<h3>v1.2.0-eva2000.03 - 11/06/2011</h3>
+<ul>
+	<li>Added yum.conf check routine after MariaDB and PHP installs to add mysql* and php* exclusion for default mysql and php during yum updates</li>
+	<li>Updated apc.ini</li>
+	<li>Fixed APC autoconf errors</li>
+	<li>Add centmin-experimental.sh version which adds additional routines to be able to: centmin install, php upgrade, xcache upgrade, apc upgrade, nginx upgrade, standalone xcache or apc installations. Not fully tested yet. So do not use on live production servers.</li>
+</ul>
+<h3>v1.2.0-eva2000.02 - 10/06/2011</h3>
+<ul>
+	<li>Improved various Nginx and php-fpm config settings i.e. for correctly working $_SERVER['PATH_INFO'], $_PATH['PATH_TRANSLATED'] and $_SERVER['PHP_SELF'] php environment variables</li>
+</ul>
+<h3>v1.2.0-eva2000.01 - 09/06/2011</h3>
+<ul>
+	<li>Set MariaDB 5.2.x as default MySQL server installation</li>
+	<li>Updated mysqltuner.pl download link</li>
+	<li>Added Memcached server, libevent</li>
+	<li>Added Memcache PHP extension - please leave at v3.0.5, v3.0.6 doesn't seem to work</li>
+	<li>Added Python 2.7.1 installed /opt/python2.7.1 leaving CentOS Python 2.4.3-43 intact</li>
+	<li>Updated Nginx FancyIndex module download link to Gitorious archive tarball</li>
+	<li>Changed APC Cache from YUM based install to compiled from source</li>
+	<li>Added APC cache myapc.php admin page at /usr/local/nginx/html/myapc.phpAdded config/apc/apc.ini APC cache settings file</li>
+	<li>Added xcache admin directory to /usr/local/nginx/html/myxcacheadmin/ you need to read config/xcache/xcache_admin_setup_instructions.txt for xcache admin user/pass changes procedure</li>
+	<li>Added xcache admin password setup routine</li>
+	<li>Added memcache.php admin login setup routine</li>
+	<li>Fixed PHP configure error: Cannot find OpenSSL's libraries</li>
+	<li>Fixed Xcache compile error: Cannot find autoconf</li>
+	<li>Fixed Extras/nginx-update.sh nginx version read variable ${ngver}</li>
+</ul>

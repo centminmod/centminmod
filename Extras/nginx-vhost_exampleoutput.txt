@@ -1,0 +1,21 @@
+/sbin/nginx-vhost test5.com
+
+nginx: the configuration file /usr/local/nginx/conf/nginx.conf syntax is ok
+nginx: configuration file /usr/local/nginx/conf/nginx.conf test is successful
+Reloading nginx: [  OK  ]
+
+vhost for test5.com created successfully
+vhost conf file for test5.com created: /usr/local/nginx/conf/conf.d/test5.com.conf
+upload files to /home/nginx/domains/test5.com/public
+vhost log files directory is /home/nginx/domains/test5.com/log
+
+Current vhost listing at: /usr/local/nginx/conf/conf.d/
+                       
+Aug 25  01:45   2.5K   virtual.conf_centmin
+Aug 25  01:45   456    ssl.conf
+Aug 25  22:17   2.1K   virtual.conf
+Aug 31  16:49   597    test.com.conf
+Aug 31  16:54   602    test2.com.conf
+Aug 31  16:54   602    test3.com.conf
+Aug 31  16:56   602    test4.com.conf
+Aug 31  17:04   602    test5.com.conf

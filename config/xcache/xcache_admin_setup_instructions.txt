@@ -1,0 +1,23 @@
+The default xcache admin username and password are
+
+username = useradmin
+password = userpassword
+
+Added xcache admin directory to /usr/local/nginx/html/myxcacheadmin/ 
+
+-------------------------------------------------
+Changing username/passwords for xcache admin page
+-------------------------------------------------
+
+You need to setup admin password as per instructions at http://xcache.lighttpd.net/wiki/InstallAdministration for your /usr/local/lib/php.ini. 
+
+So edit php.ini the default user/pass.
+
+note: userpassword's md5 hash converted value = d440aed189a13ff970dac7e7e8f987b2
+
+[xcache.admin]
+xcache.admin.enable_auth = On
+xcache.admin.user = "useradmin"
+xcache.admin.pass = "d440aed189a13ff970dac7e7e8f987b2"
+
+Change username of your choosing and to create an md5 hashed password as per instructions at http://xcache.lighttpd.net/wiki/InstallAdministration and replace the xcache.admin.pass md5 hash with your updated password

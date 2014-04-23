@@ -1,0 +1,70 @@
+#!/bin/sh
+# chkconfig: - 80 12
+# description:  The twemcache daemon is a network memory cache service.
+# https://github.com/twitter/twemcache
+# processname: twemcache
+BINNAME=twemcache
+BIN=/usr/local/bin/twemcache
+USER=nobody
+CON=2048
+THREADS=4
+MINSP=72
+CHUNKF=1.25
+PORT1=22322
+PORT2=22323
+MEMSIZE=8
+SERVERCOUNT=1
+SERVERIP='127.0.0.1'
+OPTIONS=''
+
+if [ -f /proc/user_beancounters ]; then
+ulimit -s 256
+fi
+
+if [ "$SERVERCOUNT" == '2' ]; then
+
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+
+elif  [ "$SERVERCOUNT" == '1' ]; then
+
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+
+fi
+
+case "$1" in
+start)
+
+if [ "$SERVERCOUNT" == '2' ]; then
+
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+
+elif  [ "$SERVERCOUNT" == '1' ]; then
+
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+
+fi
+
+;;
+stop) 
+
+killall $BIN
+
+;;
+restart)             
+killall $BIN
+
+if [ "$SERVERCOUNT" == '2' ]; then
+
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+
+elif  [ "$SERVERCOUNT" == '1' ]; then
+
+$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+
+fi
+
+;;
+esac

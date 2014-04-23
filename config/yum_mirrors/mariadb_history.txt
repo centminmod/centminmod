@@ -1,0 +1,13 @@
+http://mirror.aarnet.edu.au/pub/MariaDB/mariadb-${MDB_VERONLY}/kvm-rpm-centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm
+
+http://ftp.osuosl.org/pub/mariadb/mariadb-5.2.13/kvm-rpm-centos5-amd64/rpms/
+
+http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/kvm-rpm-centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm
+
+http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/kvm-rpm-centos5-${MDB_ARCH}/rpms/MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm
+
+http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/kvm-rpm-centos5-${MDB_ARCH}/rpms/MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
+
+http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/kvm-rpm-centos5-${MDB_ARCH}/rpms/MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm
+
+http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/kvm-rpm-centos5-${MDB_ARCH}/rpms/MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm

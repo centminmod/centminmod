@@ -1,0 +1,5 @@
+http://dl.fedoraproject.org/pub/epel/6/${RPMFARCH}/epel-release-6-8.noarch.rpm
+http://mirror.us.leaseweb.net/epel/6/${RPMFARCH}/epel-release-6-8.noarch.rpm
+
+http://dl.fedoraproject.org/pub/epel/5/${RPMFARCH}/epel-release-5-4.noarch.rpm
+http://mirror.us.leaseweb.net/epel/5/${RPMFARCH}/epel-release-5-4.noarch.rpm

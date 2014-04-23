@@ -1,0 +1,33 @@
+To install read FAQ at http://centminmod.com/download.html
+
+##########
+Notes:
+##########
+
+Centmin Mod v1.2.3 is configured to be almost 99% unattended for initial Centmin Mod install. You'd only have to edit 3 variables up to the top of centmin.sh prior to install to proceed with unattended mode, 
+
+UNATTENDED='y' 
+NGINX_IPV='n' for Nginx IPv6 support 
+ZONEINFO for server timezones (details http://centminmod.com/datetimezones.html). 
+
+Everything else should in theory be unattended once you hit menu option #1 to install Centmin Mod.
+
+As unattended mode leaves little choice via prompts, I had to make the decisions for some installed items. In unattended mode,
+
+- Xcache isn't installed but APC Cache is the default installed PHP opcode cacher. From my experience APC Cache is better than Xcache for Nginx PHP-FPM
+- Memcached server is automatically installed with 1 server instance http://centminmod.com/memcached.html
+- Python 2.7.3 is not installed
+- CSF Firewall is automatically installed http://centminmod.com/csf_firewall.html
+- Siege benchmark is automatically installed
+
+##########
+Tips:
+##########
+
+If possible, setup a test server or virtualised server via Virtualbox or VMWare to test out Centmin Mod before doing install on live server. 
+
+For quick tests, you can easily setup a 512MB memory, 16GB hard disk storage Secured Cloud VM server instance using SecuredServers.com Cloud http://www.securedservers.com/532-3.html with costs starting from US$0.025 per hour. Benchmarks on Secured Cloud VM instance here http://vbtechsupport.com/2127/.
+
+Secured Cloud VM setup tip: To make your Centmin Mod install web accessible on Secured Cloud VMs, they have their own firewall enabled in Secured Cloud VM customer admin area that only allows port 22 and 3389 by default. For Centmin Mod installs, you can disable Secured Cloud VM's firewall and let Centmin Mod CSF firewall take over.
+
+Or even cheaper option is to setup a DigitalOcean.com 512MB memory VPS at $0.007/hr http://centminmod.com/digitalocean. Or a DigitalOcean.com 1GB memory VPS at $0.015/hr http://centminmod.com/digitalocean.

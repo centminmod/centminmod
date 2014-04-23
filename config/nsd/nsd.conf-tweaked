@@ -1,0 +1,20 @@
+#
+# nsd.conf -- the NSD(8) configuration file, nsd.conf(5).
+#
+# Copyright (c) 2001-2006, NLnet Labs. All rights reserved.
+#
+# See LICENSE for the license.
+#
+
+server:
+	hide-version: yes
+
+	# zonefile: to store pid for nsd in.
+	pidfile: "/var/run/nsd/nsd.pid"
+
+	# The directory for zonefile: files.
+	zonesdir: "/etc/nsd"
+
+zone:
+	name: "demo.com"
+	zonefile: "master/demo.com.zone"

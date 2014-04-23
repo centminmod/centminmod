@@ -1,0 +1,19 @@
+# logrotate
+# nano -w /etc/logrotate.d/nginx
+
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+        daily
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+                /sbin/service nginx restart
+               #or
+               #kill -s USR1 'cat /usr/local/nginx/logs/nginx.pid'
+        endscript            
+}
+
+# /etc/init.d/syslog restart
+# or /sbin/service logrotate restart

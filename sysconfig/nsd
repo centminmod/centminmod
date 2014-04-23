@@ -1,0 +1,30 @@
+# /etc/sysconfig/nsd
+# Configuration for /etc/init.d/nsd
+
+OTHER_NSD_OPTS=""
+#extra verbosity
+#ZONEC_VERBOSE=-v
+
+# You might also need to change SElinux policies if you decide
+# to deviate from the standard locations below.
+
+# Main configuration file
+#NSD_CONF="/etc/nsd/nsd.conf"
+
+# NSD DB
+#NSD_DB="/var/db/nsd/nsd.db"
+
+# Path to nsdc program
+#NSDC_PROG="/usr/local/sbin/nsdc"
+
+# Path to nsd program
+#NSD_PROG="/usr/local/sbin/nsd"
+
+# NSD pid file
+#NSD_PIDFILE="/var/run/nsd/nsd.pid"
+
+# NSD zone transfer daemon state file (should equal to the xfrdfile
+# parameter set in nsd.conf)
+#NSD_XFRDFILE="/var/db/nsd/xfrd.state"
+
+# EOF

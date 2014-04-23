@@ -1,0 +1,17 @@
+Edit php.ini = phpedit
+Edit my.cnf = mycnf
+Edit php-fpm.conf = fpmconf
+Edit nginx.conf = nginxconf
+Edit (nginx) virtual.conf = vhostconf
+Edit (nginx) php.conf = phpinc
+Edit (nginx) drop.conf = dropinc
+Edit (nginx) staticfiles.conf = statfilesinc
+nginx stop/start/restart = ngxstop/ngxstart/ngxrestart
+php-fpm stop/start/restart = fpmstop/fpmstart/fpmrestart
+mysql stop/start/restart = mysqlstop/mysqlstart/mysqlrestart
+nginx + php-fpm stop/start/restart = npstop/npstart/nprestart
+memcached stop/start/restart = memcachedstop/memcachedstart/memcachedrestart
+csf stop/start/restart = csfstop/csfstart/csfrestart
+Update nginx = nginx-update
+Setup new nginx vhost = nginx-vhost domain.com
+(where domain.com is the domain you want to setup without the www.)

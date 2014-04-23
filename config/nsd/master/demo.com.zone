@@ -1,0 +1,28 @@
+$TTL 14400
+@       IN      SOA     ns1.demo.com.      hostmaster.demo.com. (
+                                                2010091500
+                                                14400
+                                                3600
+                                                1209600
+                                                86400 )
+
+; Nameservers
+demo.com.	14400	IN	NS	ns1.demo.com.
+demo.com.	14400	IN	NS	ns2.demo.com.
+
+; A Records
+demo.com.	14400	IN	A	192.192.192.192
+ftp			14400	IN	A	192.192.192.192
+localhost	14400	IN	A	127.0.0.1
+mail		14400	IN	A	192.192.192.192
+ns1			14400	IN	A	192.192.192.192
+ns2			14400	IN	A	192.192.192.192
+pop			14400	IN	A	192.192.192.192
+smtp		14400	IN	A	192.192.192.192
+www			14400	IN	A	192.192.192.192
+
+; MX Record
+demo.com.	14400	IN	MX	10 mail
+
+; TXT Record (for SPF)
+demo.com.	14400	IN	TXT	"v=spf1 a mx ip4:192.192.192.192 ~all"

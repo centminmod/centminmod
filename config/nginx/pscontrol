@@ -1,0 +1,62 @@
+#/bin/bash
+# turn ngx_pagespeed on or off switch
+
+pshandler() {
+nano -w /usr/local/nginx/conf/pagespeedhandler.conf
+}
+
+psconf() {
+nano -w /usr/local/nginx/conf/pagespeed.conf
+}
+
+psoff() {
+sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeed.conf
+/etc/init.d/nginx restart
+}
+
+pson() {
+sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeed.conf
+/etc/init.d/nginx restart
+}
+
+psstatslogoff() {
+sed -i 's/ModPagespeedStatistics on;/ModPagespeedStatistics off;/g' /usr/local/nginx/conf/pagespeedstatslog.conf
+sed -i 's/ModPagespeedStatisticsLogging on;/ModPagespeedStatisticsLogging off;/g' /usr/local/nginx/conf/pagespeedstatslog.conf
+/etc/init.d/nginx restart
+}
+
+psstatslogon() {
+sed -i 's/ModPagespeedStatistics off;/ModPagespeedStatistics on;/g' /usr/local/nginx/conf/pagespeedstatslog.conf
+sed -i 's/ModPagespeedStatisticsLogging off;/ModPagespeedStatisticsLogging on;/g' /usr/local/nginx/conf/pagespeedstatslog.conf
+/etc/init.d/nginx restart
+}
+
+case "$1" in
+handler)
+pshandler
+;;
+edit)
+psconf
+;;
+on)
+pson
+;;
+off)
+psoff
+;;
+statson)
+psstatslogon
+;;
+statsoff)
+psstatslogoff
+;;
+*)
+echo "pscontrol handler"
+echo "pscontrol edit"
+echo "pscontrol on"
+echo "pscontrol off"
+echo "pscontrol statson"
+echo "pscontrol statsoff"
+;;
+esac
+exit

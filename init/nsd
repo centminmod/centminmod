@@ -1,0 +1,111 @@
+#!/bin/bash
+
+#
+# nsd:         Starts the NSD Name Server Daemon
+#
+# chkconfig: - 13 87
+# description:  NSD is a complete implementation of an authoritative \
+#               DNS name server. 
+# processname: /usr/local/sbin/nsd
+# config: /etc/nsd/nsd.conf
+#
+### BEGIN INIT INFO
+# Provides: nsd
+# Required-Start: $local_fs $network $syslog
+# Required-Stop: $local_fs $network $syslog
+# Default-Stop: 0 11 89
+# Short-Description: start|stop|status|restart|try-restart|reload|force-reload DNS server
+# Description: control NSD implementation of DNS server
+### END INIT INFO
+
+# Init script default settings
+NSD_CONF="/etc/nsd/nsd.conf"
+NSD_DB="/var/db/nsd/nsd.db"
+NSD_PROG="/usr/local/sbin/nsd"
+NSD_PIDFILE="/var/run/nsd/nsd.pid"
+NSD_XFRDFILE="/var/db/nsd/xfrd.state"
+NSDC_PROG="/usr/local/sbin/nsdc"
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+[ -r /etc/sysconfig/nsd ] && . /etc/sysconfig/nsd
+
+# Check that networking is configured.
+[ "${NETWORKING}" = "no" ] && exit 0
+
+start() {
+  # Source networking configuration.
+  [ -r /etc/sysconfig/network ] && . /etc/sysconfig/network
+
+  # Check that networking is up
+  [ "${NETWORKING}" = "no" ] && exit 1
+
+  # Sanity checks.
+  [ -f $NSD_CONF ] || exit 5
+  [ -x $NSD_PROG ] || exit 5
+
+  echo -n $"Starting nsd:"
+  $NSDC_PROG -c $NSD_CONF rebuild >/dev/null 2>%1
+  $NSD_PROG -c $NSD_CONF $OTHER_NSD_OPTS
+  RETVAL=$?
+  echo
+        if [ $RETVAL -eq 0 ]; then
+           touch /var/lock/subsys/nsd;
+        else
+           exit 7;
+        fi
+  return 0;
+}
+
+stop() {
+  echo -n $"Stopping nsd: "
+  # save state to zonefiles
+  $NSDC_PROG -c $NSD_CONF patch > /dev/null 2>%1
+  $NSDC_PROG -c $NSD_CONF stop
+  RETVAL=$?
+  # was nsdc successful?
+  [ "$RETVAL" -eq 0 ] || killproc $NSD_PROG -TERM >/dev/null 2>&1
+  if [ $RETVAL -eq 0 ] ; then
+     rm -f $NSD_PIDFILE
+     rm -f /var/lock/subsys/nsd
+     # ensure notifies are sent at startup
+     rm -f $NSD_XFRDFILE
+  fi
+  echo
+  return $RETVAL
+}
+
+restart() {
+	stop
+	start
+}
+
+RETVAL=0
+
+# See how we were called.
+case "$1" in
+  start)
+	start
+	;;
+  stop)
+	stop
+	;;
+  restart)
+	restart
+	;;
+  condrestart)
+        [ -f /var/lock/subsys/nsd ] && restart || :
+	;;
+  status)
+	$NSDC_PROG -c $NSD_CONF running
+	;;
+  stats|reload|rebuild|running|update|notify)
+	$NSDC_PROG -c $NSD_CONF $1 
+	;;
+  *)
+	echo $"Usage: $0 {start|stop|status|restart|condrestart|stats|notify|reload|rebuild|running|update}"
+	exit 1
+esac
+
+exit $?

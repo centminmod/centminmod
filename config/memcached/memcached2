@@ -1,0 +1,156 @@
+#!/bin/sh
+# chkconfig: - 80 12
+# description:  The memcached daemon is a network memory cache service.
+# processname: memcached
+BINNAME=memcached
+BIN=/usr/local/bin/memcached
+USER=nobody
+LOGGING='n'
+LOGFILE="/var/log/memcached.log"
+LOGFILEB="/var/log/memcached2.log"
+CON=1024
+THREADS=4
+MINSP=72
+CHUNKF=1.25
+PORT1=11211
+PORT2=11212
+MEMSIZE=8
+SERVERCOUNT=2
+SERVERIP='127.0.0.1'
+OPTIONS='-o slab_reassign,slab_automove'
+
+if [ -f /proc/user_beancounters ]; then
+ulimit -s 256
+fi
+
+DEBUG='n'
+CPUSET='n'
+#############################
+
+processcheck() {
+PROCESS=$(ps ax | grep memcached | grep -Ev '(grep|memcached status|memcached start|memcached stop|memcached restart|memcached_reinstall)')
+CHECKM=${PROCESS:-nomemcached}
+}
+
+setcpu() {
+if [ "$CPUSET" == 'y' ]; then
+	CORECHECK=$(taskset -pc $(pidof memcached) | awk -F ': ' '{print $2}' | awk -F ',' '{print $3}')
+	if [ "$CORECHECK" == '3' ]; then
+	taskset -pc 3 $(pidof memcached) 2>&1 >/dev/null
+	fi
+fi
+}
+
+twomem() {
+processcheck
+
+if [ "$DEBUG" == 'y' ]; then
+echo $CHECKM
+fi
+
+if [[ "$CHECKM" == 'nomemcached' ]]; then
+	echo "Memcached server started "
+        if [[ "$LOGGING" = [yY] ]]; then
+        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
+        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILEB 2>&1
+        else
+        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        fi
+else
+	echo "Memcached server already running "
+fi
+
+}
+
+onemem() {
+processcheck
+
+if [ "$DEBUG" == 'y' ]; then
+echo $CHECKM
+fi
+
+if [[ "$CHECKM" == 'nomemcached' ]]; then
+	echo "Memcached server started "
+        if [[ "$LOGGING" = [yY] ]]; then
+        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
+        else
+        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        fi
+else
+	echo "Memcached server already running "
+fi
+}
+
+mstart() {
+if [ "$SERVERCOUNT" == '2' ]; then
+	twomem
+elif  [ "$SERVERCOUNT" == '1' ]; then
+	onemem
+	setcpu
+fi
+}
+
+mstop() {
+processcheck
+
+if [ "$DEBUG" == 'y' ]; then
+echo $CHECKM
+fi
+
+if [[ "$CHECKM" != 'nomemcached' ]]; then
+	echo "Memcached server stopped "
+	killall $BIN 2>/dev/null
+else
+	echo "Memcached server already stopped "
+fi
+}
+
+mstatus() {
+processcheck
+
+if [ "$DEBUG" == 'y' ]; then
+echo $CHECKM
+fi
+
+if [[ "$CHECKM" == 'nomemcached' ]]; then
+	echo "Memcached server not running "
+else
+	echo "Memcached server is running "
+fi
+}
+
+#############################
+
+if [[ "$SERVERCOUNT" == '2' && ! "$1" ]]; then
+        twomem
+elif  [[ "$SERVERCOUNT" == '1' && ! "$1" ]]; then
+        onemem
+        setcpu
+        #echo "1=${1} 2=${2}" #debug
+fi
+
+case "$1" in
+start)
+
+mstart
+
+;;
+stop) 
+
+mstop
+
+;;
+restart)             
+
+mstop
+sleep 2
+mstart
+
+;;
+status)
+
+mstatus
+
+;;
+esac
