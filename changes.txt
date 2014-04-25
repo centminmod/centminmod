@@ -12,7 +12,7 @@ v1.2.3-eva2000.07 20/04/2014
 - Updated PCRE version compiled for Nginx 8.33 to 8.35 http://www.pcre.org/changelog.txt
 - Updated PHP memcached extension from 2.1.0 to 2.2.0 http://pecl.php.net/package-changelog.php?package=memcached
 - Updated NSD v3.2.16 to v3.2.17 http://www.nlnetlabs.nl/projects/nsd/index.html#releases
-- Updated Nginx from v1.5.8 to v1.5.13 release http://nginx.org/en/CHANGES
+- Updated Nginx from v1.5.8 to v1.7.0 release http://nginx.org/en/CHANGES
 - Updated Nginx WebDav module from 0.0.2 to 0.0.3 https://github.com/arut/nginx-dav-ext-module
 - Updated multi-threaded compression menu with updated versions for pbzip2, lbzip2, plzip, lzip
 - Updated libmemcached from 1.0.16 to 1.0.18 https://launchpad.net/libmemcached/+download

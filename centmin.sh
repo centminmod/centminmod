@@ -11,7 +11,7 @@ DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='07'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='20/04/2014'
+SCRIPT_DATE='25/04/2014'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
@@ -225,7 +225,7 @@ MDB_PREVERSION="${MDB_PREVERONLY}-${MDB_PREBUILD}"     # Use this version of Mar
 MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alternative recommended)
 SENDMAIL_INSTALL=y           # Install Sendmail (and mailx)
 # Nginx
-NGINX_VERSION='1.5.13'        # Use this version of Nginx
+NGINX_VERSION='1.7.0'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
