@@ -28,7 +28,7 @@ then
 
 sed -i "s/TCP_OUT = \"/TCP_OUT = \"111,2049,1110,1194,9418,/g" /etc/csf/csf.conf
 sed -i "s/UDP_IN = \"/UDP_IN = \"111,2049,1110,/g" /etc/csf/csf.conf
-sed -i "s/UDP_OUT = \"/UDP_OUT = \"111,2049,1110,33434:33523/g" /etc/csf/csf.conf
+sed -i "s/UDP_OUT = \"/UDP_OUT = \"111,2049,1110,33434:33523,/g" /etc/csf/csf.conf
     
     echo "Disabling CSF Testing mode (activates firewall)..."
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
