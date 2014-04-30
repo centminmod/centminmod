@@ -50,7 +50,7 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf" <<END
 #server {
 #            listen   80;
 #            server_name $vhostname;
-#            return 301 $scheme://www.${vhostname}$request_uri;
+#            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
@@ -81,7 +81,7 @@ server {
   #autoindex_localtime on;
 
   # Enable for vBulletin usage WITHOUT vbSEO installed
-  #try_files		$uri $uri/ /index.php;
+  #try_files		\$uri \$uri/ /index.php;
 
   }
 
