@@ -1,8 +1,8 @@
 function funct_xcachereinstall {
 
 echo " "
-ASK "Xcache reinstall - Would you like to continue? [y/n] "   
-if [[ "$key" = [nN] ]];
+read -ep "Xcache reinstall - Would you like to continue? [y/n] " xcachekey
+if [[ "$xcachekey" = [nN] ]];
 then
     exit 0
 fi
@@ -12,8 +12,7 @@ if [ ! -d "$DIR_TMP" ]; then
 mkdir /svr-setup
 fi
 
-echo -n "Install which version of Xcache? (version i.e. 2.0.1): "
-read xcachever
+read -ep "Install which version of Xcache? (version i.e. 3.1.0): " xcachever
 
 #######################
 
@@ -66,17 +65,42 @@ XCACHESOCHECKB=$(grep 'xcache.so' ${CONFIGSCANDIR}/xcache.ini)
 
 if [[ -z $XCACHESOCHECK || -z $XCACHESOCHECKB ]]; then
 
+    echo
+read -ep "Want to reset xcache.ini settings to default (y) or keep existing xcache.ini settings  and user/pass (n)? [y/n]: " resetxcacheini
+
+    if [[ "$resetxcacheini" = [yY] ]]; then 
+
 echo
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
-if [ "$PHPVERCHECK" == '5.4' ]; then
+if [[ "$PHPVERCHECK" == '5.4' || "$PHPVERCHECK" == '5.5' ]]; then
     #cat $CUR_DIR/config/xcache/xcache_php54.ini >> /usr/local/lib/php.ini
     cat $CUR_DIR/config/xcache/xcache_php54.ini > ${CONFIGSCANDIR}/xcache.ini
 else
    #cat $CUR_DIR/config/xcache/xcache.ini >> /usr/local/lib/php.ini
     cat $CUR_DIR/config/xcache/xcache.ini > ${CONFIGSCANDIR}/xcache.ini
 fi
+
+    echo ""
+    echo "*************************************************"
+    cecho "*  Setup Xcache Admin Password for /usr/local/nginx/html/myxcacheadmin" $boldgreen
+    echo "*************************************************"
+    read -ep "(Type password your want to set and press Enter): " xcachepassword
+
+xcachepass="`echo -n "${xcachepassword}" | md5sum | awk '{ print $1 }'`"
+
+cecho "old md5 password hash: `grep xcache.admin.pass ${CONFIGSCANDIR}/xcache.ini | awk '{ print $3 }' | sed -e 's/"//g'`" $boldgreen
+cecho "new md5 password hash: ${xcachepass}" $boldgreen
+cecho "xcache username: `grep xcache.admin.user ${CONFIGSCANDIR}/xcache.ini | awk '{ print $3 }' | sed -e 's/"//g'`" $boldgreen
+cecho "xcache password: ${xcachepassword}" $boldgreen
+
+    sed -i "s/d440aed189a13ff970dac7e7e8f987b2/${xcachepass}/g" ${CONFIGSCANDIR}/xcache.ini
+
+cecho " php.ini now has xcache.admin.pass set as follows: :" $boldgreen
+cecho " `cat ${CONFIGSCANDIR}/xcache.ini | grep xcache.admin.pass`" $boldgreen
+
+    fi # resetxcachein
 
 fi # XCACHESOCHECK
 
@@ -88,7 +112,8 @@ fi # XCACHESOCHECK
     make clean
     /usr/local/bin/phpize
     ./configure --enable-xcache --with-php-config=/usr/local/bin/php-config
-    make && make install
+    make${MAKETHREADS}
+    make install
 
     /etc/init.d/php-fpm restart
     echo "*************************************************"

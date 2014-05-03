@@ -1,4 +1,4 @@
-<b>v1.2.3-eva2000.07 02/05/2014</b>
+<b>v1.2.3-eva2000.07 03/05/2014</b>
 <ul>
   <li>Improvements to speed up install process</li>
   <li>Added back the return of an optional cli install method which bypasses the menu option #1 install method. If you run ./centmin.sh install, you can bypass the shel based menu for fully unattended installation.</li>
@@ -13,6 +13,7 @@
   <li>Updated PHP configuration to autodetect if openldap-clients package is installed and if installed auto add --with-ldap --with-ldap-sasl configuration options to PHP configuration for PHP LDAP extension support http://www.php.net/manual/en/ldap.installation.php. If you don't currently have PHP LDAP extension support, just run yum -y install openldap-clients and then run centmin.sh menu option #5 to recompile PHP.</li>
   <li>Updated PCRE version compiled for Nginx 8.33 to 8.35 http://www.pcre.org/changelog.txt</li>
   <li>Updated PHP memcached extension from 2.1.0 to 2.2.0 http://pecl.php.net/package-changelog.php?package=memcached</li>
+  <li>Updated Xcache from 2.0.1 to 3.1.0 <a href="http://xcache.lighttpd.net/browser/tags/3.1.0/ChangeLog" target="_blank">http://xcache.lighttpd.net/browser/tags/3.1.0/ChangeLog</a></li>
   <li> Updated NSD v3.2.15 to v3.2.17 <a href="http://www.nlnetlabs.nl/projects/nsd/index.html#releases" target="_blank">http://www.nlnetlabs.nl/projects/nsd/index.html#releases</a></li>
   <li>Updated Nginx from v1.5.8 to v1.7.0 release <a href="http://nginx.org/en/CHANGES" target="_blank">http://nginx.org/en/CHANGES</a></li>
   <li>Updated Nginx WebDav module from 0.0.2 to 0.0.3 https://github.com/arut/nginx-dav-ext-module</li>
