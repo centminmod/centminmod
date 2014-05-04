@@ -342,7 +342,7 @@ fi
 ####
 # axivo centos 6.x 64bit only
 
-if [ ${MACHINE_TYPE} == 'x86_64' ];
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 
 if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
   echo "${CENTOSSIXAXIVOFILE} [found]"
