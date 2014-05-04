@@ -82,21 +82,21 @@ fi
 
 
 
-if [ -s centalt-release-5-3.noarch.rpm ]; then
-  echo "centalt-release-5-3.noarch.rpm [found]"
+if [ -s ${CENTOSFIVECENTALTFILE} ]; then
+  echo "${CENTOSFIVECENTALTFILE} [found]"
   else
-  echo "Error: centalt-release-5-3.noarch.rpm not found !!! Download now......"
+  echo "Error: ${CENTOSFIVECENTALTFILE} not found !!! Download now......"
   wget ${WGETOPT} ${CENTOSFIVECENTALT} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: centalt-release-5-3.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSFIVECENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
-rpm -i centalt-release-5-3.noarch.rpm
+rpm -i ${CENTOSFIVECENTALTFILE}
 yumpriorcentalt
 echo ""
 	fi
@@ -340,7 +340,42 @@ rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
 fi
 
 ####
+# axivo centos 6.x 64bit only
 
+if [ ${MACHINE_TYPE} == 'x86_64' ];
+
+if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
+  echo "${CENTOSSIXAXIVOFILE} [found]"
+  else
+  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXAXIVO} --tries=3
+  # wget ${WGETOPT} ${CENTOSSIXAXIVOLOCAL} --tries=3
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${CENTOSSIXAXIVOFILE} download failed." $boldgreen
+FAILAXIVO='y'
+checklogdetails
+	exit #$ERROR
+else 
+	cecho "Download done." $boldyellow
+	rpm -i ${CENTOSSIXAXIVOFILE}
+	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	ERR=$?
+	CCAXIVOCHECK="$ERR"
+		if [ "$CCAXIVOCHECK" == '0' ]; then
+			yumprioraxivo
+			echo ""
+		else
+			cecho "Error: problem with ${CENTOSSIXAXIVOFILE} install." $boldgreen
+			exit $ERR
+		fi
+	fi
+
+fi
+
+fi
+
+####
 
 
 # CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version
