@@ -6,29 +6,31 @@ Centmin Mod G+ Community forum at http://centminmod.com/gcom
 
 ***
 
-# Centmin Mod installed via Github
+Centmin Mod installed via Github
 
-*Step 1.* Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and define it in the variable named branchname typed on SSH command line as follows.
+Step 1. 
 
-`branchname=123.07beta16xtrarepo`
+Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and define it in the variable named branchname typed on SSH command line as follows.
 
-*Step 2.* Actual install
+branchname=123.07beta16xtrarepo
 
-```
+Step 2.
+
+Actual install
+
 branchname=123.07beta16xtrarepo
 wget -P /usr/local/src https://github.com/centminmod/centminmod/archive/${branchname}.zip
 cd /usr/local/src
 unzip ${branchname}.zip
 cd centminmod-${branchname}
 chmod +x centmin.sh
-```
 
 Then to install either type
 
 for menu mode
 
-`./centmin.sh`
+./centmin.sh
 
 or for CLI install mode
 
-`./centmin.sh install`
+./centmin.sh install
