@@ -3,3 +3,32 @@ This is just a test repository for Centmin Mod. DO NOT rely on this repository f
 .07 beta has new CLI installer mode outlined at https://blog.centminmod.com/327
 
 Centmin Mod G+ Community forum at http://centminmod.com/gcom
+
+***
+
+# Centmin Mod installed via Github
+
+*Step 1.* Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and define it in the variable named branchname typed on SSH command line as follows.
+
+`branchname=123.07beta16xtrarepo`
+
+*Step 2.* Actual install
+
+```
+branchname=123.07beta16xtrarepo
+wget -P /usr/local/src https://github.com/centminmod/centminmod/archive/${branchname}.zip
+cd /usr/local/src
+unzip ${branchname}.zip
+cd centminmod-${branchname}
+chmod +x centmin.sh
+```
+
+Then to install either type
+
+for menu mode
+
+`./centmin.sh`
+
+or for CLI install mode
+
+`./centmin.sh install`
