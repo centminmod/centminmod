@@ -172,7 +172,7 @@ PHP_DISABLED=n                # PHP-FPM disabled by default with chkconfig off
 MYSQLSERVICE_DISABLED=n       # MariaDB MySQL service disabled by default with chkconfig off
 
 # General Configuration
-NGINXUPGRADESLEEP='35'
+NGINXUPGRADESLEEP='3'
 NSD_INSTALL=y                # Install NSD (DNS Server)
 NSD_VERSION='3.2.17'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
