@@ -167,6 +167,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
     cd openssl-${OPENSSL_VERSION}
     make clean
+	opensslpatches
     ./config --prefix=/usr/local --openssldir=/usr/local/ssl
     make
     make install
