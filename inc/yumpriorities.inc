@@ -274,6 +274,8 @@ cat /etc/yum.repos.d/centalt.repo
 echo ""
 fi
 
+}
+
 yumpriorpercona() {
 cp -p /etc/yum.repos.d/Percona.repo /etc/yum.repos.d/Percona.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/Percona.repo)" ]
@@ -355,6 +357,4 @@ cecho "*************************************************" $boldgreen
 cat /etc/yum.repos.d/axivo.repo
 echo ""
 fi
-}
-
 }
