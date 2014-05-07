@@ -24,7 +24,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 export BPATH=$DIR_TMP
 export STATICLIBSSL="${BPATH}/staticlibssl"
 
-    tar xzf openssl-${OPENSSL_VERSION}.tar.gz
+    if [[ -f openssl-${OPENSSL_VERSION}.tar.gz && ! -d ${DIR_TMP}/openssl-${OPENSSL_VERSION} ]]; then
+        tar xzf openssl-${OPENSSL_VERSION}.tar.gz
+    fi
     #-- Build static openssl
     cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
     rm -rf "$STATICLIBSSL"
