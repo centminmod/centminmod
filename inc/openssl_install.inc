@@ -30,6 +30,7 @@ export STATICLIBSSL="${BPATH}/staticlibssl"
     rm -rf "$STATICLIBSSL"
     mkdir -p "$STATICLIBSSL"
     make clean
+    opensslpatches
     ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128 \
     && make depend \
     && make${MAKETHREADS} \
