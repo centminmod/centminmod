@@ -1,9 +1,10 @@
 #!/bin/bash
 # centminmod.com cli installer
 #######################################################
-DOWNLOAD='centmin-v1.2.3-eva2000.07_submenu_020514.zip'
+DOWNLOAD='centmin-v1.2.3-eva2000.07_submenu_070514.zip'
 
 INSTALLDIR='/usr/local/src'
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 #######################################################
 # 
 
@@ -36,21 +37,21 @@ chmod +x centmin.sh
 tail -1 /root/centminlogs/centminmod_yumtimes_*.log
 tail -1 /root/centminlogs/*_install.log
 
-if [[ -z $(alias | grep cmdir) ]]; then
-	# setup command shortcut aliases 
-	# given the known download location
-	alias cmdir='pushd /usr/local/src/centmin-v1.2.3mod'
-	alias centmin='pushd /usr/local/src/centmin-v1.2.3mod; bash centmin.sh'
-	echo "alias cmdir='pushd /usr/local/src/centmin-v1.2.3mod'" >> /root/.bashrc
-	echo "alias centmin='cd /usr/local/src/centmin-v1.2.3mod; bash centmin.sh'" >> /root/.bashrc
-	source /root/.bashrc
-	echo
-	echo "Created command shortcuts:"
-	echo "* type cmdir to change to Centmin Mod install directory"
-	echo "  at /usr/local/src/centmin-v1.2.3mod"
-	echo "* type centmin call and run centmin.sh"
-	echo "  at /usr/local/src/centmin-v1.2.3mod/centmin.sh"
-fi
+# if [[ -z $(alias | grep cmdir) ]]; then
+# 	# setup command shortcut aliases 
+# 	# given the known download location
+# 	alias cmdir="pushd ${SCRIPT_DIR}"
+# 	alias centmin="pushd ${SCRIPT_DIR}; bash centmin.sh"
+# 	echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
+# 	echo "alias centmin='cd ${SCRIPT_DIR}; bash centmin.sh'" >> /root/.bashrc
+# 	source /root/.bashrc
+# 	echo
+# 	echo "Created command shortcuts:"
+# 	echo "* type cmdir to change to Centmin Mod install directory"
+# 	echo "  at ${SCRIPT_DIR}"
+# 	echo "* type centmin call and run centmin.sh"
+# 	echo "  at ${SCRIPT_DIR}/centmin.sh"
+# fi
 }
 
 if [[ "$DEF" = 'novalue' ]]; then

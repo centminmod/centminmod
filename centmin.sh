@@ -1201,7 +1201,25 @@ if [[ "$1" = 'install' ]]; then
     
     alldownloads
     funct_centmininstall
+
+if [[ -z $(alias | grep cmdir) ]]; then
+    # setup command shortcut aliases 
+    # given the known download location
+    alias cmdir="pushd ${SCRIPT_DIR}"
+    alias centmin="pushd ${SCRIPT_DIR}; bash centmin.sh"
+    echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
+    echo "alias centmin='cd ${SCRIPT_DIR}; bash centmin.sh'" >> /root/.bashrc
+    source /root/.bashrc
+    # echo
+    # echo "Created command shortcuts:"
+    # echo "* type cmdir to change to Centmin Mod install directory"
+    # echo "  at ${SCRIPT_DIR}"
+    # echo "* type centmin call and run centmin.sh"
+    # echo "  at ${SCRIPT_DIR}/centmin.sh"
+fi
+
     unsetramdisk
+
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
     } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
@@ -1296,7 +1314,25 @@ else
             
             alldownloads
             funct_centmininstall
+
+if [[ -z $(alias | grep cmdir) ]]; then
+    # setup command shortcut aliases 
+    # given the known download location
+    alias cmdir="pushd ${SCRIPT_DIR}"
+    alias centmin="pushd ${SCRIPT_DIR}; bash centmin.sh"
+    echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
+    echo "alias centmin='cd ${SCRIPT_DIR}; bash centmin.sh'" >> /root/.bashrc
+    source /root/.bashrc
+    # echo
+    # echo "Created command shortcuts:"
+    # echo "* type cmdir to change to Centmin Mod install directory"
+    # echo "  at ${SCRIPT_DIR}"
+    # echo "* type centmin call and run centmin.sh"
+    # echo "  at ${SCRIPT_DIR}/centmin.sh"
+fi
+
             unsetramdisk
+
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
             } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
