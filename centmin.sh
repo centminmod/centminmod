@@ -1684,6 +1684,7 @@ fi
         ;;
         21|update)
         UALL='y'
+        starttime=$(date +%s.%N)
         centminlog
         {
         
@@ -1729,6 +1730,11 @@ fi
         { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
             fi
         fi
+
+        endtime=$(date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
+        echo "Total Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
 
         ;;
         22|exit)
