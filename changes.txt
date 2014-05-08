@@ -1,7 +1,8 @@
-v1.2.3-eva2000.07 07/05/2014
+v1.2.3-eva2000.07 09/05/2014
 - Improvements to speed up install process - up to 40-60% faster install time than previous versions.
 - Added back the return of an optional cli install method which bypasses the menu option #1 install method. If you run ./centmin.sh install, you can bypass the shell based menu for fully unattended installation.
 - Added SELINUX check
+- Added new menu option #21 update – it upgrades Nginx, PHP-FPM and Siege benchmark versions based on versions defined in centmin.sh. Useful for Centmin Mod version updates as defined in FAQ #4 at http://centminmod.com/faq.html.
 - Added routine to inc/openssl_install.inc to allow for OpenSSL source code patching for Nginx OpenSSL recompiles. Includes OpenSSL 1.0.1g CVE-2010-5298 Release Buffer patch.
 - Added Axivo YUM repository https://www.axivo.com/resources/repository-setup.1/ for access to packages such as mydumper, elasticsearch etc
 - Removed the memcache admin stats page user/password prompt and initial MariaDB MySQL root user setting/security prompts in favour of auto generating the user/passwords which will be shown at end of initial install i.e. http://centminmod.com/screenshots/centminmod/v123_07/centminmod07_new_memcacheadmin_mysqlsecurity_setup_fullunattended.png.
