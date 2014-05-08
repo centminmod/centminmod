@@ -11,7 +11,7 @@ DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='07'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='07/05/2014'
+SCRIPT_DATE='09/05/2014'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
@@ -1271,10 +1271,11 @@ else
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Re-install" $boldgreen
-            cecho "21). Exit" $boldgreen
+            cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
+            cecho "22). Exit" $boldgreen
             cecho "--------------------------------------------------------" $boldyellow
         
-            read -ep "Enter option [ 1 - 21 ] " option
+            read -ep "Enter option [ 1 - 22 ] " option
             cecho "--------------------------------------------------------" $boldyellow
         
         #########################################################
@@ -1681,7 +1682,56 @@ fi
         fi
         
         ;;
-        21|exit)
+        21|update)
+        UALL='y'
+        centminlog
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
+        
+        cecho "Updating Nginx, PHP-FPM & Siege versions" $boldyellow
+        echo
+        yumskipinstall
+
+        if [[ "$yuminstallrun" == [yY] ]]; then
+            yuminstall
+        fi
+
+        funct_nginxupgrade
+        funct_phpupgrade
+        checksiege
+        siegeinstall
+
+        echo ""
+            cecho "--------------------------------------------------------" $boldyellow
+            cecho "Check Nginx Version:" $boldyellow
+            cecho "--------------------------------------------------------" $boldyellow
+            nginx -V
+        echo ""
+            cecho "--------------------------------------------------------" $boldyellow
+            cecho "Check PHP-FPM Version:" $boldyellow
+            cecho "--------------------------------------------------------" $boldyellow
+            php -v
+        echo ""
+            cecho "--------------------------------------------------------" $boldyellow
+            cecho "Check Siege Benchmark Version:" $boldyellow
+            cecho "--------------------------------------------------------" $boldyellow
+        siege -V
+
+        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
+            fi
+        fi
+
+        ;;
+        22|exit)
         
         bookmark
         
@@ -1815,6 +1865,38 @@ fi
         nsdreinstall)
         nsdreinstall
         ;;
+        update)
+        UALL='y'
+        cecho "Updating Nginx, PHP-FPM & Siege versions" $boldyellow
+        echo
+        yumskipinstall
+
+        if [[ "$yuminstallrun" == [yY] ]]; then
+            yuminstall
+        fi
+
+        funct_nginxupgrade
+        funct_phpupgrade
+        checksiege
+        siegeinstall
+
+        echo ""
+            cecho "--------------------------------------------------------" $boldyellow
+            cecho "Check Nginx Version:" $boldyellow
+            cecho "--------------------------------------------------------" $boldyellow
+            nginx -V
+        echo ""
+            cecho "--------------------------------------------------------" $boldyellow
+            cecho "Check PHP-FPM Version:" $boldyellow
+            cecho "--------------------------------------------------------" $boldyellow
+            php -v
+        echo ""
+            cecho "--------------------------------------------------------" $boldyellow
+            cecho "Check Siege Benchmark Version:" $boldyellow
+            cecho "--------------------------------------------------------" $boldyellow
+        siege -V
+
+        ;;
         exit)
         
         echo ""
@@ -1847,6 +1929,7 @@ fi
         echo "$0 suhosininstall"
         echo "$0 ffmpeginstall"
         echo "$0 nsdreinstall"
+        echo "$0 update"
         
         ;;
         esac

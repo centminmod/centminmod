@@ -1,7 +1,14 @@
+checksiege() {
+    cecho "Check for siege-${SIEGE_VERSION}.tar.gz" $boldyellow
+    if [[ ! -f "${DIR_TMP}/siege-${SIEGE_VERSION}.tar.gz" ]]; then
+        siegetarball
+    fi
+}
+
 siegeinstall() {
 
 #ASK "Install Siege Benchmark script ? [y/n] "
-if [[ "$SIEGEINSTALL" = [yY] ]];
+if [[ "$SIEGEINSTALL" = [yY] || "$UALL" = 'y' ]];
 then
     echo "*************************************************"
     cecho "* Installing Siege Benchmark... " $boldgreen
@@ -24,6 +31,7 @@ then
     sed -i 's/# failures =/failures = 2048/g' /usr/local/etc/siegerc
 ) &
 
+if [[ "$UALL" != 'y' ]]; then 
 # subshell background process
 (
     cd $DIR_TMP
@@ -34,6 +42,7 @@ then
     make$MAKETHREADS
     make install
 ) &
+fi # UALL
 wait
     echo "*************************************************"
     cecho "* Siege Benchmark installed " $boldgreen

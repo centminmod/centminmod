@@ -101,11 +101,15 @@ else
 fi
 
 echo " "
-read -ep "PHP Upgrade - Would you like to continue? [y/n] " key
-if [[ "$key" = [nN] ]];
-then
-    exit 0
-fi
+if [[ "$UALL" = 'y' ]]; then 
+    key='y'
+else
+    read -ep "PHP Upgrade - Would you like to continue? [y/n] " key
+    if [[ "$key" = [nN] ]];
+    then
+        exit 0
+    fi
+fi # UALL
 
 DIR_TMP="$DIR_TMP"
 if [ ! -d "$DIR_TMP" ]; then
@@ -116,12 +120,18 @@ funct_mktempfile
 
 autodetectextensions
 
-echo ""
-read -ep "Install which version of PHP? (version i.e. ${PHP_VERSION}): " phpver
-read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
-if [[ "$overwritephpfpmconf" = [yY] ]]; then
-    read -ep "Does this server have less than <=2048MB of memory installed ? [y/n]: " lessphpmem
-fi
+if [[ "$UALL" = 'y' ]]; then 
+    phpver=${PHP_VERSION}
+    overwritephpfpmconf='n'
+    lessphpmem='y'
+else
+    echo ""
+    read -ep "Install which version of PHP? (version i.e. ${PHP_VERSION}): " phpver
+    read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
+    if [[ "$overwritephpfpmconf" = [yY] ]]; then
+        read -ep "Does this server have less than <=2048MB of memory installed ? [y/n]: " lessphpmem
+    fi
+fi # UALL
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)

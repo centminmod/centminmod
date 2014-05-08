@@ -44,7 +44,11 @@ echo " "
 cecho "This software comes with no warranty of any kind. You are free to use" $boldyellow
 cecho "it for both personal and commercial use as licensed under the GPL." $boldyellow
 echo " "
-read -ep "Nginx Upgrade - Would you like to continue? [y/n] " nukey
+if [[ "$UALL" = 'y' ]]; then 
+    nukey=y
+else
+    read -ep "Nginx Upgrade - Would you like to continue? [y/n] " nukey
+fi
 
 if [[ "$nukey" = [nN] ]];
 then
@@ -64,11 +68,16 @@ if [ ! -f /etc/init.d/nginx ]; then
     chkconfig --levels 235 nginx on
 fi
 
-echo ""
-read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
-echo ""
-read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
-echo ""
+if [[ "$UALL" = 'y' ]]; then 
+    ngver=$NGINX_VERSION
+    recompileopenssl='n'
+else
+    echo ""
+    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
+    echo ""
+    read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+    echo ""
+fi # UALL
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
