@@ -26,7 +26,7 @@ then
     ./configure
     make$MAKETHREADS
     make install
-    mkdir /usr/local/var/
+    mkdir -p /usr/local/var/
 
     sed -i 's/# failures =/failures = 2048/g' /usr/local/etc/siegerc
 ) &
