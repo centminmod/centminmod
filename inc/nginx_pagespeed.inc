@@ -206,7 +206,7 @@ pagespeed FileCachePath /var/ngx_pagespeed_cache;
 #######################################################
 ## 1.7.30.1 beta defaults
 ######################################
-pagespeed DefaultSharedMemoryCacheKB 20000;
+# pagespeed DefaultSharedMemoryCacheKB 20000;
 pagespeed PreserveUrlRelativity on;
 pagespeed MaxCombinedCssBytes -1;
 pagespeed ImageResolutionLimitBytes 16777216;
