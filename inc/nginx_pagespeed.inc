@@ -84,21 +84,9 @@ cat > "/usr/local/nginx/conf/pagespeed.conf" <<END
 pagespeed off;
 
 #######################################################
-# 1.8.31.2 beta required paths
-# https://developers.google.com/speed/pagespeed/module/admin
-######################################
-# pagespeed StatisticsPath /ngx_pagespeed_statistics;
-# pagespeed GlobalStatisticsPath /ngx_pagespeed_global_statistics;
-# pagespeed MessagesPath /ngx_pagespeed_message;
-# pagespeed ConsolePath /pagespeed_console;
-# pagespeed AdminPath /pagespeed_admin;
-# pagespeed GlobalAdminPath /pagespeed_global_admin;
-
-#######################################################
 # File cache settings 
 ######################################
 # needs to exist and be writable by nginx
-pagespeed FileCachePath /var/ngx_pagespeed_cache;
 
 # pagespeed FileCacheSizeKb          102400;
 # pagespeed FileCacheCleanIntervalMs 3600000;
@@ -235,6 +223,30 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
 END
 }
 #####################################################
+makepsadmin() {
+touch /usr/local/nginx/conf/pagespeedadmin.conf
+cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
+#######################################################
+# 1.8.31.2 beta required paths
+# https://developers.google.com/speed/pagespeed/module/admin
+######################################
+pagespeed FileCachePath /var/ngx_pagespeed_cache;
+pagespeed StatisticsPath /ngx_pagespeed_statistics;
+pagespeed GlobalStatisticsPath /ngx_pagespeed_global_statistics;
+pagespeed MessagesPath /ngx_pagespeed_message;
+pagespeed ConsolePath /pagespeed_console;
+pagespeed AdminPath /pagespeed_admin;
+pagespeed GlobalAdminPath /pagespeed_global_admin;
+END
+
+PSADMINCONFCHECK=$(grep '/usr/local/nginx/conf/pagespeedadmin.conf' /usr/local/nginx/conf/nginx.conf)
+
+if [[ -z "$PSADMINCONFCHECK" ]]; then
+  sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+fi
+
+}
+#####################################################
 # create pagespeedhandler.conf
 makepshandler() {
 touch /usr/local/nginx/conf/pagespeedhandler.conf
@@ -342,6 +354,7 @@ fi
 ADMINPATHCHECK=$(grep AdminPath /usr/local/nginx/conf/pagespeedhandler.conf)
 
 if [[ -z "$ADMINPATHCHECK" ]]; then
+  makepsadmin
   makepsconf
   makepshandler
 fi
