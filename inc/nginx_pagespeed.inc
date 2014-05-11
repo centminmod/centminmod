@@ -179,6 +179,7 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
   # combine_javascript
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-js-combine
 #  pagespeed EnableFilters combine_javascript;
+#  pagespeed MaxCombinedJsBytes 122900;
 
   # extend_cache
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-cache-extend
