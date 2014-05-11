@@ -19,7 +19,7 @@ Step 2.
 Actual install of .07 beta branch 123.07beta19
 
 branchname=123.07beta19
-wget -P /usr/local/src https://github.com/centminmod/centminmod/archive/${branchname}.zip
+wget -O /usr/local/src/${branchname}.zip https://github.com/centminmod/centminmod/archive/${branchname}.zip
 cd /usr/local/src
 unzip ${branchname}.zip
 cd centminmod-${branchname}
