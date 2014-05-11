@@ -18,6 +18,7 @@ Step 2.
 
 Actual install of .07 beta branch 123.07beta19
 
+yum -y install wget nano bc unzip
 branchname=123.07beta19
 wget -O /usr/local/src/${branchname}.zip https://github.com/centminmod/centminmod/archive/${branchname}.zip
 cd /usr/local/src
