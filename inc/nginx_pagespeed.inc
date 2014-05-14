@@ -357,9 +357,9 @@ PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
 fi
 
 # checks for ngx_pagespeed 1.8.31.2 beta introduced features
-ADMINPATHCHECK=$(grep AdminPath /usr/local/nginx/conf/pagespeedhandler.conf)
+ADMINPATHCHECK=$(grep AdminPath /usr/local/nginx/conf/pagespeedadmin.conf)
 
-if [[ -z "$ADMINPATHCHECK" ]]; then
+if [[ -z "$ADMINPATHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then
   makepsadmin
   makepsconf
   makepshandler
