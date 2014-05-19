@@ -26,7 +26,8 @@ if [[ -z $LIMITSCONFCHECK ]]; then
     # Set VPS hard/soft limits
     echo "* soft nofile 131072" >>/etc/security/limits.conf
     echo "* hard nofile 131072" >>/etc/security/limits.conf
-
+    ulimit -n 131072
+    echo "ulimit -n 131072" >> /etc/rc.local
 fi # check if custom open file descriptor limits already exist
 
 if [[ -f /etc/security/limits.d/90-nproc.conf ]]; then
