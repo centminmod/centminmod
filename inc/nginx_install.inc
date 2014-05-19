@@ -19,15 +19,15 @@ then
 #######################################################
 # check if custom open file descriptor limits already exist
 
-LIMITSCONFCHECK=`grep '* hard nofile 131072' /etc/security/limits.conf`
+LIMITSCONFCHECK=`grep '* hard nofile 262144' /etc/security/limits.conf`
 
 if [[ -z $LIMITSCONFCHECK ]]; then
 
     # Set VPS hard/soft limits
-    echo "* soft nofile 131072" >>/etc/security/limits.conf
-    echo "* hard nofile 131072" >>/etc/security/limits.conf
-    ulimit -n 131072
-    echo "ulimit -n 131072" >> /etc/rc.local
+    echo "* soft nofile 262144" >>/etc/security/limits.conf
+    echo "* hard nofile 262144" >>/etc/security/limits.conf
+    ulimit -n 262144
+    echo "ulimit -n 262144" >> /etc/rc.local
 fi # check if custom open file descriptor limits already exist
 
 if [[ -f /etc/security/limits.d/90-nproc.conf ]]; then
@@ -38,8 +38,8 @@ cat > "/etc/security/limits.d/90-nproc.conf" <<EOF
 
 *          soft    nproc     4096
 *          hard    nproc     4096
-nginx      soft    nproc     8192
-nginx      hard    nproc     8192
+nginx      soft    nproc     16384
+nginx      hard    nproc     16384
 root       soft    nproc     unlimited
 EOF
 fi # raise user process limits
@@ -69,6 +69,9 @@ vm.min_free_kbytes=65536
 net.ipv4.ip_local_port_range=10000 65500
 EOF
 sysctl -p
+
+sed -i 's/backlog=256/backlog=2048/g' /usr/local/nginx/conf/conf.d/virtual.conf
+
 fi
 
     # nginx Modules / Prerequisites
@@ -177,14 +180,14 @@ fi
 #######################################################
 # check if custom open file descriptor limits already exist
 
-NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 131072' /etc/security/limits.conf`
+NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 262144' /etc/security/limits.conf`
 
 if [[ -z $NGXLIMITSCONFCHECK ]]; then
 
     # Set user nginx hard/soft limits
-    echo "nginx soft nofile 131072" >>/etc/security/limits.conf
-    echo "nginx hard nofile 131072" >>/etc/security/limits.conf
-    ulimit -n 131072
+    echo "nginx soft nofile 262144" >>/etc/security/limits.conf
+    echo "nginx hard nofile 262144" >>/etc/security/limits.conf
+    ulimit -n 262144
 
 fi # check if custom open file descriptor limits already exist
 
