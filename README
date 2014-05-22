@@ -10,16 +10,16 @@ Step 1.
 
 Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and define it in the variable named branchname typed on SSH command line as follows.
 
-For latest stable Centmin Mod v1.2.3-eva2000.06 use branchname=123.06stable or for .07 beta type branchname=123.07beta19
+For latest stable Centmin Mod v1.2.3-eva2000.06 use branchname=123.06stable or for .07 beta type branchname=123.07beta20
 
-branchname=123.07beta19
+branchname=123.07beta20
 
 Step 2.
 
-Actual install of .07 beta branch 123.07beta19
+Actual install of .07 beta branch 123.07beta20
 
 yum -y install wget nano bc unzip
-branchname=123.07beta19
+branchname=123.07beta20
 wget -O /usr/local/src/${branchname}.zip https://github.com/centminmod/centminmod/archive/${branchname}.zip
 cd /usr/local/src
 unzip ${branchname}.zip
