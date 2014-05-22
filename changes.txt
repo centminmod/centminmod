@@ -1,4 +1,4 @@
-v1.2.3-eva2000.07 09/05/2014
+v1.2.3-eva2000.07 23/05/2014
 - Improvements to speed up install process - up to 40-60% faster install time than previous versions.
 - Added back the return of an optional cli install method which bypasses the menu option #1 install method. If you run ./centmin.sh install, you can bypass the shell based menu for fully unattended installation.
 - Added SELINUX check
