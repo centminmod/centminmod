@@ -270,6 +270,7 @@ EOF
 cecho "*************************************************" $boldgreen
 cecho "Fixing centalt.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
+sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/centalt.repo
 cat /etc/yum.repos.d/centalt.repo
 echo ""
 fi
