@@ -6,7 +6,7 @@ PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gs
 
 if [ "$PHPVERCHECK" != '5.4' ]; then
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 echo "FFMPEG install starting..."
 

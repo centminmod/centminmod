@@ -7,7 +7,7 @@ echo "*************************************************"
 cecho "* pigz install " $boldgreen
 echo "*************************************************"
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 if [ -s pigz-2.3.1.tar.gz ]; then
   echo "pigz-2.3.1.tar.gz [found]"
@@ -38,7 +38,7 @@ echo "*************************************************"
 cecho "* pbzip2 install " $boldgreen
 echo "*************************************************"
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 if [ -s pbzip2-1.1.8.tar.gz ]; then
   echo "pbzip2-1.1.8.tar.gz [found]"
@@ -65,7 +65,7 @@ echo "*************************************************"
 cecho "* lbzip2 install " $boldgreen
 echo "*************************************************"
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 if [ -s lbzip2-2.3.tar.gz ]; then
   echo "lbzip2-2.3.tar.gz [found]"
@@ -93,7 +93,7 @@ echo "*************************************************"
 cecho "* lzip install " $boldgreen
 echo "*************************************************"
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 if [ -s lzip-1.15.tar.gz ]; then
   echo "lzip-1.15.tar.gz [found]"
@@ -121,7 +121,7 @@ echo "*************************************************"
 cecho "* plzip install " $boldgreen
 echo "*************************************************"
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 if [ -s lzlib-1.5.tar.gz ]; then
   echo "lzlib-1.5.tar.gz [found]"
@@ -164,7 +164,7 @@ echo "*************************************************"
 cecho "* p7zip install " $boldgreen
 echo "*************************************************"
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 if [ -s p7zip_9.20.1_src_all.tar.bz2 ]; then
   echo "p7zip_9.20.1_src_all.tar.bz2 [found]"

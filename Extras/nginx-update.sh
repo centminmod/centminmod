@@ -81,7 +81,7 @@ then
 fi
 
 DIR_TMP="/svr-setup"
-mkdir /svr-setup
+mkdir $DIR_TMP
 
 echo -n "Install which version of Nginx? (Type version and press Enter): "
 read ngver
@@ -90,7 +90,7 @@ read ngver
     cecho "* Updating nginx" $boldgreen
     echo "*************************************************"
 
-    cd /svr-setup
+    cd $DIR_TMP
 
     # nginx Modules / Prerequisites
 	cecho "Installing nginx Modules / Prerequisites..." $boldgreen
@@ -110,7 +110,7 @@ read ngver
     make install
 
     # Install google-perftools
-    cd /svr-setup
+    cd $DIR_TMP
 
     echo "Compiling google-perftools..."
     if [ -s google-perftools-${GPERFTOOLS_VERSION}.tar.gz ]; then
@@ -128,7 +128,7 @@ read ngver
     /sbin/ldconfig
 
     # Install OpenSSL
-    cd /svr-setup
+    cd $DIR_TMP
 
     echo "Compiling OpenSSL..."
     if [ -s openssl-${OPENSSL_VERSION}.tar.gz ]; then
@@ -149,7 +149,7 @@ read ngver
     make install
 
     # Install PCRE
-    cd /svr-setup
+    cd $DIR_TMP
 
     echo "Compiling PCRE..."
     if [ -s pcre-${PCRE_VERSION}.tar.gz ]; then
@@ -165,7 +165,7 @@ read ngver
     make install
 
     # nginx Modules
-    cd /svr-setup
+    cd $DIR_TMP
 
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
@@ -193,7 +193,7 @@ read ngver
     tar zvxf Nginx-accesskey-2.0.3.tar.gz
 
     # Install nginx
-    cd /svr-setup
+    cd $DIR_TMP
 
     echo "Compiling nginx..."
     if [ -s nginx-${ngver}.tar.gz ]; then
@@ -233,6 +233,6 @@ read ngver
 
 echo " "
 
-rm -rf /svr-setup
+rm -rf $DIR_TMP
 
 exit 0

@@ -55,9 +55,9 @@ then
     exit 0
 fi
 
-DIR_TMP="/svr-setup"
+# DIR_TMP="/svr-setup"
 if [ ! -d "$DIR_TMP" ]; then
-mkdir /svr-setup
+mkdir $DIR_TMP
 fi
 
 funct_mktempfile

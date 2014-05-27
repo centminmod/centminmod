@@ -7,9 +7,9 @@ then
     exit 0
 fi
 
-DIR_TMP="/svr-setup"
+# DIR_TMP="/svr-setup"
 if [ ! -d "$DIR_TMP" ]; then
-mkdir /svr-setup
+mkdir $DIR_TMP
 fi
 
 read -ep "Install which version of Xcache? (version i.e. 3.1.0): " xcachever
@@ -52,7 +52,7 @@ fi # xcachever=2.0.0
     cecho "* Re-installing XCache" $boldgreen
     echo "*************************************************"
 
-    cd /svr-setup
+    cd $DIR_TMP
 
     if [ -s xcache-${xcachever}.tar.gz ]; then
         cecho "xcache ${xcachever} Archive found, skipping download..." $boldgreen
@@ -125,7 +125,7 @@ if [[ "$ENABLE_MENU" != [yY] ]]; then
 ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
 if [[ "$key" = [yY] ]];
 then
-    rm -rf /svr-setup
+    rm -rf $DIR_TMP
     echo "Temporary files/folders removed"
 fi
 

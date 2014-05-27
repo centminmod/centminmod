@@ -647,7 +647,7 @@ else
 echo ""
 	fi
 
-if [ ! -d /svr-setup/ngx-fancyindex-ngx-fancyindex ]; then
+if [ ! -d ${DIR_TMP}/ngx-fancyindex-ngx-fancyindex ]; then
         cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
 rm -rf ${NGX_FANCYINDEXLINKFILE}
 
