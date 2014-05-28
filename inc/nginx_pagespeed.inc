@@ -301,6 +301,33 @@ cecho "**********************************************************************" $
 cecho "* ngx_pagespeed parity update tasks" $boldgreen
 cecho "**********************************************************************" $boldyellow
 
+#####################################################
+# if NGINX_PAGESPEED=n is disabled in centmin.sh do some commenting out
+if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
+  PSADMINCHECK=$(grep '^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
+
+  # disable pagespeedadmin.conf if enabled/uncommented
+  if [[ ! -z "$PSADMINCHECK" ]]; then
+    sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
+
+  # check all Nginx vhosts which have 3 pagespeed include lines enabled/uncommented
+  CHECKVHOSTFORPS=$(grep -rl '^include \/usr\/local\/nginx\/conf\/pagespeed' /usr/local/nginx/conf/conf.d/* )
+
+  # for each Nginx vhost with pagespeed include lines enabled, disable then when NGINX_PAGESPEED=n
+  if [[ ! -z "$CHECKVHOSTFORPS" ]]; then
+    for v in $CHECKVHOSTFORPS
+    do
+      echo
+      echo "commenting out pagespeed includes in $v"
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeed.conf;/#include \/usr\/local\/nginx\/conf\/pagespeed.conf;/g' $v
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/g' $v
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/g' $v
+    done
+  fi
+fi # NGINX_PAGESPEED=n
+#####################################################
+
 	if [ -d /var/ngx_pagespeed_cache ]; then
 	chmod 1777 /var/ngx_pagespeed_cache
 	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
