@@ -14,6 +14,13 @@ selinxcheck() {
 	fi
 }
 
+centaltoff() {
+	if [[ -f /etc/yum.repos.d/centalt.repo ]]; then
+		sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/centalt.repo
+		yum clean all -q
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -35,5 +42,6 @@ exit
 fi
 
 selinxcheck
+centaltoff
 
 }
