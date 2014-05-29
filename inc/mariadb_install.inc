@@ -104,15 +104,21 @@ if [[ ! -z "$OLDMYSQLSERVER" ]]; then
     rpm -e -nodeps $OLDMYSQLSERVER
 fi
 
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
+    DISABLECENTALTREPO=" --disablerepo=CentALT"
+else
+    DISABLECENTALTREPO=""
+fi # CENTALTREPO_DISABLE
+
 # echo ""
 # echo "MariaDB 5.5 check available packages"
-# echo "yum${CACHESKIP} -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
-# yum${CACHESKIP} -q list --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+# echo "yum${CACHESKIP} -q --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
+# yum${CACHESKIP} -q list --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
 echo ""
 echo "MariaDB 5.5 YUM install..."
-echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
-time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
+time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
 #cp -a /etc/my.cnf /etc/my.cnf-newold
 #cp -f /etc/my.cnf.rpmorig /etc/my.cnf

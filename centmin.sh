@@ -275,6 +275,7 @@ WGETOPT='-cnv --no-dns-cache -4'
 # compiled versions for 64bit systems only
 FPMRPM_LIBEVENT=n
 FPMRPM_MEMCACHED=n
+CENTALTREPO_DISABLE=y
 ###############################################################
 
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.

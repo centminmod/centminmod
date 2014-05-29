@@ -81,7 +81,7 @@ rpm -i ${CENTOSFIVERPMFORGEFILE}
 fi
 
 
-
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 if [ -s ${CENTOSFIVECENTALTFILE} ]; then
   echo "${CENTOSFIVECENTALTFILE} [found]"
   else
@@ -102,6 +102,7 @@ echo ""
 	fi
 
 fi
+fi # CENTALTREPO_DISABLE
 
 if [ -s "${CENTOSFIVEPERCONARELEASEFILE}" ]; then
   echo "${CENTOSFIVEPERCONARELEASEFILE} [found]"
@@ -256,7 +257,7 @@ rpm -i ${CENTOSSIXRPMFORGEFILE}
 fi
 
 
-
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 if [ -s "${CENTOSSIXCENTALTFILE}" ]; then
   echo "${CENTOSSIXCENTALTFILE} [found]"
   else
@@ -278,6 +279,7 @@ echo ""
 	fi
 
 fi
+fi # CENTALTREPO_DISABLE
 
 
 if [ -s "${CENTOSSIXPERCONALRELEASEFILE}" ]; then
