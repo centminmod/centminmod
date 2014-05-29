@@ -83,7 +83,7 @@ else
         FILEINFOOPT=""
 fi
 
-LIBCCLIENT=`yum list libc-client-devel | grep Available | awk '{print $1}'`
+LIBCCLIENT=`yum list libc-client-devel --disablerepo=rpmforge,epel | grep Available | awk '{print $1}'`
 
 if [[ "$LIBCCLIENT" = 'Available' ]]; then
 	yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
