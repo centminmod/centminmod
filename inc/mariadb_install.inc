@@ -161,11 +161,14 @@ echo ""
 
 yum${CACHESKIP} -q -y install perl-DBD-MySQL
 
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 # make sure MariaDB 5.5 is updated from only one repo
 echo ""
 if [[ -z "$(grep 'exclude=mariadb' /etc/yum.repos.d/centalt.repo)" ]]; then
 echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
 fi
+fi # CENTALTREPO_DISABLE
+
 # exclude MariaDB Galera Server
 if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
 echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
