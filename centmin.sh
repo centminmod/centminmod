@@ -250,7 +250,7 @@ LIBEVENT_VERSION='2.0.21'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.20'    # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'     # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
-LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
+LIBMEMCACHED_YUM='n'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
