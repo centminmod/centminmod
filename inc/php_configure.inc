@@ -19,31 +19,31 @@ else
 fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
-	yum${CACHESKIP} -q -y install readline-devel libedit-devel
+	yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
-	yum -q -y install libicu libicu-devel
+	yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
-	yum -q -y install aspell aspell-devel
+	yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ ! -f /usr/include/recode.h ]]; then
-	yum -q -y install recode recode-devel
+	yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ ! -f /usr/include/tidy.h ]]; then
-	yum -q -y install libtidy libtidy-devel
+	yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ ! -d /usr/include/enchant ]]; then
-	yum -q -y install enchant enchant-devel
+	yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ ! -d /usr/include/net-snmp ]]; then
-	yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils
+	yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
 fi
 
 if [[ -f /usr/bin/ldapadd ]]; then
@@ -86,7 +86,7 @@ fi
 LIBCCLIENT=`yum list libc-client-devel | grep Available | awk '{print $1}'`
 
 if [[ "$LIBCCLIENT" = 'Available' ]]; then
-	yum${CACHESKIP} -y install libc-client-devel
+	yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
