@@ -256,7 +256,7 @@ TWEMPERF_VER='0.1.1'
 
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.33'
-PHP_VERSION='5.4.28'          # Use this version of PHP
+PHP_VERSION='5.4.29'          # Use this version of PHP
 PHP_MIRRORURL='http://www.php.net'
 PHPUPGRADE_MIRRORURL='http://www.php.net'
 XCACHE_VERSION='3.1.0'       # Use this version of Xcache
