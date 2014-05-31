@@ -380,7 +380,7 @@ if [[ -f /usr/bin/pscontrol ]]; then
 PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
 PSADMINCHECK=$(grep 'psadmin' /usr/bin/pscontrol)
 
-	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" ]]; hen
+	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" ]]; then
 	rm -rf /usr/bin/pscontrol
 	rm -rf /usr/local/nginx/conf/pscontrol
 	genpscontrolfile
