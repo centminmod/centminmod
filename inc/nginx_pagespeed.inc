@@ -5,6 +5,10 @@ cat > "/usr/local/nginx/conf/pscontrol" <<END
 #/bin/bash
 # turn ngx_pagespeed on or off switch
 
+psadmin() {
+nano -w /usr/local/nginx/conf/pagespeedadmin.conf
+}
+
 pshandler() {
 nano -w /usr/local/nginx/conf/pagespeedhandler.conf
 }
@@ -40,6 +44,9 @@ sed -i 's/pagespeed StatisticsLogging off;/pagespeed StatisticsLogging on;/g' /u
 }
 
 case "\$1" in
+admin)
+psadmin
+;;
 handler)
 pshandler
 ;;
@@ -62,6 +69,7 @@ statsoff)
 psstatslogoff
 ;;
 *)
+echo "pscontrol admin"
 echo "pscontrol handler"
 echo "pscontrol edit"
 echo "pscontrol editstats"
@@ -370,8 +378,9 @@ fi
 
 if [[ -f /usr/bin/pscontrol ]]; then
 PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
+PSADMINCHECK=$(grep 'psadmin' /usr/bin/pscontrol)
 
-	if [ -z "$PSSTATSCHECK" ]; then
+	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" ]]; hen
 	rm -rf /usr/bin/pscontrol
 	rm -rf /usr/local/nginx/conf/pscontrol
 	genpscontrolfile
