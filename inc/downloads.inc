@@ -81,7 +81,7 @@ rpm -i rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm
 fi
 
 
-
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 if [ -s centalt-release-5-3.noarch.rpm ]; then
   echo "centalt-release-5-3.noarch.rpm [found]"
   else
@@ -102,6 +102,7 @@ echo ""
 	fi
 
 fi
+fi # CENTALTREPO_DISABLE
 
 if [ -s percona-release-0.0-1.${ARCH}.rpm ]; then
   echo "percona-release-0.0-1.${ARCH}.rpm [found]"
@@ -256,7 +257,7 @@ rpm -i rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm
 fi
 
 
-
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 if [ -s centalt-release-6-1.noarch.rpm ]; then
   echo "centalt-release-6-1.noarch.rpm [found]"
   else
@@ -278,6 +279,7 @@ echo ""
 	fi
 
 fi
+fi # CENTALTREPO_DISABLE
 
 
 if [ -s percona-release-0.0-1.${RPMFARCH}.rpm ]; then

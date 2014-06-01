@@ -104,15 +104,20 @@ if [[ ! -z "$OLDMYSQLSERVER" ]]; then
     rpm -e -nodeps $OLDMYSQLSERVER
 fi
 
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
+    DISABLECENTALTREPO=" --disablerepo=CentALT"
+else
+    DISABLECENTALTREPO=""
+fi # CENTALTREPO_DISABLE
 echo ""
 echo "MariaDB 5.5 check available packages"
-echo "yum -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test"
-yum -q list --disablerepo=CentALT MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test
+echo "yum -q --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test"
+yum -q list$DISABLECENTALTREPO MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test
 
 echo ""
 echo "MariaDB 5.5 YUM install..."
-echo "yum -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test"
-yum -q -y --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test
+echo "yum -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test"
+yum -q -y$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared MariaDB-test
 
 #cp -a /etc/my.cnf /etc/my.cnf-newold
 #cp -f /etc/my.cnf.rpmorig /etc/my.cnf
@@ -152,11 +157,13 @@ echo ""
 
 yum -q -y install perl-DBD-MySQL
 
+if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 # make sure MariaDB 5.5 is updated from only one repo
 echo ""
 if [[ -z "$(grep 'exclude=mariadb' /etc/yum.repos.d/centalt.repo)" ]]; then
 echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
 fi
+fi # CENTALTREPO_DISABLE
 # exclude MariaDB Galera Server
 if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
 echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo

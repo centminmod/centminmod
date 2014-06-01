@@ -231,8 +231,8 @@ NGINX_INSTALL=y              # Install Nginx (Webserver)
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=y   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.7.30.4-beta'
-NGINX_PAGESPEEDPSOL_VER='1.7.30.4'
+NGXPGSPEED_VER='1.8.31.3-beta'
+NGINX_PAGESPEEDPSOL_VER='1.8.31.3'
 NGINX_WEBDAV=y          # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.2'  # nginx-dav-ext-module version
 NGINX_LIBATOMIC=y     # Nginx configured with libatomic support
@@ -310,6 +310,9 @@ ZOPCACHECACHE_VERSION='7.0.2'
 PYTHON_VERSION='2.7.6'       # Use this version of Python
 SIEGE_VERSION='3.0.5'
 
+###############################################################
+CENTALTREPO_DISABLE=y
+###############################################################
 # The default is stable, you can change this to development if you wish
 #ARCH_OVERRIDE='i386'
 # Uncomment the above line if you are running a 32bit Paravirtulized Xen VPS
