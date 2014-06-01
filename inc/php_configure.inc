@@ -19,7 +19,7 @@ else
 fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
-	yum -q -y install readline-devel libedit-devel
+	yum -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
 fi
 
 if [ "$PHPPCNTL" == 'y' ]; then
@@ -34,10 +34,10 @@ else
         FILEINFOOPT=""
 fi
 
-LIBCCLIENT=`yum list libc-client-devel | grep Available | awk '{print $1}'`
+LIBCCLIENT=`yum list libc-client-devel --disablerepo=rpmforge,epel | grep Available | awk '{print $1}'`
 
 if [[ "$LIBCCLIENT" = 'Available' ]]; then
-	yum -y install libc-client-devel
+	yum -y install libc-client-devel --disablerepo=rpmforge,epel
 fi
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
