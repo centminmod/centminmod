@@ -268,7 +268,7 @@ cat > "/usr/local/nginx/conf/pagespeedhandler.conf" <<END
 #  Ensure requests for pagespeed optimized resources go to the pagespeed
 #  handler and no extraneous headers get set.
 location ~ "\.pagespeed\.([a-z]\.)?[a-z]{2}\.[^.]{10}\.[^.]+" { add_header "" ""; }
-location ~ "^/ngx_pagespeed_static/" { }
+location ~ "^/pagespeed_static/" { }
 location ~ "^/ngx_pagespeed_beacon$" { }
 location /ngx_pagespeed_statistics { allow 127.0.0.1; deny all; }
 location /ngx_pagespeed_global_statistics { allow 127.0.0.1; deny all; }
@@ -400,6 +400,14 @@ if [[ -z "$ADMINPATHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]];
   makepsconf
   makepshandler
 fi
+
+# check for 1.8.31.3 change from ngx_pagespeed_static to pagespeed_static
+PSTATICCHECK=$(grep ngx_pagespeed_static /usr/local/nginx/conf/pagespeedhandler.conf)
+
+if [[ -z "$PSSTATSCHECK" ]]; then
+  makepshandler
+fi
+
 
 } #pagespeeduptasks
 
