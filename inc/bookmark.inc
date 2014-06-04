@@ -11,7 +11,7 @@ cat <<EOF
 * Centmin Mod FAQ - http://centminmod.com/faq.html
 * Change Log - http://centminmod.com/changelog.html 
 * Google+ Page latest news http://centminmod.com/gpage
-* Google+ Community Forum http://centminmod.com/gcom
+* Community Forums https://community.centminmod.com (signup)
 ###############################################################
 # Cheap VPS Hosting at Digitalocean 
 # https://www.digitalocean.com/?refcode=c1cb367108e8
