@@ -6,6 +6,8 @@ NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
 CUSTOMSERVERNAME='y'
 CUSTOMSERVERSTRING='nginx centminmod'
 PHPFPMCONFDIR='/usr/local/nginx/conf/phpfpmd'
+
+CMVERSION_CHECK='n'
 #####################################################
 DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
@@ -193,6 +195,7 @@ NGINX_PCREVER='8.35'   # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.25'
 NGINX_OPENRESTY=n     # Agentzh's openresty Nginx modules
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
+PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
 PHPFINFO=n                   # Disable or Enable PHP File Info extension
 PHPPCNTL=y                    # Disable or Enable PHP Process Control extension
@@ -231,7 +234,7 @@ NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.1g'     # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.1h'     # Use this version of OpenSSL
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
