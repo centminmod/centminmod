@@ -132,6 +132,11 @@ else
 fi
 
     time make$MAKETHREADS
+
+	if [[ "$PHPMAKETEST" = [yY] ]]; then
+		time make test
+	fi
+
     time make install
 
 # check if php was in fact installed
