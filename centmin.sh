@@ -1,12 +1,13 @@
 #!/bin/sh
-UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
-ZONEINFO=Australia/Brisbane  # Set Timezone
+ZONEINFO=Etc/UTC  # Set Timezone
 NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
+USEEDITOR='nano' # choice between nano or vim text editors for cmd shortcuts
 
 CUSTOMSERVERNAME='y'
 CUSTOMSERVERSTRING='nginx centminmod'
 PHPFPMCONFDIR='/usr/local/nginx/conf/phpfpmd'
 
+UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 CMVERSION_CHECK='n'
 #####################################################
 DT=`date +"%d%m%y-%H%M%S"`
