@@ -6,6 +6,7 @@ THEMYSQLPASS=$(openssl rand 12 -base64)
 
 mysql -e "DROP USER ''@'localhost';"
 mysql -e "DROP USER ''@'`hostname`';"
+mysql -e "DROP DATABASE test;"
 mysql -e "UPDATE mysql.user SET Password = PASSWORD('$THEMYSQLPASS') WHERE User = 'root'; FLUSH PRIVILEGES;"
 
 # check
