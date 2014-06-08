@@ -157,7 +157,7 @@ centminfinish() {
 
 installchecks
 DATENOW=$(date +"%b %d")
-grep -h $DATENOW /var/log/yum.log >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
+grep -h $DATENOW /var/log/yum.log | tee -a ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
 
 
     echo "*************************************************"
