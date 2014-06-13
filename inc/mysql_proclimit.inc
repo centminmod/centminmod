@@ -12,7 +12,7 @@ cat /proc/`pidof mysqld`/limits
 echo ""
 echo "-------------------------------------------------------------------------"
 
-if [[ ! -f /etc/security/limits.d/91-mysql.conf ]]; then
+# if [[ ! -f /etc/security/limits.d/91-mysql.conf ]]; then
 echo ""
 echo "-------------------------------------------------------------------------"
 echo "Increase mysqld process soft limit from 1024 to 9772"
@@ -20,7 +20,7 @@ echo "-------------------------------------------------------------------------"
 echo "mysql  soft  nproc  9772" > /etc/security/limits.d/91-mysql.conf
 echo "Editing /proc/`pidof mysqld`/limits"
 echo -n "Max processes=9772:9772" > /proc/`pidof mysqld`/limits
-fi
+# fi
 
 echo ""
 echo "-------------------------------------------------------------------------"
