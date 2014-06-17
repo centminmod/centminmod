@@ -328,22 +328,25 @@ funct_showtempfile
 # error check
 ################
 
-/etc/init.d/nginx stop
+# /etc/init.d/nginx stop
+/usr/local/sbin/nginx -s stop
 
     # speed up nginx wait time if not many vhosts are on server
     if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
-        NGINXUPGRADESLEEP=8
+        NGINXUPGRADESLEEP=4
     fi
 
-sleep $NGINXUPGRADESLEEP
+# sleep $NGINXUPGRADESLEEP
 
+sleep 3
 NGINXPSCHECK=`ps --no-heading -C nginx`
 
 if [ ! -z "$NGINXPSCHECK" ]; then
 echo ""
 echo "nginx seems to be still running, trying to stop it again..."
 echo ""
-/etc/init.d/nginx stop
+# /etc/init.d/nginx stop and suppress any error messages
+/usr/local/sbin/nginx -s stop 2>/dev/null
 sleep $NGINXUPGRADESLEEP
 fi
 
