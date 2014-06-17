@@ -1,4 +1,4 @@
-v1.2.3-eva2000.07 30/05/2014
+v1.2.3-eva2000.07 30/06/2014
 - Improvements to speed up install process - up to 40-60% faster install time than previous versions.
 - Added back the return of an optional cli install method which bypasses the menu option #1 install method. If you run ./centmin.sh install, you can bypass the shell based menu for fully unattended installation.
 - Added SELINUX check
@@ -19,7 +19,7 @@ v1.2.3-eva2000.07 30/05/2014
 - Updated PHP memcached extension from 2.1.0 to 2.2.0 http://pecl.php.net/package-changelog.php?package=memcached
 - Updated Xcache from 2.0.1 to 3.1.0 http://xcache.lighttpd.net/browser/tags/3.1.0/ChangeLog
 - Updated NSD v3.2.16 to v3.2.17 http://www.nlnetlabs.nl/projects/nsd/index.html#releases
-- Updated Nginx from v1.5.8 to v1.7.1 release http://nginx.org/en/CHANGES
+- Updated Nginx from v1.5.8 to v1.7.2 release http://nginx.org/en/CHANGES
 - Added some TCP tuned options for non-OpenVZ based servers with increased open file descriptor limits from 65536 to 262144.
 - Updated Nginx WebDav module from 0.0.2 to 0.0.3 https://github.com/arut/nginx-dav-ext-module
 - Updated multi-threaded compression menu with updated versions for pbzip2, lbzip2, plzip, lzip
