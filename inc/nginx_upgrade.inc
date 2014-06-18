@@ -1,3 +1,17 @@
+checkgeoip() {
+    GEOIP_CHECK=$(nginx -V 2>&1 | grep geoip)
+
+    if [[ ! -z "$GEOIP_CHECK" ]]; then
+        cecho "Detected existing Nginx has NGINX_GEOIP=y enabled" $boldyellow
+        cecho "however, you are recompiling Nginx with NGINX_GEOIP=n" $boldyellow
+        cecho "Is this incorrect and you want to set NGINX_GEOIP=y enabled ? " $boldyellow
+        read -ep "Answer y or n. Typing y will set NGINX_GEOIP=y [y/n]: " setgeoip
+        if [[ "$setgeoip" = [yY] ]]; then
+            NGINX_GEOIP=y 
+        fi
+    fi
+}
+
 checkmap() {
 MAPCHECK=$(grep '/usr/local/nginx/conf/fastcgi_param_https_map.conf' /usr/local/nginx/conf/nginx.conf)
 
@@ -77,6 +91,7 @@ else
     echo ""
     read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
     echo ""
+    checkgeoip
 fi # UALL
 
 # Backup Nginx CONF
