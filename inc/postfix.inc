@@ -16,11 +16,11 @@ MBOXSIZELIMIT=$(postconf -d | grep mailbox_size_limit | head -n1 | awk '{print $
 INCLIMIT=$(echo "$MBOXSIZELIMIT*20" | bc)
 CHECKMBOXSIZELIMIT=$(grep mailbox_size_limit /etc/postfix/main.cf)
 
-#if [[ -z "$CHECKMBOXSIZELIMIT" ]]; then
-#	echo "mailbox_size_limit = $INCLIMIT" >> /etc/postfix/main.cf
-#else
-#	sed -i "s/mailbox_size_limit = 51200000/mailbox_size_limit = $INCLIMIT/g" /etc/postfix/main.cf
-#fi
+# check if /var/spool/postfix/public/pickup exists
+if [[ ! -f /var/spool/postfix/public/pickup ]]; then
+	mkfifo /var/spool/postfix/public/pickup
+	chown postfix:postfix /var/spool/postfix/public/pickup
+fi
 
 postconf -e mailbox_size_limit=$INCLIMIT
 postconf -e smtpd_client_connection_count_limit=50
@@ -28,7 +28,7 @@ postconf -e smtpd_client_connection_count_limit=50
 postconf -e smtpd_recipient_limit=2000
 postconf -e smtpd_recipient_overshoot_limit=2000
 postconf -e default_destination_recipient_limit=10000
-/etc/init.d/postfix reload
+/etc/init.d/postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
 	cd $DIR_TMP
