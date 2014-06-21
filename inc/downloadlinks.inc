@@ -147,6 +147,7 @@ XCACHE_LINK="http://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/${XCACHE_
 
 APCCACHE_LINKFILE="APC-${APCCACHE_VERSION}.tgz"
 APCCACHE_LINK="http://pecl.php.net/get/${APCCACHE_LINKFILE}"
+APCCACHE_LINKLOCAL="http://centminmod.com/centminmodparts/apc/php550/${APCCACHE_LINKFILE}"
 
 ZENDOPCACHE_LINKFILE="zendopcache-${ZOPCACHECACHE_VERSION}.tgz"
 ZENDOPCACHE_LINK="http://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"

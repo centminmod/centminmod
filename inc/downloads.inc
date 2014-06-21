@@ -1728,6 +1728,52 @@ fi
 }
 
 ###############################################
+apclocaltarball() {
+
+echo ""
+	if [ "$UNATTENDED" == 'n' ]; then
+read -ep "Install APC? (By default uses 32MB RAM) [y/n] " askapcinstall
+	else
+	askapcinstall='y'
+	fi #unattended
+if [[ "$askapcinstall" = [yY] ]]; then
+APCINSTALL='y'
+    cd $DIR_TMP
+
+    rm -rf APC*
+
+        cecho "Download local ${APCCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${APCCACHE_LINKFILE} ]; then
+        cecho "${APCCACHE_LINKFILE} Archive (local) found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP ${APCCACHE_LINKLOCAL} $WGETRETRY 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${APCCACHE_LINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${APCCACHE_LINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${APCCACHE_LINKFILE} (local) extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${APCCACHE_LINKFILE} (local) valid file." $boldyellow
+echo ""
+	fi
+
+fi
+
+}
+
+###############################################
 apctarball() {
 
 echo ""
@@ -1760,8 +1806,10 @@ tar xzf ${APCCACHE_LINKFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "trying local mirror download..." $boldgreen
+	apclocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
          cecho "${APCCACHE_LINKFILE} valid file." $boldyellow
 echo ""
