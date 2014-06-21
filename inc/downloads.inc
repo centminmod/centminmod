@@ -941,6 +941,41 @@ echo ""
 }
 
 ###############################################
+imagickphpextlocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf imagick*
+
+        cecho "Download local ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
+  cecho "${PHPEXT_IMAGICKLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_IMAGICKLINKFILE} local not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_IMAGICKLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_IMAGICKLINKFILE} local valid file." $boldyellow
+echo ""
+	fi
+}
+
+###############################################
 imagickphpexttarball() {
 
     cd $DIR_TMP
@@ -966,10 +1001,47 @@ tar xzf ${PHPEXT_IMAGICKLINKFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	imagickphpextlocaltarball
+# checklogdetails
+# 	exit #$ERROR
+else 
+         cecho "${PHPEXT_IMAGICKLINKFILE} valid file." $boldyellow
+echo ""
+	fi
+}
+
+###############################################
+memcacheextlocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf memcache*
+
+        cecho "Download local ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
+  cecho "${PHPEXT_MEMCACHELINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "${PHPEXT_IMAGICKLINKFILE} valid file." $boldyellow
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_MEMCACHELINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_MEMCACHELINKFILE} local valid file." $boldyellow
 echo ""
 	fi
 }
@@ -1000,10 +1072,47 @@ tar xzf ${PHPEXT_MEMCACHELINKFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	memcacheextlocaltarball
+# checklogdetails
+# 	exit #$ERROR
+else 
+         cecho "${PHPEXT_MEMCACHELINKFILE} valid file." $boldyellow
+echo ""
+	fi
+}
+
+###############################################
+memcachedphplocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf memcached*
+
+        cecho "Download local ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
+  cecho "${PHPEXT_MEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "${PHPEXT_MEMCACHELINKFILE} valid file." $boldyellow
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_MEMCACHEDLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_MEMCACHEDLINKFILE} local valid file." $boldyellow
 echo ""
 	fi
 }
@@ -1034,12 +1143,51 @@ tar xzf ${PHPEXT_MEMCACHEDLINKFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "trying local mirror download..." $boldgreen
+	memcachedphplocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
          cecho "${PHPEXT_MEMCACHEDLINKFILE} valid file." $boldyellow
 echo ""
 	fi
+}
+
+###############################################
+libmemcachedlocaltarball() {
+
+if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
+
+    cd $DIR_TMP
+
+        cecho "Download local ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
+  cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_LIBMEMCACHEDLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local valid file." $boldyellow
+echo ""
+	fi
+fi #LIBMEMCACHED_YUM
 }
 
 ###############################################
@@ -1070,8 +1218,10 @@ tar xzf ${PHPEXT_LIBMEMCACHEDLINKFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "trying local mirror download..." $boldgreen
+	libmemcachedlocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
          cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} valid file." $boldyellow
 echo ""
@@ -1820,6 +1970,51 @@ fi
 }
 
 ###############################################
+zopcachelocaltarball() {
+
+echo ""
+	if [ "$UNATTENDED" == 'n' ]; then
+read -ep "Install Zend OPCache ? (By default uses 32MB RAM) [y/n] " askzopcacheinstall
+	else
+	askzopcacheinstall='y'
+	fi #unattended
+if [[ "$askzopcacheinstall" = [yY] ]]; then
+ZOPCACHEINSTALL='y'
+    cd $DIR_TMP
+    rm -rf zendopcache*
+
+        cecho "Download local ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
+        cecho " ${ZENDOPCACHE_LINKFILE} local Archive found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP ${ZENDOPCACHE_LINKLOCAL} $WGETRETRY 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${ZENDOPCACHE_LINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${ZENDOPCACHE_LINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${ZENDOPCACHE_LINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${ZENDOPCACHE_LINKFILE} local valid file." $boldyellow
+echo ""
+	fi
+
+fi
+
+}
+
+###############################################
 zopcachetarball() {
 
 echo ""
@@ -1852,8 +2047,10 @@ tar xzf ${ZENDOPCACHE_LINKFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "trying local mirror download..." $boldgreen
+	zopcachelocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
          cecho "${ZENDOPCACHE_LINKFILE} valid file." $boldyellow
 echo ""

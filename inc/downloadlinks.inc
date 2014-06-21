@@ -96,15 +96,19 @@ LIBEVENTLINK="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}
 
 PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
 PHPEXT_IMAGICKLINK="http://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
+PHPEXT_IMAGICKLINKLOCAL="http://centminmod.com/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
 
 PHPEXT_MEMCACHELINKFILE="memcache-${MEMCACHE_VERSION}.tgz"
 PHPEXT_MEMCACHELINK="http://pecl.php.net/get/${PHPEXT_MEMCACHELINKFILE}"
+PHPEXT_MEMCACHELINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_MEMCACHELINKFILE}"
 
 PHPEXT_MEMCACHEDLINKFILE="memcached-${MEMCACHEDPHP_VER}.tgz"
 PHPEXT_MEMCACHEDLINK="http://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
+PHPEXT_MEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
 
 PHPEXT_LIBMEMCACHEDLINKFILE="libmemcached-${LIBMEMCACHED_VER}.tar.gz"
 PHPEXT_LIBMEMCACHEDLINK="https://launchpad.net/libmemcached/1.0/${LIBMEMCACHED_VER}/+download/${PHPEXT_LIBMEMCACHEDLINKFILE}"
+PHPEXT_LIBMEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_LIBMEMCACHEDLINKFILE}"
 
 TWEMPERF_LINKFILE="twemperf-${TWEMPERF_VER}.tar.gz"
 TWEMPERF_LINK="https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.gz"
@@ -151,6 +155,7 @@ APCCACHE_LINKLOCAL="http://centminmod.com/centminmodparts/apc/php550/${APCCACHE_
 
 ZENDOPCACHE_LINKFILE="zendopcache-${ZOPCACHECACHE_VERSION}.tgz"
 ZENDOPCACHE_LINK="http://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
+ZENDOPCACHE_LINKLOCAL="http://centminmod.com/centminmodparts/zendopcache/${ZENDOPCACHE_LINKFILE}"
 
 NSD_LINKFILE="nsd-${NSD_VERSION}.tar.gz"
 #NSD_LINK="http://www.nlnetlabs.nl/downloads/nsd/${NSD_LINKFILE}"
