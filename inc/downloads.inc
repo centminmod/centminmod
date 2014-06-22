@@ -846,15 +846,15 @@ libeventtarball() {
 
     cd $DIR_TMP
 
-        cecho "Download libevent-${LIBEVENT_VERSION}-stable.tar.gz ..." $boldyellow
-if [ -s libevent-${LIBEVENT_VERSION}-stable.tar.gz ]; then
-  cecho "libevent-${LIBEVENT_VERSION}-stable.tar.gz found, skipping download..." $boldgreen
+        cecho "Download release-${LIBEVENT_VERSION}-stable.tar.gz ..." $boldyellow
+if [ -s release-${LIBEVENT_VERSION}-stable.tar.gz ]; then
+  cecho "release-${LIBEVENT_VERSION}-stable.tar.gz found, skipping download..." $boldgreen
   else
-  echo "Error: libevent-${LIBEVENT_VERSION}-stable.tar.gz not found !!! Download now......"
-        wget -cnv --progress=bar --no-check-certificate https://github.com/downloads/libevent/libevent/libevent-${LIBEVENT_VERSION}-stable.tar.gz --tries=3 
+  echo "Error: release-${LIBEVENT_VERSION}-stable.tar.gz not found !!! Download now......"
+        wget -cnv --progress=bar --no-check-certificate https://github.com/downloads/libevent/libevent/release-${LIBEVENT_VERSION}-stable.tar.gz --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libevent-${LIBEVENT_VERSION}-stable.tar.gz download failed." $boldgreen
+	cecho "Error: release-${LIBEVENT_VERSION}-stable.tar.gz download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -863,14 +863,14 @@ else
 	fi
 fi
 
-tar xzf libevent-${LIBEVENT_VERSION}-stable.tar.gz 
+tar xzf release-${LIBEVENT_VERSION}-stable.tar.gz 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libevent-${LIBEVENT_VERSION}-stable.tar.gz extraction failed." $boldgreen
+	cecho "Error: release-${LIBEVENT_VERSION}-stable.tar.gz extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "libevent-${LIBEVENT_VERSION}-stable.tar.gz valid file." $boldyellow
+         cecho "release-${LIBEVENT_VERSION}-stable.tar.gz valid file." $boldyellow
 echo ""
 	fi
 
