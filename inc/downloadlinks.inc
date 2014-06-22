@@ -91,8 +91,9 @@ NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3"
 NGX_SRCACHELINKFILE="srcache-nginx-module_v0.16.tar.gz"
 NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v0.16"
 
-LIBEVENTLINKFILE="libevent-${LIBEVENT_VERSION}-stable.tar.gz"
-LIBEVENTLINK="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
+LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
+LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
+LIBEVENTLINK="https://github.com/libevent/libevent/archive/${LIBEVENTLINKFILE}"
 
 PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
 PHPEXT_IMAGICKLINK="http://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"

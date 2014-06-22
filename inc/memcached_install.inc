@@ -26,8 +26,8 @@ fi
 
 checklibevent() {
 
-cecho "Check if libevent-${LIBEVENT_VERSION}-stable.tar.gz exists" $boldyellow
-if [ ! -f "${DIR_TMP}/libevent-${LIBEVENT_VERSION}-stable.tar.gz" ]; then
+cecho "Check if release-${LIBEVENT_VERSION}-stable.tar.gz exists" $boldyellow
+if [ ! -f "${DIR_TMP}/release-${LIBEVENT_VERSION}-stable.tar.gz" ]; then
 
     cecho "Downloading libevent..." $boldgreen
 
@@ -133,8 +133,8 @@ if [[ "$FPMRPM_LIBEVENT" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     fi
 else
     cd $DIR_TMP
-    #tar xfz libevent-${LIBEVENT_VERSION}-stable.tar.gz
-    cd libevent-${LIBEVENT_VERSION}-stable
+    #tar xfz release-${LIBEVENT_VERSION}-stable.tar.gz
+    cd libevent-release-${LIBEVENT_VERSION}-stable
     make clean
     ./configure --prefix=/usr/${LIBDIR}
     make${MAKETHREADS}
