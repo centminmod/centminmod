@@ -851,7 +851,7 @@ if [ -s release-${LIBEVENT_VERSION}-stable.tar.gz ]; then
   cecho "release-${LIBEVENT_VERSION}-stable.tar.gz found, skipping download..." $boldgreen
   else
   echo "Error: release-${LIBEVENT_VERSION}-stable.tar.gz not found !!! Download now......"
-        wget -cnv --progress=bar --no-check-certificate https://github.com/downloads/libevent/libevent/release-${LIBEVENT_VERSION}-stable.tar.gz --tries=3 
+        wget -cnv --progress=bar --no-check-certificate https://github.com/libevent/libevent/archive/release-${LIBEVENT_VERSION}-stable.tar.gz --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: release-${LIBEVENT_VERSION}-stable.tar.gz download failed." $boldgreen
