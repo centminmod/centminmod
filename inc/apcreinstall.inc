@@ -29,7 +29,7 @@ fi
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
-if [[ "$PHPCURRENTVER" = '5.5' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' ]]; then
     apcdevfix
 else
     if [ -s APC-${apcver}.tgz ]; then
@@ -41,7 +41,7 @@ else
 tar xvzf APC-${apcver}.tgz
 cd APC-${apcver}
 
-fi # 5.5 fix 
+fi # 5.5 & 5.6 fix 
 
 make clean
 /usr/local/bin/phpize -clean

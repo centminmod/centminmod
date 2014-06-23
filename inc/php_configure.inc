@@ -12,7 +12,7 @@ ISLOWMEMPHPMB=`echo "scale=0;$ISLOWMEMPHP/1024" | bc`
 CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
 
-if [[ "$PHPMUVER" = '5.5' && "zendopcacheon" = [yY] || "ZOPCACHEDFT" = [yY] ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' && "zendopcacheon" = [yY] || "ZOPCACHEDFT" = [yY] ]]; then
 	OPCACHEOPT=" --enable-opcache"
 else
 	OPCACHEOPT=""
