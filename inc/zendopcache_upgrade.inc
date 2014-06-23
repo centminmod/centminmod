@@ -1,7 +1,7 @@
 #################
 zopcacheupgrade() {
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' ]]; then
+if [[ "$PHPMUVER" = '5.5' ]]; then
 	echo ""
 	echo "-----------------------------------------------------------------------------------------"
 	cecho "Detected PHP $PHPMUVER branch." $boldyellow
