@@ -70,7 +70,7 @@ net.ipv4.ip_local_port_range=10000 65500
 EOF
 sysctl -p
 
-sed -i 's/backlog=256/backlog=2048/g' $CUR_DIR/config/nginx/conf/conf.d/virtual.conf
+sed -i 's/backlog=256/backlog=2048/g' $CM_INSTALLDIR/config/nginx/conf/conf.d/virtual.conf
 
 fi
 

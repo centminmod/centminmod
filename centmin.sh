@@ -416,6 +416,7 @@ ASKCMD="read $KEYPRESS_PARAM "
 # MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
 CUR_DIR=`pwd` # Get current directory.
+CM_INSTALLDIR=$CUR_DIR
 ###############################################################
 # FUNCTIONS
 
