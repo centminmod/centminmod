@@ -247,6 +247,13 @@ funct_logrotate
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 		ngxpagespeedinstall
+    elif [[ "$NGINX_PAGESPEED" = [nN] ]]; then
+        PSADMINCHECK=$(grep '^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
+        
+        # disable pagespeedadmin.conf if enabled/uncommented
+        if [[ ! -z "$PSADMINCHECK" ]]; then
+            sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+        fi
 	fi
 
     echo "*************************************************"
