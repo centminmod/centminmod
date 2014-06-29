@@ -5,6 +5,10 @@ cat > "/usr/local/nginx/conf/pscontrol" <<END
 #/bin/bash
 # turn ngx_pagespeed on or off switch
 
+psadmin() {
+nano -w /usr/local/nginx/conf/pagespeedadmin.conf
+}
+
 pshandler() {
 nano -w /usr/local/nginx/conf/pagespeedhandler.conf
 }
@@ -40,6 +44,9 @@ sed -i 's/pagespeed StatisticsLogging off;/pagespeed StatisticsLogging on;/g' /u
 }
 
 case "\$1" in
+admin)
+psadmin
+;;
 handler)
 pshandler
 ;;
@@ -62,6 +69,7 @@ statsoff)
 psstatslogoff
 ;;
 *)
+echo "pscontrol admin"
 echo "pscontrol handler"
 echo "pscontrol edit"
 echo "pscontrol editstats"
@@ -76,100 +84,9 @@ END
 
 }
 
-pagespeeduptasks() {
-
-cecho "**********************************************************************" $boldyellow
-cecho "* ngx_pagespeed parity update tasks" $boldgreen
-cecho "**********************************************************************" $boldyellow
-
-	if [ -d /var/ngx_pagespeed_cache ]; then
-	chmod 1777 /var/ngx_pagespeed_cache
-	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
-	chown -R nginx:nginx /var/ngx_pagespeed_cache/
-	ls -lah /var | grep ngx_pagespeed_cache
-	fi
-
-	if [ ! -d /var/log/pagespeed ]; then
-	mkdir -p /var/log/pagespeed
-	chown nginx:nginx /var/log/pagespeed
-	ls -lah /var/log/ | grep pagespeed
-	fi
-
-if [[ ! -f /usr/local/nginx/conf/pagespeedstatslog.conf ]]; then
-echo ""
-echo "setup pagespeedstatslog.conf at /usr/local/nginx/conf/pagespeedstatslog.conf"
-
-touch /usr/local/nginx/conf/pagespeedstatslog.conf
-cat > "/usr/local/nginx/conf/pagespeedstatslog.conf" <<END
-#  Pagespeed stats logging 1.6.29.3+
-pagespeed Statistics on;
-pagespeed StatisticsLogging on;
-pagespeed LogDir /var/log/pagespeed;
-END
-fi
-
-# for 1.6.29.3 beta added pagespeed console setting
-if [ -f /usr/local/nginx/conf/pagespeedhandler.conf ]; then
-
-	CONSOLECHECK=$(grep '/pagespeed_console' /usr/local/nginx/conf/pagespeedhandler.conf)
-	
-	if [ -z "$CONSOLECHECK" ] ; then
-
-	echo "" >> /usr/local/nginx/conf/pagespeedhandler.conf
-	echo "location /pagespeed_console { allow 127.0.0.1; deny all; }" >> /usr/local/nginx/conf/pagespeedhandler.conf
-
-	fi
-
-fi
-
-if [[ -f /usr/bin/pscontrol ]]; then
-PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
-
-	if [ -z "$PSSTATSCHECK" ]; then
-	rm -rf /usr/bin/pscontrol
-	rm -rf /usr/local/nginx/conf/pscontrol
-	genpscontrolfile
-	echo "cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol"
-	cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol
-	chmod 0700 /usr/bin/pscontrol
-	else
-	echo "/usr/bin/pscontrol already up to dated"
-	fi
-fi
-
-}
-
-pagespeedbackup() {
-echo ""
-echo "backup ngx_pagespeed pagespeed.conf"
-echo "cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}"
-cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}
-}
-
-ngxpagespeedinstall() {
-
-if [[ ! -f /usr/local/nginx/conf/pagespeed.conf ]]; then
-echo ""
-echo "setup pagespeed.conf at /usr/local/nginx/conf/pagespeed.conf"
-echo "create cache directory at /var/ngx_pagespeed"
-
-	if [ ! -d /var/ngx_pagespeed_cache ]; then
-	mkdir -p /var/ngx_pagespeed_cache
-	mkdir -p /var/ngx_pagespeed_cache/http,3A
-	ls -lah /var | grep ngx_pagespeed_cache
-	fi
-
-	if [ ! -d /var/log/pagespeed ]; then
-	mkdir -p /var/log/pagespeed
-	chown nginx:nginx /var/log/pagespeed
-	ls -lah /var/log/ | grep pagespeed
-	fi
-
-	chmod 1777 /var/ngx_pagespeed_cache
-	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
-	chown -R nginx:nginx /var/ngx_pagespeed_cache/
-	ls -lah /var | grep ngx_pagespeed_cache
-
+#####################################################
+# create pagespeed.conf
+makepsconf() {
 touch /usr/local/nginx/conf/pagespeed.conf
 cat > "/usr/local/nginx/conf/pagespeed.conf" <<END
 pagespeed off;
@@ -178,7 +95,6 @@ pagespeed off;
 # File cache settings 
 ######################################
 # needs to exist and be writable by nginx
-pagespeed FileCachePath /var/ngx_pagespeed_cache;
 
 # pagespeed FileCacheSizeKb          102400;
 # pagespeed FileCacheCleanIntervalMs 3600000;
@@ -204,9 +120,13 @@ pagespeed FileCachePath /var/ngx_pagespeed_cache;
 #  pagespeed MemcachedTimeoutUs 100000;
 
 #######################################################
+## https://developers.google.com/speed/pagespeed/module/admin#virtual-hosts-and-stats
+######################################
+# pagespeed UsePerVhostStatistics on;
+
+#######################################################
 ## 1.7.30.1 beta defaults
 ######################################
-pagespeed DefaultSharedMemoryCacheKB 20000;
 pagespeed PreserveUrlRelativity on;
 pagespeed MaxCombinedCssBytes -1;
 pagespeed ImageResolutionLimitBytes 16777216;
@@ -267,6 +187,7 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
   # combine_javascript
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-js-combine
 #  pagespeed EnableFilters combine_javascript;
+#  pagespeed MaxCombinedJsBytes 122900;
 
   # extend_cache
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-cache-extend
@@ -279,6 +200,10 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
   # rewrite_javascript
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-js-minify
 #  pagespeed EnableFilters rewrite_javascript;
+
+  # inline_preview_images
+  # https://developers.google.com/speed/pagespeed/module/filter-inline-preview-images
+  pagespeed EnableFilters inline_preview_images;
 
   # lazyload_images
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-lazyload-images
@@ -310,24 +235,119 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
 
 #######################################################
 END
+}
+#####################################################
+makepsadmin() {
+touch /usr/local/nginx/conf/pagespeedadmin.conf
+cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
+#######################################################
+# 1.8.31.2 beta required paths
+# https://developers.google.com/speed/pagespeed/module/admin
+######################################
+pagespeed FileCachePath /var/ngx_pagespeed_cache;
+pagespeed StatisticsPath /ngx_pagespeed_statistics;
+pagespeed GlobalStatisticsPath /ngx_pagespeed_global_statistics;
+pagespeed MessagesPath /ngx_pagespeed_message;
+pagespeed ConsolePath /pagespeed_console;
+pagespeed AdminPath /pagespeed_admin;
+pagespeed GlobalAdminPath /pagespeed_global_admin;
+END
+
+PSADMINCONFCHECK=$(grep '/usr/local/nginx/conf/pagespeedadmin.conf' /usr/local/nginx/conf/nginx.conf)
+
+if [[ -z "$PSADMINCONFCHECK" ]]; then
+  sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
 fi
 
-if [[ ! -f /usr/local/nginx/conf/pagespeedhandler.conf ]]; then
-echo ""
-echo "setup pagespeedhandler.conf at /usr/local/nginx/conf/pagespeedhandler.conf"
-
+}
+#####################################################
+# create pagespeedhandler.conf
+makepshandler() {
 touch /usr/local/nginx/conf/pagespeedhandler.conf
 cat > "/usr/local/nginx/conf/pagespeedhandler.conf" <<END
 #  Ensure requests for pagespeed optimized resources go to the pagespeed
 #  handler and no extraneous headers get set.
 location ~ "\.pagespeed\.([a-z]\.)?[a-z]{2}\.[^.]{10}\.[^.]+" { add_header "" ""; }
-location ~ "^/ngx_pagespeed_static/" { }
+location ~ "^/pagespeed_static/" { }
 location ~ "^/ngx_pagespeed_beacon$" { }
 location /ngx_pagespeed_statistics { allow 127.0.0.1; deny all; }
+location /ngx_pagespeed_global_statistics { allow 127.0.0.1; deny all; }
 location /ngx_pagespeed_message { allow 127.0.0.1; deny all; }
 location /pagespeed_console { allow 127.0.0.1; deny all; }
+location ~ ^/pagespeed_admin { allow 127.0.0.1; deny all; }
+location ~ ^/pagespeed_global_admin { allow 127.0.0.1; deny all; }
 END
-fi
+}
+#####################################################
+# create pagespeedstatslog.conf
+makepsstatlog() {
+touch /usr/local/nginx/conf/pagespeedstatslog.conf
+cat > "/usr/local/nginx/conf/pagespeedstatslog.conf" <<END
+#  Pagespeed stats logging 1.6.29.3+
+pagespeed Statistics on;
+pagespeed StatisticsLogging on;
+pagespeed LogDir /var/log/pagespeed;
+END
+}
+#####################################################
+
+pagespeedbackup() {
+echo ""
+echo "backup ngx_pagespeed pagespeed.conf"
+echo "cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}"
+cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}
+
+echo ""
+echo "backup ngx_pagespeed pagespeedhandler.conf"
+echo "cp -a /usr/local/nginx/conf/pagespeedhandler.conf /usr/local/nginx/conf/pagespeedhandler.conf_${DT}"
+cp -a /usr/local/nginx/conf/pagespeedhandler.conf /usr/local/nginx/conf/pagespeedhandler.conf_${DT}
+}
+
+pagespeeduptasks() {
+
+cecho "**********************************************************************" $boldyellow
+cecho "* ngx_pagespeed parity update tasks" $boldgreen
+cecho "**********************************************************************" $boldyellow
+
+#####################################################
+# if NGINX_PAGESPEED=n is disabled in centmin.sh do some commenting out
+if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
+  PSADMINCHECK=$(grep '^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
+
+  # disable pagespeedadmin.conf if enabled/uncommented
+  if [[ ! -z "$PSADMINCHECK" ]]; then
+    sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
+
+  # check all Nginx vhosts which have 3 pagespeed include lines enabled/uncommented
+  CHECKVHOSTFORPS=$(grep -rl '^include \/usr\/local\/nginx\/conf\/pagespeed' /usr/local/nginx/conf/conf.d/* )
+
+  # for each Nginx vhost with pagespeed include lines enabled, disable then when NGINX_PAGESPEED=n
+  if [[ ! -z "$CHECKVHOSTFORPS" ]]; then
+    for v in $CHECKVHOSTFORPS
+    do
+      echo
+      echo "commenting out pagespeed includes in $v"
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeed.conf;/#include \/usr\/local\/nginx\/conf\/pagespeed.conf;/g' $v
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/g' $v
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/g' $v
+    done
+  fi
+fi # NGINX_PAGESPEED=n
+#####################################################
+
+	if [ -d /var/ngx_pagespeed_cache ]; then
+	chmod 1777 /var/ngx_pagespeed_cache
+	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+	chown -R nginx:nginx /var/ngx_pagespeed_cache/
+	ls -lah /var | grep ngx_pagespeed_cache
+	fi
+
+	if [ ! -d /var/log/pagespeed ]; then
+	mkdir -p /var/log/pagespeed
+	chown nginx:nginx /var/log/pagespeed
+	ls -lah /var/log/ | grep pagespeed
+	fi
 
 if [[ ! -f /usr/local/nginx/conf/pagespeedstatslog.conf ]]; then
 echo ""
@@ -340,6 +360,95 @@ pagespeed Statistics on;
 pagespeed StatisticsLogging on;
 pagespeed LogDir /var/log/pagespeed;
 END
+fi
+
+# for 1.6.29.3 beta added pagespeed console setting
+if [ -f /usr/local/nginx/conf/pagespeedhandler.conf ]; then
+
+	CONSOLECHECK=$(grep '/pagespeed_console' /usr/local/nginx/conf/pagespeedhandler.conf)
+	
+	if [ -z "$CONSOLECHECK" ] ; then
+
+	echo "" >> /usr/local/nginx/conf/pagespeedhandler.conf
+	echo "location /pagespeed_console { allow 127.0.0.1; deny all; }" >> /usr/local/nginx/conf/pagespeedhandler.conf
+
+	fi
+
+fi
+
+if [[ -f /usr/bin/pscontrol ]]; then
+PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
+PSADMINCHECK=$(grep 'psadmin' /usr/bin/pscontrol)
+
+	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" ]]; then
+	rm -rf /usr/bin/pscontrol
+	rm -rf /usr/local/nginx/conf/pscontrol
+	genpscontrolfile
+	echo "cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol"
+	cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol
+	chmod 0700 /usr/bin/pscontrol
+	else
+	echo "/usr/bin/pscontrol already up to dated"
+	fi
+fi
+
+# checks for ngx_pagespeed 1.8.31.2 beta introduced features
+ADMINPATHCHECK=$(grep AdminPath /usr/local/nginx/conf/pagespeedadmin.conf)
+
+if [[ -z "$ADMINPATHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then
+  makepsadmin
+  makepsconf
+  makepshandler
+fi
+
+# check for 1.8.31.3 change from ngx_pagespeed_static to pagespeed_static
+PSTATICCHECK=$(grep ngx_pagespeed_static /usr/local/nginx/conf/pagespeedhandler.conf)
+
+if [[ -z "$PSSTATSCHECK" ]]; then
+  makepshandler
+fi
+
+
+} #pagespeeduptasks
+
+ngxpagespeedinstall() {
+
+if [[ ! -f /usr/local/nginx/conf/pagespeed.conf ]]; then
+echo ""
+echo "setup pagespeed.conf at /usr/local/nginx/conf/pagespeed.conf"
+echo "create cache directory at /var/ngx_pagespeed"
+
+	if [ ! -d /var/ngx_pagespeed_cache ]; then
+	mkdir -p /var/ngx_pagespeed_cache
+	mkdir -p /var/ngx_pagespeed_cache/http,3A
+	ls -lah /var | grep ngx_pagespeed_cache
+	fi
+
+	if [ ! -d /var/log/pagespeed ]; then
+	mkdir -p /var/log/pagespeed
+	chown nginx:nginx /var/log/pagespeed
+	ls -lah /var/log/ | grep pagespeed
+	fi
+
+	chmod 1777 /var/ngx_pagespeed_cache
+	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+	chown -R nginx:nginx /var/ngx_pagespeed_cache/
+	ls -lah /var | grep ngx_pagespeed_cache
+
+  makepsconf
+
+fi
+
+if [[ ! -f /usr/local/nginx/conf/pagespeedhandler.conf ]]; then
+echo ""
+echo "setup pagespeedhandler.conf at /usr/local/nginx/conf/pagespeedhandler.conf"
+makepshandler
+fi
+
+if [[ ! -f /usr/local/nginx/conf/pagespeedstatslog.conf ]]; then
+echo ""
+echo "setup pagespeedstatslog.conf at /usr/local/nginx/conf/pagespeedstatslog.conf"
+makepsstatlog
 fi
 
 if [[ ! -f /usr/local/nginx/conf/pscontrol ]]; then

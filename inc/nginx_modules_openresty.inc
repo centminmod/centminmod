@@ -1,7 +1,7 @@
 function funct_nginxmodules_openresty {
 
     # nginx Modules
-    cd /svr-setup
+    cd ${DIR_TMP}
 
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
@@ -11,7 +11,7 @@ function funct_nginxmodules_openresty {
 
     tar zvxf ngx-fancyindex-0.3.1.tar.gz
 
-if [ ! -d /svr-setup/ngx-fancyindex-ngx-fancyindex ]; then
+if [ ! -d ${DIR_TMP}/ngx-fancyindex-ngx-fancyindex ]; then
 rm -rf ngx-fancyindex-0.3.1.tar.gz
 
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then

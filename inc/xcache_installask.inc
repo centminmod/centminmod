@@ -26,7 +26,7 @@ if [[ -z $XCACHESOCHECK || -z $XCACHESOCHECKB ]]; then
 
 		echo $lessxcachemem
 
-		if [ "$PHPVERCHECK" == '5.4' ]; then
+		if [[ "$PHPVERCHECK" == '5.4' || "$PHPVERCHECK" == '5.5' ]]; then
 			#echo -e "\nCopying xcache-min_php54.ini >> /usr/local/lib/php.ini\n"
 			#  cat $CUR_DIR/config/xcache/xcache-min_php54.ini >> /usr/local/lib/php.ini
 			echo -e "\nCopying xcache-min_php54.ini > ${CONFIGSCANDIR}/xcache.ini\n"
@@ -44,7 +44,7 @@ if [[ -z $XCACHESOCHECK || -z $XCACHESOCHECKB ]]; then
 
 		echo ""
 
-		if [ "$PHPVERCHECK" == '5.4' ]; then
+		if [[ "$PHPVERCHECK" == '5.4' || "$PHPVERCHECK" == '5.5' ]]; then
 			#echo -e "\nCopying xcache-min_php54.ini >> /usr/local/lib/php.ini\n"
 			#    cat $CUR_DIR/config/xcache/xcache_php54.ini >> /usr/local/lib/php.ini
 			echo -e "\nCopying xcache-min_php54.ini > ${CONFIGSCANDIR}/xcache.ini\n"
@@ -68,7 +68,8 @@ fi # XCACHESOCHECK
     cd xcache-${XCACHE_VERSION}
     /usr/local/bin/phpize
     ./configure --enable-xcache --with-php-config=/usr/local/bin/php-config
-    make && make install
+    make${MAKETHREADS}
+    make install
 
 if [ -f ${CONFIGSCANDIR}/apc.ini ]; then
 	rm -rf ${CONFIGSCANDIR}/apc.ini
@@ -132,9 +133,10 @@ read xcachepassword
 
 xcachepass="`echo -n "${xcachepassword}" | md5sum | awk '{ print $1 }'`"
 
-cecho "old password: `grep xcache.admin.pass ${CONFIGSCANDIR}/xcache.ini | awk '{ print $3 }' | sed -e 's/"//g'`" $boldgreen
-cecho "new password: ${xcachepass}" $boldgreen
+cecho "old md5 password hash: `grep xcache.admin.pass ${CONFIGSCANDIR}/xcache.ini | awk '{ print $3 }' | sed -e 's/"//g'`" $boldgreen
+cecho "new md5 password hash: ${xcachepass}" $boldgreen
 cecho "xcache username: `grep xcache.admin.user ${CONFIGSCANDIR}/xcache.ini | awk '{ print $3 }' | sed -e 's/"//g'`" $boldgreen
+cecho "xcache password: ${xcachepassword}" $boldgreen
 
     sed -i "s/d440aed189a13ff970dac7e7e8f987b2/${xcachepass}/g" ${CONFIGSCANDIR}/xcache.ini
 

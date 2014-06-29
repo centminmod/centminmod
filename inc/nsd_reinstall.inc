@@ -3,7 +3,7 @@ nsdreinstall() {
     echo "*************************************************"
     cecho "* Re-Installing NSD" $boldgreen
     echo "*************************************************"
-    cd /svr-setup
+    cd ${DIR_TMP}
     if [ -s nsd-${NSD_VERSION}.tar.gz ]; then
         cecho "NSD ${NSD_VERSION} Archive found, skipping download..." $boldgreen 
     else
@@ -14,7 +14,7 @@ nsdreinstall() {
     cd nsd-${NSD_VERSION}
     make clean
     ./configure
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
 
 NSDUSERCHECK=`grep 'nsd' /etc/passwd`

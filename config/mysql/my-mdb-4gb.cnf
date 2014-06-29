@@ -14,7 +14,7 @@ skip-symbolic-links
 #mysql --port=3307 --protocol=tcp
 #extra-port=3307
 #extra-max-connections=1
-#tmpdir=/home/mysqltmp
+tmpdir=/home/mysqltmp
 
 skip-innodb
 skip-federated
@@ -97,7 +97,7 @@ innodb_log_buffer_size = 8M
 innodb_flush_log_at_trx_commit = 2
 innodb_thread_concurrency = 0
 innodb_lock_wait_timeout=50
-innodb_flush_method = O_DIRECT
+#innodb_flush_method = O_DIRECT
 innodb_support_xa=1
 
 # 200 * # DISKS

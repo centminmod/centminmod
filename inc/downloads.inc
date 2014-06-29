@@ -14,28 +14,28 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
 {
     cd $DIR_TMP
 
-if [ -s epel-release-5-4.noarch.rpm ]; then
-  echo "epel-release-5-4.noarch.rpm [found]"
+if [ -s "${CENTOSFIVEEPELFILE}" ]; then
+  echo "${CENTOSFIVEEPELFILE} [found]"
   else
-  echo "Error: epel-release-5-4.noarch.rpm not found !!! Download now......"
-  wget -cnv http://mirror.us.leaseweb.net/epel/5/${ARCH}/epel-release-5-4.noarch.rpm --tries=3 
+  echo "Error: ${CENTOSFIVEEPELFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSFIVEEPEL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: epel-release-5-4.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSFIVEEPELFILE} download failed." $boldgreen
 FAILEPEL='y'
 checklogdetails
 	exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
-	rpm -i epel-release-5-4.noarch.rpm
-	yum -q list ccache 2>&1 >/dev/null
+	rpm -i ${CENTOSFIVEEPELFILE}
+	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
 	CCEPELCHECK="$ERR"
 		if [ "$CCEPELCHECK" == '0' ]; then
 			yumpriorepel
 			echo ""
 		else
-			cecho "Error: problem with epel-release-5-4.noarch.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSFIVEEPELFILE} install." $boldgreen
 			exit $ERR
 		fi
 	fi
@@ -51,29 +51,29 @@ if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; 
 	rpm -e $FORGERPM
 fi
 
-if [ -s rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm ]; then
-  echo "rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm [found]"
+if [ -s "${CENTOSFIVERPMFORGEFILE}" ]; then
+  echo "${CENTOSFIVERPMFORGEFILE} [found]"
   else
-  echo "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm not found !!! Download now......"
-  wget -cnv http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm --tries=3 
+  echo "Error: ${CENTOSFIVERPMFORGEFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSFIVERPMFORGE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSFIVERPMFORGEFILE} download failed." $boldgreen
 FAILRPMFORGE='y'
 checklogdetails
 	#exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-rpm -i rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm
-	yum -q list axel 2>&1 >/dev/null
+rpm -i ${CENTOSFIVERPMFORGEFILE}
+	yum${CACHESKIP} -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCRPMFORGECHECK="$ERR"
 		if [ "$CCRPMFORGECHECK" == '0' ]; then
 			yumpriorrpmforge
 			echo ""
 		else
-			cecho "Error: problem with rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSFIVERPMFORGEFILE} install." $boldgreen
 			#exit $ERR
 		fi
 	fi
@@ -82,21 +82,21 @@ fi
 
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
-if [ -s centalt-release-5-3.noarch.rpm ]; then
-  echo "centalt-release-5-3.noarch.rpm [found]"
+if [ -s ${CENTOSFIVECENTALTFILE} ]; then
+  echo "${CENTOSFIVECENTALTFILE} [found]"
   else
-  echo "Error: centalt-release-5-3.noarch.rpm not found !!! Download now......"
-  wget -cnv http://centos.alt.ru/repository/centos/5/${RPMFARCH}/centalt-release-5-3.noarch.rpm --tries=3 
+  echo "Error: ${CENTOSFIVECENTALTFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSFIVECENTALT} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: centalt-release-5-3.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSFIVECENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
-rpm - import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
-rpm -i centalt-release-5-3.noarch.rpm
+rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
+rpm -i ${CENTOSFIVECENTALTFILE}
 yumpriorcentalt
 echo ""
 	fi
@@ -104,21 +104,21 @@ echo ""
 fi
 fi # CENTALTREPO_DISABLE
 
-if [ -s percona-release-0.0-1.${ARCH}.rpm ]; then
-  echo "percona-release-0.0-1.${ARCH}.rpm [found]"
+if [ -s "${CENTOSFIVEPERCONARELEASEFILE}" ]; then
+  echo "${CENTOSFIVEPERCONARELEASEFILE} [found]"
   else
-  echo "Error: percona-release-0.0-1.${ARCH}.rpm not found !!! Download now......"
-  wget -cnv http://www.percona.com/downloads/percona-release/percona-release-0.0-1.${ARCH}.rpm --tries=3 
+  echo "Error: ${CENTOSFIVEPERCONARELEASEFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSFIVEPERCONARELEASE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: percona-release-0.0-1.${ARCH}.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSFIVEPERCONARELEASEFILE} download failed." $boldgreen
 FAILPERCONA='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
-rpm -i percona-release-0.0-1.${ARCH}.rpm
+rpm -i ${CENTOSFIVEPERCONARELEASEFILE}
 	#yum -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCPERCONACHECK="$ERR"
@@ -126,28 +126,28 @@ rpm -i percona-release-0.0-1.${ARCH}.rpm
 			yumpriorpercona
 			echo ""
 		else
-			cecho "Error: problem with percona-release-0.0-1.${ARCH}.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSFIVEPERCONARELEASEFILE} install." $boldgreen
 			exit $ERR
 		fi
 	fi
 
 fi
 
-if [ -s varnish-release-3.0-1.el5.centos.noarch.rpm ]; then
-  echo "varnish-release-3.0-1.el5.centos.noarch.rpm [found]"
+if [ -s "${CENTOSFIVEVARNISHFILE}" ]; then
+  echo "${CENTOSFIVEVARNISHFILE} [found]"
   else
-  echo "Error: varnish-release-3.0-1.el5.centos.noarch.rpm not found !!! Download now......"
-  wget -cnv http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/varnish-release-3.0-1.el5.centos.noarch.rpm --tries=3 
+  echo "Error: ${CENTOSFIVEVARNISHFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSFIVEVARNISH} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: varnish-release-3.0-1.el5.centos.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSFIVEVARNISHFILE} download failed." $boldgreen
 FAILVARNISH='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 
-rpm --nosignature -i varnish-release-3.0-1.el5.centos.noarch.rpm
+rpm --nosignature -i ${CENTOSFIVEVARNISHFILE}
 	#yum -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCVARNISHCHECK="$ERR"
@@ -155,7 +155,7 @@ rpm --nosignature -i varnish-release-3.0-1.el5.centos.noarch.rpm
 			yumpriorvarnish
 			echo ""
 		else
-			cecho "Error: problem with varnish-release-3.0-1.el5.centos.noarch.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSFIVEVARNISHFILE} install." $boldgreen
 			exit $ERR
 		fi
 	fi
@@ -175,7 +175,7 @@ yumcentossixdownload() {
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
 {
 echo "*************************************************"
-cecho "* CentOS 6 / 6.1 / 6.2 detected installing EPEL Repo" $boldgreen
+cecho "* CentOS 6.x detected installing EPEL Repo" $boldgreen
 echo "*************************************************"
 
     if [ ${MACHINE_TYPE} == 'x86_64' ];
@@ -189,29 +189,29 @@ echo "*************************************************"
 
     cd $DIR_TMP
 
-if [ -s epel-release-6-8.noarch.rpm ]; then
-  echo "epel-release-6-8.noarch.rpm [found]"
+if [ -s "${CENTOSSIXEPELFILE}" ]; then
+  echo "${CENTOSSIXEPELFILE} [found]"
   else
-  echo "Error: epel-release-6-8.noarch.rpm not found !!! Download now......"
-  wget -cnv http://mirror.us.leaseweb.net/epel/6/${RPMFARCH}/epel-release-6-8.noarch.rpm --tries=3
-  # wget -cnv http://centminmod.com/centminmodparts/repos/epel-release-6-8.noarch.rpm --tries=3
+  echo "Error: ${CENTOSSIXEPELFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXEPEL} --tries=3
+  # wget ${WGETOPT} ${CENTOSSIXEPELLOCAL} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: epel-release-6-8.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSSIXEPELFILE} download failed." $boldgreen
 FAILEPEL='y'
 checklogdetails
 	exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
-	rpm -i epel-release-6-8.noarch.rpm
-	yum -q list ccache 2>&1 >/dev/null
+	rpm -i ${CENTOSSIXEPELFILE}
+	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
 	CCEPELCHECK="$ERR"
 		if [ "$CCEPELCHECK" == '0' ]; then
 			yumpriorepel
 			echo ""
 		else
-			cecho "Error: problem with epel-release-6-8.noarch.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSSIXEPELFILE} install." $boldgreen
 			exit $ERR
 		fi
 	fi
@@ -227,29 +227,29 @@ if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; 
 	rpm -e $FORGERPM
 fi
 
-if [ -s rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm ]; then
-  echo "rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm [found]"
+if [ -s "${CENTOSSIXRPMFORGEFILE}" ]; then
+  echo "${CENTOSSIXRPMFORGEFILE} [found]"
   else
-  echo "Error: rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm not found !!! Download now......"
-  wget -cnv http://pkgs.repoforge.org/rpmforge-release/rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm --tries=3 
+  echo "Error: ${CENTOSSIXRPMFORGEFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXRPMFORGE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSSIXRPMFORGEFILE} download failed." $boldgreen
 FAILRPMFORGE='y'
 checklogdetails
 	#exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-rpm -i rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm
-	yum -q list axel 2>&1 >/dev/null
+rpm -i ${CENTOSSIXRPMFORGEFILE}
+	yum${CACHESKIP} -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCRPMFORGECHECK="$ERR"
 		if [ "$CCRPMFORGECHECK" == '0' ]; then
 			yumpriorrpmforge
 			echo ""
 		else
-			cecho "Error: problem with rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSSIXRPMFORGEFILE} install." $boldgreen
 			#exit $ERR
 		fi
 	fi
@@ -258,22 +258,22 @@ fi
 
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
-if [ -s centalt-release-6-1.noarch.rpm ]; then
-  echo "centalt-release-6-1.noarch.rpm [found]"
+if [ -s "${CENTOSSIXCENTALTFILE}" ]; then
+  echo "${CENTOSSIXCENTALTFILE} [found]"
   else
-  echo "Error: centalt-release-6-1.noarch.rpm not found !!! Download now......"
-  wget -cnv http://centos.alt.ru/repository/centos/6/${RPMFARCH}/centalt-release-6-1.noarch.rpm --tries=3
-  # wget -cnv http://centminmod.com/centminmodparts/repos/centalt-release-6-1.noarch.rpm --tries=3
+  echo "Error: ${CENTOSSIXCENTALTFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXCENTALT} --tries=3
+  # wget ${WGETOPT} ${CENTOSSIXCENTALTLOCAL} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: centalt-release-6-1.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSSIXCENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
-rpm - import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
-rpm -i centalt-release-6-1.noarch.rpm
+rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
+rpm -i ${CENTOSSIXCENTALTFILE}
 yumpriorcentalt
 echo ""
 	fi
@@ -282,21 +282,21 @@ fi
 fi # CENTALTREPO_DISABLE
 
 
-if [ -s percona-release-0.0-1.${RPMFARCH}.rpm ]; then
-  echo "percona-release-0.0-1.${RPMFARCH}.rpm [found]"
+if [ -s "${CENTOSSIXPERCONALRELEASEFILE}" ]; then
+  echo "${CENTOSSIXPERCONALRELEASEFILE} [found]"
   else
-  echo "Error: percona-release-0.0-1.${RPMFARCH}.rpm not found !!! Download now......"
-  wget -cnv http://www.percona.com/downloads/percona-release/percona-release-0.0-1.${RPMFARCH}.rpm --tries=3 
+  echo "Error: ${CENTOSSIXPERCONALRELEASEFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXPERCONALRELEASE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: percona-release-0.0-1.${RPMFARCH}.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSSIXPERCONALRELEASEFILE} download failed." $boldgreen
 FAILPERCONA='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
-rpm -i percona-release-0.0-1.${RPMFARCH}.rpm
+rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
 	#yum -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCPERCONACHECK="$ERR"
@@ -304,29 +304,29 @@ rpm -i percona-release-0.0-1.${RPMFARCH}.rpm
 			yumpriorpercona
 			echo ""
 		else
-			cecho "Error: problem with percona-release-0.0-1.${RPMFARCH}.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSSIXPERCONALRELEASEFILE} install." $boldgreen
 			exit $ERR
 		fi
 	fi
 
 fi
 
-if [ -s varnish-release-3.0-1.el6.noarch.rpm ]; then
-  echo "varnish-release-3.0-1.el6.noarch.rpm [found]"
+if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
+  echo "${CENTOSSIXVARNISHFILE} [found]"
   else
-  echo "Error: varnish-release-3.0-1.el6.noarch.rpm not found !!! Download now......"
-  wget -cnv http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/varnish-release/varnish-release-3.0-1.el6.noarch.rpm --tries=3
-  # wget -cnv http://centminmod.com/centminmodparts/repos/varnish-release-3.0-1.el6.noarch.rpm --tries=3
+  echo "Error: ${CENTOSSIXVARNISHFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXVARNISH} --tries=3
+  # wget ${WGETOPT} ${CENTOSSIXVARNISHLOCAL} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: varnish-release-3.0-1.el6.noarch.rpm download failed." $boldgreen
+	cecho "Error: ${CENTOSSIXVARNISHFILE} download failed." $boldgreen
 FAILVARNISH='y'
 checklogdetails
 	exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 
-rpm --nosignature -i varnish-release-3.0-1.el6.noarch.rpm
+rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
 	#yum -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCVARNISHCHECK="$ERR"
@@ -334,7 +334,7 @@ rpm --nosignature -i varnish-release-3.0-1.el6.noarch.rpm
 			yumpriorvarnish
 			echo ""
 		else
-			cecho "Error: problem with varnish-release-3.0-1.el6.noarch.rpm install." $boldgreen
+			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
 			exit $ERR
 		fi
 	fi
@@ -342,11 +342,46 @@ rpm --nosignature -i varnish-release-3.0-1.el6.noarch.rpm
 fi
 
 ####
+# axivo centos 6.x 64bit only
 
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+
+if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
+  echo "${CENTOSSIXAXIVOFILE} [found]"
+  else
+  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXAXIVO} --tries=3
+  # wget ${WGETOPT} ${CENTOSSIXAXIVOLOCAL} --tries=3
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${CENTOSSIXAXIVOFILE} download failed." $boldgreen
+FAILAXIVO='y'
+checklogdetails
+	exit #$ERROR
+else 
+	cecho "Download done." $boldyellow
+	rpm -i ${CENTOSSIXAXIVOFILE}
+	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	ERR=$?
+	CCAXIVOCHECK="$ERR"
+		if [ "$CCAXIVOCHECK" == '0' ]; then
+			yumprioraxivo
+			echo ""
+		else
+			cecho "Error: problem with ${CENTOSSIXAXIVOFILE} install." $boldgreen
+			exit $ERR
+		fi
+	fi
+
+fi
+
+fi
+
+####
 
 
 # CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='axel mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28 rssh'
+PACKAGEEXTRA='libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
 
 declare -a arrays
 arrays=(${PACKAGEEXTRA})
@@ -354,19 +389,20 @@ arrays=(${PACKAGEEXTRA})
 for pkgs in ${arrays[@]}
 do
 echo Processing package: $pkgs
-YUMINSTALLRPMCHECKS=`yum -q list installed $pkgs | awk '/Installed/ {print $1}' &>/dev/null`
+YUMINSTALLRPMCHECKS=$(rpm -qa $pkgs)
 #echo $YUMINSTALLRPMCHECKS
-        if [ "$YUMINSTALLRPMCHECKS" == 'Installed' ]; then
+        if [ "$YUMINSTALLRPMCHECKS" ]; then
 echo "----------------------------------------------------------------------------------"
-        yum -q -y update $pkgs
-        yum -q list $pkgs
+        # yum${CACHESKIP} -q -y update $pkgs
+        # yum${CACHESKIP} -q list $pkgs
+        echo "$pkg already installed"
 echo "----------------------------------------------------------------------------------"
         else
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgs" $boldyellow
 echo "----------------------------------------------------------------------------------"
-        yum -q -y install $pkgs
-        yum -q list $pkgs
+        yum${CACHESKIP} -q -y install $pkgs
+        # yum${CACHESKIP} -q list $pkgs
 echo "----------------------------------------------------------------------------------"
         fi
 done
@@ -426,15 +462,15 @@ nginxpcretarball() {
 
     cd $DIR_TMP
 
-        cecho "Download pcre-${NGINX_PCREVER}.tar.gz ..." $boldyellow
-    if [ -s pcre-${NGINX_PCREVER}.tar.gz ]; then
-        cecho "pcre-${NGINX_PCREVER}.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${PCRELINKFILE} ..." $boldyellow
+    if [ -s ${PCRELINKFILE} ]; then
+        cecho "${PCRELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/pcre-${NGINX_PCREVER}.tar.gz --tries=3 
-        # wget -c --progress=bar http://centminmod.com/centminmodparts/pcre/pcre-${NGINX_PCREVER}.tar.gz --tries=3 
+        wget -c --progress=bar ${PCRELINK} --tries=3 
+        # wget -c --progress=bar ${PCRELINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: pcre-${NGINX_PCREVER}.tar.gz download failed." $boldgreen
+	cecho "Error: ${PCRELINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -443,14 +479,14 @@ else
 	fi
     fi
 
-tar xzf pcre-${NGINX_PCREVER}.tar.gz 
+tar xzf ${PCRELINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: pcre-${NGINX_PCREVER}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${PCRELINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "pcre-${NGINX_PCREVER}.tar.gz valid file." $boldyellow
+         cecho "${PCRELINKFILE} valid file." $boldyellow
 echo ""
 	fi
 }
@@ -459,14 +495,14 @@ nginxwebdavtarball() {
 
     cd $DIR_TMP
 
-        cecho "Download nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz ..." $boldyellow
-    if [ -s nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz ]; then
-        cecho "nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${NGX_WEBDAVLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_WEBDAVLINKFILE} ]; then
+        cecho "${NGX_WEBDAVLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate https://github.com/arut/nginx-dav-ext-module/archive/v${NGINX_EXTWEBDAVVER}.tar.gz -O nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz --tries=3 
+        wget -c --progress=bar --no-check-certificate ${NGX_WEBDAVLINK} -O ${NGX_WEBDAVLINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_WEBDAVLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -475,14 +511,14 @@ else
 	fi
     fi
 
-tar xzf nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz 
+tar xzf ${NGX_WEBDAVLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_WEBDAVLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz valid file." $boldyellow
+         cecho "${NGX_WEBDAVLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 }
@@ -496,14 +532,14 @@ nginxpgspeedtarball() {
     # official github master zip renamed
     if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
 
-            cecho "Download release-${NGXPGSPEED_VER}.tar.gz ..." $boldyellow
-    		if [ -s release-${NGXPGSPEED_VER}.tar.gz ]; then
-        	cecho "release-${NGXPGSPEED_VER}.tar.gz Archive found, skipping download..." $boldgreen
+            cecho "Download ${NGX_PAGESPEEDGITLINKFILE} ..." $boldyellow
+    		if [ -s ${NGX_PAGESPEEDGITLINKFILE} ]; then
+        	cecho "${NGX_PAGESPEEDGITLINKFILE} Archive found, skipping download..." $boldgreen
     else
-    	    wget -c --progress=bar --no-check-certificate https://github.com/pagespeed/ngx_pagespeed/archive/master.tar.gz -O release-${NGXPGSPEED_VER}.tar.gz --tries=3 
+    	    wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDGITLINK} -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3 
 			ERROR=$?
 				if [[ "$ERROR" != '0' ]]; then
-					cecho "Error: release-${NGXPGSPEED_VER}.tar.gz download failed." $boldgreen
+					cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} download failed." $boldgreen
 					checklogdetails
 					exit #$ERROR
 				else 
@@ -514,14 +550,14 @@ nginxpgspeedtarball() {
 
 	fi # NGINX_PAGESPEEDGITMASTER
 
-        cecho "Download release-${NGXPGSPEED_VER}.tar.gz ..." $boldyellow
-    if [ -s release-${NGXPGSPEED_VER}.tar.gz ]; then
-        cecho "release-${NGXPGSPEED_VER}.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_PAGESPEEDLINKFILE} ]; then
+        cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate https://github.com/pagespeed/ngx_pagespeed/archive/release-${NGXPGSPEED_VER}.tar.gz -O release-${NGXPGSPEED_VER}.tar.gz --tries=3 
+        wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: release-${NGXPGSPEED_VER}.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -530,33 +566,33 @@ else
 	fi
     fi
 
-tar xzf release-${NGXPGSPEED_VER}.tar.gz
+tar xzf ${NGX_PAGESPEEDLINKFILE}
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: release-${NGXPGSPEED_VER}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_PAGESPEEDLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "release-${NGXPGSPEED_VER}.tar.gz valid file." $boldyellow
+         cecho "${NGX_PAGESPEEDLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
 	\cp -Rf ngx_pagespeed-master ngx_pagespeed-release-${NGXPGSPEED_VER}
 	rm -rf ngx_pagespeed-master
-	rm -rf release-${NGXPGSPEED_VER}.tar.gz
+	rm -rf ${NGX_PAGESPEEDGITLINKFILE}
 fi
 
-        cecho "Download ${NGINX_PAGESPEEDPSOL_VER}.tar.gz ..." $boldyellow
-    if [ -s ${NGINX_PAGESPEEDPSOL_VER}.tar.gz ]; then
-        cecho "${NGINX_PAGESPEEDPSOL_VER}.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} ..." $boldyellow
+    if [ -s ${NGX_PAGESPEEDPSOLINKLFILE} ]; then
+        cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
     else
     cd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
-        wget -c --progress=bar --no-check-certificate https://dl.google.com/dl/page-speed/psol/${NGINX_PAGESPEEDPSOL_VER}.tar.gz --tries=3 
+        wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDPSOLINKL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGINX_PAGESPEEDPSOL_VER}.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -565,14 +601,14 @@ else
 	fi
     fi
 
-tar xzf ${NGINX_PAGESPEEDPSOL_VER}.tar.gz
+tar xzf ${NGX_PAGESPEEDPSOLINKLFILE}
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGINX_PAGESPEEDPSOL_VER}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "${NGINX_PAGESPEEDPSOL_VER}.tar.gz valid file." $boldyellow
+         cecho "${NGX_PAGESPEEDPSOLINKLFILE} valid file." $boldyellow
     cd $DIR_TMP
 echo ""
 	fi
@@ -586,14 +622,14 @@ ngxmoduletarball() {
 
     cd $DIR_TMP
 
-        cecho "Download ngx-fancyindex-0.3.1.tar.gz ..." $boldyellow
-    if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
+        cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_FANCYINDEXLINKFILE} ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar http://centminmod.com/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3 
+        wget -c --progress=bar ${NGX_FANCYINDEXLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ngx-fancyindex-0.3.1.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -602,28 +638,28 @@ else
 	fi
     fi
 
-tar xzf ngx-fancyindex-0.3.1.tar.gz 
+tar xzf ${NGX_FANCYINDEXLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ngx-fancyindex-0.3.1.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_FANCYINDEXLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "ngx-fancyindex-0.3.1.tar.gz valid file." $boldyellow
+         cecho "${NGX_FANCYINDEXLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-if [ ! -d /svr-setup/ngx-fancyindex-ngx-fancyindex ]; then
-        cecho "Download ngx-fancyindex-0.3.1.tar.gz ..." $boldyellow
-rm -rf ngx-fancyindex-0.3.1.tar.gz
+if [ ! -d ${DIR_TMP}/ngx-fancyindex-ngx-fancyindex ]; then
+        cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
+rm -rf ${NGX_FANCYINDEXLINKFILE}
 
-    if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
+    if [ -s ${NGX_FANCYINDEXLINKFILE} ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar http://centminmod.com/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3 
+        wget -c --progress=bar ${NGX_FANCYINDEXLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ngx-fancyindex-0.3.1.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -633,25 +669,25 @@ else
     fi
 fi #fancyindex recheck
 
-tar xzf ngx-fancyindex-0.3.1.tar.gz 
+tar xzf ${NGX_FANCYINDEXLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ngx-fancyindex-0.3.1.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_FANCYINDEXLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "ngx-fancyindex-0.3.1.tar.gz valid file." $boldyellow
+         cecho "${NGX_FANCYINDEXLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download ngx_cache_purge-2.1.tar.gz ..." $boldyellow
-    if [ -s ngx_cache_purge-2.1.tar.gz ]; then
+        cecho "Download ${NGX_CACHEPURGEFILE} ..." $boldyellow
+    if [ -s ${NGX_CACHEPURGEFILE} ]; then
         cecho "ngx_cache_purge 2.1 Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://centminmod.com/centminmodparts/nginx/modules/ngx_cache_purge-2.1.tar.gz $WGETRETRY 
+        $DOWNLOADAPP ${NGX_CACHEPURGE} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ngx_cache_purge-2.1.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_CACHEPURGEFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -660,25 +696,25 @@ else
 	fi
     fi
 
-tar xzf ngx_cache_purge-2.1.tar.gz 
+tar xzf ${NGX_CACHEPURGEFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ngx_cache_purge-2.1.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_CACHEPURGEFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "ngx_cache_purge-2.1.tar.gz valid file." $boldyellow
+         cecho "${NGX_CACHEPURGEFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download Nginx-accesskey-2.0.3.tar.gz ..." $boldyellow
-    if [ -s Nginx-accesskey-2.0.3.tar.gz ]; then
+        cecho "Download ${NGX_ACCESSKEYLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_ACCESSKEYLINKFILE} ]; then
         cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
     else
-        wget -c http://wiki.nginx.org/images/5/51/Nginx-accesskey-2.0.3.tar.gz --tries=3
+        wget -c ${NGX_ACCESSKEYLINK} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: Nginx-accesskey-2.0.3.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_ACCESSKEYLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -687,25 +723,25 @@ else
 	fi
     fi
 
-tar xzf Nginx-accesskey-2.0.3.tar.gz 
+tar xzf ${NGX_ACCESSKEYLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: Nginx-accesskey-2.0.3.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_ACCESSKEYLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Nginx-accesskey-2.0.3.tar.gz valid file." $boldyellow
+         cecho "${NGX_ACCESSKEYLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download nginx-http-concat-master.tar.gz ..." $boldyellow
-    if [ -s nginx-http-concat-master.tar.gz ]; then
-        cecho "nginx-http-concat-master.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${NGX_CONCATLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_CONCATLINKFILE} ]; then
+        cecho "${NGX_CONCATLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate https://github.com/alibaba/nginx-http-concat/archive/master.tar.gz -O nginx-http-concat-master.tar.gz --tries=3 
+        wget -c --progress=bar --no-check-certificate ${NGX_CONCATLINK} -O ${NGX_CONCATLINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nginx-http-concat-master.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_CONCATLINKFILE} download failed." $boldgreen
 
 checklogdetails
 	exit #$ERROR
@@ -715,14 +751,42 @@ else
 	fi
     fi
 
-tar xzf nginx-http-concat-master.tar.gz 
+tar xzf ${NGX_CONCATLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nginx-http-concat-master.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_CONCATLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "nginx-http-concat-master.tar.gz valid file." $boldyellow
+         cecho "${NGX_CONCATLINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
+        cecho "Download ${NGX_HEADERSMORELINKFILE} ..." $boldyellow
+    if [ -s ${NGX_HEADERSMORELINKFILE} ]; then
+        cecho "${NGX_HEADERSMORELINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        wget -c --progress=bar --no-check-certificate ${NGX_HEADERSMORELINK} -O ${NGX_HEADERSMORELINKFILE} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_HEADERSMORELINKFILE} download failed." $boldgreen
+
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_HEADERSMORELINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_HEADERSMORELINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_HEADERSMORELINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -749,14 +813,14 @@ echo ""
 
     cd $DIR_TMP
 
-        cecho "Download nginx-${NGINX_VERSION}.tar.gz ..." $boldyellow
-    if [ -s nginx-${NGINX_VERSION}.tar.gz ]; then
-        cecho "nginx-${NGINX_VERSION}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download ${NGX_LINKFILE} ..." $boldyellow
+    if [ -s ${NGX_LINKFILE} ]; then
+        cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" $WGETRETRY 
+        $DOWNLOADAPP "${NGX_LINK}" $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nginx-${NGINX_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -765,14 +829,14 @@ else
 	fi
     fi
 
-tar xzf nginx-${NGINX_VERSION}.tar.gz 
+tar xzf ${NGX_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nginx-${NGINX_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "nginx-${NGINX_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${NGX_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -780,15 +844,15 @@ ngxmoduletarball
 
 if [ "$NGINX_OPENRESTY" == 'y' ]; then
 
-        cecho "Download memc-nginx-module_v0.13rc3.tar.gz ..." $boldyellow
-if [ -s memc-nginx-module_v0.13rc3.tar.gz ]; then
-  cecho "memc-nginx-module_v0.13rc3.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${NGX_MEMCLINKFILE} ..." $boldyellow
+if [ -s ${NGX_MEMCLINKFILE} ]; then
+  cecho "${NGX_MEMCLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: memc-nginx-module_v0.13rc3.tar.gz not found!!!download now......"
-        wget -c --progress=bar --no-check-certificate https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3 -O memc-nginx-module_v0.13rc3.tar.gz --tries=3 
+  cecho "Error: ${NGX_MEMCLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_MEMCLINK} -O ${NGX_MEMCLINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memc-nginx-module_v0.13rc3.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_MEMCLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -797,26 +861,26 @@ else
 	fi
     fi
 
-tar xzf memc-nginx-module_v0.13rc3.tar.gz 
+tar xzf ${NGX_MEMCLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memc-nginx-module_v0.13rc3.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_MEMCLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "memc-nginx-module_v0.13rc3.tar.gz valid file." $boldyellow
+         cecho "${NGX_MEMCLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download srcache-nginx-module_v0.16.tar.gz ..." $boldyellow
-if [ -s srcache-nginx-module_v0.16.tar.gz ]; then
-  cecho "srcache-nginx-module_v0.16.tar.gz Archive found, skipping download..." $boldgreen
+        cecho "Download ${NGX_SRCACHELINKFILE} ..." $boldyellow
+if [ -s ${NGX_SRCACHELINKFILE} ]; then
+  cecho "${NGX_SRCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: srcache-nginx-module_v0.16.tar.gz not found!!!download now......"
-        wget -c --progress=bar --no-check-certificate https://github.com/agentzh/srcache-nginx-module/tarball/v0.16 -O srcache-nginx-module_v0.16.tar.gz --tries=3 
+  cecho "Error: ${NGX_SRCACHELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_SRCACHELINK} -O ${NGX_SRCACHELINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: srcache-nginx-module_v0.16.tar.gz download failed." $boldgreen
+	cecho "Error: ${NGX_SRCACHELINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -825,14 +889,14 @@ else
 	fi
     fi
 
-tar xzf srcache-nginx-module_v0.16.tar.gz 
+tar xzf ${NGX_SRCACHELINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: srcache-nginx-module_v0.16.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NGX_SRCACHELINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "srcache-nginx-module_v0.16.tar.gz valid file." $boldyellow
+         cecho "${NGX_SRCACHELINKFILE} valid file." $boldyellow
 echo ""
 	fi
 	
@@ -846,15 +910,15 @@ libeventtarball() {
 
     cd $DIR_TMP
 
-        cecho "Download release-${LIBEVENT_VERSION}-stable.tar.gz ..." $boldyellow
-if [ -s release-${LIBEVENT_VERSION}-stable.tar.gz ]; then
-  cecho "release-${LIBEVENT_VERSION}-stable.tar.gz found, skipping download..." $boldgreen
+        cecho "Download ${LIBEVENTLINKFILE} ..." $boldyellow
+if [ -s ${LIBEVENTLINKFILE} ]; then
+  cecho "${LIBEVENTLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: release-${LIBEVENT_VERSION}-stable.tar.gz not found !!! Download now......"
-        wget -cnv --progress=bar --no-check-certificate https://github.com/libevent/libevent/archive/release-${LIBEVENT_VERSION}-stable.tar.gz --tries=3 
+  echo "Error: ${LIBEVENTLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${LIBEVENTLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: release-${LIBEVENT_VERSION}-stable.tar.gz download failed." $boldgreen
+	cecho "Error: ${LIBEVENTLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -863,17 +927,52 @@ else
 	fi
 fi
 
-tar xzf release-${LIBEVENT_VERSION}-stable.tar.gz 
+tar xzf ${LIBEVENTLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: release-${LIBEVENT_VERSION}-stable.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${LIBEVENTLINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "release-${LIBEVENT_VERSION}-stable.tar.gz valid file." $boldyellow
+         cecho "${LIBEVENTLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
+}
+
+###############################################
+imagickphpextlocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf imagick*
+
+        cecho "Download local ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
+  cecho "${PHPEXT_IMAGICKLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_IMAGICKLINKFILE} local not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_IMAGICKLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_IMAGICKLINKFILE} local valid file." $boldyellow
+echo ""
+	fi
 }
 
 ###############################################
@@ -881,15 +980,15 @@ imagickphpexttarball() {
 
     cd $DIR_TMP
 
-        cecho "Download imagick-${IMAGICKPHP_VER}.tgz ..." $boldyellow
-if [ -s imagick-${IMAGICKPHP_VER}.tgz ]; then
-  cecho "imagick-${IMAGICKPHP_VER}.tgz found, skipping download..." $boldgreen
+        cecho "Download ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
+  cecho "${PHPEXT_IMAGICKLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: imagick-${IMAGICKPHP_VER}.tgz not found !!! Download now......"
-        wget -cnv --progress=bar http://pecl.php.net/get/imagick-${IMAGICKPHP_VER}.tgz --tries=3 
+  echo "Error: ${PHPEXT_IMAGICKLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: imagick-${IMAGICKPHP_VER}.tgz download failed." $boldgreen
+	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -898,14 +997,51 @@ else
 	fi
 fi
 
-tar xzf imagick-${IMAGICKPHP_VER}.tgz 
+tar xzf ${PHPEXT_IMAGICKLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: imagick-${IMAGICKPHP_VER}.tgz extraction failed." $boldgreen
+	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	imagickphpextlocaltarball
+# checklogdetails
+# 	exit #$ERROR
+else 
+         cecho "${PHPEXT_IMAGICKLINKFILE} valid file." $boldyellow
+echo ""
+	fi
+}
+
+###############################################
+memcacheextlocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf memcache*
+
+        cecho "Download local ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
+  cecho "${PHPEXT_MEMCACHELINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "imagick-${IMAGICKPHP_VER}.tgz valid file." $boldyellow
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_MEMCACHELINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_MEMCACHELINKFILE} local valid file." $boldyellow
 echo ""
 	fi
 }
@@ -915,15 +1051,15 @@ memcacheexttarball() {
 
     cd $DIR_TMP
 
-        cecho "Download memcache-${MEMCACHE_VERSION}.tgz ..." $boldyellow
-if [ -s memcache-${MEMCACHE_VERSION}.tgz ]; then
-  cecho "memcache-${MEMCACHE_VERSION}.tgz found, skipping download..." $boldgreen
+        cecho "Download ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
+  cecho "${PHPEXT_MEMCACHELINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: memcache-${MEMCACHE_VERSION}.tgz not found !!! Download now......"
-        wget -cnv --progress=bar http://pecl.php.net/get/memcache-${MEMCACHE_VERSION}.tgz --tries=3 
+  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memcache-${MEMCACHE_VERSION}.tgz download failed." $boldgreen
+	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -932,14 +1068,51 @@ else
 	fi
 fi
 
-tar xzf memcache-${MEMCACHE_VERSION}.tgz 
+tar xzf ${PHPEXT_MEMCACHELINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memcache-${MEMCACHE_VERSION}.tgz extraction failed." $boldgreen
+	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	memcacheextlocaltarball
+# checklogdetails
+# 	exit #$ERROR
+else 
+         cecho "${PHPEXT_MEMCACHELINKFILE} valid file." $boldyellow
+echo ""
+	fi
+}
+
+###############################################
+memcachedphplocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf memcached*
+
+        cecho "Download local ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
+  cecho "${PHPEXT_MEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINKLOCAL} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "memcache-${MEMCACHE_VERSION}.tgz valid file." $boldyellow
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_MEMCACHEDLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_MEMCACHEDLINKFILE} local valid file." $boldyellow
 echo ""
 	fi
 }
@@ -949,15 +1122,15 @@ memcachedphptarball() {
 
     cd $DIR_TMP
 
-        cecho "Download memcached-${MEMCACHEDPHP_VER}.tgz ..." $boldyellow
-if [ -s memcached-${MEMCACHEDPHP_VER}.tgz ]; then
-  cecho "memcached-${MEMCACHEDPHP_VER}.tgz found, skipping download..." $boldgreen
+        cecho "Download ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
+  cecho "${PHPEXT_MEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: memcached-${MEMCACHEDPHP_VER}.tgz not found !!! Download now......"
-        wget -cnv --progress=bar http://pecl.php.net/get/memcached-${MEMCACHEDPHP_VER}.tgz --tries=3 
+  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memcached-${MEMCACHEDPHP_VER}.tgz download failed." $boldgreen
+	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -966,32 +1139,73 @@ else
 	fi
 fi
 
-tar xzf memcached-${MEMCACHEDPHP_VER}.tgz 
+tar xzf ${PHPEXT_MEMCACHEDLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memcached-${MEMCACHEDPHP_VER}.tgz extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	memcachedphplocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
-         cecho "memcached-${MEMCACHEDPHP_VER}.tgz valid file." $boldyellow
+         cecho "${PHPEXT_MEMCACHEDLINKFILE} valid file." $boldyellow
 echo ""
 	fi
 }
 
 ###############################################
-libmemcachedtarball() {
+libmemcachedlocaltarball() {
+
+if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
 
     cd $DIR_TMP
 
-        cecho "Download libmemcached-${LIBMEMCACHED_VER}.tar.gz ..." $boldyellow
-if [ -s libmemcached-${LIBMEMCACHED_VER}.tar.gz ]; then
-  cecho "libmemcached-${LIBMEMCACHED_VER}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download local ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
+  cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: libmemcached-${LIBMEMCACHED_VER}.tar.gz not found !!! Download now......"
-        wget -cnv --progress=bar https://launchpad.net/libmemcached/1.0/${LIBMEMCACHED_VER}/+download/libmemcached-${LIBMEMCACHED_VER}.tar.gz --tries=3 
+  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libmemcached-${LIBMEMCACHED_VER}.tar.gz download failed." $boldgreen
+	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+fi
+
+tar xzf ${PHPEXT_LIBMEMCACHEDLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local valid file." $boldyellow
+echo ""
+	fi
+fi #LIBMEMCACHED_YUM
+}
+
+###############################################
+libmemcachedtarball() {
+
+if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
+
+    cd $DIR_TMP
+
+        cecho "Download ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
+  cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINK} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1000,16 +1214,19 @@ else
 	fi
 fi
 
-tar xzf libmemcached-${LIBMEMCACHED_VER}.tar.gz 
+tar xzf ${PHPEXT_LIBMEMCACHEDLINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libmemcached-${LIBMEMCACHED_VER}.tar.gz extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	libmemcachedlocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
-         cecho "libmemcached-${LIBMEMCACHED_VER}.tar.gz valid file." $boldyellow
+         cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} valid file." $boldyellow
 echo ""
 	fi
+fi #LIBMEMCACHED_YUM
 }
 
 ###############################################
@@ -1017,18 +1234,19 @@ twemperftarball() {
 
     cd $DIR_TMP
 
-        cecho "Download mcperf-${TWEMPERF_VER}.tar.gz ..." $boldyellow
-if [ -s mcperf-${TWEMPERF_VER}.tar.gz ]; then
-  cecho "mcperf-${TWEMPERF_VER}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download ${TWEMPERF_LINKFILE} ..." $boldyellow
+if [ -s ${TWEMPERF_LINKFILE} ]; then
+  cecho "${TWEMPERF_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: mcperf-${TWEMPERF_VER}.tar.gz not found !!! Download now......"
-        #wget -cnv --progress=bar --no-check-certificate https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.gz -O mcperf-${TWEMPERF_VER}.tar.gz --tries=3 
+  echo "Error: ${TWEMPERF_LINKFILE} not found !!! Download now......"
+        
+     wget ${WGETOPT} --progress=bar --no-check-certificate ${TWEMPERF_LINK} -O ${TWEMPERF_LINKFILE} --tries=3 
 
-wget -cnv --progress=bar https://twemperf.googlecode.com/files/mcperf-${TWEMPERF_VER}.tar.gz --tries=3
+	# wget ${WGETOPT} --progress=bar ${TWEMPERF_LINK} --tries=3
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: mcperf-${TWEMPERF_VER}.tar.gz download failed." $boldgreen
+	cecho "Error: ${TWEMPERF_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1038,16 +1256,16 @@ else
 fi
 
 if [ ! -d "twemperf-${TWEMPERF_VER}" ]; then
-tar xzf mcperf-${TWEMPERF_VER}.tar.gz
+tar xzf ${TWEMPERF_LINKFILE}
 fi
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: mcperf-${TWEMPERF_VER}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${TWEMPERF_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "mcperf-${TWEMPERF_VER}.tar.gz valid file." $boldyellow
+         cecho "${TWEMPERF_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1078,16 +1296,16 @@ echo ""
 libeventtarball
 
 #########################################################
-        cecho "Download memcached-${MEMCACHED_VERSION}.tar.gz ..." $boldyellow
-if [ -s memcached-${MEMCACHED_VERSION}.tar.gz ]; then
-  cecho "memcached-${MEMCACHED_VERSION}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download ${MEMCACHEDSERVER_LINKFILE} ..." $boldyellow
+if [ -s ${MEMCACHEDSERVER_LINKFILE} ]; then
+  cecho "${MEMCACHEDSERVER_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: memcached-${MEMCACHED_VERSION}.tar.gz not found !!! Download now......"
-  		# wget -cnv --progress=bar http://www.memcached.org/files/memcached-${MEMCACHED_VERSION}.tar.gz --tries=3
-        wget -cnv --progress=bar http://centminmod.com/centminmodparts/memcached/memcached-${MEMCACHED_VERSION}.tar.gz --tries=3
+  echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Download now......"
+  		wget ${WGETOPT} --progress=bar ${MEMCACHEDSERVER_LINK} --tries=3
+        # wget ${WGETOPT} --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memcached-${MEMCACHED_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${MEMCACHEDSERVER_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1096,14 +1314,14 @@ else
 	fi
 fi
 
-tar xzf memcached-${MEMCACHED_VERSION}.tar.gz 
+tar xzf ${MEMCACHEDSERVER_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: memcached-${MEMCACHED_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${MEMCACHEDSERVER_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "memcached-${MEMCACHED_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${MEMCACHEDSERVER_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1111,7 +1329,7 @@ echo ""
 memcacheexttarball
 memcachedphptarball
 libmemcachedtarball
-twemperftarball
+# twemperftarball
 #########################################################
 
 fi
@@ -1123,39 +1341,39 @@ mysqltools() {
 
     cd /root
 
-        cecho "Download mysqlreport ..." $boldyellow
-    if [ -s mysqlreport ]; then
-        cecho "mysqlreport found, skipping download..." $boldgreen
+        cecho "Download ${MYSQLREPORT_LINKFILE} ..." $boldyellow
+    if [ -s ${MYSQLREPORT_LINKFILE} ]; then
+        cecho "${MYSQLREPORT_LINKFILE} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://centminmod.com/centminmodparts/mysqlreport/mysqlreport $WGETRETRY 
+        $DOWNLOADAPP ${MYSQLREPORT_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: mysqlreport download failed." $boldgreen
+	cecho "Error: ${MYSQLREPORT_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Download done." $boldyellow
+         cecho "Download ${MYSQLREPORT_LINKFILE} done." $boldyellow
 #echo ""
 	fi
     fi
 
-        cecho "Download mysqltuner.pl ..." $boldyellow
-    if [ -s mysqltuner.pl ]; then
-        cecho "mysqltuner.pl found, skipping download..." $boldgreen
+        cecho "Download ${MYSQLTUNER_LINKFILE} ..." $boldyellow
+    if [ -s ${MYSQLTUNER_LINKFILE} ]; then
+        cecho "${MYSQLTUNER_LINKFILE} found, skipping download..." $boldgreen
     else
-        wget -cnv --progress=bar http://centminmod.com/centminmodparts/mysqltuner/mysqltuner.txt -O mysqltuner.pl --tries=3 
+        wget ${WGETOPT} --progress=bar ${MYSQLTUNER_LINK} -O ${MYSQLTUNER_LINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: mysqltuner.pl download failed." $boldgreen
+	cecho "Error: ${MYSQLTUNER_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Download done." $boldyellow
+         cecho "Download ${MYSQLTUNER_LINKFILE} done." $boldyellow
 #echo ""
 	fi
     fi
 
-    chmod +x mysqlreport mysqltuner.pl
+    chmod +x mysqlreport ${MYSQLTUNER_LINKFILE}
 
 }
 
@@ -1362,14 +1580,14 @@ openssldownload() {
 if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' ]]; then
     cd $DIR_TMP
 
-        cecho "Download openssl-${OPENSSL_VERSION}.tar.gz ..." $boldyellow
-    if [ -s openssl-${OPENSSL_VERSION}.tar.gz ]; then
+        cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
+    if [ -s ${OPENSSL_LINKFILE} ]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz $WGETRETRY 
+        $DOWNLOADAPP ${OPENSSL_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: openssl-${OPENSSL_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1378,14 +1596,14 @@ else
 	fi
     fi
 
-tar xzf openssl-${OPENSSL_VERSION}.tar.gz 
+tar xzf ${OPENSSL_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: openssl-${OPENSSL_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${OPENSSL_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "openssl-${OPENSSL_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${OPENSSL_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1395,14 +1613,14 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     # Install OpenSSL
     cd $DIR_TMP
 
-        cecho "Download openssl-${OPENSSL_VERSION}.tar.gz ..." $boldyellow
-    if [ -s openssl-${OPENSSL_VERSION}.tar.gz ]; then
+        cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
+    if [ -s ${OPENSSL_LINKFILE} ]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz $WGETRETRY 
+        $DOWNLOADAPP ${OPENSSL_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: openssl-${OPENSSL_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1411,14 +1629,14 @@ else
 	fi
     fi
 
-tar xzf openssl-${OPENSSL_VERSION}.tar.gz 
+tar xzf ${OPENSSL_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: openssl-${OPENSSL_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${OPENSSL_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "openssl-${OPENSSL_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${OPENSSL_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1481,15 +1699,15 @@ SIEGEINSTALL='y'
 
     cd $DIR_TMP
 
-        cecho "Download siege-${SIEGE_VERSION}.tar.gz ..." $boldyellow
-    if [ -s siege-${SIEGE_VERSION}.tar.gz ]; then
-        cecho "siege-${SIEGE_VERSION}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download ${SIEGE_LINKFILE} ..." $boldyellow
+    if [ -s ${SIEGE_LINKFILE} ]; then
+        cecho "${SIEGE_LINKFILE} found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP http://www.joedog.org/pub/siege/siege-${SIEGE_VERSION}.tar.gz $WGETRETRY
-        $DOWNLOADAPP http://centminmod.com/centminmodparts/siege/siege-${SIEGE_VERSION}.tar.gz $WGETRETRY
+        # $DOWNLOADAPP ${SIEGE_LINK} $WGETRETRY
+        $DOWNLOADAPP ${SIEGE_LINKLOCAL} $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: siege-${SIEGE_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${SIEGE_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1498,26 +1716,26 @@ else
 	fi
     fi
 
-tar xzf siege-${SIEGE_VERSION}.tar.gz 
+tar xzf ${SIEGE_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: siege-${SIEGE_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${SIEGE_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "siege-${SIEGE_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${SIEGE_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download sproxy-latest.tar.gz ..." $boldyellow
-    if [ -s sproxy-latest.tar.gz ]; then
+        cecho "Download ${SPROXY_LINKFILE} ..." $boldyellow
+    if [ -s ${SPROXY_LINKFILE} ]; then
         cecho "sproxy-latest found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP http://www.joedog.org/pub/sproxy/sproxy-latest.tar.gz $WGETRETRY
-        $DOWNLOADAPP http://centminmod.com/centminmodparts/siege/sproxy-latest.tar.gz $WGETRETRY
+        # $DOWNLOADAPP ${SPROXY_LINK} $WGETRETRY
+        $DOWNLOADAPP http://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE} $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: sproxy-latest.tar.gz download failed." $boldgreen
+	cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1527,14 +1745,14 @@ else
 	fi
     fi
 
-tar xzf sproxy-latest.tar.gz 
+tar xzf ${SPROXY_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: sproxy-latest.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${SPROXY_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "sproxy-latest.tar.gz valid file." $boldyellow
+         cecho "${SPROXY_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1557,15 +1775,15 @@ PYTHONUPDATE='y'
 
     cd $DIR_TMP
 
-        cecho "Download Python-${PYTHON_VERSION}.tgz ..." $boldyellow
-if [ -s Python-${PYTHON_VERSION}.tgz ]; then
-  cecho "Python-${PYTHON_VERSION}.tgz found, skipping download..." $boldgreen
+        cecho "Download ${PYTHON_LINKFILE} ..." $boldyellow
+if [ -s ${PYTHON_LINKFILE} ]; then
+  cecho "${PYTHON_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: Python-${PYTHON_VERSION}.tgz not found !!! Download now......"
-        $DOWNLOADAPP http://www.python.org/ftp/python/${PYTHON_VERSION}/Python-${PYTHON_VERSION}.tgz $WGETRETRY 
+  echo "Error: ${PYTHON_LINKFILE} not found !!! Download now......"
+        $DOWNLOADAPP http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Python-${PYTHON_VERSION}.tgz download failed." $boldgreen
+	cecho "${PYTHON_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1574,30 +1792,30 @@ else
 	fi
 fi
 
-tar xzf Python-${PYTHON_VERSION}.tgz 
+tar xzf ${PYTHON_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: Python-${PYTHON_VERSION}.tgz extraction failed." $boldgreen
+	cecho "Error: ${PYTHON_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Python-${PYTHON_VERSION}.tgz valid file." $boldyellow
+         cecho "${PYTHON_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download setuptools-0.6c11-py2.7.egg ..." $boldyellow
-if [ -s setuptools-0.6c11-py2.7.egg ]; then
-  cecho "setuptools-0.6c11-py2.7.egg found, skipping download..." $boldgreen
+        cecho "Download ${PYTHON_SETUPTOOLSLINKFILE} ..." $boldyellow
+if [ -s ${PYTHON_SETUPTOOLSLINKFILE} ]; then
+  cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: setuptools-0.6c11-py2.7.egg not found !!! Download now......"
-        wget -c --no-check-certificate http://pypi.python.org/packages/2.7/s/setuptools/setuptools-0.6c11-py2.7.egg --tries=3 
+  echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Download now......"
+        wget -c --no-check-certificate ${PYTHON_SETUPTOOLSLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "setuptools-0.6c11-py2.7.egg download failed." $boldgreen
+	cecho "${PYTHON_SETUPTOOLSLINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Download done." $boldyellow
+         cecho "Download ${PYTHON_SETUPTOOLSLINKFILE} done." $boldyellow
 echo ""
 	fi
 fi
@@ -1628,14 +1846,14 @@ XCACHESRCINSTALL='y'
 
     cd $DIR_TMP
 
-        cecho "Download xcache-${XCACHE_VERSION}.tar.gz ..." $boldyellow
-    if [ -s xcache-${XCACHE_VERSION}.tar.gz ]; then
+        cecho "Download ${XCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${XCACHE_LINKFILE} ]; then
         cecho "xcache ${XCACHE_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/xcache-${XCACHE_VERSION}.tar.gz $WGETRETRY 
+        $DOWNLOADAPP ${XCACHE_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: xcache-${XCACHE_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${XCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1644,14 +1862,60 @@ else
 	fi
     fi
 
-tar xzf xcache-${XCACHE_VERSION}.tar.gz 
+tar xzf ${XCACHE_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: xcache-${XCACHE_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${XCACHE_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "xcache-${XCACHE_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${XCACHE_LINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
+fi
+
+}
+
+###############################################
+apclocaltarball() {
+
+echo ""
+	if [ "$UNATTENDED" == 'n' ]; then
+read -ep "Install APC? (By default uses 32MB RAM) [y/n] " askapcinstall
+	else
+	askapcinstall='y'
+	fi #unattended
+if [[ "$askapcinstall" = [yY] ]]; then
+APCINSTALL='y'
+    cd $DIR_TMP
+
+    rm -rf APC*
+
+        cecho "Download local ${APCCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${APCCACHE_LINKFILE} ]; then
+        cecho "${APCCACHE_LINKFILE} Archive (local) found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP ${APCCACHE_LINKLOCAL} $WGETRETRY 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${APCCACHE_LINKFILE} local download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${APCCACHE_LINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${APCCACHE_LINKFILE} (local) extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${APCCACHE_LINKFILE} (local) valid file." $boldyellow
 echo ""
 	fi
 
@@ -1672,14 +1936,14 @@ if [[ "$askapcinstall" = [yY] ]]; then
 APCINSTALL='y'
     cd $DIR_TMP
 
-        cecho "Download APC-${APCCACHE_VERSION}.tgz ..." $boldyellow
-    if [ -s APC-${APCCACHE_VERSION}.tgz ]; then
-        cecho "APC-${APCCACHE_VERSION}.tgz Archive found, skipping download..." $boldgreen
+        cecho "Download ${APCCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${APCCACHE_LINKFILE} ]; then
+        cecho "${APCCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://pecl.php.net/get/APC-${APCCACHE_VERSION}.tgz $WGETRETRY 
+        $DOWNLOADAPP ${APCCACHE_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: APC-${APCCACHE_VERSION}.tgz download failed." $boldgreen
+	cecho "Error: ${APCCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1688,14 +1952,61 @@ else
 	fi
     fi
 
-tar xzf APC-${APCCACHE_VERSION}.tgz 
+tar xzf ${APCCACHE_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: APC-${APCCACHE_VERSION}.tgz extraction failed." $boldgreen
+	cecho "Error: ${APCCACHE_LINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	apclocaltarball
+# checklogdetails
+# 	exit #$ERROR
+else 
+         cecho "${APCCACHE_LINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
+fi
+
+}
+
+###############################################
+zopcachelocaltarball() {
+
+echo ""
+	if [ "$UNATTENDED" == 'n' ]; then
+read -ep "Install Zend OPCache ? (By default uses 32MB RAM) [y/n] " askzopcacheinstall
+	else
+	askzopcacheinstall='y'
+	fi #unattended
+if [[ "$askzopcacheinstall" = [yY] ]]; then
+ZOPCACHEINSTALL='y'
+    cd $DIR_TMP
+    rm -rf zendopcache*
+
+        cecho "Download local ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
+        cecho " ${ZENDOPCACHE_LINKFILE} local Archive found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP ${ZENDOPCACHE_LINKLOCAL} $WGETRETRY 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${ZENDOPCACHE_LINKFILE} local download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "APC-${APCCACHE_VERSION}.tgz valid file." $boldyellow
+         cecho "Download local done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${ZENDOPCACHE_LINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${ZENDOPCACHE_LINKFILE} local extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${ZENDOPCACHE_LINKFILE} local valid file." $boldyellow
 echo ""
 	fi
 
@@ -1716,14 +2027,14 @@ if [[ "$askzopcacheinstall" = [yY] ]]; then
 ZOPCACHEINSTALL='y'
     cd $DIR_TMP
 
-        cecho "Download zendopcache-${ZOPCACHECACHE_VERSION}.tgz ..." $boldyellow
-    if [ -s zendopcache-${ZOPCACHECACHE_VERSION}.tgz ]; then
-        cecho " zendopcache-${ZOPCACHECACHE_VERSION}.tgz Archive found, skipping download..." $boldgreen
+        cecho "Download ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
+    if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
+        cecho " ${ZENDOPCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://pecl.php.net/get/zendopcache-${ZOPCACHECACHE_VERSION}.tgz $WGETRETRY 
+        $DOWNLOADAPP ${ZENDOPCACHE_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: zendopcache-${ZOPCACHECACHE_VERSION}.tgz download failed." $boldgreen
+	cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -1732,14 +2043,16 @@ else
 	fi
     fi
 
-tar xzf zendopcache-${ZOPCACHECACHE_VERSION}.tgz 
+tar xzf ${ZENDOPCACHE_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: zendopcache-${ZOPCACHECACHE_VERSION}.tgz extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+	cecho "Error: ${ZENDOPCACHE_LINKFILE} extraction failed." $boldgreen
+	cecho "trying local mirror download..." $boldgreen
+	zopcachelocaltarball
+# checklogdetails
+# 	exit #$ERROR
 else 
-         cecho "zendopcache-${ZOPCACHECACHE_VERSION}.tgz valid file." $boldyellow
+         cecho "${ZENDOPCACHE_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1755,31 +2068,31 @@ then
 
     cd $DIR_TMP
 
-        cecho "Download nsd-${NSD_VERSION}.tar.gz ..." $boldyellow
-    if [ -s nsd-${NSD_VERSION}.tar.gz ]; then
+        cecho "Download ${NSD_LINKFILE} ..." $boldyellow
+    if [ -s ${NSD_LINKFILE} ]; then
         cecho "NSD ${NSD_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP http://centminmod.com/centminmodparts/nsd/nsd-${NSD_VERSION}.tar.gz  $WGETRETRY
-        #$DOWNLOADAPP http://www.nlnetlabs.nl/downloads/nsd/nsd-${NSD_VERSION}.tar.gz $WGETRETRY 
+        # $DOWNLOADAPP ${NSD_LINKLOCAL} $WGETRETRY
+        $DOWNLOADAPP ${NSD_LINK} $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nsd-${NSD_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${NSD_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Download done." $boldyellow
+         cecho "Download ${NSD_LINKFILE} done." $boldyellow
 #echo ""
 	fi
     fi
 
-tar xzf nsd-${NSD_VERSION}.tar.gz 
+tar xzf ${NSD_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: nsd-${NSD_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${NSD_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "nsd-${NSD_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${NSD_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1802,30 +2115,30 @@ CSFINSTALLOK='y'
 
     cd $DIR_TMP
 
-        cecho "Download csf.tgz ..." $boldyellow
-    if [ -s csf.tgz ]; then
+        cecho "Download ${CSF_LINKFILE} ..." $boldyellow
+    if [ -s ${CSF_LINKFILE} ]; then
         cecho "csf Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://www.configserver.com/free/csf.tgz $WGETRETRY 
+        $DOWNLOADAPP ${CSF_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: csf.tgz download failed." $boldgreen
+	cecho "Error: ${CSF_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "Download done." $boldyellow
+         cecho "Download ${CSF_LINKFILE} done." $boldyellow
 #echo ""
 	fi
     fi
 
-tar xzf csf.tgz 
+tar xzf ${CSF_LINKFILE} 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: csf.tgz extraction failed." $boldgreen
+	cecho "Error: ${CSF_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "csf.tgz valid file." $boldyellow
+         cecho "${CSF_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -1856,6 +2169,8 @@ pythontarball
 
 nginxtarball
 
+phptarball
+
 xcachetarball
 
 apctarball
@@ -1872,15 +2187,13 @@ openssldownload
 
 pcretarball
 
-phptarball
+mysqltools
+
+nsdtarball
 
 mariadbrpms
 
 #mariadbyumrepo
-
-mysqltools
-
-nsdtarball
 
 echo "*****************************************************"
 cecho "Downloads complete." $boldgreen

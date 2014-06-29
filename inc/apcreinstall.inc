@@ -1,8 +1,8 @@
 function funct_apcreinstall {
 
 echo " "
-ASK "APC reinstall - Would you like to continue? [y/n] "   
-if [[ "$key" = [nN] ]];
+read -ep "APC reinstall - Would you like to continue? [y/n] " apckeyd
+if [[ "$apckeyd" = [nN] ]];
 then
     exit 0
 fi
@@ -12,8 +12,14 @@ fi
 #mkdir $DIR_TMP
 #fi
 
-echo -n "Re-install which version of APC? (version i.e. 3.1.13): "
-read apcver
+read -ep "Re-install which version of APC? (type a version i.e. 3.1.13): " apcver
+
+if [[ -z "$apcver" ]]; then
+    echo "you did not enter an APC version number i.e. 3.1.13"
+    echo "aborting APC re-install, please rerun APC reinstall"
+    echo "and enter a APC version number when prompted."
+    exit 0
+fi
 
     echo "*************************************************"
     cecho "* Re-installing Alternative PHP Cache" $boldgreen
@@ -23,7 +29,7 @@ read apcver
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
-if [[ "$PHPCURRENTVER" = '5.5' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' ]]; then
     apcdevfix
 else
     if [ -s APC-${apcver}.tgz ]; then
@@ -35,7 +41,7 @@ else
 tar xvzf APC-${apcver}.tgz
 cd APC-${apcver}
 
-fi # 5.5 fix 
+fi # 5.5 & 5.6 fix 
 
 make clean
 /usr/local/bin/phpize -clean
@@ -46,7 +52,7 @@ sed -i 's/PHP_APC_VERSION \"3.1.9\"/PHP_APC_VERSION \"3.1.10\"/' php_apc.h
 fi
 
 ./configure --with-php-config=/usr/local/bin/php-config
-make
+make${MAKETHREADS}
 make install
 
 APCSOCHECK=`grep 'extension=apc.so' /usr/local/lib/php.ini`

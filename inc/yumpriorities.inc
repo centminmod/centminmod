@@ -276,6 +276,7 @@ echo ""
 fi
 
 }
+
 yumpriorpercona() {
 cp -p /etc/yum.repos.d/Percona.repo /etc/yum.repos.d/Percona.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/Percona.repo)" ]
@@ -331,4 +332,30 @@ cat /etc/yum.repos.d/varnish.repo
 echo ""
 fi
 
+}
+
+yumprioraxivo() {
+cp -p /etc/yum.repos.d/axivo.repo /etc/yum.repos.d/axivo.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/axivo.repo)" ]
+        then
+                #echo priorities already set for axivo.repo
+PRIOREXISTS=1
+        else
+                echo setting yum priorities for axivo.repo
+                ex -s /etc/yum.repos.d/axivo.repo << EOF
+:/\[axivo\]/ , /gpgkey/
+:a
+priority=13
+exclude=nginx* php* mariadb* memcached* xtrabackup
+.
+:w
+:q
+EOF
+
+cecho "*************************************************" $boldgreen
+cecho "Fixing axivo.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+cat /etc/yum.repos.d/axivo.repo
+echo ""
+fi
 }

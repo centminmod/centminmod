@@ -1,3 +1,17 @@
+checkgeoip() {
+    GEOIP_CHECK=$(nginx -V 2>&1 | grep geoip)
+
+    if [[ ! -z "$GEOIP_CHECK" ]]; then
+        cecho "Detected existing Nginx has NGINX_GEOIP=y enabled" $boldyellow
+        cecho "however, you are recompiling Nginx with NGINX_GEOIP=n" $boldyellow
+        cecho "Is this incorrect and you want to set NGINX_GEOIP=y enabled ? " $boldyellow
+        read -ep "Answer y or n. Typing y will set NGINX_GEOIP=y [y/n]: " setgeoip
+        if [[ "$setgeoip" = [yY] ]]; then
+            NGINX_GEOIP=y 
+        fi
+    fi
+}
+
 checkmap() {
 MAPCHECK=$(grep '/usr/local/nginx/conf/fastcgi_param_https_map.conf' /usr/local/nginx/conf/nginx.conf)
 
@@ -17,7 +31,7 @@ fi
 checknginxmodules() {
 
 cecho "Check for missing nginx modules" $boldyellow
-if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-2.1.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" ]]; then
+if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-2.1.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/headers-more-v0.25.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" ]]; then
 ngxmoduletarball
 openssldownload
 fi
@@ -44,16 +58,20 @@ echo " "
 cecho "This software comes with no warranty of any kind. You are free to use" $boldyellow
 cecho "it for both personal and commercial use as licensed under the GPL." $boldyellow
 echo " "
-read -ep "Nginx Upgrade - Would you like to continue? [y/n] " nukey
+if [[ "$UALL" = 'y' ]]; then 
+    nukey=y
+else
+    read -ep "Nginx Upgrade - Would you like to continue? [y/n] " nukey
+fi
 
 if [[ "$nukey" = [nN] ]];
 then
     exit 0
 fi
 
-DIR_TMP="/svr-setup"
+# DIR_TMP="/svr-setup"
 if [ ! -d "$DIR_TMP" ]; then
-mkdir /svr-setup
+mkdir $DIR_TMP
 fi
 
 funct_mktempfile
@@ -64,8 +82,17 @@ if [ ! -f /etc/init.d/nginx ]; then
     chkconfig --levels 235 nginx on
 fi
 
-echo ""
-read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
+if [[ "$UALL" = 'y' ]]; then 
+    ngver=$NGINX_VERSION
+    recompileopenssl='n'
+else
+    echo ""
+    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
+    echo ""
+    read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+    echo ""
+    checkgeoip
+fi # UALL
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
@@ -111,7 +138,7 @@ then
     cd libunwind-${LIBUNWIND_VERSION}
     make clean
     ./configure
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
 
     # Install google-perftools
@@ -128,16 +155,16 @@ then
     cd google-perftools-${GPERFTOOLS_VERSION}
     make clean
     ./configure --enable-frame-pointers
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
     #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
     #/sbin/ldconfig
 
 fi # GPERFTOOL_SOURCEINSTALL
 
-echo ""
-read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL [y/n]: " recompileopenssl 
-echo ""
+# echo ""
+# read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+# echo ""
 
 if [ "$recompileopenssl" == 'y' ]; then
 
@@ -164,18 +191,40 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
         $DOWNLOADAPP http://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz $WGETRETRY
     fi
 
-    tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
-    cd openssl-${OPENSSL_VERSION}
-    make clean
-	opensslpatches
-    ./config --prefix=/usr/local --openssldir=/usr/local/ssl
-    make
-    make install
+    if [ ! -f /usr/bin/makedepend ]; then
+        yum -q -y install imake
+    fi
 
-    ./config shared enable-tlsext --prefix=/usr/local --openssldir=/usr/local/ssl
+    echo "Compiling OpenSSL..."
+#download openssl centos 6.x
+
+# from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
+export BPATH=$DIR_TMP
+export STATICLIBSSL="${BPATH}/staticlibssl"
+
+    tar xzf openssl-${OPENSSL_VERSION}.tar.gz
+    #-- Build static openssl
+    cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+    rm -rf "$STATICLIBSSL"
+    mkdir -p "$STATICLIBSSL"
     make clean
-    make
-    make install
+    opensslpatches
+    ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128 \
+    && make depend \
+    && make${MAKETHREADS} \
+    && make install
+
+    # tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
+    # cd openssl-${OPENSSL_VERSION}
+    # # make clean
+    # # ./config --prefix=/usr/local --openssldir=/usr/local/ssl
+    # # make
+    # # make install
+
+    # ./config shared enable-tlsext --prefix=/usr/local --openssldir=/usr/local/ssl
+    # make clean
+    # time make${MAKETHREADS}
+    # make install
 fi # openssl centos 6
 
 fi # recompileopenssl
@@ -200,7 +249,7 @@ then
     cd pcre-${PCRE_VERSION}
     make clean
     ./configure
-    make$MAKETHREADS
+    make${MAKETHREADS}
     make install
 
 fi
@@ -266,7 +315,7 @@ funct_showtempfile
 # error check
 ################
 
-    make
+    time make
 
 ################
 # error check
@@ -294,20 +343,29 @@ funct_showtempfile
 # error check
 ################
 
-/etc/init.d/nginx stop
-sleep $NGINXUPGRADESLEEP
+# /etc/init.d/nginx stop
+/usr/local/sbin/nginx -s stop
 
+    # speed up nginx wait time if not many vhosts are on server
+    if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
+        NGINXUPGRADESLEEP=4
+    fi
+
+# sleep $NGINXUPGRADESLEEP
+
+sleep 3
 NGINXPSCHECK=`ps --no-heading -C nginx`
 
 if [ ! -z "$NGINXPSCHECK" ]; then
 echo ""
 echo "nginx seems to be still running, trying to stop it again..."
 echo ""
-/etc/init.d/nginx stop
+# /etc/init.d/nginx stop and suppress any error messages
+/usr/local/sbin/nginx -s stop 2>/dev/null
 sleep $NGINXUPGRADESLEEP
 fi
 
-    make install
+    time make install
 
 ################
 # error check
@@ -328,6 +386,11 @@ funct_showtempfile
 	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
 
     /etc/init.d/nginx start
+
+    # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
+    # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
+    # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
+    # echo $OPENSSLVER_CHECK
 
 funct_showtempfile
 	cleanup_msg

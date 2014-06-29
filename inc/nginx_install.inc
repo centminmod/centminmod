@@ -19,15 +19,60 @@ then
 #######################################################
 # check if custom open file descriptor limits already exist
 
-LIMITSCONFCHECK=`grep '* hard nofile 65536' /etc/security/limits.conf`
+LIMITSCONFCHECK=`grep '* hard nofile 262144' /etc/security/limits.conf`
 
 if [[ -z $LIMITSCONFCHECK ]]; then
 
     # Set VPS hard/soft limits
-    echo "* soft nofile 65536" >>/etc/security/limits.conf
-    echo "* hard nofile 65536" >>/etc/security/limits.conf
-
+    echo "* soft nofile 262144" >>/etc/security/limits.conf
+    echo "* hard nofile 262144" >>/etc/security/limits.conf
+    ulimit -n 262144
+    echo "ulimit -n 262144" >> /etc/rc.local
 fi # check if custom open file descriptor limits already exist
+
+if [[ -f /etc/security/limits.d/90-nproc.conf ]]; then
+cat > "/etc/security/limits.d/90-nproc.conf" <<EOF
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*          soft    nproc     4096
+*          hard    nproc     4096
+nginx      soft    nproc     16384
+nginx      hard    nproc     16384
+root       soft    nproc     unlimited
+EOF
+fi # raise user process limits
+
+if [[ ! -f /proc/user_beancounters ]]; then
+cat >> "/etc/sysctl.conf" <<EOF
+# centminmod added
+net.core.wmem_max=12582912
+net.core.rmem_max=12582912
+net.ipv4.tcp_rmem= 10240 87380 12582912
+net.ipv4.tcp_wmem= 10240 87380 12582912
+net.core.netdev_max_backlog=8192
+net.core.somaxconn=8150
+net.core.optmem_max=8192
+net.ipv4.tcp_fin_timeout=20
+net.ipv4.tcp_keepalive_intvl=30
+net.ipv4.tcp_keepalive_probes=3
+net.ipv4.tcp_keepalive_time=300
+net.ipv4.tcp_max_syn_backlog=8192
+net.ipv4.tcp_sack=0
+net.ipv4.tcp_syn_retries=3
+net.ipv4.tcp_synack_retries = 2
+net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_tw_reuse = 1
+vm.swappiness=20
+vm.min_free_kbytes=65536
+net.ipv4.ip_local_port_range=10000 65500
+EOF
+sysctl -p
+
+sed -i 's/backlog=256/backlog=2048/g' $CM_INSTALLDIR/config/nginx/conf.d/virtual.conf
+
+fi
 
     # nginx Modules / Prerequisites
 	cecho "Installing nginx Modules / Prerequisites..." $boldgreen
@@ -68,12 +113,13 @@ fi # GPERFTOOLS_SOURCE INSTALL
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
 
 	if [ "$NOSOURCEOPENSSL" == 'n' ]; then
-	installopenssl
+	   installopenssl
+    else
+       installopenssl
 	fi
 else
-
-	installopenssl
-
+    installopenssl
+    # echo "NOSOURCEOPENSSL=y"
 fi # for centos 6.x only
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
@@ -124,8 +170,8 @@ else
 funct_nginxconfigure
 fi
 
-    make$MAKETHREADS
-    make install
+    time make$MAKETHREADS
+    time make install
     mimefix
     groupadd nginx
     useradd -g nginx -d /home/nginx -s /sbin/nologin nginx
@@ -134,22 +180,22 @@ fi
 #######################################################
 # check if custom open file descriptor limits already exist
 
-NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 65536' /etc/security/limits.conf`
+NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 262144' /etc/security/limits.conf`
 
 if [[ -z $NGXLIMITSCONFCHECK ]]; then
 
     # Set user nginx hard/soft limits
-    echo "nginx soft nofile 65536" >>/etc/security/limits.conf
-    echo "nginx hard nofile 65536" >>/etc/security/limits.conf
-    ulimit -n 65536
+    echo "nginx soft nofile 262144" >>/etc/security/limits.conf
+    echo "nginx hard nofile 262144" >>/etc/security/limits.conf
+    ulimit -n 262144
 
 fi # check if custom open file descriptor limits already exist
 
     mkdir /home/nginx/domains
     #chmod 0771 /home/nginx/domains/
-    mkdir -p /home/nginx/domains/demo.com/{public,private,log,backup}
-    cp -R $CUR_DIR/htdocs/demo.com/* /home/nginx/domains/demo.com/public
-    cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/demo.com/public
+    mkdir -p /home/nginx/domains/demodomain.com/{public,private,log,backup}
+    cp -R $CUR_DIR/htdocs/demodomain.com/* /home/nginx/domains/demodomain.com/public
+    cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/demodomain.com/public
     chown -R nginx:nginx /home/nginx
 
     mkdir -p /usr/local/nginx/html
@@ -201,6 +247,13 @@ funct_logrotate
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 		ngxpagespeedinstall
+    elif [[ "$NGINX_PAGESPEED" = [nN] ]]; then
+        PSADMINCHECK=$(grep '^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
+        
+        # disable pagespeedadmin.conf if enabled/uncommented
+        if [[ ! -z "$PSADMINCHECK" ]]; then
+            sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+        fi
 	fi
 
     echo "*************************************************"

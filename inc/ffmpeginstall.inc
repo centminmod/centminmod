@@ -6,7 +6,7 @@ PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gs
 
 if [ "$PHPVERCHECK" != '5.4' ]; then
 
-cd /svr-setup
+cd ${DIR_TMP}
 
 echo "FFMPEG install starting..."
 
@@ -29,7 +29,7 @@ phpize
 
 sed -i 's/PIX_FMT_RGBA32/PIX_FMT_RGB32/g' ffmpeg_frame.c
 
-make
+make${MAKETHREADS}
 make install
 
 FFMPEGCHECK=`grep 'extension=ffmpeg.so' /usr/local/lib/php.ini `
