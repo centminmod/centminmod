@@ -6,7 +6,7 @@ Centmin Mod Menu based Nginx Auto Installer
 * Centmin Mod FAQ - http://centminmod.com/faq.html
 * Change Log - http://centminmod.com/changelog.html
 * Google+ Page latest news http://centminmod.com/gpage
-* Google+ Community Forum http://centminmod.com/gcom
+* Community Forums https://community.centminmod.com (signup)
 
 ##################################
 This script is NOT SUPPORTED in any way, shape or form. You may get help from fellow Centmin Mod users on Centmin Mod Google+ Community site at http://centminmod.com/gcom.
