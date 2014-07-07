@@ -17,6 +17,24 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "OpenSSL 1.0.1g patched"
     echo  "####################################"
 fi
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY]] ]; then
+    # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
+        echo  "###################################"
+        echo "Patching OpenSSL 1.0.1h"
+        echo  "###################################"
+        echo "Cloudflare RC4 kill patch"
+        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__disable_rc4.patch"
+        echo  "####################################"
+        pushd ssl
+        rm -rf openssl__disable_rc4.patch
+        wget -cnv --no-check-certificate https://github.com/cloudflare/sslconfig/raw/master/patches/openssl__disable_rc4.patch
+        patch < openssl__disable_rc4.patch
+        popd
+        echo  "####################################"
+        echo  "OpenSSL 1.0.1h patched"
+        echo  "####################################"
+    # fi
+fi # CLOUDFLARE_PATCHSSL
 }
 
 installopenssl() {
