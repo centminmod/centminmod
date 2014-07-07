@@ -133,6 +133,9 @@ else
     fi
 fi # UALL
 
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
+
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 
@@ -392,6 +395,10 @@ if [ -f /usr/local/nginx/html/phpi.php ]; then
 NPHP=$RANDOM
 mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
 chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
+fi
+
+if [[ "$zendopcacheon" = [yY] ]]; then
+    cat ${CENTMINLOGDIR}/zendopcache_passfile.txt
 fi
 
     echo "***************************************************"
