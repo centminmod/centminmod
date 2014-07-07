@@ -17,7 +17,7 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "OpenSSL 1.0.1g patched"
     echo  "####################################"
 fi
-if [[ "$CLOUDFLARE_PATCHSSL" = [yY]] ]; then
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         echo  "###################################"
         echo "Patching OpenSSL 1.0.1h"
