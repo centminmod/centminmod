@@ -277,10 +277,10 @@ fi
 if [[ "$NGINXPATCH" = [yY] ]]; then
 
     echo "*************************************************"
-    cecho "Nginx Patch Time - 60 second delay" $boldgreen
+    cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
-    sleep 60
+    sleep $NGINXPATCH_DELAY
 fi
 
 if [ "$NGINX_OPENRESTY" == 'y' ]; then
