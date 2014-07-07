@@ -94,6 +94,9 @@ else
     checkgeoip
 fi # UALL
 
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
+
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
 	nginxbackup

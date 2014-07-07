@@ -303,6 +303,7 @@ fi
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
+source "inc/htpasswdsh.inc"
 source "inc/gcc.inc"
 source "inc/entropy.inc"
 source "inc/cpucount.inc"

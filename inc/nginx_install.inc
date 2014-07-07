@@ -242,6 +242,8 @@ touch /usr/local/nginx/conf/htpasswd
 fi
 
 cp $CUR_DIR/config/htpasswdgen/htpasswd.py /usr/local/nginx/conf/htpasswd.py
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
 
 funct_logrotate
 
