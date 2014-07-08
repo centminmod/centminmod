@@ -12,9 +12,9 @@ CMVERSION_CHECK='n'
 #####################################################
 DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
-SCRIPT_MINORVER='07'
+SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='30/06/2014'
+SCRIPT_DATE='31/07/2014'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
@@ -107,7 +107,7 @@ echo "aborting script..."
 exit
 fi
 
-TESTEDCENTOSVER='6.5'
+TESTEDCENTOSVER='7.0'
 CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -315,6 +315,9 @@ source "inc/bookmark.inc"
 source "inc/centminlogs.inc"
 source "inc/yumskip.inc"
 source "inc/questions.inc"
+source "inc/downloads_centosfive.inc"
+source "inc/downloads_centossix.inc"
+source "inc/downloads_centosseven.inc"
 source "inc/downloadlinks.inc"
 source "inc/downloads.inc"
 source "inc/yumpriorities.inc"
@@ -423,7 +426,7 @@ CM_INSTALLDIR=$CUR_DIR
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
 DOWNLOADAPP='axel -a'
 WGETRETRY=''
 AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"

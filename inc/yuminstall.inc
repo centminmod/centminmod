@@ -30,7 +30,7 @@ echo "...."
 echo "......"
 echo "........."
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
 yum -y -q install yum-plugin-priorities yum-plugin-fastestmirror yum-plugin-downloadonly
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
