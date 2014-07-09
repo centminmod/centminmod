@@ -26,6 +26,7 @@ MARIADB55ARCH=`uname -m`
 echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
 rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
+###############################################################################
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
 
 	if [ "$MARIADB55ARCH" == 'x86_64' ]; then
@@ -60,8 +61,10 @@ EOF
 
 	fi # arch check
 fi # centos6 check
+###############################################################################
 
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' ]]; then
+###############################################################################
+if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' ]]; then
 
 	if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
@@ -95,14 +98,29 @@ EOF
 
 	fi # arch check
 fi # centos5 check
+###############################################################################
 
-echo ""
-echo "Check for existing mysql-server packages"
-OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
-if [[ ! -z "$OLDMYSQLSERVER" ]]; then
-    echo "rpm -e -nodeps $OLDMYSQLSERVER"
-    rpm -e -nodeps $OLDMYSQLSERVER
-fi
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    echo ""
+    echo "Check for existing mysql-server packages"
+    OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
+    if [[ ! -z "$OLDMYSQLSERVER" ]]; then
+        echo "rpm -e -nodeps $OLDMYSQLSERVER"
+        rpm -e -nodeps $OLDMYSQLSERVER
+    fi
+fi # CENTOS_SEVEN != 7
+
+# only run for CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    echo ""
+    echo "Check for existing mariadb packages"
+    OLDMYSQLSERVER=`rpm -qa | grep 'mariadb' | head -n1`
+    if [[ ! -z "$OLDMYSQLSERVER" ]]; then
+        echo "rpm -e -nodeps $OLDMYSQLSERVER"
+        rpm -e -nodeps $OLDMYSQLSERVER
+    fi
+fi # CENTOS_SEVEN != 7
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
     DISABLECENTALTREPO=" --disablerepo=CentALT"
@@ -110,15 +128,29 @@ else
     DISABLECENTALTREPO=""
 fi # CENTALTREPO_DISABLE
 
-# echo ""
-# echo "MariaDB 5.5 check available packages"
-# echo "yum${CACHESKIP} -q --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
-# yum${CACHESKIP} -q list --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+# only run for CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    # for CentOS 7.x and excluding default mariadb 
+    # opting for mariadb official yum repo instead
+    if [[ ! `grep exclude /etc/yum.conf` ]]; then
+        cecho "Can't find exclude line in /etc/yum.conf... adding exclude line for mariadb*" $boldgreen
+        echo "exclude=mariadb*">> /etc/yum.conf
+    fi
+fi # CENTOS_SEVEN = 7
 
+###############################################################################
 echo ""
 echo "MariaDB 5.5 YUM install..."
-echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
-time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
+    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    # run for CentOS 7.x
+    echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO --disablerepo=* --enablerepo=mariadb install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
+    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO --disablerepo=* --enablerepo=mariadb install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+fi # CENTOS_SEVEN != 7
 
 #cp -a /etc/my.cnf /etc/my.cnf-newold
 #cp -f /etc/my.cnf.rpmorig /etc/my.cnf
@@ -126,7 +158,7 @@ sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
 sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
 sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
 sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
-
+###############################################################################
 echo ""
 
 mysqltmpdir
