@@ -125,6 +125,44 @@ fi
 source "inc/centos_seven.inc"
 seven_function
 
+cmservice() {
+        servicename=$1
+        action=$2
+        if [[ "$CENTOS_SEVEN" != '7' ]]; then
+        echo "service ${servicename} $action"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                service ${servicename} $action
+        fi
+        else
+        echo "systemctl $action ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $action ${servicename}.service
+        fi
+        fi
+}
+
+cmchkconfig() {
+        servicename=$1
+        status=$2
+        if [[ "$CENTOS_SEVEN" != '7' ]]; then
+        echo "chkconfig ${servicename} $status"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                chkconfig ${servicename} $status
+        fi
+        else
+                if [ "$status" = 'on' ]; then
+                        status=enable
+                fi
+                if [ "$status" = 'off' ]; then
+                        status=disable
+                fi
+        echo "systemctl $status ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $status ${servicename}.service
+        fi
+        fi
+}
+
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
