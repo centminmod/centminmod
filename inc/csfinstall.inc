@@ -90,12 +90,12 @@ EOF
 
 fi # check to see if csf.pignore already has custom apps added
 
-    chkconfig --levels 235 csf on
-    service csf restart
+    cmchkconfig csf on
+    cmservice csf restart
     csf -r
 
-    chkconfig lfd on
-    service lfd start
+    cmchkconfig lfd on
+    cmservice lfd start
 
     echo "*************************************************"
     cecho "* CSF firewall installed " $boldgreen

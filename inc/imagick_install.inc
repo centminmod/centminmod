@@ -40,7 +40,7 @@ echo "extension=imagick.so" > ${CONFIGSCANDIR}/imagick.ini
 
 fi #check if imagick.so exists in php.ini
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* imagick PHP installed" $boldgreen
     echo "*************************************************"

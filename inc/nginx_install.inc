@@ -6,12 +6,15 @@ then
     cecho "* Installing nginx" $boldgreen
     echo "*************************************************"
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
     # Disable Apache if installed
     if [ -f /etc/init.d/httpd ];
     then
-      /sbin/service httpd stop
+      service httpd stop
       chkconfig httpd off
     fi
+fi # CENTOS_SEVEN != 7
 
     # Then install nginx
     cd $DIR_TMP
@@ -221,9 +224,12 @@ fi # check if custom open file descriptor limits already exist
     sed -i "s/server_name localhost/server_name $HN/g" /usr/local/nginx/conf/conf.d/virtual.conf
     echo ""
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
     chmod +x /etc/init.d/nginx
     chkconfig --levels 235 nginx on
+fi # CENTOS_SEVEN != 7
 
 if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename
@@ -232,8 +238,11 @@ mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
 chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
 fi
 
-# rackspace cloud servers block port 80 so need to allow it
-iptables -I RH-Firewall-1-INPUT -p tcp --dport 80 -j ACCEPT
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    # rackspace cloud servers block port 80 so need to allow it
+    iptables -I RH-Firewall-1-INPUT -p tcp --dport 80 -j ACCEPT
+fi # CENTOS_SEVEN != 7
 
 if [ ! -f /usr/local/nginx/conf/htpasswd ]; then
 

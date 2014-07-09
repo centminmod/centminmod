@@ -48,7 +48,7 @@ cecho "xcache username: `grep xcache.admin.user ${CONFIGSCANDIR}/xcache.ini | aw
 cecho "php.ini now has xcache.admin.pass set as follows: :" $boldgreen
 cecho "`cat ${CONFIGSCANDIR}/xcache.ini | grep xcache.admin.pass`" $boldgreen
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* XCache installed" $boldgreen
     echo "*************************************************"

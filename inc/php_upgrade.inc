@@ -257,7 +257,7 @@ funct_showtempfile
 	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP configure ok\n"
 	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
 
 funct_showtempfile
 	cleanup_msg
@@ -288,7 +288,7 @@ funct_showtempfile
 	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP make ok\n"
 	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
 
 funct_showtempfile
 	cleanup_msg
@@ -385,7 +385,7 @@ fi # overwritephpfpmconf
 
 zendopcacheextfix
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
 
 funct_showtempfile
 	cleanup_msg

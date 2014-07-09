@@ -14,19 +14,41 @@ if [[ "$CMSDEBUG" = [yY] ]]; then
 fi
 
 cmservice() {
-	servicename=$1
-	action=$2
-	if [[ "$CENTOS_SEVEN" != '7' ]]; then
-        echo "service ${1} $2"
+        servicename=$1
+        action=$2
+        if [[ "$CENTOS_SEVEN" != '7' ]]; then
+        echo "service ${servicename} $action"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-        	service ${1} $2
+                service ${servicename} $action
         fi
-	else
-        echo "systemctl $2 ${1}.service"
+        else
+        echo "systemctl $action ${servicename}.service"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-        	systemctl $2 ${1}.service
+                systemctl $action ${servicename}.service
         fi
-	fi
+        fi
+}
+
+cmchkconfig() {
+        servicename=$1
+        status=$2
+        if [[ "$CENTOS_SEVEN" != '7' ]]; then
+        echo "chkconfig ${servicename} $status"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                chkconfig ${servicename} $status
+        fi
+        else
+                if [ "$status" = 'on' ]; then
+                        status=enable
+                fi
+                if [ "$status" = 'off' ]; then
+                        status=disable
+                fi
+        echo "systemctl $status ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $status ${servicename}.service
+        fi
+        fi
 }
 
 }

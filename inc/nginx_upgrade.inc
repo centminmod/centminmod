@@ -76,11 +76,14 @@ fi
 
 funct_mktempfile
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
 if [ ! -f /etc/init.d/nginx ]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
     chmod +x /etc/init.d/nginx
     chkconfig --levels 235 nginx on
 fi
+fi # CENTOS_SEVEN != 7
 
 if [[ "$UALL" = 'y' ]]; then 
     ngver=$NGINX_VERSION
@@ -346,7 +349,7 @@ funct_showtempfile
 # error check
 ################
 
-# /etc/init.d/nginx stop
+# cmservice nginx stop
 /usr/local/sbin/nginx -s stop
 
     # speed up nginx wait time if not many vhosts are on server

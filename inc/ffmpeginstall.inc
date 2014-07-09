@@ -44,7 +44,7 @@ echo "FFMPEG PHP extension installed.."
 echo "restarting php-fpm service ..."
 echo ""
 
-service php-fpm restart
+cmservice php-fpm restart
 
 echo ""
 echo "check phpinfo for FFMPEG PHP Extension..."

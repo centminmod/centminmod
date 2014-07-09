@@ -138,7 +138,7 @@ fi # check if opcache.so exists in zendopcache.ini
 
 replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache re-installed" $boldgreen
     echo "*************************************************"

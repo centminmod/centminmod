@@ -28,7 +28,7 @@ postconf -e smtpd_client_connection_count_limit=50
 postconf -e smtpd_recipient_limit=2000
 postconf -e smtpd_recipient_overshoot_limit=2000
 postconf -e default_destination_recipient_limit=10000
-/etc/init.d/postfix restart
+cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
 	cd $DIR_TMP

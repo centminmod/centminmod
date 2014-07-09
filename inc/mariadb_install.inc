@@ -131,14 +131,17 @@ echo ""
 
 mysqltmpdir
 
-mysqlinitfix
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    mysqlinitfix
+fi # CENTOS_SEVEN != 7
 
-service mysql restart
-service mysql stop
+cmservice mysql restart
+cmservice mysql stop
 # remove default innodb tablespace and log files that are incompatible with
 # MariaDB 5.5 included my.cnf used
 gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
-service mysql start
+cmservice mysql start
 
 	if [ "$UNATTENDED" == 'nn' ]; then
 echo ""
@@ -186,7 +189,7 @@ then
     cecho "* Installing MariaDB " $boldgreen
     echo "*************************************************"
 
-service mysqld stop
+cmservice mysqld stop
 
 yum${CACHESKIP} -y remove mysql mysql-libs
 
@@ -219,7 +222,7 @@ fi
 
 yum${CACHESKIP} -y install perl-DBD-MySQL
 
-service mysqld stop
+cmservice mysqld stop
 
 #yum -y remove mysql mysql-libs
 
@@ -265,7 +268,7 @@ echo "rpm -i MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
     rpm -i MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
 
 # check MariaDB server installed properly
-service mysql status
+cmservice mysql status
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -290,7 +293,7 @@ chown -R mysql:mysql /var/lib/mysql/mysql/
     cd $DIR_TMP
 
    # chkconfig --levels 235 mysql on
-   # service mysql restart
+   # cmservice mysql restart
 
 if [[ ! `grep exclude /etc/yum.conf` ]]; then
 
@@ -314,7 +317,7 @@ mysql_upgrade --force --verbose
 
 mysqlproclimit
 
-service mysql restart
+cmservice mysql restart
 #mysql_secure_installation
     
     echo "*************************************************"
@@ -374,14 +377,14 @@ fi
     echo "*************************************************"
 
 mysql_upgrade --force --verbose
-service mysql restart
+cmservice mysql restart
 #mysql_secure_installation
   
     echo "*************************************************"
     cecho "* MariaDB installed" $boldgreen
     echo "*************************************************"
     
-    /etc/init.d/mysql stop
+    cmservice mysql stop
 fi
 
 }

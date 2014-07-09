@@ -94,7 +94,7 @@ END
 
 echo 
 cecho "---------------------------------------------" $boldyellow
-service nginx reload
+cmservice nginx reload
 
 echo 
 cecho "---------------------------------------------" $boldyellow

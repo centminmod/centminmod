@@ -57,7 +57,7 @@ if [ ! -z "$SUHOSINCHECK" ]; then
     echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' /usr/local/lib/php.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
 fi
 
-service php-fpm restart
+cmservice php-fpm restart
 
 php -v
 

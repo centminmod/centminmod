@@ -509,15 +509,15 @@ unsetramdisk() {
         \cp -R ${DIR_TMP}/* ${DIR_TMP}_disk
         # ls -lah ${DIR_TMP}_disk
         diff -qr ${DIR_TMP} ${DIR_TMP}_disk
-        /etc/init.d/nginx stop
-        /etc/init.d/php-fpm stop
-        /etc/init.d/memcached stop
+        cmservice nginx stop
+        cmservice php-fpm stop
+        cmservice memcached stop
         sleep 5
         # lsof | grep /svr-setup
         umount -l ${DIR_TMP}
-        /etc/init.d/nginx start
-        /etc/init.d/php-fpm start
-        /etc/init.d/memcached start
+        cmservice nginx start
+        cmservice php-fpm start
+        cmservice memcached start
         \cp -R ${DIR_TMP}_disk/* ${DIR_TMP}
         # ls -lahrt ${DIR_TMP}
         df -hT

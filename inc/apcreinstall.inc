@@ -89,7 +89,7 @@ read -ep "Do you want to reset apc.ini settings to default (y) or keep existing 
 
 fi # check if apc.so exists in php.ini
 
-#    /etc/init.d/php-fpm restart
+#    cmservice php-fpm restart
 
 if [ -f /usr/local/nginx/html/myapc.php ]; then
 # Randomize myapc.php filename

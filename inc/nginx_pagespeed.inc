@@ -5,6 +5,40 @@ cat > "/usr/local/nginx/conf/pscontrol" <<END
 #/bin/bash
 # turn ngx_pagespeed on or off switch
 
+CMSDEBUG=y
+CENTOSVER=\$(cat /etc/redhat-release | awk '{ print \$3 }')
+
+if [ "\$CENTOSVER" == 'release' ]; then
+    CENTOSVER=\$(cat /etc/redhat-release | awk '{ print \$4 }' | cut -d . -f1,2)
+    if [[ "\$(cat /etc/redhat-release | awk '{ print \$4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "\$CMSDEBUG" = [yY] ]]; then
+  if [[ "\$CENTOS_SEVEN" != '7' ]]; then
+            echo "Detected 6.5"
+  else
+            echo "Detected 7.0"
+  fi
+fi
+
+cmservice() {
+        servicename=\$1
+        action=\$2
+        if [[ "\$CENTOS_SEVEN" != '7' ]]; then
+        echo "service \${servicename} \$action"
+        if [[ "\$CMSDEBUG" = [nN] ]]; then
+                service \${servicename} \$action
+        fi
+        else
+        echo "systemctl \$action \${servicename}.service"
+        if [[ "\$CMSDEBUG" = [nN] ]]; then
+                systemctl \$action \${servicename}.service
+        fi
+        fi
+}
+
 psadmin() {
 nano -w /usr/local/nginx/conf/pagespeedadmin.conf
 }

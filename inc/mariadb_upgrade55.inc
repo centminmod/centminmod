@@ -257,8 +257,12 @@ sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.
 
 echo ""
 
-mysqlinitfix
-service mysql restart
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    mysqlinitfix
+fi # CENTOS_SEVEN != 7
+
+cmservice mysql restart
 
 echo ""
     echo "*************************************************"

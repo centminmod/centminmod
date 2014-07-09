@@ -35,7 +35,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         delaycompress
         notifempty
         postrotate
-                /sbin/service php-fpm restart
+                service php-fpm restart
                #or
                #kill -s USR1 'cat /var/run/php-fpm/php-fpm.pid'
         endscript            

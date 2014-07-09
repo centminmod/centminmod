@@ -114,7 +114,7 @@ sed -i '/include \/usr\/local\/nginx\/conf\/staticfiles.conf;/a \include \/usr\/
 fi
 
 echo ""
-service nginx reload
+cmservice nginx reload
 
 	echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
 	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
@@ -177,7 +177,7 @@ else
 fi # check if opcache.so exists in zendopcache.ini
 fi # zendopcacheon
 
-    # /etc/init.d/php-fpm restart
+    # cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache installed" $boldgreen
     echo "*************************************************"

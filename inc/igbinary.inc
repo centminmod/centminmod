@@ -82,6 +82,6 @@ if [[ $APCSOCHECK ]]; then
 sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
 fi
 
-service php-fpm restart
+cmservice php-fpm restart
 
 }

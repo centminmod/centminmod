@@ -94,7 +94,7 @@ fi
 
 fi # check if apc.so exists in php.ini
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Alternative PHP Cache installed" $boldgreen
     echo "*************************************************"

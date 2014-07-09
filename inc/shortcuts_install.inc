@@ -37,6 +37,8 @@ else
     echo "nano -w /usr/local/nginx/conf/staticfiles.conf" >/usr/bin/statfilesinc ; chmod 700 /usr/bin/statfilesinc
 fi # USEEDITOR
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
     echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
@@ -72,6 +74,7 @@ fi # USEEDITOR
         echo "service csf start" >/usr/bin/csfstart ; chmod 700 /usr/bin/csfstart
         echo "service csf restart" >/usr/bin/csfrestart ; chmod 700 /usr/bin/csfrestart
     fi
+fi # CENTOS_SEVEN != 7
     
     SUHOSINCHECK=`grep 'extension=suhosin.so' /usr/local/lib/php.ini `
     if [ ! -z "$SUHOSINCHECK" ]; then

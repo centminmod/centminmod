@@ -101,7 +101,7 @@ else
 	fi
 fi # check if opcache.so exists in zendopcache.ini
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache installed" $boldgreen
     echo "*************************************************"

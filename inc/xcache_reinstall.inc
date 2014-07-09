@@ -115,7 +115,7 @@ fi # XCACHESOCHECK
     make${MAKETHREADS}
     make install
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* XCache re-installed" $boldgreen
     echo "*************************************************"

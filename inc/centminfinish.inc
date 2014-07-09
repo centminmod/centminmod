@@ -96,9 +96,9 @@ if [[ "$NSD_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping NSD service:" $boldyellow
-	service nsd stop
+	cmservice nsd stop
 	cecho "Disabling NSD service:" $boldyellow
-	chkconfig nsd off
+	cmchkconfig nsd off
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable NSD service type these 2 commands:" $boldyellow
 	echo "service nsd start"
@@ -111,9 +111,9 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping Memcached server service:" $boldyellow
-	service memcached stop
+	cmservice memcached stop
 	cecho "Disabling Memcached server service:" $boldyellow
-	chkconfig memcached stop
+	cmchkconfig memcached stop
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable Memcached server service type these 2 commands:" $boldyellow
 	echo "service memcached start"
@@ -126,9 +126,9 @@ if [[ "$PHP_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping php-fpm service:" $boldyellow
-	service php-fpm stop
+	cmservice php-fpm stop
 	cecho "Disabling php-fpm service:" $boldyellow
-	chkconfig php-fpm off
+	cmchkconfig php-fpm off
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable php-fpm service type these 2 commands:" $boldyellow
 	echo "service php-fpm start"
@@ -141,9 +141,9 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping mysql service:" $boldyellow
-	service mysql stop
+	cmservice mysql stop
 	cecho "Disabling mysql service:" $boldyellow
-	chkconfig mysql off
+	cmchkconfig mysql off
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable mysql service type these 2 commands:" $boldyellow
 	echo "service mysql start"

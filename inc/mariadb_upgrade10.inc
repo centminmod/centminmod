@@ -277,7 +277,7 @@ echo "log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query
 
 echo ""
 
-service mysql start
+cmservice mysql start
 
 echo ""
 echo "------------------------------------------------"
@@ -357,7 +357,7 @@ fi
 # sed -i 's/innodb_purge_threads=1/#innodb_purge_threads=1/g' /etc/my.cnf
 sed -i 's/innodb_doublewrite = 1/#innodb_doublewrite = 1/g' /etc/my.cnf
 sed -i 's/innodb_doublewrite=1/#innodb_doublewrite=1/g' /etc/my.cnf
-service mysql restart
+cmservice mysql restart
 
 echo ""
 
