@@ -73,6 +73,12 @@ user:postfix
 user:dovecot
 user:www-data
 user:spamfilter
+exe:/usr/libexec/dovecot/imap
+exe:/usr/libexec/dovecot/pop3
+exe:/usr/libexec/dovecot/anvil
+exe:/usr/libexec/dovecot/auth
+exe:/usr/libexec/dovecot/pop3-login
+exe:/usr/libexec/dovecot/imap-login
 exe:/usr/libexec/postfix
 exe:/usr/libexec/postfix/bounce
 exe:/usr/libexec/postfix/discard
