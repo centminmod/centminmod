@@ -73,6 +73,12 @@ user:postfix
 user:dovecot
 user:www-data
 user:spamfilter
+exe:/usr/libexec/postfix
+exe:/usr/libexec/postfix/bounce
+exe:/usr/libexec/postfix/discard
+exe:/usr/libexec/postfix/error
+exe:/usr/libexec/postfix/flush
+exe:/usr/libexec/postfix/local
 exe:/usr/libexec/postfix/smtp
 exe:/usr/libexec/postfix/smtpd
 exe:/usr/libexec/postfix/pickup
