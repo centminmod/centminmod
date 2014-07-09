@@ -108,16 +108,22 @@ exit
 fi
 
 TESTEDCENTOSVER='7.0'
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
+CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
 
 if [ "$CENTOSVER" == 'release' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $4 }'`
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
 fi
 
 if [ "$CENTOSVER" == 'Enterprise' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $7 }'`
-OLS='y'
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
 fi
+
+source "inc/centos_seven.inc"
+seven_function
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
