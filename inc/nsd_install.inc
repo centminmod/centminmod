@@ -36,13 +36,13 @@ fi
     cd /etc/sysconfig/
     cp $CUR_DIR/sysconfig/nsd nsd
 
-# only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+# # only run for CentOS 6.x
+# if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cd /etc/init.d/
     cp $CUR_DIR/init/nsd nsd
     chmod +x /etc/init.d/nsd
     chkconfig --levels 235 nsd on
-fi # CENTOS_SEVEN != 7
+# fi # CENTOS_SEVEN != 7
 
     echo "*************************************************"
     cecho "* NSD installed" $boldgreen
