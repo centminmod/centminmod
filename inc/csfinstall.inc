@@ -4,6 +4,25 @@ csfinstalls() {
 if [[ "$CSFINSTALLOK" = [yY] ]];
 then
 
+# if CentOS 7 is detected disable firewalld in favour 
+# of iptables ip6tables for now
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$FIREWALLD_DISABLE" = [yY] ]]; then
+    # disable firewalld
+    systemctl disable firewalld
+    systemctl stop firewalld
+
+    # install iptables-services package
+    yum -y install iptables-services
+
+    # start iptables and ip6tables services
+    systemctl start iptables
+    systemctl start ip6tables
+    systemctl enable iptables
+    systemctl enable ip6tables
+    fi
+fi
+
     echo "*************************************************"
     cecho "* Installing CSF firewall... " $boldgreen
     echo "*************************************************"

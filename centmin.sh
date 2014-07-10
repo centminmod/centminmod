@@ -205,6 +205,10 @@ fi
 ENABLE_MENU='y'
 
 #####################################################
+# CentOS 7 specific
+FIREWALLD_DISABLE='n'
+
+#####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
 CCACHESIZE='2G'
