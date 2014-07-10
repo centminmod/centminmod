@@ -311,8 +311,8 @@ cd $SCRIPT_DIR
 #######################################################
 # check /etc/init.d/memcached
 
-# only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+# # only run for CentOS 6.x
+# if [[ "$CENTOS_SEVEN" != '7' ]]; then
 if [[ ! -f /etc/init.d/memcached ]]; then
 
 #echo ""
@@ -343,7 +343,7 @@ chmod +x /etc/init.d/memcached
 chkconfig --add memcached
 chkconfig --level 345 memcached on
 service memcached start
-fi # CENTOS_SEVEN != 7
+# fi # CENTOS_SEVEN != 7
 
     cecho "Compiling PHP memcache extension..." $boldgreen
 
