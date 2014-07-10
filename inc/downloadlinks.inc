@@ -53,7 +53,7 @@ CENTOSSEVENEPEL="http://mirror.us.leaseweb.net/epel/beta/7/${RPMFARCH}/${CENTOSS
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/beta/7/${RPMFARCH}/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
 
-CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm"
+CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
 CENTOSSEVENRPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSSEVENRPMFORGEFILE}"
 
 CENTOSSEVENCENTALTFILE="centalt-release-6-1.noarch.rpm"
