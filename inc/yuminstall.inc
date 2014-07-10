@@ -80,6 +80,7 @@ sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
 
 yumcentossixdownload
+yumcentossevendownload
 
 axelsetup
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log

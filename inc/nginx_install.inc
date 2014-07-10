@@ -224,12 +224,12 @@ fi # check if custom open file descriptor limits already exist
     sed -i "s/server_name localhost/server_name $HN/g" /usr/local/nginx/conf/conf.d/virtual.conf
     echo ""
 
-# only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+## only run for CentOS 6.x
+#if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
     chmod +x /etc/init.d/nginx
     chkconfig --levels 235 nginx on
-fi # CENTOS_SEVEN != 7
+#fi # CENTOS_SEVEN != 7
 
 if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename

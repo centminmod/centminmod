@@ -11,15 +11,16 @@ mariadb55install() {
 echo "MariaDB 5.5 Repo setup..."
 echo ""
 
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
+# CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
 
-if [ "$CENTOSVER" == 'release' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $4 }'`
-fi
+# if [ "$CENTOSVER" == 'release' ]; then
+#     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+# fi
 
-if [ "$CENTOSVER" == 'Enterprise' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $7 }'`
-fi
+# if [ "$CENTOSVER" == 'Enterprise' ]; then
+#     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+#     OLS='y'
+# fi
 
 MARIADB55ARCH=`uname -m`
 
