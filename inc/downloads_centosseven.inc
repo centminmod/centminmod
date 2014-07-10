@@ -209,7 +209,7 @@ fi
 ####
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
+PACKAGEEXTRA='uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
 
 declare -a arrays
 arrays=(${PACKAGEEXTRA})
