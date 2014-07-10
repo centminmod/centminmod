@@ -107,8 +107,8 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo "Check for existing mysql-server packages"
     OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
     if [[ ! -z "$OLDMYSQLSERVER" ]]; then
-        echo "rpm -e -nodeps $OLDMYSQLSERVER"
-        rpm -e -nodeps $OLDMYSQLSERVER
+        echo "rpm -e --nodeps $OLDMYSQLSERVER"
+        rpm -e --nodeps $OLDMYSQLSERVER
     fi
 fi # CENTOS_SEVEN != 7
 
@@ -116,10 +116,17 @@ fi # CENTOS_SEVEN != 7
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo ""
     echo "Check for existing mariadb packages"
-    OLDMYSQLSERVER=`rpm -qa | grep 'mariadb' | head -n1`
+    OLDMYSQLSERVER=`rpm -qa | grep 'mariadb-server' | head -n1`
     if [[ ! -z "$OLDMYSQLSERVER" ]]; then
-        echo "rpm -e -nodeps $OLDMYSQLSERVER"
-        rpm -e -nodeps $OLDMYSQLSERVER
+        echo "rpm -e --nodeps $OLDMYSQLSERVER"
+        rpm -e --nodeps $OLDMYSQLSERVER
+    fi
+    echo ""
+    echo "Check for existing mariadb-libs package"
+    OLDMYSQL_LIBS=`rpm -qa | grep 'mariadb-libs' | head -n1`
+    if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
+        echo "rpm -e --nodeps $OLDMYSQL_LIBS"
+        rpm -e --nodeps $OLDMYSQL_LIBS
     fi
 fi # CENTOS_SEVEN != 7
 
@@ -149,6 +156,9 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     # run for CentOS 7.x
+    echo "time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install perl-DBI"
+    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install perl-DBI
+
     echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO --disablerepo=* --enablerepo=mariadb install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
     time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO --disablerepo=* --enablerepo=mariadb install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 fi # CENTOS_SEVEN != 7
