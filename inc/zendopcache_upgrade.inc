@@ -94,6 +94,7 @@ opprotect() {
 
 cat > "/usr/local/nginx/conf/include_opcache.conf" <<EOF
             location ~ ^/(${N}_opcache.php) {
+    include /usr/local/nginx/conf/php.conf;
 	auth_basic "Password Protected";
 	auth_basic_user_file /usr/local/nginx/conf/htpasswd_opcache;
             }
