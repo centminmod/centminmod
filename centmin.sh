@@ -128,7 +128,7 @@ seven_function
 cmservice() {
         servicename=$1
         action=$2
-        if [[ "$CENTOS_SEVEN" != '7' ]]; then
+        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "service ${servicename} $action"
         if [[ "$CMSDEBUG" = [nN] ]]; then
                 service ${servicename} $action
@@ -144,7 +144,7 @@ cmservice() {
 cmchkconfig() {
         servicename=$1
         status=$2
-        if [[ "$CENTOS_SEVEN" != '7' ]]; then
+        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "chkconfig ${servicename} $status"
         if [[ "$CMSDEBUG" = [nN] ]]; then
                 chkconfig ${servicename} $status
