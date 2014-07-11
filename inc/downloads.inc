@@ -24,7 +24,7 @@ then
     if [ -s php-${PHP_VERSION}.tar.gz ]; then
         cecho "php-${PHP_VERSION}.tar.gz found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.gz/from/$(echo $PHP_MIRRORURL | sed -e 's/http:\/\///')/mirror $AXELPHPTARGZ $WGETRETRY 
+        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.gz/from/this/mirror $AXELPHPTARGZ $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: php-${PHP_VERSION}.tar.gz download failed." $boldgreen
