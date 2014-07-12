@@ -388,6 +388,63 @@ else
 echo ""
 	fi
 
+        cecho "Download ${NGX_STICKYLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_STICKYLINKFILE} ]; then
+        cecho "${NGX_STICKYLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        wget -c --progress=bar ${NGX_STICKYLINK} -O ${NGX_STICKYLINKFILE} --tries=3
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_STICKYLINKFILE} download failed." $boldgreen
+
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_STICKYLINKFILE}
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_STICKYLINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_STICKYLINKFILE} valid file." $boldyellow
+         mv nginx-goodies-nginx-sticky-module-ng-* nginx-sticky-module-${NGINX_STICKYVER}
+echo ""
+	fi
+
+        cecho "Download ${NGX_UPSTREAMCHECKLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_UPSTREAMCHECKLINKFILE} ]; then
+        cecho "${NGX_UPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        wget -c --progress=bar --no-check-certificate ${NGX_UPSTREAMCHECKLINK} -O ${NGX_UPSTREAMCHECKLINKFILE} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} download failed." $boldgreen
+
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_UPSTREAMCHECKLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_UPSTREAMCHECKLINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
 nginxpcretarball
 nginxwebdavtarball
 nginxpgspeedtarball

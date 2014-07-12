@@ -107,6 +107,14 @@ NGX_HEADERSMORELINKFILE="headers-more-v${NGINX_HEADERSMORE}.tar.gz"
 NGX_HEADERSMORELINK="https://github.com/agentzh/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
 
 # wget renamed
+NGX_STICKYLINKFILE="nginx-sticky-${NGINX_STICKYVER}.tar.gz"
+NGX_STICKYLINK="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKYVER}.tar.gz"
+
+# wget renamed
+NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
+
+# wget renamed
 NGX_MEMCLINKFILE="memc-nginx-module_v0.13rc3.tar.gz"
 NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3"
 
