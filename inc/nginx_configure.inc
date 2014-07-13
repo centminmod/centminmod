@@ -25,8 +25,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [ "$NGINX_OPENRESTY" == 'y' ]; then
-		MEMCDIR=`ls -rt $DIR_TMP | grep agentzh-memc-nginx-module`
-		SRCACHEDIR=`ls -rt $DIR_TMP | grep agentzh-srcache-nginx-module`
+		MEMCDIR=`ls -rt $DIR_TMP | grep openresty-memc-nginx-module`
+		SRCACHEDIR=`ls -rt $DIR_TMP | grep openresty-srcache-nginx-module`
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
 	else
