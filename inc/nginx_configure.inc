@@ -24,6 +24,16 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
 	fi
 
+	if [ "$NGINX_OPENRESTY" == 'y' ]; then
+		MEMCDIR=`ls -rt $DIR_TMP | grep agentzh-memc-nginx-module`
+		SRCACHEDIR=`ls -rt $DIR_TMP | grep agentzh-srcache-nginx-module`
+		MEMCOPT=" --add-module=../${MEMCDIR}"
+		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
+	else
+		MEMCOPT=""
+		SRCCACHEOPT=""
+	fi
+
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
 		SPDYOPT=" --with-http_spdy_module"
 	else
@@ -178,11 +188,11 @@ checkgcc
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
 
-./configure ${CPUCCOPT}--with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+./configure ${CPUCCOPT}--with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
 
     else
 
-./configure ${CPUCCOPT}--with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+./configure ${CPUCCOPT}--with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }

@@ -115,12 +115,12 @@ NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz
 NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
 
 # wget renamed
-NGX_MEMCLINKFILE="memc-nginx-module_v0.13rc3.tar.gz"
-NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3"
+NGX_MEMCLINKFILE="memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
+NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v${ORESTY_MEMCVER}"
 
 # wget renamed
-NGX_SRCACHELINKFILE="srcache-nginx-module_v0.16.tar.gz"
-NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v0.16"
+NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
+NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v${ORESTY_SRCCACHEVER}"
 
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"

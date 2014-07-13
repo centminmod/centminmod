@@ -454,49 +454,7 @@ nginxpgspeedtarball
 
 
 ###############################################
-nginxtarball() {
-
-if [[ "$NGINX_INSTALL" = [yY] ]]; 
-then
-
-echo ""
-	if [ "$UNATTENDED" == 'n' ]; then
-    read -ep "Would you like to compile nginx with IPv6 support? [y/n] " asknginxipv
-	else
-	asknginxipv="$NGINX_IPV"
-	fi #unattended
-
-    cd $DIR_TMP
-
-        cecho "Download ${NGX_LINKFILE} ..." $boldyellow
-    if [ -s ${NGX_LINKFILE} ]; then
-        cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
-    else
-        $DOWNLOADAPP "${NGX_LINK}" $WGETRETRY 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-	fi
-    fi
-
-tar xzf ${NGX_LINKFILE} 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGX_LINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "${NGX_LINKFILE} valid file." $boldyellow
-echo ""
-	fi
-
-ngxmoduletarball
-
+openrestytarball() {
 if [ "$NGINX_OPENRESTY" == 'y' ]; then
 
         cecho "Download ${NGX_MEMCLINKFILE} ..." $boldyellow
@@ -556,6 +514,53 @@ echo ""
 	fi
 	
 fi # openresty
+}
+
+###############################################
+nginxtarball() {
+
+if [[ "$NGINX_INSTALL" = [yY] ]]; 
+then
+
+echo ""
+	if [ "$UNATTENDED" == 'n' ]; then
+    read -ep "Would you like to compile nginx with IPv6 support? [y/n] " asknginxipv
+	else
+	asknginxipv="$NGINX_IPV"
+	fi #unattended
+
+    cd $DIR_TMP
+
+        cecho "Download ${NGX_LINKFILE} ..." $boldyellow
+    if [ -s ${NGX_LINKFILE} ]; then
+        cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP "${NGX_LINK}" $WGETRETRY 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_LINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_LINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_LINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
+ngxmoduletarball
+openrestytarball
+
 fi # NGINX INSTALL
 
 }

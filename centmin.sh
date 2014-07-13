@@ -247,7 +247,9 @@ NGINX_STICKY='y'             # nginx sticky module https://bitbucket.org/nginx-g
 NGINX_STICKYVER='1.2.5'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.1.9'
-NGINX_OPENRESTY=n     # Agentzh's openresty Nginx modules
+NGINX_OPENRESTY=n            # Agentzh's openresty Nginx modules
+ORESTY_MEMCVER='0.15'     # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
@@ -386,7 +388,7 @@ source "inc/logrotate_phpfpm.inc"
 source "inc/nginx_mimetype.inc"
 source "inc/openssl_install.inc"
 source "inc/nginx_configure.inc"
-source "inc/nginx_configure_openresty.inc"
+# source "inc/nginx_configure_openresty.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"

@@ -36,6 +36,12 @@ ngxmoduletarball
 openssldownload
 fi
 
+if [ "$NGINX_OPENRESTY" == 'y' ]; then
+    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}" ]]; then
+    openrestytarball
+    fi
+fi
+
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
     # if option to download official github based master ngx_pagespeed
     # remove old version downloaded & download master tarball instead
