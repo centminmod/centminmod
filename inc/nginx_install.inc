@@ -167,11 +167,7 @@ fi
     #tar xvfz nginx-${NGINX_VERSION}.tar.gz
     cd nginx-${NGINX_VERSION}
 
-if [ "$NGINX_OPENRESTY" == 'y' ]; then
-funct_nginxconfigure_openresty
-else
 funct_nginxconfigure
-fi
 
     time make$MAKETHREADS
     time make install
