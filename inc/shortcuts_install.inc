@@ -42,26 +42,31 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
     echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
+    echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
     echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
     echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
     echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+    echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
 
     if [ -f /etc/init.d/mysql ]; then
     
         echo "service mysql stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "service mysql start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "service mysql restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "service mysql reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
     
     elif [ -f /etc/init.d/mysqld ]; then
     
         echo "service mysqld stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "service mysqld start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "service mysqld restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "service mysqld reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
     
     fi
         echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
         echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
         echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+        echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
     
     if [ -f /usr/local/bin/memcached ]; then
         echo "service memcached stop" >/usr/bin/memcachedstop ; chmod 700 /usr/bin/memcachedstop
@@ -81,26 +86,31 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
     echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
+    echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
     echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
     echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
     echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+    echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
 
     if [ -f /etc/init.d/mysql ]; then
     
         echo "service mysql stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "service mysql start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "service mysql restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "service mysql reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
     
     elif [ -f /etc/init.d/mysqld ]; then
     
         echo "service mysqld stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "service mysqld start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "service mysqld restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "service mysqld reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
     
     fi
         echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
         echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
         echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+        echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
     
     if [ -f /usr/local/bin/memcached ]; then
         echo "service memcached stop" >/usr/bin/memcachedstop ; chmod 700 /usr/bin/memcachedstop
