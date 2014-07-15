@@ -35,7 +35,7 @@ fi
 #########################################################
 
 SRCDIR='/usr/local/src'
-AVGDOWNLOADRPM=$(lynx -dump http://free.avg.com/us-en/download.prd-alf | grep 'download.avgfree.com' | grep 'rpm' | awk -F " " '{print $2}')
+AVGDOWNLOADRPM=$(lynx -dump http://free.avg.com/us-en/download-free-all-product | grep 'download.avgfree.com' | grep 'rpm' | awk -F " " '{print $2}')
 AVGRPMNAME=$(echo ${AVGDOWNLOADRPM##*/})
 
 #########################################################
