@@ -24,7 +24,7 @@ fi
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
 
-if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' ]]; then
     apcdevfix
 else
 #tar xvzf APC-${APCCACHE_VERSION}.tgz

@@ -29,7 +29,7 @@ fi
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
-if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' ]]; then
     apcdevfix
 else
     if [ -s APC-${apcver}.tgz ]; then

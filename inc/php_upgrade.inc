@@ -56,7 +56,7 @@ if [[ "$DETECTMEMCACHED" == [yY] ]]; then
 fi
 
 if [[ "$DETECTOPCACHE" == [yY] ]]; then
-    if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' ]]; then
+    if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' ]]; then
         cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
         zopcachereinstall
     fi
