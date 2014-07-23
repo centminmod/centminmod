@@ -10,10 +10,10 @@ if [ -f ${CONFIGSCANDIR}/apc.ini ]; then
 fi
 
 if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
-    if [[ "$PHPMUVER" != '5.7' ]]; then
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTIGBINARY=y
     else
-        # remove igbinary.ini when PHP 5.7 detected on upgrade
+        # remove igbinary.ini when PHP NGDEBUG detected on upgrade
         DETECTIGBINARY=n
         echo "rm -rf ${CONFIGSCANDIR}/igbinary.ini"
         rm -rf ${CONFIGSCANDIR}/igbinary.ini
@@ -21,10 +21,10 @@ if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
 fi
 
 if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; then
-    if [[ "$PHPMUVER" != '5.7' ]]; then
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTMEMCACHED=y
     else
-        # remove memcache.ini & memcached.ini when PHP 5.7 detected on upgrade
+        # remove memcache.ini & memcached.ini when PHP NGDEBUG detected on upgrade
         DETECTMEMCACHED=n
         echo "rm -rf ${CONFIGSCANDIR}/memcache.ini"
         echo "rm -rf ${CONFIGSCANDIR}/memcached.ini"
@@ -38,10 +38,10 @@ if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
 fi
 
 if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
-    if [[ "$PHPMUVER" != '5.7' ]]; then
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTIMAGICK=y
     else
-        # remove imagick.ini when PHP 5.7 detected on upgrade
+        # remove imagick.ini when PHP NGDEBUG detected on upgrade
         DETECTIMAGICK=n
         echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
         rm -rf ${CONFIGSCANDIR}/imagick.ini
@@ -160,6 +160,7 @@ gethtpasswdsh
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 
+    phpng_download
     autodetectextensions
     zopcacheupgrade
 
