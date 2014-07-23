@@ -879,17 +879,17 @@ if [[ "$APCINSTALL" = [yY] && "$ZOPCACHEDFT" = [nN] ]]; then
 	funct_apcsourceinstall
 fi
 
-# if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5
+# if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5, 5.6 or 5.7
 # install Zend OpCache PECL extesnion otherwise if PHP_VERSION = 5.5
 # then php_configure.inc routine will pick up PHP_VERSION 5.5 and install
 # native Zend OpCache when ZOPCACHEDFT=yY
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" != '5.5' ]]; then
+if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" != '5.5' || "$PHPMVER" != '5.6' || "$PHPMVER" != '5.7' ]]; then
 	zopcacheinstall
 fi
 
-# if PHP_VERSION = 5.5 will need to setup a zendopcache.ini settings file
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.5' ]]; then
+# if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
+if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' ]]; then
 	zopcache_initialini
 fi
 
