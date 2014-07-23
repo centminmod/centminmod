@@ -118,8 +118,6 @@ fi
 
 funct_mktempfile
 
-autodetectextensions
-
 if [[ "$UALL" = 'y' ]]; then 
     phpver=${PHP_VERSION}
     overwritephpfpmconf='n'
@@ -136,6 +134,7 @@ fi # UALL
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 
+    autodetectextensions
     zopcacheupgrade
 
 
