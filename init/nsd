@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ ! -d /var/run/nsd/ ]; then
+    mkdir -p /var/run/nsd
+    chown -R nsd:nsd /var/run/nsd/
+fi
+
 #
 # nsd:         Starts the NSD Name Server Daemon
 #
