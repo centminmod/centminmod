@@ -20,15 +20,19 @@ cd suhosin-${SUHOSINVER}
 make clean
 phpize
 ./configure
-make
+make${MAKETHREADS}
 make install
 
-SUHOSINCHECK=`grep 'extension=suhosin.so' /usr/local/lib/php.ini `
-if [ -z "$SUHOSINCHECK" ]; then
-echo "" >> /usr/local/lib/php.ini
-echo "extension=suhosin.so" >> /usr/local/lib/php.ini
+if [ ! -f ${CONFIGSCANDIR}/suhosin.ini ]; then
+	touch ${CONFIGSCANDIR}/suhosin.ini
+fi
 
-cat >>/usr/local/lib/php.ini<<EOF
+SUHOSINCHECK=$(grep 'extension=suhosin.so' ${CONFIGSCANDIR}/suhosin.ini)
+if [ -z "$SUHOSINCHECK" ]; then
+# echo "" >> ${CONFIGSCANDIR}/suhosin.ini
+echo "extension=suhosin.so" >> ${CONFIGSCANDIR}/suhosin.ini
+
+cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
 suhosin.simulation = 0
 suhosin.cookie.encrypt = 0
 suhosin.executor.disable_eval = 0
@@ -53,8 +57,8 @@ EOF
 fi
 
 if [ ! -z "$SUHOSINCHECK" ]; then
-    echo "sed -i 's/;extension=suhosin.so/extension=suhosin.so/g' /usr/local/lib/php.ini; fpmrestart; php -v" >/usr/bin/suhosinon ; chmod 700 /usr/bin/suhosinon
-    echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' /usr/local/lib/php.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
+    echo "sed -i 's/;extension=suhosin.so/extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinon ; chmod 700 /usr/bin/suhosinon
+    echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
 fi
 
 cmservice php-fpm restart
