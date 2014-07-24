@@ -316,7 +316,7 @@ LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 FFMPEGVER='0.6.0'
-SUHOSINVER='0.9.33'
+SUHOSINVER='0.9.36'
 PHP_VERSION='5.4.30'          # Use this version of PHP
 PHP_MIRRORURL='http://www.php.net'
 PHPUPGRADE_MIRRORURL='http://www.php.net'
