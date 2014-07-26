@@ -305,7 +305,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.35'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.1.2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.2.0RC1'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.21'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.20'    # Use this version of Memcached server
@@ -327,7 +327,7 @@ IGBINARYGIT='y'
 ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.3'
 # Python
-PYTHON_VERSION='2.7.7'       # Use this version of Python
+PYTHON_VERSION='2.7.8'       # Use this version of Python
 SIEGE_VERSION='3.0.6'
 
 WGETOPT='-cnv --no-dns-cache -4'
