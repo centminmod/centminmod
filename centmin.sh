@@ -206,7 +206,7 @@ ENABLE_MENU='y'
 
 #####################################################
 # CentOS 7 specific
-FIREWALLD_DISABLE='n'
+FIREWALLD_DISABLE='y'
 
 #####################################################
 # CCACHE Configuration

@@ -4,25 +4,6 @@ csfinstalls() {
 if [[ "$CSFINSTALLOK" = [yY] ]];
 then
 
-# if CentOS 7 is detected disable firewalld in favour 
-# of iptables ip6tables for now
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    if [[ "$FIREWALLD_DISABLE" = [yY] ]]; then
-    # disable firewalld
-    systemctl disable firewalld
-    systemctl stop firewalld
-
-    # install iptables-services package
-    yum -y install iptables-services
-
-    # start iptables and ip6tables services
-    systemctl start iptables
-    systemctl start ip6tables
-    systemctl enable iptables
-    systemctl enable ip6tables
-    fi
-fi
-
     echo "*************************************************"
     cecho "* Installing CSF firewall... " $boldgreen
     echo "*************************************************"
@@ -127,6 +108,60 @@ fi # check to see if csf.pignore already has custom apps added
 
     cmchkconfig lfd on
     cmservice lfd start
+
+# if CentOS 7 is detected disable firewalld in favour 
+# of csf iptables ip6tables for now
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$FIREWALLD_DISABLE" = [yY] ]]; then
+        # disable firewalld
+        systemctl disable firewalld
+        systemctl stop firewalld
+    
+        # install iptables-services package
+        yum -y install iptables-services
+    
+        # start iptables and ip6tables services
+        systemctl start iptables
+        systemctl start ip6tables
+        systemctl enable iptables
+        systemctl enable ip6tables
+    else
+        # leave firewalld enabled
+        # disable CSF firewall instead
+        service csf stop
+        service lfd stop
+        chkconfig csf off
+        chkconfig lfd off
+
+        # as CSF Firewall is disabled
+        # need to setup firewalld permanent
+        # services for default public zone
+        firewall-cmd --permanent --zone=public --add-service=dns
+        firewall-cmd --permanent --zone=public --add-service=ftp
+        firewall-cmd --permanent --zone=public --add-service=http
+        firewall-cmd --permanent --zone=public --add-service=https
+        firewall-cmd --permanent --zone=public --add-service=imaps
+        firewall-cmd --permanent --zone=public --add-service=mysql
+        firewall-cmd --permanent --zone=public --add-service=pop3s
+        firewall-cmd --permanent --zone=public --add-service=smtp
+        firewall-cmd --permanent --zone=public --add-service=openvpn
+        firewall-cmd --permanent --zone=public --add-service=nfs
+
+        firewall-cmd --reload
+        firewall-cmd --zone=public --list-services
+
+        # custom ports allowed
+        FIREWALLD_PORTS='1186 1194 11211 11212 11213 11214 2049 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050'
+
+        for fp in $FIREWALLD_PORTS
+          do
+            firewall-cmd --permanent --zone=public --add-port=${fp}/tcp
+        done
+
+        firewall-cmd --reload
+        firewall-cmd --zone=public --list-ports
+    fi
+fi
 
     echo "*************************************************"
     cecho "* CSF firewall installed " $boldgreen
