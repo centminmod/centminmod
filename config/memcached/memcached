@@ -14,6 +14,9 @@ MINSP=72
 CHUNKF=1.25
 PORT1=11211
 PORT2=11212
+SOCKET_ENABLE=n
+SOCKETA='-s /var/run/memcached/memcached1.sock -a 0755'
+SOCKETB='-s /var/run/memcached/memcached2.sock -a 0755'
 MEMSIZE=8
 SERVERCOUNT=1
 SERVERIP='127.0.0.1'
@@ -21,6 +24,19 @@ OPTIONS='-o slab_reassign,slab_automove'
 
 if [ -f /proc/user_beancounters ]; then
 ulimit -s 256
+fi
+
+if [ ! -d /var/run/memcached/ ]; then
+	mkdir -p /var/run/memcached/
+	chown nobody:nobody /var/run/memcached/
+fi
+
+if [[ "$SOCKET_ENABLE" = [yY] ]]; then
+	METHODA="$SOCKETA"
+	METHODB="$SOCKETB"
+else
+	METHODA="-l $SERVERIP -p $PORT1"
+	METHODB="-l $SERVERIP -p $PORT2"
 fi
 
 DEBUG='n'
@@ -34,10 +50,10 @@ CHECKM=${PROCESS:-nomemcached}
 
 setcpu() {
 if [ "$CPUSET" == 'y' ]; then
-	CORECHECK=$(taskset -pc $(pidof memcached) | awk -F ': ' '{print $2}' | awk -F ',' '{print $3}')
-	if [ "$CORECHECK" == '3' ]; then
-	taskset -pc 3 $(pidof memcached) 2>&1 >/dev/null
-	fi
+        CORECHECK=$(taskset -pc $(pidof $BINNAME) | awk -F ': ' '{print $2}' | awk -F ',' '{print $3}')
+        if [ "$CORECHECK" == '3' ]; then
+        taskset -pc 3 $(pidof $BINNAME) 2>&1 >/dev/null
+        fi
 fi
 }
 
@@ -49,16 +65,16 @@ echo $CHECKM
 fi
 
 if [[ "$CHECKM" == 'nomemcached' ]]; then
-	echo "Memcached server started "
+        echo "Memcached server started "
         if [[ "$LOGGING" = [yY] ]]; then
-        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
-        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILEB 2>&1
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
+        $BIN -d -m $MEMSIZE $METHODB -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILEB 2>&1
         else
-	$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
-	$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT2 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE $METHODB -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
         fi
 else
-	echo "Memcached server already running "
+        echo "Memcached server already running "
 fi
 
 }
@@ -71,23 +87,23 @@ echo $CHECKM
 fi
 
 if [[ "$CHECKM" == 'nomemcached' ]]; then
-	echo "Memcached server started "
+        echo "Memcached server started "
         if [[ "$LOGGING" = [yY] ]]; then
-        $BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
         else
-	$BIN -d -m $MEMSIZE -l $SERVERIP -p $PORT1 -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
         fi
 else
-	echo "Memcached server already running "
+        echo "Memcached server already running "
 fi
 }
 
 mstart() {
 if [ "$SERVERCOUNT" == '2' ]; then
-	twomem
+        twomem
 elif  [ "$SERVERCOUNT" == '1' ]; then
-	onemem
-	setcpu
+        onemem
+        setcpu
 fi
 }
 
@@ -99,10 +115,10 @@ echo $CHECKM
 fi
 
 if [[ "$CHECKM" != 'nomemcached' ]]; then
-	echo "Memcached server stopped "
-	killall $BIN 2>/dev/null
+        echo "Memcached server stopped "
+        kill -9 $(pidof $BINNAME) 2>/dev/null
 else
-	echo "Memcached server already stopped "
+        echo "Memcached server already stopped "
 fi
 }
 
@@ -114,9 +130,9 @@ echo $CHECKM
 fi
 
 if [[ "$CHECKM" == 'nomemcached' ]]; then
-	echo "Memcached server not running "
+        echo "Memcached server not running "
 else
-	echo "Memcached server is running "
+        echo "Memcached server is running "
 fi
 }
 
