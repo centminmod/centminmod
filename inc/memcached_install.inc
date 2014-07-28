@@ -339,6 +339,18 @@ fi
 
 fi # check /etc/init.d/memcached
 
+# add check for Windows CLRF line endings
+if [ ! -f /usr/bin/file ]; then
+    yum -q -y install file
+fi
+if [[ $(file /etc/init.d/memcached) =~ CRLF && -f /etc/init.d/memcached ]]; then
+    if [ ! -f /usr/bin/dos2unix ]; then
+        yum -q -y install dos2unix
+    fi
+    echo "detected CRLF line endings converting to Unix LF"
+    dos2unix /etc/init.d/memcached
+fi
+
 chmod +x /etc/init.d/memcached
 chkconfig --add memcached
 chkconfig --level 345 memcached on

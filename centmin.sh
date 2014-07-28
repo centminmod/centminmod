@@ -810,6 +810,18 @@ fi
 
     cp $CUR_DIR/init/php-fpm /etc/init.d/php-fpm
 
+# add check for Windows CLRF line endings
+if [ ! -f /usr/bin/file ]; then
+    yum -q -y install file
+fi
+if [[ $(file /etc/init.d/php-fpm) =~ CRLF && -f /etc/init.d/php-fpm ]]; then
+    if [ ! -f /usr/bin/dos2unix ]; then
+        yum -q -y install dos2unix
+    fi
+    echo "detected CRLF line endings converting to Unix LF"
+    dos2unix /etc/init.d/php-fpm
+fi
+
     chmod +x /etc/init.d/php-fpm
 
     mkdir -p /var/run/php-fpm
