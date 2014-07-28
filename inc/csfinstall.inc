@@ -147,7 +147,8 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         firewall-cmd --permanent --zone=public --add-service=openvpn
         firewall-cmd --permanent --zone=public --add-service=nfs
 
-        firewall-cmd --reload
+        # firewall-cmd --reload
+        systemctl restart firewalld
         firewall-cmd --zone=public --list-services
 
         # custom ports allowed
