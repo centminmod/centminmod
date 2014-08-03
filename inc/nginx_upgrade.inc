@@ -293,11 +293,7 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     sleep $NGINXPATCH_DELAY
 fi
 
-if [ "$NGINX_OPENRESTY" == 'y' ]; then
-funct_nginxconfigure_openresty
-else
 funct_nginxconfigure
-fi
 
 ################
 # error check
