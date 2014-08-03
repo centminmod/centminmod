@@ -32,8 +32,8 @@ listen.allowed_clients = 127.0.0.1
 ; BSD-derived systems allow connections regardless of permissions. 
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666
-;listen.owner = nobody
-;listen.group = nobody
+;listen.owner = nginx
+;listen.group = nginx
 ;listen.mode = 0666
 
 ; Unix user/group of processes
