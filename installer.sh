@@ -1,7 +1,7 @@
 #!/bin/bash
 # centminmod.com cli installer
 #######################################################
-DOWNLOAD='centmin-v1.2.3-eva2000.07_submenu_230514.zip'
+DOWNLOAD='centmin-v1.2.3-eva2000.07.zip'
 
 INSTALLDIR='/usr/local/src'
 # SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
