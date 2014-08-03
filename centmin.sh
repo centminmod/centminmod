@@ -14,7 +14,7 @@ DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/07/2014'
+SCRIPT_DATE='30/08/2014'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
@@ -332,6 +332,10 @@ SIEGE_VERSION='3.0.6'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
+# experimental Intel compiled optimisations 
+# when auto detect Intel based processors
+INTELOPT='y'
+
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
 FPMRPM_LIBEVENT=n

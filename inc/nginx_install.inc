@@ -167,10 +167,15 @@ fi
     #tar xvfz nginx-${NGINX_VERSION}.tar.gz
     cd nginx-${NGINX_VERSION}
 
+set_intelflags
+
 funct_nginxconfigure
 
     time make$MAKETHREADS
     time make install
+
+unset_intelflags
+
     mimefix
     groupadd nginx
     useradd -g nginx -d /home/nginx -s /sbin/nologin nginx

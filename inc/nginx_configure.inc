@@ -182,17 +182,18 @@ sed -i "s/Server: nginx/Server: $CUSTOMSERVERSTRING/g" src/http/ngx_http_header_
 	echo ""
 fi
 
-checkgcc
+# disabled not ready for usage yet
+# checkgcc
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
 
-./configure ${CPUCCOPT}--with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+./configure --with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
 
     else
 
-./configure ${CPUCCOPT}--with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+./configure --with-cc-opt="-I${STATICLIBSSL}/include -I/usr/include" --with-ld-opt="-L${STATICLIBSSL}/lib -Wl,-rpath -lssl -lcrypto -ldl -lz" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-2.1 --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }

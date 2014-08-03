@@ -117,6 +117,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 fi
 
+set_intelflags
+
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
 	echo "../configure --enable-cgi --enable-fpm${OPCACHEOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-intl --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${LIBDIR} --with-jpeg-dir=${LIBDIR} --with-png-dir=${LIBDIR} --with-xpm-dir=${LIBDIR} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}"
@@ -138,6 +140,8 @@ fi
 	fi
 
     time make install
+
+unset_intelflags
 
 # check if php was in fact installed
 

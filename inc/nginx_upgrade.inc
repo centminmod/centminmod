@@ -282,6 +282,8 @@ funct_nginxmodules
     cd nginx-${ngver}
     make clean
 
+set_intelflags
+
 if [[ "$NGINXPATCH" = [yY] ]]; then
 
     echo "*************************************************"
@@ -374,6 +376,8 @@ sleep $NGINXUPGRADESLEEP
 fi
 
     time make install
+
+unset_intelflags
 
 ################
 # error check
