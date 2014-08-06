@@ -7,7 +7,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 		# cat /proc/sys/kernel/random/entropy_avail
 		yum${CACHESKIP} -y -q install haveged rng-tools
 		if [ -f /etc/rc.d/init.d/haveged ]; then
-			sed -i 's/-w 1024/-w 4096/' /etc/rc.d/init.d/haveged
+			sed -i 's/-w 1024/-w 4067/' /etc/rc.d/init.d/haveged
 		fi
 	
 		cmchkconfig haveged on
