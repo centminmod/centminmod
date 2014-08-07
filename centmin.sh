@@ -230,13 +230,13 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.7.2'        # Use this version of Nginx
+NGINX_VERSION='1.7.4'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.1h'     # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.1i'     # Use this version of OpenSSL
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
@@ -260,8 +260,8 @@ LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 FFMPEGVER='0.6.0'
-SUHOSINVER='0.9.33'
-PHP_VERSION='5.4.30'          # Use this version of PHP
+SUHOSINVER='0.9.36'
+PHP_VERSION='5.4.31'          # Use this version of PHP
 PHP_MIRRORURL='http://www.php.net'
 PHPUPGRADE_MIRRORURL='http://www.php.net'
 XCACHE_VERSION='3.1.0'       # Use this version of Xcache
@@ -271,7 +271,7 @@ IGBINARYGIT='y'
 ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.3'
 # Python
-PYTHON_VERSION='2.7.7'       # Use this version of Python
+PYTHON_VERSION='2.7.8'       # Use this version of Python
 SIEGE_VERSION='3.0.6'
 
 WGETOPT='-cnv --no-dns-cache -4'
