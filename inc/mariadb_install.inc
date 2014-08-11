@@ -462,15 +462,15 @@ if [[ "$lessmem" = [yY] ]]; then
 
 echo $lessmem
 
-echo -e "\nCopying MariaDB my-mdb55-min.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb55-min.cnf /etc/my.cnf
+echo -e "\nCopying MariaDB my-mdb10-min.cnf file to /etc/my.cnf\n"
+    cp $CUR_DIR/config/mysql/my-mdb10-min.cnf /etc/my.cnf
 
 else
 
 echo $lessmem
 
-echo -e "\nCopying MariaDB my-mdb55.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb55.cnf /etc/my.cnf
+echo -e "\nCopying MariaDB my-mdb10.cnf file to /etc/my.cnf\n"
+    cp $CUR_DIR/config/mysql/my-mdb10.cnf /etc/my.cnf
 
 fi
 
