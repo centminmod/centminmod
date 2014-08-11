@@ -67,7 +67,7 @@ CENTOSSEVENVARNISHFILE="varnish-release-3.0-1.el6.noarch.rpm"
 CENTOSSEVENVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/varnish-release/${CENTOSSEVENVARNISHFILE}"
 CENTOSSEVENVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
 
-CENTOSSEVENAXIVOFILE="axivo-release-6-1.noarch.rpm"
+CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
 CENTOSSEVENAXIVO="http://rpm.axivo.com/redhat/${CENTOSSEVENAXIVOFILE}"
 CENTOSSEVENAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
 
