@@ -8,7 +8,7 @@ fi
 
 mariadb55install() {
 
-echo "MariaDB 5.5 Repo setup..."
+echo "MariaDB 10.x Repo setup..."
 echo ""
 
 # CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
@@ -30,7 +30,7 @@ rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 ###############################################################################
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
 
-	if [ "$MARIADB55ARCH" == 'x86_64' ]; then
+    if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -39,13 +39,12 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/5.5/centos6-amd64
+baseurl = http://yum.mariadb.org/10.0/centos6-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
-priority=8
 EOF
 
-	else
+    else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -54,20 +53,17 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/5.5/centos6-x86
+baseurl = http://yum.mariadb.org/10.0/centos6-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
-priority=8
 EOF
 
-	fi # arch check
+    fi # arch check
 fi # centos6 check
-###############################################################################
 
-###############################################################################
 if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' ]]; then
 
-	if [ "$MARIADB55ARCH" == 'x86_64' ]; then
+    if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -76,13 +72,12 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/5.5/centos5-amd64
+baseurl = http://yum.mariadb.org/10.0/centos5-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
-priority=8
 EOF
 
-	else
+    else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -91,13 +86,12 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/5.5/centos5-x86
+baseurl = http://yum.mariadb.org/10.0/centos5-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
-priority=8
 EOF
 
-	fi # arch check
+    fi # arch check
 fi # centos5 check
 ###############################################################################
 
@@ -152,15 +146,29 @@ echo "MariaDB 5.5 YUM install..."
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
-    echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
-    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    echo ""
+    echo "*************************************************"
+    cecho "MariaDB 10.x YUM install..." $boldgreen
+    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    echo "*************************************************"
+    echo ""
+    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+
+    cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     # run for CentOS 7.x
     echo "time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install perl-DBI"
     time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install perl-DBI
 
-    echo "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO --disablerepo=* --enablerepo=mariadb install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared"
-    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO --disablerepo=* --enablerepo=mariadb install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    echo ""
+    echo "*************************************************"
+    cecho "MariaDB 10.x YUM install..." $boldgreen
+    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    echo "*************************************************"
+    echo ""
+    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+
+    cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
 
 #cp -a /etc/my.cnf /etc/my.cnf-newold
@@ -186,6 +194,27 @@ cmservice mysql stop
 gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
 cmservice mysql start
 
+    echo "------------------------------------------------"
+    echo "Installing MariaDB 10 plugins"
+    echo "------------------------------------------------"
+    echo "mysql -e \"INSTALL SONAME 'metadata_lock_info';\""
+    mysql -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "mysql -e \"INSTALL SONAME 'query_cache_info';\""
+    mysql -e "INSTALL SONAME 'query_cache_info';"
+    echo "mysql -e \"INSTALL SONAME 'query_response_time';\""
+    mysql -e "INSTALL SONAME 'query_response_time';"
+    # echo "------------------------------------------------"
+    # echo "Installing MariaDB 10 XtraDB Engine plugin"
+    # echo "------------------------------------------------"
+    # echo "mysql -e \"INSTALL SONAME 'ha_xtradb';\""
+    # mysql -e "INSTALL SONAME 'ha_xtradb';"
+    echo "mysql -t -e \"SELECT * FROM mysql.plugin;\""
+    mysql -t -e "SELECT * FROM mysql.plugin;"
+    echo "mysql -t -e \"SHOW PLUGINS;\""
+    mysql -t -e "SHOW PLUGINS;"
+    echo "mysql -t -e \"SHOW ENGINES;\""
+    mysql -t -e "SHOW ENGINES;"
+
 	if [ "$UNATTENDED" == 'nn' ]; then
 echo ""
 echo "------------------------------------------------"
@@ -195,12 +224,56 @@ read -ep "Do you have a MySQL root password set ? [y/n]: " mysqlrootset
 echo ""
 
 if [[ "$mysqlrootset" == [yY] ]]; then
-echo "Enter MySQL root password when prompted"
-echo "mysql_upgrade -u root -p"
-mysql_upgrade -u root -p
+    echo "Enter MySQL root password when prompted"
+    echo "mysql_upgrade -u root -p"
+    mysql_upgrade -u root -p
+
+    echo "------------------------------------------------"
+    echo "Installing MariaDB 10 plugins"
+    echo "------------------------------------------------"
+    echo "mysql -u root -p -e \"INSTALL SONAME 'metadata_lock_info';\""
+    mysql -u root -p -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "mysql -u root -p -e \"INSTALL SONAME 'query_cache_info';\""
+    mysql -u root -p -e "INSTALL SONAME 'query_cache_info';"
+    echo "mysql -u root -p -e \"INSTALL SONAME 'query_response_time';\""
+    mysql -u root -p -e "INSTALL SONAME 'query_response_time';"
+    # echo "------------------------------------------------"
+    # echo "Installing MariaDB 10 XtraDB Engine plugin"
+    # echo "------------------------------------------------"
+    # echo "mysql -u root -p -e \"INSTALL SONAME 'ha_xtradb';\""
+    # mysql -u root -p -e "INSTALL SONAME 'ha_xtradb';"
+
+    echo "mysql -u root -p -e \"SELECT * FROM mysql.plugin;\""
+    mysql -u root -p -e "SELECT * FROM mysql.plugin;"
+    echo "mysql -u root -p -e \"SHOW PLUGINS;\""
+    mysql -u root -p -e "SHOW PLUGINS;"
+    echo "mysql -u root -p -e \"SHOW ENGINES;\""
+    mysql -u root -p -e "SHOW ENGINES;"
 else
-echo "mysql_upgrade"
-mysql_upgrade
+    echo "mysql_upgrade"
+    mysql_upgrade
+
+    echo "------------------------------------------------"
+    echo "Installing MariaDB 10 plugins"
+    echo "------------------------------------------------"
+    echo "mysql -e \"INSTALL SONAME 'metadata_lock_info';\""
+    mysql -e "INSTALL SONAME 'metadata_lock_info';"
+    echo "mysql -e \"INSTALL SONAME 'query_cache_info';\""
+    mysql -e "INSTALL SONAME 'query_cache_info';"
+    echo "mysql -e \"INSTALL SONAME 'query_response_time';\""
+    mysql -e "INSTALL SONAME 'query_response_time';"
+    # echo "------------------------------------------------"
+    # echo "Installing MariaDB 10 XtraDB Engine plugin"
+    # echo "------------------------------------------------"
+    # echo "mysql -e \"INSTALL SONAME 'ha_xtradb';\""
+    # mysql -e "INSTALL SONAME 'ha_xtradb';"
+    echo "mysql -t -e \"SELECT * FROM mysql.plugin;\""
+    mysql -t -e "SELECT * FROM mysql.plugin;"
+    echo "mysql -t -e \"SHOW PLUGINS;\""
+    mysql -t -e "SHOW PLUGINS;"
+    echo "mysql -t -e \"SHOW ENGINES;\""
+    mysql -t -e "SHOW ENGINES;"
+
 fi
 	fi #unattended
 echo ""
