@@ -88,8 +88,9 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo ""
     read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
-    echo ""
-    read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+    # echo ""
+    # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+    recompileopenssl='n'
     echo ""
     checkgeoip
 fi # UALL
