@@ -45,7 +45,7 @@ CENTOSSIXVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/va
 CENTOSSIXVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
 
 CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
-CENTOSSIXAXIVO="http://rpm.axivo.com/redhat/${CENTOSSIXAXIVOFILE}"
+CENTOSSIXAXIVO="http://rpm.axivo.com/el/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 CENTOSSEVENEPELFILE="epel-release-7-0.2.noarch.rpm"
@@ -68,7 +68,7 @@ CENTOSSEVENVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/
 CENTOSSEVENVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
 
 CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
-CENTOSSEVENAXIVO="http://rpm.axivo.com/redhat/${CENTOSSEVENAXIVOFILE}"
+CENTOSSEVENAXIVO="http://rpm.axivo.com/el/${CENTOSSEVENAXIVOFILE}"
 CENTOSSEVENAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
