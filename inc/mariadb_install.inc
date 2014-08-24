@@ -144,29 +144,31 @@ fi # CENTOS_SEVEN = 7
 echo ""
 echo "MariaDB 5.5 YUM install..."
 
+DISABLEOTHERREPO=' --disablerepo=epel,rpmforge'
+
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.x YUM install..." $boldgreen
-    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     # run for CentOS 7.x
-    echo "time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install perl-DBI"
-    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install perl-DBI
+    echo "time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install perl-DBI"
+    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install perl-DBI
 
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.x YUM install..." $boldgreen
-    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly$DISABLECENTALTREPO install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
