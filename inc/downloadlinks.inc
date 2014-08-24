@@ -45,7 +45,7 @@ CENTOSSIXVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/va
 CENTOSSIXVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
 
 CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
-CENTOSSIXAXIVO="http://rpm.axivo.com/el/${CENTOSSIXAXIVOFILE}"
+CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
