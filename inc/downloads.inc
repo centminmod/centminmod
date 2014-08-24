@@ -364,7 +364,7 @@ checklogdetails
 	exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
-	rpm -i ${CENTOSSIXAXIVOFILE}
+	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
 	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
 	CCAXIVOCHECK="$ERR"
