@@ -32,6 +32,7 @@ checklogdetails
 	exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
+	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
 	rpm -i ${CENTOSSIXEPELFILE}
 	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
