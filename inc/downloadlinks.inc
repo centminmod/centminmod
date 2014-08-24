@@ -12,7 +12,7 @@
     fi
 
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
-CENTOSFIVEEPEL="http://mirror.us.leaseweb.net/epel/5/${ARCH}/${CENTOSFIVEEPELFILE}"
+CENTOSFIVEEPEL="http://epel.mirror.constant.com/5/${ARCH}/${CENTOSFIVEEPELFILE}"
 
 CENTOSFIVERPMFORGEFILE="rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm"
 CENTOSFIVERPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSFIVERPMFORGEFILE}"
@@ -27,7 +27,7 @@ CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
 
 CENTOSSIXEPELFILE="epel-release-6-8.noarch.rpm"
-CENTOSSIXEPEL="http://mirror.us.leaseweb.net/epel/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
+CENTOSSIXEPEL="http://epel.mirror.constant.com/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
 CENTOSSIXEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXEPELFILE}"
 
 CENTOSSIXRPMFORGEFILE="rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm"
@@ -45,7 +45,7 @@ CENTOSSIXVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/va
 CENTOSSIXVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
 
 CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
-CENTOSSIXAXIVO="http://rpm.axivo.com/redhat/${CENTOSSIXAXIVOFILE}"
+CENTOSSIXAXIVO="http://rpm.axivo.com/el/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
