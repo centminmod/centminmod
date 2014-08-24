@@ -83,11 +83,16 @@ else
         FILEINFOOPT=""
 fi
 
-LIBCCLIENT=`yum list libc-client-devel --disablerepo=rpmforge,epel | grep Available | awk '{print $1}'`
-
-if [[ "$LIBCCLIENT" = 'Available' ]]; then
-	yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+if [[ "$CENTOSVER" = '7.0' ]]; then
+	if [[ ! $(rpm -qa uw-imap-devel) ]]; then 
+		yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+	fi
+else
+	if [[ ! $(rpm -qa libc-client-devel) ]]; then 
+		yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+	fi
 fi
+
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
 
