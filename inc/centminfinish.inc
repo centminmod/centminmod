@@ -155,6 +155,11 @@ fi
 
 centminfinish() {
 
+if [[ ! $(ps aufx | grep rsyslog | grep -v grep) ]]; then
+	cmservice rsyslog start
+	cmchkconfig rsyslog on
+fi
+
 installchecks
 DATENOW=$(date +"%b %d")
 grep -h $DATENOW /var/log/yum.log | tee -a ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
