@@ -35,7 +35,7 @@ if [[ ! -f /usr/include/recode.h ]]; then
 fi
 
 if [[ ! -f /usr/include/tidy.h ]]; then
-	yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge,epel
+	yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge
 fi
 
 if [[ ! -d /usr/include/enchant ]]; then
