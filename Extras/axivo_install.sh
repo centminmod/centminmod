@@ -7,6 +7,7 @@
 #############
 DT=`date +"%d%m%y-%H%M%S"`
 
+WGETOPT='-cnv --no-dns-cache -4'
 ######################################################
 
 TESTEDCENTOSVER='7.0'
@@ -92,7 +93,7 @@ checklogdetails
 else 
 	cecho "Download done." $boldyellow
 	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	
 	ERR=$?
 	CCAXIVOCHECK="$ERR"
 		if [ "$CCAXIVOCHECK" == '0' ]; then
@@ -130,7 +131,7 @@ checklogdetails
 else 
   cecho "Download done." $boldyellow
   rpm -ivh --nosignature ${CENTOSSEVENAXIVOFILE}
-  yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+  
   ERR=$?
   CCAXIVOCHECK="$ERR"
     if [ "$CCAXIVOCHECK" == '0' ]; then
