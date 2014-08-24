@@ -346,6 +346,8 @@ fi
 ####
 # axivo centos 6.x 64bit only
 
+if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
+
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 
 if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
@@ -378,6 +380,8 @@ else
 fi
 
 fi
+
+fi # AXIVOREPO_DISABLE
 
 ####
 
