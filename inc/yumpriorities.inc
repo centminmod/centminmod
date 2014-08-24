@@ -335,6 +335,7 @@ fi
 }
 
 yumprioraxivo() {
+if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
 cp -p /etc/yum.repos.d/axivo.repo /etc/yum.repos.d/axivo.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/axivo.repo)" ]
         then
@@ -358,4 +359,6 @@ cecho "*************************************************" $boldgreen
 cat /etc/yum.repos.d/axivo.repo
 echo ""
 fi
+fi # AXIVOREPO_DISABLE
 }
+
