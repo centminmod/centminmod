@@ -144,8 +144,6 @@ fi
 
 fi # centos vercheck
 
-fi
-
 ###
 
 if [[ "$CENTOSVER" = '7.0' ]]; then
