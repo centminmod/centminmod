@@ -902,8 +902,16 @@ fi
 # then php_configure.inc routine will pick up PHP_VERSION 5.5 and install
 # native Zend OpCache when ZOPCACHEDFT=yY
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" != '5.5' || "$PHPMVER" != '5.6' || "$PHPMVER" != '5.7' ]]; then
-	zopcacheinstall
+if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.4' ]]; then
+    zopcacheinstall
+fi
+
+if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.3' ]]; then
+    zopcacheinstall
+fi
+
+if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.2' ]]; then
+    zopcacheinstall
 fi
 
 # if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
