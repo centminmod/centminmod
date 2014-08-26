@@ -97,9 +97,17 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo ""
     read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
-    # echo ""
-    # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
-    recompileopenssl='n'
+
+    # auto check if static compiled Nginx openssl version matches
+    # the one defined in centmin.sh OPENSSL_VERSION variable
+    # if doesn't match then auto recompile the statically set
+    # OPENSSL_VERSION
+    AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
+    if [[ "$AUTOOPENSSLCHECK" ]]; then
+        recompileopenssl='n'
+    else
+        recompileopenssl='y'
+    fi
     echo ""
     checkgeoip
 fi # UALL
