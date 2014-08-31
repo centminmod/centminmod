@@ -328,7 +328,7 @@ ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.3'
 # Python
 PYTHON_VERSION='2.7.8'       # Use this version of Python
-SIEGE_VERSION='3.0.6'
+SIEGE_VERSION='3.0.7'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
