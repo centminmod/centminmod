@@ -1,3 +1,44 @@
+axivosixyum() {
+
+if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
+
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+
+if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
+  echo "${CENTOSSIXAXIVOFILE} [found]"
+  else
+  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSIXAXIVO} --tries=3
+  # wget ${WGETOPT} ${CENTOSSIXAXIVOLOCAL} --tries=3
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${CENTOSSIXAXIVOFILE} download failed." $boldgreen
+FAILAXIVO='y'
+checklogdetails
+	exit #$ERROR
+else 
+	cecho "Download done." $boldyellow
+	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
+	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	ERR=$?
+	CCAXIVOCHECK="$ERR"
+		if [ "$CCAXIVOCHECK" == '0' ]; then
+			yumprioraxivo
+			echo ""
+		else
+			cecho "Error: problem with ${CENTOSSIXAXIVOFILE} install." $boldgreen
+			exit $ERR
+		fi
+	fi
+
+fi
+
+fi
+
+fi # AXIVOREPO_DISABLE
+
+}
+
 ###############################################
 yumcentossixdownload() {
 
@@ -173,44 +214,7 @@ fi
 
 ####
 # axivo centos 6.x 64bit only
-
-if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
-
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-
-if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
-  echo "${CENTOSSIXAXIVOFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXAXIVO} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXAXIVOLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXAXIVOFILE} download failed." $boldgreen
-FAILAXIVO='y'
-checklogdetails
-	exit #$ERROR
-else 
-	cecho "Download done." $boldyellow
-	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	ERR=$?
-	CCAXIVOCHECK="$ERR"
-		if [ "$CCAXIVOCHECK" == '0' ]; then
-			yumprioraxivo
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXAXIVOFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-fi
-
-fi # AXIVOREPO_DISABLE
-
+# axivosixyum
 ####
 
 

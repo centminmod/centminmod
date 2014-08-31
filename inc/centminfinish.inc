@@ -160,9 +160,18 @@ if [[ ! $(ps aufx | grep rsyslog | grep -v grep) ]]; then
 	cmchkconfig rsyslog on
 fi
 
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
+	axivosixyum
+fi
+
+if [[ "$CENTOSVER" = '7.0' ]]; then
+	axivoseven
+fi
+
 installchecks
 DATENOW=$(date +"%b %d")
-grep -h $DATENOW /var/log/yum.log | tee -a ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
+YUMLOG=$(grep -h $DATENOW /var/log/yum.log)
+echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
 
 
     echo "*************************************************"

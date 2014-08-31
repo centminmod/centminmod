@@ -1,3 +1,44 @@
+axivoseven() {
+
+if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
+
+if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+
+if [ -s "${CENTOSSEVENAXIVOFILE}" ]; then
+  echo "${CENTOSSEVENAXIVOFILE} [found]"
+  else
+  echo "Error: ${CENTOSSEVENAXIVOFILE} not found !!! Download now......"
+  wget ${WGETOPT} ${CENTOSSEVENAXIVO} --tries=3
+  # wget ${WGETOPT} ${CENTOSSEVENAXIVOLOCAL} --tries=3
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${CENTOSSEVENAXIVOFILE} download failed." $boldgreen
+FAILAXIVO='y'
+checklogdetails
+  exit #$ERROR
+else 
+  cecho "Download done." $boldyellow
+  rpm -ivh --nosignature ${CENTOSSEVENAXIVOFILE}
+  yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+  ERR=$?
+  CCAXIVOCHECK="$ERR"
+    if [ "$CCAXIVOCHECK" == '0' ]; then
+      yumprioraxivo
+      echo ""
+    else
+      cecho "Error: problem with ${CENTOSSEVENAXIVOFILE} install." $boldgreen
+      exit $ERR
+    fi
+  fi
+
+fi
+
+fi
+
+fi # AXIVOREPO_DISABLE
+
+}
+
 ###############################################
 yumcentossevendownload() {
 
@@ -173,44 +214,7 @@ fi
 
 ####
 # axivo centos 6.x 64bit only
-
-if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
-
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-
-if [ -s "${CENTOSSEVENAXIVOFILE}" ]; then
-  echo "${CENTOSSEVENAXIVOFILE} [found]"
-  else
-  echo "Error: ${CENTOSSEVENAXIVOFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSEVENAXIVO} --tries=3
-  # wget ${WGETOPT} ${CENTOSSEVENAXIVOLOCAL} --tries=3
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${CENTOSSEVENAXIVOFILE} download failed." $boldgreen
-FAILAXIVO='y'
-checklogdetails
-  exit #$ERROR
-else 
-  cecho "Download done." $boldyellow
-  rpm -ivh --nosignature ${CENTOSSEVENAXIVOFILE}
-  yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-  ERR=$?
-  CCAXIVOCHECK="$ERR"
-    if [ "$CCAXIVOCHECK" == '0' ]; then
-      yumprioraxivo
-      echo ""
-    else
-      cecho "Error: problem with ${CENTOSSEVENAXIVOFILE} install." $boldgreen
-      exit $ERR
-    fi
-  fi
-
-fi
-
-fi
-
-fi # AXIVOREPO_DISABLE
-
+# axivoseven
 ####
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
