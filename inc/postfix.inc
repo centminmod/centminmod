@@ -36,6 +36,7 @@ postconf -e smtp_helo_timeout=200s
 postconf -e smtp_mx_session_limit=100
 postconf -e smtpd_client_connection_count_limit=50
 #postconf -e smtpd_client_connection_rate_limit=60
+postconf -e 'recipient_delimiter = +'
 postconf -e smtpd_recipient_limit=2000
 postconf -e smtpd_recipient_overshoot_limit=2000
 cmservice postfix restart
