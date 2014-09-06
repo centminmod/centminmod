@@ -1251,6 +1251,7 @@ cecho "---------------------------------------------" $boldyellow
 	echo "Disabling SELinux..."
 
 	sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
+    sed -i 's/SELINUX=permissive/SELINUX=disabled/g' $SELINUXCONFIGFILE
 	setenforce 0
 
 	echo ""

@@ -8,6 +8,8 @@ selinxcheck() {
 		echo "will require a server reboot before running initial install"
 		sleep 3
 		sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
+		sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
+		echo
 		echo "SELINUX disabled, please reboot server and rerun install"
 		echo "---------------------------------------------------------------"
 		exit 0
