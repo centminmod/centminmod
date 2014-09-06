@@ -49,8 +49,8 @@ CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 CENTOSSEVENEPELFILE="epel-release-7-1.noarch.rpm"
-CENTOSSEVENEPEL="http://epel.mirror.constant.com/beta/7/${RPMFARCH}/${CENTOSSEVENEPELFILE}"
-CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/beta/7/${RPMFARCH}/${CENTOSSEVENEPELFILE}"
+CENTOSSEVENEPEL="http://epel.mirror.constant.com/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
+CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
 
 CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
