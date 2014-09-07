@@ -612,8 +612,16 @@ then
 	fi #unattended
     if [[ "$key" = [yY] ]];
     then
-        mv /etc/yum.conf /etc/yum.bak
-        cp $CUR_DIR/config/yum/yum.conf /etc/yum.conf
+        \cp -f /etc/yum.conf /etc/yum.bak
+
+ex -s /etc/yum.conf << EOF
+:/plugins=1/
+:a
+exclude=*.i386 *.i586 *.i686
+.
+:w
+:q
+EOF
         echo "Your origional yum configuration has been backed up to /etc/yum.bak"
     else
         rm -rf $CUR_DIR/config/yum
