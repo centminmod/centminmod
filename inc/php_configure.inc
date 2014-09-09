@@ -141,7 +141,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 fi
 
-set_intelflags
+# set_intelflags
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
@@ -165,7 +165,7 @@ fi
 
     time make install
 
-unset_intelflags
+# unset_intelflags
 
 # check if php was in fact installed
 
