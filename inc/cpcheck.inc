@@ -11,6 +11,8 @@ selinxcheck() {
 		sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
 		echo
 		echo "SELINUX disabled, please reboot server and rerun install"
+		echo "on reboot you can find the centmin.sh file located at:"
+		echo "echo $(pwd)"
 		echo "---------------------------------------------------------------"
 		exit 0
 	fi
