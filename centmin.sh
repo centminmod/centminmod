@@ -334,7 +334,7 @@ WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
-INTELOPT='y'
+INTELOPT='n'
 
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
