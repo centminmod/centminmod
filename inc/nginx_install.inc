@@ -52,10 +52,10 @@ if [[ ! -f /proc/user_beancounters ]]; then
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
 fs.file-max=1600000
-net.core.wmem_max=12582912
-net.core.rmem_max=12582912
-net.ipv4.tcp_rmem= 10240 87380 12582912
-net.ipv4.tcp_wmem= 10240 87380 12582912
+net.core.wmem_max=16777216
+net.core.rmem_max=16777216
+net.ipv4.tcp_rmem=8192 87380 16777216                                          
+net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=8192
 net.core.somaxconn=8150
 net.core.optmem_max=8192
@@ -71,7 +71,7 @@ net.ipv4.tcp_tw_recycle = 1
 net.ipv4.tcp_tw_reuse = 1
 vm.swappiness=10
 vm.min_free_kbytes=65536
-net.ipv4.ip_local_port_range=10000 65500
+net.ipv4.ip_local_port_range=10000 65535
 EOF
 sysctl -p
 
