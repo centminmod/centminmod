@@ -101,10 +101,6 @@ pagespeed off;
 # pagespeed FileCacheInodeLimit      500000;
 
 #######################################################
-# Set it to 0 if you want to disable this feature.
-# pagespeed MessageBufferSize 100000;
-
-#######################################################
 # By default, ngx_pagespeed adds an X-PageSpeed header with a value of the version of 
 # ngx_pagespeed being used. This directive lets you specify the value to use instead:
 # pagespeed XHeaderValue "ngx_pagespeed";
@@ -224,14 +220,14 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-image-sprite
 # pagespeed EnableFilters rewrite_css,sprite_images;
 
-  # Bound the number of images that can be rewritten at any one time; this
-  # avoids overloading the CPU.  Set this to 0 to remove the bound.
-  #
-#  pagespeed ImageMaxRewritesAtOnce 2;
-
   # insert_dns_prefetch
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-insert-dns-prefetch
 #  pagespeed EnableFilters insert_dns_prefetch;
+
+  # InPlaceResourceOptimization
+  # https://developers.google.com/speed/pagespeed/module/system#ipro
+  # Enabled by default as of 1.9.32.1
+#  pagespeed InPlaceResourceOptimization off;
 
 #######################################################
 END
@@ -251,6 +247,22 @@ pagespeed MessagesPath /ngx_pagespeed_message;
 pagespeed ConsolePath /pagespeed_console;
 pagespeed AdminPath /pagespeed_admin;
 pagespeed GlobalAdminPath /pagespeed_global_admin;
+
+#######################################################
+# Set it to 0 if you want to disable this feature.
+# pagespeed MessageBufferSize 100000;
+
+#######################################################
+# https://developers.google.com/speed/pagespeed/module/system#tune_thread
+# pagespeed NumRewriteThreads 4;
+# pagespeed NumExpensiveRewriteThreads 4;
+
+#######################################################
+# https://developers.google.com/speed/pagespeed/module/system#image_rewrite_max
+# Bound the number of images that can be rewritten at any one time; this
+# avoids overloading the CPU.  Set this to 0 to remove the bound.
+#
+# pagespeed ImageMaxRewritesAtOnce 2;
 END
 
 PSADMINCONFCHECK=$(grep '/usr/local/nginx/conf/pagespeedadmin.conf' /usr/local/nginx/conf/nginx.conf)
