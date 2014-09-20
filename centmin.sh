@@ -640,13 +640,45 @@ echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
 	cecho "* Secured /tmp and /var/tmp" $boldgreen
 	echo "*************************************************"
 
-	rm -rf /tmp
-	mkdir /tmp
-	mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
-	chmod 1777 /tmp
-	echo "tmpfs   /tmp    tmpfs   rw,noexec,nosuid        0       0" >> /etc/fstab
-	rm -rf /var/tmp
-	ln -s /tmp /var/tmp
+    # TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+    CURRENT_TMPSIZE=$(df /tmp | awk '/tmp/ {print $2}')
+
+    # only mount /tmp on tmpfs if CentOS system
+    # total memory size is greater than 8GB
+    # will give /tmp a size equal to 1/2 total memory
+    if [[ "$TOTALMEM" -ge '8000000' ]]; then
+	   rm -rf /tmp
+	   mkdir -p /tmp
+	   mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+	   chmod 1777 /tmp
+	   echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+	   rm -rf /var/tmp
+	   ln -s /tmp /var/tmp
+    elif [[ "$TOTALMEM" -ge '2000000' || "$TOTALMEM" -lt '8000000' ]]; then
+       # set on disk non-tmpfs /tmp to 4GB size
+       # if total memory is between 2GB and <8GB
+       rm -rf /tmp
+       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4000000
+       echo Y | mkfs.ext4 /home/usertmp_donotdelete
+       mkdir -p /tmp
+       mount -t ext4 -o rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       chmod 1777 /tmp
+       echo "/home/usertmp_donotdelete /tmp ext4 rw,noexec,nosuid 0 0" >> /etc/fstab
+       rm -rf /var/tmp
+       ln -s /tmp /var/tmp
+    elif [[ "$TOTALMEM" -le '2000000' ]]; then
+       # set on disk non-tmpfs /tmp to 2GB size
+       # if total memory is <2GB
+       rm -rf /tmp
+       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+       echo Y | mkfs.ext4 /home/usertmp_donotdelete
+       mkdir -p /tmp
+       mount -t ext4 -o rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       chmod 1777 /tmp
+       echo "/home/usertmp_donotdelete /tmp ext4 rw,noexec,nosuid 0 0" >> /etc/fstab
+       rm -rf /var/tmp
+       ln -s /tmp /var/tmp
+    fi
 fi
 
 #questions
