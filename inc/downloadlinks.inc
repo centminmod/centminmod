@@ -20,8 +20,8 @@ CENTOSFIVERPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSFIVERPMFO
 CENTOSFIVECENTALTFILE="centalt-release-5-3.noarch.rpm"
 CENTOSFIVECENTALT="http://centos.alt.ru/repository/centos/5/${RPMFARCH}/${CENTOSFIVECENTALTFILE}"
 
-CENTOSFIVEPERCONARELEASEFILE="percona-release-0.0-1.${ARCH}.rpm"
-CENTOSFIVEPERCONARELEASE="http://www.percona.com/downloads/percona-release/${CENTOSFIVEPERCONARELEASEFILE}"
+CENTOSFIVEPERCONARELEASEFILE="percona-release-0.1-2.noarch.rpm"
+CENTOSFIVEPERCONARELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/${CENTOSFIVEPERCONARELEASEFILE}"
 
 CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
@@ -37,8 +37,8 @@ CENTOSSIXCENTALTFILE="centalt-release-6-1.noarch.rpm"
 CENTOSSIXCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSSIXCENTALTFILE}"
 CENTOSSIXCENTALTLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXCENTALTFILE}"
 
-CENTOSSIXPERCONALRELEASEFILE="percona-release-0.0-1.${RPMFARCH}.rpm"
-CENTOSSIXPERCONALRELEASE="http://www.percona.com/downloads/percona-release/${CENTOSSIXPERCONALRELEASEFILE}"
+CENTOSSIXPERCONALRELEASEFILE="percona-release-0.1-2.noarch.rpm"
+CENTOSSIXPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/${CENTOSSIXPERCONALRELEASEFILE}"
 
 CENTOSSIXVARNISHFILE="varnish-release-3.0-1.el6.noarch.rpm"
 CENTOSSIXVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/varnish-release/${CENTOSSIXVARNISHFILE}"
