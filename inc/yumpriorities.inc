@@ -282,16 +282,16 @@ fi # repo file check
 }
 
 yumpriorpercona() {
-if [ -f /etc/yum.repos.d/Percona.repo ]; then
-cp -p /etc/yum.repos.d/Percona.repo /etc/yum.repos.d/Percona.OLD
-if [ -n "$(grep ^priority /etc/yum.repos.d/Percona.repo)" ]
+if [ -f /etc/yum.repos.d/percona-release.repo ]; then
+cp -p /etc/yum.repos.d/percona-release.repo /etc/yum.repos.d/percona-release.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/percona-release.repo)" ]
         then
-                #echo priorities already set for Percona.repo
+                #echo priorities already set for percona-release.repo
 PRIOREXISTS=1
         else
-                echo setting yum priorities for Percona.repo
-                ex -s /etc/yum.repos.d/Percona.repo << EOF
-:/\[rpmforge\]/ , /gpgcheck/
+                echo setting yum priorities for percona-release.repo
+                ex -s /etc/yum.repos.d/percona-release.repo << EOF
+:/\[percona-release-\$basearch\]/ , /gpgcheck/
 :a
 priority=11
 exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster*
@@ -300,12 +300,12 @@ exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster*
 :q
 EOF
 
-sed -i 's/enabled = 1/enabled = 0/g' /etc/yum.repos.d/Percona.repo
+sed -i 's/enabled = 1/enabled = 0/g' /etc/yum.repos.d/percona-release.repo
 
 cecho "*************************************************" $boldgreen
-cecho "Fixing Percona.repo YUM Priorities" $boldgreen
+cecho "Fixing percona-release.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
-cat /etc/yum.repos.d/Percona.repo
+cat /etc/yum.repos.d/percona-release.repo
 echo ""
 fi
 fi # repo file check
