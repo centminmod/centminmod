@@ -19,7 +19,6 @@ checklogdetails
 else 
   cecho "Download done." $boldyellow
   rpm -ivh --nosignature ${CENTOSSEVENAXIVOFILE}
-  yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
   ERR=$?
   CCAXIVOCHECK="$ERR"
     if [ "$CCAXIVOCHECK" == '0' ]; then
@@ -36,6 +35,48 @@ fi
 fi
 
 fi # AXIVOREPO_DISABLE
+
+}
+
+###############################################
+
+remisevenyum() {
+
+if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+
+# if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+
+  if [ -s "${CENTOSSEVENREMIFILE}" ]; then
+    echo "${CENTOSSEVENREMIFILE} [found]"
+    else
+    echo "Error: ${CENTOSSEVENREMIFILE} not found !!! Download now......"
+    wget ${WGETOPT} ${CENTOSSEVENREMI} --tries=3
+    # wget ${WGETOPT} ${CENTOSSEVENREMILOCAL} --tries=3
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${CENTOSSEVENREMIFILE} download failed." $boldgreen
+  FAILREMI='y'
+  checklogdetails
+    exit #$ERROR
+  else 
+    cecho "Download done." $boldyellow
+    rpm -ivh --nosignature ${CENTOSSEVENREMIFILE}
+    ERR=$?
+    CCREMICHECK="$ERR"
+      if [ "$CCREMICHECK" == '0' ]; then
+        yumpriorremi
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSEVENREMIFILE} install." $boldgreen
+        exit $ERR
+      fi
+    fi
+  
+  fi
+
+# fi # MACHINE_TYPE
+
+fi # REMIREPO_DISABLE
 
 }
 
@@ -216,6 +257,7 @@ fi
 # axivo centos 6.x 64bit only
 # axivoseven
 ####
+remisevenyum
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
 PACKAGEEXTRA='uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'

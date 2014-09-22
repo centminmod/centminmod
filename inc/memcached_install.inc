@@ -198,8 +198,8 @@ make install
 #############################################
 if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
     
-    cecho "Installing libmemcached via CentALT YUM repo ..." $boldgreen
-    yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --enablerepo=CentALT --disableplugin=priorities
+    cecho "Installing libmemcached via REMI YUM repo ..." $boldgreen
+    yum${CACHESKIP} -q -y install libmemcached-last libmemcached-last-devel --enablerepo=remi --disableplugin=priorities
 else
     
     cecho "Compiling libmemcached-${LIBMEMCACHED_VER} ..." $boldgreen

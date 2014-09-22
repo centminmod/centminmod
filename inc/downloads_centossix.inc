@@ -19,7 +19,6 @@ checklogdetails
 else 
 	cecho "Download done." $boldyellow
 	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
 	CCAXIVOCHECK="$ERR"
 		if [ "$CCAXIVOCHECK" == '0' ]; then
@@ -36,6 +35,48 @@ fi
 fi
 
 fi # AXIVOREPO_DISABLE
+
+}
+
+###############################################
+
+remisixyum() {
+
+if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+
+# if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+
+	if [ -s "${CENTOSSIXREMIFILE}" ]; then
+  	echo "${CENTOSSIXREMIFILE} [found]"
+  	else
+  	echo "Error: ${CENTOSSIXREMIFILE} not found !!! Download now......"
+  	wget ${WGETOPT} ${CENTOSSIXREMI} --tries=3
+  	# wget ${WGETOPT} ${CENTOSSIXREMILOCAL} --tries=3
+	ERROR=$?
+		if [[ "$ERROR" != '0' ]]; then
+		cecho "Error: ${CENTOSSIXREMIFILE} download failed." $boldgreen
+	FAILREMI='y'
+	checklogdetails
+		exit #$ERROR
+	else 
+		cecho "Download done." $boldyellow
+		rpm -ivh --nosignature ${CENTOSSIXREMIFILE}
+		ERR=$?
+		CCREMICHECK="$ERR"
+			if [ "$CCREMICHECK" == '0' ]; then
+				yumpriorremi
+				echo ""
+			else
+				cecho "Error: problem with ${CENTOSSIXREMIFILE} install." $boldgreen
+				exit $ERR
+			fi
+		fi
+	
+	fi
+
+# fi # MACHINE_TYPE
+
+fi # REMIREPO_DISABLE
 
 }
 
@@ -216,6 +257,7 @@ fi
 # axivo centos 6.x 64bit only
 # axivosixyum
 ####
+remisixyum
 
 
 # CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version

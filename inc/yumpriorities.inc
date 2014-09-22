@@ -370,3 +370,32 @@ fi # /etc/yum.repos.d/axivo.repo
 fi # AXIVOREPO_DISABLE
 }
 
+yumpriorremi() {
+if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+if [ -f /etc/yum.repos.d/remi.repo ]; then
+        cp -p /etc/yum.repos.d/remi.repo /etc/yum.repos.d/remi.OLD
+        if [ -n "$(grep ^priority /etc/yum.repos.d/remi.repo)" ]
+                then
+                        #echo priorities already set for remi.repo
+        PRIOREXISTS=1
+                else
+                        echo setting yum priorities for remi.repo
+ex -s /etc/yum.repos.d/remi.repo << EOF
+:/\[remi/ , /gpgkey/
+:a
+priority=9
+exclude=php* mysql*
+.
+:w
+:q
+EOF
+        
+        cecho "*************************************************" $boldgreen
+        cecho "Fixing remi.repo YUM Priorities" $boldgreen
+        cecho "*************************************************" $boldgreen
+        cat /etc/yum.repos.d/remi.repo
+        echo ""
+        fi
+fi # /etc/yum.repos.d/remi.repo
+fi # REMIREPO_DISABLE
+}

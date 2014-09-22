@@ -311,7 +311,7 @@ LIBEVENT_VERSION='2.0.21'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.20'    # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'     # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
-LIBMEMCACHED_YUM='n'        # switch to YUM install instead of source compile
+LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
@@ -328,7 +328,7 @@ ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.3'
 # Python
 PYTHON_VERSION='2.7.8'       # Use this version of Python
-SIEGE_VERSION='3.0.7'
+SIEGE_VERSION='3.0.8'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
@@ -342,6 +342,7 @@ FPMRPM_LIBEVENT=n
 FPMRPM_MEMCACHED=n
 CENTALTREPO_DISABLE=y
 AXIVOREPO_DISABLE=n
+REMIREPO_DISABLE=n
 ###############################################################
 
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.

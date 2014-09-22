@@ -48,6 +48,10 @@ CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
 CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
+CENTOSSIXREMIFILE="remi-release-6.rpm"
+CENTOSSIXREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSIXREMIFILE}"
+CENTOSSIXREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXREMIFILE}"
+
 CENTOSSEVENEPELFILE="epel-release-7-1.noarch.rpm"
 CENTOSSEVENEPEL="http://epel.mirror.constant.com/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
@@ -70,6 +74,10 @@ CENTOSSEVENVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSEV
 CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
 CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
 CENTOSSEVENAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
+
+CENTOSSEVENREMIFILE="remi-release-7.rpm"
+CENTOSSEVENREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSEVENREMIFILE}"
+CENTOSSEVENREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
 PCRELINK="http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
