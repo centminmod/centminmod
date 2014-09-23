@@ -83,6 +83,7 @@ yumcentossixdownload
 yumcentossevendownload
 
 axelsetup
+geoipinstall
 
 
 # use Remi's ImageMagicK 6.8.9 package

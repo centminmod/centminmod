@@ -417,6 +417,9 @@ if [ $CBODYCHECK ]; then
 sed -i 's/client_body_in_file_only on/client_body_in_file_only off/g' /usr/local/nginx/conf/nginx.conf
 fi
 
+geoinccheck
+geoipphp
+
     echo "*************************************************"
     cecho "* nginx updated" $boldgreen
     echo "*************************************************"
