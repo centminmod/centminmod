@@ -1,3 +1,26 @@
+geoipphpext() {
+if [[ -d /usr/share/GeoIP ]]; then
+	if [ ! -f /usr/bin/svn ]; then
+		echo "installing subversion..."
+		yum -y -q install subversion
+	fi
+	
+	echo "compiling geoip PHP extension..."
+	cd $DIR_TMP
+	svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+	cd geoip
+	make clean
+	/usr/local/bin/phpize
+	./configure --with-php-config=/usr/local/bin/php-config
+	make$MAKETHREADS
+	make install
+
+cat > "/etc/centminmod/php.d/geoip.ini" <<EOF
+extension=geoip.so
+EOF
+fi
+}
+
 geoipinstall() {
 
 cecho "GeoIP database and library install..." $boldyellow

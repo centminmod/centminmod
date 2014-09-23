@@ -48,6 +48,10 @@ if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
     fi
 fi
 
+if [ -f ${CONFIGSCANDIR}/geoip.ini ]; then
+    DETECTGEOIP=y
+fi
+
 }
 
 ########################################################################
@@ -88,6 +92,11 @@ fi
 if [[ "$DETECTIMAGICK" == [yY] ]]; then
     cecho "Auto reinstalling previously detected imagemagick extension" $boldyellow
     imagickinstall
+fi
+
+if [[ "$DETECTGEOIP" == [yY] ]]; then
+    cecho "Auto reinstalling previously detected geoip extension" $boldyellow
+    geoipphpext
 fi
 
 # Fix extension directory on major PHP version changes 

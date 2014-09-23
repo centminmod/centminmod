@@ -1064,6 +1064,8 @@ installpythonfuct
 
 imagickinstall
 
+geoipphpext
+
 nsdinstall
 
 if [ -f $CUR_DIR/Extras/nginx-update.sh ];
