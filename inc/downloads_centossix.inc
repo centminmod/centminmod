@@ -15,7 +15,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSSIXAXIVOFILE} download failed." $boldgreen
 FAILAXIVO='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
 	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
@@ -57,7 +57,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 		cecho "Error: ${CENTOSSIXREMIFILE} download failed." $boldgreen
 	FAILREMI='y'
 	checklogdetails
-		exit #$ERROR
+		# exit #$ERROR
 	else 
 		cecho "Download done." $boldyellow
 		rpm -ivh --nosignature ${CENTOSSIXREMIFILE}
@@ -111,7 +111,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSSIXEPELFILE} download failed." $boldgreen
 FAILEPEL='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
 	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
@@ -181,7 +181,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSSIXCENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
@@ -204,7 +204,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSSIXPERCONALRELEASEFILE} download failed." $boldgreen
 FAILPERCONA='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
@@ -234,7 +234,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSSIXVARNISHFILE} download failed." $boldgreen
 FAILVARNISH='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 

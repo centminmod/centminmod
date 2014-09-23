@@ -15,7 +15,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSFIVEEPELFILE} download failed." $boldgreen
 FAILEPEL='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
 	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-5
@@ -84,7 +84,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSFIVECENTALTFILE} download failed." $boldgreen
 FAILCENTALT='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
@@ -106,7 +106,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSFIVEPERCONARELEASEFILE} download failed." $boldgreen
 FAILPERCONA='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
@@ -135,7 +135,7 @@ ERROR=$?
 	cecho "Error: ${CENTOSFIVEVARNISHFILE} download failed." $boldgreen
 FAILVARNISH='y'
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 
