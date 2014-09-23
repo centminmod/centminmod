@@ -419,6 +419,11 @@ fi # overwritephpfpmconf
 
 zendopcacheextfix
 
+if [ ! -f ${CONFIGSCANDIR}/geoip.ini ]; then
+    # always install geoip module
+    geoipphpext
+fi
+
     cmservice php-fpm restart
 
 funct_showtempfile
