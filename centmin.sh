@@ -69,6 +69,11 @@ echo "aborting script... please re-run centmin.sh"
 exit
 fi
 
+if [ ! -f /usr/bin/lynx ]; then
+echo "installing lynx..."
+yum -y -q install lynx
+fi
+
 if [ ! -f /usr/bin/unzip ]; then
 yum -y -q install unzip
 fi
