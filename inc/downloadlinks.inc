@@ -57,6 +57,15 @@ CENTOSSEVENEPEL="http://epel.mirror.constant.com/7/${RPMFARCH}/e/${CENTOSSEVENEP
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
 
+# dynamic mirror check for EPEL
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/7/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
+CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
+CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
+CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
+fi
+
 CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
 CENTOSSEVENRPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSSEVENRPMFORGEFILE}"
 
