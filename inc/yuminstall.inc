@@ -79,6 +79,7 @@ if [ -f /usr/bin/mytop ]; then
 sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
 
+yum clean all -q
 yumcentossixdownload
 yumcentossevendownload
 
