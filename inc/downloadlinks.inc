@@ -52,7 +52,7 @@ CENTOSSIXREMIFILE="remi-release-6.rpm"
 CENTOSSIXREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSIXREMIFILE}"
 CENTOSSIXREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXREMIFILE}"
 
-CENTOSSEVENEPELFILE="epel-release-7-1.noarch.rpm"
+CENTOSSEVENEPELFILE="epel-release-7-2.noarch.rpm"
 CENTOSSEVENEPEL="http://epel.mirror.constant.com/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
