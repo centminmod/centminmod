@@ -82,6 +82,9 @@ fi
 yumcentossixdownload
 
 axelsetup
+
+yum -y update
+
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 
 yendtime=$(date +%s.%N)
