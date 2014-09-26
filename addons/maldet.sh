@@ -75,8 +75,10 @@ fi
 
 setemailalert() {
 	if [[ ! -z "$ALERT_POEMAIL" ]]; then
+		sed -i 's/email_alert=0/email_alert=1/g' /usr/local/maldetect/conf.maldet
 		sed -i "s/email_addr=\"you@domain.com\"/email_addr=\"${ALERTEMAIL},${ALERT_POEMAIL}\"/g" /usr/local/maldetect/conf.maldet
 	else
+		sed -i 's/email_alert=0/email_alert=1/g' /usr/local/maldetect/conf.maldet
 		sed -i "s/email_addr=\"you@domain.com\"/email_addr=\"${ALERTEMAIL}\"/g" /usr/local/maldetect/conf.maldet
 	fi
 }
@@ -131,6 +133,8 @@ clamavinstall() {
 	# install clamav and clamd
 	echo
 	cecho "Installing clamav..."  $boldyellow
+	yum clean all -q
+	yum makecache fast -q
 	yum -y install clamav clamd
 	/etc/init.d/clamd start
 	chkconfig clamd on
