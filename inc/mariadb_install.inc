@@ -28,7 +28,34 @@ echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
 rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
 ###############################################################################
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '7.0' ]]; then
+
+    if [ "$(uname -m)" == 'x86_64' ]; then
+
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+    else
+
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+    fi # centos 7 uname -m
+
+fi
+
+###############################################################################
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
 
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 

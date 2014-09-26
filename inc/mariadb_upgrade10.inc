@@ -70,25 +70,25 @@ OLDMARIADBDEVEL=`rpm -qa | grep MariaDB | awk '/MariaDB-devel/'`
 OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
 OLDMARIADBTEST=`rpm -qa | grep MariaDB | awk '/MariaDB-test/'`
 OLDMARIADBCOMMON=`rpm -qa | grep MariaDB | awk '/MariaDB-common/'`
-# OLDMARIADBCOMPAT=`rpm -qa | grep MariaDB | awk '/MariaDB-compat/'`
+OLDMARIADBCOMPAT=`rpm -qa | grep MariaDB | awk '/MariaDB-compat/'`
 
 yum -q -y remove perl-DBD-MySQL
 
 echo "rpm -e $OLDMARIADBTEST"
+echo "rpm -e $OLDMARIADBSERVER"
 echo "rpm -e $OLDMARIADBCLIENT"
 echo "rpm -e $OLDMARIADBDEVEL"
-echo "rpm -e $OLDMARIADBSERVER"
-echo "rpm -e $OLDMARIADBSHARED"
-echo "rpm -e $OLDMARIADBCOMMON"
-# echo "rpm -e $OLDMARIADBCOMPAT"
+echo "rpm -e --nodeps $OLDMARIADBSHARED"
+echo "rpm -e --nodeps $OLDMARIADBCOMPAT"
+echo "rpm -e --nodeps $OLDMARIADBCOMMON"
 
 rpm -e $OLDMARIADBTEST
+rpm -e $OLDMARIADBSERVER
 rpm -e $OLDMARIADBCLIENT
 rpm -e $OLDMARIADBDEVEL
-rpm -e $OLDMARIADBSERVER
-rpm -e $OLDMARIADBSHARED
-rpm -e $OLDMARIADBCOMMON
-rpm -e $OLDMARIADBCOMPAT
+rpm -e --nodeps $OLDMARIADBSHARED
+rpm -e --nodeps $OLDMARIADBCOMPAT
+rpm -e --nodeps $OLDMARIADBCOMMON
 
 yum clean all
 
@@ -112,7 +112,10 @@ yum clean all
 CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
 
 if [ "$CENTOSVER" == 'release' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $4 }'`
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
 fi
 
 if [ "$CENTOSVER" == 'Enterprise' ]; then
@@ -124,7 +127,35 @@ MARIADB55ARCH=`uname -m`
 echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
 rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '7.0' ]]; then
+###############################################################################
+if [[ "$CENTOSVER" = '7.0' ]]; then
+
+    if [ "$(uname -m)" == 'x86_64' ]; then
+
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+    else
+
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+
+    fi # centos 7 uname -m
+
+fi
+
+###############################################################################
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
 
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
