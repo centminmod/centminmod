@@ -4,7 +4,7 @@ ffmpegsetup() {
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
-if [ "$PHPVERCHECK" != '5.4' ]; then
+if [[ "$PHPVERCHECK" != '5.4' ]]; then
 
 cd ${DIR_TMP}
 
