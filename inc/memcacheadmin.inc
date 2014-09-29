@@ -21,7 +21,7 @@ cd memcache-${MEMCACHE_VERSION}
     echo "*************************************************"
 
 # Randomize memcache_${N}.php filename
-N=$RANDOM
+N=$(od -vAn -N4 -tu4 < /dev/urandom)
 \cp -a memcache.php /usr/local/nginx/html/memcache_${N}.php
 chown -R nginx:nginx /usr/local/nginx/html
 chmod 644 /usr/local/nginx/html/memcache_${N}.php

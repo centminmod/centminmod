@@ -79,7 +79,7 @@ fi
 
 ######################################################
 # Randomize ${N}_opcache.php filename
-N=$RANDOM
+N=$(od -vAn -N4 -tu4 < /dev/urandom)
 if [[ -f /usr/local/nginx/html/opcache.php ]]; then
 	mv /usr/local/nginx/html/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
