@@ -60,6 +60,11 @@ cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config-backup
 echo "--------------------------"
 echo "change ssh port"
 echo "--------------------------"
+cecho "You'll be asked what your current default SSH port is (default = 22)." $boldyellow
+cecho "Then asked which SSH port number you want to change to." $boldyellow
+cecho "New SSH port should be a number below and less than <1024." $boldyellow
+sleep 15
+echo
 
 cecho "Your current default SSH port is: $CURRENTSSHDPORT" $boldyellow
 echo ""
@@ -69,6 +74,16 @@ read -ep "Enter existing SSH port number (default = 22 for fresh installs): " EX
 echo ""
 
 read -ep "Enter the SSH port number you want to change to: " PORTNUM
+
+if [ -f /etc/csf/csf.conf ]; then
+	CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | egrep '^TCP_IN|^TCP_OUT|^UDP_IN|^UDP_OUT' | grep $PORTNUM)
+	if [[ "$CHECKNEWPORTNUM" ]]; then
+		echo "the new port $PORTNUM is already in use by other software defined by CSF Firewall"
+		echo "please re-run menu option 16 and try a different port"
+		echo "aborting..."
+		exit
+	fi
+fi
 
 sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
 
