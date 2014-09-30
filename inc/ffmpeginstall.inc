@@ -4,7 +4,7 @@ ffmpegsetup() {
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
-if [[ "$PHPVERCHECK" != '5.4' ]]; then
+if [[ "$PHPVERCHECK" != '5.8' ]]; then
 
 cd ${DIR_TMP}
 
@@ -17,7 +17,7 @@ if [ -s ffmpeg-php-${FFMPEGVER}.tbz2 ]; then
   echo "ffmpeg-php-${FFMPEGVER}.tbz2 [found]"
   else
   echo "Error: ffmpeg-php-${FFMPEGVER}.tbz2 not found!!!download now......"
-  wget -c --progress=bar http://downloads.sourceforge.net/project/ffmpeg-php/ffmpeg-php/${FFMPEGVER}/ffmpeg-php-${FFMPEGVER}.tbz2?use_mirror=aarnet --tries=3
+  wget -c --progress=bar http://downloads.sourceforge.net/project/ffmpeg-php/ffmpeg-php/${FFMPEGVER}/ffmpeg-php-${FFMPEGVER}.tbz2?use_mirror=aarnet -O ffmpeg-php-${FFMPEGVER}.tbz2 --tries=3
 fi
 
 tar -xjf ffmpeg-php-${FFMPEGVER}.tbz2
@@ -25,6 +25,8 @@ cd ffmpeg-php-${FFMPEGVER}
 make clean
 phpize -clean
 phpize
+wget -O ffmpeg.patch https://gist.github.com/centminmod/b3cd8785bed2a87c7ba8/raw/ffmpeg.patch
+patch < ffmpeg.patch
 ./configure --with-php-config=/usr/local/bin/php-config
 
 sed -i 's/PIX_FMT_RGBA32/PIX_FMT_RGB32/g' ffmpeg_frame.c
