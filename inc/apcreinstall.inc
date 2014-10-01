@@ -93,7 +93,8 @@ fi # check if apc.so exists in php.ini
 
 if [ -f /usr/local/nginx/html/myapc.php ]; then
 # Randomize myapc.php filename
-N=$(od -vAn -N4 -tu4 < /dev/urandom)
+N=$(od -vAn -N4 -tx < /dev/urandom)
+N=$(echo ${N} | sed -e 's/\s//')
 mv /usr/local/nginx/html/myapc.php /usr/local/nginx/html/${N}_myapc.php
 chown nginx:nginx /usr/local/nginx/html/${N}_myapc.php
 fi

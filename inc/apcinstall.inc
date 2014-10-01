@@ -50,7 +50,8 @@ if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
 fi
 
 # Randomize myapc.php filename
-N=$(od -vAn -N4 -tu4 < /dev/urandom)
+N=$(od -vAn -N4 -tx < /dev/urandom)
+N=$(echo ${N} | sed -e 's/\s//')
 cp apc.php /usr/local/nginx/html/${N}_myapc.php
 
 if [ -f /usr/local/nginx/html/myapc.php ]; then
