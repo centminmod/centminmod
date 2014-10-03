@@ -4,12 +4,12 @@ RAMDISKTMPFS='y'
 
 setramdisk() {
 	if [[ "$RAMDISKTMPFS" = [yY] ]]; then
-		TMPFSLIMIT=2900000
+		TMPFSLIMIT=4000000
 		TMPFSENABLED=1
 		if [[ "$TOTALMEM" -ge "$TMPFSLIMIT" ]]; then
 			echo "setting up $DIR_TMP on tmpfs ramdisk for initial install"
 			mkdir -p $DIR_TMP
-			mount -t tmpfs -o size=2200M,mode=0755 tmpfs $DIR_TMP
+			mount -t tmpfs -o size=3100M,mode=0755 tmpfs $DIR_TMP
 			df -hT
 		else
         	mkdir -p $DIR_TMP
