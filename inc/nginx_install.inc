@@ -255,7 +255,7 @@ fi
 if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename
 NPHP=$(od -vAn -N4 -tx < /dev/urandom)
-# NPHP=$(echo ${N} | sed -e 's/\s//')
+NPHP=$(echo ${NPHP} | sed -e 's/\s//')
 mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
 chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
 fi
