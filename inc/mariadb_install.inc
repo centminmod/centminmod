@@ -134,11 +134,6 @@ mysqltmpdir
 mysqlinitfix
 
 service mysql restart
-service mysql stop
-# remove default innodb tablespace and log files that are incompatible with
-# MariaDB 5.5 included my.cnf used
-gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
-service mysql start
 
 	if [ "$UNATTENDED" == 'nn' ]; then
 echo ""
@@ -376,6 +371,12 @@ fi
 mysql_upgrade --force --verbose
 service mysql restart
 #mysql_secure_installation
+
+service mysql stop
+# remove default innodb tablespace and log files that are incompatible with
+# MariaDB 5.5 included my.cnf used
+gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
+service mysql start
   
     echo "*************************************************"
     cecho "* MariaDB installed" $boldgreen
