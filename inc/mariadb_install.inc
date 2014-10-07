@@ -218,21 +218,6 @@ fi # CENTOS_SEVEN != 7
 
 cmservice mysql restart
 
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
-    # for CentOS 5.x and 6.x only
-    # remove default innodb tablespace and log files that are incompatible with
-    # MariaDB 5.5 / 10 included my.cnf used
-    # not necessary for CentOS 7.x though
-    cmservice mysql stop
-    gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
-    cmservice mysql start
-else
-    # only remove log files but leave innodb tablespace
-    cmservice mysql stop
-    gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
-    cmservice mysql start
-fi
-
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
@@ -534,6 +519,21 @@ fi
 mysql_upgrade --force --verbose
 cmservice mysql restart
 #mysql_secure_installation
+
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    # for CentOS 5.x and 6.x only
+    # remove default innodb tablespace and log files that are incompatible with
+    # MariaDB 5.5 / 10 included my.cnf used
+    # not necessary for CentOS 7.x though
+    cmservice mysql stop
+    gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
+    cmservice mysql start
+else
+    # only remove log files but leave innodb tablespace
+    cmservice mysql stop
+    gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
+    cmservice mysql start
+fi
   
     echo "*************************************************"
     cecho "* MariaDB installed" $boldgreen
