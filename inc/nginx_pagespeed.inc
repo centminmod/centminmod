@@ -5,7 +5,7 @@ cat > "/usr/local/nginx/conf/pscontrol" <<END
 #/bin/bash
 # turn ngx_pagespeed on or off switch
 
-CMSDEBUG=y
+CMSDEBUG=n
 CENTOSVER=\$(cat /etc/redhat-release | awk '{ print \$3 }')
 
 if [ "\$CENTOSVER" == 'release' ]; then
