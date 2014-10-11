@@ -23,11 +23,13 @@ nano -w /usr/local/nginx/conf/pagespeedstatslog.conf
 
 psoff() {
 sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeed.conf
+sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeedadmin.conf
 /etc/init.d/nginx restart
 }
 
 pson() {
 sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeed.conf
+sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeedadmin.conf
 /etc/init.d/nginx restart
 }
 
@@ -239,7 +241,13 @@ cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
 #######################################################
 # 1.8.31.2 beta required paths
 # https://developers.google.com/speed/pagespeed/module/admin
-######################################
+#######################################################
+# 1.9.32.1 beta required change
+# https://community.centminmod.com/threads/how-can-i-disable-it-after-installation.1603/#post-7665
+# add a second pagespeed off; variable 
+# loaded in nginx.conf via pagespeedadmin.conf include file
+pagespeed off;
+#######################################################
 pagespeed FileCachePath /var/ngx_pagespeed_cache;
 pagespeed StatisticsPath /ngx_pagespeed_statistics;
 pagespeed GlobalStatisticsPath /ngx_pagespeed_global_statistics;
@@ -410,6 +418,16 @@ ADMINPATHCHECK=$(grep AdminPath /usr/local/nginx/conf/pagespeedadmin.conf)
 if [[ -z "$ADMINPATHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then
   makepsadmin
   makepsconf
+  makepshandler
+fi
+
+# checks for ngx_pagespeed 1.9.32.1 beta change
+# https://community.centminmod.com/threads/how-can-i-disable-it-after-installation.1603/#post-7665
+ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
+
+if [[ -z "$ADMINPSSWITCHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then
+  makepsadmin
+  # makepsconf
   makepshandler
 fi
 

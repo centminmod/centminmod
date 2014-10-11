@@ -1,6 +1,10 @@
 #/bin/bash
 # turn ngx_pagespeed on or off switch
 
+psadmin() {
+nano -w /usr/local/nginx/conf/pagespeedadmin.conf
+}
+
 pshandler() {
 nano -w /usr/local/nginx/conf/pagespeedhandler.conf
 }
@@ -11,11 +15,13 @@ nano -w /usr/local/nginx/conf/pagespeed.conf
 
 psoff() {
 sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeed.conf
+sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeedadmin.conf
 /etc/init.d/nginx restart
 }
 
 pson() {
 sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeed.conf
+sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeedadmin.conf
 /etc/init.d/nginx restart
 }
 
@@ -32,6 +38,9 @@ sed -i 's/ModPagespeedStatisticsLogging off;/ModPagespeedStatisticsLogging on;/g
 }
 
 case "$1" in
+admin)
+psadmin
+;;
 handler)
 pshandler
 ;;
@@ -51,6 +60,7 @@ statsoff)
 psstatslogoff
 ;;
 *)
+echo "pscontrol admin"
 echo "pscontrol handler"
 echo "pscontrol edit"
 echo "pscontrol on"
