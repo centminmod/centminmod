@@ -71,9 +71,9 @@ else
 fi
 
 if [ "$PHPFINFO" == 'y' ]; then
-	SNMPOPT=""
+	FILEINFOOPT=""
 else
-	SNMPOPT=" --disable-fileinfo"
+	FILEINFOOPT=" --disable-fileinfo"
 fi
 
 
