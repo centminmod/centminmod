@@ -182,7 +182,7 @@ OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
 OPENSSL_LINK="http://centminmod.com/centminmodparts/openssl/${OPENSSL_LINKFILE}"
 
 SIEGE_LINKFILE="siege-${SIEGE_VERSION}.tar.gz"
-SIEGE_LINK="http://www.joedog.org/pub/siege/${SIEGE_LINKFILE}"
+SIEGE_LINK="http://download.joedog.org/siege/${SIEGE_LINKFILE}"
 SIEGE_LINKLOCAL="http://centminmod.com/centminmodparts/siege/${SIEGE_LINKFILE}"
 
 SPROXY_LINKFILE="sproxy-latest.tar.gz"
