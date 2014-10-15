@@ -230,13 +230,13 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.7.5'        # Use this version of Nginx
+NGINX_VERSION='1.7.6'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.1i'     # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.1j'     # Use this version of OpenSSL
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
