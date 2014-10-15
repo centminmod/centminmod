@@ -1,4 +1,5 @@
 #/bin/bash
+# 1.9.32.1 fixed
 # turn ngx_pagespeed on or off switch
 
 CMSDEBUG=n

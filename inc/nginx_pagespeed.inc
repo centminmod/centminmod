@@ -3,6 +3,7 @@ genpscontrolfile() {
 touch /usr/local/nginx/conf/pscontrol
 cat > "/usr/local/nginx/conf/pscontrol" <<END
 #/bin/bash
+# 1.9.32.1 fixed
 # turn ngx_pagespeed on or off switch
 
 CMSDEBUG=n
@@ -433,8 +434,9 @@ fi
 if [[ -f /usr/bin/pscontrol ]]; then
 PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
 PSADMINCHECK=$(grep 'psadmin' /usr/bin/pscontrol)
+PSADMINFIXCHECK=$(grep '1.9.32.1 fixed' /usr/bin/pscontrol)
 
-	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" ]]; then
+	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" || -z "$PSADMINFIXCHECK" ]]; then
 	rm -rf /usr/bin/pscontrol
 	rm -rf /usr/local/nginx/conf/pscontrol
 	genpscontrolfile
