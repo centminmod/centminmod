@@ -264,7 +264,7 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
   # InPlaceResourceOptimization
   # https://developers.google.com/speed/pagespeed/module/system#ipro
   # Enabled by default as of 1.9.32.1
-#  pagespeed InPlaceResourceOptimization off;
+  pagespeed InPlaceResourceOptimization off;
 
 #######################################################
 END
