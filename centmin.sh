@@ -260,6 +260,7 @@ PHPMAKETEST=n                # set to y to enable make test after PHP make for d
 
 PHPFINFO=n                   # Disable or Enable PHP File Info extension
 PHPPCNTL=y                    # Disable or Enable PHP Process Control extension
+PHPINTL=y                    # Disable or Enable PHP intl extension
 PHPRECODE=n                   # Disable or Enable PHP Recode extension
 PHPSNMP=y                     # Disable or Enable PHP SNMP extension
 SHORTCUTS=y	      # shortcuts
