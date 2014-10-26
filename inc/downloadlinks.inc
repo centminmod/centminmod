@@ -5,14 +5,14 @@
     if [ ${MACHINE_TYPE} == 'x86_64' ];
     then
         ARCH='x86_64'
-       RPMFARCH='x86_64'
+        RPMFARCH='x86_64'
     else
         ARCH='i686'
         RPMFARCH='i386'
     fi
 
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
-CENTOSFIVEEPEL="http://epel.mirror.constant.com/5/${ARCH}/${CENTOSFIVEEPELFILE}"
+CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${RPMFARCH}/${CENTOSFIVEEPELFILE}"
 
 CENTOSFIVERPMFORGEFILE="rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm"
 CENTOSFIVERPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSFIVERPMFORGEFILE}"
@@ -27,7 +27,7 @@ CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
 
 CENTOSSIXEPELFILE="epel-release-6-8.noarch.rpm"
-CENTOSSIXEPEL="http://epel.mirror.constant.com/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
+CENTOSSIXEPEL="http://mirror.sfo12.us.leaseweb.net/epel/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
 CENTOSSIXEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXEPELFILE}"
 
 CENTOSSIXRPMFORGEFILE="rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm"
