@@ -5,14 +5,15 @@
     if [ ${MACHINE_TYPE} == 'x86_64' ];
     then
         ARCH='x86_64'
-       RPMFARCH='x86_64'
+        RPMFARCH='x86_64'
     else
         ARCH='i686'
         RPMFARCH='i386'
     fi
 
+# dynamic mirror check for EPEL below overrides these values now
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
-CENTOSFIVEEPEL="http://epel.mirror.constant.com/5/${ARCH}/${CENTOSFIVEEPELFILE}"
+CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${ARCH}/${CENTOSFIVEEPELFILE}"
 
 CENTOSFIVERPMFORGEFILE="rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm"
 CENTOSFIVERPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSFIVERPMFORGEFILE}"
@@ -26,8 +27,9 @@ CENTOSFIVEPERCONARELEASE="http://www.percona.com/redir/downloads/percona-release
 CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
 
+# dynamic mirror check for EPEL below overrides these values now
 CENTOSSIXEPELFILE="epel-release-6-8.noarch.rpm"
-CENTOSSIXEPEL="http://epel.mirror.constant.com/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
+CENTOSSIXEPEL="http://mirror.sfo12.us.leaseweb.net/epel/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
 CENTOSSIXEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXEPELFILE}"
 
 CENTOSSIXRPMFORGEFILE="rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm"
@@ -52,18 +54,43 @@ CENTOSSIXREMIFILE="remi-release-6.rpm"
 CENTOSSIXREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSIXREMIFILE}"
 CENTOSSIXREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXREMIFILE}"
 
+# dynamic mirror check for EPEL below overrides these values now
 CENTOSSEVENEPELFILE="epel-release-7-2.noarch.rpm"
-CENTOSSEVENEPEL="http://epel.mirror.constant.com/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
+CENTOSSEVENEPEL="http://mirror.sfo12.us.leaseweb.net/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
 
 # dynamic mirror check for EPEL
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/7/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
-CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
-CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
-CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
-CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
+	CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/7/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
+	CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
+	CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
+	CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
+	
+	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/6/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSIXEPEL_MIRRORURL=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL%/*}/)
+	CENTOSSIXEPEL_MIRRORURLFILE=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL##*/})
+	CENTOSSIXEPELFILE="$CENTOSSIXEPEL_MIRRORURLFILE"
+	CENTOSSIXEPEL="$CENTOSSIXEPEL_MIRRORFULLURL"
+	
+	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/5/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSFIVEEPEL_MIRRORURL=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL%/*}/)
+	CENTOSFIVEEPEL_MIRRORURLFILE=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL##*/})
+	CENTOSFIVEEPELFILE="$CENTOSFIVEEPEL_MIRRORURLFILE"
+	CENTOSFIVEEPEL="$CENTOSFIVEEPEL_MIRRORFULLURL"
+else
+	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSIXEPEL_MIRRORURL=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL%/*}/)
+	CENTOSSIXEPEL_MIRRORURLFILE=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL##*/})
+	CENTOSSIXEPELFILE="$CENTOSSIXEPEL_MIRRORURLFILE"
+	CENTOSSIXEPEL="$CENTOSSIXEPEL_MIRRORFULLURL"
+	
+	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/5/i386/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSFIVEEPEL_MIRRORURL=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL%/*}/)
+	CENTOSFIVEEPEL_MIRRORURLFILE=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL##*/})
+	CENTOSFIVEEPELFILE="$CENTOSFIVEEPEL_MIRRORURLFILE"
+	CENTOSFIVEEPEL="$CENTOSFIVEEPEL_MIRRORFULLURL"
 fi
 
 CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
