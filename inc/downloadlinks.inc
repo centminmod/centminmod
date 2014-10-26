@@ -13,7 +13,7 @@
 
 # dynamic mirror check for EPEL below overrides these values now
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
-CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${ARCH}/${CENTOSFIVEEPELFILE}"
+CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${RPMFARCH}/${CENTOSFIVEEPELFILE}"
 
 CENTOSFIVERPMFORGEFILE="rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm"
 CENTOSFIVERPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSFIVERPMFORGEFILE}"
