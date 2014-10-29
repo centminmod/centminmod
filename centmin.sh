@@ -107,7 +107,7 @@ echo "aborting script..."
 exit
 fi
 
-TESTEDCENTOSVER='6.5'
+TESTEDCENTOSVER='6.6'
 CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
 
 if [ "$CENTOSVER" == 'release' ]; then
