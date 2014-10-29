@@ -185,8 +185,8 @@ NGINX_GEOIP=n			 # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=y   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.9.32.1-beta'
-NGINX_PAGESPEEDPSOL_VER='1.9.32.1'
+NGXPGSPEED_VER='1.9.32.2-beta'
+NGINX_PAGESPEEDPSOL_VER='1.9.32.2'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV=y          # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'  # nginx-dav-ext-module version
@@ -230,7 +230,7 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.7.6'        # Use this version of Nginx
+NGINX_VERSION='1.7.7'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
