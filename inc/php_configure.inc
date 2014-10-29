@@ -89,7 +89,7 @@ if [[ "$LIBCCLIENT" = 'Available' ]]; then
 	yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
 
 	if [[ ! -f /usr/bin/libmcrypt-config ]]; then
 
