@@ -1,10 +1,12 @@
 ########################################################################
 phpng_download() {
-	if [[ "$PHPMUVER" = 'NG' || "$PHPMUVER" = '5.7' ]]; then
+	if [[ "$PHPMUVER" = 'NG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]]; then
 		if [[ "$PHPMUVER" = 'NG' ]]; then
 			PHPNGVER='NG'
 		elif [[ "$PHPMUVER" = '5.7' ]]; then
 			PHPNGVER='5.7.0'
+		elif [[ "$PHPMUVER" = '7.0' ]]; then
+			PHPNGVER='7.0.0'
 		fi
 		cecho "Downloading PHP $PHPMUVER from https://git.php.net/repository/php-src.git" $boldyellow
 		cd $DIR_TMP
