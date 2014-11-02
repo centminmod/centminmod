@@ -26,7 +26,7 @@ fi
 
 # check if this is a PHP upgrade task
 if [ "$PHPMUVER" ]; then
-	if [[ "$(expr $PHPMUVER \>= 5.2)" = 1 && "$(expr $PHPMUVER \<= 5.4)" = 1 ]]
+	if [[ "$(expr $PHPMUVER \>= 5.2)" = 1 && "$(expr $PHPMUVER \<= 5.4)" = 1 ]]; then
 		ZOPCACHEPROMPT='y'
 	else
 		ZOPCACHEPROMPT='n'
