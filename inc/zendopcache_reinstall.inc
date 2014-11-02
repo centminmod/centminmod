@@ -17,7 +17,24 @@ echo "Current centmin.sh set PHP_VERSION: $PHPMVER"
 echo "Current PHP upgrade version set: $PHPMUVER"
 echo "-------------------------------------------------------------------"
 
-if [[ "$PHPMVER" != '5.7' || "$PHPCURRENTVER" != '5.7' || "$PHPMVER" != '5.6' || "$PHPCURRENTVER" != '5.6' || "$PHPMVER" != '5.5' || "$PHPCURRENTVER" != '5.5' ]]; then
+# only prompt for Zend Opcache version if PHP version is between 5.2 and 5.4 inclusive
+if [[ "$(expr $PHPMVER \>= 5.2)" = 1 && "$(expr $PHPMVER \<= 5.4)" = 1 ]] && [[ "$(expr $PHPCURRENTVER \>= 5.2)" = 1 && "$(expr $PHPCURRENTVER \<= 5.4)" = 1 ]]; then
+	ZOPCACHEPROMPT='y'
+else
+	ZOPCACHEPROMPT='n'
+fi
+
+# check if this is a PHP upgrade task
+if [ "$PHPMUVER" ]; then
+	if [[ "$(expr $PHPMUVER \>= 5.2)" = 1 && "$(expr $PHPMUVER \<= 5.4)" = 1 ]]
+		ZOPCACHEPROMPT='y'
+	else
+		ZOPCACHEPROMPT='n'
+	fi
+fi
+
+# only prompt for Zend Opcache version ZOPCACHEPROMPT=y
+if [[ "$ZOPCACHEPROMPT" = [yY] ]]; then
 
 echo ""
 read -ep "Install which version of Zend OpCache? (version i.e. ${ZOPCACHECACHE_VERSION}}): " zocver
