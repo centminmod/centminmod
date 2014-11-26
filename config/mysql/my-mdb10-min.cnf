@@ -119,6 +119,7 @@ quick
 max_allowed_packet = 32M
 
 [myisamchk] 
+tmpdir=/home/mysqltmp
 key_buffer = 32M 
 sort_buffer = 16M
 read_buffer = 16M
