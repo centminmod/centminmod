@@ -135,7 +135,7 @@ clamavinstall() {
 	cecho "Installing clamav..."  $boldyellow
 	yum clean all -q
 	yum makecache fast -q
-	yum -y install clamav clamd
+	yum -y install clamav clamd clamav-update --disablerepo=rpmforge
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam
