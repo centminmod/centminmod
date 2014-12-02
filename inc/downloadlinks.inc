@@ -116,7 +116,8 @@ CENTOSSEVENREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSEVENREMIFILE}
 CENTOSSEVENREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
-PCRELINK="http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+PCRELINK="ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${PCRELINKFILE}"
+# PCRELINK="http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
 PCRELINKLOCAL="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 
 # wget renamed
