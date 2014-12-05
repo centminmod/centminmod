@@ -137,7 +137,7 @@ NGX_PAGESPEEDPSOLINKL="https://dl.google.com/dl/page-speed/psol/${NGX_PAGESPEEDP
 NGX_FANCYINDEXLINKFILE="ngx-fancyindex-0.3.1.tar.gz"
 NGX_FANCYINDEXLINK="http://centminmod.com/centminmodparts/nginx/modules/${NGX_FANCYINDEXLINKFILE}"
 
-NGX_CACHEPURGEFILE="ngx_cache_purge-2.1.tar.gz"
+NGX_CACHEPURGEFILE="ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
 NGX_CACHEPURGE="http://centminmod.com/centminmodparts/nginx/modules/${NGX_CACHEPURGEFILE}"
 
 NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.3.tar.gz"

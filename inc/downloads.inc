@@ -280,7 +280,7 @@ echo ""
 
         cecho "Download ${NGX_CACHEPURGEFILE} ..." $boldyellow
     if [ -s ${NGX_CACHEPURGEFILE} ]; then
-        cecho "ngx_cache_purge 2.1 Archive found, skipping download..." $boldgreen
+        cecho "ngx_cache_purge ${NGINX_CACHEPURGEVER} Archive found, skipping download..." $boldgreen
     else
         $DOWNLOADAPP ${NGX_CACHEPURGE} $WGETRETRY 
 ERROR=$?

@@ -31,7 +31,7 @@ fi
 checknginxmodules() {
 
 cecho "Check for missing nginx modules" $boldyellow
-if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-2.1.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" || ! -f "${DIR_TMP}/headers-more-v${NGINX_HEADERSMORE}.tar.gz" || ! -f "${DIR_TMP}/nginx-sticky-${NGINX_STICKYVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz" ]]; then
+if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" || ! -f "${DIR_TMP}/headers-more-v${NGINX_HEADERSMORE}.tar.gz" || ! -f "${DIR_TMP}/nginx-sticky-${NGINX_STICKYVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz" ]]; then
 ngxmoduletarball
 openssldownload
 fi

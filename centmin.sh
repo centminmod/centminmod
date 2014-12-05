@@ -248,6 +248,7 @@ NGINX_LIBATOMIC=y          # Nginx configured with libatomic support
 NGINX_PCREJIT=y            # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.36'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.25'
+NGINX_CACHEPURGEVER='2.2'
 NGINX_STICKY='y'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.5'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
