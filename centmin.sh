@@ -194,6 +194,7 @@ NGINX_LIBATOMIC=y     # Nginx configured with libatomic support
 NGINX_PCREJIT=y            # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.35'   # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.25'
+NGINX_CACHEPURGEVER='2.2'
 NGINX_OPENRESTY=n     # Agentzh's openresty Nginx modules
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
