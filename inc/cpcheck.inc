@@ -25,6 +25,13 @@ centaltoff() {
 	fi
 }
 
+csfipsetcheck() {
+	if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
+		yum -y -q install ipset ipset-devel
+		sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -47,5 +54,6 @@ fi
 
 selinxcheck
 centaltoff
+csfipsetcheck
 
 }
