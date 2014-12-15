@@ -27,10 +27,12 @@ centaltoff() {
 
 csfipsetcheck() {
 	if [ ! -f /proc/user_beancounters ]; then
-	if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
-		yum -y -q install ipset ipset-devel
-		sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
-	fi
+		if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
+			yum -y -q install ipset ipset-devel
+			sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
+		fi
+	else
+		sed -i 's/LF_IPSET = \"1\"/LF_IPSET = \"0\"/' /etc/csf/csf.conf
 	fi
 }
 
