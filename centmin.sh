@@ -194,7 +194,7 @@ NGINX_LIBATOMIC=y     # Nginx configured with libatomic support
 NGINX_PCREJIT=y            # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.35'   # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.25'
-NGINX_CACHEPURGEVER='2.2'
+NGINX_CACHEPURGEVER='2.3'
 NGINX_OPENRESTY=n     # Agentzh's openresty Nginx modules
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
@@ -231,7 +231,7 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.7.7'        # Use this version of Nginx
+NGINX_VERSION='1.7.9'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
