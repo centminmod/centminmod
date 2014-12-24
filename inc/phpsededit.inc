@@ -2,7 +2,7 @@ phpsededit() {
     PHPINICUSTOM='a_customphp.ini'
     CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
 
-    if [[ ! -f "${CUSTOMPHPINIFILE}" ]; then
+    if [[ ! -f "${CUSTOMPHPINIFILE}" ]]; then
         touch ${CUSTOMPHPINIFILE}
     else
         \cp -a ${CUSTOMPHPINIFILE} ${CUSTOMPHPINIFILE}-bak_$DT
