@@ -252,7 +252,7 @@ NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='y'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.5'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
-NGINX_UPSTREAMCHECKVER='0.1.9'
+NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'            # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.15'     # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
@@ -323,7 +323,7 @@ LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 FFMPEGVER='0.6.0'
-SUHOSINVER='0.9.36'
+SUHOSINVER='0.9.37.1'
 PHP_VERSION='5.4.36'          # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL='http://php.net'
