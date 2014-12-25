@@ -40,15 +40,16 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s pbzip2-1.1.8.tar.gz ]; then
-  echo "pbzip2-1.1.8.tar.gz [found]"
+if [ -s pbzip2-1.1.12.tar.gz ]; then
+  echo "pbzip2-1.1.12.tar.gz [found]"
   else
-  echo "Error: pbzip2-1.1.8.tar.gz not found!!!download now......"
-  wget -c http://compression.ca/pbzip2/pbzip2-1.1.8.tar.gz --tries=3
+  echo "Error: pbzip2-1.1.12.tar.gz not found!!!download now......"
+  # wget -c http://compression.ca/pbzip2/pbzip2-1.1.12.tar.gz --tries=3
+  wget -c https://launchpad.net/pbzip2/1.1/1.1.12/+download/pbzip2-1.1.12.tar.gz --tries=3
 fi
 
-tar xvzf pbzip2-1.1.8.tar.gz
-cd pbzip2-1.1.8
+tar xvzf pbzip2-1.1.12.tar.gz
+cd pbzip2-1.1.12
 make
 cp pbzip2 /usr/bin
 
@@ -67,15 +68,15 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s lbzip2-2.3.tar.gz ]; then
-  echo "lbzip2-2.3.tar.gz [found]"
+if [ -s lbzip2-2.5.tar.gz ]; then
+  echo "lbzip2-2.5.tar.gz [found]"
   else
-  echo "Error: lbzip2-2.3.tar.gz not found!!!download now......"
-  wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-2.3.tar.gz --tries=3
+  echo "Error: lbzip2-2.5.tar.gz not found!!!download now......"
+  wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-2.5.tar.gz --tries=3
 fi
 
-tar xvzf lbzip2-2.3.tar.gz
-cd lbzip2-2.3
+tar xvzf lbzip2-2.5.tar.gz
+cd lbzip2-2.5
 ./configure
 make
 make install
@@ -95,15 +96,15 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s lzip-1.15.tar.gz ]; then
-  echo "lzip-1.15.tar.gz [found]"
+if [ -s lzip-1.16.tar.gz ]; then
+  echo "lzip-1.16.tar.gz [found]"
   else
-  echo "Error: lzip-1.15.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/lzip-1.15.tar.gz --tries=3
+  echo "Error: lzip-1.16.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/lzip-1.16.tar.gz --tries=3
 fi
 
-tar xvzf lzip-1.15.tar.gz
-cd lzip-1.15
+tar xvzf lzip-1.16.tar.gz
+cd lzip-1.16
 ./configure
 make
 make install
@@ -123,30 +124,30 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s lzlib-1.5.tar.gz ]; then
-  echo "lzlib-1.5.tar.gz [found]"
+if [ -s lzlib-1.6.tar.gz ]; then
+  echo "lzlib-1.6.tar.gz [found]"
   else
-  echo "Error: lzlib-1.5.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/lzlib-1.5.tar.gz --tries=3
+  echo "Error: lzlib-1.6.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.6.tar.gz --tries=3
 fi
 
-if [ -s plzip-1.1.tar.gz ]; then
-  echo "plzip-1.1.tar.gz [found]"
+if [ -s plzip-1.2.tar.gz ]; then
+  echo "plzip-1.2.tar.gz [found]"
   else
-  echo "Error: plzip-1.1.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/plzip-1.1.tar.gz --tries=3
+  echo "Error: plzip-1.2.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/plzip/plzip-1.2.tar.gz --tries=3
 fi
 
-tar xvzf lzlib-1.5.tar.gz
-cd lzlib-1.5
+tar xvzf lzlib-1.6.tar.gz
+cd lzlib-1.6
 ./configure
 make
 make install
 
 cd ../
 
-tar xvzf plzip-1.1.tar.gz
-cd plzip-1.1
+tar xvzf plzip-1.2.tar.gz
+cd plzip-1.2
 ./configure
 make
 make install
