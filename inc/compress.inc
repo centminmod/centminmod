@@ -1,6 +1,14 @@
+PIGZ_VER='2.3.1'
+PBZIP_VER='1.1.12'
+LBZIP_VER='2.5'
+LZIP_VER='1.16'
+LZLIB_VER='1.6'
+PLZIP_VER='1.2'
+PZIP_VER='9.20.1'
+
 function funct_pigzinstall {
 
-if [ ! -f /usr/bin/pigz ]; then
+if [[ ! -f /usr/bin/pigz || ! -f "${DIR_TMP}/pigz-${PIGZ_VER}.tar.gz" ]]; then
 
 echo ""
 echo "*************************************************"
@@ -9,20 +17,20 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s pigz-2.3.1.tar.gz ]; then
-  echo "pigz-2.3.1.tar.gz [found]"
+if [ -s pigz-${PIGZ_VER}.tar.gz ]; then
+  echo "pigz-${PIGZ_VER}.tar.gz [found]"
   else
-  echo "Error: pigz-2.3.1.tar.gz not found!!! download now......"
-  wget -c --no-check-certificate http://zlib.net/pigz/pigz-2.3.1.tar.gz --tries=3
+  echo "Error: pigz-${PIGZ_VER}.tar.gz not found!!! download now......"
+  wget -c --no-check-certificate http://zlib.net/pigz/pigz-${PIGZ_VER}.tar.gz --tries=3
 fi
 
-tar xvzf pigz-2.3.1.tar.gz
-#cd pigz-2.3.1
-cd pigz-2.3.1
+tar xzf pigz-${PIGZ_VER}.tar.gz
+cd pigz-${PIGZ_VER}
+make clean
 # rm -rf Makefile
 # wget -c --no-check-certificate https://raw.github.com/madler/pigz/5316bf3440025ca37d84d7580a8f616c0127668a/Makefile -O Makefile
 make
-cp pigz unpigz /usr/bin
+\cp -f pigz unpigz /usr/bin
 ls -lh /usr/bin | grep pigz
 
 fi
@@ -31,7 +39,7 @@ fi
 
 function funct_pbzip2install {
 
-if [ ! -f /usr/bin/pbzip2 ]; then
+if [[ ! -f /usr/bin/pbzip2 || ! -f "${DIR_TMP}/pbzip2-${PBZIP_VER}.tar.gz" ]]; then
 
 echo ""
 echo "*************************************************"
@@ -40,18 +48,19 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s pbzip2-1.1.12.tar.gz ]; then
-  echo "pbzip2-1.1.12.tar.gz [found]"
+if [ -s pbzip2-${PBZIP_VER}.tar.gz ]; then
+  echo "pbzip2-${PBZIP_VER}.tar.gz [found]"
   else
-  echo "Error: pbzip2-1.1.12.tar.gz not found!!!download now......"
-  # wget -c http://compression.ca/pbzip2/pbzip2-1.1.12.tar.gz --tries=3
-  wget -c https://launchpad.net/pbzip2/1.1/1.1.12/+download/pbzip2-1.1.12.tar.gz --tries=3
+  echo "Error: pbzip2-${PBZIP_VER}.tar.gz not found!!!download now......"
+  # wget -c http://compression.ca/pbzip2/pbzip2-${PBZIP_VER}.tar.gz --tries=3
+  wget -c https://launchpad.net/pbzip2/1.1/${PBZIP_VER}/+download/pbzip2-${PBZIP_VER}.tar.gz --tries=3
 fi
 
-tar xvzf pbzip2-1.1.12.tar.gz
-cd pbzip2-1.1.12
+tar xzf pbzip2-${PBZIP_VER}.tar.gz
+cd pbzip2-${PBZIP_VER}
+make clean
 make
-cp pbzip2 /usr/bin
+\cp -f pbzip2 /usr/bin
 
 fi
 
@@ -59,7 +68,7 @@ fi
 
 function funct_lbzip2install {
 
-if [ ! -f /usr/local/bin/lbzip2 ]; then
+if [[ ! -f /usr/local/bin/lbzip2 || ! -f "${DIR_TMP}/lbzip2-${LBZIP_VER}.tar.gz" ]]; then
 
 echo ""
 echo "*************************************************"
@@ -68,15 +77,16 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s lbzip2-2.5.tar.gz ]; then
-  echo "lbzip2-2.5.tar.gz [found]"
+if [ -s lbzip2-${LBZIP_VER}.tar.gz ]; then
+  echo "lbzip2-${LBZIP_VER}.tar.gz [found]"
   else
-  echo "Error: lbzip2-2.5.tar.gz not found!!!download now......"
-  wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-2.5.tar.gz --tries=3
+  echo "Error: lbzip2-${LBZIP_VER}.tar.gz not found!!!download now......"
+  wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-${LBZIP_VER}.tar.gz --tries=3
 fi
 
-tar xvzf lbzip2-2.5.tar.gz
-cd lbzip2-2.5
+tar xzf lbzip2-${LBZIP_VER}.tar.gz
+cd lbzip2-${LBZIP_VER}
+make clean
 ./configure
 make
 make install
@@ -87,7 +97,7 @@ fi
 
 function funct_lzipinstall {
 
-if [ ! -f /usr/local/bin/lzip ]; then
+if [[ ! -f /usr/local/bin/lzip || ! -f "${DIR_TMP}/lzip-${LZIP_VER}.tar.gz" ]]; then
 
 echo ""
 echo "*************************************************"
@@ -96,15 +106,16 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s lzip-1.16.tar.gz ]; then
-  echo "lzip-1.16.tar.gz [found]"
+if [ -s lzip-${LZIP_VER}.tar.gz ]; then
+  echo "lzip-${LZIP_VER}.tar.gz [found]"
   else
-  echo "Error: lzip-1.16.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/lzip-1.16.tar.gz --tries=3
+  echo "Error: lzip-${LZIP_VER}.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/lzip-${LZIP_VER}.tar.gz --tries=3
 fi
 
-tar xvzf lzip-1.16.tar.gz
-cd lzip-1.16
+tar xzf lzip-${LZIP_VER}.tar.gz
+cd lzip-${LZIP_VER}
+make clean
 ./configure
 make
 make install
@@ -115,7 +126,7 @@ fi
 
 function funct_plzipinstall {
 
-if [ ! -f /usr/local/bin/plzip ]; then
+if [[ ! -f /usr/local/bin/plzip || ! -f "${DIR_TMP}/lzlib-${LZLIB_VER}.tar.gz" || ! -f "${DIR_TMP}/plzip-${PLZIP_VER}.tar.gz" ]]; then
 
 echo ""
 echo "*************************************************"
@@ -124,30 +135,32 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s lzlib-1.6.tar.gz ]; then
-  echo "lzlib-1.6.tar.gz [found]"
+if [ -s lzlib-${LZLIB_VER}.tar.gz ]; then
+  echo "lzlib-${LZLIB_VER}.tar.gz [found]"
   else
-  echo "Error: lzlib-1.6.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-1.6.tar.gz --tries=3
+  echo "Error: lzlib-${LZLIB_VER}.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-${LZLIB_VER}.tar.gz --tries=3
 fi
 
-if [ -s plzip-1.2.tar.gz ]; then
-  echo "plzip-1.2.tar.gz [found]"
+if [ -s plzip-${PLZIP_VER}.tar.gz ]; then
+  echo "plzip-${PLZIP_VER}.tar.gz [found]"
   else
-  echo "Error: plzip-1.2.tar.gz not found!!!download now......"
-  wget -c http://download.savannah.gnu.org/releases/lzip/plzip/plzip-1.2.tar.gz --tries=3
+  echo "Error: plzip-${PLZIP_VER}.tar.gz not found!!!download now......"
+  wget -c http://download.savannah.gnu.org/releases/lzip/plzip/plzip-${PLZIP_VER}.tar.gz --tries=3
 fi
 
-tar xvzf lzlib-1.6.tar.gz
-cd lzlib-1.6
+tar xzf lzlib-${LZLIB_VER}.tar.gz
+cd lzlib-${LZLIB_VER}
+make clean
 ./configure
 make
 make install
 
 cd ../
 
-tar xvzf plzip-1.2.tar.gz
-cd plzip-1.2
+tar xzf plzip-${PLZIP_VER}.tar.gz
+cd plzip-${PLZIP_VER}
+make clean
 ./configure
 make
 make install
@@ -158,7 +171,7 @@ fi
 
 function funct_p7zipinstall {
 
-if [ ! -f /usr/local/bin/7za ]; then
+if [[ ! -f /usr/local/bin/7za || ! -f "${DIR_TMP}/p7zip_${PZIP_VER}_src_all.tar.bz2" ]]; then
 
 echo ""
 echo "*************************************************"
@@ -167,16 +180,17 @@ echo "*************************************************"
 
 cd ${DIR_TMP}
 
-if [ -s p7zip_9.20.1_src_all.tar.bz2 ]; then
-  echo "p7zip_9.20.1_src_all.tar.bz2 [found]"
+if [ -s p7zip_${PZIP_VER}_src_all.tar.bz2 ]; then
+  echo "p7zip_${PZIP_VER}_src_all.tar.bz2 [found]"
   else
-  echo "Error: p7zip_9.20.1_src_all.tar.bz2 not found!!!download now......"
-  wget -c http://aarnet.dl.sourceforge.net/project/p7zip/p7zip/9.20.1/p7zip_9.20.1_src_all.tar.bz2 --tries=3
+  echo "Error: p7zip_${PZIP_VER}_src_all.tar.bz2 not found!!!download now......"
+  wget -c http://aarnet.dl.sourceforge.net/project/p7zip/p7zip/${PZIP_VER}/p7zip_${PZIP_VER}_src_all.tar.bz2 --tries=3
 fi
 
-bzip2 -d p7zip_9.20.1_src_all.tar.bz2
-tar xvf p7zip_9.20.1_src_all.tar
-cd p7zip_9.20.1
+bzip2 -d p7zip_${PZIP_VER}_src_all.tar.bz2
+tar xvf p7zip_${PZIP_VER}_src_all.tar
+cd p7zip_${PZIP_VER}
+make clean
 ./install.sh
 make
 make install
