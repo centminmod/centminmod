@@ -2,7 +2,7 @@ csftweaks() {
 if [ -f /etc/csf/csf.conf ]; then
     echo "Custom configure CSF settings...set"
 if [ ! -z "$EMAIL" ]; then
-    sed -i "s/LF_ALERT_TO = ""/LF_ALERT_TO = "$EMAIL"/g" /etc/csf/csf.conf
+    sed -i "s/LF_ALERT_TO = \"\"/LF_ALERT_TO = \"$EMAIL\"/g" /etc/csf/csf.conf
 fi
     #sed -i 's/LF_TRIGGER = "0"/LF_TRIGGER = "1"/g' /etc/csf/csf.conf
     sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
