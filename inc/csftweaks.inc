@@ -27,8 +27,8 @@ fi
     sed -i 's/LF_DISTFTP_UNIQ = "3"/LF_DISTFTP_UNIQ = "6"/g' /etc/csf/csf.conf
     sed -i 's/LF_DISTFTP_PERM = "3600"/LF_DISTFTP_PERM = "6000"/g' /etc/csf/csf.conf
 
-    if [ ! -f /proc/user_beancounters ]; then
-        if [ ! -f /usr/sbin/ipset ]; then
+    if [[ ! -f /proc/user_beancounters && "$(lsmod | grep ip_set)" ]]; then
+        if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
             # from iptables so uses less server resources to handle many IPs
             # does not work with OpenVZ VPS so only implement for non-OpenVZ
