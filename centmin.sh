@@ -671,9 +671,9 @@ echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4000000
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
-       mount -t ext4 -o rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 rw,noexec,nosuid 0 0" >> /etc/fstab
+       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
     elif [[ "$TOTALMEM" -le '2000000' ]]; then
@@ -683,9 +683,9 @@ echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
-       mount -t ext4 -o rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 rw,noexec,nosuid 0 0" >> /etc/fstab
+       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
     fi
