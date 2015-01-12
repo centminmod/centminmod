@@ -241,8 +241,8 @@ NGINX_GEOIP=n			 # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=y   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.9.32.2-beta'
-NGINX_PAGESPEEDPSOL_VER='1.9.32.2'
+NGXPGSPEED_VER='1.9.32.3-beta'
+NGINX_PAGESPEEDPSOL_VER='1.9.32.3'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV=y               # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
@@ -300,7 +300,7 @@ NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.1j'   # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.1k'   # Use this version of OpenSSL
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
 
 # Choose whether to compile Nginx --with-google_perftools_module
