@@ -316,8 +316,8 @@ PCRE_VERSION='8.36'          # NO longer used/ignored
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.2.0RC1'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
-LIBEVENT_VERSION='2.0.21'    # Use this version of Libevent
-MEMCACHED_VERSION='1.4.21'    # Use this version of Memcached server
+LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
+MEMCACHED_VERSION='1.4.22'    # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'     # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
 LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
@@ -331,8 +331,8 @@ PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL='http://php.net'
 XCACHE_VERSION='3.2.0'       # Use this version of Xcache
 APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
-IGBINARY_VERSION='1.1.1'
-IGBINARYGIT='y'
+IGBINARY_VERSION='1.2.1'
+IGBINARYGIT='n'
 ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.4'  # http://pecl.php.net/package/ZendOpcache
 # Python
