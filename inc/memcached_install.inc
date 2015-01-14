@@ -136,6 +136,7 @@ else
     #tar xfz release-${LIBEVENT_VERSION}-stable.tar.gz
     cd libevent-release-${LIBEVENT_VERSION}-stable
     make clean
+    ./autogen.sh
     ./configure --prefix=/usr/${LIBDIR}
     make${MAKETHREADS}
     make install
