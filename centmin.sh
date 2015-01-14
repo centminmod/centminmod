@@ -334,7 +334,7 @@ APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
 IGBINARY_VERSION='1.1.1'
 IGBINARYGIT='y'
 ZOPCACHEDFT='n'
-ZOPCACHECACHE_VERSION='7.0.3'
+ZOPCACHECACHE_VERSION='7.0.4'  # http://pecl.php.net/package/ZendOpcache
 # Python
 PYTHON_VERSION='2.7.9'       # Use this version of Python
 SIEGE_VERSION='3.0.9'
