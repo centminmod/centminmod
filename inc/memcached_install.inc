@@ -80,6 +80,14 @@ if [[ ! -f ${CONFIGSCANDIR}/igbinary.ini ]]; then
 	#echo "will need to reinstall memcached extensions if needed"
 fi
 
+# check for different igbinary versions
+
+if [ -f /usr/local/bin/php ]; then
+    if [[ "$(php --ri igbinary | awk '/igbinary version/ {print $4}')" != "${IGBINARY_VERSION}" ]]; then
+        funct_igbinaryinstall
+    fi
+fi
+
 }
 
 #######################################################
