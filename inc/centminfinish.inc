@@ -84,6 +84,12 @@ nsd -v
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check pure-ftpd Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+pure-ftpd -h | head -n1 | awk '{print $1,$2}'
+letswait
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check YUM Repo List" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 yum repolist
@@ -148,6 +154,21 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
 	cecho "In future to re-enable mysql service type these 2 commands:" $boldyellow
 	echo "service mysql start"
 	echo "chkconfig mysql on"
+	cecho "--------------------------------------------------------" $boldyellow
+fi
+
+if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
+
+	echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Stopping pure-ftpd service:" $boldyellow
+	cmservice pure-ftpd stop
+	cecho "Disabling pure-ftpd service:" $boldyellow
+	cmchkconfig pure-ftpd off
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "In future to re-enable pure-ftpd service type these 2 commands:" $boldyellow
+	echo "service pure-ftpd start"
+	echo "chkconfig pure-ftpd on"
 	cecho "--------------------------------------------------------" $boldyellow
 fi
 

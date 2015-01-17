@@ -1,9 +1,20 @@
 function funct_nginxaddvhost {
+PUREUSER=nginx
+PUREGROUP=nginx
+CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+pureftpinstall
 
 echo ""
 cecho "---------------------------------------------" $boldyellow
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+  read -ep "Create FTP username for vhost domain (enter username): " ftpuser
+  read -ep "Create FTP password for $ftpuser (enter password): " ftppass
+  echo
+  echo "FTP username you entered: $ftpuser"
+  echo "FTP password you entered: $ftppass"
+fi
 
 echo ""
 
@@ -11,6 +22,11 @@ if [ ! -d /home/nginx/domains/$vhostname ]; then
 
 # Checking Permissions, making directories, example index.html
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
+
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+  ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
+  pure-pw mkdb
+fi
 
 cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
 <html>
@@ -96,8 +112,20 @@ END
 echo 
 cecho "---------------------------------------------" $boldyellow
 cmservice nginx reload
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+  cmservice pure-ftpd restart
+fi
 
 echo 
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+cecho "---------------------------------------------" $boldyellow
+cecho "FTP hostname : $CNIP" $boldwhite
+cecho "FTP port : 21" $boldwhite
+cecho "FTP mode : FTP (explicit SSL)" $boldwhite
+cecho "FTP Passive (PASV) : ensure is checked/enabled" $boldwhite
+cecho "FTP username created for $vhostname : $ftpuser" $boldwhite
+cecho "FTP password created for $vhostname : $ftppass" $boldwhite
+fi
 cecho "---------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite

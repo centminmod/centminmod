@@ -228,6 +228,7 @@ NSD_DISABLED=n               # NSD disabled by default with chkconfig off
 MEMCACHED_DISABLED=n          # Memcached server disabled by default via chkconfig off
 PHP_DISABLED=n                # PHP-FPM disabled by default with chkconfig off
 MYSQLSERVICE_DISABLED=n       # MariaDB MySQL service disabled by default with chkconfig off
+PUREFTPD_DISABLED=n           # Pure-ftpd service disabled by default with chkconfig off
 
 # General Configuration
 NGINXUPGRADESLEEP='6'
@@ -372,6 +373,7 @@ fi
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
+source "inc/pureftpd.inc"
 source "inc/htpasswdsh.inc"
 source "inc/gcc.inc"
 source "inc/entropy.inc"
@@ -1073,6 +1075,8 @@ installpythonfuct
 imagickinstall
 
 nsdinstall
+
+pureftpinstall
 
 if [ -f $CUR_DIR/Extras/nginx-update.sh ];
 then
