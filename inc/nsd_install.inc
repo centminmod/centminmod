@@ -15,11 +15,19 @@ fi
 
 #download nsd
 
+# check if NSD is v3 or v4
+NSD_VERCHECK=$(echo $NSD_VERSION | cut -d . -f1)
+NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
+
     echo "Compiling NSD..."
     #tar xzvf nsd-${NSD_VERSION}.tar.gz
     cd nsd-${NSD_VERSION}
     ./configure
     make${MAKETHREADS}
+    # for nsd v4
+    if [[ "$NSD_VERCHECK" = '4' ]]; then
+        make nsd-mem
+    fi
     make install
     echo "Creating user and group for nsd..."
     groupadd nsd
@@ -31,7 +39,13 @@ fi
     mkdir -p /etc/nsd
     mkdir -p /etc/nsd/master
     mkdir -p /etc/nsd/slave
+    # for nsd v4
+    mkdir -p /etc/nsd/zones
+    touch /etc/nsd/zones/zone.list
+    # setup example demo.com zone in zone.list
+    printf "zone:\n\tname: "demo.com"\n\tzonefile: "master/demo.com.zone"\n" >> /etc/nsd/zones/zone.list
     chown -R nsd:nsd /etc/nsd/
+    chmod 0666 /var/db/nsd/
     cp -R $CUR_DIR/config/nsd/* /etc/nsd/
     cd /etc/sysconfig/
     cp $CUR_DIR/sysconfig/nsd nsd

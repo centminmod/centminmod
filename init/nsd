@@ -5,7 +5,7 @@ if [ ! -d /var/run/nsd/ ]; then
     chown -R nsd:nsd /var/run/nsd/
 fi
 
-#
+# nsdv3
 # nsd:         Starts the NSD Name Server Daemon
 #
 # chkconfig: - 13 87
