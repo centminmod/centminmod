@@ -12,10 +12,10 @@ socket=/var/lib/mysql/mysql.sock
 tmpdir=/home/mysqltmp
 
 innodb=ON
-skip-federated
+#skip-federated
 #skip-pbxt
 #skip-pbxt_statistics
-skip-archive
+#skip-archive
 #skip-name-resolve
 #old_passwords
 back_log = 75
