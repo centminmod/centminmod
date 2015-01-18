@@ -6,6 +6,7 @@ pureftpinstall() {
 
 		yum -q -y install pure-ftpd
 		cmchkconfig pure-ftpd on
+		sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
 	
 		echo "configuring pure-ftpd for virtual user support"
 		# tweak /etc/pure-ftpd/pure-ftpd.conf
@@ -31,6 +32,7 @@ pureftpinstall() {
 			
 		echo "pure-ftpd installed"
 		cmservice pure-ftpd restart
+		csf -r
 
 		echo
 	fi
