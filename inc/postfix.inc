@@ -39,11 +39,12 @@ postconf -e smtpd_client_connection_count_limit=50
 postconf -e 'recipient_delimiter = +'
 postconf -e smtpd_recipient_limit=2000
 postconf -e smtpd_recipient_overshoot_limit=2000
+postconf -e 'smtpd_banner = $myhostname ESMTP'
 
 postconf -d | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols'
 postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3'
 postconf -e 'smtpd_tls_protocols = !SSLv2 !SSLv3'
-postconf -n | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols'
+postconf -n | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols|smtpd_banner'
 
 postconf -d | egrep 'smtp_tls_mandatory_protocols|smtp_tls_protocols'
 postconf -e 'smtp_tls_mandatory_protocols = !SSLv2 !SSLv3'
