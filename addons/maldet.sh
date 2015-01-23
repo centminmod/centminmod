@@ -136,6 +136,9 @@ clamavinstall() {
 	yum clean all -q
 	yum makecache fast -q
 	yum -y install clamav clamd --disablerepo=epel
+	if [[ -z "$(grep clam /etc/yum.repos.d/epel.repo)" ]]; then
+		sed -i 's/exclude=varnish/exclude=varnish clamd clamav clamav-db/' /etc/yum.repos.d/epel.repo
+	fi
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam

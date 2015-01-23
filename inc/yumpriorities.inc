@@ -210,7 +210,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
-exclude=varnish
+exclude=varnish clamd clamav clamav-db
 .
 :w
 :q
