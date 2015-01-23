@@ -13,7 +13,11 @@ then
 
 #download csf tarball
 
-    yum${CACHESKIP} -y install perl-libwww-perl
+    if [[ -z "$(rpm -qa perl-Crypt-SSLeay)" || -z "$(rpm -qa perl-Net-SSLeay)" ]]; then
+        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay
+    else
+        yum${CACHESKIP} -y install perl-libwww-perl
+    fi
 
     #tar xzf csf.tgz
     cd csf
