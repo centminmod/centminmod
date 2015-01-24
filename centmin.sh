@@ -237,7 +237,7 @@ NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.1k'     # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.2'     # Use this version of OpenSSL
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
@@ -262,7 +262,7 @@ TWEMPERF_VER='0.1.1'
 
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.36'
-PHP_VERSION='5.4.33'          # Use this version of PHP
+PHP_VERSION='5.4.37'          # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL='http://php.net'
 XCACHE_VERSION='3.1.0'       # Use this version of Xcache
@@ -270,7 +270,7 @@ APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
 IGBINARY_VERSION='1.1.1'
 IGBINARYGIT='y'
 ZOPCACHEDFT='n'
-ZOPCACHECACHE_VERSION='7.0.3'
+ZOPCACHECACHE_VERSION='7.0.4'
 # Python
 PYTHON_VERSION='2.7.8'       # Use this version of Python
 SIEGE_VERSION='3.0.6'
