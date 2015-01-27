@@ -73,6 +73,11 @@ if [ ! -d /var/run/nsd ]; then
     fi # CENTOS_SEVEN != 7
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/nsd/nsd.conf
+    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/init.d/nsd
+fi
+
 ####################################
 if [[ "$NSD_VERCHECK" = '4' || "$NSDRUN_VERCHECK" = '4' ]]; then
 
@@ -154,7 +159,7 @@ fi # NSD_VERCHECK
     chown -R nsd:nsd /var/run/nsd/
     chown -R nsd:nsd /var/db/nsd/
     chown -R nsd:nsd /etc/nsd/
-    chmod 0666 /var/db/nsd/
+    chmod 0755/var/db/nsd/
 
 #killall -9 nsd
 /etc/init.d/nsd stop

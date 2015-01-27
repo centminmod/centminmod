@@ -233,7 +233,7 @@ PUREFTPD_DISABLED=n           # Pure-ftpd service disabled by default with chkco
 # General Configuration
 NGINXUPGRADESLEEP='6'
 NSD_INSTALL=y                # Install NSD (DNS Server)
-NSD_VERSION='3.2.17'         # NSD Version
+NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
 NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades

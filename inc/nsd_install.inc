@@ -45,10 +45,15 @@ NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     # setup example demo.com zone in zone.list
     printf "zone:\n\tname: "demo.com"\n\tzonefile: "master/demo.com.zone"\n" >> /etc/nsd/zones/zone.list
     chown -R nsd:nsd /etc/nsd/
-    chmod 0666 /var/db/nsd/
+    chmod 0755 /var/db/nsd/
     cp -R $CUR_DIR/config/nsd/* /etc/nsd/
     cd /etc/sysconfig/
     cp $CUR_DIR/sysconfig/nsd nsd
+
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/nsd/nsd.conf
+    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/init.d/nsd
+fi
 
 # # only run for CentOS 6.x
 # if [[ "$CENTOS_SEVEN" != '7' ]]; then
