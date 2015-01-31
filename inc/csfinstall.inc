@@ -13,9 +13,9 @@ then
 
 #download csf tarball
 
-    if [[ -z "$(rpm -qa perl-Crypt-SSLeay)" || -z "$(rpm -qa perl-Net-SSLeay)" ]]; then
-        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay
-    else
+    if [[ -z "$(rpm -qa perl-Crypt-SSLeay)" || -z "$(rpm -qa perl-Net-SSLeay)" || -z "$(rpm -qa perl-LWP-Protocol-https)" ]]; then
+        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https
+    elif [[ -z "$(rpm -qa perl-libwww-perl)" ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
     fi
 
