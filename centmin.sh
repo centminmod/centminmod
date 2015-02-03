@@ -16,7 +16,7 @@ DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/01/2015'
+SCRIPT_DATE='31/03/2015'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
@@ -618,13 +618,16 @@ fi
 if [ ${ARCH} == 'x86_64' ];
 then
 	if [ "$UNATTENDED" == 'n' ]; then
-    ASK "Would you like to exclude installation of 32bit Yum packages? (Recommended for 64bit CentOS) [y/n] "
+        ASK "Would you like to exclude installation of 32bit Yum packages? (Recommended for 64bit CentOS) [y/n] "
 	else
-	key='y'
+	   key='y'
 	fi #unattended
     if [[ "$key" = [yY] ]];
     then
         \cp -f /etc/yum.conf /etc/yum.bak
+
+        echo "removing any i686 packages installed by default"
+        yum -y remove \*.i686
 
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
@@ -720,7 +723,7 @@ fi
 #
 clear
 cecho "**********************************************************************" $boldyellow
-cecho "* Centmin, an nginx, MariaDB/MySQL, PHP & DNS Install script for CentOS" $boldgreen
+cecho "* Centmin Mod Nginx, MariaDB MySQL, PHP & DNS Install script for CentOS" $boldgreen
 cecho "* Version: $SCRIPT_VERSION - Date: $SCRIPT_DATE" $boldgreen
 cecho "* $COPYRIGHT $SCRIPT_MODIFICATION_AUTHOR" $boldgreen
 cecho "**********************************************************************" $boldyellow
@@ -802,7 +805,7 @@ funct_centos6check
 
     cd $DIR_TMP
 
-if [ "$(rpm -qa | grep php*)" ]; then
+if [ "$(rpm -qa | grep ^php*)" ]; then
 
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
 echo "yum -y erase php*"
