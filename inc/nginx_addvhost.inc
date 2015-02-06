@@ -62,8 +62,12 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # Setting up Nginx mapping
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf" <<END
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
 #server {
 #            listen   80;
 #            server_name $vhostname;
@@ -81,7 +85,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=32k;
+  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
@@ -98,6 +102,8 @@ server {
   #autoindex_localtime on;
 
   # Enable for vBulletin usage WITHOUT vbSEO installed
+  # More example Nginx vhost configurations at
+  # http://centminmod.com/nginx_configure.html
   #try_files		\$uri \$uri/ /index.php;
 
   }
