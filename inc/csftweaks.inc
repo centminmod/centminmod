@@ -28,6 +28,12 @@ fi
     sed -i 's/LF_DISTFTP_UNIQ = "3"/LF_DISTFTP_UNIQ = "6"/g' /etc/csf/csf.conf
     sed -i 's/LF_DISTFTP_PERM = "3600"/LF_DISTFTP_PERM = "6000"/g' /etc/csf/csf.conf
 
+    # enable CSF support of dynamic DNS
+    # add your dynamic dns hostnames to /etc/csf/csf.dyndns and restart CSF
+    # https://community.centminmod.com/threads/csf-firewall-info.25/page-2#post-10687
+    sed -i 's/DYNDNS = \"0\"/DYNDNS = \"300\"/' /etc/csf/csf.conf
+    sed -i 's/DYNDNS_IGNORE = \"0\"/DYNDNS_IGNORE = \"1\"/' /etc/csf/csf.conf
+
     if [[ ! -f /proc/user_beancounters && "$(lsmod | grep ip_set)" ]]; then
         if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
