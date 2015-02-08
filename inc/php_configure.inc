@@ -95,13 +95,6 @@ else
 	SNMPOPT=""
 fi
 
-if [ "$PHPFINFO" == 'y' ]; then
-	FILEINFOOPT=""
-else
-	FILEINFOOPT=" --disable-fileinfo"
-fi
-
-
 if [[ "$CHECKLOWMEMPHP" = "1" || "$PHPFINFO" = 'n' ]]; then
         FILEINFOOPT=" --disable-fileinfo"
 else
