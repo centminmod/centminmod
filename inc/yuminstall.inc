@@ -95,17 +95,21 @@ axelsetup
 # use Remi's ImageMagicK 6.8.9 package
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
-    if [[ "$(rpm -qa ImageMagick)" ]];then
-    echo
-    echo "----------------------------------------------------------------------------------"
-    cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
-    echo "----------------------------------------------------------------------------------"
-    yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+    if [[ "$(rpm -qa ImageMagick)" ]]; then
+      echo
+      echo "----------------------------------------------------------------------------------"
+      cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
+      echo "----------------------------------------------------------------------------------"
+      yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-  libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+  
+      yum -y remove ImageMagick
+  
+      yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel -- enablerepo=remi --disableplugin=priorities
+      echo
+    fi
 
-    yum -y remove ImageMagick
-
-    yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
-    echo
+    if [[ "$(rpm -qa ImageMagick-last)" ]]; then
+      yum -y update ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
     fi
   fi
 fi
