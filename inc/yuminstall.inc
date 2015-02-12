@@ -46,7 +46,15 @@ yumcentosfivedownload
 
 #yum -y -q update kernel-devel
 
-PACKAGE='ca-certificates yum-plugin-security yum-utils bash mlocate rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel ipset ipset-devel'
+if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
+
+PACKAGE='ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel ipset ipset-devel'
+
+else
+
+PACKAGE='ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel ipset ipset-devel'
+
+fi
 
 declare -a array
 array=(${PACKAGE})
@@ -87,6 +95,7 @@ axelsetup
 # use Remi's ImageMagicK 6.8.9 package
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
+    if [[ "$(rpm -qa ImageMagick)" ]];then
     echo
     echo "----------------------------------------------------------------------------------"
     cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
@@ -97,6 +106,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
     yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
     echo
+    fi
   fi
 fi
 
