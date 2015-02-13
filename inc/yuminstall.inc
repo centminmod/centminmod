@@ -104,7 +104,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   
       yum -y remove ImageMagick
   
-      yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel -- enablerepo=remi --disableplugin=priorities
+      yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
       echo
     fi
 
