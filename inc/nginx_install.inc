@@ -9,12 +9,22 @@ then
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     # Disable Apache if installed
-    if [ -f /etc/init.d/httpd ];
-    then
+    if [ -f /etc/init.d/httpd ]; then
       service httpd stop
       chkconfig httpd off
     fi
 fi # CENTOS_SEVEN != 7
+
+# only run for CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    # Disable Apache if installed
+    if [[ "$(systemctl is-enabled httpd.service)" = 'enabled' ]]; then
+      systemctl stop httpd.service
+      systemctl disable httpd.service
+    else
+      systemctl disable httpd.service
+    fi
+fi # CENTOS_SEVEN = 7
 
     # Then install nginx
     cd $DIR_TMP
