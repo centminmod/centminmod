@@ -91,9 +91,9 @@ fi
 if [[ "$CHECKM" == 'nomemcached' ]]; then
         echo "Memcached server started "
         if [[ "$LOGGING" = [yY] ]]; then
-        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
         else
-        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
         fi
 else
         echo "Memcached server already running "
