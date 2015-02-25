@@ -133,9 +133,11 @@ interactive-timeout
 #plugin-load=ha_innodb
 #ignore_builtin_innodb
 
-## MariaDB 10 InnoDB plugin only
-#innodb_buffer_pool_load_now=1
-#innodb_buffer_pool_dump_now=1
+## MariaDB 10 only save and restore buffer pool pages
+## warm up InnoDB buffer pool on server restarts
+innodb_buffer_pool_dump_at_shutdown=1
+innodb_buffer_pool_load_at_startup=1
+innodb_buffer_pool_populate=0
 ## Disabled settings
 performance_schema=OFF
 innodb_stats_on_metadata=OFF
