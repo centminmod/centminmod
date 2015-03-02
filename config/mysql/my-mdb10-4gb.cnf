@@ -60,6 +60,7 @@ log-error=/var/log/mysqld.log
 
 # innodb settings
 innodb_purge_threads=1
+innodb_file_format = Barracuda
 innodb_file_per_table = 1
 innodb_open_files = 1000
 innodb_data_file_path= ibdata1:10M:autoextend
