@@ -1,5 +1,14 @@
 selinxcheck() {
 	# check if selinux is disabled, if not abort and prompt to reboot
+
+	if [ ! -f /usr/sbin/sestatus ]; then
+		yum -q -y install policycoreutils
+	fi
+
+	if [ ! -f /usr/sbin/setenforce ]; then
+		yum -q -y install libselinux-utils
+	fi	
+
 	if [[ -z $(sestatus | grep disabled) && -f /etc/selinux/config ]]; then
 		echo "---------------------------------------------------------------"
 		echo "SELINUX linux detected"
@@ -29,10 +38,14 @@ csfipsetcheck() {
 	if [[ ! -f /proc/user_beancounters && "$(lsmod | grep ip_set)" ]]; then
 		if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
 			yum -y -q install ipset ipset-devel
+			if [ -f /etc/csf/csf.conf ]; then
 			sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
+			fi
 		fi
 	else
+		if [ -f /etc/csf/csf.conf ]; then
 		sed -i 's/LF_IPSET = \"1\"/LF_IPSET = \"0\"/' /etc/csf/csf.conf
+		fi
 	fi
 }
 
