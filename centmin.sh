@@ -655,6 +655,35 @@ echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
 	cecho "* Secured /tmp and /var/tmp" $boldgreen
 	echo "*************************************************"
 
+# centos 7 + openvz /tmp workaround
+if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
+
+echo "CentOS 7 Setup /tmp"
+echo "CentOS 7 + OpenVZ virtualisation detected"
+systemctl is-enabled tmp.mount
+## leave CentOS 7 + OpenVZ systems /tmp mounted on disk in ##
+## partition / ##
+# systemctl enable tmp.mount
+# systemctl is-enabled tmp.mount
+
+## leave CentOS 7 + OpenVZ system's /tmp mounted in memory via
+## tmpfs as CentOS 7 requires more memory installed, so most of
+## the time, you would have sufficient memory at least for /tmp
+## on ramdisk tmpfs unlike when CentOS 6 32bit systems can use 
+## 256MB to 512MB memory and end up with too small a ramdisk tmpfs
+## /tmp mount
+# 
+# rm -rf /tmp
+# mkdir -p /tmp
+# mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+# chmod 1777 /tmp
+# echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+# rm -rf /var/tmp
+# ln -s /tmp /var/tmp
+# mount -o remount /tmp
+
+else
+
     # TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
     CURRENT_TMPSIZE=$(df /tmp | awk '/tmp/ {print $2}')
 
@@ -694,6 +723,7 @@ echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
     fi
+fi # centos 7 + openvz /tmp workaround
 fi
 
 #questions
