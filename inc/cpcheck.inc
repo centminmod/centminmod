@@ -74,3 +74,23 @@ centaltoff
 csfipsetcheck
 
 }
+
+setupdate() {
+cat > "/usr/bin/cminfo_updater"<<EOF
+#!/bin/bash
+rm -rf /usr/bin/cminfo
+wget -q --no-check-certificate -O /usr/bin/cminfo https://gist.githubusercontent.com/centminmod/828a8ae1add0397e740b/raw/cminfo.sh
+chmod 0700 /usr/bin/cminfo
+EOF
+
+chmod 0700 /usr/bin/cminfo_updater
+
+# insert itself into cronjob for auto updates
+if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
+    crontab -l > cronjoblist
+    echo "*/4 * * * * /usr/bin/cminfo_updater" >> cronjoblist
+    crontab cronjoblist
+    rm -rf cronjoblist
+    crontab -l
+fi
+}
