@@ -478,8 +478,10 @@ fi
 
 if [ ! -f /usr/bin/cminfo_updater ]; then
     setupdate
+    /usr/bin/cminfo_updater
 else
     setupdate
+    /usr/bin/cminfo_updater
 fi
 
 if [ ! -x /usr/bin/cminfo ]; then
