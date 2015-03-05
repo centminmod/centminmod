@@ -114,16 +114,6 @@ echo "aborting script..."
 exit
 fi
 
-if [ ! -x /usr/bin/cminfo ]; then
-    chmod 0700 /usr/bin/cminfo
-fi
-
-if [ ! -f /usr/bin/cminfo_updater ]; then
-    setupdate
-else
-    setupdate
-fi
-
 TESTEDCENTOSVER='7.0'
 CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
 
@@ -484,6 +474,16 @@ if [ -f /etc/centminmod-versionlog ];then
 	fi
 else
 	echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
+fi
+
+if [ ! -f /usr/bin/cminfo_updater ]; then
+    setupdate
+else
+    setupdate
+fi
+
+if [ ! -x /usr/bin/cminfo ]; then
+    chmod 0700 /usr/bin/cminfo
 fi
 
 ###############################################################
