@@ -306,4 +306,4 @@ ping.response = pong
 ;php_admin_value[error_log] = /var/log/fpm-php.www.log
 ;php_admin_flag[log_errors] = on
 ;php_admin_value[memory_limit] = 32M
-php_admin_value[disable_functions] = shell_exec
+php_admin_value[disable_functions] = shell_exec, exec

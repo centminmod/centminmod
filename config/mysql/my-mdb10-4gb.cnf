@@ -1,4 +1,5 @@
 [mysqld]
+local-infile=0
 ignore-db-dir=lost+found
 #character-set-server=utf8
 datadir=/var/lib/mysql
