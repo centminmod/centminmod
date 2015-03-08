@@ -40,14 +40,12 @@ cat > "/etc/logrotate.d/nginx" <<END
         daily
         missingok
         rotate 10
-        size=100M
+        size=500M
         compress
         delaycompress
         notifempty
         postrotate
-                /sbin/service nginx restart
-               #or
-               #kill -s USR1 'cat /usr/local/nginx/logs/nginx.pid'
+        /bin/kill -SIGUSR1 `cat /usr/local/nginx/logs/nginx.pid 2>/dev/null` 2>/dev/null || true
         endscript            
 }
 END
