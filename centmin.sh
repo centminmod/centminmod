@@ -262,6 +262,7 @@ ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
+PHPDEBUGMODE=n               # --enable-debug PHP compile flag
 PHPFINFO=n                   # Disable or Enable PHP File Info extension
 PHPPCNTL=y                    # Disable or Enable PHP Process Control extension
 PHPINTL=y                    # Disable or Enable PHP intl extension
