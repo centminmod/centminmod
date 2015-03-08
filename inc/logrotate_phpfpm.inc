@@ -30,14 +30,12 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         daily
         missingok
         rotate 10
-        size=100M
+        size=500M
         compress
         delaycompress
         notifempty
         postrotate
-                service php-fpm restart
-               #or
-               #kill -s USR1 'cat /var/run/php-fpm/php-fpm.pid'
+        /bin/kill -SIGUSR1 `cat /var/run/php-fpm/php-fpm.pid 2>/dev/null` 2>/dev/null || true
         endscript            
 }
 END
