@@ -127,6 +127,13 @@ echo ""
 	sed -i '/\/home?\/?\/public_html/ a\                \/usr\/local\/maldetect\/maldet -b -r \/var\/www\/html 2 >> \/dev\/null 2>&1' /etc/cron.daily/maldet
 	sed -i '/\/home?\/?\/public_html/ a\                \/usr\/local\/maldetect\/maldet -b -r \/usr\/local\/nginx\/html 2 >> \/dev\/null 2>&1' /etc/cron.daily/maldet
  
+ 	# extend scan to other system directories where malware and viruses can be placed
+	echo "" >> /etc/cron.daily/maldet
+	echo "# extend maldet scans to other areas" >> /etc/cron.daily/maldet
+	echo "/usr/local/maldetect/maldet -b -r /boot 2 >> /dev/null 2>&1" >> /etc/cron.daily/maldet
+	echo "/usr/local/maldetect/maldet -b -r /etc 2 >> /dev/null 2>&1" >> /etc/cron.daily/maldet
+	echo "/usr/local/maldetect/maldet -b -r /usr 2 >> /dev/null 2>&1" >> /etc/cron.daily/maldet
+
 }
 
 clamavinstall() {
