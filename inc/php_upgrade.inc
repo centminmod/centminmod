@@ -79,7 +79,7 @@ if [[ "$DETECTMEMCACHED" == [yY] ]]; then
 fi
 
 if [[ "$DETECTOPCACHE" == [yY] ]]; then
-    if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' ]]; then
+    if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' || "$PHPMUVER" != '7.0' ]]; then
         cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
         zopcachereinstall
     fi
@@ -146,11 +146,25 @@ if [[ "$UALL" = 'y' ]]; then
     overwritephpfpmconf='n'
     lessphpmem='y'
 else
-    echo ""
-    read -ep "Install which version of PHP? (version i.e. ${PHP_VERSION}): " phpver
-    read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
-    if [[ "$overwritephpfpmconf" = [yY] ]]; then
-        read -ep "Does this server have less than <=2048MB of memory installed ? [y/n]: " lessphpmem
+    echo "----------------------------------------------------------------"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.0, NGDEBUG)"
+    echo "PHP 7.0.0 is experimental in alpha status and may have broken PHP extensions."
+    echo "NGDEBUG is PHP 7.0.0 minus incompatible PHP extensions"
+    echo "----------------------------------------------------------------"
+    read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+    echo "----------------------------------------------------------------"
+    echo "Want to update to latest php-fpm.conf ? (overwrites will auto backup existing php-fpm.conf)"
+    echo "existing php.ini will be backed up at /usr/local/lib/php.ini-oldversion_$DT"
+    echo "existing php-fpm.conf will be backed up at /usr/local/etc/php-fpm.conf-oldversion_$DT"
+    echo "----------------------------------------------------------------"
+    read -ep "Update & overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
+    echo "----------------------------------------------------------------"
+    
+    # switch to auto calculate system memory instead of prompting for user input
+    IS_PHPLOWMEM='2097152'
+    CHECK_PHPLOWMEM=`expr $TOTALMEM \< $IS_PHPLOWMEM`
+    if [ "$CHECK_PHPLOWMEM" == "1" ]; then
+        lessphpmem=y
     fi
 fi # UALL
 

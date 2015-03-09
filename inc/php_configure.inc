@@ -19,7 +19,7 @@ else
 	PHPDEBUGOPT=''
 fi
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' && "zendopcacheon" = [yY] || "ZOPCACHEDFT" = [yY] ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' && "zendopcacheon" = [yY] || "ZOPCACHEDFT" = [yY] ]]; then
 	OPCACHEOPT=" --enable-opcache"
 else
 	OPCACHEOPT=""
