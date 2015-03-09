@@ -79,7 +79,8 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-wget -q --no-check-certificate -O /usr/bin/cminfo https://gist.githubusercontent.com/centminmod/828a8ae1add0397e740b/raw/cminfo.sh
+#wget -q --no-check-certificate -O /usr/bin/cminfo https://gist.githubusercontent.com/centminmod/828a8ae1add0397e740b/raw/cminfo.sh
+wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/123.08centos7beta01/tools/cminfo.sh
 chmod 0700 /usr/bin/cminfo
 EOF
 
