@@ -6,10 +6,10 @@ if [[ "$xcachekey" = [nN] ]]; then
     # if not reinstalling Xcache Cache when selecting no
     # you should remove xcache.ini file to prevent loading
     # attempts and errors on PHP-FPM service restarts
-    if [ -f "${CONFIGSCANDIR}/xcache.ini" ]; then
-        echo "rm -rf ${CONFIGSCANDIR}/xcache.ini"
-        rm -rf ${CONFIGSCANDIR}/xcache.ini
-    fi    
+    #if [ -f "${CONFIGSCANDIR}/xcache.ini" ]; then
+    #    echo "rm -rf ${CONFIGSCANDIR}/xcache.ini"
+    #    rm -rf ${CONFIGSCANDIR}/xcache.ini
+    #fi    
     exit 0
 fi
 

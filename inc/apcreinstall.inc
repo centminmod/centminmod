@@ -6,10 +6,10 @@ if [[ "$apckeyd" = [nN] ]]; then
     # if not reinstalling APC Cache when selecting no
     # you should remove apc.ini file to prevent loading
     # attempts and errors on PHP-FPM service restarts
-    if [ -f "${CONFIGSCANDIR}/apc.ini" ]; then
-        echo "rm -rf ${CONFIGSCANDIR}/apc.ini"
-        rm -rf ${CONFIGSCANDIR}/apc.ini
-    fi
+    #if [ -f "${CONFIGSCANDIR}/apc.ini" ]; then
+    #    echo "rm -rf ${CONFIGSCANDIR}/apc.ini"
+    #    rm -rf ${CONFIGSCANDIR}/apc.ini
+    #fi
     exit 0
 fi
 
