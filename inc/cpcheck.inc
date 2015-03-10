@@ -75,6 +75,14 @@ csfipsetcheck
 
 }
 
+histformat() {
+	if [[ -z "$(grep HISTTIMEFORMAT /root/.bashrc)" ]]; then
+		echo "HISTTIMEFORMAT=\"[%d.%m.%y] %T   \"" >> /root/.bashrc
+		echo "export HISTSIZE=10000" >> /root/.bashrc
+		echo "export HISTTIMEFORMAT" >> /root/.bashrc
+	fi	
+}
+
 setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash

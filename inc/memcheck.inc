@@ -17,6 +17,7 @@ CHECKLOWMEM=`expr $TOTALMEM \< $ISLOWMEM`
 lowmemcheck() {
 
 cpcheck
+histformat
 
 # Check memory installed threshold
 if [ "$CHECKLOWMEM" == "1" ]; then
