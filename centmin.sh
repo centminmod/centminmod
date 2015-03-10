@@ -928,6 +928,7 @@ fi
     chmod +x /etc/init.d/php-fpm
 
     mkdir -p /var/run/php-fpm
+    chmod 755 /var/run/php-fpm
     touch /var/run/php-fpm/php-fpm.pid
     chown nginx:nginx /var/run/php-fpm
     chown root:root /var/run/php-fpm/php-fpm.pid

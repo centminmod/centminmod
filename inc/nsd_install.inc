@@ -34,6 +34,7 @@ NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     useradd -g nsd -s /sbin/nologin -M nsd
     echo "Setting up directories..."
     mkdir -p /var/run/nsd
+    chmod 755 /var/run/nsd
     chown -R nsd:nsd /var/run/nsd/
     chown -R nsd:nsd /var/db/nsd/
     mkdir -p /etc/nsd

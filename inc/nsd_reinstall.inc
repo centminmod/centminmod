@@ -58,7 +58,8 @@ fi
 
 if [ ! -d /var/run/nsd ]; then
     echo "Setting up directories..."
-    mkdir /var/run/nsd
+    mkdir -p var/run/nsd
+    chmod 755 /var/run/nsd
     chown -R nsd:nsd /var/run/nsd/
     chown -R nsd:nsd /var/db/nsd/
 

@@ -2,6 +2,7 @@
 
 if [ ! -d /var/run/nsd/ ]; then
     mkdir -p /var/run/nsd
+    chmod 755 /var/run/nsd
     chown -R nsd:nsd /var/run/nsd/
 fi
 
