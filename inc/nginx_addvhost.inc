@@ -21,6 +21,7 @@ echo ""
 if [ ! -d /home/nginx/domains/$vhostname ]; then
 
 # Checking Permissions, making directories, example index.html
+umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
@@ -56,7 +57,7 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
 END
 
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/$vhostname/public
-
+umask 022
 chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 

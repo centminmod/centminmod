@@ -210,7 +210,7 @@ if [[ -z $NGXLIMITSCONFCHECK ]]; then
     ulimit -n 262144
 
 fi # check if custom open file descriptor limits already exist
-
+    umask 027
     mkdir /home/nginx/domains
     #chmod 0771 /home/nginx/domains/
     mkdir -p /home/nginx/domains/demodomain.com/{public,private,log,backup}
@@ -223,6 +223,7 @@ fi # check if custom open file descriptor limits already exist
     chmod g+s /home/nginx
     chmod g+s /home/nginx/domains/
     chmod g+s /usr/local/nginx/html
+    umask 022
 
     mkdir -p /usr/local/nginx/conf/conf.d
     fpmconfdir
