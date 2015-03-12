@@ -1122,6 +1122,8 @@ installpythonfuct
 
 imagickinstall
 
+geoipphpext
+
 nsdinstall
 
 pureftpinstall
