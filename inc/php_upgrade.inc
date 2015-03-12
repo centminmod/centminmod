@@ -50,6 +50,8 @@ fi
 
 if [ -f ${CONFIGSCANDIR}/geoip.ini ]; then
     DETECTGEOIP=y
+else
+    DETECTGEOIP=y
 fi
 
 }
