@@ -17,7 +17,7 @@ if [[ -d /usr/share/GeoIP ]]; then
 	make$MAKETHREADS
 	make install
 
-cat > "/etc/centminmod/php.d/geoip.ini" <<EOF
+cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 EOF
 fi
