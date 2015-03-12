@@ -7,7 +7,9 @@ if [[ -d /usr/share/GeoIP ]]; then
 	
 	echo "compiling geoip PHP extension..."
 	cd $DIR_TMP
-	svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+	if [[ ! -d ${DIR_TMP}/geoip ]]; then
+		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+	fi
 	cd geoip
 	make clean
 	/usr/local/bin/phpize
