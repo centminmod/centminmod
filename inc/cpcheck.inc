@@ -49,6 +49,12 @@ csfipsetcheck() {
 	fi
 }
 
+checkaliases() {
+	if [[ "$(grep 'centminmod-123.08centos7beta01' /root/.bashrc)" && -d /usr/local/src/centminmod-123.08centos7beta02 ]]; then
+        sed -i 's/centminmod-123.08centos7beta01/centminmod-123.08centos7beta02/' /root/.bashrc
+    fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -72,6 +78,7 @@ fi
 selinxcheck
 centaltoff
 csfipsetcheck
+checkaliases
 
 }
 
