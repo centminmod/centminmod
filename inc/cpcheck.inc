@@ -95,6 +95,10 @@ EOF
 chmod 0700 /usr/bin/cminfo_updater
 
 # insert itself into cronjob for auto updates
+if [ ! -f /usr/bin/crontab ]; then
+	yum -y -q install crontab
+fi
+
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
     echo "*/4 * * * * /usr/bin/cminfo_updater" >> cronjoblist
