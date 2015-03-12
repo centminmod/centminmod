@@ -160,6 +160,9 @@ else
 fi
 
 if [[ "$NGINX_GEOIP" = [yY] ]]; then
+	if [[ ! -d /usr/share/GeoIP ]]; then
+		geoipinstall
+	fi
 	GEOIPOPT=' --with-http_geoip_module'
 else
 	GEOIPOPT=''

@@ -300,6 +300,9 @@ funct_logrotate
         fi
 	fi
 
+geoinccheck
+geoipphp
+
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"

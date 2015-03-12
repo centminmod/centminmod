@@ -238,7 +238,7 @@ NTP_INSTALL=y                # Install Network time protocol daemon
 NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
 NGINX_INSTALL=y              # Install Nginx (Webserver)
-NGINX_GEOIP=n			 # Nginx GEOIP module install
+NGINX_GEOIP=y			 # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=y   # Install ngx_pagespeed from official github master instead  
@@ -407,6 +407,7 @@ source "inc/nginx_mimetype.inc"
 source "inc/openssl_install.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
+source "inc/geoip.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"
