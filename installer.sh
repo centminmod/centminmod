@@ -27,7 +27,7 @@ yumupdater() {
 cminstall() {
 cd $INSTALLDIR
 if [[ ! -f "${DOWNLOAD}" ]]; then
-	wget -cnv http://centminmod.com/centminmod_beta/${DOWNLOAD} --tries=3
+	wget -cnv http://centminmod.com/download/${DOWNLOAD} --tries=3
 	rm -rf centmin-v1.2.3mod
 	unzip ${DOWNLOAD}
 fi
