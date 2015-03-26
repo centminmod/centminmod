@@ -91,7 +91,9 @@ if [[ -f ${CONFIGSCANDIR}/xcache.ini ]]; then
 fi
 
 if [[ -f ${CONFIGSCANDIR}/zendopcache.ini ]]; then
-	rm -rf ${CONFIGSCANDIR}/zendopcache.ini
+	# \cp -af ${CONFIGSCANDIR}/zendopcache.ini ${CONFIGSCANDIR}/zendopcache.ini.bak
+	# rm -rf ${CONFIGSCANDIR}/zendopcache.ini
+	ZOPHPINIEXISTS=y
 fi
 
 ######################################################
@@ -104,57 +106,67 @@ if [[ -f /usr/local/nginx/html/opcache.php ]]; then
 fi
 
 ######################################################
-
 PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
-
-#replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- $CUR_DIR/config/zendopcache/zendopcache-min.ini
-
-#replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- $CUR_DIR/config/zendopcache/zendopcache.ini
-
-#$CUR_DIR/config/zendopcache/zendopcache-min.ini
-#$CUR_DIR/config/zendopcache/zendopcache.ini
-
 #######################################################
-# check if opcache.so exists in ${CONFIGSCANDIR}/zendopcache.ini
 
+# check if ${CONFIGSCANDIR}/zendopcache.ini file exists
+if [ ! -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+	if [[ "$lesszendopcachemem" = [yY] ]]; then
+		echo $lesszendopcachemem			
+		echo -e "\nCopying zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
+		cat $CUR_DIR/config/zendopcache/zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini
+		replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini	
+	else
+		echo $lesszendopcachemem	
+		echo -e "\nCopying zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
+		cat $CUR_DIR/config/zendopcache/zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini
+		replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini		
+	fi
+fi
+
+# check if opcache.so exists in ${CONFIGSCANDIR}/zendopcache.ini
 ZOPLUSSOCHECK=$(grep 'opcache.so' ${CONFIGSCANDIR}/zendopcache.ini)
 
+################
+# if opcache.so doesn't exist then ZOPPLUSSOCHECK will be empty
 if [[ -z $ZOPLUSSOCHECK ]]; then
-
 	echo
 	read -ep "Do you want to reset zendopcache.ini settings to default (y) or keep existing zendopcache.ini settings (n)? [y/n]: " resetzocache
 
     if [[ "$resetzocache" = [yY] ]]; then   
-
 		echo
-		
-			if [[ "$lesszendopcachemem" = [yY] ]]; then
-			
-			echo $lesszendopcachemem
-			
+		if [[ "$lesszendopcachemem" = [yY] ]]; then
+			echo $lesszendopcachemem			
 			echo -e "\nCopying zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
 			cat $CUR_DIR/config/zendopcache/zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini
-			replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini
-			
-			else
-			
-			echo $lesszendopcachemem
-			
-			echo -e "\nCopying zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
-				cat $CUR_DIR/config/zendopcache/zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini
-				replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini
-			
-			fi
-		
+			replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini	
 		else
-		
-			if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+			echo $lesszendopcachemem	
+			echo -e "\nCopying zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
+			cat $CUR_DIR/config/zendopcache/zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini
+			replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini		
+		fi
+	else
+		# if resetzocache=n
+		if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
 			ls -lah ${CONFIGSCANDIR}/zendopcache.ini
-			fi
+			
+			echo
+			# replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini
+			
+			# resetzocache = n
+			# update zend_extension path for updated PHP version and update ${CONFIGSCANDIR}/zendopcache.ini
+			# with such path while keeping existing ${CONFIGSCANDIR}/zendopcache.ini settings intact
+			sed -i "/zend_extension=/c\zend_extension=$PHPEXTDIRD\/opcache.so" ${CONFIGSCANDIR}/zendopcache.ini
+		else
+			echo
+			echo "${CONFIGSCANDIR}/zendopcache.ini doesn't exist"
+			echo "May need to run sub menu option 1 to install Zend Opcache"
+			echo "instead of sub menu option 2 to reinstall Zend Opcache"
+		fi
 	fi # resetzocache
 fi # check if opcache.so exists in zendopcache.ini
-
-replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini
+################
 
     cmservice php-fpm restart
     echo "*************************************************"
@@ -163,12 +175,9 @@ replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" --
 
 else
 
-PHPNATIVEOPCACHE='y'
-
+	PHPNATIVEOPCACHE='y'
 	echo ""
 	echo "Detected PHP branch: 5.5 which has native support for Zend OPcache"
 	echo "To re-install Zend OPcache run menu option #5 and specify PHP 5.5.0 or higher"
-
 fi # check for PHPMVER !=5.5
-
 }
