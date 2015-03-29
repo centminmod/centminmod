@@ -38,7 +38,10 @@ time zip -4 -q -r ${PKGNAME}-$DT $PKGDIR
 echo
 ls -lah $PKGBASE | grep $PKGNAME
 
+# clean up
+rm -rf $PKGDIR
+
 echo
 echo "packaging completed"
-echo "saved package to ${PKGDIR}/$PKGNAME"
+echo "saved package to ${PKGBASE}/${PKGNAME}-${DT}.zip"
 exit
