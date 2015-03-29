@@ -13,7 +13,8 @@ PKGNAME='centminmod_pkg'
 ################################################
 mkdir -p $PKGDIR
 
-for f in "$(ls /svr-setup-package)"
+cd /svr-setup
+for f in $(ls /svr-setup)
  do 
 	if [[ "$(stat --printf='%F' $f)" != 'directory' ]]; then 
 		echo "copying $f to $PKGDIR"
@@ -23,7 +24,7 @@ done
 
 echo
 echo "copy ngx_pagespeed + psol"
-cd /svr-setup-package
+cd /svr-setup
 \cp -a $(ls -t | grep ngx_pagespeed-release | head -n1) $PKGDIR
 
 echo
