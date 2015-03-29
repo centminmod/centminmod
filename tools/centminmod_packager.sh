@@ -34,7 +34,7 @@ ls -lah $PKGDIR
 echo
 echo "zip up package directory $PKGDIR"
 cd $PKGBASE
-time zip -4 -q -r ${PKGNAME}-$DT $PKGDIR
+time zip -4 -q -r ${PKGNAME}-$DT ${PKGNAME}
 
 echo
 ls -lah $PKGBASE | grep $PKGNAME
