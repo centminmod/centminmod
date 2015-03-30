@@ -83,8 +83,28 @@ EOF
 
 	fi
 
+	# check if include file /usr/local/nginx/conf/geoip.conf exists in
+	# /usr/local/nginx/conf/nginx.conf
+	# if does not exist insert using sed a new line after http { for
+	# include /usr/local/nginx/conf/geoip.conf;
 	if [[ -z "$GEOIPCHECK" ]]; then
-		sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+		# check if use set in centmin.sh NGINX_GEOIP=y or n, if yes
+		# insert include /usr/local/nginx/conf/geoip.conf;, if no
+		# inset commented out version #include /usr/local/nginx/conf/geoip.conf;
+		if [[ "$NGINX_GEOIP" = [yY] ]]; then
+			sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+		else
+			sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+		fi
+	else
+		# if include /usr/local/nginx/conf/geoip.conf; line already exists in nginx.conf
+		# and NGINX_GEOIP=y, ensure that the line isn't commented out
+		# if NGINX_GEOIP=n, then comment out the include line with hash #
+		if [[ "$NGINX_GEOIP" = [yY] ]]; then
+			sed -i 's/#include \/usr\/local\/nginx\/conf\/geoip.conf;/include \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+		else
+			sed -i 's/include \/usr\/local\/nginx\/conf\/geoip.conf;/#include \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+		fi
 	fi
 }
 
