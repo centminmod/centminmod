@@ -19,8 +19,30 @@ pureftpinstall() {
 		sed -i 's/# PassivePortRange          30000 50000/PassivePortRange    3000 3050/' /etc/pure-ftpd/pure-ftpd.conf
 
 		# ensure TLS Cipher preference protects against poodle attacks
+
 		sed -i 's/# TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3/TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:!SSLv3/' /etc/pure-ftpd/pure-ftpd.conf
 
+		if [[ ! "$(grep 'TLSCipherSuite' /etc/pure-ftpd/pure-ftpd.conf)" ]]; then
+			echo 'TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:!SSLv3' >> /etc/pure-ftpd/pure-ftpd.conf
+		fi
+
+		# check if /etc/pure-ftpd/pureftpd.passwd exists
+		if [ ! -f /etc/pure-ftpd/pureftpd.passwd ]; then
+			touch /etc/pure-ftpd/pureftpd.passwd
+			chmod 0600 /etc/pure-ftpd/pureftpd.passwd
+			pure-pw mkdb
+		fi
+
+		# generate /etc/pure-ftpd/pureftpd.pdb
+		if [ ! -f /etc/pure-ftpd/pureftpd.pdb ]; then
+			pure-pw mkdb
+		fi
+
+		# check tweaks were made
+		echo
+		cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite'
+
+		echo
 		echo "generating self-signed ssl certificate..."
 		echo "FTP client needs to use FTP (explicit SSL) mode"
 		echo "to connect to server's main ip address on port 21"
@@ -32,11 +54,21 @@ pureftpinstall() {
 		chmod 600 /etc/ssl/private/*.pem
 		openssl x509 -in /etc/ssl/private/pure-ftpd.pem -text -noout
 		echo 
+		ls -lah /etc/ssl/private/
+		echo
 		echo "self-signed ssl cert generated"
 			
 		echo "pure-ftpd installed"
 		cmservice pure-ftpd restart
 		csf -r
+
+		echo
+		echo "check /etc/pure-ftpd/pureftpd.passwd"
+		ls -lah /etc/pure-ftpd/pureftpd.passwd
+
+		echo
+		echo "check /etc/pure-ftpd/pureftpd.pdb"
+		ls -lah /etc/pure-ftpd/pureftpd.pdb
 
 		echo
 	fi
