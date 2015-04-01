@@ -39,7 +39,7 @@ if [[ "$ZOPCACHEPROMPT" = [yY] ]]; then
 echo ""
 read -ep "Install which version of Zend OpCache? (version i.e. ${ZOPCACHECACHE_VERSION}}): " zocver
 ZENDOPCACHE_LINKFILE="zendopcache-${zocver}.tgz"
-ZENDOPCACHE_LINK="http://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
+ZENDOPCACHE_LINK="https://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
 
 
     cd $DIR_TMP
