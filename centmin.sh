@@ -114,7 +114,7 @@ echo "aborting script..."
 exit
 fi
 
-TESTEDCENTOSVER='7.0'
+TESTEDCENTOSVER='7.1'
 CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -512,7 +512,7 @@ CM_INSTALLDIR=$CUR_DIR
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 DOWNLOADAPP='wget ${WGETOPT} --progress=bar'
 WGETRETRY='--tries=3'
 AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
@@ -1245,7 +1245,7 @@ fi
 function funct_centos6check {
 
 
-if [[ "$CENTOSVER" == '5.6' || "$CENTOSVER" == '5.7'|| "$CENTOSVER" == '5.8' || "$CENTOSVER" == '6.0' || "$CENTOSVER" == '6.1' || "$CENTOSVER" == '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" == '5.6' || "$CENTOSVER" == '5.7'|| "$CENTOSVER" == '5.8' || "$CENTOSVER" == '6.0' || "$CENTOSVER" == '6.1' || "$CENTOSVER" == '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
 MCRYPT=" --with-mcrypt"
 

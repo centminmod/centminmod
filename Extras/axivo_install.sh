@@ -112,7 +112,7 @@ fi
 } 2>&1 | tee ${CENTMINLOGDIR}/axivo_install_${DT}_centos6.log
 fi
 
-if [[ "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 {
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 

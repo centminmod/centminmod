@@ -28,7 +28,7 @@ echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
 rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
 ###############################################################################
-if [[ "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
     if [ "$(uname -m)" == 'x86_64' ]; then
 

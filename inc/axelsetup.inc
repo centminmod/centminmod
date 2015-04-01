@@ -146,7 +146,7 @@ fi # centos vercheck
 
 ###
 
-if [[ "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
     if [ ${MACHINE_TYPE} == 'x86_64' ];
     then

@@ -185,7 +185,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	axivosixyum
 fi
 
-if [[ "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 	axivoseven
 fi
 

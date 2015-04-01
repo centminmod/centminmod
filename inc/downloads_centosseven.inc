@@ -83,7 +83,7 @@ fi # REMIREPO_DISABLE
 ###############################################
 yumcentossevendownload() {
 
-if [[ "$CENTOSVER" = '7.0' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 {
 echo "*************************************************"
 cecho "* CentOS 7.x detected installing EPEL Repo" $boldgreen
