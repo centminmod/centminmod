@@ -210,12 +210,12 @@ echo "yum -y erase php*"
 fi
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
-DOWNLOADAPP='wget -c --progress=bar'
+DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ=''
 AXELPHPUPGRADETARGZ=''
 else
-DOWNLOADAPP='wget -c --progress=bar'
+DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ=''
 AXELPHPUPGRADETARGZ=''
