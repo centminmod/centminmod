@@ -96,15 +96,15 @@ LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFI
 LIBEVENTLINK="https://github.com/libevent/libevent/archive/${LIBEVENTLINKFILE}"
 
 PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
-PHPEXT_IMAGICKLINK="http://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
+PHPEXT_IMAGICKLINK="https://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
 PHPEXT_IMAGICKLINKLOCAL="http://centminmod.com/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
 
 PHPEXT_MEMCACHELINKFILE="memcache-${MEMCACHE_VERSION}.tgz"
-PHPEXT_MEMCACHELINK="http://pecl.php.net/get/${PHPEXT_MEMCACHELINKFILE}"
+PHPEXT_MEMCACHELINK="https://pecl.php.net/get/${PHPEXT_MEMCACHELINKFILE}"
 PHPEXT_MEMCACHELINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_MEMCACHELINKFILE}"
 
 PHPEXT_MEMCACHEDLINKFILE="memcached-${MEMCACHEDPHP_VER}.tgz"
-PHPEXT_MEMCACHEDLINK="http://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
+PHPEXT_MEMCACHEDLINK="https://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
 PHPEXT_MEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
 
 PHPEXT_LIBMEMCACHEDLINKFILE="libmemcached-${LIBMEMCACHED_VER}.tar.gz"
@@ -151,11 +151,11 @@ XCACHE_LINKFILE="xcache-${XCACHE_VERSION}.tar.gz"
 XCACHE_LINK="http://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/${XCACHE_LINKFILE}"
 
 APCCACHE_LINKFILE="APC-${APCCACHE_VERSION}.tgz"
-APCCACHE_LINK="http://pecl.php.net/get/${APCCACHE_LINKFILE}"
+APCCACHE_LINK="https://pecl.php.net/get/${APCCACHE_LINKFILE}"
 APCCACHE_LINKLOCAL="http://centminmod.com/centminmodparts/apc/php550/${APCCACHE_LINKFILE}"
 
 ZENDOPCACHE_LINKFILE="zendopcache-${ZOPCACHECACHE_VERSION}.tgz"
-ZENDOPCACHE_LINK="http://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
+ZENDOPCACHE_LINK="https://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
 ZENDOPCACHE_LINKLOCAL="http://centminmod.com/centminmodparts/zendopcache/${ZENDOPCACHE_LINKFILE}"
 
 NSD_LINKFILE="nsd-${NSD_VERSION}.tar.gz"
