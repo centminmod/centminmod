@@ -426,7 +426,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
-AXELPHPUPGRADETARGZ="-O php-${PHP_VERSION}.tar.gz"
+AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.gz"
 else
 DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
