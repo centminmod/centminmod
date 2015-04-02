@@ -93,8 +93,10 @@ EOF
 		# inset commented out version #include /usr/local/nginx/conf/geoip.conf;
 		if [[ "$NGINX_GEOIP" = [yY] ]]; then
 			sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+			sed -i 's/#fastcgi_param GEOIP_/fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
 		else
 			sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+			sed -i 's/fastcgi_param GEOIP_/#fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
 		fi
 	else
 		# if include /usr/local/nginx/conf/geoip.conf; line already exists in nginx.conf
@@ -102,8 +104,10 @@ EOF
 		# if NGINX_GEOIP=n, then comment out the include line with hash #
 		if [[ "$NGINX_GEOIP" = [yY] ]]; then
 			sed -i 's/#include \/usr\/local\/nginx\/conf\/geoip.conf;/include \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+			sed -i 's/#fastcgi_param GEOIP_/fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
 		else
 			sed -i 's/include \/usr\/local\/nginx\/conf\/geoip.conf;/#include \/usr\/local\/nginx\/conf\/geoip.conf;/g' /usr/local/nginx/conf/nginx.conf
+			sed -i 's/fastcgi_param GEOIP_/#fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
 		fi
 	fi
 }
