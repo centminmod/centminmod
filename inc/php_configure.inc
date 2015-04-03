@@ -101,7 +101,15 @@ else
 	SNMPOPT=""
 fi
 
-if [[ "$CHECKLOWMEMPHP" = "1" || "$PHPFINFO" = 'n' ]]; then
+if [[ "$CHECKLOWMEMPHP" = "1" ]]; then
+        FILEINFOOPT=" --disable-fileinfo"
+else
+        FILEINFOOPT=""
+fi
+
+# let centmin.sh set PHPFINFO variable override the
+# low memory CHECKLOWMEMPHP variable check
+if [[ "$PHPFINFO" = 'n' ]]; then
         FILEINFOOPT=" --disable-fileinfo"
 else
         FILEINFOOPT=""
