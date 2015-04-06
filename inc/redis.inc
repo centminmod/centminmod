@@ -58,7 +58,7 @@ checkredistar
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 #tar xvzf ${PHPEXT_REDISLINKFILE}
-cd ${DIR_TMP}/redis-${REDISPHP_VER}
+cd ${DIR_TMP}/phpredis-${REDISPHP_VER}
 make clean
 /usr/local/bin/phpize
 if [[ -f "${PHPEXTDIRD}/igbinary.so" ]]; then

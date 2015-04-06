@@ -33,7 +33,7 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
     fi
 fi
 
-if [[ -f ${CONFIGSCANDIR}/redis.ini || "$PHPREDIS" = [yY] ]]; then
+if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
     DETECTREDIS=y
 fi
 
@@ -430,12 +430,24 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         autodetectinstallextensions
     fi
 
+    if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+        redisinstall
+    elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+        rm -rf ${CONFIGSCANDIR}/redis.ini
+    fi
+
 else
 
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
     if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]]; then
         autodetectinstallextensions
+    fi
+
+    if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+        redisinstall
+    elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+        rm -rf ${CONFIGSCANDIR}/redis.ini
     fi
 
 fi # overwritephpfpmconf

@@ -187,7 +187,7 @@ PHPEXT_LIBMEMCACHEDLINKFILE="libmemcached-${LIBMEMCACHED_VER}.tar.gz"
 PHPEXT_LIBMEMCACHEDLINK="https://launchpad.net/libmemcached/1.0/${LIBMEMCACHED_VER}/+download/${PHPEXT_LIBMEMCACHEDLINKFILE}"
 PHPEXT_LIBMEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_LIBMEMCACHEDLINKFILE}"
 
-PHPEXT_REDISLINKFILE="redis-${REDISPHP_VER}.tgz"
+PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
 PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
 PHPEXT_REDISLINKLOCAL="http://centminmod.com/centminmodparts/redis/${PHPEXT_MEMCACHEDLINKFILE}"
 
