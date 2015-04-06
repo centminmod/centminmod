@@ -814,6 +814,77 @@ echo ""
 }
 
 ###############################################
+redisphplocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf redis*
+
+        cecho "Download local ${PHPEXT_REDISLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_REDISLINKFILE} ]; then
+  cecho "${PHPEXT_REDISLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINKLOCAL} -O ${PHPEXT_REDISLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} local download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_REDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${PHPEXT_REDISLINKFILE} local valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
+redisphptarball() {
+
+    cd $DIR_TMP
+
+        cecho "Download ${PHPEXT_REDISLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_REDISLINKFILE} ]; then
+  cecho "${PHPEXT_REDISLINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINK} -O ${PHPEXT_REDISLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_REDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} extraction failed." $boldgreen
+    cecho "trying local mirror download..." $boldgreen
+    redisphplocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_REDISLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
 libmemcachedlocaltarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then

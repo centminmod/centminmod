@@ -33,6 +33,10 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
     fi
 fi
 
+if [ -f ${CONFIGSCANDIR}/redis.ini ]; then
+    DETECTREDIS=y
+fi
+
 if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
     DETECTOPCACHE=y
 fi
@@ -82,6 +86,11 @@ fi
 if [[ "$DETECTMEMCACHED" == [yY] ]]; then
     cecho "Auto reinstalling previously detected memcached/memcache php extension" $boldyellow
     funct_memcachedreinstall
+fi
+
+if [[ "$DETECTREDIS" == [yY] ]]; then
+    cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
+    redisinstall
 fi
 
 if [[ "$DETECTOPCACHE" == [yY] ]]; then
