@@ -414,6 +414,7 @@ source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"
 source "inc/memcached_install.inc"
+source "inc/redis.inc"
 source "inc/mysql_proclimit.inc"
 source "inc/mysqltmp.inc"
 source "inc/mariadb_install.inc"
@@ -1125,6 +1126,8 @@ installpythonfuct
 imagickinstall
 
 geoipphpext
+
+redisinstall
 
 nsdinstall
 
