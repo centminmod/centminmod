@@ -33,7 +33,7 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
     fi
 fi
 
-if [ -f ${CONFIGSCANDIR}/redis.ini ]; then
+if [[ -f ${CONFIGSCANDIR}/redis.ini || "$PHPREDIS" = [yY] ]]; then
     DETECTREDIS=y
 fi
 

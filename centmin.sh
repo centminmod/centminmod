@@ -325,6 +325,8 @@ MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
 LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
+PHPREDIS='y'                # redis PHP extension install
+REDISPHP_VER='2.2.7'        # redis PHP version
 
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.37.1'
