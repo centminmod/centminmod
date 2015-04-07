@@ -38,10 +38,11 @@ pureftpinstall
 
 wpinstall
   WPSALT=$(openssl rand 11 -base64)
+  WPSALTB=$(openssl rand 11 -base64)
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
-  WPADMINPASS="z${WPSALT}wps${WPN}"
+  WPADMINPASS="z${WPSALTB}wps${WPN}"
  
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
