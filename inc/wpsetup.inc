@@ -21,13 +21,9 @@ dbsetup() {
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
-  DBND=$RANDOM
-  DBNE=$RANDOM
-  DB="wpxdb_${DBN}"
-  DBUSER="wpdb${SALT}u${DBD}"
-  DBPASS="wpdb${SALT}p${DBE}"
-  DBUSER="${DBUSER}_${DBNB}"
-  DBPASS="${DBPASS}_${DBNC}"
+  DB="wp${DBN}db_${SALT}"
+  DBUSER="wpdb${SALT}u${DBNB}"
+  DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
   mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
