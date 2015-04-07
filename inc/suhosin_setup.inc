@@ -8,14 +8,14 @@ if [ "$PHPVERCHECK" != '5.7' ]; then
 
 cd $DIR_TMP
 
-if [ -s suhosin-${SUHOSINVER}.tgz ]; then
-  echo "suhosin-${SUHOSINVER}.tgz [found]"
+if [ -s suhosin-${SUHOSINVER}.tar.gz ]; then
+  echo "suhosin-${SUHOSINVER}.tar.gz [found]"
   else
-  echo "Error: suhosin-${SUHOSINVER}.tgz not found!!!download now......"
-  wget -c --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tgz --tries=3
+  echo "Error: suhosin-${SUHOSINVER}.tar.gz not found!!!download now......"
+  wget -c --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tar.gz --tries=3
 fi
 
-tar xvzf suhosin-${SUHOSINVER}.tgz
+tar xvzf suhosin-${SUHOSINVER}.tar.gz
 cd suhosin-${SUHOSINVER}
 make clean
 phpize
