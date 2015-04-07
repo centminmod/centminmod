@@ -33,6 +33,10 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
     fi
 fi
 
+if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
+    DETECTREDIS=y
+fi
+
 if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
     DETECTOPCACHE=y
 fi
@@ -82,6 +86,11 @@ fi
 if [[ "$DETECTMEMCACHED" == [yY] ]]; then
     cecho "Auto reinstalling previously detected memcached/memcache php extension" $boldyellow
     funct_memcachedreinstall
+fi
+
+if [[ "$DETECTREDIS" == [yY] ]]; then
+    cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
+    redisinstall
 fi
 
 if [[ "$DETECTOPCACHE" == [yY] ]]; then
@@ -421,12 +430,24 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         autodetectinstallextensions
     fi
 
+    if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+        redisinstall
+    elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+        rm -rf ${CONFIGSCANDIR}/redis.ini
+    fi
+
 else
 
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
     if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]]; then
         autodetectinstallextensions
+    fi
+
+    if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+        redisinstall
+    elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+        rm -rf ${CONFIGSCANDIR}/redis.ini
     fi
 
 fi # overwritephpfpmconf
