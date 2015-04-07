@@ -30,9 +30,10 @@ fi
 SUHOSINCHECK=$(grep 'extension=suhosin.so' ${CONFIGSCANDIR}/suhosin.ini)
 if [ -z "$SUHOSINCHECK" ]; then
 # echo "" >> ${CONFIGSCANDIR}/suhosin.ini
-echo "extension=suhosin.so" >> ${CONFIGSCANDIR}/suhosin.ini
+# echo "extension=suhosin.so" >> ${CONFIGSCANDIR}/suhosin.ini
 
 cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
+extension=suhosin.so
 suhosin.simulation = 0
 suhosin.cookie.encrypt = 0
 suhosin.executor.disable_eval = 0
