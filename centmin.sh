@@ -432,6 +432,7 @@ source "inc/openvz_stack.inc"
 source "inc/siegeinstall.inc"
 source "inc/python_install.inc"
 source "inc/nginx_addvhost.inc"
+source "inc/wpsetup.inc"
 source "inc/mariadb_upgrade.inc"
 source "inc/mariadb_upgrade53.inc"
 source "inc/mariadb_upgrade55.inc"
@@ -1537,10 +1538,11 @@ else
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Re-install" $boldgreen
             cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
-            cecho "22). Exit" $boldgreen
+            cecho "22). Add Wordpress Nginx vhost + WP Super Cache" $boldgreen
+            cecho "23). Exit" $boldgreen
             cecho "--------------------------------------------------------" $boldyellow
         
-            read -ep "Enter option [ 1 - 22 ] " option
+            read -ep "Enter option [ 1 - 23 ] " option
             cecho "--------------------------------------------------------" $boldyellow
         
         #########################################################
@@ -2002,7 +2004,15 @@ fi
         echo "Total Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
 
         ;;
-        22|exit)
+        22|addwpvhost)
+        
+        centminlog
+        {
+        wpacctsetup
+        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log
+        
+        ;;        
+        23|exit)
         
         bookmark
         
