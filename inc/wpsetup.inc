@@ -11,9 +11,11 @@ wpinstall() {
 
 dbsetup() {
   DBN=$RANDOM
+  DBNB=$RANDOM
+  DBNC=$RANDOM
   DB="wpxdb_${DBN}"
-  DBUSER="${DBUSER}_${DBN}"
-  DBPASS="${DBPASS}_${DBN}"
+  DBUSER="${DBUSER}_${DBNB}"
+  DBPASS="${DBPASS}_${DBNC}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
   mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
@@ -28,11 +30,16 @@ pureftpinstall
 wpinstall
 
   WPN=$RANDOM
+  WPNB=$RANDOM
+  WPNC=$RANDOM
+  WPND=$RANDOM
+  WPADMINUSER='zwp${WPNB}'
+  WPADMINPASS='zwps${WPNC}'
   WPADMINUSER="${WPADMINUSER}_${WPN}"
-  WPADMINPASS="${WPADMINPASS}_${WPN}"
+  WPADMINPASS="${WPADMINPASS}_${WPD}"
 
-if [ ! -d /root/tool ]; then
-  mkdir -p /root/tool
+if [ ! -d /root/tools ]; then
+  mkdir -p /root/tools
 fi
 
 echo
