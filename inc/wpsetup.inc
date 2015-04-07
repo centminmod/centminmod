@@ -17,14 +17,15 @@ wpinstall() {
 }
 
 dbsetup() {
+  SALT=$(openssl rand 11 -base64)
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
   DBND=$RANDOM
   DBNE=$RANDOM
   DB="wpxdb_${DBN}"
-  DBUSER="wpdbu${DBD}"
-  DBPASS="wpdbp${DBE}"
+  DBUSER="wpdb${SALT}u${DBD}"
+  DBPASS="wpdb${SALT}p${DBE}"
   DBUSER="${DBUSER}_${DBNB}"
   DBPASS="${DBPASS}_${DBNC}"
   mysqladmin create $DB
@@ -39,13 +40,13 @@ CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 pureftpinstall
 
 wpinstall
-
+  WPSALT=$(openssl rand 11 -base64)
   WPN=$RANDOM
   WPNB=$RANDOM
   WPNC=$RANDOM
   WPND=$RANDOM
-  WPADMINUSER='zwp${WPNB}'
-  WPADMINPASS='zwps${WPNC}'
+  WPADMINUSER="z${WPSALT}wp${WPNB}"
+  WPADMINPASS="z${WPSALT}wps${WPNC}"
   WPADMINUSER="${WPADMINUSER}_${WPN}"
   WPADMINPASS="${WPADMINPASS}_${WPD}"
 
