@@ -21,8 +21,9 @@ dbsetup() {
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
-  DB="wp${DBN}db_${SALT}"
-  DBUSER="wpdb${SALT}u${DBNB}"
+  DBND=$RANDOM
+  DB="wp${DBN}db_${DBND}"
+  DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
