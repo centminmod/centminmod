@@ -189,7 +189,7 @@ PHPEXT_LIBMEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${
 
 PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
 PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
-PHPEXT_REDISLINKLOCAL="http://centminmod.com/centminmodparts/redis/${PHPEXT_MEMCACHEDLINKFILE}"
+PHPEXT_REDISLINKLOCAL="http://centminmod.com/centminmodparts/redis/${PHPEXT_REDISLINKFILE}"
 
 TWEMPERF_LINKFILE="twemperf-${TWEMPERF_VER}.tar.gz"
 TWEMPERF_LINK="https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.gz"
