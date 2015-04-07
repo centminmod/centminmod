@@ -1,12 +1,19 @@
 wpinstall() {
-    cecho "------------------------------------------------------------" $boldgreen
-    cecho "Installing wpcli.sh" $boldyellow
-    cecho "------------------------------------------------------------" $boldgreen
-    if [ -d "${SCRIPT_DIR}/addons" ]; then
-      cd ${SCRIPT_DIR}/addons      
+    if [ ! -f /usr/bin/wp ]; then
+      cecho "------------------------------------------------------------" $boldgreen
+      cecho "Installing wpcli.sh" $boldyellow
+      cecho "------------------------------------------------------------" $boldgreen
+      if [ -d "${SCRIPT_DIR}/addons" ]; then
+        cd ${SCRIPT_DIR}/addons      
+      fi
+      chmod +x wpcli.sh
+      ./wpcli.sh install
+    else
+      cecho "------------------------------------------------------------" $boldgreen
+      cecho "Update wp-cli tool" $boldyellow
+      cecho "------------------------------------------------------------" $boldgreen
+      wp cli update --allow-root
     fi
-    chmod +x wpcli.sh
-    ./wpcli.sh install
 }
 
 dbsetup() {
