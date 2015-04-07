@@ -43,13 +43,9 @@ wpinstall
   WPSALT=$(openssl rand 11 -base64)
   WPN=$RANDOM
   WPNB=$RANDOM
-  WPNC=$RANDOM
-  WPND=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
-  WPADMINPASS="z${WPSALT}wps${WPNC}"
-  WPADMINUSER="${WPADMINUSER}_${WPN}"
-  WPADMINPASS="${WPADMINPASS}_${WPD}"
-
+  WPADMINPASS="z${WPSALT}wps${WPN}"
+ 
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
 fi
