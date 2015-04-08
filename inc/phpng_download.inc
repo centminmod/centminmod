@@ -1,8 +1,8 @@
 ########################################################################
 phpng_download() {
-	if [[ "$PHPMUVER" = 'NG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]]; then
-		if [[ "$PHPMUVER" = 'NG' ]]; then
-			PHPNGVER='NG'
+	if [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]]; then
+		if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
+			PHPNGVER='NGDEBUG'
 		elif [[ "$PHPMUVER" = '5.7' ]]; then
 			PHPNGVER='5.7.0'
 		elif [[ "$PHPMUVER" = '7.0' ]]; then
