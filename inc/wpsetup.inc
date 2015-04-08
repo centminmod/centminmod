@@ -136,7 +136,7 @@ try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri 
 }
 
 location ~* /(wp-login\.php) {
-    limit_req zone=wplogin burst=1 nodelay;
+    limit_req zone=xwplogin burst=1 nodelay;
     include /usr/local/nginx/conf/php.conf;
 }
 
