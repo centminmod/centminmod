@@ -430,10 +430,12 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         autodetectinstallextensions
     fi
 
-    if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
-        redisinstall
-    elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
-        rm -rf ${CONFIGSCANDIR}/redis.ini
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+            redisinstall
+        elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+            rm -rf ${CONFIGSCANDIR}/redis.ini
+        fi
     fi
 
 else
@@ -444,12 +446,13 @@ else
         autodetectinstallextensions
     fi
 
-    if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
-        redisinstall
-    elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
-        rm -rf ${CONFIGSCANDIR}/redis.ini
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+            redisinstall
+        elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+            rm -rf ${CONFIGSCANDIR}/redis.ini
+        fi
     fi
-
 fi # overwritephpfpmconf
 
 zendopcacheextfix
