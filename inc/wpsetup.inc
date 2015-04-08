@@ -327,7 +327,7 @@ chmod 0700 /root/tools/wp_updater_${vhostname}.sh
 
 if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
     crontab -l > cronjoblist
-    echo "*/8 * * * * /root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
+    echo "* */8 * * * /root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
