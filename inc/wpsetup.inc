@@ -312,14 +312,15 @@ chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
 
 cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
 #!/bin/bash
+PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin
 EMAIL=$WPADMINEMAIL
 
 {
 cd /home/nginx/domains/${vhostname}/public
 echo "/home/nginx/domains/${vhostname}/public"
-wp cli update --allow-root
-wp plugin status --allow-root
-wp plugin update --all --allow-root
+/usr/bin/wp cli update --allow-root
+/usr/bin/wp plugin status --allow-root
+/usr/bin/wp plugin update --all --allow-root
 } 2>&1 | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
 
