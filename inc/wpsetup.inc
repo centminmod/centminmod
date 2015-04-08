@@ -87,6 +87,14 @@ fi
 chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
+# rate limit setup
+
+WPRATECHECK=$(grep 'zone=xwplogin' /usr/local/nginx/conf/nginx.conf)
+
+if [[ -z "$WPRATECHECK" ]]; then
+  sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:16m rate=40r/m;\n/g' /usr/local/nginx/conf/nginx.conf
+fi
+
 # Setting up Nginx vhost mapping for Wordpress
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf" <<END
 # Centmin Mod Getting Started Guide
@@ -125,6 +133,11 @@ location / {
 
 try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
+}
+
+location ~* /(wp-login\.php) {
+    limit_req zone=wplogin burst=1 nodelay;
+    include /usr/local/nginx/conf/php.conf;
 }
 
 include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
