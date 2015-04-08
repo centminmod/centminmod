@@ -327,7 +327,7 @@ chmod 0700 /root/tools/wp_updater_${vhostname}.sh
 
 if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
     crontab -l > cronjoblist
-    echo "*/4 * * * * /root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
+    echo "*/8 * * * * /root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
@@ -366,7 +366,7 @@ echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "Wordpress Auto Updater created at:" $boldyellow
 cecho "  /root/tools/wp_updater_${vhostname}.sh" $boldyellow
-cecho "cronjob set for every 4 hour update (3x times per day)" $boldyellow
+cecho "cronjob set for every 8 hours update (3x times per day)" $boldyellow
 cecho "------------------------------------------------------------" $boldgreen
 echo
 cecho "Wordpress domain: $vhostname" $boldyellow
