@@ -291,13 +291,47 @@ fi
   cecho "------------------------------------------------------------" $boldgreen
 
 cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
+#/bin/bash
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.conf
 rm -rf /home/nginx/domains/${vhostname}
 rm -rf /usr/local/nginx/conf/wpsecure_${vhostname}.conf
 rm -rf /usr/local/nginx/conf/wpsupercache_${vhostname}.conf
+rm -rf /root/tools/wp_updater_${vhostname}.sh
+crontab -l > cronjoblist
+sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
+crontab cronjoblist
+rm -rf cronjoblist
 END
 
 chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
+
+  cecho "------------------------------------------------------------" $boldgreen
+  cecho "Created wp_updater_${vhostname}.sh script" $boldyellow
+  cecho "/root/tools/wp_updater_${vhostname}.sh" $boldyellow
+  cecho "------------------------------------------------------------" $boldgreen
+
+cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
+#!/bin/bash
+EMAIL=$WPADMINEMAIL
+
+{
+cd /home/nginx/domains/${vhostname}/public
+echo "/home/nginx/domains/${vhostname}/public"
+wp cli update --allow-root
+wp plugin status --allow-root
+wp plugin update --all --allow-root
+} 2>&1 | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+ENDA
+
+chmod 0700 /root/tools/wp_updater_${vhostname}.sh
+
+if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
+    crontab -l > cronjoblist
+    echo "*/4 * * * * /root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
+    crontab cronjoblist
+    rm -rf cronjoblist
+    crontab -l
+fi
 
 echo 
 cecho "---------------------------------------------" $boldyellow
@@ -327,6 +361,12 @@ echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "SSH commands to uninstall created Wordpress install and Nginx vhost:" $boldyellow
 cecho "  /root/tools/wp_uninstall_${vhostname}.sh" $boldyellow
+cecho "------------------------------------------------------------" $boldgreen
+echo
+cecho "------------------------------------------------------------" $boldgreen
+cecho "Wordpress Auto Updater created at:" $boldyellow
+cecho "  /root/tools/wp_updater_${vhostname}.sh" $boldyellow
+cecho "cronjob set for every 4 hour update (3x times per day)" $boldyellow
 cecho "------------------------------------------------------------" $boldgreen
 echo
 cecho "Wordpress domain: $vhostname" $boldyellow
