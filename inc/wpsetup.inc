@@ -97,8 +97,19 @@ fi
 chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
-# rate limit setup
+# wp-login.php password protection
+if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+  HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
+  HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
+  HTWPLOGIN=$RANDOM
+  HTWPLOGINB=$RANDOM
+  HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
+  HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
+  echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
+  /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
+fi
 
+# rate limit setup
 WPRATECHECK=$(grep 'zone=xwplogin' /usr/local/nginx/conf/nginx.conf)
 
 if [[ -z "$WPRATECHECK" ]]; then
@@ -147,6 +158,8 @@ try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri 
 
 location ~* /(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
+    auth_basic "Private";
+    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php.conf;
 }
 
@@ -410,6 +423,23 @@ cecho "Wordpress DB Pass: $DBPASS" $boldyellow
 cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
 cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
 cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
+
+if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+  echo  
+  cecho "Wordpress wp-login.php password protection info:" $boldyellow
+  cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+  cecho "wp-login.php protection Username: $HTUSER" $boldyellow
+  cecho "wp-login.php protection Password: $HTPASS" $boldyellow
+  echo
+  cecho "Resetting wp-login.php protection:" $boldyellow
+  cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+  cecho "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+  cecho "Step 2. run command:" $boldyellow
+  cecho "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" $boldyellow
+  cecho "Step 3. restart Nginx + PHP-FPM services" $boldyellow
+  cecho "     nprestart" $boldyellow
+fi
+
 echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
