@@ -92,7 +92,7 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 WPRATECHECK=$(grep 'zone=xwplogin' /usr/local/nginx/conf/nginx.conf)
 
 if [[ -z "$WPRATECHECK" ]]; then
-  sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:16m rate=40r/m;\n/g' /usr/local/nginx/conf/nginx.conf
+  sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:16m rate=40r\/m;\n/g' /usr/local/nginx/conf/nginx.conf
 fi
 
 # Setting up Nginx vhost mapping for Wordpress
