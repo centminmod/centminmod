@@ -364,6 +364,10 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
 
+if [ -f /tmp/setupwp.log ]; then
+  rm -rf /tmp/setupwp.log
+fi
+
 {
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
@@ -425,7 +429,9 @@ cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performa
 18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
 19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
 cecho "------------------------------------------------------------" $boldgreen
-} 2>&1 | perl -pe 's/\x1b.*?[mGKH]//g' | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+} 2>&1 | tee /tmp/setupwp.log
+cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+rm -rf /tmp/setupwp.log
 
 echo
 cecho "---------------------------------------------" $boldyellow
