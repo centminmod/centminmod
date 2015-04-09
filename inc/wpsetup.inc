@@ -57,6 +57,16 @@ echo
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
 
+TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
+# echo "$TESTEMAIL"
+while [[ "$TESTEMAIL" = "" ]]; do
+  echo
+  echo "!! make sure email address is valid and typed correctly !!"
+  read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
+  TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
+  echo
+done
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   read -ep "Create FTP username for vhost domain (enter username): " ftpuser
   read -ep "Create FTP password for $ftpuser (enter password): " ftppass
@@ -354,6 +364,7 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
 
+{
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "---------------------------------------------" $boldyellow
@@ -414,6 +425,7 @@ cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performa
 18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
 19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
 cecho "------------------------------------------------------------" $boldgreen
+} 2>&1 | perl -pe 's/\x1b.*?[mGKH]//g' | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
 
 echo
 cecho "---------------------------------------------" $boldyellow
