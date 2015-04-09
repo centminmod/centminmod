@@ -368,8 +368,12 @@ ENDA
 chmod 0700 /root/tools/wp_updater_${vhostname}.sh
 
 if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
+    # generate random number of seconds to delay cron start
+    # making sure wp_updater for several wordpress nginx installs
+    # do not run at very same time during cron scheduling
+    DELAY=$(echo ${RANDOM:0:3})
     crontab -l > cronjoblist
-    echo "0 */8 * * * /root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
+    echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
