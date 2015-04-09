@@ -288,6 +288,11 @@ wp plugin install addthis-smart-layers --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install search-regex --allow-root
 cecho "------------------------------------------------------------" $boldgreen
+# update all plugins to make sure they are latest available
+wp plugin update --all --allow-root
+echo
+wp plugin status --allow-root
+cecho "------------------------------------------------------------" $boldgreen
 
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public/wp-content/plugins/
 
