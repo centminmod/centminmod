@@ -1,4 +1,8 @@
 function funct_phpconfigure {
+# set locale temporarily to english
+# for php compile due to some non-english
+# locale compilation issues i.e. Turkish 
+LANG=en_US.UTF-8
 
 fpmconfdir
 
