@@ -57,6 +57,7 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 siege -V
 letswait
+if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check ngx_pagespeed Control Script:" $boldyellow
@@ -64,6 +65,7 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 pscontrol
 letswait
+fi
 # echo ""
 # 	cecho "--------------------------------------------------------" $boldyellow
 # 	cecho "Check TwemPerf Version:" $boldyellow
