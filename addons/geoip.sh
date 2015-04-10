@@ -99,7 +99,8 @@ rpm -ql GeoIP-devel GeoIP
 cecho "GeoLiteCity database download ..." $boldyellow
 	wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
 	# gzip -d /usr/local/share/GeoIP/GeoLiteCity.dat.gz
-	gzip -d /usr/share/GeoIP/GeoLiteCity.dat.gz
+	gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
+	cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 	
 	# cp -a /usr/share/GeoIP/GeoIP.dat /usr/share/GeoIP/GeoIP.dat-backup
 	# wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
@@ -154,7 +155,7 @@ cecho "geoip.conf include check..." $boldyellow
 
 	GEOIPCHECK=$(grep '/usr/local/nginx/conf/geoip.conf' /usr/local/nginx/conf/nginx.conf)
 
-	if [[ ! -f '/usr/local/nginx/conf/geoip.conf' ]]; then
+	if [[ ! -f /usr/local/nginx/conf/geoip.conf ]]; then
 
 sed -i 's/}//' /usr/local/nginx/conf/php.conf
 
