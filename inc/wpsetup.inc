@@ -163,6 +163,11 @@ location ~* /(wp-login\.php) {
     include /usr/local/nginx/conf/php.conf;
 }
 
+location ~* /(xmlrpc\.php) {
+    limit_req zone=xwplogin burst=2 nodelay;
+    include /usr/local/nginx/conf/php.conf;
+}
+
 include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
 include /usr/local/nginx/conf/php.conf;
 include /usr/local/nginx/conf/staticfiles.conf;
