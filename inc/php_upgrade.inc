@@ -393,7 +393,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f /usr/local/etc/php-fpm.conf /usr/local/etc/php-fpm.conf-oldversion_$DT
         ls -lhrt /usr/local/etc/ | grep php-fpm.conf
     
-    sleep 20
+    sleep 12
     
     echo
     echo "Backing up existing php.conf at /usr/local/nginx/conf/php.conf-oldversion_$DT"
@@ -403,8 +403,15 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php.conf-oldversion_$DT
         ls -lhrt /usr/local/nginx/conf/ | grep php.conf
         cp -f $CUR_DIR/config/nginx/php.conf /usr/local/nginx/conf/php.conf
+
+    # recheck whether fastcgi_param GEOIP_ settings in php.conf need to be disabled or enabled
+    if [[ "$NGINX_GEOIP" = [yY] ]]; then
+        sed -i 's/#fastcgi_param GEOIP_/fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
+    else
+        sed -i 's/fastcgi_param GEOIP_/#fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
+    fi
     
-    sleep 20
+    sleep 12
     
     echo 
 
