@@ -9,11 +9,43 @@ cecho "---------------------------------------------" $boldyellow
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+  if [ ! -f /usr/sbin/cracklib-check ]; then
+    yum -y -q install cracklib
+  fi
+  if [ ! -f /usr/bin/pwgen ]; then
+    yum -y -q install pwgen
+  fi
   read -ep "Create FTP username for vhost domain (enter username): " ftpuser
-  read -ep "Create FTP password for $ftpuser (enter password): " ftppass
+  read -ep "Do you want to auto generate FTP password [y/n]: " autogenpass
+
+  if [[ "$autogenpass" = [yY] ]]; then
+    ftppass=$(pwgen -1cnys 21)
+  else
+    read -ep "Create FTP password for $ftpuser (enter password): " ftppass
+  
+    # simple password strength check
+    # utilise http://cracklib.sourceforge.net/ too
+    CHECKPASSWD="$(cracklib-check <<<"$ftppass")"
+    # okay awk is  bad choice but this is a demo 
+    okay="$(awk -F': ' '{ print $2}' <<<"$CHECKPASSWD")"
+    while [[ "$okay" != "OK" ]]; do
+      echo "!! password strength not strong enough !! "
+      echo "!! do not use common dictionary words !! "
+      echo "!! do not use short passwords !! "
+      echo "!! do not use simplistic passwords !! "
+      echo
+      read -ep "re-enter FTP password for $ftpuser (enter password): " ftppass
+      CHECKPASSWD="$(cracklib-check <<<"$ftppass")"
+      okay="$(awk -F': ' '{ print $2}' <<<"$CHECKPASSWD")"
+    done
+  fi # autogenpass
   echo
   echo "FTP username you entered: $ftpuser"
-  echo "FTP password you entered: $ftppass"
+  if [[ "$autogenpass" = [yY] ]]; then
+    echo "FTP password auto generated: $ftppass"
+  else
+    echo "FTP password you entered: $ftppass"    
+  fi
 fi
 
 echo ""
