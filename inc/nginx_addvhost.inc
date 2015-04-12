@@ -26,7 +26,6 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
     # simple password strength check
     # utilise http://cracklib.sourceforge.net/ too
     CHECKPASSWD="$(cracklib-check <<<"$ftppass")"
-    # okay awk is  bad choice but this is a demo 
     okay="$(awk -F': ' '{ print $2}' <<<"$CHECKPASSWD")"
     while [[ "$okay" != "OK" ]]; do
       echo "!! password strength not strong enough !! "
