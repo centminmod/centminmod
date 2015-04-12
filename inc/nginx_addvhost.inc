@@ -16,7 +16,7 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
     yum -y -q install pwgen
   fi
   read -ep "Create FTP username for vhost domain (enter username): " ftpuser
-  read -ep "Do you want to auto generate FTP password [y/n]: " autogenpass
+  read -ep "Do you want to auto generate FTP password (recommended) [y/n]: " autogenpass
 
   if [[ "$autogenpass" = [yY] ]]; then
     ftppass=$(pwgen -1cnys 21)
