@@ -55,6 +55,16 @@ cecho "---------------------------------------------" $boldyellow
 echo
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
+
+TESTVHOST=$(echo $vhostname | grep '\/')
+while [[ "$TESTVHOST" ]]; do
+  echo "!! only domain.com or subdomain.domain.com supported !!"
+  echo "   subdirectory is not supported right now"
+  read -ep "re-enter vhost domain name you want to add (without www. prefix): " vhostname
+  TESTVHOST=$(echo $vhostname | grep '\/')
+  echo
+done
+
 read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
