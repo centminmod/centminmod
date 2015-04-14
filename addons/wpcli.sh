@@ -14,6 +14,7 @@
 # ./wpcli.sh install
 ###############################################
 DT=`date +"%d%m%y-%H%M%S"`
+CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 
 # functions
