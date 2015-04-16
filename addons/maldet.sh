@@ -146,6 +146,10 @@ clamavinstall() {
 	if [[ -z "$(grep clam /etc/yum.repos.d/epel.repo)" ]]; then
 		sed -i 's/exclude=varnish/exclude=varnish clamd clamav clamav-db/' /etc/yum.repos.d/epel.repo
 	fi
+	# fix for CentOS 7 on system reboot missing /var/run/clamav directory
+	if [[ -z "$(grep '/var/run/clamav' /etc/init.d/clamd)" ]]; then
+		sed -i 's|# config: \/etc\/clamav.conf|# config: \/etc\/clamav.conf\n\nif [ ! -d /var/run/clamav ]; then\n\tmkdir -p \/var\/run\/clamav\n\tchown -R clamav:clamav \/var\/run\/clamav\n\tchmod -R 700 \/var\/run\/clamav\nfi|' /etc/init.d/clamd
+	fi
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam
