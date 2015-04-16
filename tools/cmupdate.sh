@@ -58,9 +58,10 @@ updatecm() {
 	unzip ${branchname}.zip
 	cd centminmod-${branchname}
     chmod +x addons/*.sh
+    chmod +x tools/*.sh    
 	chmod +x centmin.sh
     echo
-    echo "exist SSH session - re-login to SSH to complete update"
+    echo "Exit SSH session - re-login to SSH to complete update"
     sleep 3
     exit
 	echo
