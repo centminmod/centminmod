@@ -1,6 +1,7 @@
 #!/bin/bash
 ######################################################
-# written by George Liu (eva2000) vbtechsupport.com
+# centmin mod updater for .08 beta and higher
+# written by George Liu (eva2000) centminmod.com
 ######################################################
 # variables
 #############
@@ -46,14 +47,22 @@ updatecm() {
     cecho "* Update Centmin Mod Source Code Only" $boldgreen
     echo "*************************************************"
     echo
-	branchname=123.08centos7beta01
+	branchname=123.08centos7beta02
 	rm -rf /usr/local/src/${branchname}.zip
 	rm -rf /usr/local/src/centminmod-${branchname}
+    sed -i "s|\/usr\/local\/src\/centmin-v1.2.3mod|\/usr\/local\/src\/centminmod-${branchname}|g" /root/.bashrc
+    sed -i "s|\/usr\/local\/src\/centminmod-123.08centos7beta01|\/usr\/local\/src\/centminmod-${branchname}|g" /root/.bashrc
+    sed -i "s|\/usr\/local\/src\/centminmod-123.08centos7beta02|\/usr\/local\/src\/centminmod-${branchname}|g" /root/.bashrc
 	wget -cnv --no-check-certificate -O /usr/local/src/${branchname}.zip https://github.com/centminmod/centminmod/archive/${branchname}.zip
 	cd /usr/local/src
 	unzip ${branchname}.zip
 	cd centminmod-${branchname}
+    chmod +x addons/*.sh
 	chmod +x centmin.sh
+    echo
+    echo "exist SSH session - re-login to SSH to complete update"
+    sleep 3
+    exit
 	echo
     echo "*************************************************"
     cecho "* Centmin Mod Source Code Only Updated" $boldgreen
