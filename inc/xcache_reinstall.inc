@@ -18,7 +18,7 @@ if [ ! -d "$DIR_TMP" ]; then
 mkdir $DIR_TMP
 fi
 
-read -ep "Install which version of Xcache? (version i.e. 3.1.0): " xcachever
+read -ep "Install which version of Xcache? (version i.e. 3.2.0): " xcachever
 
 #######################
 
@@ -27,7 +27,7 @@ xcachevercheck=`echo $xcachever | awk -F "." '{print $1"."$2}'`
 if [ "$xcachevercheck" == '2.0' ]; then
 
 echo ""
-read -ep "Are you upgrading Xcache from v1.3.2 to v2.0.x series i.e. v2.0.0 ? [y/n]: " xcachev2
+read -ep "Are you upgrading Xcache from v1.3.2 to v2.0.x or higher series i.e. v2.0.0 ? [y/n]: " xcachev2
 echo ""
 
 if [[ "$xcachev2" == [yY] ]]; then
