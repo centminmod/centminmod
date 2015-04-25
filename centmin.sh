@@ -728,9 +728,9 @@ else
        echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
-    elif [[ "$TOTALMEM" -le '2000000' ]]; then
+    elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2000000' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
-       # if total memory is <2GB
+       # if total memory is between 1.1-2GB
        rm -rf /tmp
        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
@@ -740,6 +740,18 @@ else
        echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
+    elif [[ "$TOTALMEM" -le '1153433' ]]; then
+       # set on disk non-tmpfs /tmp to 1GB size
+       # if total memory is <1.1GB
+       rm -rf /tmp
+       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+       echo Y | mkfs.ext4 /home/usertmp_donotdelete
+       mkdir -p /tmp
+       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       chmod 1777 /tmp
+       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       rm -rf /var/tmp
+       ln -s /tmp /var/tmp       
     fi
 fi # centos 7 + openvz /tmp workaround
 fi
