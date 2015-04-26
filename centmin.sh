@@ -668,7 +668,8 @@ ASK "Would you like to secure /tmp and /var/tmp? (Highly recommended) [y/n] "
 	fi #unattended
 if [[ "$key" = [yY] ]]; 
 then
-echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
+{
+echo "Centmin Mod secure /tmp # `date`"
 	echo "*************************************************"
 	cecho "* Secured /tmp and /var/tmp" $boldgreen
 	echo "*************************************************"
@@ -708,7 +709,7 @@ else
     # only mount /tmp on tmpfs if CentOS system
     # total memory size is greater than 8GB
     # will give /tmp a size equal to 1/2 total memory
-    if [[ "$TOTALMEM" -ge '8000000' ]]; then
+    if [[ "$TOTALMEM" -ge '8100001' ]]; then
 	   rm -rf /tmp
 	   mkdir -p /tmp
 	   mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
@@ -716,7 +717,7 @@ else
 	   echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
 	   rm -rf /var/tmp
 	   ln -s /tmp /var/tmp
-    elif [[ "$TOTALMEM" -ge '2000000' || "$TOTALMEM" -lt '8000000' ]]; then
+    elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
        rm -rf /tmp
@@ -728,7 +729,7 @@ else
        echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
-    elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2000000' ]]; then
+    elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
        rm -rf /tmp
@@ -755,6 +756,7 @@ else
     fi
 fi # centos 7 + openvz /tmp workaround
 fi
+} 2>&1 | tee ${CENTMINLOGDIR}/securedtmp.log
 
 #questions
 
