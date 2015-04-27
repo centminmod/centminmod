@@ -666,9 +666,8 @@ ASK "Would you like to secure /tmp and /var/tmp? (Highly recommended) [y/n] "
 	else
 	key='y'
 	fi #unattended
-if [[ "$key" = [yY] ]]; 
-then
 {
+if [[ "$key" = [yY] ]]; then
 echo "Centmin Mod secure /tmp # `date`"
 	echo "*************************************************"
 	cecho "* Secured /tmp and /var/tmp" $boldgreen
