@@ -97,7 +97,7 @@ yumcentossevendownload
 axelsetup
 geoipinstall
 
-# use Remi's ImageMagicK 6.8.9 package
+# use Remi's ImageMagicK 6.9.* package
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     if [[ "$(rpm -qa ImageMagick)" ]]; then
@@ -109,7 +109,13 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   
       yum -y remove ImageMagick
   
-      yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+      if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+        # yum -y install libwebp libwebp-devel --skip-broken
+        yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+      else
+        yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+      fi
+      
       echo
     fi
 
