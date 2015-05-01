@@ -4,7 +4,7 @@ LBZIP_VER='2.5'
 LZIP_VER='1.16'
 LZLIB_VER='1.6'
 PLZIP_VER='1.2'
-PZIP_VER='9.20.1'
+PZIP_VER='9.38.1'
 
 function funct_pigzinstall {
 
@@ -184,7 +184,7 @@ if [ -s p7zip_${PZIP_VER}_src_all.tar.bz2 ]; then
   echo "p7zip_${PZIP_VER}_src_all.tar.bz2 [found]"
   else
   echo "Error: p7zip_${PZIP_VER}_src_all.tar.bz2 not found!!!download now......"
-  wget -c http://aarnet.dl.sourceforge.net/project/p7zip/p7zip/${PZIP_VER}/p7zip_${PZIP_VER}_src_all.tar.bz2 --tries=3
+  wget -c -O p7zip_${PZIP_VER}_src_all.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/${PZIP_VER}/p7zip_${PZIP_VER}_src_all.tar.bz2/download?use_mirror=softlayer-sng --tries=3
 fi
 
 bzip2 -d p7zip_${PZIP_VER}_src_all.tar.bz2
