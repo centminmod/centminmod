@@ -100,7 +100,7 @@ echo ""
 	fi # unattended
 
 if [[ "$NSD_DISABLED" = [yY] ]]; then
-
+	if [[ ! -z "$(ps aux | grep nsd | grep -v grep)" ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping NSD service:" $boldyellow
@@ -112,6 +112,7 @@ if [[ "$NSD_DISABLED" = [yY] ]]; then
 	echo "service nsd start"
 	echo "chkconfig nsd on"
 	cecho "--------------------------------------------------------" $boldyellow
+	fi
 fi
 
 if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
