@@ -60,6 +60,9 @@ CENTOSSEVENEPEL="http://mirror.sfo12.us.leaseweb.net/epel/7/${RPMFARCH}/e/${CENT
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
 
+# only do dynamic mirror check if /etc/yum.repos.d/epel.repo and thus EPEL yum repo
+# has not been setup and installed yet
+if [ ! -f /etc/yum.repos.d/epel.repo ]; then
 # dynamic mirror check for EPEL
 if [[ "$(uname -m)" = 'x86_64' ]]; then
 	if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
@@ -102,6 +105,7 @@ else
 	CENTOSFIVEEPEL="$CENTOSFIVEEPEL_MIRRORFULLURL"
 	fi
 fi
+fi # /etc/yum.repos.d/epel.repo file check
 
 CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
 CENTOSSEVENRPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSSEVENRPMFORGEFILE}"
