@@ -513,6 +513,15 @@ ASKCMD="read $KEYPRESS_PARAM "
 
 CUR_DIR=`pwd` # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
 ###############################################################
 # FUNCTIONS
 
