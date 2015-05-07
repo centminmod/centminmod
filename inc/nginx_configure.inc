@@ -27,11 +27,17 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	if [ "$NGINX_OPENRESTY" == 'y' ]; then
 		MEMCDIR=`ls -rt $DIR_TMP | grep openresty-memc-nginx-module | tail -1`
 		SRCACHEDIR=`ls -rt $DIR_TMP | grep openresty-srcache-nginx-module | tail -1`
+		SETMISCDIR=`ls -rt $DIR_TMP | grep set-misc-nginx-module | tail -1`
+		DEVELKITDIR=`ls -rt $DIR_TMP | grep ngx_devel_kit | tail -1`		
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
+		SETMISCOPT=" --add-module=../${SETMISCDIR}"
+		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"		
 	else
 		MEMCOPT=""
 		SRCCACHEOPT=""
+		SETMISCOPT=""
+		DEVELKITOPT=""			
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -214,10 +220,10 @@ fi
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }

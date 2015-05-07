@@ -257,8 +257,10 @@ NGINX_STICKYVER='1.2.5'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'            # Agentzh's openresty Nginx modules
-ORESTY_MEMCVER='0.15'     # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_MEMCVER='0.15'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SETMISCVER='0.28'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 

@@ -181,6 +181,14 @@ NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v${ORESTY_MEM
 NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
 NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v${ORESTY_SRCCACHEVER}"
 
+# wget renamed
+NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
+NGX_DEVELKITLINK="https://github.com/simpl/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+
+# wget renamed
+NGX_SETMISCLINKFILE="set-misc-nginx-module_v${ORESTY_SETMISCVER}.tar.gz"
+NGX_SETMISCLINK="https://github.com/openresty/set-misc-nginx-module/archive/v${ORESTY_SETMISCVER}.tar.gz"
+
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
 LIBEVENTLINK="https://github.com/libevent/libevent/archive/${LIBEVENTLINKFILE}"

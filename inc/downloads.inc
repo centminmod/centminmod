@@ -512,6 +512,62 @@ else
          cecho "${NGX_SRCACHELINKFILE} valid file." $boldyellow
 echo ""
 	fi
+
+        cecho "Download ${NGX_DEVELKITLINKFILE} ..." $boldyellow
+if [ -s ${NGX_DEVELKITLINKFILE} ]; then
+  cecho "${NGX_DEVELKITLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_DEVELKITLINK} -O ${NGX_DEVELKITLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_DEVELKITLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_DEVELKITLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_DEVELKITLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_DEVELKITLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_SETMISCLINKFILE} ..." $boldyellow
+if [ -s ${NGX_SETMISCLINKFILE} ]; then
+  cecho "${NGX_SETMISCLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_SETMISCLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_SETMISCLINK} -O ${NGX_SETMISCLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_SETMISCLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_SETMISCLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_SETMISCLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_SETMISCLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
 	
 fi # openresty
 }
