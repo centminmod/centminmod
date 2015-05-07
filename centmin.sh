@@ -237,6 +237,7 @@ NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
 NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
+STRIPNGINX='n'               # set 'y' to strip nginx binary to reduce size
 NGINX_INSTALL=y              # Install Nginx (Webserver)
 NGINX_GEOIP=y			 # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support

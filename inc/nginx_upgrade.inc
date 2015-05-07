@@ -332,6 +332,15 @@ funct_showtempfile
 
     time make
 
+    if [[ "$STRIPNGINX" = [yY] ]]; then
+        echo
+        echo "strip nginx binary..."
+        ls -lah objs/nginx
+        strip -s objs/nginx
+        ls -lah objs/nginx
+        echo
+    fi
+
 ################
 # error check
 

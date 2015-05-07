@@ -184,6 +184,16 @@ fi
 funct_nginxconfigure
 
     time make$MAKETHREADS
+
+    if [[ "$STRIPNGINX" = [yY] ]]; then
+        echo
+        echo "strip nginx binary..."
+        ls -lah objs/nginx
+        strip -s objs/nginx
+        ls -lah objs/nginx
+        echo
+    fi
+
     time make install
 
 # unset_intelflags
