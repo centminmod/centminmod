@@ -189,6 +189,10 @@ NGX_DEVELKITLINK="https://github.com/simpl/ngx_devel_kit/archive/v${ORESTY_DEVEL
 NGX_SETMISCLINKFILE="set-misc-nginx-module_v${ORESTY_SETMISCVER}.tar.gz"
 NGX_SETMISCLINK="https://github.com/openresty/set-misc-nginx-module/archive/v${ORESTY_SETMISCVER}.tar.gz"
 
+# wget renamed
+NGX_ECHOLINKFILE="echo-nginx-module_v${ORESTY_ECHOVER}.tar.gz"
+NGX_ECHOLINK="https://github.com/openresty/echo-nginx-module/archive/v${ORESTY_ECHOVER}.tar.gz"
+
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
 LIBEVENTLINK="https://github.com/libevent/libevent/archive/${LIBEVENTLINKFILE}"

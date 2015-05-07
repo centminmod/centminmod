@@ -568,6 +568,34 @@ else
          cecho "${NGX_SETMISCLINKFILE} valid file." $boldyellow
 echo ""
     fi    
+
+        cecho "Download ${NGX_ECHOLINKFILE} ..." $boldyellow
+if [ -s ${NGX_ECHOLINKFILE} ]; then
+  cecho "${NGX_ECHOLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_ECHOLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_ECHOLINK} -O ${NGX_ECHOLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_ECHOLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_ECHOLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_ECHOLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_ECHOLINKFILE} valid file." $boldyellow
+echo ""
+    fi       
 	
 fi # openresty
 }

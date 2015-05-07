@@ -261,6 +261,7 @@ ORESTY_MEMCVER='0.15'        # openresty memc module https://github.com/openrest
 ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCVER='0.28'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_ECHOVER='0.57'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
