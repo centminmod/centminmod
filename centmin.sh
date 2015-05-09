@@ -220,15 +220,15 @@ FIREWALLD_DISABLE='y'
 CCACHEINSTALL='y'
 CCACHESIZE='2G'
 
-# Disable installed services by default
-# The service is still installed but disabled by default 
-# can be re-enabled with commands
+# When set to =y, will disable those listed installed services 
+# by default. The service is still installed but disabled 
+# by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
-NSD_DISABLED=n               # NSD disabled by default with chkconfig off
-MEMCACHED_DISABLED=n          # Memcached server disabled by default via chkconfig off
-PHP_DISABLED=n                # PHP-FPM disabled by default with chkconfig off
-MYSQLSERVICE_DISABLED=n       # MariaDB MySQL service disabled by default with chkconfig off
-PUREFTPD_DISABLED=n           # Pure-ftpd service disabled by default with chkconfig off
+NSD_DISABLED=n                # when set to =y, NSD disabled by default with chkconfig off
+MEMCACHED_DISABLED=n          # when set to =y,  Memcached server disabled by default via chkconfig off
+PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
+PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # General Configuration
 NGINXUPGRADESLEEP='6'
