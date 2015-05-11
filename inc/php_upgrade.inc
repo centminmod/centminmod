@@ -37,6 +37,10 @@ if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
     DETECTREDIS=y
 fi
 
+if [[ -f "${CONFIGSCANDIR}/mongodb.ini" || "$PHPMONGODB" = [yY] ]]; then
+    DETECTMONGODB=y
+fi
+
 if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
     DETECTOPCACHE=y
 fi
@@ -91,6 +95,11 @@ fi
 if [[ "$DETECTREDIS" == [yY] ]]; then
     cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
     redisinstall
+fi
+
+if [[ "$DETECTMONGODB" == [yY] ]]; then
+    cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
+    mongodbinstall
 fi
 
 if [[ "$DETECTOPCACHE" == [yY] ]]; then

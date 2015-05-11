@@ -969,6 +969,77 @@ echo ""
 }
 
 ###############################################
+mongodbphplocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf mongo*
+
+        cecho "Download local ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
+  cecho "${PHPEXT_MONGODBLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINKLOCAL} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_MONGODBLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${PHPEXT_MONGODBLINKFILE} local valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
+mongodbphptarball() {
+
+    cd $DIR_TMP
+
+        cecho "Download ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
+  cecho "${PHPEXT_MONGODBLINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINK} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_MONGODBLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} extraction failed." $boldgreen
+    cecho "trying local mirror download..." $boldgreen
+    mongodbphplocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_MONGODBLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
 libmemcachedlocaltarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
