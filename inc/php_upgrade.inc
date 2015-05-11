@@ -72,49 +72,49 @@ cecho "Auto reinstalling previously detected PHP extensions" $boldyellow
 cecho "----------------------------------------------------" $boldgreen
 
 
-if [[ "$DETECTXCACHE" == [yY] ]]; then
+if [[ "$DETECTXCACHE" = [yY] ]]; then
     cecho "Auto reinstalling previously detected Xcache" $boldyellow
     funct_xcachereinstall
 fi
 
-if [[ "$DETECTAPC" == [yY] ]]; then
+if [[ "$DETECTAPC" = [yY] ]]; then
     cecho "Auto reinstalling previously detected APC Cache" $boldyellow
     funct_apcreinstall
 fi
 
-if [[ "$DETECTIGBINARY" == [yY] ]]; then
+if [[ "$DETECTIGBINARY" = [yY] ]]; then
     cecho "Auto reinstalling previously detected igbinary extension" $boldyellow
     funct_igbinaryinstall
 fi
 
-if [[ "$DETECTMEMCACHED" == [yY] ]]; then
+if [[ "$DETECTMEMCACHED" = [yY] ]]; then
     cecho "Auto reinstalling previously detected memcached/memcache php extension" $boldyellow
     funct_memcachedreinstall
 fi
 
-if [[ "$DETECTREDIS" == [yY] ]]; then
+if [[ "$DETECTREDIS" = [yY] ]]; then
     cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
     redisinstall
 fi
 
-if [[ "$DETECTMONGODB" == [yY] ]]; then
+if [[ "$DETECTMONGODB" = [yY] ]]; then
     cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
     mongodbinstall
 fi
 
-if [[ "$DETECTOPCACHE" == [yY] ]]; then
+if [[ "$DETECTOPCACHE" = [yY] ]]; then
     if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' || "$PHPMUVER" != '7.0' ]]; then
         cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
         zopcachereinstall
     fi
 fi
 
-if [[ "$DETECTIMAGICK" == [yY] ]]; then
+if [[ "$DETECTIMAGICK" = [yY] ]]; then
     cecho "Auto reinstalling previously detected imagemagick extension" $boldyellow
     imagickinstall
 fi
 
-if [[ "$DETECTGEOIP" == [yY] ]]; then
+if [[ "$DETECTGEOIP" = [yY] ]]; then
     cecho "Auto reinstalling previously detected geoip extension" $boldyellow
     geoipphpext
 fi
