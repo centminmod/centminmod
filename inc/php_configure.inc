@@ -188,6 +188,7 @@ if [[ "$STRIPPHP" = [yY] ]]; then
     ls -lah /usr/local/bin/php
     ls -lah /usr/local/bin/php-cgi
     strip -s /usr/local/bin/php
+    strip -s /usr/local/bin/php-cgi
     ls -lah /usr/local/bin/php
     ls -lah /usr/local/bin/php-cgi
     echo
