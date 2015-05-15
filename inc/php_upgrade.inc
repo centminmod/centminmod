@@ -367,6 +367,17 @@ funct_showtempfile
 echo "make install"
     time make install
 
+if [[ "$STRIPPHP" = [yY] ]]; then
+    echo
+    echo "strip PHP binary..."
+    ls -lah /usr/local/bin/php
+    ls -lah /usr/local/bin/php-cgi
+    strip -s /usr/local/bin/php
+    ls -lah /usr/local/bin/php
+    ls -lah /usr/local/bin/php-cgi
+    echo
+fi
+
 ################
 # error check
 
