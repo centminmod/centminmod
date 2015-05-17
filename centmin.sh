@@ -718,7 +718,7 @@ systemctl is-enabled tmp.mount
 # ln -s /tmp /var/tmp
 # mount -o remount /tmp
 
-else
+elif [[ ! -f /proc/user_beancounters ]]; then
 
     # TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
     CURRENT_TMPSIZE=$(df /tmp | awk '/tmp/ {print $2}')
