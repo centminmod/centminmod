@@ -47,7 +47,7 @@ CPUSET='n'
 #############################
 
 processcheck() {
-PROCESS=$(ps ax | grep memcached | grep -Ev '(grep|memcached status|memcached start|memcached stop|memcached restart|memcached_reinstall)')
+PROCESS=$(ps ax | grep memcached | grep -Ev '(/etc/init.d/memcached|grep|memcached status|memcached start|memcached stop|memcached restart|memcached_reinstall)')
 CHECKM=${PROCESS:-nomemcached}
 }
 
