@@ -327,30 +327,42 @@ cd $SCRIPT_DIR
 # # only run for CentOS 6.x
 # if [[ "$CENTOS_SEVEN" != '7' ]]; then
 if [[ ! -f /etc/init.d/memcached ]]; then
-
-#echo ""
-#echo -n "Install how many Memcached servers ? 1 or 2 ?: "
-#read nomemcachedservers
-
-echo "Setup /etc/init.d/memcached with $nomemcachedservers Memcached servers"
-
-if [[ "$nomemcachedservers" = '1' ]]; then
-
-echo "setup /etc/init.d/memcached"
-echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
-cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached
-
-fi
-
-if [[ "$nomemcachedservers" = '2' ]]; then
-
-echo "setup /etc/init.d/memcached"
-echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
-cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached
-
-fi
-
+    echo "Setup /etc/init.d/memcached with $nomemcachedservers Memcached servers"
+    
+    if [[ "$nomemcachedservers" = '1' ]]; then
+        echo "setup /etc/init.d/memcached"
+        echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+        cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached
+    fi
+    
+    if [[ "$nomemcachedservers" = '2' ]]; then
+        echo "setup /etc/init.d/memcached"
+        echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+        cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached
+    fi
 fi # check /etc/init.d/memcached
+
+if [[ ! "$(grep PIDA /etc/init.d/memcached)" ]]; then
+    # ensure newest init.d/memcached file is in place
+    echo "Check /etc/init.d/memcached for PIDA / PIDB options"
+
+    # transfer existing MEMSIZE memory allocation to newer init.d/memcached file
+    MEMCACHED_EXISTMEMSIZE=$(awk -F "=" '/^MEMSIZE/ {print $2}' /etc/init.d/memcached)
+    
+    if [[ "$nomemcachedservers" = '1' ]]; then
+        echo "setup /etc/init.d/memcached"
+        echo "\cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+        \cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached
+        sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+    fi
+    
+    if [[ "$nomemcachedservers" = '2' ]]; then
+        echo "setup /etc/init.d/memcached"
+        echo "\cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+        \cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached
+        sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+    fi
+fi # check /etc/init.d/memcached for PIDA/PIDB
 
 # add check for Windows CLRF line endings
 if [ ! -f /usr/bin/file ]; then
