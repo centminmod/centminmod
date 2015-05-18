@@ -30,7 +30,6 @@ if [[ "$zendopcacheon" = [yY] ]]; then
 			sed -i 's/apc.serializer=igbinary/;apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
 		fi
 	
-
 		if [ -f ${CONFIGSCANDIR}/memcache.ini ]; then
 			rm -rf ${CONFIGSCANDIR}/memcache.ini
 		fi
@@ -48,6 +47,10 @@ if [[ "$zendopcacheon" = [yY] ]]; then
 		fi
 	
 		if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+			# save zend opcache memory allocation size
+			# to be transplanted back into newly created
+			# zendopcache.ini
+			ZENDOPCACHE_EXISTMEMSIZE=$(awk -F "=" '/opcache.memory_consumption/ {print $2}' ${CONFIGSCANDIR}/zendopcache.ini)
 			rm -rf ${CONFIGSCANDIR}/zendopcache.ini
 		fi
 
@@ -169,12 +172,20 @@ if [[ -z "$ZOPLUSSOCHECK" ]]; then
 	echo -e "\nCopying zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
 	cat $CUR_DIR/config/zendopcache/zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini
 
+	# transfer existing memory allocation value to newly created
+	# zendopcache.ini
+	sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
+
 else
 
 	echo $lesszendopcachemem
 
 	echo -e "\nCopying zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
 	cat $CUR_DIR/config/zendopcache/zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini
+
+	# transfer existing memory allocation value to newly created
+	# zendopcache.ini
+	sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
 
 fi # check if opcache.so exists in zendopcache.ini
 fi # zendopcacheon
