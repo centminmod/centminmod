@@ -204,16 +204,25 @@ if [ -f src/http/ngx_http_header_filter_module.c ]; then
 	fi
 fi
 
-# NGINX 1.9 stream support
+# NGINX 1.9 stream support & 1.8 threads
 # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
 if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
-	STREAM=' --with-stream'
+	STREAM=' --with-stream --with-stream_ssl_module'
+	THREADS=' --with-threads'
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
-	STREAM=' --with-stream'
+	STREAM=' --with-stream --with-stream_ssl_module'
+	THREADS=' --with-threads'
+elif [[ "$ngver" && "$NGXUPGRADE_VER" = '1.8' ]]; then
+	STREAM=""
+	THREADS=' --with-threads'
+elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.8' ]]; then
+	STREAM=""
+	THREADS=' --with-threads'	
 else
 	STREAM=""
+	THREADS=""
 fi
 
 # disabled not ready for usage yet
@@ -223,10 +232,10 @@ fi
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }
