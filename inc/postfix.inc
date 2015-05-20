@@ -56,6 +56,15 @@ postconf -e 'lmtp_tls_mandatory_protocols = !SSLv2 !SSLv3'
 postconf -e 'lmtp_tls_protocols = !SSLv2 !SSLv3'
 postconf -n | egrep 'lmtp_tls_protocols|lmtp_tls_mandatory_protocols'
 
+postconf -d | grep '^smtpd_tls_mandatory_exclude_ciphers'
+postconf -e 'smtpd_tls_mandatory_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA'
+postconf -n | grep '^smtpd_tls_mandatory_exclude_ciphers'
+
+# openssl dhparam -out /path/to/dhparams.pem 2048
+# postconf -d | grep '^smtpd_tls_dh1024_param_file'
+# postconf -e 'smtpd_tls_dh1024_param_file = /path/to/dhparams.pem'
+# postconf -n | grep '^smtpd_tls_dh1024_param_file'
+
 cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
