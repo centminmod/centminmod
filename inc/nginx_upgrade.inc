@@ -36,9 +36,16 @@ ngxmoduletarball
 openssldownload
 fi
 
-if [ "$NGINX_OPENRESTY" == 'y' ]; then
+if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]]; then
     openrestytarball
+    fi
+
+    # ORESTY_LUANGINX=y|n
+    if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+        if [[ ! -f "${DIR_TMP}/${NGX_LUANGINXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAGITLINKFILE}"|| ! -f "${DIR_TMP}/${NGX_LUAMEMCACHEDLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMYSQLLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUADNSLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPLOADLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAWEBSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOCKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTRINGLINKFILE}" ]]; then
+            openrestytarball
+        fi
     fi
 fi
 
@@ -273,6 +280,20 @@ then
     make${MAKETHREADS}
     make install
 
+fi
+
+if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+    echo "*************************************************"
+    cecho "* LuaJIT-${ORESTY_LUAGITVER} install" $boldgreen
+    echo "*************************************************"
+
+    cd LuaJIT-${ORESTY_LUAGITVER}
+    make clean
+    make${MAKETHREADS}
+    make install
+
+    export LUAJIT_LIB=/usr/local/lib
+    export LUAJIT_INC=/usr/local/include/luajit-2.0
 fi
 
 funct_nginxmodules

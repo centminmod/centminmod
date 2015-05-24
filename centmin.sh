@@ -263,6 +263,19 @@ ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.
 ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCVER='0.28'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOVER='0.57'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+
+ORESTY_LUANGINX='y'          # enable or disable or ORESTY_LUA* nginx modules below
+ORESTY_LUANGINXVER='0.9.16rc1'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
+ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.20'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
+ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
+ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
+ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
+
 STRIPPHP='n'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
@@ -379,6 +392,12 @@ else
     else
         ARCH='i386'
     fi
+fi
+
+# ensure if ORESTY_LUANGINX is enabled, that the other required
+# Openresty modules are enabled if folks forget to enable them
+if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+    NGINX_OPENRESTY='y'
 fi
 
 # source "inc/mainmenu.inc"

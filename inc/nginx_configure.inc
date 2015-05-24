@@ -24,7 +24,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
 	fi
 
-	if [ "$NGINX_OPENRESTY" == 'y' ]; then
+	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
 		MEMCDIR=`ls -rt $DIR_TMP | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
 		SRCACHEDIR=`ls -rt $DIR_TMP | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
 		SETMISCDIR=`ls -rt $DIR_TMP | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
@@ -41,6 +41,30 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		SETMISCOPT=""
 		DEVELKITOPT=""
 		ECHOOPT=""		
+	fi
+
+	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+		LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER}"
+		LUAGITOPT=" --add-module=../LuaJIT-${ORESTY_LUAGITVER}"
+		LUAMEMCACHEDOPT=" --add-module=../lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}"
+		LUAMYSQLOPT=" --add-module=../lua-resty-mysql-${ORESTY_LUAMYSQLVER}"
+		LUAREDISOPT=" --add-module=../lua-resty-redis-${ORESTY_LUAREDISVER}"
+		LUADNSOPT=" --add-module=../lua-resty-dns-${ORESTY_LUADNSVER}"
+		LUAUPLOADOPT=" --add-module=../lua-resty-upload-${ORESTY_LUAUPLOADVER}"
+		LUAWEBSOCKETOPT=" --add-module=../lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}"
+		LUALOCKOPT=" --add-module=../lua-resty-lock-${ORESTY_LUALOCKVER}"
+		LUASTRINGOPT=" --add-module=../lua-resty-string-${ORESTY_LUASTRINGVER}"
+	else
+		LUAOPT=""
+		LUAGITOPT=""
+		LUAMEMCACHEDOPT=""
+		LUAMYSQLOPT=""
+		LUAREDISOPT=""
+		LUADNSOPT=""
+		LUAUPLOADOPT=""
+		LUAWEBSOCKETOPT=""
+		LUALOCKOPT=""
+		LUASTRINGOPT=""	
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -232,10 +256,10 @@ fi
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${LUAGITOPT}${LUAMEMCACHEDOPT}${LUAMYSQLOPT}${LUAREDISOPT}${LUADNSOPT}${LUAUPLOADOPT}${LUAWEBSOCKETOPT}${LUALOCKOPT}${LUASTRINGOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${LUAGITOPT}${LUAMEMCACHEDOPT}${LUAMYSQLOPT}${LUAREDISOPT}${LUADNSOPT}${LUAUPLOADOPT}${LUAWEBSOCKETOPT}${LUALOCKOPT}${LUASTRINGOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }
