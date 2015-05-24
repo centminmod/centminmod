@@ -45,26 +45,26 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 		LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER}"
-		# LUAGITOPT=" --add-module=../LuaJIT-${ORESTY_LUAGITVER}"
-		LUAMEMCACHEDOPT=" --add-module=../lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}"
-		LUAMYSQLOPT=" --add-module=../lua-resty-mysql-${ORESTY_LUAMYSQLVER}"
-		LUAREDISOPT=" --add-module=../lua-resty-redis-${ORESTY_LUAREDISVER}"
-		LUADNSOPT=" --add-module=../lua-resty-dns-${ORESTY_LUADNSVER}"
-		LUAUPLOADOPT=" --add-module=../lua-resty-upload-${ORESTY_LUAUPLOADVER}"
-		LUAWEBSOCKETOPT=" --add-module=../lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}"
-		LUALOCKOPT=" --add-module=../lua-resty-lock-${ORESTY_LUALOCKVER}"
-		LUASTRINGOPT=" --add-module=../lua-resty-string-${ORESTY_LUASTRINGVER}"
+		if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
+			yum -q -y install lua lua-devel
+		fi
+		
+    	if [[ "$(uname -m)" = 'x86_64' ]]; then
+        	LUALIB_DIR='lib64'
+    	else
+        	LUALIB_DIR='lib'
+    	fi
+	
+    	\cp -rf ${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}/lib/resty/dns /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}/lib/resty/websocket /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
+    	\cp -rf ${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1		
 	else
 		LUAOPT=""
-		# LUAGITOPT=""
-		LUAMEMCACHEDOPT=""
-		LUAMYSQLOPT=""
-		LUAREDISOPT=""
-		LUADNSOPT=""
-		LUAUPLOADOPT=""
-		LUAWEBSOCKETOPT=""
-		LUALOCKOPT=""
-		LUASTRINGOPT=""	
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -256,10 +256,10 @@ fi
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${LUAMEMCACHEDOPT}${LUAMYSQLOPT}${LUAREDISOPT}${LUADNSOPT}${LUAUPLOADOPT}${LUAWEBSOCKETOPT}${LUALOCKOPT}${LUASTRINGOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${LUAMEMCACHEDOPT}${LUAMYSQLOPT}${LUAREDISOPT}${LUADNSOPT}${LUAUPLOADOPT}${LUAWEBSOCKETOPT}${LUALOCKOPT}${LUASTRINGOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }

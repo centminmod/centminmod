@@ -287,6 +287,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     cecho "* LuaJIT-${ORESTY_LUAGITVER} install" $boldgreen
     echo "*************************************************"
 
+    cd $DIR_TMP
     cd LuaJIT-${ORESTY_LUAGITVER}
     make clean
     make${MAKETHREADS}
