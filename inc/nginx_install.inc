@@ -157,11 +157,19 @@ then
 
 fi
 
-#if [ "$NGINX_OPENRESTY" == 'y' ]; then
-#funct_nginxmodules_openresty
-#else
-#funct_nginxmodules
-#fi
+if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+    echo "*************************************************"
+    cecho "* LuaJIT-${ORESTY_LUAGITVER} install" $boldgreen
+    echo "*************************************************"
+
+    cd LuaJIT-${ORESTY_LUAGITVER}
+    make clean
+    make${MAKETHREADS}
+    make install
+
+    export LUAJIT_LIB=/usr/local/lib
+    export LUAJIT_INC=/usr/local/include/luajit-2.0
+fi
 
     # Install nginx
     cd $DIR_TMP
