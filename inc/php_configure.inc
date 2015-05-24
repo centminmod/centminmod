@@ -15,8 +15,15 @@ TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
 ISLOWMEMPHPMB=`echo "scale=0;$ISLOWMEMPHP/1024" | bc`
 CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
+PLIBDIR='/usr'
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' && "zendopcacheon" = [yY] || "ZOPCACHEDFT" = [yY] ]]; then
+if [[ "$PHPDEBUGMODE" = [yY] ]]; then
+	PHPDEBUGOPT=' --enable-debug'
+else
+	PHPDEBUGOPT=''
+fi
+
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' && "zendopcacheon" = [yY] || "ZOPCACHEDFT" = [yY] ]]; then
 	OPCACHEOPT=" --enable-opcache"
 else
 	OPCACHEOPT=""
@@ -50,16 +57,40 @@ if [[ ! -d /usr/include/net-snmp ]]; then
 	yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
 fi
 
+if [[ ! -f /usr/include/expect.h ]]; then
+	yum -q -y install expect-devel --disablerepo=rpmforge,epel
+fi
+
 if [[ -f /usr/bin/ldapadd ]]; then
 	LDAPOPT=' --with-ldap --with-ldap-sasl'
 else
 	LDAPOPT=""
 fi
 
+if [[ -f /usr/include/vpx ]]; then
+	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+else
+	yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+fi
+
+if [[ -f /usr/include/t1lib.h ]]; then
+	TLIBOPT=" --with-t1lib=${PLIBDIR}"
+else
+	yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
+	TLIBOPT=" --with-t1lib=${PLIBDIR}"
+fi
+ 
 if [ "$PHPPCNTL" == 'y' ]; then
 	PCNTLOPT=" --enable-pcntl"
 else
 	PCNTLOPT=""
+fi
+
+if [ "$PHPINTL" == 'y' ]; then
+	PHPINTLOPT=" --enable-intl"
+else
+	PHPINTLOPT=""
 fi
 
 if [ "$PHPRECODE" == 'y' ]; then
@@ -74,26 +105,32 @@ else
 	SNMPOPT=""
 fi
 
-if [ "$PHPFINFO" == 'y' ]; then
-	FILEINFOOPT=""
-else
-	FILEINFOOPT=" --disable-fileinfo"
-fi
-
-
-if [[ "$CHECKLOWMEMPHP" = "1" || "$PHPFINFO" = 'n' ]]; then
+if [[ "$CHECKLOWMEMPHP" = "1" ]]; then
         FILEINFOOPT=" --disable-fileinfo"
 else
         FILEINFOOPT=""
 fi
 
-LIBCCLIENT=`yum list libc-client-devel --disablerepo=rpmforge,epel | grep Available | awk '{print $1}'`
-
-if [[ "$LIBCCLIENT" = 'Available' ]]; then
-	yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+# let centmin.sh set PHPFINFO variable override the
+# low memory CHECKLOWMEMPHP variable check
+if [[ "$PHPFINFO" = 'n' ]]; then
+        FILEINFOOPT=" --disable-fileinfo"
+else
+        FILEINFOOPT=""
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
+	if [[ ! $(rpm -qa uw-imap-devel) ]]; then 
+		yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+	fi
+else
+	if [[ ! $(rpm -qa libc-client-devel) ]]; then 
+		yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+	fi
+fi
+
+
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
 	if [[ ! -f /usr/bin/libmcrypt-config ]]; then
 
@@ -121,17 +158,19 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 fi
 
+# set_intelflags
+
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
-	echo "../configure --enable-cgi --enable-fpm${OPCACHEOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-intl --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${LIBDIR} --with-jpeg-dir=${LIBDIR} --with-png-dir=${LIBDIR} --with-xpm-dir=${LIBDIR} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}"
+	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}"
 
-../configure --enable-cgi --enable-fpm${OPCACHEOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-intl --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${LIBDIR} --with-jpeg-dir=${LIBDIR} --with-png-dir=${LIBDIR} --with-xpm-dir=${LIBDIR} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}
+../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}
 
 else
 
-	echo "../configure --enable-cgi --enable-fpm${OPCACHEOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-intl --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${LIBDIR} --with-jpeg-dir=${LIBDIR} --with-png-dir=${LIBDIR} --with-xpm-dir=${LIBDIR} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}"
+	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}"
 
-../configure --enable-cgi --enable-fpm${OPCACHEOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-intl --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${LIBDIR} --with-jpeg-dir=${LIBDIR} --with-png-dir=${LIBDIR} --with-xpm-dir=${LIBDIR} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}
+../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}
 
 fi
 
@@ -142,6 +181,20 @@ fi
 	fi
 
     time make install
+
+if [[ "$STRIPPHP" = [yY] ]]; then
+    echo
+    echo "strip PHP binary..."
+    ls -lah /usr/local/bin/php
+    ls -lah /usr/local/bin/php-cgi
+    strip -s /usr/local/bin/php
+    strip -s /usr/local/bin/php-cgi
+    ls -lah /usr/local/bin/php
+    ls -lah /usr/local/bin/php-cgi
+    echo
+fi
+
+# unset_intelflags
 
 # check if php was in fact installed
 

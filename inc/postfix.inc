@@ -39,12 +39,12 @@ postconf -e smtpd_client_connection_count_limit=50
 postconf -e 'recipient_delimiter = +'
 postconf -e smtpd_recipient_limit=2000
 postconf -e smtpd_recipient_overshoot_limit=2000
-postconf -e default_destination_recipient_limit=10000
+postconf -e 'smtpd_banner = $myhostname ESMTP'
 
 postconf -d | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols'
 postconf -e 'smtpd_tls_mandatory_protocols = !SSLv2, !SSLv3'
 postconf -e 'smtpd_tls_protocols = !SSLv2 !SSLv3'
-postconf -n | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols'
+postconf -n | egrep 'smtpd_tls_mandatory_protocols|smtpd_tls_protocols|smtpd_banner'
 
 postconf -d | egrep 'smtp_tls_mandatory_protocols|smtp_tls_protocols'
 postconf -e 'smtp_tls_mandatory_protocols = !SSLv2 !SSLv3'
@@ -56,7 +56,16 @@ postconf -e 'lmtp_tls_mandatory_protocols = !SSLv2 !SSLv3'
 postconf -e 'lmtp_tls_protocols = !SSLv2 !SSLv3'
 postconf -n | egrep 'lmtp_tls_protocols|lmtp_tls_mandatory_protocols'
 
-/etc/init.d/postfix restart
+postconf -d | grep '^smtpd_tls_mandatory_exclude_ciphers'
+postconf -e 'smtpd_tls_mandatory_exclude_ciphers = aNULL, eNULL, EXPORT, DES, RC4, MD5, PSK, aECDH, EDH-DSS-DES-CBC3-SHA, EDH-RSA-DES-CDC3-SHA, KRB5-DE5, CBC3-SHA'
+postconf -n | grep '^smtpd_tls_mandatory_exclude_ciphers'
+
+# openssl dhparam -out /path/to/dhparams.pem 2048
+# postconf -d | grep '^smtpd_tls_dh1024_param_file'
+# postconf -e 'smtpd_tls_dh1024_param_file = /path/to/dhparams.pem'
+# postconf -n | grep '^smtpd_tls_dh1024_param_file'
+
+cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
 	cd $DIR_TMP

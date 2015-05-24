@@ -6,12 +6,25 @@ then
     cecho "* Installing nginx" $boldgreen
     echo "*************************************************"
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
     # Disable Apache if installed
-    if [ -f /etc/init.d/httpd ];
-    then
-      /sbin/service httpd stop
+    if [ -f /etc/init.d/httpd ]; then
+      service httpd stop
       chkconfig httpd off
     fi
+fi # CENTOS_SEVEN != 7
+
+# only run for CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    # Disable Apache if installed
+    if [[ "$(systemctl is-enabled httpd.service)" = 'enabled' ]]; then
+      systemctl stop httpd.service
+      systemctl disable httpd.service
+    else
+      systemctl disable httpd.service
+    fi
+fi # CENTOS_SEVEN = 7
 
     # Then install nginx
     cd $DIR_TMP
@@ -41,32 +54,34 @@ cat > "/etc/security/limits.d/90-nproc.conf" <<EOF
 nginx      soft    nproc     16384
 nginx      hard    nproc     16384
 root       soft    nproc     unlimited
+
 EOF
 fi # raise user process limits
 
 if [[ ! -f /proc/user_beancounters ]]; then
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
-net.core.wmem_max=12582912
-net.core.rmem_max=12582912
-net.ipv4.tcp_rmem= 10240 87380 12582912
-net.ipv4.tcp_wmem= 10240 87380 12582912
+fs.file-max=9000000
+net.core.wmem_max=16777216
+net.core.rmem_max=16777216
+net.ipv4.tcp_rmem=8192 87380 16777216                                          
+net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=8192
 net.core.somaxconn=8150
 net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=20
+net.ipv4.tcp_fin_timeout=10
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
-net.ipv4.tcp_keepalive_time=300
+net.ipv4.tcp_keepalive_time=240
 net.ipv4.tcp_max_syn_backlog=8192
-net.ipv4.tcp_sack=0
+net.ipv4.tcp_sack=1
 net.ipv4.tcp_syn_retries=3
 net.ipv4.tcp_synack_retries = 2
 net.ipv4.tcp_tw_recycle = 1
 net.ipv4.tcp_tw_reuse = 1
-vm.swappiness=20
+vm.swappiness=10
 vm.min_free_kbytes=65536
-net.ipv4.ip_local_port_range=10000 65500
+net.ipv4.ip_local_port_range=1024 65535
 EOF
 sysctl -p
 
@@ -110,7 +125,7 @@ then
 
 fi # GPERFTOOLS_SOURCE INSTALL 
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
 	if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 	   installopenssl
@@ -164,14 +179,25 @@ fi
     #tar xvfz nginx-${NGINX_VERSION}.tar.gz
     cd nginx-${NGINX_VERSION}
 
-if [ "$NGINX_OPENRESTY" == 'y' ]; then
-funct_nginxconfigure_openresty
-else
+# set_intelflags
+
 funct_nginxconfigure
-fi
 
     time make$MAKETHREADS
+
+    if [[ "$STRIPNGINX" = [yY] ]]; then
+        echo
+        echo "strip nginx binary..."
+        ls -lah objs/nginx
+        strip -s objs/nginx
+        ls -lah objs/nginx
+        echo
+    fi
+
     time make install
+
+# unset_intelflags
+
     mimefix
     groupadd nginx
     useradd -g nginx -d /home/nginx -s /sbin/nologin nginx
@@ -187,10 +213,14 @@ if [[ -z $NGXLIMITSCONFCHECK ]]; then
     # Set user nginx hard/soft limits
     echo "nginx soft nofile 262144" >>/etc/security/limits.conf
     echo "nginx hard nofile 262144" >>/etc/security/limits.conf
+    echo "nobody soft nofile 262144" >>/etc/security/limits.conf
+    echo "nobody hard nofile 262144" >>/etc/security/limits.conf
+    echo "root soft nofile 262144" >>/etc/security/limits.conf
+    echo "root hard nofile 262144" >>/etc/security/limits.conf
     ulimit -n 262144
 
 fi # check if custom open file descriptor limits already exist
-
+    umask 027
     mkdir /home/nginx/domains
     #chmod 0771 /home/nginx/domains/
     mkdir -p /home/nginx/domains/demodomain.com/{public,private,log,backup}
@@ -203,6 +233,7 @@ fi # check if custom open file descriptor limits already exist
     chmod g+s /home/nginx
     chmod g+s /home/nginx/domains/
     chmod g+s /usr/local/nginx/html
+    umask 022
 
     mkdir -p /usr/local/nginx/conf/conf.d
     fpmconfdir
@@ -221,19 +252,40 @@ fi # check if custom open file descriptor limits already exist
     sed -i "s/server_name localhost/server_name $HN/g" /usr/local/nginx/conf/conf.d/virtual.conf
     echo ""
 
+## only run for CentOS 6.x
+#if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
+
+
+# add check for Windows CLRF line endings
+if [ ! -f /usr/bin/file ]; then
+    yum -q -y install file
+fi
+if [[ $(file /etc/init.d/nginx) =~ CRLF && -f /etc/init.d/nginx ]]; then
+    if [ ! -f /usr/bin/dos2unix ]; then
+        yum -q -y install dos2unix
+    fi
+    echo "detected CRLF line endings converting to Unix LF"
+    dos2unix /etc/init.d/nginx
+fi
+
     chmod +x /etc/init.d/nginx
     chkconfig --levels 235 nginx on
+#fi # CENTOS_SEVEN != 7
 
 if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename
-NPHP=$RANDOM
+NPHP=$(od -vAn -N4 -tx < /dev/urandom)
+NPHP=$(echo ${NPHP} | sed -e 's/\s//')
 mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
 chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
 fi
 
-# rackspace cloud servers block port 80 so need to allow it
-iptables -I RH-Firewall-1-INPUT -p tcp --dport 80 -j ACCEPT
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    # rackspace cloud servers block port 80 so need to allow it
+    iptables -I RH-Firewall-1-INPUT -p tcp --dport 80 -j ACCEPT
+fi # CENTOS_SEVEN != 7
 
 if [ ! -f /usr/local/nginx/conf/htpasswd ]; then
 
@@ -242,6 +294,8 @@ touch /usr/local/nginx/conf/htpasswd
 fi
 
 cp $CUR_DIR/config/htpasswdgen/htpasswd.py /usr/local/nginx/conf/htpasswd.py
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
 
 funct_logrotate
 
@@ -255,6 +309,9 @@ funct_logrotate
             sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
         fi
 	fi
+
+geoinccheck
+geoipphp
 
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen

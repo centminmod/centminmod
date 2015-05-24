@@ -8,7 +8,9 @@ USER=nobody
 LOGGING='n'
 LOGFILE="/var/log/memcached.log"
 LOGFILEB="/var/log/memcached2.log"
-CON=1024
+CON=2048
+BACKLOG=2048
+MAXREQ=200
 THREADS=4
 MINSP=72
 CHUNKF=1.25
@@ -21,22 +23,25 @@ MEMSIZE=8
 SERVERCOUNT=1
 SERVERIP='127.0.0.1'
 OPTIONS='-o slab_reassign,slab_automove'
+PIDA='/var/run/memcached/memcached1.pid'
+PIDB='/var/run/memcached/memcached2.pid'
 
 if [ -f /proc/user_beancounters ]; then
 ulimit -s 256
 fi
 
 if [ ! -d /var/run/memcached/ ]; then
-	mkdir -p /var/run/memcached/
-	chown nobody:nobody /var/run/memcached/
+        mkdir -p /var/run/memcached/
+        chmod 755 /var/run/memcached/
+        chown nobody:nobody /var/run/memcached/
 fi
 
 if [[ "$SOCKET_ENABLE" = [yY] ]]; then
-	METHODA="$SOCKETA"
-	METHODB="$SOCKETB"
+        METHODA="$SOCKETA"
+        METHODB="$SOCKETB"
 else
-	METHODA="-l $SERVERIP -p $PORT1"
-	METHODB="-l $SERVERIP -p $PORT2"
+        METHODA="-l $SERVERIP -p $PORT1"
+        METHODB="-l $SERVERIP -p $PORT2"
 fi
 
 DEBUG='n'
@@ -44,8 +49,21 @@ CPUSET='n'
 #############################
 
 processcheck() {
-PROCESS=$(ps ax | grep memcached | grep -Ev '(grep|memcached status|memcached start|memcached stop|memcached restart|memcached_reinstall)')
-CHECKM=${PROCESS:-nomemcached}
+        PROCESS=$(ps ax | grep memcached | grep -Ev '(/etc/init.d/memcached|grep|memcached status|memcached start|memcached stop|memcached restart|memcached_reinstall)')
+
+        if [ "$SERVERCOUNT" == '2' ]; then
+                if [[ ! -z "$PROCESS" || -f $PIDA ]] || [[ ! -z "$PROCESS" || -f $PIDB ]]; then
+                        CHECKM='yesmemcached'
+                else
+                        CHECKM='nomemcached'
+                fi
+        else
+                if [[ ! -z "$PROCESS" || -f $PIDA ]]; then
+                        CHECKM='yesmemcached'
+                else
+                        CHECKM='nomemcached'
+                fi
+        fi
 }
 
 setcpu() {
@@ -67,11 +85,11 @@ fi
 if [[ "$CHECKM" == 'nomemcached' ]]; then
         echo "Memcached server started "
         if [[ "$LOGGING" = [yY] ]]; then
-        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
-        $BIN -d -m $MEMSIZE $METHODB -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILEB 2>&1
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -P $PIDA -vv > $LOGFILE 2>&1
+        $BIN -d -m $MEMSIZE $METHODB -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -P $PIDB -vv > $LOGFILEB 2>&1
         else
-        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
-        $BIN -d -m $MEMSIZE $METHODB -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -P $PIDA
+        $BIN -d -m $MEMSIZE $METHODB -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -P $PIDB
         fi
 else
         echo "Memcached server already running "
@@ -89,9 +107,9 @@ fi
 if [[ "$CHECKM" == 'nomemcached' ]]; then
         echo "Memcached server started "
         if [[ "$LOGGING" = [yY] ]]; then
-        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -vv > $LOGFILE 2>&1
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -P $PIDA -vv > $LOGFILE 2>&1
         else
-        $BIN -d -m $MEMSIZE $METHODA -c $CON -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS
+        $BIN -d -m $MEMSIZE $METHODA -c $CON -b $BACKLOG -R $MAXREQ -t $THREADS -n $MINSP -f $CHUNKF -u $USER $OPTIONS -P $PIDA
         fi
 else
         echo "Memcached server already running "
@@ -116,9 +134,34 @@ fi
 
 if [[ "$CHECKM" != 'nomemcached' ]]; then
         echo "Memcached server stopped "
-        kill -9 $(pidof $BINNAME) 2>/dev/null
+        if [ "$SERVERCOUNT" == '2' ]; then
+                kill -9 $(cat $PIDA 2>/dev/null) 2>/dev/null
+                RETVALA=$?
+                if [ $RETVALA -eq 0 ] ; then
+                        rm -rf $PIDA 2>/dev/null
+                        rm -rf $PIDB 2>/dev/null
+                        kill -9 $(pidof $BINNAME) 2>/dev/null
+                fi
+                kill -9 $(cat $PIDB 2>/dev/null) 2>/dev/null
+                RETVALB=$?
+                if [ $RETVALB -eq 0 ] ; then
+                        rm -rf $PIDA 2>/dev/null
+                        rm -rf $PIDB 2>/dev/null
+                        kill -9 $(pidof $BINNAME) 2>/dev/null
+                fi                
+        else
+                kill -9 $(cat $PIDA 2>/dev/null) 2>/dev/null
+                RETVALA=$?
+                if [ $RETVALA -eq 0 ] ; then
+                        rm -rf $PIDA 2>/dev/null
+                        kill -9 $(pidof $BINNAME) 2>/dev/null
+                fi                
+        fi
 else
-        echo "Memcached server already stopped "
+        # echo "Memcached server already stopped "
+        rm -rf $PIDA 2>/dev/null
+        rm -rf $PIDB 2>/dev/null
+        kill -9 $(pidof $BINNAME) 2>/dev/null
 fi
 }
 

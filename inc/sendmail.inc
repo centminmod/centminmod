@@ -17,7 +17,7 @@ sed -i 's/Sendmail \$v\/\$Z; \$b/Sendmail \$b/g' /etc/mail/sendmail.cf
 
 echo "sendmail: ALL" >> /etc/hosts.allow
 
-service sendmail restart
+cmservice sendmail restart
 
 fi
 

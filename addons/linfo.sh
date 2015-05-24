@@ -4,7 +4,7 @@
 # latest version at http://linfo.sourceforge.net/
 #################################################
 DIR_TMP='/svr-setup'
-LINFO_VER='1.10'
+LINFO_VER='2.0.2'
 LINFOBASE='/usr/local/nginx/html'	# DO NOT CHANGE
 LINFODIR='cinfo'
 LINFOPATH="${LINFOBASE}/${LINFODIR}"
@@ -88,7 +88,7 @@ echo ""
 	fi
 
 rm -rf ${LINFOPATH}
-/bin/cp -af linfo-${LINFO_VER} ${LINFOPATH}
+\cp -aRf linfo-${LINFO_VER}/* ${LINFOPATH}
 
 chown nginx:nginx ${LINFOPATH}
 chown -R nginx:nginx ${LINFOPATH}
@@ -116,9 +116,13 @@ fi
 
 python /usr/local/nginx/conf/htpasswd.py -b /usr/local/nginx/conf/cinfo_htpasswd $CUSER $CPASS
 
+echo "setup /usr/local/nginx/conf/phpallowed.conf"
+\cp -af /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/phpallowed.conf
+sed -i 's/fastcgi_param PHP_ADMIN_VALUE open_basedir/#fastcgi_param PHP_ADMIN_VALUE open_basedir/' /usr/local/nginx/conf/phpallowed.conf
+
 echo ""
 cecho "cinfo_htpasswd user/pass created..." $boldyellow
-cat /usr/local/nginx/conf/cinfo_htpasswd 
+cat /usr/local/nginx/conf/cinfo_htpasswd
 
 echo ""
 cecho "Create /usr/local/nginx/conf/cinfo.conf" $boldyellow
@@ -127,6 +131,7 @@ cat > "/usr/local/nginx/conf/cinfo.conf" <<EOF
             location /${LINFODIR}/ {
 	auth_basic "Private";
 	auth_basic_user_file /usr/local/nginx/conf/cinfo_htpasswd;
+	include /usr/local/nginx/conf/phpallowed.conf;
             }
 EOF
 

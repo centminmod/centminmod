@@ -57,6 +57,7 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 siege -V
 letswait
+if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check ngx_pagespeed Control Script:" $boldyellow
@@ -64,6 +65,7 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 pscontrol
 letswait
+fi
 # echo ""
 # 	cecho "--------------------------------------------------------" $boldyellow
 # 	cecho "Check TwemPerf Version:" $boldyellow
@@ -84,6 +86,12 @@ nsd -v
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check pure-ftpd Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+pure-ftpd -h | head -n1 | awk '{print $1,$2}'
+letswait
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check YUM Repo List" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 yum repolist
@@ -92,18 +100,19 @@ echo ""
 	fi # unattended
 
 if [[ "$NSD_DISABLED" = [yY] ]]; then
-
+	if [[ ! -z "$(ps aux | grep nsd | grep -v grep)" ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping NSD service:" $boldyellow
-	service nsd stop
+	cmservice nsd stop
 	cecho "Disabling NSD service:" $boldyellow
-	chkconfig nsd off
+	cmchkconfig nsd off
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable NSD service type these 2 commands:" $boldyellow
 	echo "service nsd start"
 	echo "chkconfig nsd on"
 	cecho "--------------------------------------------------------" $boldyellow
+	fi
 fi
 
 if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
@@ -111,9 +120,9 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping Memcached server service:" $boldyellow
-	service memcached stop
+	cmservice memcached stop
 	cecho "Disabling Memcached server service:" $boldyellow
-	chkconfig memcached stop
+	cmchkconfig memcached stop
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable Memcached server service type these 2 commands:" $boldyellow
 	echo "service memcached start"
@@ -126,9 +135,9 @@ if [[ "$PHP_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping php-fpm service:" $boldyellow
-	service php-fpm stop
+	cmservice php-fpm stop
 	cecho "Disabling php-fpm service:" $boldyellow
-	chkconfig php-fpm off
+	cmchkconfig php-fpm off
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable php-fpm service type these 2 commands:" $boldyellow
 	echo "service php-fpm start"
@@ -141,9 +150,9 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
 	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Stopping mysql service:" $boldyellow
-	service mysql stop
+	cmservice mysql stop
 	cecho "Disabling mysql service:" $boldyellow
-	chkconfig mysql off
+	cmchkconfig mysql off
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "In future to re-enable mysql service type these 2 commands:" $boldyellow
 	echo "service mysql start"
@@ -151,13 +160,42 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
 	cecho "--------------------------------------------------------" $boldyellow
 fi
 
+if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
+
+	echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Stopping pure-ftpd service:" $boldyellow
+	cmservice pure-ftpd stop
+	cecho "Disabling pure-ftpd service:" $boldyellow
+	cmchkconfig pure-ftpd off
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "In future to re-enable pure-ftpd service type these 2 commands:" $boldyellow
+	echo "service pure-ftpd start"
+	echo "chkconfig pure-ftpd on"
+	cecho "--------------------------------------------------------" $boldyellow
+fi
+
 }
 
 centminfinish() {
 
+if [[ ! $(ps aufx | grep rsyslog | grep -v grep) ]]; then
+	cmservice rsyslog start
+	cmchkconfig rsyslog on
+fi
+
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+	axivosixyum
+fi
+
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
+	axivoseven
+fi
+
 installchecks
 DATENOW=$(date +"%b %d")
-grep -h $DATENOW /var/log/yum.log | tee -a ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
+YUMLOG=$(grep -h $DATENOW /var/log/yum.log)
+echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
 
 
     echo "*************************************************"

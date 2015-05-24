@@ -11,6 +11,7 @@
         RPMFARCH='i386'
     fi
 
+# dynamic mirror check for EPEL below overrides these values now
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
 CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${RPMFARCH}/${CENTOSFIVEEPELFILE}"
 
@@ -26,6 +27,7 @@ CENTOSFIVEPERCONARELEASE="http://www.percona.com/redir/downloads/percona-release
 CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
 
+# dynamic mirror check for EPEL below overrides these values now
 CENTOSSIXEPELFILE="epel-release-6-8.noarch.rpm"
 CENTOSSIXEPEL="http://mirror.sfo12.us.leaseweb.net/epel/6/${RPMFARCH}/${CENTOSSIXEPELFILE}"
 CENTOSSIXEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXEPELFILE}"
@@ -48,8 +50,88 @@ CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
 CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
+CENTOSSIXREMIFILE="remi-release-6.rpm"
+CENTOSSIXREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSIXREMIFILE}"
+CENTOSSIXREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXREMIFILE}"
+
+# dynamic mirror check for EPEL below overrides these values now
+CENTOSSEVENEPELFILE="epel-release-7-2.noarch.rpm"
+CENTOSSEVENEPEL="http://mirror.sfo12.us.leaseweb.net/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
+CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
+CENTOSSEVENEPELLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
+
+# only do dynamic mirror check if /etc/yum.repos.d/epel.repo and thus EPEL yum repo
+# has not been setup and installed yet
+if [ ! -f /etc/yum.repos.d/epel.repo ]; then
+# dynamic mirror check for EPEL
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+	if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
+	CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/7/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
+	CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
+	CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
+	CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
+	fi
+	
+	if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/6/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSIXEPEL_MIRRORURL=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL%/*}/)
+	CENTOSSIXEPEL_MIRRORURLFILE=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL##*/})
+	CENTOSSIXEPELFILE="$CENTOSSIXEPEL_MIRRORURLFILE"
+	CENTOSSIXEPEL="$CENTOSSIXEPEL_MIRRORFULLURL"
+	fi
+	
+	if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' ]]; then
+	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/5/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSFIVEEPEL_MIRRORURL=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL%/*}/)
+	CENTOSFIVEEPEL_MIRRORURLFILE=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL##*/})
+	CENTOSFIVEEPELFILE="$CENTOSFIVEEPEL_MIRRORURLFILE"
+	CENTOSFIVEEPEL="$CENTOSFIVEEPEL_MIRRORFULLURL"
+	fi
+else
+	if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSIXEPEL_MIRRORURL=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL%/*}/)
+	CENTOSSIXEPEL_MIRRORURLFILE=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL##*/})
+	CENTOSSIXEPELFILE="$CENTOSSIXEPEL_MIRRORURLFILE"
+	CENTOSSIXEPEL="$CENTOSSIXEPEL_MIRRORFULLURL"
+	fi
+	
+	if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' ]]; then
+	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/5/i386/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSFIVEEPEL_MIRRORURL=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL%/*}/)
+	CENTOSFIVEEPEL_MIRRORURLFILE=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL##*/})
+	CENTOSFIVEEPELFILE="$CENTOSFIVEEPEL_MIRRORURLFILE"
+	CENTOSFIVEEPEL="$CENTOSFIVEEPEL_MIRRORFULLURL"
+	fi
+fi
+fi # /etc/yum.repos.d/epel.repo file check
+
+CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
+CENTOSSEVENRPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSSEVENRPMFORGEFILE}"
+
+CENTOSSEVENCENTALTFILE="centalt-release-6-1.noarch.rpm"
+CENTOSSEVENCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSSEVENCENTALTFILE}"
+CENTOSSEVENCENTALTLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENCENTALTFILE}"
+
+CENTOSSEVENPERCONALRELEASEFILE="percona-release-0.1-3.noarch.rpm"
+CENTOSSEVENPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSEVENPERCONALRELEASEFILE}"
+
+CENTOSSEVENVARNISHFILE="varnish-release-3.0-1.el6.noarch.rpm"
+CENTOSSEVENVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/varnish-release/${CENTOSSEVENVARNISHFILE}"
+CENTOSSEVENVARNISHLOCAL='http://centminmod.com/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
+
+CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
+CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
+CENTOSSEVENAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
+
+CENTOSSEVENREMIFILE="remi-release-7.rpm"
+CENTOSSEVENREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSEVENREMIFILE}"
+CENTOSSEVENREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
+
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
-PCRELINK="http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+PCRELINK="ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${PCRELINKFILE}"
+# PCRELINK="http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
 PCRELINKLOCAL="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 
 # wget renamed
@@ -84,12 +166,32 @@ NGX_HEADERSMORELINKFILE="headers-more-v${NGINX_HEADERSMORE}.tar.gz"
 NGX_HEADERSMORELINK="https://github.com/agentzh/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
 
 # wget renamed
-NGX_MEMCLINKFILE="memc-nginx-module_v0.13rc3.tar.gz"
-NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3"
+NGX_STICKYLINKFILE="nginx-sticky-${NGINX_STICKYVER}.tar.gz"
+NGX_STICKYLINK="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKYVER}.tar.gz"
 
 # wget renamed
-NGX_SRCACHELINKFILE="srcache-nginx-module_v0.16.tar.gz"
-NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v0.16"
+NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
+NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
+
+# wget renamed
+NGX_MEMCLINKFILE="memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
+NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v${ORESTY_MEMCVER}"
+
+# wget renamed
+NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
+NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v${ORESTY_SRCCACHEVER}"
+
+# wget renamed
+NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
+NGX_DEVELKITLINK="https://github.com/simpl/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+
+# wget renamed
+NGX_SETMISCLINKFILE="set-misc-nginx-module_v${ORESTY_SETMISCVER}.tar.gz"
+NGX_SETMISCLINK="https://github.com/openresty/set-misc-nginx-module/archive/v${ORESTY_SETMISCVER}.tar.gz"
+
+# wget renamed
+NGX_ECHOLINKFILE="echo-nginx-module_v${ORESTY_ECHOVER}.tar.gz"
+NGX_ECHOLINK="https://github.com/openresty/echo-nginx-module/archive/v${ORESTY_ECHOVER}.tar.gz"
 
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
@@ -110,6 +212,14 @@ PHPEXT_MEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHP
 PHPEXT_LIBMEMCACHEDLINKFILE="libmemcached-${LIBMEMCACHED_VER}.tar.gz"
 PHPEXT_LIBMEMCACHEDLINK="https://launchpad.net/libmemcached/1.0/${LIBMEMCACHED_VER}/+download/${PHPEXT_LIBMEMCACHEDLINKFILE}"
 PHPEXT_LIBMEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${PHPEXT_LIBMEMCACHEDLINKFILE}"
+
+PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
+PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
+PHPEXT_REDISLINKLOCAL="http://centminmod.com/centminmodparts/redis/${PHPEXT_REDISLINKFILE}"
+
+PHPEXT_MONGODBLINKFILE="mongo-php-${MONGODBPHP_VER}.tgz"
+PHPEXT_MONGODBLINK="https://github.com/mongodb/mongo-php-driver/archive/${MONGODBPHP_VER}.tar.gz"
+PHPEXT_MONGODBLINKLOCAL="http://centminmod.com/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
 
 TWEMPERF_LINKFILE="twemperf-${TWEMPERF_VER}.tar.gz"
 TWEMPERF_LINK="https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.gz"

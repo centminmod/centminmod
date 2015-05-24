@@ -28,6 +28,7 @@ CHECKVALUES=$(grep 'ClientAliveInterval 3600' /etc/ssh/sshd_config)
 if [[ -z "$CHECKVALUES" ]]; then
 	echo "ClientAliveInterval 3600" >> /etc/ssh/sshd_config
 	echo "ClientAliveCountMax 120" >> /etc/ssh/sshd_config
+	echo "UseDNS no" >> /etc/ssh/sshd_config
 	#echo "ServerAliveInterval 120" >> /etc/ssh/sshd_config
 	#echo "ServerAliveCountMax 120" >> /etc/ssh/sshd_config
 fi
@@ -37,7 +38,7 @@ if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKTCPALIVE" || -z "$CHECKVALUES" ]]; the
 	echo "Configure sshd_config"
 	echo "----------------------------"
 	/usr/sbin/sshd -t
-	service sshd reload
+	cmservice sshd  reload
 fi
 
 }
@@ -103,7 +104,7 @@ iptables -I INPUT -p tcp --dport $EXISTPORTNUM -j REJECT
 echo "iptables -I INPUT -p tcp --dport $PORTNUM -j ACCEPT"
 iptables -I INPUT -p tcp --dport $PORTNUM -j ACCEPT
 
-service iptables restart
+cmservice iptables restart
 
 if [ -f /etc/csf/csf.conf ]; then
 
@@ -131,7 +132,7 @@ sed -i "s/$TCPIN/$TCPINNEW/g" /etc/csf/csf.conf
 
 sed -i "s/$TCPOUT/$TCPOUTNEW/g" /etc/csf/csf.conf
 
-	service csf restart
+	cmservice csf restart
 	csf -r
 
 	else
@@ -144,7 +145,7 @@ sed -i "s/$TCPOUT/$TCPOUTNEW/g" /etc/csf/csf.conf
 
 fi
 
-service sshd restart
+cmservice sshd  restart
 
 echo ""
 echo "*************************************************"

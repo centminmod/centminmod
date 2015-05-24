@@ -2,8 +2,14 @@ function funct_apcreinstall {
 
 echo " "
 read -ep "APC reinstall - Would you like to continue? [y/n] " apckeyd
-if [[ "$apckeyd" = [nN] ]];
-then
+if [[ "$apckeyd" = [nN] ]]; then
+    # if not reinstalling APC Cache when selecting no
+    # you should remove apc.ini file to prevent loading
+    # attempts and errors on PHP-FPM service restarts
+    #if [ -f "${CONFIGSCANDIR}/apc.ini" ]; then
+    #    echo "rm -rf ${CONFIGSCANDIR}/apc.ini"
+    #    rm -rf ${CONFIGSCANDIR}/apc.ini
+    #fi
     exit 0
 fi
 
@@ -29,7 +35,7 @@ fi
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
-if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' ]]; then
     apcdevfix
 else
     if [ -s APC-${apcver}.tgz ]; then
@@ -89,11 +95,12 @@ read -ep "Do you want to reset apc.ini settings to default (y) or keep existing 
 
 fi # check if apc.so exists in php.ini
 
-#    /etc/init.d/php-fpm restart
+#    cmservice php-fpm restart
 
 if [ -f /usr/local/nginx/html/myapc.php ]; then
 # Randomize myapc.php filename
-N=$RANDOM
+N=$(od -vAn -N4 -tx < /dev/urandom)
+N=$(echo ${N} | sed -e 's/\s//')
 mv /usr/local/nginx/html/myapc.php /usr/local/nginx/html/${N}_myapc.php
 chown nginx:nginx /usr/local/nginx/html/${N}_myapc.php
 fi

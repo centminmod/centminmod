@@ -8,417 +8,9 @@ checklogdetails() {
 }
 
 ###############################################
-yumcentosfivedownload() {
-
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' ]]; then
-{
-    cd $DIR_TMP
-
-if [ -s "${CENTOSFIVEEPELFILE}" ]; then
-  echo "${CENTOSFIVEEPELFILE} [found]"
-  else
-  echo "Error: ${CENTOSFIVEEPELFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSFIVEEPEL} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSFIVEEPELFILE} download failed." $boldgreen
-FAILEPEL='y'
-checklogdetails
-	exit #$ERROR
-else 
-	cecho "Download done." $boldyellow
-	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-5
-	rpm -i ${CENTOSFIVEEPELFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	ERR=$?
-	CCEPELCHECK="$ERR"
-		if [ "$CCEPELCHECK" == '0' ]; then
-			yumpriorepel
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSFIVEEPELFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; then
-	rm -rf /etc/yum.repos.d/rpmforge.repo
-	rm -rf /etc/yum.repos.d/rpmforge.OLD
-	rm -rf ${DIR_TMP}/rpmforge-release*
-
-	FORGERPM=$(rpm -qa | grep rpmforge-release)
-	rpm -e $FORGERPM
-fi
-
-if [ -s "${CENTOSFIVERPMFORGEFILE}" ]; then
-  echo "${CENTOSFIVERPMFORGEFILE} [found]"
-  else
-  echo "Error: ${CENTOSFIVERPMFORGEFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSFIVERPMFORGE} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSFIVERPMFORGEFILE} download failed." $boldgreen
-FAILRPMFORGE='y'
-checklogdetails
-	#exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-rpm -i ${CENTOSFIVERPMFORGEFILE}
-	yum${CACHESKIP} -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCRPMFORGECHECK="$ERR"
-		if [ "$CCRPMFORGECHECK" == '0' ]; then
-			yumpriorrpmforge
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSFIVERPMFORGEFILE} install." $boldgreen
-			#exit $ERR
-		fi
-	fi
-
-fi
-
-
-if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
-if [ -s ${CENTOSFIVECENTALTFILE} ]; then
-  echo "${CENTOSFIVECENTALTFILE} [found]"
-  else
-  echo "Error: ${CENTOSFIVECENTALTFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSFIVECENTALT} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSFIVECENTALTFILE} download failed." $boldgreen
-FAILCENTALT='y'
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
-rpm -i ${CENTOSFIVECENTALTFILE}
-yumpriorcentalt
-echo ""
-	fi
-
-fi
-fi # CENTALTREPO_DISABLE
-
-if [ -s "${CENTOSFIVEPERCONARELEASEFILE}" ]; then
-  echo "${CENTOSFIVEPERCONARELEASEFILE} [found]"
-  else
-  echo "Error: ${CENTOSFIVEPERCONARELEASEFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSFIVEPERCONARELEASE} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSFIVEPERCONARELEASEFILE} download failed." $boldgreen
-FAILPERCONA='y'
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
-rpm -i ${CENTOSFIVEPERCONARELEASEFILE}
-	#yum -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCPERCONACHECK="$ERR"
-		if [ "$CCPERCONACHECK" == '0' ]; then
-			yumpriorpercona
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSFIVEPERCONARELEASEFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-if [ -s "${CENTOSFIVEVARNISHFILE}" ]; then
-  echo "${CENTOSFIVEVARNISHFILE} [found]"
-  else
-  echo "Error: ${CENTOSFIVEVARNISHFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSFIVEVARNISH} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSFIVEVARNISHFILE} download failed." $boldgreen
-FAILVARNISH='y'
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-
-rpm --nosignature -i ${CENTOSFIVEVARNISHFILE}
-	#yum -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCVARNISHCHECK="$ERR"
-		if [ "$CCVARNISHCHECK" == '0' ]; then
-			yumpriorvarnish
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSFIVEVARNISHFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-####
-
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yuminstall_centos5.log
-fi # CENTOS 5.x
-
-}
-
-###############################################
-yumcentossixdownload() {
-
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
-{
-echo "*************************************************"
-cecho "* CentOS 6.x detected installing EPEL Repo" $boldgreen
-echo "*************************************************"
-
-    if [ ${MACHINE_TYPE} == 'x86_64' ];
-    then
-        ARCH='x86_64'
-       RPMFARCH='x86_64'
-    else
-        ARCH='i686'
-        RPMFARCH='i386'
-    fi
-
-    cd $DIR_TMP
-
-if [ -s "${CENTOSSIXEPELFILE}" ]; then
-  echo "${CENTOSSIXEPELFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXEPELFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXEPEL} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXEPELLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXEPELFILE} download failed." $boldgreen
-FAILEPEL='y'
-checklogdetails
-	exit #$ERROR
-else 
-	cecho "Download done." $boldyellow
-	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
-	rpm -i ${CENTOSSIXEPELFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	ERR=$?
-	CCEPELCHECK="$ERR"
-		if [ "$CCEPELCHECK" == '0' ]; then
-			yumpriorepel
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXEPELFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; then
-	rm -rf /etc/yum.repos.d/rpmforge.repo
-	rm -rf /etc/yum.repos.d/rpmforge.OLD
-	rm -rf ${DIR_TMP}/rpmforge-release*
-
-	FORGERPM=$(rpm -qa | grep rpmforge-release)
-	rpm -e $FORGERPM
-fi
-
-if [ -s "${CENTOSSIXRPMFORGEFILE}" ]; then
-  echo "${CENTOSSIXRPMFORGEFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXRPMFORGEFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXRPMFORGE} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXRPMFORGEFILE} download failed." $boldgreen
-FAILRPMFORGE='y'
-checklogdetails
-	#exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-rpm -i ${CENTOSSIXRPMFORGEFILE}
-	yum${CACHESKIP} -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCRPMFORGECHECK="$ERR"
-		if [ "$CCRPMFORGECHECK" == '0' ]; then
-			yumpriorrpmforge
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXRPMFORGEFILE} install." $boldgreen
-			#exit $ERR
-		fi
-	fi
-
-fi
-
-
-if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
-if [ -s "${CENTOSSIXCENTALTFILE}" ]; then
-  echo "${CENTOSSIXCENTALTFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXCENTALTFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXCENTALT} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXCENTALTLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXCENTALTFILE} download failed." $boldgreen
-FAILCENTALT='y'
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
-rpm -i ${CENTOSSIXCENTALTFILE}
-yumpriorcentalt
-echo ""
-	fi
-
-fi
-fi # CENTALTREPO_DISABLE
-
-
-if [ -s "${CENTOSSIXPERCONALRELEASEFILE}" ]; then
-  echo "${CENTOSSIXPERCONALRELEASEFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXPERCONALRELEASEFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXPERCONALRELEASE} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXPERCONALRELEASEFILE} download failed." $boldgreen
-FAILPERCONA='y'
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
-rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
-	#yum -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCPERCONACHECK="$ERR"
-		if [ "$CCPERCONACHECK" == '0' ]; then
-			yumpriorpercona
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXPERCONALRELEASEFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
-  echo "${CENTOSSIXVARNISHFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXVARNISHFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXVARNISH} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXVARNISHLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXVARNISHFILE} download failed." $boldgreen
-FAILVARNISH='y'
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-
-rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
-	#yum -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCVARNISHCHECK="$ERR"
-		if [ "$CCVARNISHCHECK" == '0' ]; then
-			yumpriorvarnish
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-####
-# axivo centos 6.x 64bit only
-
-if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
-
-if [ ${MACHINE_TYPE} == 'x86_64' ]; then
-
-if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
-  echo "${CENTOSSIXAXIVOFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXAXIVO} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXAXIVOLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXAXIVOFILE} download failed." $boldgreen
-FAILAXIVO='y'
-checklogdetails
-	exit #$ERROR
-else 
-	cecho "Download done." $boldyellow
-	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	ERR=$?
-	CCAXIVOCHECK="$ERR"
-		if [ "$CCAXIVOCHECK" == '0' ]; then
-			yumprioraxivo
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXAXIVOFILE} install." $boldgreen
-			exit $ERR
-		fi
-	fi
-
-fi
-
-fi
-
-fi # AXIVOREPO_DISABLE
-
-####
-
-
-# CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
-
-declare -a arrays
-arrays=(${PACKAGEEXTRA})
-
-for pkgs in ${arrays[@]}
-do
-echo Processing package: $pkgs
-YUMINSTALLRPMCHECKS=$(rpm -qa $pkgs)
-#echo $YUMINSTALLRPMCHECKS
-        if [ "$YUMINSTALLRPMCHECKS" ]; then
-echo "----------------------------------------------------------------------------------"
-        # yum${CACHESKIP} -q -y update $pkgs
-        # yum${CACHESKIP} -q list $pkgs
-        echo "$pkg already installed"
-echo "----------------------------------------------------------------------------------"
-        else
-echo "----------------------------------------------------------------------------------"
-cecho "Installing $pkgs" $boldyellow
-echo "----------------------------------------------------------------------------------"
-        yum${CACHESKIP} -q -y install $pkgs
-        # yum${CACHESKIP} -q list $pkgs
-echo "----------------------------------------------------------------------------------"
-        fi
-done
-
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yuminstall_centos6.log
-fi
-
-}
-
-###############################################
+# yumcentosfivedownload moved
+# yumcentossixdownload moved
+# yumcentossevendownload moved
 
 ###############################################
 phptarball() {
@@ -796,6 +388,63 @@ else
 echo ""
 	fi
 
+        cecho "Download ${NGX_STICKYLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_STICKYLINKFILE} ]; then
+        cecho "${NGX_STICKYLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        wget -c --progress=bar ${NGX_STICKYLINK} -O ${NGX_STICKYLINKFILE} --tries=3
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_STICKYLINKFILE} download failed." $boldgreen
+
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_STICKYLINKFILE}
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_STICKYLINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_STICKYLINKFILE} valid file." $boldyellow
+         mv nginx-goodies-nginx-sticky-module-ng-* nginx-sticky-module-${NGINX_STICKYVER}
+echo ""
+	fi
+
+        cecho "Download ${NGX_UPSTREAMCHECKLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_UPSTREAMCHECKLINKFILE} ]; then
+        cecho "${NGX_UPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        wget -c --progress=bar --no-check-certificate ${NGX_UPSTREAMCHECKLINK} -O ${NGX_UPSTREAMCHECKLINKFILE} --tries=3 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} download failed." $boldgreen
+
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_UPSTREAMCHECKLINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_UPSTREAMCHECKLINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
 nginxpcretarball
 nginxwebdavtarball
 nginxpgspeedtarball
@@ -805,49 +454,7 @@ nginxpgspeedtarball
 
 
 ###############################################
-nginxtarball() {
-
-if [[ "$NGINX_INSTALL" = [yY] ]]; 
-then
-
-echo ""
-	if [ "$UNATTENDED" == 'n' ]; then
-    read -ep "Would you like to compile nginx with IPv6 support? [y/n] " asknginxipv
-	else
-	asknginxipv="$NGINX_IPV"
-	fi #unattended
-
-    cd $DIR_TMP
-
-        cecho "Download ${NGX_LINKFILE} ..." $boldyellow
-    if [ -s ${NGX_LINKFILE} ]; then
-        cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
-    else
-        $DOWNLOADAPP "${NGX_LINK}" $WGETRETRY 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-	fi
-    fi
-
-tar xzf ${NGX_LINKFILE} 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGX_LINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "${NGX_LINKFILE} valid file." $boldyellow
-echo ""
-	fi
-
-ngxmoduletarball
-
+openrestytarball() {
 if [ "$NGINX_OPENRESTY" == 'y' ]; then
 
         cecho "Download ${NGX_MEMCLINKFILE} ..." $boldyellow
@@ -905,8 +512,139 @@ else
          cecho "${NGX_SRCACHELINKFILE} valid file." $boldyellow
 echo ""
 	fi
+
+        cecho "Download ${NGX_DEVELKITLINKFILE} ..." $boldyellow
+if [ -s ${NGX_DEVELKITLINKFILE} ]; then
+  cecho "${NGX_DEVELKITLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_DEVELKITLINK} -O ${NGX_DEVELKITLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_DEVELKITLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_DEVELKITLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_DEVELKITLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_DEVELKITLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_SETMISCLINKFILE} ..." $boldyellow
+if [ -s ${NGX_SETMISCLINKFILE} ]; then
+  cecho "${NGX_SETMISCLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_SETMISCLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_SETMISCLINK} -O ${NGX_SETMISCLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_SETMISCLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_SETMISCLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_SETMISCLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_SETMISCLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_ECHOLINKFILE} ..." $boldyellow
+if [ -s ${NGX_ECHOLINKFILE} ]; then
+  cecho "${NGX_ECHOLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_ECHOLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_ECHOLINK} -O ${NGX_ECHOLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_ECHOLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_ECHOLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_ECHOLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_ECHOLINKFILE} valid file." $boldyellow
+echo ""
+    fi       
 	
 fi # openresty
+}
+
+###############################################
+nginxtarball() {
+
+if [[ "$NGINX_INSTALL" = [yY] ]]; 
+then
+
+echo ""
+	if [ "$UNATTENDED" == 'n' ]; then
+    read -ep "Would you like to compile nginx with IPv6 support? [y/n] " asknginxipv
+	else
+	asknginxipv="$NGINX_IPV"
+	fi #unattended
+
+    cd $DIR_TMP
+
+        cecho "Download ${NGX_LINKFILE} ..." $boldyellow
+    if [ -s ${NGX_LINKFILE} ]; then
+        cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP "${NGX_LINK}" $WGETRETRY 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+	fi
+    fi
+
+tar xzf ${NGX_LINKFILE} 
+ERROR=$?
+	if [[ "$ERROR" != '0' ]]; then
+	cecho "Error: ${NGX_LINKFILE} extraction failed." $boldgreen
+checklogdetails
+	exit #$ERROR
+else 
+         cecho "${NGX_LINKFILE} valid file." $boldyellow
+echo ""
+	fi
+
+ngxmoduletarball
+openrestytarball
+
 fi # NGINX INSTALL
 
 }
@@ -1157,6 +895,148 @@ else
          cecho "${PHPEXT_MEMCACHEDLINKFILE} valid file." $boldyellow
 echo ""
 	fi
+}
+
+###############################################
+redisphplocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf redis*
+
+        cecho "Download local ${PHPEXT_REDISLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_REDISLINKFILE} ]; then
+  cecho "${PHPEXT_REDISLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINKLOCAL} -O ${PHPEXT_REDISLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} local download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_REDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${PHPEXT_REDISLINKFILE} local valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
+redisphptarball() {
+
+    cd $DIR_TMP
+
+        cecho "Download ${PHPEXT_REDISLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_REDISLINKFILE} ]; then
+  cecho "${PHPEXT_REDISLINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINK} -O ${PHPEXT_REDISLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_REDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_REDISLINKFILE} extraction failed." $boldgreen
+    cecho "trying local mirror download..." $boldgreen
+    redisphplocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_REDISLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
+mongodbphplocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf mongo*
+
+        cecho "Download local ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
+  cecho "${PHPEXT_MONGODBLINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINKLOCAL} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_MONGODBLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} local extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${PHPEXT_MONGODBLINKFILE} local valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
+mongodbphptarball() {
+
+    cd $DIR_TMP
+
+        cecho "Download ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
+  cecho "${PHPEXT_MONGODBLINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Download now......"
+        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINK} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf ${PHPEXT_MONGODBLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_MONGODBLINKFILE} extraction failed." $boldgreen
+    cecho "trying local mirror download..." $boldgreen
+    mongodbphplocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_MONGODBLINKFILE} valid file." $boldyellow
+echo ""
+    fi
 }
 
 ###############################################
@@ -1615,7 +1495,7 @@ echo ""
 
 fi # for nginx openssl
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
     # Install OpenSSL
     cd $DIR_TMP
 

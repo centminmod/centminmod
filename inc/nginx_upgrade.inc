@@ -1,7 +1,7 @@
 checkgeoip() {
     GEOIP_CHECK=$(nginx -V 2>&1 | grep geoip)
 
-    if [[ ! -z "$GEOIP_CHECK" ]]; then
+    if [[ ! -z "$GEOIP_CHECK" && "$(grep 'NGINX_GEOIP=n' centmin.sh)" ]]; then
         cecho "Detected existing Nginx has NGINX_GEOIP=y enabled" $boldyellow
         cecho "however, you are recompiling Nginx with NGINX_GEOIP=n" $boldyellow
         cecho "Is this incorrect and you want to set NGINX_GEOIP=y enabled ? " $boldyellow
@@ -31,9 +31,15 @@ fi
 checknginxmodules() {
 
 cecho "Check for missing nginx modules" $boldyellow
-if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/headers-more-v0.25.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" ]]; then
+if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" || ! -f "${DIR_TMP}/headers-more-v${NGINX_HEADERSMORE}.tar.gz" || ! -f "${DIR_TMP}/nginx-sticky-${NGINX_STICKYVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz" ]]; then
 ngxmoduletarball
 openssldownload
+fi
+
+if [ "$NGINX_OPENRESTY" == 'y' ]; then
+    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]]; then
+    openrestytarball
+    fi
 fi
 
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
@@ -76,11 +82,14 @@ fi
 
 funct_mktempfile
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
 if [ ! -f /etc/init.d/nginx ]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
     chmod +x /etc/init.d/nginx
     chkconfig --levels 235 nginx on
 fi
+fi # CENTOS_SEVEN != 7
 
 if [[ "$UALL" = 'y' ]]; then 
     ngver=$NGINX_VERSION
@@ -88,12 +97,23 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo ""
     read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
-    # echo ""
-    # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
-    recompileopenssl='n'
+
+    # auto check if static compiled Nginx openssl version matches
+    # the one defined in centmin.sh OPENSSL_VERSION variable
+    # if doesn't match then auto recompile the statically set
+    # OPENSSL_VERSION
+    AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
+    if [[ "$AUTOOPENSSLCHECK" ]]; then
+        recompileopenssl='n'
+    else
+        recompileopenssl='y'
+    fi
     echo ""
     checkgeoip
 fi # UALL
+
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
@@ -182,7 +202,7 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
     tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
 fi # for nginx openssl
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
     # Install OpenSSL
     cd $DIR_TMP
     echo "Compiling OpenSSL..."
@@ -255,11 +275,7 @@ then
 
 fi
 
-if [ "$NGINX_OPENRESTY" == 'y' ]; then
-funct_nginxmodules_openresty
-else
 funct_nginxmodules
-fi
 
     # Install nginx
     cd $DIR_TMP
@@ -275,20 +291,18 @@ fi
     cd nginx-${ngver}
     make clean
 
+# set_intelflags
+
 if [[ "$NGINXPATCH" = [yY] ]]; then
 
     echo "*************************************************"
-    cecho "Nginx Patch Time - 60 second delay" $boldgreen
+    cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
-    sleep 60
+    sleep $NGINXPATCH_DELAY
 fi
 
-if [ "$NGINX_OPENRESTY" == 'y' ]; then
-funct_nginxconfigure_openresty
-else
 funct_nginxconfigure
-fi
 
 ################
 # error check
@@ -318,6 +332,15 @@ funct_showtempfile
 
     time make
 
+    if [[ "$STRIPNGINX" = [yY] ]]; then
+        echo
+        echo "strip nginx binary..."
+        ls -lah objs/nginx
+        strip -s objs/nginx
+        ls -lah objs/nginx
+        echo
+    fi
+
 ################
 # error check
 
@@ -344,7 +367,7 @@ funct_showtempfile
 # error check
 ################
 
-# /etc/init.d/nginx stop
+# cmservice nginx stop
 /usr/local/sbin/nginx -s stop
 
     # speed up nginx wait time if not many vhosts are on server
@@ -367,6 +390,8 @@ sleep $NGINXUPGRADESLEEP
 fi
 
     time make install
+
+# unset_intelflags
 
 ################
 # error check
@@ -400,6 +425,9 @@ CBODYCHECK=`grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf`
 if [ $CBODYCHECK ]; then
 sed -i 's/client_body_in_file_only on/client_body_in_file_only off/g' /usr/local/nginx/conf/nginx.conf
 fi
+
+geoinccheck
+geoipphp
 
     echo "*************************************************"
     cecho "* nginx updated" $boldgreen

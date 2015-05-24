@@ -36,9 +36,9 @@ listen.allowed_clients = 127.0.0.1
 ; BSD-derived systems allow connections regardless of permissions. 
 ; Default Values: user and group are set as the running user
 ;                 mode is set to 0666
-;listen.owner = nobody
-;listen.group = nobody
-;listen.mode = 0666
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0666
 
 ; Unix user/group of processes
 ; Note: The user is mandatory. If the group is not set, the default user's group
@@ -223,3 +223,4 @@ php_admin_value[error_log] = /var/log/php-fpm/www-error.log
 php_admin_flag[log_errors] = on
 ;php_admin_value[open_basedir] = /tmp/:/usr/local/nginx/html/
 ;php_admin_value[memory_limit] = 32M
+php_admin_value[disable_functions] = shell_exec

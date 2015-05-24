@@ -1,4 +1,6 @@
 [mysqld]
+local-infile=0
+ignore-db-dir=lost+found
 #character-set-server=utf8
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
@@ -122,6 +124,7 @@ quick
 max_allowed_packet = 64M
 
 [myisamchk] 
+tmpdir=/home/mysqltmp
 key_buffer = 256M 
 sort_buffer = 256K
 read_buffer = 256K

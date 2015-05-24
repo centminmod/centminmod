@@ -1,7 +1,7 @@
 #################
 zopcacheupgrade() {
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]]; then
 	echo ""
 	echo "-----------------------------------------------------------------------------------------"
 	cecho "Detected PHP $PHPMUVER branch." $boldyellow
@@ -30,7 +30,6 @@ if [[ "$zendopcacheon" = [yY] ]]; then
 			sed -i 's/apc.serializer=igbinary/;apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
 		fi
 	
-
 		if [ -f ${CONFIGSCANDIR}/memcache.ini ]; then
 			rm -rf ${CONFIGSCANDIR}/memcache.ini
 		fi
@@ -48,6 +47,10 @@ if [[ "$zendopcacheon" = [yY] ]]; then
 		fi
 	
 		if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+			# save zend opcache memory allocation size
+			# to be transplanted back into newly created
+			# zendopcache.ini
+			ZENDOPCACHE_EXISTMEMSIZE=$(awk -F "=" '/opcache.memory_consumption/ {print $2}' ${CONFIGSCANDIR}/zendopcache.ini)
 			rm -rf ${CONFIGSCANDIR}/zendopcache.ini
 		fi
 
@@ -68,10 +71,76 @@ if [[ "$zendopcacheon" = [yY] ]]; then
 
 ######################################################
 # Randomize ${N}_opcache.php filename
-N=$RANDOM
+
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
+
+hname=$(hostname)
+OPSALT=$(openssl rand 3 -base64)
+OPUSER=$(echo "opadmin${CSALT}")
+OPPASS=$(openssl rand 16 -base64)
+
+###############
+opprotect() {
+	echo ""
+	cecho "Creating htpasswd_opcache user/pass..." $boldyellow
+	echo "/usr/local/nginx/conf/htpasswd.sh create /usr/local/nginx/conf/htpasswd_opcache $OPUSER $OPPASS"
+	# if [ ! -f /usr/local/nginx/conf/htpasswd_opcache ]; then
+	# 	touch /usr/local/nginx/conf/htpasswd_opcache
+	# fi
+	/usr/local/nginx/conf/htpasswd.sh create /usr/local/nginx/conf/htpasswd_opcache $OPUSER $OPPASS
+	OPDETAILS=$(cat /usr/local/nginx/conf/htpasswd_opcache)
+
+	echo ""
+	cecho "Create include file /usr/local/nginx/conf/include_opcache.conf" $boldyellow
+	echo ""
+
+cat > "/usr/local/nginx/conf/include_opcache.conf" <<EOF
+            location ~ ^/(${N}_opcache.php) {
+    include /usr/local/nginx/conf/php.conf;
+	auth_basic "Password Protected";
+	auth_basic_user_file /usr/local/nginx/conf/htpasswd_opcache;
+            }
+EOF
+
+	cat /usr/local/nginx/conf/include_opcache.conf
+
+echo ""
+cecho "Setup virtual.conf" $boldyellow
+cecho "Adding /usr/local/nginx/conf/include_opcache.conf include entry" $boldyellow
+
+CHECKCOPINFO=$(grep include_opcache.conf /usr/local/nginx/conf/conf.d/virtual.conf)
+
+if [[ -z "$CHECKCOPINFO" ]]; then
+
+sed -i '/include \/usr\/local\/nginx\/conf\/staticfiles.conf;/a \include \/usr\/local\/nginx\/conf\/include_opcache.conf;' /usr/local/nginx/conf/conf.d/virtual.conf
+
+fi
+
+echo ""
+cmservice nginx reload
+
+	echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "Password protected ${hname}/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "Username: $OPUSER" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "Password: $OPPASS" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	echo "" >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+}
+###############
+
+N=$(od -vAn -N4 -tx < /dev/urandom)
+N=$(echo ${N} | sed -e 's/\s//')
 if [[ -f /usr/local/nginx/html/opcache.php ]]; then
 	mv /usr/local/nginx/html/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	opprotect
+elif [[ -z $(ls /usr/local/nginx/html/ | grep opcache.php) ]]; then
+	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
+	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	opprotect
 fi
 ######################################################
 
@@ -103,6 +172,10 @@ if [[ -z "$ZOPLUSSOCHECK" ]]; then
 	echo -e "\nCopying zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
 	cat $CUR_DIR/config/zendopcache/zendopcache-min.ini > ${CONFIGSCANDIR}/zendopcache.ini
 
+	# transfer existing memory allocation value to newly created
+	# zendopcache.ini
+	sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
+
 else
 
 	echo $lesszendopcachemem
@@ -110,10 +183,14 @@ else
 	echo -e "\nCopying zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini\n"
 	cat $CUR_DIR/config/zendopcache/zendopcache.ini > ${CONFIGSCANDIR}/zendopcache.ini
 
+	# transfer existing memory allocation value to newly created
+	# zendopcache.ini
+	sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
+
 fi # check if opcache.so exists in zendopcache.ini
 fi # zendopcacheon
 
-    # /etc/init.d/php-fpm restart
+    # cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache installed" $boldgreen
     echo "*************************************************"

@@ -2,7 +2,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
 	<head>
-		<title>Test Page for the Nginx HTTP Server</title>
+		<title>Test Page for the Centmin Mod Nginx HTTP Server</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<style type="text/css">
 			/*<![CDATA[*/
@@ -27,11 +27,11 @@
 				text-align: center;
 				margin: 0;
 				padding: 0.6em 2em 0.4em;
-				background-color: #22437f;
+				background-color: #43a6df;
 				color: #fff;
 				font-weight: normal;
 				font-size: 1.75em;
-				border-bottom: 2px solid #000;
+				border-bottom: 2px solid #e3e3e3;
 			}
 			h1 strong {
 				font-weight: bold;
@@ -80,18 +80,24 @@
 			a:hover img {
 				border: 2px solid #224;
 			}
+			.cmlogo {
+				text-align: center;
+			}
 			/*]]>*/
 		</style>
 	</head>
 
 	<body>
 
-		<h1><strong>Nginx Test Page</strong></h1>
+		<h1><strong>Centmin Mod Nginx Test Page</strong></h1>
 
 		<div class="content">
 			<div class="content-middle">
-				<p>This page is used to test the proper operation of the Nginx HTTP server after it has been installed. If you can read this page, it means that the Nginx HTTP server installed at this site is working properly.</p>
+				<p>This page is used to test the proper operation of the Centmin Mod based Nginx HTTP server after it has been installed. If you can read this page, it means that the Nginx HTTP server installed at this site is working properly.</p>
 			</div>
+<div class="cmlogo">
+<p><a href="http://centminmod.com/" target="_top"><img src="cmlogo.png" width="320" height="259" border="0" align="middle" alt="CentminMod.com Nginx Auto Installer"></a></p>
+</div>
 			<hr />
 
 			<div class="content-columns">
@@ -108,11 +114,9 @@
 				<div class="content-column-right">
 					<h2>If you are the website administrator:</h2>
 
-					<p>You may now add content to the directory <tt>/usr/local/nginx/html</tt>. Note that until you do so, people visiting your website will see this page, and not your content. To prevent this page from ever being used, replace this file (<tt>index.html</tt>). You may also wish to make modifications to <tt>/usr/local/nginx/conf/nginx.conf</tt> and <tt>/usr/local/nginx/conf/conf.d/virtual.conf</tt>.</p>
+<p>After Centmin Mod install, follow the <a href="http://centminmod.com/getstarted.html">Getting Started Guide</a> to setup your Centmin Mod LEMP web server.</p>
 
-                                        <p>You are free to use the image below (and <a href="http://wiki.nginx.org/NginxPropaganda">these</a>) on web sites powered by the Nginx HTTP Server:</p>
-
-                                        <p><a href="http://nginx.org/" title="Nginx"><img src="nginx-logo.png" alt="[ Powered by Nginx ]"/></a></p>
+					<p>You may want to change this <tt>index.html</tt> file located within directory <tt>/usr/local/nginx/html</tt>. Note that until you do so, people visiting your website will see this page, and not your content. To prevent this page from ever being used, replace this file (<tt>index.html</tt>). </p>
 
 				</div>
 

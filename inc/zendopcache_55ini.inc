@@ -3,7 +3,7 @@ zopcache_initialini() {
 
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
-if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' ]]; then
+if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' ]]; then
 	PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 fi # PHPMVER
 
@@ -32,7 +32,7 @@ if [[ -z "$ZOPLUSSOCHECK" ]]; then
 
 	fi # check if opcache.so exists in zendopcache.ini
 
-    # /etc/init.d/php-fpm restart
+    # cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Zend Optimizer Plus OPcache installed" $boldgreen
     echo "*************************************************"

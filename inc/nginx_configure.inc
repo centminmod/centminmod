@@ -13,7 +13,7 @@ GPERFOPT=""
 
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
 	if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
@@ -24,10 +24,41 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
 	fi
 
+	if [ "$NGINX_OPENRESTY" == 'y' ]; then
+		MEMCDIR=`ls -rt $DIR_TMP | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
+		SRCACHEDIR=`ls -rt $DIR_TMP | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
+		SETMISCDIR=`ls -rt $DIR_TMP | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
+		DEVELKITDIR=`ls -rt $DIR_TMP | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
+		ECHODIR=`ls -rt $DIR_TMP | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
+		MEMCOPT=" --add-module=../${MEMCDIR}"
+		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
+		SETMISCOPT=" --add-module=../${SETMISCDIR}"
+		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
+		ECHOOPT=" --add-module=../${ECHODIR}"
+	else
+		MEMCOPT=""
+		SRCCACHEOPT=""
+		SETMISCOPT=""
+		DEVELKITOPT=""
+		ECHOOPT=""		
+	fi
+
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
 		SPDYOPT=" --with-http_spdy_module"
 	else
 		SPDYOPT=""
+	fi
+
+	if [[ "$NGINX_STICKY" = [yY] ]]; then
+		STICKYOPT=" --add-module=../nginx-sticky-module-${NGINX_STICKYVER}"
+	else
+		STICKYOPT=""
+	fi
+
+	if [[ "$NGINX_UPSTREAMCHECK" = [yY] ]]; then
+		UPSTREAMOPT=" --add-module=../nginx_upstream_check_module-${NGINX_UPSTREAMCHECKVER}"
+	else
+		UPSTREAMOPT=""
 	fi
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
@@ -90,6 +121,18 @@ else
 		SPDYOPT=""
 	fi
 
+	if [[ "$NGINX_STICKY" = [yY] ]]; then
+		STICKYOPT=" --add-module=../nginx-sticky-module-${NGINX_STICKYVER}"
+	else
+		STICKYOPT=""
+	fi
+
+	if [[ "$NGINX_UPSTREAMCHECK" = [yY] ]]; then
+		UPSTREAMOPT=" --add-module=../nginx_upstream_check_module-${NGINX_UPSTREAMCHECKVER}"
+	else
+		UPSTREAMOPT=""
+	fi
+
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 		ngxpagespeedinstall
 		PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
@@ -126,6 +169,9 @@ else
 fi
 
 if [[ "$NGINX_GEOIP" = [yY] ]]; then
+	if [[ ! -d /usr/share/GeoIP ]]; then
+		geoipinstall
+	fi
 	GEOIPOPT=' --with-http_geoip_module'
 else
 	GEOIPOPT=''
@@ -138,27 +184,58 @@ else
 	RUBYMODULE=""
 fi
 
-if [[ "$CUSTOMSERVERNAME" == [yY] ]]; then
-	echo ""
-	echo "Check existing server string:"
-grep "Server: " src/http/ngx_http_header_filter_module.c | grep -v full_string
-	echo ""
-	echo "Change server string to $CUSTOMSERVERSTRING"
-sed -i "s/Server: nginx/Server: $CUSTOMSERVERSTRING/g" src/http/ngx_http_header_filter_module.c
-	echo ""
+if [[ -d "${DIR_TMP}/nginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
+	cd ${DIR_TMP}/nginx-${NGINX_VERSION}
 fi
 
-checkgcc
+if [[ -d "${DIR_TMP}/nginx-${ngver}" && "$ngver" ]]; then
+	cd ${DIR_TMP}/nginx-${ngver}
+fi
+
+if [ -f src/http/ngx_http_header_filter_module.c ]; then
+	if [[ "$CUSTOMSERVERNAME" == [yY] ]]; then
+		echo ""
+		echo "Check existing server string:"
+	grep "Server: " src/http/ngx_http_header_filter_module.c | grep -v full_string
+		echo ""
+		echo "Change server string to $CUSTOMSERVERSTRING"
+	sed -i "s/Server: nginx/Server: $CUSTOMSERVERSTRING/g" src/http/ngx_http_header_filter_module.c
+		echo ""
+	fi
+fi
+
+# NGINX 1.9 stream support & 1.8 threads
+# http://nginx.org/en/docs/stream/ngx_stream_core_module.html
+NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
+NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
+if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
+	STREAM=' --with-stream --with-stream_ssl_module'
+	THREADS=' --with-threads'
+elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
+	STREAM=' --with-stream --with-stream_ssl_module'
+	THREADS=' --with-threads'
+elif [[ "$ngver" && "$NGXUPGRADE_VER" = '1.8' ]]; then
+	STREAM=""
+	THREADS=' --with-threads'
+elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.8' ]]; then
+	STREAM=""
+	THREADS=' --with-threads'	
+else
+	STREAM=""
+	THREADS=""
+fi
+
+# disabled not ready for usage yet
+# checkgcc
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
-
-./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
-
+      	pwd
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
-
-./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${OPENSSLOPT}${LIBATOMICOPT}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+    	pwd
+		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }

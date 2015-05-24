@@ -30,7 +30,7 @@ echo "...."
 echo "......"
 echo "........."
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 yum -y -q install yum-plugin-priorities yum-plugin-fastestmirror yum-plugin-downloadonly
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
@@ -46,7 +46,15 @@ yumcentosfivedownload
 
 #yum -y -q update kernel-devel
 
-PACKAGE='ca-certificates imake expect bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes cyrus-sasl cyrus-sasl-devel strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel'
+if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
+
+PACKAGE='deltarpm cracklib ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel'
+
+else
+
+PACKAGE='deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel'
+
+fi
 
 declare -a array
 array=(${PACKAGE})
@@ -79,9 +87,43 @@ if [ -f /usr/bin/mytop ]; then
 sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
 
-yumcentossixdownload
+if [ ! -f /proc/user_beancounters ]; then
+  yum -y install ipset ipset-devel
+fi
 
+yum clean all -q
+yumcentossixdownload
+yumcentossevendownload
 axelsetup
+geoipinstall
+
+# use Remi's ImageMagicK 6.9.* package
+if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+  if [ -f /etc/yum.repos.d/remi.repo ]; then
+    if [[ "$(rpm -qa ImageMagick)" ]]; then
+      echo
+      echo "----------------------------------------------------------------------------------"
+      cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
+      echo "----------------------------------------------------------------------------------"
+      yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-  libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+  
+      yum -y remove ImageMagick
+  
+      if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+        # yum -y install libwebp libwebp-devel --skip-broken
+        yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+      else
+        yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+      fi
+      
+      echo
+    fi
+
+    if [[ "$(rpm -qa ImageMagick-last)" ]]; then
+      yum -y update ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+    fi
+  fi
+fi
 
 yum -y update
 

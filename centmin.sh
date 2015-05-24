@@ -1,4 +1,6 @@
 #!/bin/sh
+EMAIL=''          # Server notification email address enter only 1 address
+PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
 ZONEINFO=Etc/UTC  # Set Timezone
 NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
 USEEDITOR='nano' # choice between nano or vim text editors for cmd shortcuts
@@ -12,13 +14,13 @@ CMVERSION_CHECK='n'
 #####################################################
 DT=`date +"%d%m%y-%H%M%S"`
 SCRIPT_MAJORVER='1.2.3'
-SCRIPT_MINORVER='07'
+SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='30/06/2014'
+SCRIPT_DATE='31/03/2015'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
-COPYRIGHT="Copyright 2011-2014 CentminMod.com"
+COPYRIGHT="Copyright 2011-2015 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -69,6 +71,11 @@ echo "aborting script... please re-run centmin.sh"
 exit
 fi
 
+if [ ! -f /usr/bin/lynx ]; then
+echo "installing lynx..."
+yum -y -q install lynx
+fi
+
 if [ ! -f /usr/bin/unzip ]; then
 yum -y -q install unzip
 fi
@@ -107,17 +114,61 @@ echo "aborting script..."
 exit
 fi
 
-TESTEDCENTOSVER='6.6'
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
+TESTEDCENTOSVER='7.1'
+CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
 
 if [ "$CENTOSVER" == 'release' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $4 }'`
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
 fi
 
 if [ "$CENTOSVER" == 'Enterprise' ]; then
-CENTOSVER=`cat /etc/redhat-release | awk '{ print $7 }'`
-OLS='y'
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
 fi
+
+source "inc/centos_seven.inc"
+seven_function
+
+cmservice() {
+        servicename=$1
+        action=$2
+        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+        echo "service ${servicename} $action"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                service ${servicename} $action
+        fi
+        else
+        echo "systemctl $action ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $action ${servicename}.service
+        fi
+        fi
+}
+
+cmchkconfig() {
+        servicename=$1
+        status=$2
+        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+        echo "chkconfig ${servicename} $status"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                chkconfig ${servicename} $status
+        fi
+        else
+                if [ "$status" = 'on' ]; then
+                        status=enable
+                fi
+                if [ "$status" = 'off' ]; then
+                        status=disable
+                fi
+        echo "systemctl $status ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $status ${servicename}.service
+        fi
+        fi
+}
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
@@ -161,46 +212,65 @@ fi
 ENABLE_MENU='y'
 
 #####################################################
+# CentOS 7 specific
+FIREWALLD_DISABLE='y'
+
+#####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
 CCACHESIZE='2G'
 
-# Disable installed services by default
-# The service is still installed but disabled by default 
-# can be re-enabled with commands
+# When set to =y, will disable those listed installed services 
+# by default. The service is still installed but disabled 
+# by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
-NSD_DISABLED=n               # NSD disabled by default with chkconfig off
-MEMCACHED_DISABLED=n          # Memcached server disabled by default via chkconfig off
-PHP_DISABLED=n                # PHP-FPM disabled by default with chkconfig off
-MYSQLSERVICE_DISABLED=n       # MariaDB MySQL service disabled by default with chkconfig off
+NSD_DISABLED=n                # when set to =y, NSD disabled by default with chkconfig off
+MEMCACHED_DISABLED=n          # when set to =y,  Memcached server disabled by default via chkconfig off
+PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
+PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # General Configuration
 NGINXUPGRADESLEEP='6'
 NSD_INSTALL=y                # Install NSD (DNS Server)
-NSD_VERSION='3.2.17'         # NSD Version
+NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
-NGINXPATCH=n                 # Set to y to allow 30 seconds time before Nginx configure and patching Nginx
+NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
+STRIPNGINX='n'               # set 'y' to strip nginx binary to reduce size
 NGINX_INSTALL=y              # Install Nginx (Webserver)
-NGINX_GEOIP=n			 # Nginx GEOIP module install
+NGINX_GEOIP=y			 # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.9.32.3-beta'
 NGINX_PAGESPEEDPSOL_VER='1.9.32.3'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
-NGINX_WEBDAV=y          # Nginx WebDAV and nginx-dav-ext-module
-NGINX_EXTWEBDAVVER='0.0.3'  # nginx-dav-ext-module version
-NGINX_LIBATOMIC=y     # Nginx configured with libatomic support
+NGINX_WEBDAV=y               # Nginx WebDAV and nginx-dav-ext-module
+NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
+NGINX_LIBATOMIC=y          # Nginx configured with libatomic support
 NGINX_PCREJIT=y            # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.36'   # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.25'
 NGINX_CACHEPURGEVER='2.3'
-NGINX_OPENRESTY=n     # Agentzh's openresty Nginx modules
+NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
+NGINX_STICKYVER='1.2.5'
+NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
+NGINX_UPSTREAMCHECKVER='0.3.0'
+NGINX_OPENRESTY='y'            # Agentzh's openresty Nginx modules
+ORESTY_MEMCVER='0.15'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SETMISCVER='0.28'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_ECHOVER='0.57'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+STRIPPHP='n'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
+PHPDEBUGMODE=n               # --enable-debug PHP compile flag
 PHPFINFO=n                   # Disable or Enable PHP File Info extension
 PHPPCNTL=y                    # Disable or Enable PHP Process Control extension
+PHPINTL=y                    # Disable or Enable PHP intl extension
 PHPRECODE=n                   # Disable or Enable PHP Recode extension
 PHPSNMP=y                     # Disable or Enable PHP SNMP extension
 SHORTCUTS=y	      # shortcuts
@@ -231,13 +301,14 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.7.12'        # Use this version of Nginx
+NGINX_VERSION='1.9.0'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2a'     # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.2a'   # Use this version of OpenSSL
+CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
@@ -247,42 +318,52 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.35'          # NO longer used/ignored
+PCRE_VERSION='8.37'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.1.2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.3.0RC1'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
-LIBEVENT_VERSION='2.0.21'    # Use this version of Libevent
-MEMCACHED_VERSION='1.4.20'    # Use this version of Memcached server
+LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
+MEMCACHED_VERSION='1.4.24'    # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'     # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
-LIBMEMCACHED_YUM='n'        # switch to YUM install instead of source compile
+LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
+PHPREDIS='y'                # redis PHP extension install
+REDISPHP_VER='2.2.7'        # redis PHP version
+PHPMONGODB='n'              # MongoDB PHP extension install
+MONGODBPHP_VER='1.6.7'      # MongoDB PHP version
+MONGODB_SASL='n'            # SASL not working yet leave = n
 
 FFMPEGVER='0.6.0'
-SUHOSINVER='0.9.36'
+SUHOSINVER='0.9.37.1'
 PHP_VERSION='5.4.41'          # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL='http://php.net'
-XCACHE_VERSION='3.1.0'       # Use this version of Xcache
+XCACHE_VERSION='3.2.0'       # Use this version of Xcache
 APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
-IGBINARY_VERSION='1.1.1'
-IGBINARYGIT='y'
+IGBINARY_VERSION='1.2.1'
+IGBINARYGIT='n'
 ZOPCACHEDFT='n'
-ZOPCACHECACHE_VERSION='7.0.4'
+ZOPCACHECACHE_VERSION='7.0.5'  # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
 # Python
-PYTHON_VERSION='2.7.8'       # Use this version of Python
-SIEGE_VERSION='3.0.6'
+PYTHON_VERSION='2.7.9'       # Use this version of Python
+SIEGE_VERSION='3.0.9'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
+# experimental Intel compiled optimisations 
+# when auto detect Intel based processors
+INTELOPT='n'
+
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
 FPMRPM_LIBEVENT=n
 FPMRPM_MEMCACHED=n
 CENTALTREPO_DISABLE=y
-AXIVOREPO_DISABLE=y
+AXIVOREPO_DISABLE=n
+REMIREPO_DISABLE=n
 ###############################################################
 
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
@@ -303,6 +384,8 @@ fi
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
+source "inc/pureftpd.inc"
+source "inc/htpasswdsh.inc"
 source "inc/gcc.inc"
 source "inc/entropy.inc"
 source "inc/cpucount.inc"
@@ -314,6 +397,9 @@ source "inc/bookmark.inc"
 source "inc/centminlogs.inc"
 source "inc/yumskip.inc"
 source "inc/questions.inc"
+source "inc/downloads_centosfive.inc"
+source "inc/downloads_centossix.inc"
+source "inc/downloads_centosseven.inc"
 source "inc/downloadlinks.inc"
 source "inc/downloads.inc"
 source "inc/yumpriorities.inc"
@@ -330,17 +416,21 @@ source "inc/logrotate_phpfpm.inc"
 source "inc/nginx_mimetype.inc"
 source "inc/openssl_install.inc"
 source "inc/nginx_configure.inc"
-source "inc/nginx_configure_openresty.inc"
+# source "inc/nginx_configure_openresty.inc"
+source "inc/geoip.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"
 source "inc/memcached_install.inc"
+source "inc/redis.inc"
+source "inc/mongodb.inc"
 source "inc/mysql_proclimit.inc"
 source "inc/mysqltmp.inc"
 source "inc/mariadb_install.inc"
 source "inc/mysql_install.inc"
 source "inc/mariadb_submenu.inc"
 source "inc/php_configure.inc"
+source "inc/phpng_download.inc"
 source "inc/php_upgrade.inc"
 source "inc/suhosin_setup.inc"
 source "inc/nginx_pagespeed.inc"
@@ -351,6 +441,7 @@ source "inc/openvz_stack.inc"
 source "inc/siegeinstall.inc"
 source "inc/python_install.inc"
 source "inc/nginx_addvhost.inc"
+source "inc/wpsetup.inc"
 source "inc/mariadb_upgrade.inc"
 source "inc/mariadb_upgrade53.inc"
 source "inc/mariadb_upgrade55.inc"
@@ -400,6 +491,18 @@ else
 	echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
 fi
 
+if [ ! -f /usr/bin/cminfo_updater ]; then
+    setupdate
+    /usr/bin/cminfo_updater
+else
+    setupdate
+    /usr/bin/cminfo_updater
+fi
+
+if [ ! -x /usr/bin/cminfo ]; then
+    chmod 0700 /usr/bin/cminfo
+fi
+
 ###############################################################
 # The default is stable, you can change this to development if you wish
 #ARCH_OVERRIDE='i386'
@@ -419,10 +522,19 @@ ASKCMD="read $KEYPRESS_PARAM "
 
 CUR_DIR=`pwd` # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
@@ -499,15 +611,15 @@ unsetramdisk() {
         \cp -R ${DIR_TMP}/* ${DIR_TMP}_disk
         # ls -lah ${DIR_TMP}_disk
         diff -qr ${DIR_TMP} ${DIR_TMP}_disk
-        /etc/init.d/nginx stop
-        /etc/init.d/php-fpm stop
-        /etc/init.d/memcached stop
+        cmservice nginx stop
+        cmservice php-fpm stop
+        cmservice memcached stop
         sleep 5
         # lsof | grep /svr-setup
         umount -l ${DIR_TMP}
-        /etc/init.d/nginx start
-        /etc/init.d/php-fpm start
-        /etc/init.d/memcached start
+        cmservice nginx start
+        cmservice php-fpm start
+        cmservice memcached start
         \cp -R ${DIR_TMP}_disk/* ${DIR_TMP}
         # ls -lahrt ${DIR_TMP}
         df -hT
@@ -542,14 +654,25 @@ fi
 if [ ${ARCH} == 'x86_64' ];
 then
 	if [ "$UNATTENDED" == 'n' ]; then
-    ASK "Would you like to exclude installation of 32bit Yum packages? (Recommended for 64bit CentOS) [y/n] "
+        ASK "Would you like to exclude installation of 32bit Yum packages? (Recommended for 64bit CentOS) [y/n] "
 	else
-	key='y'
+	   key='y'
 	fi #unattended
     if [[ "$key" = [yY] ]];
     then
-        mv /etc/yum.conf /etc/yum.bak
-        cp $CUR_DIR/config/yum/yum.conf /etc/yum.conf
+        \cp -f /etc/yum.conf /etc/yum.bak
+
+        echo "removing any i686 packages installed by default"
+        yum -y remove \*.i686
+
+ex -s /etc/yum.conf << EOF
+:/plugins=1/
+:a
+exclude=*.i386 *.i586 *.i686
+.
+:w
+:q
+EOF
         echo "Your origional yum configuration has been backed up to /etc/yum.bak"
     else
         rm -rf $CUR_DIR/config/yum
@@ -561,21 +684,96 @@ ASK "Would you like to secure /tmp and /var/tmp? (Highly recommended) [y/n] "
 	else
 	key='y'
 	fi #unattended
-if [[ "$key" = [yY] ]]; 
-then
-echo "Centmin Mod secure /tmp completed # `date`" > ${DIR_TMP}/securedtmp.log
+{
+if [[ "$key" = [yY] ]]; then
+echo "Centmin Mod secure /tmp # `date`"
 	echo "*************************************************"
 	cecho "* Secured /tmp and /var/tmp" $boldgreen
 	echo "*************************************************"
 
-	rm -rf /tmp
-	mkdir /tmp
-	mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
-	chmod 1777 /tmp
-	echo "tmpfs   /tmp    tmpfs   rw,noexec,nosuid        0       0" >> /etc/fstab
-	rm -rf /var/tmp
-	ln -s /tmp /var/tmp
+# centos 7 + openvz /tmp workaround
+if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
+
+echo "CentOS 7 Setup /tmp"
+echo "CentOS 7 + OpenVZ virtualisation detected"
+systemctl is-enabled tmp.mount
+## leave CentOS 7 + OpenVZ systems /tmp mounted on disk in ##
+## partition / ##
+# systemctl enable tmp.mount
+# systemctl is-enabled tmp.mount
+
+## leave CentOS 7 + OpenVZ system's /tmp mounted in memory via
+## tmpfs as CentOS 7 requires more memory installed, so most of
+## the time, you would have sufficient memory at least for /tmp
+## on ramdisk tmpfs unlike when CentOS 6 32bit systems can use 
+## 256MB to 512MB memory and end up with too small a ramdisk tmpfs
+## /tmp mount
+# 
+# rm -rf /tmp
+# mkdir -p /tmp
+# mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+# chmod 1777 /tmp
+# echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+# rm -rf /var/tmp
+# ln -s /tmp /var/tmp
+# mount -o remount /tmp
+
+elif [[ ! -f /proc/user_beancounters ]]; then
+
+    # TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+    CURRENT_TMPSIZE=$(df /tmp | awk '/tmp/ {print $2}')
+
+    # only mount /tmp on tmpfs if CentOS system
+    # total memory size is greater than 8GB
+    # will give /tmp a size equal to 1/2 total memory
+    if [[ "$TOTALMEM" -ge '8100001' ]]; then
+	   rm -rf /tmp
+	   mkdir -p /tmp
+	   mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+	   chmod 1777 /tmp
+	   echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+	   rm -rf /var/tmp
+	   ln -s /tmp /var/tmp
+    elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
+       # set on disk non-tmpfs /tmp to 4GB size
+       # if total memory is between 2GB and <8GB
+       rm -rf /tmp
+       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4000000
+       echo Y | mkfs.ext4 /home/usertmp_donotdelete
+       mkdir -p /tmp
+       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       chmod 1777 /tmp
+       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       rm -rf /var/tmp
+       ln -s /tmp /var/tmp
+    elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
+       # set on disk non-tmpfs /tmp to 2GB size
+       # if total memory is between 1.1-2GB
+       rm -rf /tmp
+       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+       echo Y | mkfs.ext4 /home/usertmp_donotdelete
+       mkdir -p /tmp
+       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       chmod 1777 /tmp
+       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       rm -rf /var/tmp
+       ln -s /tmp /var/tmp
+    elif [[ "$TOTALMEM" -le '1153433' ]]; then
+       # set on disk non-tmpfs /tmp to 1GB size
+       # if total memory is <1.1GB
+       rm -rf /tmp
+       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+       echo Y | mkfs.ext4 /home/usertmp_donotdelete
+       mkdir -p /tmp
+       mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
+       chmod 1777 /tmp
+       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       rm -rf /var/tmp
+       ln -s /tmp /var/tmp       
+    fi
+fi # centos 7 + openvz /tmp workaround
 fi
+} 2>&1 | tee ${CENTMINLOGDIR}/securedtmp.log
 
 #questions
 
@@ -604,7 +802,7 @@ fi
 #
 clear
 cecho "**********************************************************************" $boldyellow
-cecho "* Centmin, an nginx, MariaDB/MySQL, PHP & DNS Install script for CentOS" $boldgreen
+cecho "* Centmin Mod Nginx, MariaDB MySQL, PHP & DNS Install script for CentOS" $boldgreen
 cecho "* Version: $SCRIPT_VERSION - Date: $SCRIPT_DATE" $boldgreen
 cecho "* $COPYRIGHT $SCRIPT_MODIFICATION_AUTHOR" $boldgreen
 cecho "**********************************************************************" $boldyellow
@@ -686,7 +884,7 @@ funct_centos6check
 
     cd $DIR_TMP
 
-if [ "$(rpm -qa | grep php*)" ]; then
+if [ "$(rpm -qa | grep ^php*)" ]; then
 
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
 echo "yum -y erase php*"
@@ -751,9 +949,22 @@ fi
 
     cp $CUR_DIR/init/php-fpm /etc/init.d/php-fpm
 
+# add check for Windows CLRF line endings
+if [ ! -f /usr/bin/file ]; then
+    yum -q -y install file
+fi
+if [[ $(file /etc/init.d/php-fpm) =~ CRLF && -f /etc/init.d/php-fpm ]]; then
+    if [ ! -f /usr/bin/dos2unix ]; then
+        yum -q -y install dos2unix
+    fi
+    echo "detected CRLF line endings converting to Unix LF"
+    dos2unix /etc/init.d/php-fpm
+fi
+
     chmod +x /etc/init.d/php-fpm
 
     mkdir -p /var/run/php-fpm
+    chmod 755 /var/run/php-fpm
     touch /var/run/php-fpm/php-fpm.pid
     chown nginx:nginx /var/run/php-fpm
     chown root:root /var/run/php-fpm/php-fpm.pid
@@ -821,17 +1032,25 @@ if [[ "$APCINSTALL" = [yY] && "$ZOPCACHEDFT" = [nN] ]]; then
 	funct_apcsourceinstall
 fi
 
-# if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5
+# if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5, 5.6 or 5.7
 # install Zend OpCache PECL extesnion otherwise if PHP_VERSION = 5.5
 # then php_configure.inc routine will pick up PHP_VERSION 5.5 and install
 # native Zend OpCache when ZOPCACHEDFT=yY
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" != '5.5' ]]; then
-	zopcacheinstall
+if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.4' ]]; then
+    zopcacheinstall
 fi
 
-# if PHP_VERSION = 5.5 will need to setup a zendopcache.ini settings file
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.5' ]]; then
+if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.3' ]]; then
+    zopcacheinstall
+fi
+
+if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.2' ]]; then
+    zopcacheinstall
+fi
+
+# if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
+if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' ]]; then
 	zopcache_initialini
 fi
 
@@ -938,7 +1157,15 @@ installpythonfuct
 
 imagickinstall
 
+geoipphpext
+
+redisinstall
+
+mongodbinstall
+
 nsdinstall
+
+pureftpinstall
 
 if [ -f $CUR_DIR/Extras/nginx-update.sh ];
 then
@@ -1057,7 +1284,7 @@ fi
 function funct_centos6check {
 
 
-if [[ "$CENTOSVER" == '5.6' || "$CENTOSVER" == '5.7'|| "$CENTOSVER" == '5.8' || "$CENTOSVER" == '6.0' || "$CENTOSVER" == '6.1' || "$CENTOSVER" == '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" == '5.6' || "$CENTOSVER" == '5.7'|| "$CENTOSVER" == '5.8' || "$CENTOSVER" == '6.0' || "$CENTOSVER" == '6.1' || "$CENTOSVER" == '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 
 MCRYPT=" --with-mcrypt"
 
@@ -1167,6 +1394,7 @@ cecho "---------------------------------------------" $boldyellow
 	echo "Disabling SELinux..."
 
 	sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
+    sed -i 's/SELINUX=permissive/SELINUX=disabled/g' $SELINUXCONFIGFILE
 	setenforce 0
 
 	echo ""
@@ -1343,10 +1571,11 @@ else
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Re-install" $boldgreen
             cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
-            cecho "22). Exit" $boldgreen
+            cecho "22). Add Wordpress Nginx vhost + WP Super Cache" $boldgreen
+            cecho "23). Exit" $boldgreen
             cecho "--------------------------------------------------------" $boldyellow
         
-            read -ep "Enter option [ 1 - 22 ] " option
+            read -ep "Enter option [ 1 - 23 ] " option
             cecho "--------------------------------------------------------" $boldyellow
         
         #########################################################
@@ -1808,7 +2037,15 @@ fi
         echo "Total Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
 
         ;;
-        22|exit)
+        22|addwpvhost)
+        
+        centminlog
+        {
+        wpacctsetup
+        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log
+        
+        ;;        
+        23|exit)
         
         bookmark
         

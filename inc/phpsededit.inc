@@ -1,28 +1,62 @@
 phpsededit() {
-    if [[ "$(date +"%Z")" = 'EST' ]]; then
-    sed -i "s/;date.timezone =/date.timezone = Australia\/Brisbane/g" /usr/local/lib/php.ini
+    PHPINICUSTOM='a_customphp.ini'
+    CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
+
+    if [[ ! -f "${CUSTOMPHPINIFILE}" ]]; then
+        touch ${CUSTOMPHPINIFILE}
     else
-    sed -i "s/;date.timezone =/date.timezone = UTC/g" /usr/local/lib/php.ini
+        \cp -a ${CUSTOMPHPINIFILE} ${CUSTOMPHPINIFILE}-bak_$DT
+        rm -rf $CUSTOMPHPINIFILE
+        rm -rf ${CONFIGSCANDIR}/custom_php.ini
+        echo "" > ${CUSTOMPHPINIFILE}
     fi
 
-    sed -i 's/max_execution_time = 30/max_execution_time = 60/g' /usr/local/lib/php.ini
-    sed -i 's/short_open_tag = Off/short_open_tag = On/g' /usr/local/lib/php.ini
-    sed -i 's/;realpath_cache_size = 16k/realpath_cache_size = 4096k/g' /usr/local/lib/php.ini
-    sed -i 's/;realpath_cache_ttl = 120/realpath_cache_ttl = 360/g' /usr/local/lib/php.ini
-    sed -i 's/upload_max_filesize = 2M/upload_max_filesize = 15M/g' /usr/local/lib/php.ini
-    #sed -i 's/memory_limit = 128M/memory_limit = 256M/g' /usr/local/lib/php.ini
-    sed -i 's/post_max_size = 8M/post_max_size = 15M/g' /usr/local/lib/php.ini
-    sed -i 's/expose_php = On/expose_php = Off/g' /usr/local/lib/php.ini
-    #sed -i 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g' /usr/local/lib/php.ini
-    #sed -i 's/disable_functions =/disable_functions=exec,passthru,shell_exec,system,proc_open,popen/g' /usr/local/lib/php.ini
-    sed -i 's/mail.add_x_header = On/mail.add_x_header = Off/g' /usr/local/lib/php.ini
+    if [[ "$(date +"%Z")" = 'EST' ]]; then
+        echo "date.timezone = Australia/Brisbane" >> ${CUSTOMPHPINIFILE}
+    else
+        echo "date.timezone = UTC" >> ${CUSTOMPHPINIFILE}
+    fi
 
-    sed -i 's/;max_input_nesting_level = 64/max_input_nesting_level = 128/g' /usr/local/lib/php.ini
-    sed -i 's/; max_input_vars = 1000/max_input_vars = 2000/g' /usr/local/lib/php.ini
-    sed -i 's/;mysqlnd.net_cmd_buffer_size = 2048/mysqlnd.net_cmd_buffer_size = 16384/g' /usr/local/lib/php.ini
+    # dynamic PHP memory_limit calculation
+    if [[ "$TOTALMEM" -le '262144' ]]; then
+        PHP_MEMORYLIMIT='48M'
+    elif [[ "$TOTALMEM" -gt '262144' && "$TOTALMEM" -le '393216' ]]; then
+        PHP_MEMORYLIMIT='96M'
+    elif [[ "$TOTALMEM" -gt '393216' && "$TOTALMEM" -le '524288' ]]; then
+        PHP_MEMORYLIMIT='128M'
+    elif [[ "$TOTALMEM" -gt '524288' && "$TOTALMEM" -le '1049576' ]]; then
+        PHP_MEMORYLIMIT='160M'
+    elif [[ "$TOTALMEM" -gt '1049576' && "$TOTALMEM" -le '2097152' ]]; then
+        PHP_MEMORYLIMIT='256M'
+    elif [[ "$TOTALMEM" -gt '2097152' && "$TOTALMEM" -le '3145728' ]]; then
+        PHP_MEMORYLIMIT='320M'
+    elif [[ "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
+        PHP_MEMORYLIMIT='512M'
+    elif [[ "$TOTALMEM" -gt '4194304' ]]; then
+        PHP_MEMORYLIMIT='640M'
+    fi
 
-# for mysqlnd native driver default mysql.sock configuration
-#echo "mysql.default_socket=/var/lib/mysql/mysql.sock" > /root/centminmod/php.d/mysqlsocket.ini
-#echo "mysqli.default_socket=/var/lib/mysql/mysql.sock" > /root/centminmod/php.d/mysqlsocket.ini
+    echo "max_execution_time = 60" >> ${CUSTOMPHPINIFILE}
+    echo "short_open_tag = On" >> ${CUSTOMPHPINIFILE}
+    echo "realpath_cache_size = 8192k" >> ${CUSTOMPHPINIFILE}
+    echo "realpath_cache_ttl = 600" >> ${CUSTOMPHPINIFILE}
+    echo "upload_max_filesize = 20M" >> ${CUSTOMPHPINIFILE}
+    echo "memory_limit = $PHP_MEMORYLIMIT" >> ${CUSTOMPHPINIFILE}
+    echo "post_max_size = 20M" >> ${CUSTOMPHPINIFILE}
+    echo "expose_php = Off" >> ${CUSTOMPHPINIFILE}
+    echo "mail.add_x_header = Off" >> ${CUSTOMPHPINIFILE}
+    echo "max_input_nesting_level = 128" >> ${CUSTOMPHPINIFILE}
+    echo "max_input_vars = 2000" >> ${CUSTOMPHPINIFILE}
+    echo "mysqlnd.net_cmd_buffer_size = 16384" >> ${CUSTOMPHPINIFILE}
+    #echo "cgi.fix_pathinfo=0" >> ${CUSTOMPHPINIFILE}
+    #echo "disable_functions=exec,passthru,shell_exec,system,proc_open,popen" >> ${CUSTOMPHPINIFILE}
+
+    if [ ! -f /etc/ssl/certs/cacert.pem ]; then
+        wget -q -O /etc/ssl/certs/cacert.pem http://curl.haxx.se/ca/cacert.pem
+        echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
+    else
+        wget -q -O /etc/ssl/certs/cacert.pem http://curl.haxx.se/ca/cacert.pem
+        echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
+    fi
 
 }

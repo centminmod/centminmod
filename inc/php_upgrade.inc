@@ -10,11 +10,35 @@ if [ -f ${CONFIGSCANDIR}/apc.ini ]; then
 fi
 
 if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
-    DETECTIGBINARY=y
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        DETECTIGBINARY=y
+    else
+        # remove igbinary.ini when PHP NGDEBUG detected on upgrade
+        DETECTIGBINARY=n
+        echo "rm -rf ${CONFIGSCANDIR}/igbinary.ini"
+        rm -rf ${CONFIGSCANDIR}/igbinary.ini
+    fi
 fi
 
 if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; then
-    DETECTMEMCACHED=y
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        DETECTMEMCACHED=y
+    else
+        # remove memcache.ini & memcached.ini when PHP NGDEBUG detected on upgrade
+        DETECTMEMCACHED=n
+        echo "rm -rf ${CONFIGSCANDIR}/memcache.ini"
+        echo "rm -rf ${CONFIGSCANDIR}/memcached.ini"
+        rm -rf ${CONFIGSCANDIR}/memcache.ini
+        rm -rf ${CONFIGSCANDIR}/memcached.ini
+    fi
+fi
+
+if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
+    DETECTREDIS=y
+fi
+
+if [[ -f "${CONFIGSCANDIR}/mongodb.ini" || "$PHPMONGODB" = [yY] ]]; then
+    DETECTMONGODB=y
 fi
 
 if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
@@ -22,7 +46,20 @@ if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
 fi
 
 if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
-    DETECTIMAGICK=y
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        DETECTIMAGICK=y
+    else
+        # remove imagick.ini when PHP NGDEBUG detected on upgrade
+        DETECTIMAGICK=n
+        echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
+        rm -rf ${CONFIGSCANDIR}/imagick.ini
+    fi
+fi
+
+if [ -f ${CONFIGSCANDIR}/geoip.ini ]; then
+    DETECTGEOIP=y
+else
+    DETECTGEOIP=y
 fi
 
 }
@@ -35,36 +72,51 @@ cecho "Auto reinstalling previously detected PHP extensions" $boldyellow
 cecho "----------------------------------------------------" $boldgreen
 
 
-if [[ "$DETECTXCACHE" == [yY] ]]; then
+if [[ "$DETECTXCACHE" = [yY] ]]; then
     cecho "Auto reinstalling previously detected Xcache" $boldyellow
     funct_xcachereinstall
 fi
 
-if [[ "$DETECTAPC" == [yY] ]]; then
+if [[ "$DETECTAPC" = [yY] ]]; then
     cecho "Auto reinstalling previously detected APC Cache" $boldyellow
     funct_apcreinstall
 fi
 
-if [[ "$DETECTIGBINARY" == [yY] ]]; then
+if [[ "$DETECTIGBINARY" = [yY] ]]; then
     cecho "Auto reinstalling previously detected igbinary extension" $boldyellow
     funct_igbinaryinstall
 fi
 
-if [[ "$DETECTMEMCACHED" == [yY] ]]; then
+if [[ "$DETECTMEMCACHED" = [yY] ]]; then
     cecho "Auto reinstalling previously detected memcached/memcache php extension" $boldyellow
     funct_memcachedreinstall
 fi
 
-if [[ "$DETECTOPCACHE" == [yY] ]]; then
-    if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' ]]; then
+if [[ "$DETECTREDIS" = [yY] ]]; then
+    cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
+    redisinstall
+fi
+
+if [[ "$DETECTMONGODB" = [yY] ]]; then
+    cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
+    mongodbinstall
+fi
+
+if [[ "$DETECTOPCACHE" = [yY] ]]; then
+    if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' || "$PHPMUVER" != '7.0' ]]; then
         cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
         zopcachereinstall
     fi
 fi
 
-if [[ "$DETECTIMAGICK" == [yY] ]]; then
+if [[ "$DETECTIMAGICK" = [yY] ]]; then
     cecho "Auto reinstalling previously detected imagemagick extension" $boldyellow
     imagickinstall
+fi
+
+if [[ "$DETECTGEOIP" = [yY] ]]; then
+    cecho "Auto reinstalling previously detected geoip extension" $boldyellow
+    geoipphpext
 fi
 
 # Fix extension directory on major PHP version changes 
@@ -123,17 +175,35 @@ if [[ "$UALL" = 'y' ]]; then
     overwritephpfpmconf='n'
     lessphpmem='y'
 else
-    echo ""
-    read -ep "Install which version of PHP? (version i.e. ${PHP_VERSION}): " phpver
-    read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
-    if [[ "$overwritephpfpmconf" = [yY] ]]; then
-        read -ep "Does this server have less than <=2048MB of memory installed ? [y/n]: " lessphpmem
+    echo "----------------------------------------------------------------"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.0, NGDEBUG)"
+    echo "PHP 7.0.0 is experimental in alpha status and may have broken PHP extensions."
+    echo "NGDEBUG is PHP 7.0.0 minus incompatible PHP extensions"
+    echo "----------------------------------------------------------------"
+    read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+    echo "----------------------------------------------------------------"
+    echo "Want to update to latest php-fpm.conf ? (overwrites will auto backup existing php-fpm.conf)"
+    echo "existing php.ini will be backed up at /usr/local/lib/php.ini-oldversion_$DT"
+    echo "existing php-fpm.conf will be backed up at /usr/local/etc/php-fpm.conf-oldversion_$DT"
+    echo "----------------------------------------------------------------"
+    read -ep "Update & overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
+    echo "----------------------------------------------------------------"
+    
+    # switch to auto calculate system memory instead of prompting for user input
+    IS_PHPLOWMEM='2097152'
+    CHECK_PHPLOWMEM=`expr $TOTALMEM \< $IS_PHPLOWMEM`
+    if [ "$CHECK_PHPLOWMEM" == "1" ]; then
+        lessphpmem=y
     fi
 fi # UALL
+
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 
+    phpng_download
     autodetectextensions
     zopcacheupgrade
 
@@ -157,13 +227,13 @@ echo "yum -y erase php*"
 
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
 DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
 AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.gz"
 else
-DOWNLOADAPP='wget -c --progress=bar'
+DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ=''
 AXELPHPUPGRADETARGZ=''
@@ -253,7 +323,7 @@ funct_showtempfile
 	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP configure ok\n"
 	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
 
 funct_showtempfile
 	cleanup_msg
@@ -284,7 +354,7 @@ funct_showtempfile
 	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP make ok\n"
 	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
 
 funct_showtempfile
 	cleanup_msg
@@ -296,6 +366,18 @@ funct_showtempfile
 
 echo "make install"
     time make install
+
+if [[ "$STRIPPHP" = [yY] ]]; then
+    echo
+    echo "strip PHP binary..."
+    ls -lah /usr/local/bin/php
+    ls -lah /usr/local/bin/php-cgi
+    strip -s /usr/local/bin/php
+    strip -s /usr/local/bin/php-cgi
+    ls -lah /usr/local/bin/php
+    ls -lah /usr/local/bin/php-cgi
+    echo
+fi
 
 ################
 # error check
@@ -332,7 +414,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f /usr/local/etc/php-fpm.conf /usr/local/etc/php-fpm.conf-oldversion_$DT
         ls -lhrt /usr/local/etc/ | grep php-fpm.conf
     
-    sleep 20
+    sleep 12
     
     echo
     echo "Backing up existing php.conf at /usr/local/nginx/conf/php.conf-oldversion_$DT"
@@ -342,8 +424,15 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php.conf-oldversion_$DT
         ls -lhrt /usr/local/nginx/conf/ | grep php.conf
         cp -f $CUR_DIR/config/nginx/php.conf /usr/local/nginx/conf/php.conf
+
+    # recheck whether fastcgi_param GEOIP_ settings in php.conf need to be disabled or enabled
+    if [[ "$NGINX_GEOIP" = [yY] ]]; then
+        sed -i 's/#fastcgi_param GEOIP_/fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
+    else
+        sed -i 's/fastcgi_param GEOIP_/#fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
+    fi
     
-    sleep 20
+    sleep 12
     
     echo 
 
@@ -369,6 +458,14 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         autodetectinstallextensions
     fi
 
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+            redisinstall
+        elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+            rm -rf ${CONFIGSCANDIR}/redis.ini
+        fi
+    fi
+
 else
 
     # only auto reinstall PHP extensions when major PHP upgrade version differs
@@ -377,20 +474,37 @@ else
         autodetectinstallextensions
     fi
 
+    if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
+        if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
+            redisinstall
+        elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
+            rm -rf ${CONFIGSCANDIR}/redis.ini
+        fi
+    fi
 fi # overwritephpfpmconf
 
 zendopcacheextfix
 
-    /etc/init.d/php-fpm restart
+if [ ! -f ${CONFIGSCANDIR}/geoip.ini ]; then
+    # always install geoip module
+    geoipphpext
+fi
+
+    cmservice php-fpm restart
 
 funct_showtempfile
 	cleanup_msg
 
 if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename
-NPHP=$RANDOM
+NPHP=$(od -vAn -N4 -tx < /dev/urandom)
+NPHP=$(echo ${NPHP} | sed -e 's/\s//')
 mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
 chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
+fi
+
+if [[ "$zendopcacheon" = [yY] ]]; then
+    cat ${CENTMINLOGDIR}/zendopcache_passfile.txt
 fi
 
     echo "***************************************************"

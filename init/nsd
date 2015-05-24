@@ -1,6 +1,12 @@
 #!/bin/bash
 
-#
+if [ ! -d /var/run/nsd/ ]; then
+    mkdir -p /var/run/nsd
+    chmod 755 /var/run/nsd
+    chown -R nsd:nsd /var/run/nsd/
+fi
+
+# nsdv3
 # nsd:         Starts the NSD Name Server Daemon
 #
 # chkconfig: - 13 87

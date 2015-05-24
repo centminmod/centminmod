@@ -198,6 +198,7 @@ fi # OLSEXISTS CHECK
 } # yumprior
         
 yumpriorepel() {
+if [ -f /etc/yum.repos.d/epel.repo ]; then
 cp -p /etc/yum.repos.d/epel.repo /etc/yum.repos.d/epel.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/epel.repo)" ]
         then
@@ -209,7 +210,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
-exclude=varnish
+exclude=varnish clamd clamav clamav-db
 .
 :w
 :q
@@ -221,10 +222,12 @@ cecho "*************************************************" $boldgreen
 cat /etc/yum.repos.d/epel.repo
 echo ""
 fi
+fi # repo file check
 }
 
 
 yumpriorrpmforge() {
+if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 cp -p /etc/yum.repos.d/rpmforge.repo /etc/yum.repos.d/rpmforge.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/rpmforge.repo)" ]
         then
@@ -247,10 +250,11 @@ cecho "*************************************************" $boldgreen
 cat /etc/yum.repos.d/rpmforge.repo
 echo ""
 fi
-
+fi # repo file check
 }
 
 yumpriorcentalt() {
+if [ -f /etc/yum.repos.d/centalt.repo ]; then
 cp -p /etc/yum.repos.d/centalt.repo /etc/yum.repos.d/centalt.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/centalt.repo)" ]
         then
@@ -274,7 +278,7 @@ sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/centalt.repo
 cat /etc/yum.repos.d/centalt.repo
 echo ""
 fi
-
+fi # repo file check
 }
 
 yumpriorpercona() {
@@ -304,11 +308,11 @@ cecho "*************************************************" $boldgreen
 cat /etc/yum.repos.d/percona-release.repo
 echo ""
 fi
-fi
-
+fi # repo file check
 }
 
 yumpriorvarnish() {
+if [ -f /etc/yum.repos.d/varnish.repo ]; then
 cp -p /etc/yum.repos.d/varnish.repo /etc/yum.repos.d/varnish.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/varnish.repo)" ]
         then
@@ -333,19 +337,20 @@ cecho "*************************************************" $boldgreen
 cat /etc/yum.repos.d/varnish.repo
 echo ""
 fi
-
+fi # repo file check
 }
 
 yumprioraxivo() {
 if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
-cp -p /etc/yum.repos.d/axivo.repo /etc/yum.repos.d/axivo.OLD
-if [ -n "$(grep ^priority /etc/yum.repos.d/axivo.repo)" ]
-        then
-                #echo priorities already set for axivo.repo
-PRIOREXISTS=1
-        else
-                echo setting yum priorities for axivo.repo
-                ex -s /etc/yum.repos.d/axivo.repo << EOF
+if [ -f /etc/yum.repos.d/axivo.repo ]; then
+        cp -p /etc/yum.repos.d/axivo.repo /etc/yum.repos.d/axivo.OLD
+        if [ -n "$(grep ^priority /etc/yum.repos.d/axivo.repo)" ]
+                then
+                        #echo priorities already set for axivo.repo
+        PRIOREXISTS=1
+                else
+                        echo setting yum priorities for axivo.repo
+ex -s /etc/yum.repos.d/axivo.repo << EOF
 :/\[axivo\]/ , /gpgkey/
 :a
 priority=13
@@ -354,13 +359,43 @@ exclude=nginx* php* mariadb* memcached* xtrabackup
 :w
 :q
 EOF
-
-cecho "*************************************************" $boldgreen
-cecho "Fixing axivo.repo YUM Priorities" $boldgreen
-cecho "*************************************************" $boldgreen
-cat /etc/yum.repos.d/axivo.repo
-echo ""
-fi
+        
+        cecho "*************************************************" $boldgreen
+        cecho "Fixing axivo.repo YUM Priorities" $boldgreen
+        cecho "*************************************************" $boldgreen
+        cat /etc/yum.repos.d/axivo.repo
+        echo ""
+        fi
+fi # /etc/yum.repos.d/axivo.repo
 fi # AXIVOREPO_DISABLE
 }
 
+yumpriorremi() {
+if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+if [ -f /etc/yum.repos.d/remi.repo ]; then
+        cp -p /etc/yum.repos.d/remi.repo /etc/yum.repos.d/remi.OLD
+        if [ -n "$(grep ^priority /etc/yum.repos.d/remi.repo)" ]
+                then
+                        #echo priorities already set for remi.repo
+        PRIOREXISTS=1
+                else
+                        echo setting yum priorities for remi.repo
+ex -s /etc/yum.repos.d/remi.repo << EOF
+:/\[remi/ , /gpgkey/
+:a
+priority=9
+exclude=php* mysql*
+.
+:w
+:q
+EOF
+        
+        cecho "*************************************************" $boldgreen
+        cecho "Fixing remi.repo YUM Priorities" $boldgreen
+        cecho "*************************************************" $boldgreen
+        cat /etc/yum.repos.d/remi.repo
+        echo ""
+        fi
+fi # /etc/yum.repos.d/remi.repo
+fi # REMIREPO_DISABLE
+}

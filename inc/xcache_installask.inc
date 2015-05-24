@@ -169,7 +169,7 @@ funct_xcachesourceinstall
 
 #checkxcacheadmin
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* XCache installed" $boldgreen
     echo "*************************************************"

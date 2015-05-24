@@ -16,8 +16,10 @@ fi
 
     cd $DIR_TMP
 
-    chkconfig --levels 235 mysqld on
-    /etc/init.d/mysqld start
+
+    cmchkconfig mysqld on
+    cmservice mysqld start
+
 
     echo "*************************************************"
     cecho "* Starting MySQL Secure Installation" $boldgreen
@@ -29,8 +31,7 @@ mysqlproclimit
     echo "*************************************************"
     cecho "* MySQL installed" $boldgreen
     echo "*************************************************"
-
-    /etc/init.d/mysqld stop
+    cmservice mysqld stop
 fi
 
 }

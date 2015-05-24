@@ -24,7 +24,7 @@ fi
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
 
-if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' ]]; then
     apcdevfix
 else
 #tar xvzf APC-${APCCACHE_VERSION}.tgz
@@ -50,7 +50,8 @@ if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
 fi
 
 # Randomize myapc.php filename
-N=$RANDOM
+N=$(od -vAn -N4 -tx < /dev/urandom)
+N=$(echo ${N} | sed -e 's/\s//')
 cp apc.php /usr/local/nginx/html/${N}_myapc.php
 
 if [ -f /usr/local/nginx/html/myapc.php ]; then
@@ -94,7 +95,7 @@ fi
 
 fi # check if apc.so exists in php.ini
 
-    /etc/init.d/php-fpm restart
+    cmservice php-fpm restart
     echo "*************************************************"
     cecho "* Alternative PHP Cache installed" $boldgreen
     echo "*************************************************"

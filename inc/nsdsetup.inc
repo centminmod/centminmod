@@ -1,5 +1,9 @@
 function funct_nsdsetup {
 
+# check if NSD is v3 or v4
+NSD_VERCHECK=$(echo $NSD_VERSION | cut -d . -f1)
+NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
+
 echo ""
 cecho "---------------------------------------------" $boldyellow
 echo ""
@@ -94,6 +98,7 @@ cecho "---------------------------------------------" $boldyellow
 echo ""
 
 # Setting up nsd.conf entry
+if [[ "$NSDRUN_VERCHECK" = '3' ]]; then
 cat >> "/etc/nsd/nsd.conf" <<END
 
 zone:
@@ -102,6 +107,13 @@ zone:
 END
 
 cat /etc/nsd/nsd.conf
+
+elif [[ "$NSDRUN_VERCHECK" = '4' ]]; then
+
+printf "zone:\n\tname: "${vhostdomainname}"\n\tzonefile: "master/${vhostdomainname}.zone"\n" >> /etc/nsd/zones/zone.list
+
+cat /etc/nsd/zones/zone.list
+fi # NSDRUN_VERCHECK nsd v3 or v4
 
 else
 
@@ -168,7 +180,12 @@ cecho "---------------------------------------------" $boldyellow
 
 echo 
 cecho "---------------------------------------------" $boldyellow
+if [[ "$NSDRUN_VERCHECK" = '4' ]]; then
+cecho "NSD entry for $vhostdomainname created successfully in /etc/nsd/zones/zone.list" $boldwhite
+else
 cecho "NSD entry for $vhostdomainname created successfully in /etc/nsd/nsd.conf" $boldwhite
+fi
+cecho "NSD database updated at /var/db/nsd/nsd.db" $boldwhite
 cecho "NSD zone created at /etc/nsd/master/${vhostdomainname}.zone" $boldwhite
 echo 
 cecho "---------------------------------------------" $boldyellow
