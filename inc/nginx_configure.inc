@@ -48,21 +48,21 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
 			yum -q -y install lua lua-devel
 		fi
-		
+
     	if [[ "$(uname -m)" = 'x86_64' ]]; then
         	LUALIB_DIR='lib64'
     	else
         	LUALIB_DIR='lib'
     	fi
 	
-    	\cp -rf ${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}/lib/resty/dns /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}/lib/resty/websocket /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1
-    	\cp -rf ${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}/lib/resty /usr/${LUALIB_DIR}/lua/5.1		
+    	cd ${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}; make install
+    	cd ${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}; make install
+    	cd ${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}; make install
+    	cd ${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}; make install
+    	cd ${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}; make install
+    	cd ${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}; make install
+    	cd ${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}; make install
+    	cd ${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}; make install
 	else
 		LUAOPT=""
 	fi
