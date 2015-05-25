@@ -68,7 +68,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     	cd ${DIR_TMP}/lua-resty-lrucache-${ORESTY_LUALRUCACHEVER}; make install; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
     	cd ${DIR_TMP}/lua-resty-core-${ORESTY_LUARESTYCOREVER}; make install; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
     	cd ${DIR_TMP}/lua-resty-logger-socket-${ORESTY_LUALOGGERSOCKETVER}; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/lib/lua/resty/
-    	cd ${DIR_TMP}/lua-resty-cookie-${ORESTY_LUACOOKIEVER}; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
+    	cd ${DIR_TMP}/lua-resty-cookie-${ORESTY_LUACOOKIEVER}; chmod +x lib/resty/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
     	cd ${DIR_TMP}
 	else
 		LUAOPT=""
