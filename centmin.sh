@@ -275,6 +275,11 @@ ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
 ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
 ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUAREDISPARSERVER='0.10'   # openresty https://github.com/openresty/lua-redis-parser
+ORESTY_LUAUPSTREAMCHECKVER='0.03' # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUALRUCACHEVER='0.04'      # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.0'    # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.02'      # openresty https://github.com/openresty/lua-upstream-nginx-module
 
 STRIPPHP='n'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager

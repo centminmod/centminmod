@@ -226,6 +226,21 @@ NGX_LUALOCKLINK="https://github.com/openresty/lua-resty-lock/archive/v${ORESTY_L
 NGX_LUASTRINGLINKFILE="lua-resty-string_v${ORESTY_LUASTRINGVER}.tar.gz"
 NGX_LUASTRINGLINK="https://github.com/openresty/lua-resty-string/archive/v${ORESTY_LUASTRINGVER}.tar.gz"
 
+NGX_LUAREDISPARSERLINKFILE="lua-redis-parser_v${ORESTY_LUAREDISPARSERVER}.tar.gz"
+NGX_LUAREDISPARSERLINK="https://github.com/openresty/lua-redis-parser/archive/v${ORESTY_LUAREDISPARSERVER}.tar.gz"
+
+NGX_LUAUPSTREAMCHECKLINKFILE="lua-resty-upstream-healthcheck_v${ORESTY_LUAUPSTREAMCHECKVER}.tar.gz"
+NGX_LUAUPSTREAMCHECKLINK="https://github.com/openresty/lua-resty-upstream-healthcheck/archive/v${ORESTY_LUAUPSTREAMCHECKVER}.tar.gz"
+
+NGX_LUALRUCACHELINKFILE="lua-resty-lrucache_v${ORESTY_LUALRUCACHEVER}.tar.gz"
+NGX_LUALRUCACHELINK="https://github.com/openresty/lua-resty-lrucache/archive/v${ORESTY_LUALRUCACHEVER}.tar.gz"
+
+NGX_LUARESTYCORELINKFILE="lua-resty-core_v${ORESTY_LUARESTYCOREVER}.tar.gz"
+NGX_LUARESTYCORELINK="https://github.com/openresty/lua-resty-core/archive/v${ORESTY_LUARESTYCOREVER}.tar.gz"
+
+NGX_LUAUPSTREAMLINKFILE="lua-upstream-nginx-module_v${ORESTY_LUAUPSTREAMVER}.tar.gz"
+NGX_LUAUPSTREAMLINK="https://github.com/openresty/lua-upstream-nginx-module/archive/v${ORESTY_LUAUPSTREAMVER}.tar.gz"
+
 ##
 
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"

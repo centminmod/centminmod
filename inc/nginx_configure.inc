@@ -44,7 +44,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
-		LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER}"
+		LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER}"
 		if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
 			yum -q -y install lua lua-devel
 		fi
@@ -63,6 +63,10 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     	cd ${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}; make install; mv /usr/local/lib/lua/resty/websocket/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/websocket
     	cd ${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}; make install
     	cd ${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}; make install
+    	cd ${DIR_TMP}/lua-redis-parser-${ORESTY_LUAREDISPARSERVER}; make install; mv /usr/local/lib/lua/resty/redis/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/redis
+    	cd ${DIR_TMP}/lua-resty-upstream-healthcheck-${ORESTY_LUAUPSTREAMCHECKVER}; make install; mv /usr/local/lib/lua/resty/upstream/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/upstream
+    	cd ${DIR_TMP}/lua-resty-lrucache-${ORESTY_LUALRUCACHEVER}; make install; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
+    	cd ${DIR_TMP}/lua-resty-core-${ORESTY_LUARESTYCOREVER}; make install; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
     	cd ${DIR_TMP}
 	else
 		LUAOPT=""
