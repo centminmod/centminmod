@@ -1076,6 +1076,34 @@ else
 echo ""
     fi    
 
+        cecho "Download ${NGX_LUAUPSTREAMCACHELINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAUPSTREAMCACHELINKFILE} ]; then
+  cecho "${NGX_LUAUPSTREAMCACHELINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCACHELINK} -O ${NGX_LUAUPSTREAMCACHELINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAUPSTREAMCACHELINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAUPSTREAMCACHELINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
     fi # ORESTY_LUANGINX=y|n
 	
 fi # openresty
