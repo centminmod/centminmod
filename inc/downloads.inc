@@ -1009,6 +1009,17 @@ else
     fi
     fi
 
+tar xzf ${NGX_LUAUPSTREAMLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAUPSTREAMLINKFILE} valid file." $boldyellow
+echo ""
+    fi      
+
     fi # ORESTY_LUANGINX=y|n
 	
 fi # openresty
