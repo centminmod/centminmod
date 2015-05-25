@@ -280,6 +280,8 @@ ORESTY_LUAUPSTREAMCHECKVER='0.03' # openresty https://github.com/openresty/lua-r
 ORESTY_LUALRUCACHEVER='0.04'      # openresty https://github.com/openresty/lua-resty-lrucache
 ORESTY_LUARESTYCOREVER='0.1.0'    # openresty https://github.com/openresty/lua-resty-core
 ORESTY_LUAUPSTREAMVER='0.02'      # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUALOGGERSOCKETVER='0.1'   # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
+ORESTY_LUACOOKIEVER='master'      # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 
 STRIPPHP='n'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager

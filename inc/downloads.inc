@@ -1020,6 +1020,62 @@ else
 echo ""
     fi      
 
+        cecho "Download ${NGX_LUALOGGERSOCKETLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUALOGGERSOCKETLINKFILE} ]; then
+  cecho "${NGX_LUALOGGERSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUALOGGERSOCKETLINK} -O ${NGX_LUALOGGERSOCKETLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUALOGGERSOCKETLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUALOGGERSOCKETLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUACOOKIELINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUACOOKIELINKFILE} ]; then
+  cecho "${NGX_LUACOOKIELINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUACOOKIELINK} -O ${NGX_LUACOOKIELINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACOOKIELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUACOOKIELINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACOOKIELINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUACOOKIELINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
     fi # ORESTY_LUANGINX=y|n
 	
 fi # openresty

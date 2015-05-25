@@ -241,6 +241,12 @@ NGX_LUARESTYCORELINK="https://github.com/openresty/lua-resty-core/archive/v${ORE
 NGX_LUAUPSTREAMLINKFILE="lua-upstream-nginx-module_v${ORESTY_LUAUPSTREAMVER}.tar.gz"
 NGX_LUAUPSTREAMLINK="https://github.com/openresty/lua-upstream-nginx-module/archive/v${ORESTY_LUAUPSTREAMVER}.tar.gz"
 
+NGX_LUALOGGERSOCKETLINKFILE="lua-resty-logger-socket_v${ORESTY_LUALOGGERSOCKETVER}.tar.gz"
+NGX_LUALOGGERSOCKETLINK="https://github.com/cloudflare/lua-resty-logger-socket/archive/v${ORESTY_LUALOGGERSOCKETVER}.tar.gz"
+
+NGX_LUACOOKIELINKFILE="lua-resty-cookie_v${ORESTY_LUACOOKIEVER}.tar.gz"
+NGX_LUACOOKIELINK="https://github.com/cloudflare/lua-resty-cookie/archive/master.tar.gz"
+
 ##
 
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
