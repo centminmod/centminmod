@@ -1104,6 +1104,34 @@ else
 echo ""
     fi
 
+        cecho "Download ${NGX_LUACJSONLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUACJSONLINKFILE} ]; then
+  cecho "${NGX_LUACJSONLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUACJSONLINK} -O ${NGX_LUACJSONLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACJSONLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUACJSONLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACJSONLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUACJSONLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
     fi # ORESTY_LUANGINX=y|n
 	
 fi # openresty

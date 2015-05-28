@@ -250,6 +250,9 @@ NGX_LUACOOKIELINK="https://github.com/cloudflare/lua-resty-cookie/archive/master
 NGX_LUAUPSTREAMCACHELINKFILE="lua-upstream-cache-nginx-module_v${ORESTY_LUAUPSTREAMCACHEVER}.tar.gz"
 NGX_LUAUPSTREAMCACHELINK="https://github.com/cloudflare/lua-upstream-cache-nginx-module/archive/v${ORESTY_LUAUPSTREAMCACHEVER}.tar.gz"
 
+NGX_LUACJSONLINKFILE="lua-cjson_${LUACJSONVER}.tar.gz"
+NGX_LUACJSONLINK="https://github.com/openresty/lua-cjson/archive/${LUACJSONVER}.tar.gz"
+
 ##
 
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
