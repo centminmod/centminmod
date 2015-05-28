@@ -264,6 +264,9 @@ ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com
 ORESTY_SETMISCVER='0.28'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOVER='0.57'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 
+LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
+LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
+
 ORESTY_LUANGINX='y'          # enable or disable or ORESTY_LUA* nginx modules below
 ORESTY_LUANGINXVER='0.9.16rc1'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
@@ -445,6 +448,7 @@ source "inc/openssl_install.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
+source "inc/luajit.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"

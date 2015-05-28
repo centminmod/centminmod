@@ -172,20 +172,7 @@ then
 
 fi
 
-if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
-    echo "*************************************************"
-    cecho "* LuaJIT-${ORESTY_LUAGITVER} install" $boldgreen
-    echo "*************************************************"
-
-    cd $DIR_TMP
-    cd LuaJIT-${ORESTY_LUAGITVER}
-    make clean
-    make${MAKETHREADS}
-    make install
-
-    export LUAJIT_LIB=/usr/local/lib
-    export LUAJIT_INC=/usr/local/include/luajit-2.0 
-fi
+luajitinstall
 
     # Install nginx
     cd $DIR_TMP
