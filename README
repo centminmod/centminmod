@@ -17,7 +17,7 @@ Step 2.
 Actual install
 
 yum -y install wget nano bc unzip
-branchname=123.08centos7beta02
+branchname=123.08beta03
 wget -O /usr/local/src/${branchname}.zip https://github.com/centminmod/centminmod/archive/${branchname}.zip
 cd /usr/local/src
 unzip ${branchname}.zip
