@@ -301,6 +301,8 @@ MYSQLTUNER_LINK="http://centminmod.com/centminmodparts/mysqltuner/mysqltuner.txt
 NGX_LINKFILE="nginx-${NGINX_VERSION}.tar.gz"
 NGX_LINK="http://nginx.org/download/${NGX_LINKFILE}"
 
+NGX_VTSLINK='https://github.com/vozlt/nginx-module-vts.git'
+
 OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
 #OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
 OPENSSL_LINK="http://centminmod.com/centminmodparts/openssl/${OPENSSL_LINKFILE}"

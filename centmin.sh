@@ -237,10 +237,11 @@ NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
 NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
-STRIPNGINX='n'               # set 'y' to strip nginx binary to reduce size
+STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGINX_INSTALL=y              # Install Nginx (Webserver)
-NGINX_GEOIP=y			 # Nginx GEOIP module install
+NGINX_GEOIP=y			     # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
+NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.9.32.3-beta'
@@ -288,7 +289,7 @@ ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/clo
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 LUACJSONVER='2.1.0.2'              # https://github.com/openresty/lua-cjson
 
-STRIPPHP='n'                 # set 'y' to strip PHP binary to reduce size
+STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 

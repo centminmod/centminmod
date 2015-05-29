@@ -144,6 +144,7 @@ server {
   include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
 }
 END
 
