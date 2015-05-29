@@ -148,6 +148,10 @@ if [[ "$CHECKM" != 'nomemcached' ]]; then
                         rm -rf $PIDA 2>/dev/null
                         rm -rf $PIDB 2>/dev/null
                         kill -9 $(pidof $BINNAME) 2>/dev/null
+                fi
+                if [[ -f "$PIDA" || -f "$PIDB" ]]; then
+                        rm -rf $PIDA 2>/dev/null
+                        rm -rf $PIDB 2>/dev/null
                 fi                
         else
                 kill -9 $(cat $PIDA 2>/dev/null) 2>/dev/null
@@ -155,7 +159,10 @@ if [[ "$CHECKM" != 'nomemcached' ]]; then
                 if [ $RETVALA -eq 0 ] ; then
                         rm -rf $PIDA 2>/dev/null
                         kill -9 $(pidof $BINNAME) 2>/dev/null
-                fi                
+                fi
+                if [ -f "$PIDA" ]; then
+                        rm -rf $PIDA 2>/dev/null
+                fi
         fi
 else
         # echo "Memcached server already stopped "
