@@ -595,7 +595,544 @@ checklogdetails
 else 
          cecho "${NGX_ECHOLINKFILE} valid file." $boldyellow
 echo ""
-    fi       
+    fi
+
+    # ORESTY_LUANGINX=y|n
+    if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+
+        cecho "Download ${NGX_LUANGINXLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUANGINXLINKFILE} ]; then
+  cecho "${NGX_LUANGINXLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUANGINXLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUANGINXLINK} -O ${NGX_LUANGINXLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUANGINXLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUANGINXLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUANGINXLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUANGINXLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUAGITLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAGITLINKFILE} ]; then
+  cecho "${NGX_LUAGITLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAGITLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAGITLINK} -O ${NGX_LUAGITLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAGITLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAGITLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAGITLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAGITLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUAMEMCACHEDLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAMEMCACHEDLINKFILE} ]; then
+  cecho "${NGX_LUAMEMCACHEDLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAMEMCACHEDLINK} -O ${NGX_LUAMEMCACHEDLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAMEMCACHEDLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAMEMCACHEDLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUAMYSQLLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAMYSQLLINKFILE} ]; then
+  cecho "${NGX_LUAMYSQLLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAMYSQLLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAMYSQLLINK} -O ${NGX_LUAMYSQLLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAMYSQLLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAMYSQLLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAMYSQLLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAMYSQLLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_LUAREDISLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAREDISLINKFILE} ]; then
+  cecho "${NGX_LUAREDISLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAREDISLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAREDISLINK} -O ${NGX_LUAREDISLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAREDISLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAREDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAREDISLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAREDISLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUADNSLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUADNSLINKFILE} ]; then
+  cecho "${NGX_LUADNSLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUADNSLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUADNSLINK} -O ${NGX_LUADNSLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUADNSLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUADNSLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUADNSLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUADNSLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_LUAUPLOADLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAUPLOADLINKFILE} ]; then
+  cecho "${NGX_LUAUPLOADLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAUPLOADLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPLOADLINK} -O ${NGX_LUAUPLOADLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPLOADLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAUPLOADLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPLOADLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAUPLOADLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUAWEBSOCKETLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAWEBSOCKETLINKFILE} ]; then
+  cecho "${NGX_LUAWEBSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAWEBSOCKETLINK} -O ${NGX_LUAWEBSOCKETLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAWEBSOCKETLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAWEBSOCKETLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_LUALOCKLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUALOCKLINKFILE} ]; then
+  cecho "${NGX_LUALOCKLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUALOCKLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUALOCKLINK} -O ${NGX_LUALOCKLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALOCKLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUALOCKLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALOCKLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUALOCKLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUASTRINGLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUASTRINGLINKFILE} ]; then
+  cecho "${NGX_LUASTRINGLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUASTRINGLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUASTRINGLINK} -O ${NGX_LUASTRINGLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUASTRINGLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUASTRINGLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUASTRINGLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUASTRINGLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_LUAREDISPARSERLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAREDISPARSERLINKFILE} ]; then
+  cecho "${NGX_LUAREDISPARSERLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAREDISPARSERLINK} -O ${NGX_LUAREDISPARSERLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAREDISPARSERLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAREDISPARSERLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUAUPSTREAMCHECKLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAUPSTREAMCHECKLINKFILE} ]; then
+  cecho "${NGX_LUAUPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCHECKLINK} -O ${NGX_LUAUPSTREAMCHECKLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAUPSTREAMCHECKLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAUPSTREAMCHECKLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUALRUCACHELINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUALRUCACHELINKFILE} ]; then
+  cecho "${NGX_LUALRUCACHELINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUALRUCACHELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUALRUCACHELINK} -O ${NGX_LUALRUCACHELINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALRUCACHELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUALRUCACHELINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALRUCACHELINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUALRUCACHELINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUARESTYCORELINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUARESTYCORELINKFILE} ]; then
+  cecho "${NGX_LUARESTYCORELINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUARESTYCORELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUARESTYCORELINK} -O ${NGX_LUARESTYCORELINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUARESTYCORELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUARESTYCORELINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUARESTYCORELINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUARESTYCORELINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_LUAUPSTREAMLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAUPSTREAMLINKFILE} ]; then
+  cecho "${NGX_LUAUPSTREAMLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMLINK} -O ${NGX_LUAUPSTREAMLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAUPSTREAMLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAUPSTREAMLINKFILE} valid file." $boldyellow
+echo ""
+    fi      
+
+        cecho "Download ${NGX_LUALOGGERSOCKETLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUALOGGERSOCKETLINKFILE} ]; then
+  cecho "${NGX_LUALOGGERSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUALOGGERSOCKETLINK} -O ${NGX_LUALOGGERSOCKETLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUALOGGERSOCKETLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUALOGGERSOCKETLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUACOOKIELINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUACOOKIELINKFILE} ]; then
+  cecho "${NGX_LUACOOKIELINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUACOOKIELINK} -O ${NGX_LUACOOKIELINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACOOKIELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUACOOKIELINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACOOKIELINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUACOOKIELINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+        cecho "Download ${NGX_LUAUPSTREAMCACHELINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUAUPSTREAMCACHELINKFILE} ]; then
+  cecho "${NGX_LUAUPSTREAMCACHELINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCACHELINK} -O ${NGX_LUAUPSTREAMCACHELINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUAUPSTREAMCACHELINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUAUPSTREAMCACHELINKFILE} valid file." $boldyellow
+echo ""
+    fi
+
+        cecho "Download ${NGX_LUACJSONLINKFILE} ..." $boldyellow
+if [ -s ${NGX_LUACJSONLINKFILE} ]; then
+  cecho "${NGX_LUACJSONLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!!download now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_LUACJSONLINK} -O ${NGX_LUACJSONLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACJSONLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_LUACJSONLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUACJSONLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUACJSONLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
+    fi # ORESTY_LUANGINX=y|n
 	
 fi # openresty
 }

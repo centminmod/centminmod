@@ -172,11 +172,7 @@ then
 
 fi
 
-#if [ "$NGINX_OPENRESTY" == 'y' ]; then
-#funct_nginxmodules_openresty
-#else
-#funct_nginxmodules
-#fi
+luajitinstall
 
     # Install nginx
     cd $DIR_TMP

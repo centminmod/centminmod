@@ -263,6 +263,31 @@ ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.
 ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCVER='0.28'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOVER='0.57'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+
+LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
+LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
+
+ORESTY_LUANGINX='y'          # enable or disable or ORESTY_LUA* nginx modules below
+ORESTY_LUANGINXVER='0.9.16rc1'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
+ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.20'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
+ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
+ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
+ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
+ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.0'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.02'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
+ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
+ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
+LUACJSONVER='2.1.0.2'              # https://github.com/openresty/lua-cjson
+
 STRIPPHP='n'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
@@ -381,6 +406,12 @@ else
     fi
 fi
 
+# ensure if ORESTY_LUANGINX is enabled, that the other required
+# Openresty modules are enabled if folks forget to enable them
+if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+    NGINX_OPENRESTY='y'
+fi
+
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
@@ -418,6 +449,7 @@ source "inc/openssl_install.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
+source "inc/luajit.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"

@@ -24,7 +24,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
 	fi
 
-	if [ "$NGINX_OPENRESTY" == 'y' ]; then
+	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
 		MEMCDIR=`ls -rt $DIR_TMP | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
 		SRCACHEDIR=`ls -rt $DIR_TMP | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
 		SETMISCDIR=`ls -rt $DIR_TMP | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
@@ -41,6 +41,38 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		SETMISCOPT=""
 		DEVELKITOPT=""
 		ECHOOPT=""		
+	fi
+
+	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+		LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER} --add-module=../lua-upstream-cache-nginx-module-${ORESTY_LUAUPSTREAMCACHEVER}"
+		if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
+			yum -q -y install lua lua-devel
+		fi
+
+    	if [[ "$(uname -m)" = 'x86_64' ]]; then
+        	LUALIB_DIR='lib64'
+    	else
+        	LUALIB_DIR='lib'
+    	fi
+	
+    	cd ${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}; make clean; make install
+    	cd ${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}; make clean; make install
+    	cd ${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}; make clean; make install
+    	cd ${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}; make clean; make install; mv /usr/local/lib/lua/resty/dns/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/dns
+    	cd ${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}; make clean; make install
+    	cd ${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}; make clean; make install; mv /usr/local/lib/lua/resty/websocket/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/websocket
+    	cd ${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}; make clean; make install
+    	cd ${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}; make clean; make install
+    	cd ${DIR_TMP}/lua-redis-parser-${ORESTY_LUAREDISPARSERVER}; make clean; make install; mv /usr/local/lib/lua/resty/redis/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/redis
+    	cd ${DIR_TMP}/lua-resty-upstream-healthcheck-${ORESTY_LUAUPSTREAMCHECKVER}; make clean; make install; mv /usr/local/lib/lua/resty/upstream/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/upstream
+    	cd ${DIR_TMP}/lua-resty-lrucache-${ORESTY_LUALRUCACHEVER}; make clean; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
+    	cd ${DIR_TMP}/lua-resty-core-${ORESTY_LUARESTYCOREVER}; make clean; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
+    	cd ${DIR_TMP}/lua-resty-logger-socket-${ORESTY_LUALOGGERSOCKETVER}; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/lib/lua/resty/
+    	cd ${DIR_TMP}/lua-resty-cookie-${ORESTY_LUACOOKIEVER}; chmod +x lib/resty/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
+    	cd ${DIR_TMP}/lua-cjson-${LUACJSONVER}; make clean; make install
+    	cd ${DIR_TMP}
+	else
+		LUAOPT=""
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -211,9 +243,15 @@ NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
 if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 	STREAM=' --with-stream --with-stream_ssl_module'
 	THREADS=' --with-threads'
+	# workaround for nginx 1.9 compatibility
+	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
+	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 	STREAM=' --with-stream --with-stream_ssl_module'
 	THREADS=' --with-threads'
+	# workaround for nginx 1.9 compatibility
+	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
+	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c	
 elif [[ "$ngver" && "$NGXUPGRADE_VER" = '1.8' ]]; then
 	STREAM=""
 	THREADS=' --with-threads'
@@ -232,10 +270,12 @@ fi
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+      	echo "./configure --with-ld-opt="-Wl,-rpath,$LUAJIT_LIB" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt="-Wl,-rpath,$LUAJIT_LIB" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
-		./configure --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+    	echo "./configure --with-ld-opt="-Wl,-rpath,$LUAJIT_LIB" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt="-Wl,-rpath,$LUAJIT_LIB" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${OPENSSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }
