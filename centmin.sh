@@ -1539,8 +1539,14 @@ if [[ "$1" = 'install' ]]; then
     # updated method for cmdir and centmin shorcuts
     sed -i '/cmdir=/d' /root/.bashrc
     sed -i '/centmin=/d' /root/.bashrc
-    echo -e "pushd $SCRIPT_DIR" > /usr/bin/cmdir
-    echo -e "pushd $SCRIPT_DIR; bash centmin.sh" > /usr/bin/centmin
+cat > "/usr/bin/cmdir" << EOF
+#!/bin/bash
+pushd $SCRIPT_DIR
+EOF
+cat > "/usr/bin/centmin" << EOF
+#!/bin/bash
+pushd $SCRIPT_DIR; bash centmin.sh
+EOF
     chmod 0700 /usr/bin/cmdir
     chmod 0700 /usr/bin/centmin
 
@@ -1648,8 +1654,14 @@ else
     # updated method for cmdir and centmin shorcuts
     sed -i '/cmdir=/d' /root/.bashrc
     sed -i '/centmin=/d' /root/.bashrc
-    echo -e "pushd $SCRIPT_DIR" > /usr/bin/cmdir
-    echo -e "pushd $SCRIPT_DIR; bash centmin.sh" > /usr/bin/centmin
+cat > "/usr/bin/cmdir" << EOF
+#!/bin/bash
+pushd $SCRIPT_DIR
+EOF
+cat > "/usr/bin/centmin" << EOF
+#!/bin/bash
+pushd $SCRIPT_DIR; bash centmin.sh
+EOF
     chmod 0700 /usr/bin/cmdir
     chmod 0700 /usr/bin/centmin
 
