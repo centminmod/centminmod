@@ -55,6 +55,23 @@ checkaliases() {
     fi
 }
 
+checkcmdircmd() {
+	if [[ "$(grep 'cmdir=' /root/.bashrc)" || "$(grep 'centmin=' /root/.bashrc)" ]]; then
+sed -i '/cmdir=/d' /root/.bashrc
+sed -i '/centmin=/d' /root/.bashrc
+cat > "/usr/bin/cmdir" << EOF
+#!/bin/bash
+pushd $SCRIPT_DIR
+EOF
+cat > "/usr/bin/centmin" << EOF
+#!/bin/bash
+pushd $SCRIPT_DIR; bash centmin.sh
+EOF
+chmod 0700 /usr/bin/cmdir
+chmod 0700 /usr/bin/centmin
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -79,6 +96,7 @@ selinxcheck
 centaltoff
 csfipsetcheck
 checkaliases
+checkcmdircmd
 
 }
 
