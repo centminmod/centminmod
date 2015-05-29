@@ -1534,21 +1534,15 @@ if [[ "$1" = 'install' ]]; then
     alldownloads
     funct_centmininstall
 
-if [[ -z $(alias | grep cmdir) ]]; then
     # setup command shortcut aliases 
     # given the known download location
-    alias cmdir="pushd ${SCRIPT_DIR}"
-    alias centmin="pushd ${SCRIPT_DIR}; bash centmin.sh"
-    echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
-    echo "alias centmin='cd ${SCRIPT_DIR}; bash centmin.sh'" >> /root/.bashrc
-    source /root/.bashrc
-    # echo
-    # echo "Created command shortcuts:"
-    # echo "* type cmdir to change to Centmin Mod install directory"
-    # echo "  at ${SCRIPT_DIR}"
-    # echo "* type centmin call and run centmin.sh"
-    # echo "  at ${SCRIPT_DIR}/centmin.sh"
-fi
+    # updated method for cmdir and centmin shorcuts
+    sed -i '/cmdir=/d' /root/.bashrc
+    sed -i '/centmin=/d' /root/.bashrc
+    echo -e "pushd $SCRIPT_DIR" > /usr/bin/cmdir
+    echo -e "pushd $SCRIPT_DIR; bash centmin.sh" > /usr/bin/centmin
+    chmod 0700 /usr/bin/cmdir
+    chmod 0700 /usr/bin/centmin
 
     unsetramdisk
 
@@ -1649,21 +1643,15 @@ else
             alldownloads
             funct_centmininstall
 
-if [[ -z $(alias | grep cmdir) ]]; then
     # setup command shortcut aliases 
     # given the known download location
-    alias cmdir="pushd ${SCRIPT_DIR}"
-    alias centmin="pushd ${SCRIPT_DIR}; bash centmin.sh"
-    echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
-    echo "alias centmin='cd ${SCRIPT_DIR}; bash centmin.sh'" >> /root/.bashrc
-    source /root/.bashrc
-    # echo
-    # echo "Created command shortcuts:"
-    # echo "* type cmdir to change to Centmin Mod install directory"
-    # echo "  at ${SCRIPT_DIR}"
-    # echo "* type centmin call and run centmin.sh"
-    # echo "  at ${SCRIPT_DIR}/centmin.sh"
-fi
+    # updated method for cmdir and centmin shorcuts
+    sed -i '/cmdir=/d' /root/.bashrc
+    sed -i '/centmin=/d' /root/.bashrc
+    echo -e "pushd $SCRIPT_DIR" > /usr/bin/cmdir
+    echo -e "pushd $SCRIPT_DIR; bash centmin.sh" > /usr/bin/centmin
+    chmod 0700 /usr/bin/cmdir
+    chmod 0700 /usr/bin/centmin
 
             unsetramdisk
 
