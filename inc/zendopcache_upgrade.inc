@@ -174,6 +174,9 @@ if [[ -z "$ZOPLUSSOCHECK" ]]; then
 
 	# transfer existing memory allocation value to newly created
 	# zendopcache.ini
+	if [[ -z "$ZENDOPCACHE_EXISTMEMSIZE" ]]; then
+		ZENDOPCACHE_EXISTMEMSIZE='40'
+	fi
 	sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
 
 else
@@ -185,6 +188,9 @@ else
 
 	# transfer existing memory allocation value to newly created
 	# zendopcache.ini
+	if [[ -z "$ZENDOPCACHE_EXISTMEMSIZE" ]]; then
+		ZENDOPCACHE_EXISTMEMSIZE='80'
+	fi	
 	sed -i "s|^opcache.memory_consumption=.*|opcache.memory_consumption=$ZENDOPCACHE_EXISTMEMSIZE|" ${CONFIGSCANDIR}/zendopcache.ini
 
 fi # check if opcache.so exists in zendopcache.ini
