@@ -10,7 +10,7 @@ Step 1.
 
 Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and define it in the variable named branchname typed on SSH command line as follows.
 
-branchname=123.08centos7beta02
+branchname=123.08beta03
 
 Step 2.
 
