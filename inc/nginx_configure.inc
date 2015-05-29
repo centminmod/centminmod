@@ -87,14 +87,18 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [[ ! -d "${DIR_TMP}/nginx-module-vts" ]]; then
 				cd $DIR_TMP
 				git clone $NGX_VTSLINK nginx-module-vts
-				sed -i 's|color:       black;|color:       white;|g' /svr-setup/nginx-module-vts/share/status.template.html
-				sed -i 's|#DED|#43a6df|g' /svr-setup/nginx-module-vts/share/status.template.html
+				sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
+				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
+				sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
+				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
 			elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
 				cd ${DIR_TMP}/nginx-module-vts
 				git stash
 				git pull
-				sed -i 's|color:       black;|color:       white;|g' /svr-setup/nginx-module-vts/share/status.template.html
-				sed -i 's|#DED|#43a6df|g' /svr-setup/nginx-module-vts/share/status.template.html
+				sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
+				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
+				sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
+				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
 			fi
 		else
 			VTSOPT=""
