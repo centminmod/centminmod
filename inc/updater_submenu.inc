@@ -68,8 +68,6 @@ centminlog
 
 centminlog
 {
-
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
 if [[ -f "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "Updating Current Centmin Mod code branch via git" $boldyellow
@@ -87,6 +85,7 @@ else
 	echo "       run submenu option 1 to setup github environment first"
 	break
 fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
 ;;
 3)
 
