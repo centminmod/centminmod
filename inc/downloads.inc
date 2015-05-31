@@ -2609,6 +2609,10 @@ memcachetarball
 
 imagickphpexttarball
 
+redisphptarball
+
+mongodbphptarball
+
 gperftools
 
 openssldownload
