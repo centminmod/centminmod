@@ -1539,15 +1539,13 @@ if [[ "$1" = 'install' ]]; then
     # updated method for cmdir and centmin shorcuts
     sed -i '/cmdir=/d' /root/.bashrc
     sed -i '/centmin=/d' /root/.bashrc
-cat > "/usr/bin/cmdir" << EOF
-#!/bin/bash
-pushd $SCRIPT_DIR
-EOF
+    rm -rf /usr/bin/cmdir
+    alias cmdir="pushd ${SCRIPT_DIR}"
+    echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
 pushd $SCRIPT_DIR; bash centmin.sh
 EOF
-    chmod 0700 /usr/bin/cmdir
     chmod 0700 /usr/bin/centmin
 
     unsetramdisk
@@ -1654,15 +1652,13 @@ else
     # updated method for cmdir and centmin shorcuts
     sed -i '/cmdir=/d' /root/.bashrc
     sed -i '/centmin=/d' /root/.bashrc
-cat > "/usr/bin/cmdir" << EOF
-#!/bin/bash
-pushd $SCRIPT_DIR
-EOF
+    rm -rf /usr/bin/cmdir
+    alias cmdir="pushd ${SCRIPT_DIR}"
+    echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
 pushd $SCRIPT_DIR; bash centmin.sh
 EOF
-    chmod 0700 /usr/bin/cmdir
     chmod 0700 /usr/bin/centmin
 
             unsetramdisk
