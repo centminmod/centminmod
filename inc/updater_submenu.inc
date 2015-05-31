@@ -68,7 +68,7 @@ centminlog
 
 centminlog
 {
-if [[ -f "${SCRIPT_DIR}/.git" ]]; then
+if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "Updating Current Centmin Mod code branch via git" $boldyellow
 	cecho "	cd /usr/local/src/centminmod-${branchname}" $boldgreen
@@ -91,7 +91,7 @@ fi
 
 centminlog
 {
-if [[ -f "${SCRIPT_DIR}/.git" ]]; then
+if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "Update Centmin Mod to newer branch via git" $boldyellow
 	cecho "You need to input the name of the branch" $boldyellow
