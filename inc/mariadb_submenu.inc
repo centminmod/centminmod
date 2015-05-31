@@ -16,10 +16,12 @@ do
 	cecho "1). MariaDB 5.2.x Branch Upgrade Only" $boldgreen
 	cecho "2). MariaDB 5.2.x to MariaDB 5.5 YUM upgrade" $boldgreen
 	cecho "3). MariaDB 5.5 to MariaDB 10.x YUM upgrade" $boldgreen
-	cecho "4). Back to Main menu" $boldgreen
+	cecho "4). MariaDB 5.5 to MariaDB 10.1.x YUM upgrade" $boldgreen
+	cecho "5). MariaDB 10.x to MariaDB 10.1.x YUM upgrade" $boldgreen
+	cecho "6). Back to Main menu" $boldgreen
 	cecho "--------------------------------------------------------" $boldyellow
 
-	read -ep "Enter option [ 1 - 4 ] " mmoption
+	read -ep "Enter option [ 1 - 6 ] " mmoption
 	cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -97,6 +99,48 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb10_upgrade.log
 ;;
 4)
+
+centminlog
+{
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+	if [ "$MARIADBVERCHECK" == '10.1' ]; then
+
+		echo ""
+		cecho "MariaDB 10.1.x server already detected" $boldyellow
+
+	else
+
+		if [[ "$ENABLE_MARIADBTENUPGRADE" = [nN] ]]; then
+			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
+		else
+			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
+			# mariadbfivetotenoneupgrade
+		fi
+	fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_55-to-10-1_upgrade.log
+;;
+5)
+
+centminlog
+{
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+	if [ "$MARIADBVERCHECK" == '10.1' ]; then
+
+		echo ""
+		cecho "MariaDB 10.1.x server already detected" $boldyellow
+
+	else
+
+		if [[ "$ENABLE_MARIADBTENUPGRADE" = [nN] ]]; then
+			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
+		else
+			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
+			# mariadbtentotenoneupgrade
+		fi
+	fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-to-10-1_upgrade.log
+;;
+6)
 	break
 ;;
 esac

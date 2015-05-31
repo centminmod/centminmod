@@ -1593,7 +1593,7 @@ else
             cecho "8).  XCache Install" $boldgreen
             cecho "9).  APC Cache Install" $boldgreen
             cecho "10). Memcached Server Re-install" $boldgreen
-            cecho "11). MariaDB 5.2, 5.5, 10 Upgrade Sub-Menu" $boldgreen
+            cecho "11). MariaDB 5.2, 5.5, 10, 10.1 Upgrade Sub-Menu" $boldgreen
             cecho "12). Zend OpCache Install/Re-install" $boldgreen
             cecho "13). Install ioping.sh vbtechsupport.com/1239/" $boldgreen
             cecho "14). SELinux disable" $boldgreen
