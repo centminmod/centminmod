@@ -2582,6 +2582,11 @@ questions
 # yum double check
 if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; then
 
+# use local download source files first 
+# less likely to encounter broken 3rd party
+# urls and speed up initial install
+/usr/bin/unzip -q ${CUR_DIR}/downloads/svr-setup.zip -d /
+
 ccacheinstall
 
 csftarball
