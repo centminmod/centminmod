@@ -13,6 +13,8 @@ UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 CMVERSION_CHECK='n'
 #####################################################
 DT=`date +"%d%m%y-%H%M%S"`
+# for github support
+branchname='123.08beta03'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
@@ -503,6 +505,7 @@ source "inc/ffmpeginstall.inc"
 source "inc/shortcuts_install.inc"
 source "inc/memcacheadmin.inc"
 source "inc/mysqlsecure.inc"
+source "inc/updater_submenu.inc"
 source "inc/centminfinish.inc"
 
 checkcentosver
@@ -1603,10 +1606,11 @@ else
             cecho "20). NSD Re-install" $boldgreen
             cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
             cecho "22). Add Wordpress Nginx vhost + WP Super Cache" $boldgreen
-            cecho "23). Exit" $boldgreen
+            cecho "23). Update Centmin Mod Code Base" $boldgreen
+            cecho "24). Exit" $boldgreen
             cecho "--------------------------------------------------------" $boldyellow
         
-            read -ep "Enter option [ 1 - 23 ] " option
+            read -ep "Enter option [ 1 - 24 ] " option
             cecho "--------------------------------------------------------" $boldyellow
         
         #########################################################
@@ -2074,7 +2078,12 @@ EOF
         } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log
         
         ;;        
-        23|exit)
+        23|cmupdatemenu)
+
+        updatersubmenu
+
+        ;;
+        24|exit)
         
         bookmark
         
