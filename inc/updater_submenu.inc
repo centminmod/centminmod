@@ -75,7 +75,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho "	git stash" $boldgreen
 	cecho "	git pull" $boldgreen
 	cecho "	chmod +x centmin.sh" $boldgreen
-	cd /usr/local/src/centminmod-${branchname}
+	cd /usr/local/src/centminmod-${branchname} 2>/dev/null
 	git stash
 	git pull
 	chmod +x centmin.sh
@@ -120,7 +120,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		echo  
 		cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
 		git clone https://github.com/centminmod/centminmod.git centminmod-${branchname}
-		cd centminmod-${branchname}
+		cd centminmod-${branchname} 2>/dev/null
 		git checkout -f ${branchname}
 		chmod +x centmin.sh
 		
