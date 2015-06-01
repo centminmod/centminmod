@@ -95,6 +95,11 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				# ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				cd ../
+				# setup /vhost_status.html
+				cp -a ${DIR_TMP}/nginx-module-vts/share/status.compress.html /usr/local/nginx/html/vhost_status.html
+				MAINURIHOST=$HN
+				NEWURI="//${MAINURIHOST}/vhost_status"
+				sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
 			elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
 				cd ${DIR_TMP}/nginx-module-vts
 				git stash
@@ -106,7 +111,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				cd util
 				./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				# ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
-				cd ../				
+				cd ../
+				# setup /vhost_status.html
+				cp -a ${DIR_TMP}/nginx-module-vts/share/status.compress.html /usr/local/nginx/html/vhost_status.html
+				MAINURIHOST=$HN
+				NEWURI="//${MAINURIHOST}/vhost_status"
+				sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html							
 			fi
 		else
 			VTSOPT=""
