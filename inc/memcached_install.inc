@@ -315,6 +315,7 @@ incmemcachedinstall() {
 
 if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
     MEMCINSTALL='y'
+    nomemcachedservers='1'
 fi
 
 #ASK "Install Memcached Server? (default uses 8MB RAM each) [y/n] "
