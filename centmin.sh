@@ -1534,7 +1534,18 @@ if [[ "$1" = 'install' ]]; then
     exit
     fi
     
+    dlstarttime=$(date +%s.%N)
+    {    
     alldownloads
+    } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+
+    dlendtime=$(date +%s.%N)
+    DOWNLOADTIME=$(echo "scale=2;$dlendtime - $dlstarttime"|bc )
+
+    echo "" >> ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+    echo "Total Source Download Time: $DOWNLOADTIME seconds" >> ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+    ls -lah ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+
     funct_centmininstall
 
     # setup command shortcut aliases 
