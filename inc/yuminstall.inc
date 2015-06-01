@@ -133,6 +133,7 @@ yendtime=$(date +%s.%N)
 YINSTALLTIME=$(echo "scale=2;$yendtime - $ystarttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 echo "Total YUM Time: $YINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
+echo "Total YUM Time: $YINSTALLTIME seconds" > ${CENTMINLOGDIR}/centminmod_profiletimes_${DT}.log
 \cp /var/cache/yum/timedhosts.txt ${CENTMINLOGDIR}/timedhosts_${DT}.txt
 ls -lah ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 

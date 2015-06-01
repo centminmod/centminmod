@@ -2571,6 +2571,9 @@ fi
 ###############################################
 
 alldownloads() {
+
+dlstarttime=$(date +%s.%N)
+{    
 echo "*****************************************************"
 cecho "Downloading all required software for install routines." $boldgreen
 echo "*****************************************************"
@@ -2630,6 +2633,14 @@ mariadbrpms
 echo "*****************************************************"
 cecho "Downloads complete." $boldgreen
 echo "*****************************************************"
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+
+dlendtime=$(date +%s.%N)
+DOWNLOADTIME=$(echo "scale=2;$dlendtime - $dlstarttime"|bc )
+
+echo "" >> ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+echo "Total Source Download Time: $DOWNLOADTIME seconds" >> ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+ls -lah ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
 
 	if [ "$UNATTENDED" == 'n' ]; then
 echo ""
