@@ -902,7 +902,17 @@ else
     fi
 fi
 
+ngxinstallstarttime=$(date +%s.%N)
+{    
 ngxinstallmain
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
+
+ngxinstallendtime=$(date +%s.%N)
+NGXINSTALLTIME=$(echo "scale=2;$ngxinstallendtime - $ngxinstallstarttime"|bc )
+
+echo "" >> ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
+echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
+ls -lah ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log 
 
 mariadbinstallfunct
 mysqlinstallfunct
