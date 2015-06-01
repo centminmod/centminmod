@@ -313,6 +313,10 @@ cmservice php-fpm restart
 #######################################################
 incmemcachedinstall() {
 
+if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
+    MEMCINSTALL='y'
+fi
+
 #ASK "Install Memcached Server? (default uses 8MB RAM each) [y/n] "
 if [[ "$MEMCINSTALL" = [yY] ]];
 then

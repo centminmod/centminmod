@@ -1,8 +1,10 @@
 csfinstalls() {
 
+# CSF is compulsory
+CSFINSTALLOK='y'
+
 #ASK "Install CSF firewall script ? [y/n] "
-if [[ "$CSFINSTALLOK" = [yY] ]];
-then
+if [[ "$CSFINSTALLOK" = [yY] ]]; then
 
     echo "*************************************************"
     cecho "* Installing CSF firewall... " $boldgreen

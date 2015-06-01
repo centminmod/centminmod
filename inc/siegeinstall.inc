@@ -7,6 +7,9 @@ checksiege() {
 
 siegeinstall() {
 
+# siege is compulsory
+SIEGEINSTALL='y'
+
 #ASK "Install Siege Benchmark script ? [y/n] "
 if [[ "$SIEGEINSTALL" = [yY] || "$UALL" = 'y' ]];
 then
