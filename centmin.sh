@@ -918,8 +918,8 @@ ls -lah ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
 mariadbinstallfunct
 mysqlinstallfunct
 
-if [[ "$PHP_INSTALL" = [yY] ]]; 
-then
+if [[ "$PHP_INSTALL" = [yY] ]]; then
+    phpinstallstarttime=$(date +%s.%N)
     echo "*************************************************"
     cecho "* Installing PHP" $boldgreen
     echo "*************************************************"
@@ -1065,6 +1065,12 @@ funct_logphprotate
     echo "*************************************************"
     cecho "* PHP installed" $boldgreen
     echo "*************************************************"
+    phpinstallendtime=$(date +%s.%N)
+    PHPINSTALLTIME=$(echo "scale=2;$phpinstallendtime - $phpinstallstarttime"|bc )
+
+    echo "" >> ${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log
+    echo "Total PHP First Time Install Time: $PHPINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log
+    ls -lah ${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log 
 fi
 
 xcacheinstall_ask
