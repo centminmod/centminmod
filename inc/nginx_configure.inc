@@ -313,7 +313,7 @@ fi
 
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
-gcc -c -Q -march=native --help=target | grep '\[enabled\]' | tee ${CENTMINLOGDIR}/gcc_native.log
+gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_native.log
 if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
 	MTUNEOPT="-m${CCM} -mtune=native "
