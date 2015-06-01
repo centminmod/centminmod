@@ -906,6 +906,7 @@ ngxinstallstarttime=$(date +%s.%N)
 {    
 ngxinstallmain
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
+wait
 
 ngxinstallendtime=$(date +%s.%N)
 NGXINSTALLTIME=$(echo "scale=2;$ngxinstallendtime - $ngxinstallstarttime"|bc )
@@ -1193,24 +1194,34 @@ if [[ "$POSTFIX_INSTALL" = [yY] && "$SENDMAIL_INSTALL" = [nN] ]]; then
     fi
 fi
 
+echo "incmemcachedinstall"
 incmemcachedinstall
 
+echo "csfinstalls"
 csfinstalls
 
+echo "siegeinstall"
 siegeinstall
 
+echo "installpythonfuct"
 installpythonfuct
 
+echo "imagickinstall"
 imagickinstall
 
+echo "geoipphpext"
 geoipphpext
 
+echo "redisinstall"
 redisinstall
 
+echo "mongodbinstall"
 mongodbinstall
 
+echo "nsdinstall"
 nsdinstall
 
+echo "pureftpinstall"
 pureftpinstall
 
 if [ -f $CUR_DIR/Extras/nginx-update.sh ];
@@ -1548,6 +1559,7 @@ if [[ "$1" = 'install' ]]; then
     {    
     alldownloads
     } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+    wait
 
     dlendtime=$(date +%s.%N)
     DOWNLOADTIME=$(echo "scale=2;$dlendtime - $dlstarttime"|bc )
