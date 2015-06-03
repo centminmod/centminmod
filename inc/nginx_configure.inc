@@ -19,18 +19,18 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
 		LIBRESSLOPT=" --with-openssl=../portable-${LIBRESSL_VERSION}"
 		OPENSSLOPT=""
-		NGXLDOPT="--with-ld-opt="-lrt -ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB""
+		NGXLDOPT="--with-ld-opt='-lrt -ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
 	else
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			LIBRESSLOPT=""
 			OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-			NGXLDOPT="--with-ld-opt="-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB""
+			NGXLDOPT="--with-ld-opt='-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
 		else
 			export BPATH=$DIR_TMP
 			export STATICLIBSSL="${BPATH}/staticlibssl"
 			LIBRESSLOPT=""
 			OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-			NGXLDOPT="--with-ld-opt="-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB""
+			NGXLDOPT="--with-ld-opt='-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
 		fi
 	fi
 
@@ -202,11 +202,11 @@ else
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
 		LIBRESSLOPT=" --with-openssl=../portable-${LIBRESSL_VERSION}"
 		OPENSSLOPT=""
-		NGXLDOPT="--with-ld-opt="-lrt -ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB""
+		NGXLDOPT="--with-ld-opt='-lrt -ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
 	else
 		LIBRESSLOPT=""
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-		NGXLDOPT="--with-ld-opt="-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB""
+		NGXLDOPT="--with-ld-opt='-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then

@@ -338,8 +338,8 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ##################################
 ## Nginx SSL options
 # OpenSSL
-NOSOURCEOPENSSL='y'	       # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2a'   # Use this version of OpenSSL http://www.libressl.org/
+NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
+OPENSSL_VERSION='1.0.2a'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL

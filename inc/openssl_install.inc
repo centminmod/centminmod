@@ -39,16 +39,26 @@ fi # CLOUDFLARE_PATCHSSL
 
 installopenssl() {
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        libresslinstallstarttime=$(date +%s.%N)
         cd $DIR_TMP
         echo "Compiling LibreSSL..."
         cd portable-${LIBRESSL_VERSION}
-        ./autogen.sh
         make clean
+        if [ ! -f configure ]; then
+            bash autogen.sh
+        fi
         ./configure --prefix=/opt/libressl
         make -j${MAKETHREADS} check
         make -j${MAKETHREADS}
         make install
+        libresslinstallendtime=$(date +%s.%N)
+        LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+        echo "OpenSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
     else
+        opensslinstallstarttime=$(date +%s.%N)
         # Install OpenSSL
         cd $DIR_TMP
         echo "Compiling OpenSSL..."
@@ -79,5 +89,11 @@ installopenssl() {
         make depend
         make
         make install
+        opensslinstallendtime=$(date +%s.%N)
+        OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log 
     fi
 }
