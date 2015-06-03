@@ -19,18 +19,18 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
 		LIBRESSLOPT=" --with-openssl=../portable-${LIBRESSL_VERSION}"
 		OPENSSLOPT=""
-		NGXLDOPT="--with-ld-opt='-lrt -ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
+		LRT='-rt '
 	else
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			LIBRESSLOPT=""
 			OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-			NGXLDOPT="--with-ld-opt='-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
+			LRT=""
 		else
 			export BPATH=$DIR_TMP
 			export STATICLIBSSL="${BPATH}/staticlibssl"
 			LIBRESSLOPT=""
 			OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-			NGXLDOPT="--with-ld-opt='-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
+			LRT=""
 		fi
 	fi
 
@@ -202,11 +202,11 @@ else
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
 		LIBRESSLOPT=" --with-openssl=../portable-${LIBRESSL_VERSION}"
 		OPENSSLOPT=""
-		NGXLDOPT="--with-ld-opt='-lrt -ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
+		LRT='-rt '
 	else
 		LIBRESSLOPT=""
 		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-		NGXLDOPT="--with-ld-opt='-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB'"
+		LRT=""
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -346,12 +346,12 @@ fi
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
-      	echo "./configure ${NGXLDOPT} --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
-		./configure ${NGXLDOPT} --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+      	echo "./configure --with-ld-opt='${LRT}-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB' --with-cc-opt='${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2' --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt='${LRT}-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB' --with-cc-opt='${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2' --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-ipv6 --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
-    	echo "./configure ${NGXLDOPT} --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
-		./configure ${NGXLDOPT} --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+    	echo "./configure --with-ld-opt='${LRT}-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB' --with-cc-opt='${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2' --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt='${LRT}-ljemalloc -Wl,-z,relro -Wl,-rpath,$LUAJIT_LIB' --with-cc-opt='${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2' --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --with-http_ssl_module --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module --with-http_secure_link_module --with-http_flv_module --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext" --add-module=../ngx-fancyindex-ngx-fancyindex --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }
