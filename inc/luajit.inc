@@ -12,8 +12,8 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         make${MAKETHREADS}
         make install
     
-        export LUAJIT_LIB=/usr/local/lib
-        export LUAJIT_INC=/usr/local/include/luajit-2.0
+        export LUAJIT_LIB='/usr/local/lib'
+        export LUAJIT_INC='/usr/local/include/luajit-2.0'
     elif [[ "$LUAJIT_GITINSTALL" = [yY] ]]; then
         cd $DIR_TMP
         if [[ -d "LuaJIT-${LUAJIT_GITINSTALLVER}" && -d "LuaJIT-${LUAJIT_GITINSTALLVER}/.git" ]]; then            
@@ -42,8 +42,8 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 
         ln -sf luijit-${MAJVER}.${MINVER}.${RELVER}${PREREL} /usr/local/bin/luajit
     
-        export LUAJIT_LIB=/usr/local/lib
-        export LUAJIT_INC=/usr/local/include/luajit-${LUAJIT_GITINSTALLVER}
+        export LUAJIT_LIB='/usr/local/lib'
+        export LUAJIT_INC="/usr/local/include/luajit-${LUAJIT_GITINSTALLVER}"
     fi
 fi
 
