@@ -312,7 +312,11 @@ funct_showtempfile
 # error check
 ################
 
-    time make
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        time make${MAKETHREADS}
+    else
+        time make
+    fi
 
     if [[ "$STRIPNGINX" = [yY] ]]; then
         echo
