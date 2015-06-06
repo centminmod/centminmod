@@ -27,9 +27,9 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
         # remove memcache.ini & memcached.ini when PHP NGDEBUG detected on upgrade
         DETECTMEMCACHED=n
         echo "rm -rf ${CONFIGSCANDIR}/memcache.ini"
-        echo "rm -rf ${CONFIGSCANDIR}/memcached.ini"
+        # echo "rm -rf ${CONFIGSCANDIR}/memcached.ini"
         rm -rf ${CONFIGSCANDIR}/memcache.ini
-        rm -rf ${CONFIGSCANDIR}/memcached.ini
+        # rm -rf ${CONFIGSCANDIR}/memcached.ini
     fi
 fi
 
