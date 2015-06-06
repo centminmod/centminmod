@@ -376,7 +376,7 @@ IGBINARYGIT='n'
 ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.5'  # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
 # Python
-PYTHON_VERSION='2.7.9'       # Use this version of Python
+PYTHON_VERSION='2.7.10'       # Use this version of Python
 SIEGE_VERSION='3.1.0'
 
 WGETOPT='-cnv --no-dns-cache -4'
