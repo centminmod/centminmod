@@ -93,9 +93,9 @@ else
 	echo "defscrollback 200000" >> /root/.screenrc
 fi
 
-# if [ ! -f /etc/centminmod-release ];then
-#     ccacheinstall
-# fi
+if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
+    ccacheinstall
+fi
 
 if [ -f /etc/centminmod-release ];then
 	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release >/dev/null)" ]]; then

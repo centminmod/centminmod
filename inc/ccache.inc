@@ -1,11 +1,15 @@
 ccacheinstall() {
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
+	if [[ ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
+		ccachetarball
+	fi
+
 	if [ ! -f /usr/local/bin/ccache ]; then
-		# install ccache 3.2.2+
-		echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
-		echo ${CUR_DIR}
-		echo ${CM_INSTALLDIR}
+		echo "install ccache 3.2.2+"
+		#echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+		#echo ${CUR_DIR}
+		#echo ${CM_INSTALLDIR}
 		cd $DIR_TMP
 		cd ccache-${CCACHE_VER}/
 		make clean
@@ -32,7 +36,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 	fi
 
 	# check if ccache YUM installed version and remove outdated 3.1.9
-	if [ ! -f /usr/bin/ccache ]; then
+	if [ -f /usr/bin/ccache ]; then
 		yum -y remove ccache	
 	fi
 
