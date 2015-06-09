@@ -29,7 +29,7 @@ echo "$SCRIPT_VERSION" > /etc/centminmod-release
 if [ "$CCACHEINSTALL" == 'y' ]; then
 
 	# check if ccache installed first
-	if [ -f /usr/bin/ccache ]; then
+	if [ -f /usr/local/bin/ccache ]; then
 { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
 	fi
 fi
