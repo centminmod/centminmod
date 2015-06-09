@@ -57,9 +57,9 @@ if [[ "$NGINX_INSTALL" = [yY] ]]; then
     cecho "* Installing nginx" $boldgreen
     echo "*************************************************"
 
-    echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
-    echo ${CUR_DIR}
-    echo ${CM_INSTALLDIR}        
+    # echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+    # echo ${CUR_DIR}
+    # echo ${CM_INSTALLDIR}        
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
@@ -260,8 +260,8 @@ if [[ "$CLANG" = [yY] ]]; then
     unset CC
     unset CXX
     #unset CCACHE_CPP2
-    export CC="ccache gcc"
-    export CXX="ccache g++"
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++"
 fi    
 
 # unset_intelflags

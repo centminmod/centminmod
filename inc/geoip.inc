@@ -27,7 +27,11 @@ geoipinstall() {
 
 cecho "GeoIP database and library install..." $boldyellow
 
-yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
+if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+	yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
+else
+	yum -y -q install GeoIP GeoIP-devel
+fi
 rpm -ql GeoIP-devel GeoIP
 
 	cd $DIR_TMP

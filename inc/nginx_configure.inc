@@ -346,8 +346,8 @@ if [[ "$CLANG" = [yY] ]]; then
 	if [[ ! -f /usr/bin/clang ]]; then
 		yum -q -y install clang clang-devel
 	fi
-	export CC="ccache clang"
-	export CXX="ccache clang++"
+	export CC="ccache /usr/bin/clang"
+	export CXX="ccache /usr/bin/clang++"
 	export CCACHE_CPP2=yes
 	CLANG_CCOPT=' -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign'
 else

@@ -381,8 +381,8 @@ if [[ "$CLANG" = [yY] ]]; then
     unset CC
     unset CXX
     #unset CCACHE_CPP2
-    export CC="ccache gcc"
-    export CXX="ccache g++"
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++"
 fi        
 
 # unset_intelflags
