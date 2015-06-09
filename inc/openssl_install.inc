@@ -61,7 +61,7 @@ installopenssl() {
             CFLAGS=""
         fi        
         ./configure --prefix=/opt/libressl
-        make -j${MAKETHREADS} check
+        # make -j${MAKETHREADS} check
         make -j${MAKETHREADS}
         make install
 
