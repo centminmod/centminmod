@@ -24,7 +24,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 		cecho "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
 	FAILRPMFORGE='y'
 	checklogdetails
-		exit $ERROR
+		# exit $ERROR
 	else 
          	cecho "Download done." $boldyellow
 	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
@@ -99,7 +99,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 		cecho "Error: rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm download failed." $boldgreen
 	FAILRPMFORGE='y'
 	checklogdetails
-		exit $ERROR
+		# exit $ERROR
 	else 
          	cecho "Download done." $boldyellow
 	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
@@ -173,7 +173,7 @@ ERROR=$?
 	cecho "Error: rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm download failed." $boldgreen
 FAILRPMFORGE='y'
 checklogdetails
-	exit $ERROR
+	# exit $ERROR
 else 
          cecho "Download done." $boldyellow
 rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
