@@ -573,9 +573,9 @@ ASKCMD="read $KEYPRESS_PARAM "
 CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
-    echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
-    echo ${CUR_DIR}
-    echo ${CM_INSTALLDIR}    
+    # echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
+    # echo ${CUR_DIR}
+    # echo ${CM_INSTALLDIR}    
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
     source "inc/custom_config.inc"
