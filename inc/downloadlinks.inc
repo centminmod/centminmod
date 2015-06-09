@@ -308,8 +308,13 @@ NGX_LINK="http://nginx.org/download/${NGX_LINKFILE}"
 NGX_VTSLINK='https://github.com/vozlt/nginx-module-vts.git'
 
 OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
-#OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
-OPENSSL_LINK="http://centminmod.com/centminmodparts/openssl/${OPENSSL_LINKFILE}"
+OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
+# OPENSSL_LINK="http://centminmod.com/centminmodparts/openssl/${OPENSSL_LINKFILE}"
+
+# wget renamed
+LIBRESSL_LINKFILE="libressl-portable-v${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LINK="https://github.com/libressl-portable/portable/archive/v${LIBRESSL_VERSION}.tar.gz"
+# LIBRESSL_LINK="http://centminmod.com/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
 
 SIEGE_LINKFILE="siege-${SIEGE_VERSION}.tar.gz"
 SIEGE_LINK="http://download.joedog.org/siege/${SIEGE_LINKFILE}"

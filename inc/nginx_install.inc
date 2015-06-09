@@ -195,17 +195,7 @@ then
 
 fi # GPERFTOOLS_SOURCE INSTALL 
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
-
-	if [ "$NOSOURCEOPENSSL" == 'n' ]; then
-	   installopenssl
-    else
-       installopenssl
-	fi
-else
-    installopenssl
-    # echo "NOSOURCEOPENSSL=y"
-fi # for centos 6.x only
+installopenssl
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
 then
@@ -249,7 +239,11 @@ luajitinstall
 
 funct_nginxconfigure
 
-    time make$MAKETHREADS
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        time make${MAKETHREADS}
+    else
+        time make
+    fi
 
     if [[ "$STRIPNGINX" = [yY] ]]; then
         echo
@@ -261,6 +255,14 @@ funct_nginxconfigure
     fi
 
     time make install
+
+if [[ "$CLANG" = [yY] ]]; then
+    unset CC
+    unset CXX
+    #unset CCACHE_CPP2
+    export CC="ccache gcc"
+    export CXX="ccache g++"
+fi    
 
 # unset_intelflags
 

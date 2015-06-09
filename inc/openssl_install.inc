@@ -38,53 +38,86 @@ fi # CLOUDFLARE_PATCHSSL
 }
 
 installopenssl() {
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        libresslinstallstarttime=$(date +%s.%N)
+        cd $DIR_TMP
+        echo "Compiling LibreSSL..."
+        cd portable-${LIBRESSL_VERSION}
+        make clean
+        if [ ! -f configure ]; then
+            bash autogen.sh
+        fi
+        if [[ "$CLANG" = [yY] ]]; then
+            export CC="ccache clang"
+            export CXX="ccache clang++"
+            export CCACHE_CPP2=yes
+            CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign'
+            CFLAGS="$CLANG_CFLAGOPT"
+        else
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+            export CCACHE_CPP2=yes
+            CLANG_CFLAGOPT=""
+            CFLAGS=""
+        fi        
+        ./configure --prefix=/opt/libressl
+        # make -j${MAKETHREADS} check
+        make -j${MAKETHREADS}
+        make install
 
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' ]]; then
-    cd $DIR_TMP
+        if [[ "$CLANG" = [yY] ]]; then
+            unset CC
+            unset CXX
+            unset CFLAGS
+            #unset CCACHE_CPP2
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+            CLANG_CFLAGOPT=""
+            CFLAGS=""            
+        fi                
+        libresslinstallendtime=$(date +%s.%N)
+        LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
 
-    echo "Compiling OpenSSL..."
-#download openssl centos 5.x
+        echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+        echo "OpenSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
+    else
+        opensslinstallstarttime=$(date +%s.%N)
+        # Install OpenSSL
+        cd $DIR_TMP
+        echo "Compiling OpenSSL..."
+    
+        if [ ! -f /usr/bin/makedepend ]; then
+            yum -q -y install imake
+        fi
+    
+        echo "Compiling OpenSSL..."
+        #download openssl centos 6.x
+    
+        # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
+        export BPATH=$DIR_TMP
+        export STATICLIBSSL="${BPATH}/staticlibssl"
+    
+        tar xzf ${OPENSSL_LINKFILE}
+        #-- Build static openssl
+        cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+        rm -rf "$STATICLIBSSL"
+        mkdir -p "$STATICLIBSSL"
+        make clean
+        opensslpatches
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+            ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128
+        else
+            ./config --prefix=$STATICLIBSSL no-shared enable-tlsext
+        fi
+        make depend
+        make
+        make install
+        opensslinstallendtime=$(date +%s.%N)
+        OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
 
-    #tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
-fi # for nginx openssl
-
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
-    # Install OpenSSL
-    cd $DIR_TMP
-
-    if [ ! -f /usr/bin/makedepend ]; then
-        yum -q -y install imake
+        echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log 
     fi
-
-    echo "Compiling OpenSSL..."
-#download openssl centos 6.x
-
-# from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
-export BPATH=$DIR_TMP
-export STATICLIBSSL="${BPATH}/staticlibssl"
-
-    if [[ -f "openssl-${OPENSSL_VERSION}.tar.gz" && ! -d "${DIR_TMP}/openssl-${OPENSSL_VERSION}" ]]; then
-        tar xzf openssl-${OPENSSL_VERSION}.tar.gz
-    fi
-    #-- Build static openssl
-    cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
-    rm -rf "$STATICLIBSSL"
-    mkdir -p "$STATICLIBSSL"
-    make clean
-    opensslpatches
-    ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128 \
-    && make depend \
-    && make${MAKETHREADS} \
-    && make install
-
-    # ./config --prefix=/usr/local --openssldir=/usr/local/ssl
-    # make${MAKETHREADS}
-    # make install
-
-    # ./config shared enable-tlsext enable-ec_nistp_64_gcc_128 --prefix=/usr/local --openssldir=/usr/local/ssl
-    # make clean
-    # make${MAKETHREADS}
-    # make install
-fi # openssl centos 6
-
 }

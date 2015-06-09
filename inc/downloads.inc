@@ -2068,6 +2068,39 @@ fi # openssl centos 6
 }
 
 ###############################################
+libressldownload() {
+    # Install LibreSSL
+    cd $DIR_TMP
+
+        cecho "Download ${LIBRESSL_LINKFILE} ..." $boldyellow
+    if [ -s ${LIBRESSL_LINKFILE} ]; then
+        cecho "LibreSSL ${LIBRESSL_VERSION} found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} $WGETRETRY 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${LIBRESSL_LINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${LIBRESSL_LINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${LIBRESSL_LINKFILE} valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
 pcretarball() {
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
@@ -2663,6 +2696,8 @@ mongodbphptarball
 gperftools
 
 openssldownload
+
+libressldownload
 
 pcretarball
 

@@ -225,7 +225,7 @@ CCACHESIZE='2.2G'
 
 #####################################################
 # compiler related
-CLANG='n'
+CLANG='y'
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -339,9 +339,18 @@ NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
-NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2a'   # Use this version of OpenSSL
+
+##################################
+## Nginx SSL options
+# OpenSSL
+NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
+OPENSSL_VERSION='1.0.2a'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
+
+# LibreSSL
+LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+LIBRESSL_VERSION='2.1.6'   # Use this version of LibreSSL http://www.libressl.org/
+##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
@@ -564,9 +573,9 @@ ASKCMD="read $KEYPRESS_PARAM "
 CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
-    echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
-    echo ${CUR_DIR}
-    echo ${CM_INSTALLDIR}    
+    # echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
+    # echo ${CUR_DIR}
+    # echo ${CM_INSTALLDIR}    
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
     source "inc/custom_config.inc"

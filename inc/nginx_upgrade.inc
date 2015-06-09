@@ -62,9 +62,10 @@ fi
 checknginxmodules() {
 
 cecho "Check for missing nginx modules" $boldyellow
-if [[ ! -f "${DIR_TMP}/ngx-fancyindex-0.3.1.tar.gz" || ! -f "${DIR_TMP}/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz" || ! -f "${DIR_TMP}/Nginx-accesskey-2.0.3.tar.gz" || ! -f "${DIR_TMP}/nginx-http-concat-master.tar.gz" || ! -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}.tar.gz" || ! -f "${DIR_TMP}/pcre-${NGINX_PCREVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz" || ! -d "${DIR_TMP}/release-${NGXPGSPEED_VER}" || ! -f "${DIR_TMP}/headers-more-v${NGINX_HEADERSMORE}.tar.gz" || ! -f "${DIR_TMP}/nginx-sticky-${NGINX_STICKYVER}.tar.gz" || ! -f "${DIR_TMP}/nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz" ]]; then
+if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -d "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" ]]; then
 ngxmoduletarball
 openssldownload
+libressldownload
 fi
 
 if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
@@ -225,67 +226,8 @@ fi # GPERFTOOL_SOURCEINSTALL
 # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
 # echo ""
 
-if [ "$recompileopenssl" == 'y' ]; then
-
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' ]]; then
-    cd $DIR_TMP
-
-    echo "Compiling OpenSSL..."
-    if [ -s openssl-${OPENSSL_VERSION}.tar.gz ]; then
-        cecho "openssl ${OPENSSL_VERSION} Archive found, skipping download..." $boldgreen
-    else
-        $DOWNLOADAPP http://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz $WGETRETRY
-    fi
-
-    tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
-fi # for nginx openssl
-
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
-    # Install OpenSSL
-    cd $DIR_TMP
-    echo "Compiling OpenSSL..."
-    if [ -s openssl-${OPENSSL_VERSION}.tar.gz ]; then
-        cecho "openssl ${OPENSSL_VERSION} Archive found, skipping download..." $boldgreen
-    else
-        $DOWNLOADAPP http://www.openssl.org/source/openssl-${OPENSSL_VERSION}.tar.gz $WGETRETRY
-    fi
-
-    if [ ! -f /usr/bin/makedepend ]; then
-        yum -q -y install imake
-    fi
-
-    echo "Compiling OpenSSL..."
-#download openssl centos 6.x
-
-# from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
-export BPATH=$DIR_TMP
-export STATICLIBSSL="${BPATH}/staticlibssl"
-
-    tar xzf openssl-${OPENSSL_VERSION}.tar.gz
-    #-- Build static openssl
-    cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
-    rm -rf "$STATICLIBSSL"
-    mkdir -p "$STATICLIBSSL"
-    make clean
-    opensslpatches
-    ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128 \
-    && make depend \
-    && make${MAKETHREADS} \
-    && make install
-
-    # tar xvzf openssl-${OPENSSL_VERSION}.tar.gz
-    # cd openssl-${OPENSSL_VERSION}
-    # # make clean
-    # # ./config --prefix=/usr/local --openssldir=/usr/local/ssl
-    # # make
-    # # make install
-
-    # ./config shared enable-tlsext --prefix=/usr/local --openssldir=/usr/local/ssl
-    # make clean
-    # time make${MAKETHREADS}
-    # make install
-fi # openssl centos 6
-
+if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]]; then
+    installopenssl
 fi # recompileopenssl
 
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
@@ -370,7 +312,11 @@ funct_showtempfile
 # error check
 ################
 
-    time make
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        time make${MAKETHREADS}
+    else
+        time make
+    fi
 
     if [[ "$STRIPNGINX" = [yY] ]]; then
         echo
@@ -430,6 +376,14 @@ sleep $NGINXUPGRADESLEEP
 fi
 
     time make install
+
+if [[ "$CLANG" = [yY] ]]; then
+    unset CC
+    unset CXX
+    #unset CCACHE_CPP2
+    export CC="ccache gcc"
+    export CXX="ccache g++"
+fi        
 
 # unset_intelflags
 
