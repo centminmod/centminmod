@@ -2623,6 +2623,11 @@ if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; 
 # unzip svr-setup.zip
 /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/svr-setup.zip -d /
 
+CCACHE_ERROR=$?
+    if [[ "$CCACHE_ERROR" != '0' ]]; then
+        /usr/bin/unzip -qo /usr/local/src/centminmod-${branchname}/downloads/svr-setup.zip -d /
+    fi
+
 ccachetarball
 
 ccacheinstall
