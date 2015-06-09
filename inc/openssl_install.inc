@@ -47,10 +47,34 @@ installopenssl() {
         if [ ! -f configure ]; then
             bash autogen.sh
         fi
+        if [[ "$CLANG" = [yY] ]]; then
+            export CC="ccache clang"
+            export CXX="ccache clang++"
+            export CCACHE_CPP2=yes
+            CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign'
+            CFLAGS="$CLANG_CFLAGOPT"
+        else
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+            export CCACHE_CPP2=yes
+            CLANG_CFLAGOPT=""
+            CFLAGS=""
+        fi        
         ./configure --prefix=/opt/libressl
         make -j${MAKETHREADS} check
         make -j${MAKETHREADS}
         make install
+
+        if [[ "$CLANG" = [yY] ]]; then
+            unset CC
+            unset CXX
+            unset CFLAGS
+            #unset CCACHE_CPP2
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+            CLANG_CFLAGOPT=""
+            CFLAGS=""            
+        fi                
         libresslinstallendtime=$(date +%s.%N)
         LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
 
