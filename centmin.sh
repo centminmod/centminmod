@@ -222,6 +222,10 @@ FIREWALLD_DISABLE='y'
 CCACHEINSTALL='y'
 CCACHESIZE='2G'
 
+#####################################################
+# compiler related
+CLANG='n'
+
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
 # by default and can be re-enabled with commands:
