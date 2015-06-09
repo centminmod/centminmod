@@ -130,43 +130,45 @@ else
 
 fi
 
-if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; then
-  rm -rf /etc/yum.repos.d/rpmforge.repo
-  rm -rf /etc/yum.repos.d/rpmforge.OLD
-  rm -rf ${DIR_TMP}/rpmforge-release*
-
-  FORGERPM=$(rpm -qa | grep rpmforge-release)
-  rpm -e $FORGERPM
-fi
-
-if [ -s "${CENTOSSEVENRPMFORGEFILE}" ]; then
-  echo "${CENTOSSEVENRPMFORGEFILE} [found]"
-  else
-  echo "Error: ${CENTOSSEVENRPMFORGEFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSEVENRPMFORGE} --tries=3 
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${CENTOSSEVENRPMFORGEFILE} download failed." $boldgreen
-FAILRPMFORGE='y'
-checklogdetails
-  #exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-rpm -i ${CENTOSSEVENRPMFORGEFILE}
-  yum${CACHESKIP} -q list axel 2>&1 >/dev/null
-  ERR=$?
-  CCRPMFORGECHECK="$ERR"
-    if [ "$CCRPMFORGECHECK" == '0' ]; then
-      yumpriorrpmforge
-      echo ""
-    else
-      cecho "Error: problem with ${CENTOSSEVENRPMFORGEFILE} install." $boldgreen
-      #exit $ERR
-    fi
+if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
+  if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; then
+    rm -rf /etc/yum.repos.d/rpmforge.repo
+    rm -rf /etc/yum.repos.d/rpmforge.OLD
+    rm -rf ${DIR_TMP}/rpmforge-release*
+  
+    FORGERPM=$(rpm -qa | grep rpmforge-release)
+    rpm -e $FORGERPM
   fi
-
-fi
+  
+  if [ -s "${CENTOSSEVENRPMFORGEFILE}" ]; then
+    echo "${CENTOSSEVENRPMFORGEFILE} [found]"
+    else
+    echo "Error: ${CENTOSSEVENRPMFORGEFILE} not found !!! Download now......"
+    wget ${WGETOPT} ${CENTOSSEVENRPMFORGE} --tries=3 
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${CENTOSSEVENRPMFORGEFILE} download failed." $boldgreen
+  FAILRPMFORGE='y'
+  checklogdetails
+    #exit #$ERROR
+  else 
+          cecho "Download done." $boldyellow
+  rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
+  rpm -i ${CENTOSSEVENRPMFORGEFILE}
+    yum${CACHESKIP} -q list axel 2>&1 >/dev/null
+    ERR=$?
+    CCRPMFORGECHECK="$ERR"
+      if [ "$CCRPMFORGECHECK" == '0' ]; then
+        yumpriorrpmforge
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSEVENRPMFORGEFILE} install." $boldgreen
+        #exit $ERR
+      fi
+    fi
+  
+  fi
+fi # RPMFORGEREPO_DISABLE = n
 
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
