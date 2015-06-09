@@ -2568,6 +2568,40 @@ echo ""
 fi
 
 }
+
+###############################################
+
+ccachetarball() {
+    cd $DIR_TMP
+
+        cecho "Download ${CCACHEFILE} ..." $boldyellow
+    if [ -s ${CCACHEFILE} ]; then
+        cecho "ccache ${CCACHE_VER} Archive found, skipping download..." $boldgreen 
+    else
+        # $DOWNLOADAPP ${CCCACHELINKLOCAL} $WGETRETRY
+        $DOWNLOADAPP ${CCCACHELINK} $WGETRETRY
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${CCACHEFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download ${CCACHEFILE} done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${CCACHEFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${CCACHEFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${CCACHEFILE} valid file." $boldyellow
+echo ""
+    fi
+}
 ###############################################
 
 alldownloads() {
@@ -2587,6 +2621,8 @@ if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; 
 # less likely to encounter broken 3rd party
 # urls and speed up initial install
 /usr/bin/unzip -qo ${CUR_DIR}/downloads/svr-setup.zip -d /
+
+ccachetarball
 
 ccacheinstall
 

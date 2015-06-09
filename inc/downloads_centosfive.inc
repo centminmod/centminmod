@@ -20,7 +20,7 @@ else
 	cecho "Download done." $boldyellow
 	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-5
 	rpm -i ${CENTOSFIVEEPELFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
 	CCEPELCHECK="$ERR"
 		if [ "$CCEPELCHECK" == '0' ]; then
