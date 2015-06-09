@@ -30,7 +30,11 @@ else
 fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
-	yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
+	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
+	else
+		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
+	fi
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then

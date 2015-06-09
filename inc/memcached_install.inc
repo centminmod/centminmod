@@ -208,7 +208,11 @@ make install
 if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
-        yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi,epel,rpmforge --disableplugin=priorities
+        if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+            yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi,epel,rpmforge --disableplugin=priorities
+        else
+            yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi,epel --disableplugin=priorities
+        fi
     elif [[ "$CENTOS_SEVEN" != '7' ]]; then
         cecho "Installing libmemcached via REMI YUM repo ..." $boldgreen
         yum${CACHESKIP} -q -y install libmemcached-last libmemcached-last-devel --enablerepo=remi --disableplugin=priorities

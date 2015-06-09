@@ -171,7 +171,11 @@ fi # CENTOS_SEVEN = 7
 echo ""
 echo "MariaDB 5.5 YUM install..."
 
-DISABLEOTHERREPO=' --disablerepo=epel,rpmforge'
+if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEOTHERREPO=' --disablerepo=epel,rpmforge'
+else
+    DISABLEOTHERREPO=' --disablerepo=epel'
+fi
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
