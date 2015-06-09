@@ -3,6 +3,9 @@ ccacheinstall() {
 if [ "$CCACHEINSTALL" == 'y' ]; then
 	if [ ! -f /usr/local/bin/ccache ]; then
 		# install ccache 3.2.2+
+		echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+		echo ${CUR_DIR}
+		echo ${CM_INSTALLDIR}
 		cd $DIR_TMP
 		cd ccache-${CCACHE_VER}/
 		make clean

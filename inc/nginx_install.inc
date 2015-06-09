@@ -2,6 +2,10 @@ checkmapinital() {
 VTSHTTP_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
 VTSMAIN_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
 
+    echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+    echo ${CUR_DIR}
+    echo ${CM_INSTALLDIR}    
+
 if [[ -z "$VTSHTTP_INCLUDECHECK" ]]; then
     if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
         sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
@@ -52,6 +56,10 @@ if [[ "$NGINX_INSTALL" = [yY] ]]; then
     echo "*************************************************"
     cecho "* Installing nginx" $boldgreen
     echo "*************************************************"
+
+    echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+    echo ${CUR_DIR}
+    echo ${CM_INSTALLDIR}        
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
