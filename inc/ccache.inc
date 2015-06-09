@@ -24,7 +24,8 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 			echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> ~/.bashrc
 			source ~/.bashrc
 			ccache -M $CCACHESIZE
-		fi		
+		fi
+	cd ${CM_INSTALLDIR}
 	fi
 
 	# check if ccache YUM installed version and remove outdated 3.1.9
