@@ -220,6 +220,7 @@ FIREWALLD_DISABLE='y'
 #####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
+CCACHE_VER="3.2.2"
 CCACHESIZE='2.2G'
 
 #####################################################
