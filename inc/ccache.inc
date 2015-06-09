@@ -17,6 +17,9 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 			echo "export CCACHE_DIR=\"/home/.ccache\"" >> ~/.bashrc
 			echo "export CC=\"ccache gcc\"" >> ~/.bashrc
 			echo "export CXX=\"ccache g++\"" >> ~/.bashrc
+			# echo "export CC=\"ccache clang\"" >> ~/.bashrc
+			# echo "export CXX=\"ccache clang++\"" >> ~/.bashrc			
+			echo "export CCACHE_CPP2=yes" >> ~/.bashrc
 			#echo "export PATH=\"/usr/lib64/ccache:$PATH\"" >> ~/.bashrc
 			echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> ~/.bashrc
 			source ~/.bashrc
