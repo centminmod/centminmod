@@ -225,7 +225,7 @@ CCACHESIZE='2.2G'
 
 #####################################################
 # compiler related
-CLANG='y'
+CLANG='y'                     # 64bit only
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -427,6 +427,11 @@ fi
 # Openresty modules are enabled if folks forget to enable them
 if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     NGINX_OPENRESTY='y'
+fi
+
+# ensure clang alternative to gcc compiler is used only for 64bit OS
+if [[ "$(uname -m)" != 'x86_64' ]]; then
+    CLANG='n'
 fi
 
 # source "inc/mainmenu.inc"
