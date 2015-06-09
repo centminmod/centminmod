@@ -2620,7 +2620,8 @@ if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; 
 # use local download source files first 
 # less likely to encounter broken 3rd party
 # urls and speed up initial install
-/usr/bin/unzip -qo ${CUR_DIR}/downloads/svr-setup.zip -d /
+# unzip svr-setup.zip
+/usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/svr-setup.zip -d /
 
 ccachetarball
 
