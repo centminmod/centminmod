@@ -561,7 +561,7 @@ KEYPRESS_PARAM='-s -n1 -p'   # Read a keypress without hitting ENTER.
 ASKCMD="read $KEYPRESS_PARAM "
 # MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
-CUR_DIR=`pwd` # Get current directory.
+CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
 
     echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
