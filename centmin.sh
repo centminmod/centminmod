@@ -220,7 +220,12 @@ FIREWALLD_DISABLE='y'
 #####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
-CCACHESIZE='2G'
+CCACHE_VER="3.2.2"
+CCACHESIZE='2.2G'
+
+#####################################################
+# compiler related
+CLANG='y'
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -358,7 +363,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.37'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.3.0RC1'   # PHP extension for imagick
+IMAGICKPHP_VER='3.3.0RC2'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.24'    # Use this version of Memcached server
@@ -370,7 +375,7 @@ TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='2.2.7'        # redis PHP version
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.6.7'      # MongoDB PHP version
+MONGODBPHP_VER='1.6.8'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 
 FFMPEGVER='0.6.0'
@@ -385,8 +390,8 @@ IGBINARYGIT='n'
 ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.5'  # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
 # Python
-PYTHON_VERSION='2.7.9'       # Use this version of Python
-SIEGE_VERSION='3.0.9'
+PYTHON_VERSION='2.7.10'       # Use this version of Python
+SIEGE_VERSION='3.1.0'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
@@ -565,8 +570,12 @@ KEYPRESS_PARAM='-s -n1 -p'   # Read a keypress without hitting ENTER.
 ASKCMD="read $KEYPRESS_PARAM "
 # MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
-CUR_DIR=`pwd` # Get current directory.
+CUR_DIR=$SCRIPT_DIR # Get current directory.
 CM_INSTALLDIR=$CUR_DIR
+
+    echo "centmin.sh \${CUR_DIR} & \${CM_INSTALLDIR}"
+    echo ${CUR_DIR}
+    echo ${CM_INSTALLDIR}    
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
     source "inc/custom_config.inc"

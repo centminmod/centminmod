@@ -234,17 +234,35 @@ wait
     pwd
     echo "cd $DIR_TMP"
     cd $DIR_TMP
-#tar xvzf memcached-${MEMCACHEDPHP_VER}.tgz
-cd ${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}
-make clean
-/usr/local/bin/phpize
-if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-    ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-igbinary --enable-memcached-json --with-libmemcached-dir=/usr/local
+
+if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]]; then
+    echo
+    echo "compiling memcached PHP extension for PHP 7.x ..."
+    rm -rf memcached-php7
+    git clone -b php7 --single-branch https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+    cd memcached-php7
+    make clean
+    /usr/local/bin/phpize
+    if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+    else
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+    fi
+    make${MAKETHREADS}
+    make install
 else
-    ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-igbinary --enable-memcached-json --with-libmemcached-dir=/usr
-fi
-make${MAKETHREADS}
-make install
+    #tar xvzf memcached-${MEMCACHEDPHP_VER}.tgz
+    cd ${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}
+    make clean
+    /usr/local/bin/phpize
+    if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-igbinary --enable-memcached-json --with-libmemcached-dir=/usr/local
+    else
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-igbinary --enable-memcached-json --with-libmemcached-dir=/usr
+    fi
+    make${MAKETHREADS}
+    make install
+fi # php 7 or not
 
 #############################################
 #     cecho "Compiling twemperf-${TWEMPERF_VER}..." $boldgreen

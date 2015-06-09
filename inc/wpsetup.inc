@@ -240,7 +240,7 @@ location ~* (roundcube|webdav|smtp|http\:|soap|w00tw00t) {
 return 444;
 }
 
-location ~ /(\.|wp-config.php|wp-config.txt|readme.html|license.txt) { deny all; }
+location ~ /(\.|wp-config\.php|wp-config\.txt|readme\.html|license\.txt) { deny all; }
 EEF
 
 cat > "/usr/local/nginx/conf/wpsupercache_${vhostname}.conf" <<EFF
@@ -250,7 +250,7 @@ if (\$request_method = POST) { set \$cache_uri 'null cache'; }
 
 if (\$query_string != "") { set \$cache_uri 'null cache'; }
 
-if (\$request_uri ~* "(\?add-to-cart=|/cart|/my-account|/checkout|/addons|/wp-admin/|/xmlrpc.php|wp-.*.php|index.php|/feed/|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") { set \$cache_uri 'null cache'; }
+if (\$request_uri ~* "/(\?add-to-cart=|cart|my-account|checkout|addons|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
 
 if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") { set \$cache_uri 'null cache'; }
 EFF

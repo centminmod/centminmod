@@ -1,3 +1,54 @@
+checkmapinital() {
+VTSHTTP_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
+VTSMAIN_INCLUDECHECK=$(grep '/usr/local/nginx/conf/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+
+    echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+    echo ${CUR_DIR}
+    echo ${CM_INSTALLDIR}    
+
+if [[ -z "$VTSHTTP_INCLUDECHECK" ]]; then
+    if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+        sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
+    else
+        sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
+fi
+
+if [[ -z "$VTSMAIN_INCLUDECHECK" ]]; then
+    if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+        sed -i 's/include \/usr\/local\/nginx\/conf\/errorpage.conf;/include \/usr\/local\/nginx\/conf\/errorpage.conf; \ninclude \/usr\/local\/nginx\/conf\/vts_mainserver.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+    else
+        sed -i 's/include \/usr\/local\/nginx\/conf\/errorpage.conf;/include \/usr\/local\/nginx\/conf\/errorpage.conf; \n#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
+fi
+
+if [[ ! -f /usr/local/nginx/conf/vts_http.conf ]]; then
+    \cp $CUR_DIR/config/nginx/vts_http.conf /usr/local/nginx/conf/vts_http.conf
+fi
+
+if [[ ! -f /usr/local/nginx/conf/vts_mainserver.conf ]]; then
+    \cp $CUR_DIR/config/nginx/vts_mainserver.conf /usr/local/nginx/conf/vts_mainserver.conf
+fi
+
+if [[ ! -f /usr/local/nginx/conf/vts_server.conf ]]; then
+    \cp $CUR_DIR/config/nginx/vts_server.conf /usr/local/nginx/conf/vts_server.conf
+fi
+
+MAPCHECK=$(grep '/usr/local/nginx/conf/fastcgi_param_https_map.conf' /usr/local/nginx/conf/nginx.conf)
+
+if [[ -z "$MAPCHECK" ]]; then
+    sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;/g' /usr/local/nginx/conf/nginx.conf
+fi
+
+if [[ ! -f /usr/local/nginx/conf/fastcgi_param_https_map.conf ]]; then
+    \cp $CUR_DIR/config/nginx/fastcgi_param_https_map.conf /usr/local/nginx/conf/fastcgi_param_https_map.conf
+fi
+
+if [[ -z "$(grep 'fastcgi_param HTTPS $server_https;' /usr/local/nginx/conf/php.conf)" ]]; then
+    replace -s '#fastcgi_param HTTPS on;' 'fastcgi_param HTTPS $server_https;' -- /usr/local/nginx/conf/php.conf
+fi
+}
+
 ngxinstallmain() {
 
 if [[ "$NGINX_INSTALL" = [yY] ]]; then
@@ -5,6 +56,10 @@ if [[ "$NGINX_INSTALL" = [yY] ]]; then
     echo "*************************************************"
     cecho "* Installing nginx" $boldgreen
     echo "*************************************************"
+
+    echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+    echo ${CUR_DIR}
+    echo ${CM_INSTALLDIR}        
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
@@ -201,6 +256,14 @@ funct_nginxconfigure
 
     time make install
 
+if [[ "$CLANG" = [yY] ]]; then
+    unset CC
+    unset CXX
+    #unset CCACHE_CPP2
+    export CC="ccache gcc"
+    export CXX="ccache g++"
+fi    
+
 # unset_intelflags
 
     mimefix
@@ -250,6 +313,8 @@ fi # check if custom open file descriptor limits already exist
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /usr/local/nginx/html
     #rm -rf $CUR_DIR/htdocs
     cp -R $CUR_DIR/config/nginx/* /usr/local/nginx/conf
+
+    checkmapinital
 
     # setup default hostname
     echo ""

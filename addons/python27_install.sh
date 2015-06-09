@@ -4,7 +4,7 @@ VER='0.0.1'
 # python 2.7 installer for Centminmod.com
 # written by George Liu (eva2000) vbtechsupport.com
 ######################################################
-PYTHON_VERSION=2.7.8
+PYTHON_VERSION=2.7.10
 
 ######################################################
 DT=`date +"%d%m%y-%H%M%S"`

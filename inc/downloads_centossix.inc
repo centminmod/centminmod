@@ -116,7 +116,7 @@ else
 	cecho "Download done." $boldyellow
 	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
 	rpm -i ${CENTOSSIXEPELFILE}
-	yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	ERR=$?
 	CCEPELCHECK="$ERR"
 		if [ "$CCEPELCHECK" == '0' ]; then
@@ -261,7 +261,7 @@ remisixyum
 
 
 # CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
+PACKAGEEXTRA='clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
 
 declare -a arrays
 arrays=(${PACKAGEEXTRA})

@@ -11,6 +11,10 @@
         RPMFARCH='i386'
     fi
 
+CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
+CCCACHELINK="http://samba.org/ftp/ccache/${CCACHEFILE}"
+# CCCACHELINKLOCAL="http://samba.org/ftp/ccache/${CCACHEFILE}"
+
 # dynamic mirror check for EPEL below overrides these values now
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
 CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${RPMFARCH}/${CENTOSFIVEEPELFILE}"
