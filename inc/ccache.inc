@@ -2,7 +2,9 @@ ccacheinstall() {
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
 	if [[ ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
-		ccachetarball
+		echo "download ccache 3.2.2+"
+		wget -cnv ${CCCACHELINK}
+		tar xzf ${CCACHEFILE}
 	fi
 
 	if [ ! -f /usr/local/bin/ccache ]; then
