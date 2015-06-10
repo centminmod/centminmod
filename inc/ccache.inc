@@ -14,7 +14,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 	if [ ! -f /usr/local/bin/ccache ]; then
 		echo "install ccache 3.2.2+"
 		sleep 2
-		echo "cd ${DIR_TMP}/ccache-${CCACHE_VER}/"
+		# echo "cd ${DIR_TMP}/ccache-${CCACHE_VER}/"
 		cd ${DIR_TMP}/ccache-${CCACHE_VER}/
 		make clean -s
 		./configure -q
