@@ -213,12 +213,23 @@ if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
         else
             yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi,epel --disableplugin=priorities
         fi
-    elif [[ "$CENTOS_SEVEN" != '7' ]]; then
+    elif [[ "$CENTOS_SEVEN" != '7' && -f /etc/yum.repos.d/remi.repo ]]; then
         cecho "Installing libmemcached via REMI YUM repo ..." $boldgreen
         yum${CACHESKIP} -q -y install libmemcached-last libmemcached-last-devel --enablerepo=remi --disableplugin=priorities
+    else    
+        cecho "Compiling libmemcached-${LIBMEMCACHED_VER} ..." $boldgreen
+        pwd
+        echo "cd $DIR_TMP"
+        cd $DIR_TMP
+        #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
+        cd ${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}
+        make clean
+        ./config/autorun.sh
+        ./configure
+        time make${MAKETHREADS}
+        time make install
     fi # centos not 7
-else
-    
+else    
     cecho "Compiling libmemcached-${LIBMEMCACHED_VER} ..." $boldgreen
     pwd
     echo "cd $DIR_TMP"
@@ -249,8 +260,10 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]]; then
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
         ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
-    else
+    elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
         ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+    elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
     fi
     make${MAKETHREADS}
     make install
@@ -260,9 +273,11 @@ else
     make clean
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-igbinary --enable-memcached-json --with-libmemcached-dir=/usr/local
-    else
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-igbinary --enable-memcached-json --with-libmemcached-dir=/usr
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
+    elif [[ "$LIBMEMCACHED_YUM" = [yY] && -f /etc/yum.repos.d/remi.repo ]]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr
+    elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local        
     fi
     make${MAKETHREADS}
     make install
