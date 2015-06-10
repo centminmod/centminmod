@@ -226,6 +226,7 @@ CCACHESIZE='2.2G'
 #####################################################
 # compiler related
 CLANG='y'                     # 64bit only
+CLANG_PHP='n'                 # 64bit only
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 

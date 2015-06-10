@@ -164,6 +164,24 @@ fi
 
 # set_intelflags
 
+if [[ "$CLANG_PHP" = [yY] ]]; then
+    if [[ ! -f /usr/bin/clang ]]; then
+        yum -q -y install clang clang-devel
+    fi
+    export CC="ccache /usr/bin/clang"
+    export CXX="ccache /usr/bin/clang++"
+    export CCACHE_CPP2=yes
+    # PLACEHOLDER FOR CLAGS FOR PHP
+    # CFLAGS=
+
+else
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++"
+    export CCACHE_CPP2=yes
+    # PLACEHOLDER FOR CLAGS FOR PHP
+    # CFLAGS=
+fi
+
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
 	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}"
@@ -178,7 +196,7 @@ else
 
 fi
 
-    time make$MAKETHREADS
+    time make${MAKETHREADS}
 
 	if [[ "$PHPMAKETEST" = [yY] ]]; then
 		time make test
@@ -197,6 +215,17 @@ if [[ "$STRIPPHP" = [yY] ]]; then
     ls -lah /usr/local/bin/php-cgi
     echo
 fi
+
+if [[ "$CLANG_PHP" = [yY] ]]; then
+    unset CC
+    unset CXX
+    #unset CFLAGS
+    #unset CCACHE_CPP2
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++"
+    # PLACEHOLDER FOR CLAGS FOR PHP
+    # CFLAGS=
+fi   
 
 # unset_intelflags
 
