@@ -1,22 +1,31 @@
 ccacheinstall() {
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
-	if [[ ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
+	if [[ -f /usr/bin/ccache || ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
 		echo "update ccache version... one time task"
+		sleep 2
 		echo "download ccache 3.2.2+"
+		sleep 2
 		cd ${DIR_TMP}
-		wget -cnv ${CCCACHELINK}
+		wget -cq ${CCCACHELINK}
 		tar xzf ${CCACHEFILE}
 	fi
 
 	if [ ! -f /usr/local/bin/ccache ]; then
 		echo "install ccache 3.2.2+"
+		sleep 2
 		echo "cd ${DIR_TMP}/ccache-${CCACHE_VER}/"
 		cd ${DIR_TMP}/ccache-${CCACHE_VER}/
-		make clean
-		./configure
-		make${MAKETHREADS}
-		make install
+		make clean -s
+		./configure -q
+		make${MAKETHREADS} -s
+		make install -s
+		echo
+		if [ -f /usr/local/bin/ccache ]; then
+			echo "completed update to ccache 3.2.2+"
+		else
+			echo "ccache 3.2.2+ failed"
+		fi
 
 		if [ -f /usr/local/bin/ccache ]; then
 			mkdir -p /home/.ccache
