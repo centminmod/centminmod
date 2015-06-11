@@ -432,9 +432,9 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS
-if [[ "$(uname -m)" != 'x86_64' ]]; then
-    CLANG='n'
-fi
+# if [[ "$(uname -m)" != 'x86_64' ]]; then
+#     CLANG='n'
+# fi
 
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
