@@ -61,6 +61,14 @@ fi
 
 checknginxmodules() {
 
+cecho "Check for old ngx_pagespeed master branch existence" $boldyellow
+if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-master" ]]; then
+    # rm -rf ${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}
+    rm -rf ${DIR_TMP}/ngx_pagespeed-release-*
+    rm -rf ${DIR_TMP}/release-1.9.32*
+    nginxpgspeedtarball
+fi
+
 cecho "Check for missing nginx modules" $boldyellow
 if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -d "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" ]]; then
 ngxmoduletarball
