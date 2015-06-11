@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.1'
+VER='0.0.2'
 ######################################################
 # ruby, rubygem, rails and passenger installer
 # for Centminmod.com
@@ -48,20 +48,37 @@ return
 
 ###########################################
 
+if [ -f /proc/user_beancounters ]; then
+    # CPUS='1'
+    # MAKETHREADS=" -j$CPUS"
+    # speed up make
+    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
+    CPUS=$(echo $CPUS+1 | bc)
+    MAKETHREADS=" -j$CPUS"
+else
+    # speed up make
+    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
+    CPUS=$(echo $CPUS+1 | bc)
+    MAKETHREADS=" -j$CPUS"
+fi
+
 preyum() {
 	if [[ ! -d /svr-setup ]]; then
 		yum -y install gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel make bzip2 autoconf automake libtool bison iconv-devel sqlite-devel openssl-devel
-	else
+	elif [[ -z "$(rpm -ql libffi-devel)" || -z "$(rpm -ql libyaml-devel)" || -z "$(rpm -ql sqlite-devel)" ]]; then
 		yum -y install libffi-devel libyaml-devel sqlite-devel
 	fi
-	yum erase ruby ruby-libs ruby-mode rubygems
+
+	if [[ "$(rpm -ql ruby | grep -v 'not installed')" || "$(rpm -ql ruby-libs | grep -v 'not installed')" || "$(rpm -ql rubygems | grep -v 'not installed')" ]]; then
+		yum erase ruby ruby-libs ruby-mode rubygems
+	fi
 
 	mkdir -p /home/.ccache/tmp
 }
 
 installnodejs() {
 
-if [ -z $(which node >/dev/null 2>&1) ]; then
+if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
 
     cd $DIR_TMP
 
@@ -94,7 +111,7 @@ echo ""
 
 cd node-v${NODEJSVER}
 ./configure
-make
+make${MAKETHREADS}
 make install
 make doc
 
@@ -122,6 +139,8 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
 	groupadd rvm
 	usermod -a -G rvm root
 	
+	echo "curl -sSL https://rvm.io/mpapis.asc | gpg -v --import -"
+	curl -sSL https://rvm.io/mpapis.asc | gpg -v --import -
 	\curl -L https://get.rvm.io | bash -s stable
 	# \curl -L https://get.rvm.io | bash -s stable --ruby
 	# \curl -L https://get.rvm.io | bash -s stable --rails
