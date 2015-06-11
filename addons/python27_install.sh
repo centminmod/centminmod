@@ -49,6 +49,21 @@ echo -e "$color$message" ; $Reset
 return
 }
 ######################################################
+
+if [ -f /proc/user_beancounters ]; then
+    # CPUS='1'
+    # MAKETHREADS=" -j$CPUS"
+    # speed up make
+    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
+    CPUS=$(echo $CPUS+1 | bc)
+    MAKETHREADS=" -j$CPUS"
+else
+    # speed up make
+    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
+    CPUS=$(echo $CPUS+1 | bc)
+    MAKETHREADS=" -j$CPUS"
+fi
+
 pythontarball() {
 
     cd $DIR_TMP
@@ -129,7 +144,7 @@ cecho "Compiling Python 2.7..." $boldyellow
 #tar xvfz Python-${PYTHON_VERSION}.tgz
 cd Python-${PYTHON_VERSION}
 ./configure --prefix=/usr/local --with-threads --enable-unicode=ucs4 --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
-make
+make${MAKETHREADS}
 make altinstall
 
 if [[ -f /usr/local/bin/python2.7 ]]; then
