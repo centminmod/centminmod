@@ -23,7 +23,9 @@ installwpcli() {
 
 mkdir -p $WPCLIDIR
 
-yum -q -y install git
+if [ ! -f /usr/bin/git ]; then
+	yum -q -y install git
+fi
 
 if [[ ! -f /usr/bin/wp ]]; then
 
