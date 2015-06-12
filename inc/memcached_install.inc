@@ -250,11 +250,15 @@ wait
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]]; then
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
+PHPSEVEN_CHECKVER=$?
+echo $PHPSEVEN_CHECKVER
+
+if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     echo
     echo "compiling memcached PHP extension for PHP 7.x ..."
     rm -rf memcached-php7
-    git clone -b php7 --single-branch https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+    git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
     cd memcached-php7
     make clean
     /usr/local/bin/phpize
@@ -268,7 +272,8 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]]; then
     make${MAKETHREADS}
     make install
 else
-    #tar xvzf memcached-${MEMCACHEDPHP_VER}.tgz
+    echo
+    echo "compiling memcached PHP extension ${MEMCACHEDPHP_VER} ..."
     cd ${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}
     make clean
     /usr/local/bin/phpize
