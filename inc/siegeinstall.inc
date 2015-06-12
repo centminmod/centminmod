@@ -26,7 +26,7 @@ then
 
     #tar -xzf siege-${SIEGE_VERSION}.tar.gz
     cd siege-${SIEGE_VERSION}
-    ./configure
+    ./configure --with-ssl=/usr
     make$MAKETHREADS
     make install
     mkdir -p /usr/local/var/
