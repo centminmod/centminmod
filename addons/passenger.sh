@@ -253,14 +253,21 @@ END
 	if [[ -z "$PASSENGERCHECK" ]]; then
 		sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/passenger.conf;/g' /usr/local/nginx/conf/nginx.conf
 	fi
-	echo "-------------------------------------------"
-	echo "Setup completed..."
-	echo "-------------------------------------------"
+	cecho "-------------------------------------------" $boldgreen
+	cecho "Setup completed..." $boldyellow
+	cecho "-------------------------------------------" $boldgreen
+	echo ""
+	echo "Log out and log back into your SSH session"
+	echo "to complete the next setup steps bellow"
+	echo ""	
 
 	echo ""
 	echo "Uncomment lines in /usr/local/nginx/conf/passenger.conf to enable passenger"
 	echo "Nginx needs to have passenger nginx module compiled for it to work"
-	echo "check that passenger module is in list of nginx modules via command: "
+	echo ""
+	echo " 1. edit centmin.sh and set NGINX_PASSENGER=y"
+	echo " 2. run centmin.sh menu option 4 to recompile Nginx"
+	echo " 3. then check that passenger module is in list of nginx modules via command: "
 	echo ""
 	echo " nginx -V"
 	echo ""
@@ -273,8 +280,9 @@ END
 	echo "* https://github.com/phusion/passenger/wiki"
 
 	echo ""
-	echo "Log out and log back into your SSH session to complete setup"
-	echo ""
+	echo "Log out and log back into your SSH session"
+	echo "to complete the next setup steps above"
+	echo ""	
 else
 	echo "Passenger install already detected"
 fi
