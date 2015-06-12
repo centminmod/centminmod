@@ -280,6 +280,12 @@ else
 	RUBYMODULE=""
 fi
 
+# disable Clang compiler for Nginx if NGINX_PASSENGER=y as Clang fails
+# to compile Passenger Nginx Module while GCC compiler works
+if [[ "$NGINX_PASSENGER" = [yY] ]]; then
+	CLANG='n'
+fi
+
 if [[ -d "${DIR_TMP}/nginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
 	cd ${DIR_TMP}/nginx-${NGINX_VERSION}
 fi
@@ -348,10 +354,10 @@ if [[ "$CLANG" = [yY] ]]; then
 	if [[ ! -f /usr/bin/clang ]]; then
 		yum -q -y install clang clang-devel
 	fi
-	export CC="ccache /usr/bin/clang"
-	export CXX="ccache /usr/bin/clang++"
+	export CC="ccache /usr/bin/clang -ferror-limit=0"
+	export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
 	export CCACHE_CPP2=yes
-	CLANG_CCOPT=' -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign'
+	CLANG_CCOPT=' -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated'
 else
 	CLANG_CCOPT=""
 fi
