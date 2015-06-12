@@ -508,6 +508,27 @@ if [[ "$zendopcacheon" = [yY] ]]; then
     cat ${CENTMINLOGDIR}/zendopcache_passfile.txt
 fi
 
+# notes for users if PHP 7.0 detected
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
+PHPSEVEN_CHECKVER=$?
+echo $PHPSEVEN_CHECKVER
+
+if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
+    cecho "***************************************************" $boldgreen
+    cecho "PHP 7.0 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "by removing their ini files:" $boldyellow
+    cecho "***************************************************" $boldgreen
+    echo
+cecho "rm -rf /etc/centminmod/php.d/igbinary.ini
+rm -rf /etc/centminmod/php.d/imagick.ini
+rm -rf /etc/centminmod/php.d/memcache.ini
+rm -rf /etc/centminmod/php.d/mongodb.ini
+rm -rf /etc/centminmod/php.d/redis.ini" $boldyellow
+    echo
+    cecho "then restart PHP-FPM again..." $boldyellow
+    echo
+fi
+
     echo "***************************************************"
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
     echo "***************************************************"
