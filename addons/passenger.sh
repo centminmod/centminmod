@@ -260,6 +260,7 @@ END
 	echo "Log out and log back into your SSH session"
 	echo "to complete the next setup steps bellow"
 	echo ""	
+	echo "Instructions also at https://community.centminmod.com/threads/3282"
 
 	echo ""
 	echo "Uncomment lines in /usr/local/nginx/conf/passenger.conf to enable passenger"
@@ -267,7 +268,8 @@ END
 	echo ""
 	echo " 1. edit centmin.sh and set NGINX_PASSENGER=y"
 	echo " 2. run centmin.sh menu option 4 to recompile Nginx"
-	echo " 3. then check that passenger module is in list of nginx modules via command: "
+	echo " 3. uncomment/enable /usr/local/nginx/conf/passenger.conf include file in nginx.conf"
+	echo " 4. then check that passenger module is in list of nginx modules via command: "
 	echo ""
 	echo " nginx -V"
 	echo ""
@@ -283,6 +285,8 @@ END
 	echo "Log out and log back into your SSH session"
 	echo "to complete the next setup steps above"
 	echo ""	
+	echo "Instructions also at https://community.centminmod.com/threads/3282"	
+	echo ""		
 else
 	echo "Passenger install already detected"
 fi
