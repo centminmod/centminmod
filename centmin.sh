@@ -192,7 +192,7 @@ NGINX_WEBDAV=y          # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'  # nginx-dav-ext-module version
 NGINX_LIBATOMIC=y     # Nginx configured with libatomic support
 NGINX_PCREJIT=y            # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.36'   # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.37'   # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.25'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_OPENRESTY=n     # Agentzh's openresty Nginx modules
@@ -231,13 +231,13 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.7.12'        # Use this version of Nginx
+NGINX_VERSION='1.9.1'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 NOSOURCEOPENSSL='y'	# set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2a'     # Use this version of OpenSSL
+OPENSSL_VERSION='1.0.2c'     # Use this version of OpenSSL
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
@@ -262,7 +262,7 @@ TWEMPERF_VER='0.1.1'
 
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.36'
-PHP_VERSION='5.4.41'          # Use this version of PHP
+PHP_VERSION='5.4.42'          # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL='http://php.net'
 XCACHE_VERSION='3.1.0'       # Use this version of Xcache
@@ -273,7 +273,7 @@ ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.4'
 # Python
 PYTHON_VERSION='2.7.8'       # Use this version of Python
-SIEGE_VERSION='3.0.6'
+SIEGE_VERSION='3.1.0'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
