@@ -202,6 +202,7 @@ gethtpasswdsh
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
+PHPMU_ALPHAVER=$(echo "$phpver")
 
     phpng_download
     autodetectextensions
