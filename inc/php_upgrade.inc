@@ -220,7 +220,7 @@ funct_centos6check
 
     cd $DIR_TMP
 
-if [ "$(rpm -qa | grep php*)" ]; then
+if [ "$(rpm -qa | grep '^php*')" ]; then
 
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
 echo "yum -y erase php*"
