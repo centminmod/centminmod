@@ -61,6 +61,7 @@ log-error=/var/log/mysqld.log
 
 # innodb settings
 #innodb_extra_rsegments = 4
+innodb_large_prefix=1
 innodb_purge_threads=1
 innodb_doublewrite = 1
 

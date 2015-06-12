@@ -60,6 +60,7 @@ slow_query_log_file=/var/lib/mysql/slowq.log
 log-error=/var/log/mysqld.log
 
 # innodb settings
+innodb_large_prefix=1
 innodb_purge_threads=1
 innodb_file_format = Barracuda
 innodb_file_per_table = 1
