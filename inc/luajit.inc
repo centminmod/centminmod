@@ -40,7 +40,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 
         echo "luijit-${MAJVER}.${MINVER}.${RELVER}${PREREL}"
 
-        ln -sf luijit-${MAJVER}.${MINVER}.${RELVER}${PREREL} /usr/local/bin/luajit
+        ln -sf /usr/local/bin/luajit-${MAJVER}.${MINVER}.${RELVER}${PREREL} /usr/local/bin/luajit
     
         export LUAJIT_LIB='/usr/local/lib'
         export LUAJIT_INC="/usr/local/include/luajit-${LUAJIT_GITINSTALLVER}"
