@@ -202,4 +202,8 @@ echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.lo
     cecho "* Centmin Mod install completed...." $boldgreen
     echo "*************************************************"
 
+if [[ "$TS_INSTALL" = [yY] ]]; then
+	curl -s http://check.centminmod.com/utctime > ${CENTMINLOGDIR}/install.utc.time.log 2>&1
+fi
+
 }

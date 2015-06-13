@@ -209,8 +209,11 @@ if [ ! -d "/home/mysqltmp" ]; then
 fi
 
 #####################################################
-# Enable or disable menu mode
+# Timestamp Install
+TS_INSTALL='y'
 
+#####################################################
+# Enable or disable menu mode
 ENABLE_MENU='y'
 
 #####################################################
