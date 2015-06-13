@@ -316,6 +316,9 @@ LIBRESSL_LINKFILE="libressl-portable-v${LIBRESSL_VERSION}.tar.gz"
 LIBRESSL_LINK="https://github.com/libressl-portable/portable/archive/v${LIBRESSL_VERSION}.tar.gz"
 # LIBRESSL_LINK="http://centminmod.com/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
 
+# libressl non-renamed
+LIBRESSL_LOCALLINKFILE="portable-${LIBRESSL_VERSION}.tar.gz"
+
 SIEGE_LINKFILE="siege-${SIEGE_VERSION}.tar.gz"
 SIEGE_LINK="http://download.joedog.org/siege/${SIEGE_LINKFILE}"
 SIEGE_LINKLOCAL="http://centminmod.com/centminmodparts/siege/${SIEGE_LINKFILE}"

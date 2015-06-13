@@ -2087,8 +2087,11 @@ else
 #echo ""
     fi
     fi
-
-tar xzf ${LIBRESSL_LINKFILE} 
+if [ -f ${LIBRESSL_LOCALLINKFILE} ]; then
+    tar xzf ${LIBRESSL_LOCALLINKFILE}
+else
+    tar xzf ${LIBRESSL_LINKFILE} 
+fi
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${LIBRESSL_LINKFILE} extraction failed." $boldgreen
