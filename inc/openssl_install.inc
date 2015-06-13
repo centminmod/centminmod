@@ -48,6 +48,9 @@ installopenssl() {
             bash autogen.sh
         fi
         if [[ "$CLANG" = [yY] ]]; then
+            if [[ ! -f /usr/bin/clang ]]; then
+                yum -q -y install clang clang-devel
+            fi
             export CC="ccache /usr/bin/clang"
             export CXX="ccache /usr/bin/clang++"
             export CCACHE_CPP2=yes
