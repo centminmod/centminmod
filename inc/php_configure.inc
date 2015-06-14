@@ -123,7 +123,7 @@ else
         FILEINFOOPT=""
 fi
 
-if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
+if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
 	if [[ ! $(rpm -qa uw-imap-devel) ]]; then 
 		yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
 	fi
@@ -134,7 +134,7 @@ else
 fi
 
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
 
 	if [[ ! -f /usr/bin/libmcrypt-config ]]; then
 

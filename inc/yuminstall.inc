@@ -30,7 +30,7 @@ echo "...."
 echo "......"
 echo "........."
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' ]]; then
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
 yum -y -q install yum-plugin-priorities yum-plugin-fastestmirror yum-plugin-downloadonly
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
@@ -109,7 +109,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   
       yum -y remove ImageMagick
   
-      if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' ]]; then
+      if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' ]]; then
         # yum -y install libwebp libwebp-devel --skip-broken
         yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
       else
