@@ -390,7 +390,7 @@ PHPUPGRADE_MIRRORURL='http://php.net'
 XCACHE_VERSION='3.2.0'       # Use this version of Xcache
 APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
 IGBINARY_VERSION='1.2.1'
-IGBINARYGIT='n'
+IGBINARYGIT='y'
 ZOPCACHEDFT='n'
 ZOPCACHECACHE_VERSION='7.0.5'  # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
 # Python
