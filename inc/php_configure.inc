@@ -71,7 +71,7 @@ else
 	LDAPOPT=""
 fi
 
-if [[ -f /usr/include/vpx ]]; then
+if [[ -d /usr/include/vpx ]]; then
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 else
 	yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel

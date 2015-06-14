@@ -318,7 +318,7 @@ if [ -f src/http/ngx_http_header_filter_module.c ]; then
 	fi
 fi
 
-if [[ ! -f /usr/bin/jemalloc.sh || ! -f /usr/include/jemalloc ]]; then
+if [[ ! -f /usr/bin/jemalloc.sh || ! -d /usr/include/jemalloc ]]; then
 	yum -y install jemalloc jemalloc-devel
 fi
 
@@ -369,7 +369,7 @@ if [[ "$CLANG" = [yY] ]]; then
 	export CC="ccache /usr/bin/clang -ferror-limit=0"
 	export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
 	export CCACHE_CPP2=yes
-	CLANG_CCOPT=' -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated'
+	CLANG_CCOPT=' -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'
 else
 	CLANG_CCOPT=""
 fi
