@@ -1,6 +1,8 @@
 postfixsetup() {
 
-	yum -q -y install postfix-perl-scripts
+	if [ ! -f /usr/sbin/pflogsumm ]; then
+		yum -q -y install postfix-perl-scripts
+	fi
 	yum -q -y update postfix --disableplugin=priorities
 
 	CHECKSENDMAILPATH=$(grep sendmail_path /usr/local/lib/php.ini)
