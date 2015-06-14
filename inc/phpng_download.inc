@@ -1,6 +1,6 @@
 ########################################################################
 phpng_download() {
-	if [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$PHPMU_ALPHAVER" != '7.0.0alpha1' ]]; then
+	if [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$PHPMU_ALPHAVER" != '7.0.0alpha1' || "$PHPMU_ALPHAVER" != '7.0.0alpha2' || "$PHPMU_ALPHAVER" != '7.0.0alpha3' ]]; then
 		if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
 			PHPNGVER='NGDEBUG'
 		elif [[ "$PHPMUVER" = '5.7' ]]; then
@@ -21,7 +21,7 @@ phpng_download() {
 		echo
 		cecho "Creating tar archive" $boldyellow
 		tar -czf php-${PHPNGVER}.tar.gz php-${PHPNGVER}
-	elif [[ "$PHPMU_ALPHAVER" = '7.0.0alpha1' ]]; then
+	elif [[ "$PHPMU_ALPHAVER" = '7.0.0alpha1' || "$PHPMU_ALPHAVER" = '7.0.0alpha2' || "$PHPMU_ALPHAVER" = '7.0.0alpha3' ]]; then
 			PHPNGVER=$PHPMU_ALPHAVER
 		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~ab/" $boldyellow
 		cd $DIR_TMP
