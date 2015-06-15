@@ -20,7 +20,7 @@ if [[ -z "$VTSHTTP_INCLUDECHECK" ]]; then
     if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
         sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
     else
-        sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
+        sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
     fi
 fi
 
@@ -42,6 +42,14 @@ fi
 
 if [[ ! -f /usr/local/nginx/conf/vts_server.conf ]]; then
     \cp $CUR_DIR/config/nginx/vts_server.conf /usr/local/nginx/conf/vts_server.conf
+fi
+
+if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+    sed -i 's/#vhost_traffic_status_zone/vhost_traffic_status_zone/' /usr/local/nginx/conf/vts_http.conf
+    sed -i 's/#vhost_traffic_status on/vhost_traffic_status on/' /usr/local/nginx/conf/vts_server.conf
+else
+    sed -i 's/vhost_traffic_status_zone/#vhost_traffic_status_zone/' /usr/local/nginx/conf/vts_http.conf
+    sed -i 's/vhost_traffic_status on/#vhost_traffic_status on/' /usr/local/nginx/conf/vts_server.conf
 fi
 
 MAPCHECK=$(grep '/usr/local/nginx/conf/fastcgi_param_https_map.conf' /usr/local/nginx/conf/nginx.conf)
