@@ -51,10 +51,10 @@ installopenssl() {
             if [[ ! -f /usr/bin/clang ]]; then
                 yum -q -y install clang clang-devel
             fi
-            export CC="ccache /usr/bin/clang"
-            export CXX="ccache /usr/bin/clang++"
+            export CC="ccache /usr/bin/clang -ferror-limit=0"
+            export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
             export CCACHE_CPP2=yes
-            CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign'
+            CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
             CFLAGS="$CLANG_CFLAGOPT"
         else
             export CC="ccache /usr/bin/gcc"

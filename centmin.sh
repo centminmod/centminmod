@@ -228,8 +228,10 @@ CCACHESIZE='2.2G'
 
 #####################################################
 # compiler related
-CLANG='y'                     # 64bit only
-CLANG_PHP='n'                 # 64bit only
+CLANG='y'                     # Nginx and LibreSSL
+CLANG_PHP='n'                 # PHP
+CLANG_APC='n'                 # APC Cache
+CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
