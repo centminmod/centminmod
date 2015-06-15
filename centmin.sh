@@ -921,7 +921,9 @@ else
         echo "*************************************************"
         cecho "* Installing NTP (and syncing time)" $boldgreen
         echo "*************************************************"
-        yum${CACHESKIP} -y install ntp
+        if [ ! -f /usr/sbin/ntpd ]; then
+            yum${CACHESKIP} -y install ntp
+        fi
         chkconfig --levels 235 ntpd on
         ntpdate pool.ntp.org
         echo "The date/time is now:"
