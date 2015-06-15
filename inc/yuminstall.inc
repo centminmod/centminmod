@@ -48,11 +48,11 @@ yumcentosfivedownload
 
 if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
 
-PACKAGE='deltarpm cracklib ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel lua lua-devel'
+PACKAGE='deltarpm cracklib ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
 
 else
 
-PACKAGE='deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake libvpx libvpx-devel t1lib t1lib-devel expect expect-devel bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-sasl cyrus-sasl-devel cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel net-snmp-libs net-snmp-utils enchant enchant-devel lua lua-devel'
+PACKAGE='deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake distcache libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
 
 fi
 
@@ -82,7 +82,43 @@ echo "--------------------------------------------------------------------------
         fi
 done
 
-yum${CACHESKIP} -y -q install mytop iftop iotop
+## grouped devels for faster install
+if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
+
+PACKAGEG='{libvpx,libvpx-devel} {t1lib,t1lib-devel} {expect,expect-devel} {readline,readline-devel} {libedit,libedit-devel} {openssl,openssl-devel} {curl,curl-devel} {openldap,openldap-devel} {zlib,zlib-devel} {gd,gd-devel} {pcre,pcre-devel} {gettext,gettext-devel} {libidn,libidn-devel} {libjpeg,libjpeg-devel} {libpng,libpng-devel} {freetype,freetype-devel} {libxml2,libxml2-devel} {glib2,glib2-devel} {bzip2,bzip2-devel} {ncurses,ncurses-devel} {e2fsprogs,e2fsprogs-devel} {libc-client,libc-client-devel} {ImageMagick,ImageMagick-devel} {ImageMagick-c++,ImageMagick-c++-devel} {cyrus-sasl,cyrus-sasl-devel} {pam,pam-devel} {libaio,libaio-devel} {libevent,libevent-devel} {recode,recode-devel} {libtidy,libtidy-devel} {net-snmp,net-snmp-devel} {enchant,enchant-devel} {lua,lua-devel}'
+
+else
+
+PACKAGEG='{libvpx,libvpx-devel} {t1lib,t1lib-devel} {expect,expect-devel} {readline,readline-devel} {libedit,libedit-devel} {openssl,openssl-devel} {curl,curl-devel} {openldap,openldap-devel} {zlib,zlib-devel} {gd,gd-devel} {pcre,pcre-devel} {gettext,gettext-devel} {libidn,libidn-devel} {libjpeg,libjpeg-devel} {libpng,libpng-devel} {freetype,freetype-devel} {libxml2,libxml2-devel} {glib2,glib2-devel} {bzip2,bzip2-devel} {ncurses,ncurses-devel} {e2fsprogs,e2fsprogs-devel} {libc-client,libc-client-devel} {ImageMagicklast,ImageMagick-last-devel} {ImageMagick-last-c++,ImageMagick-last-c++-devel} {cyrus-sasl,cyrus-sasl-devel} {pam,pam-devel} {libaio,libaio-devel} {libevent,libevent-devel} {recode,recode-devel} {libtidy,libtidy-devel} {net-snmp,net-snmp-devel} {enchant,enchant-devel} {lua,lua-devel}'
+
+fi
+
+declare -a arrayb
+arrayb=(${PACKAGEG})
+
+for pkgg in ${arrayb[@]}
+do
+echo Processing package: $pkgg
+YUMINSTALLRPMCHECK=$(rpm -qa $pkgg | wc -l)
+#echo $YUMINSTALLRPMCHECK
+        if [[ "$YUMINSTALLRPMCHECK" = '2' ]]; then
+echo "----------------------------------------------------------------------------------"
+        # yum${CACHESKIP}-q -y update $pkgg
+        # yum${CACHESKIP} -q list $pkgg
+        echo "$pkgg already installed"
+echo "----------------------------------------------------------------------------------"
+        else
+echo "----------------------------------------------------------------------------------"
+cecho "Installing $pkgg" $boldyellow
+echo "----------------------------------------------------------------------------------"
+        yum${CACHESKIP} -q -y install $pkgg
+        # yum${CACHESKIP} -q list $pkgg
+echo "----------------------------------------------------------------------------------"
+        fi
+done
+
+
+yum${CACHESKIP} -y -q install mytop iftop
 if [ -f /usr/bin/mytop ]; then
 sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
