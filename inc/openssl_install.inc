@@ -64,8 +64,8 @@ installopenssl() {
             CFLAGS=""
         fi        
         ./configure --prefix=/opt/libressl
-        # make -j${MAKETHREADS} check
-        make -j${MAKETHREADS}
+        # make${MAKETHREADS} check
+        make${MAKETHREADS}
         make install
 
         if [[ "$CLANG" = [yY] ]]; then
