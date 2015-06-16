@@ -175,6 +175,18 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
 	cecho "--------------------------------------------------------" $boldyellow
 fi
 
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "mytimes check:" $boldyellow
+	cecho "/usr/bin/mytimes" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	if [ ! -f /usr/bin/mytimes ]; then
+		/usr/bin/mytimes
+	fi
+	cp $CUR_DIR/tools/mytimes /usr/bin/mytimes
+	chmod +x /usr/bin/mytimes
+	/usr/bin/mytimes
+	cecho "--------------------------------------------------------" $boldyellow
 }
 
 centminfinish() {
