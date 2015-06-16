@@ -350,6 +350,12 @@ if [[ -z "$MEMCACHEDSOCHECK" || -z "$MEMCACHEDSOCHECKB" ]]; then
 #echo "" >> /usr/local/lib/php.ini
 echo "extension=${PHPEXTDIRD}/memcached.so" > ${CONFIGSCANDIR}/memcached.ini
 echo "memcached.sess_connect_timeout=3000" >> ${CONFIGSCANDIR}/memcached.ini
+echo "# http://php.net/manual/en/memcached.configuration.php" >> ${CONFIGSCANDIR}/memcached.ini
+echo "memcached.sess_consistent_hash=0" >> ${CONFIGSCANDIR}/memcached.ini
+echo "memcached.sess_number_of_replicas=0" >> ${CONFIGSCANDIR}/memcached.ini
+echo "memcached.sess_randomize_replica_read=0" >> ${CONFIGSCANDIR}/memcached.ini
+echo "memcached.sess_remove_failed=0" >> ${CONFIGSCANDIR}/memcached.ini
+echo "memcached.sess_binary=0" >> ${CONFIGSCANDIR}/memcached.ini
 
 else
 
