@@ -1,3 +1,34 @@
+check_requestscheme() {
+# check for REQUEST_SCHEME parameter added in nginx 1.9.2 
+# add it if it doesn't exist in fastcgi_param and php include files
+for f in $(grep -Rl 'fastcgi_param  SERVER_PROTOCOL    \$server_protocol;' /usr/local/nginx/conf/*); 
+  do
+    echo "$f"
+    ff=$(grep 'REQUEST_SCHEME' $f)
+    fff=$(grep 'https if_not_empty' $f)
+    if [[ -z "$ff" && -z "$fff" ]]; then
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;\nfastcgi_param  HTTPS              \$https if_not_empty;|" $f
+    elif [[ -z "$ff" && "$fff" ]]; then
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;|" $f
+    fi
+done
+
+## DOES NOT WORK due to invalid version comparison for 2 dot
+## numbers i.e. 2.0.0 < 1.9.1 would return false
+# # check for REQUEST_SCHEME parameter added in nginx 1.9.2 
+# # if nginx upgrade or downgrade is less than 1.9.2 comment out
+# # REQUEST_SCHEME, if greater or equal to 1.9.2 uncomment
+# for f in $(grep -Rl 'REQUEST_SCHEME' /usr/local/nginx/conf/*); 
+#   do
+#     echo "$f"
+#     if [[ "$(expr $ngver \<= 1.9.1)" = 1 ]]; then
+#         sed -i "s|fastcgi_param  REQUEST_SCHEME|#fastcgi_param  REQUEST_SCHEME|" $f
+#     elif [[ "$(expr $ngver \>= 1.9.2)" = 1 ]]; then
+#         sed -i "s|#fastcgi_param  REQUEST_SCHEME|fastcgi_param  REQUEST_SCHEME|" $f
+#     fi
+# done
+}
+
 checkgeoip() {
     GEOIP_CHECK=$(nginx -V 2>&1 | grep geoip)
 
@@ -292,6 +323,8 @@ fi
 luajitinstall
 
 funct_nginxmodules
+
+check_requestscheme
 
     # Install nginx
     cd $DIR_TMP
