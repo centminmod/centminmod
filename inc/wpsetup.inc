@@ -17,7 +17,7 @@ wpinstall() {
 }
 
 dbsetup() {
-  SALT=$(openssl rand -base64 12 | cut -c1-12)
+  SALT=$(openssl rand -base64 12 | cut -c1-12 | sed -e s'|/||')
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
@@ -37,8 +37,8 @@ CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 pureftpinstall
 
 wpinstall
-  WPSALT=$(openssl rand -base64 12 | cut -c1-12)
-  WPSALTB=$(openssl rand -base64 11 | cut -c1-11)
+  WPSALT=$(openssl rand -base64 12 | cut -c1-12 | sed -e s'|/||')
+  WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e s'|/||')
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
