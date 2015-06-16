@@ -339,13 +339,21 @@ fi
 NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
 if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
-	STREAM=' --with-stream --with-stream_ssl_module'
+	if [[ "$NGINX_STREAM" = [yY] ]]; then
+		STREAM=' --with-stream --with-stream_ssl_module'
+	else
+		STREAM=""
+	fi
 	THREADS=' --with-threads'
 	# workaround for nginx 1.9 compatibility
 	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
 	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
-	STREAM=' --with-stream --with-stream_ssl_module'
+	if [[ "$NGINX_STREAM" = [yY] ]]; then
+		STREAM=' --with-stream --with-stream_ssl_module'
+	else
+		STREAM=""
+	fi
 	THREADS=' --with-threads'
 	# workaround for nginx 1.9 compatibility
 	sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
