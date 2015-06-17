@@ -686,7 +686,7 @@ unsetramdisk() {
         cmservice nginx stop
         cmservice php-fpm stop
         cmservice memcached stop
-        sleep 5
+        sleep 4
         # lsof | grep /svr-setup
         umount -l ${DIR_TMP}
         cmservice nginx start

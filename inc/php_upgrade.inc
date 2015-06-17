@@ -280,9 +280,9 @@ diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT
 echo "--------------------------------------------------------------------------------------------"
 echo ""
     echo "*************************************************"
-echo "Automatically continuing upgrade in 20 seconds..."
+echo "Automatically continuing upgrade in 6 seconds..."
     echo "*************************************************"
-sleep 20
+sleep 6
 echo ""
 fi # PHPDIFF
 
@@ -415,7 +415,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f /usr/local/etc/php-fpm.conf /usr/local/etc/php-fpm.conf-oldversion_$DT
         ls -lhrt /usr/local/etc/ | grep php-fpm.conf
     
-    sleep 12
+    sleep 9
     
     echo
     echo "Backing up existing php.conf at /usr/local/nginx/conf/php.conf-oldversion_$DT"

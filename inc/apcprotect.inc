@@ -83,7 +83,7 @@ cecho "Important instructions above to protect your apc.php page" $boldgreen
 	if [ "$UNATTENDED" == 'n' ]; then
 	sleep 30
 	else
-	sleep 4
+	sleep 3
 	fi #unattended
 
 }
