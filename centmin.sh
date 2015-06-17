@@ -1149,7 +1149,7 @@ if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.2' ]]; then
 fi
 
 # if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' ]]; then
+if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
 	zopcache_initialini
 fi
 
@@ -1356,7 +1356,7 @@ checkxcacheadmin
     cecho "* Running updatedb command. Please wait...." $boldgreen
     echo "*************************************************"
 
-updatedb
+time updatedb
 
 centminfinish
 memcacheadmin
