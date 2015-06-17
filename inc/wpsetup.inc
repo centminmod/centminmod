@@ -37,8 +37,8 @@ CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 pureftpinstall
 
 wpinstall
-  WPSALT=$(openssl rand -base64 12 | cut -c1-12 | sed -e s'|/||')
-  WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e s'|/||')
+  WPSALT=$(openssl rand -base64 18 | cut -c1-18 | sed -e s'|/||' -e s'|+||')
+  WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e s'|/|| -e s'|+||'')
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
@@ -278,6 +278,12 @@ sed -i "/define('WPLANG', '');/ a\
 
 wp core install --url=http://${vhostname} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
 
+# change admin userid from 1 to a random 6 digit number
+# WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
+WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
+# wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+wp db query "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+
 cecho "------------------------------------------------------------" $boldgreen
 wp theme install responsive --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
@@ -470,6 +476,7 @@ cecho "Wordpress domain: $vhostname" $boldyellow
 cecho "Wordpress DB Name: $DB" $boldyellow
 cecho "Wordpress DB User: $DBUSER" $boldyellow
 cecho "Wordpress DB Pass: $DBPASS" $boldyellow
+cecho "Wordpress Admin User ID: ${WUID}" $boldyellow
 cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
 cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
 cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
