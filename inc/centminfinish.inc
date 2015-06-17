@@ -181,10 +181,9 @@ echo ""
 	cecho "/usr/bin/mytimes" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 	if [ ! -f /usr/bin/mytimes ]; then
-		/usr/bin/mytimes
+		cp $CUR_DIR/tools/mytimes.sh /usr/bin/mytimes
+		chmod +x /usr/bin/mytimes
 	fi
-	cp $CUR_DIR/tools/mytimes.sh /usr/bin/mytimes
-	chmod +x /usr/bin/mytimes
 	/usr/bin/mytimes
 	cecho "--------------------------------------------------------" $boldyellow
 }
