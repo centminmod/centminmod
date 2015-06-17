@@ -5,33 +5,36 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
 {
     cd $DIR_TMP
 
-if [ -s "${CENTOSFIVEEPELFILE}" ]; then
-  echo "${CENTOSFIVEEPELFILE} [found]"
-  else
-  echo "Error: ${CENTOSFIVEEPELFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSFIVEEPEL} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSFIVEEPELFILE} download failed." $boldgreen
-FAILEPEL='y'
-checklogdetails
-	# exit #$ERROR
-else 
-	cecho "Download done." $boldyellow
-	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-5
-	rpm -i ${CENTOSFIVEEPELFILE}
-	#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	ERR=$?
-	CCEPELCHECK="$ERR"
-		if [ "$CCEPELCHECK" == '0' ]; then
-			yumpriorepel
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSFIVEEPELFILE} install." $boldgreen
-			exit $ERR
+if [ -f /etc/yum.repos.d/epel.repo ]; then
+	yumpriorepel
+elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
+	if [ -s "${CENTOSFIVEEPELFILE}" ]; then
+  	echo "${CENTOSFIVEEPELFILE} [found]"
+  	else
+  	echo "Error: ${CENTOSFIVEEPELFILE} not found !!! Download now......"
+  	wget ${WGETOPT} ${CENTOSFIVEEPEL} --tries=3 
+	ERROR=$?
+		if [[ "$ERROR" != '0' ]]; then
+		cecho "Error: ${CENTOSFIVEEPELFILE} download failed." $boldgreen
+	FAILEPEL='y'
+	checklogdetails
+		# exit #$ERROR
+	else 
+		cecho "Download done." $boldyellow
+		rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-5
+		rpm -i ${CENTOSFIVEEPELFILE}
+		#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+		ERR=$?
+		CCEPELCHECK="$ERR"
+			if [ "$CCEPELCHECK" == '0' ]; then
+				yumpriorepel
+				echo ""
+			else
+				cecho "Error: problem with ${CENTOSFIVEEPELFILE} install." $boldgreen
+				exit $ERR
+			fi
 		fi
 	fi
-
 fi
 
 if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then

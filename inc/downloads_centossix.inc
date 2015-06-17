@@ -100,34 +100,38 @@ echo "*************************************************"
 
     cd $DIR_TMP
 
-if [ -s "${CENTOSSIXEPELFILE}" ]; then
-  echo "${CENTOSSIXEPELFILE} [found]"
-  else
-  echo "Error: ${CENTOSSIXEPELFILE} not found !!! Download now......"
-  wget ${WGETOPT} ${CENTOSSIXEPEL} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXEPELLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXEPELFILE} download failed." $boldgreen
-FAILEPEL='y'
-checklogdetails
-	# exit #$ERROR
-else 
-	cecho "Download done." $boldyellow
-	rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
-	rpm -i ${CENTOSSIXEPELFILE}
-	#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	ERR=$?
-	CCEPELCHECK="$ERR"
-		if [ "$CCEPELCHECK" == '0' ]; then
-			yumpriorepel
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXEPELFILE} install." $boldgreen
-			exit $ERR
+if [ -f /etc/yum.repos.d/epel.repo ]; then
+	yumpriorepel
+elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
+	if [ -s "${CENTOSSIXEPELFILE}" ]; then
+  	echo "${CENTOSSIXEPELFILE} [found]"
+  	else
+  	echo "Error: ${CENTOSSIXEPELFILE} not found !!! Download now......"
+  	wget ${WGETOPT} ${CENTOSSIXEPEL} --tries=3
+  	# wget ${WGETOPT} ${CENTOSSIXEPELLOCAL} --tries=3
+	ERROR=$?
+		if [[ "$ERROR" != '0' ]]; then
+		cecho "Error: ${CENTOSSIXEPELFILE} download failed." $boldgreen
+	FAILEPEL='y'
+	checklogdetails
+		# exit #$ERROR
+	else 
+		cecho "Download done." $boldyellow
+		rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
+		rpm -i ${CENTOSSIXEPELFILE}
+		#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+		ERR=$?
+		CCEPELCHECK="$ERR"
+			if [ "$CCEPELCHECK" == '0' ]; then
+				yumpriorepel
+				echo ""
+			else
+				cecho "Error: problem with ${CENTOSSIXEPELFILE} install." $boldgreen
+				exit $ERR
+			fi
 		fi
+	
 	fi
-
 fi
 
 if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then

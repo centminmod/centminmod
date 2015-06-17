@@ -31,11 +31,11 @@ echo "......"
 echo "........."
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
-yum -y -q install yum-plugin-priorities yum-plugin-fastestmirror yum-plugin-downloadonly
+yum -y -q install yum-plugin-priorities yum-plugin-fastestmirror yum-plugin-downloadonly epel-release
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 else
-yum -y -q install yum-priorities yum-fastestmirror yum-downloadonly
+yum -y -q install yum-priorities yum-fastestmirror yum-downloadonly epel-release
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 fi
