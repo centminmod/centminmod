@@ -137,7 +137,7 @@ if [[ -f /usr/local/nginx/html/opcache.php ]]; then
 	mv /usr/local/nginx/html/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
 	opprotect
-elif [[ -z $(ls /usr/local/nginx/html/ | grep opcache.php) ]]; then
+elif [[ -z "$(ls /usr/local/nginx/html/ | grep opcache.php)" ]]; then
 	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
 	opprotect
