@@ -46,6 +46,10 @@ yumcentosfivedownload
 
 #yum -y -q update kernel-devel
 
+# if curl one liner is used and detected should skip this yum install routine
+# since it's already done by curl installer script
+if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
+
 if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
 
 PACKAGE='deltarpm cracklib ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
@@ -117,6 +121,8 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
         fi
 done
+
+fi # /usr/local/src/curlinstall_yum.txt
 
 
 yum${CACHESKIP} -y -q install mytop iftop
