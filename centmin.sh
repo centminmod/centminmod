@@ -1245,7 +1245,11 @@ if [[ "$POSTFIX_INSTALL" = [yY] && "$SENDMAIL_INSTALL" = [nN] ]]; then
         cecho "Postfix already detected, postfix install aborted" $boldgreen
         echo "*************************************************"
     elif [[ -f /etc/init.d/sendmail ]]; then
-        yum${CACHESKIP} -y -q remove sendmail sendmail-cf
+        if [ -f /usr/share/sendmail-cf ]; then
+            yum${CACHESKIP} -y -q remove sendmail sendmail-cf
+        else
+           yum${CACHESKIP} -y -q remove sendmail
+        fi
         yum${CACHESKIP} -y -q install postfix mailx
         postfixsetup
         echo "*************************************************"
