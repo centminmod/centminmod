@@ -16,15 +16,15 @@ echo "Current centmin.sh set PHP_VERSION: $PHPMVER"
 echo "Current PHP upgrade version set: $PHPMUVER"
 echo "-------------------------------------------------------------------"
 
-if [[ "$PHPMVER" != '5.7' || "$PHPCURRENTVER" != '5.7' || "$PHPMVER" != '5.6' || "$PHPCURRENTVER" != '5.6' || "$PHPMVER" != '5.5' || "$PHPCURRENTVER" != '5.5' || "$PHPMVER" = '5.4' ||"$PHPMVER" = '5.3' ||"$PHPMVER" = '5.2' ]]; then
+if [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$PHPMVER" != '7.0' || "$PHPCURRENTVER" != '7.0' || "$PHPMVER" != '5.7' || "$PHPCURRENTVER" != '5.7' || "$PHPMVER" != '5.6' || "$PHPCURRENTVER" != '5.6' || "$PHPMVER" != '5.5' || "$PHPCURRENTVER" != '5.5' || "$PHPMVER" = '5.4' ||"$PHPMVER" = '5.3' ||"$PHPMVER" = '5.2' ]]; then
 
 	if [[ ! -d "${DIR_TMP}/zendopcache-${ZOPCACHECACHE_VERSION}" || ! -f "${DIR_TMP}/${ZENDOPCACHE_LINKFILE}" ]]; then
 		zopcachetarball
 	fi
 
-#wget http://pecl.php.net/get/zendopcache-7.0.3.tgz
-#tar xvzf zendopcache-7.0.3.tgz
-#cd zendopcache-7.0.3
+#wget http://pecl.php.net/get/zendopcache-7.0.5.tgz
+#tar xvzf zendopcache-7.0.5.tgz
+#cd zendopcache-7.0.5
 cd zendopcache-${ZOPCACHECACHE_VERSION}
 make clean
 /usr/local/bin/phpize

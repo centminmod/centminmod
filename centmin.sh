@@ -408,7 +408,8 @@ APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
 IGBINARY_VERSION='1.2.1'
 IGBINARYGIT='y'
 ZOPCACHEDFT='n'
-ZOPCACHECACHE_VERSION='7.0.5'  # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
+ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
+ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'       # Use this version of Python
 SIEGE_VERSION='3.1.0'
@@ -1136,6 +1137,13 @@ fi
 # then php_configure.inc routine will pick up PHP_VERSION 5.5 and install
 # native Zend OpCache when ZOPCACHEDFT=yY
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
+
+# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
+# Zend Opcache version with one available from pecl site
+if [[ "$ZOPCACHE_OVERRIDE" = [yY] && "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.4' || "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
+    zopcacheinstall
+fi
+
 if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.4' ]]; then
     zopcacheinstall
 fi
@@ -1149,7 +1157,7 @@ if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.2' ]]; then
 fi
 
 # if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
-if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
+if [[ "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
 	zopcache_initialini
 fi
 

@@ -106,6 +106,11 @@ if [[ "$DETECTOPCACHE" = [yY] ]]; then
     if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' || "$PHPMUVER" != '7.0' ]]; then
         cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
         zopcachereinstall
+    elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+        # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
+        # Zend Opcache version with one available from pecl site
+        cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
+        zopcachereinstall        
     fi
 fi
 

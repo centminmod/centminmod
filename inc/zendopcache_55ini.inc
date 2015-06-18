@@ -3,7 +3,7 @@ zopcache_initialini() {
 
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
-if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' ]]; then
+if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
 	PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 fi # PHPMVER
 
