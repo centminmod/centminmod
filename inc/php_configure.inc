@@ -172,18 +172,39 @@ if [[ "$CLANG_PHP" = [yY] ]]; then
     if [[ ! -f /usr/bin/clang ]]; then
         yum -q -y install clang clang-devel
     fi
-    export CC="ccache /usr/bin/clang"
-    export CXX="ccache /usr/bin/clang++"
-    export CCACHE_CPP2=yes
-    # PLACEHOLDER FOR CLAGS FOR PHP
-    # CFLAGS=
-
+	# ccache compiler has some initial overhead for compiles but speeds up subsequent
+	# recompiles. however on initial install ccache has no benefits, so for initial
+	# centmin mod install disabling ccache will in theory speed up first time installs
+	if [[ "$INITIALINSTALL" != [yY] ]]; then    
+    	export CC="ccache /usr/bin/clang"
+    	export CXX="ccache /usr/bin/clang++"
+    	export CCACHE_CPP2=yes
+    	# PLACEHOLDER FOR CLAGS FOR PHP
+    	# CFLAGS=
+    else
+    	export CC="/usr/bin/clang"
+    	export CXX="/usr/bin/clang++"
+    	# export CCACHE_CPP2=yes
+    	# PLACEHOLDER FOR CLAGS FOR PHP
+    	# CFLAGS=
+    fi    	
 else
-    export CC="ccache /usr/bin/gcc"
-    export CXX="ccache /usr/bin/g++"
-    export CCACHE_CPP2=yes
-    # PLACEHOLDER FOR CLAGS FOR PHP
-    # CFLAGS=
+	# ccache compiler has some initial overhead for compiles but speeds up subsequent
+	# recompiles. however on initial install ccache has no benefits, so for initial
+	# centmin mod install disabling ccache will in theory speed up first time installs
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+    	export CC="ccache /usr/bin/gcc"
+    	export CXX="ccache /usr/bin/g++"
+    	export CCACHE_CPP2=yes
+    	# PLACEHOLDER FOR CLAGS FOR PHP
+    	# CFLAGS=
+	else
+    	export CC="/usr/bin/gcc"
+    	export CXX="/usr/bin/g++"
+    	# export CCACHE_CPP2=yes
+    	# PLACEHOLDER FOR CLAGS FOR PHP
+    	# CFLAGS=
+    fi
 fi
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
