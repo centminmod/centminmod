@@ -141,7 +141,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				cp -a ${DIR_TMP}/nginx-module-vts/share/status.compress.html /usr/local/nginx/html/vhost_status.html
 				MAINURIHOST=$HN
 				NEWURI="//${MAINURIHOST}/vhost_status"
-				sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
+				if [ -f /usr/local/nginx/html/vhost_status.html ]; then
+					sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
+				fi
 			elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
 				cd ${DIR_TMP}/nginx-module-vts
 				git stash
@@ -158,7 +160,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				cp -a ${DIR_TMP}/nginx-module-vts/share/status.compress.html /usr/local/nginx/html/vhost_status.html
 				MAINURIHOST=$HN
 				NEWURI="//${MAINURIHOST}/vhost_status"
-				sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html							
+				if [ -f /usr/local/nginx/html/vhost_status.html ]; then
+					sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
+				fi
 			fi
 		else
 			VTSOPT=""
@@ -180,7 +184,13 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-		ngxpagespeedinstall
+		# only need to invoke ngxpagespeedinstall at this stage if it is nginx upgrade
+		# no need for it to be invoked at initial first time centmin mod install as
+		# inc/nginx_install.inc has it's own call to this function when variable
+		# NGINX_PAGESPEED=y
+		if [[ "$ngver" ]]; then
+			ngxpagespeedinstall
+		fi
 		PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
 	else
 		PGSPEEDOPT=""

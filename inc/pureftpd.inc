@@ -54,7 +54,7 @@ pureftpinstall() {
 		# setup self-signed ssl certs
 		mkdir -p /etc/ssl/private
 		openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN==$CNIP" -newkey rsa:1024 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem
-		chmod 600 /etc/ssl/private/*.pem
+		chmod 600 /etc/pki/pure-ftpd/*.pem
 		openssl x509 -in /etc/pki/pure-ftpd/pure-ftpd.pem -text -noout
 		echo 
 		# ls -lah /etc/ssl/private/
