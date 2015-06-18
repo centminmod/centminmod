@@ -43,7 +43,7 @@ fi
 if [ -s memc-nginx-module_v0.13rc3.tar.gz ]; then
   cecho "memc-nginx-module_v0.13rc3.tar.gz Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: memc-nginx-module_v0.13rc3.tar.gz not found!!!download now......"
+  cecho "Error: memc-nginx-module_v0.13rc3.tar.gz not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3 -O memc-nginx-module_v0.13rc3.tar.gz --tries=3
 fi
 
@@ -52,7 +52,7 @@ fi
 if [ -s srcache-nginx-module_v0.13rc6.tar.gz ]; then
   cecho "srcache-nginx-module_v0.13rc6.tar.gz Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: srcache-nginx-module_v0.13rc6.tar.gz not found!!!download now......"
+  cecho "Error: srcache-nginx-module_v0.13rc6.tar.gz not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate https://github.com/agentzh/srcache-nginx-module/tarball/v0.13rc6 -O srcache-nginx-module_v0.13rc6.tar.gz --tries=3
 fi
 
@@ -61,7 +61,7 @@ fi
 # if [ -s ngx_auto_lib.tar.gz ]; then
 #   cecho "ngx_auto_lib.tar.gz Archive found, skipping download..." $boldgreen
 #   else
-#   cecho "Error: ngx_auto_lib.tar.gz not found!!!download now......"
+#   cecho "Error: ngx_auto_lib.tar.gz not found!!! Downloading now......"
 #         wget -c --progress=bar --no-check-certificate https://github.com/simpl/ngx_auto_lib/tarball/master -O ngx_auto_lib.tar.gz --tries=3
 # fi
 

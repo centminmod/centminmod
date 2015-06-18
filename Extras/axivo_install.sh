@@ -81,7 +81,7 @@ if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
   echo "${CENTOSSIXAXIVOFILE} [found]"
   else
-  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSSIXAXIVOFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSIXAXIVO} --tries=3
   # wget ${WGETOPT} ${CENTOSSIXAXIVOLOCAL} --tries=3
 ERROR=$?
@@ -119,7 +119,7 @@ if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 if [ -s "${CENTOSSEVENAXIVOFILE}" ]; then
   echo "${CENTOSSEVENAXIVOFILE} [found]"
   else
-  echo "Error: ${CENTOSSEVENAXIVOFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSSEVENAXIVOFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENAXIVO} --tries=3
   # wget ${WGETOPT} ${CENTOSSEVENAXIVOLOCAL} --tries=3
 ERROR=$?

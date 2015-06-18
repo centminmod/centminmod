@@ -1470,7 +1470,7 @@ if [ -s iopingcentmin.sh ]; then
 	fi
 
   else
-  echo "Error: iopingcentmin.sh not found!!!download now......"
+  echo "Error: iopingcentmin.sh not found!!! Downloading now......"
   $DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
 
 fi

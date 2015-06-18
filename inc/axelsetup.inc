@@ -17,7 +17,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	if [ -s rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm ]; then
   	echo "rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm [found]"
   	else
-  	echo "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm not found !!! Download now......"
+  	echo "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm not found !!! Downloading now......"
   	wget -cnv http://centminmod.com/centminmodparts/v123/04rpms/${ARCH}/rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
@@ -47,7 +47,7 @@ fi # RPMFORGEREPO_DISABLE = n
 if [ -s axel-2.4-1.el5.rf.${ARCH}.rpm ]; then
   echo "axel-2.4-1.el5.rf.${ARCH}.rpm [found]"
   else
-  echo "Error: axel-2.4-1.el5.rf.${ARCH}.rpm not found !!! Download now......"
+  echo "Error: axel-2.4-1.el5.rf.${ARCH}.rpm not found !!! Downloading now......"
   wget -cnv http://centminmod.com/centminmodparts/v123/04rpms/${ARCH}/axel-2.4-1.el5.rf.${ARCH}.rpm --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -92,7 +92,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	if [ -s rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm ]; then
   	echo "rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm [found]"
   	else
-  	echo "Error: rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm not found !!! Download now......"
+  	echo "Error: rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm not found !!! Downloading now......"
   	wget -cnv http://centminmod.com/centminmodparts/v123/04rpms/${ARPMFARCH}/rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
@@ -122,7 +122,7 @@ fi # RPMFORGEREPO_DISABLE = n
 if [ -s axel-2.4-1.el6.rf.${AARCH}.rpm ]; then
   echo "axel-2.4-1.el6.rf.${AARCH}.rpm [found]"
   else
-  echo "Error: axel-2.4-1.el6.rf.${AARCH}.rpm not found !!! Download now......"
+  echo "Error: axel-2.4-1.el6.rf.${AARCH}.rpm not found !!! Downloading now......"
   wget -cnv http://centminmod.com/centminmodparts/v123/04rpms/${ARPMFARCH}/axel-2.4-1.el6.rf.${AARCH}.rpm --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -166,7 +166,7 @@ if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$
 if [ -s rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm ]; then
   echo "rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm [found]"
   else
-  echo "Error: rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm not found !!! Download now......"
+  echo "Error: rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm not found !!! Downloading now......"
   wget -cnv http://centminmod.com/centminmodparts/v123/08rpms/${ARPMFARCH}/rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -195,7 +195,7 @@ fi
 if [ -s axel-2.4-1.el6.rf.${AARCH}.rpm ]; then
   echo "axel-2.4-1.el6.rf.${AARCH}.rpm [found]"
   else
-  echo "Error: axel-2.4-1.el6.rf.${AARCH}.rpm not found !!! Download now......"
+  echo "Error: axel-2.4-1.el6.rf.${AARCH}.rpm not found !!! Downloading now......"
   wget -cnv http://centminmod.com/centminmodparts/v123/08rpms/${ARPMFARCH}/axel-2.4-1.el6.rf.${AARCH}.rpm --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

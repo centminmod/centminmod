@@ -16,7 +16,7 @@ yum -y -q install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm l
 if [ -s ffmpeg-php-${FFMPEGVER}.tbz2 ]; then
   echo "ffmpeg-php-${FFMPEGVER}.tbz2 [found]"
   else
-  echo "Error: ffmpeg-php-${FFMPEGVER}.tbz2 not found!!!download now......"
+  echo "Error: ffmpeg-php-${FFMPEGVER}.tbz2 not found!!! Downloading now......"
   wget -c --progress=bar http://downloads.sourceforge.net/project/ffmpeg-php/ffmpeg-php/${FFMPEGVER}/ffmpeg-php-${FFMPEGVER}.tbz2?use_mirror=aarnet -O ffmpeg-php-${FFMPEGVER}.tbz2 --tries=3
 fi
 

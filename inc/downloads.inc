@@ -461,7 +461,7 @@ if [ "$NGINX_OPENRESTY" == 'y' ]; then
 if [ -s ${NGX_MEMCLINKFILE} ]; then
   cecho "${NGX_MEMCLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_MEMCLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_MEMCLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_MEMCLINK} -O ${NGX_MEMCLINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -489,7 +489,7 @@ echo ""
 if [ -s ${NGX_SRCACHELINKFILE} ]; then
   cecho "${NGX_SRCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_SRCACHELINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_SRCACHELINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_SRCACHELINK} -O ${NGX_SRCACHELINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -517,7 +517,7 @@ echo ""
 if [ -s ${NGX_DEVELKITLINKFILE} ]; then
   cecho "${NGX_DEVELKITLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_DEVELKITLINK} -O ${NGX_DEVELKITLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -545,7 +545,7 @@ echo ""
 if [ -s ${NGX_SETMISCLINKFILE} ]; then
   cecho "${NGX_SETMISCLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_SETMISCLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_SETMISCLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_SETMISCLINK} -O ${NGX_SETMISCLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -573,7 +573,7 @@ echo ""
 if [ -s ${NGX_ECHOLINKFILE} ]; then
   cecho "${NGX_ECHOLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_ECHOLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_ECHOLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_ECHOLINK} -O ${NGX_ECHOLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -604,7 +604,7 @@ echo ""
 if [ -s ${NGX_LUANGINXLINKFILE} ]; then
   cecho "${NGX_LUANGINXLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUANGINXLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUANGINXLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUANGINXLINK} -O ${NGX_LUANGINXLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -632,7 +632,7 @@ echo ""
 if [ -s ${NGX_LUAGITLINKFILE} ]; then
   cecho "${NGX_LUAGITLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAGITLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAGITLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAGITLINK} -O ${NGX_LUAGITLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -660,7 +660,7 @@ echo ""
 if [ -s ${NGX_LUAMEMCACHEDLINKFILE} ]; then
   cecho "${NGX_LUAMEMCACHEDLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAMEMCACHEDLINK} -O ${NGX_LUAMEMCACHEDLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -688,7 +688,7 @@ echo ""
 if [ -s ${NGX_LUAMYSQLLINKFILE} ]; then
   cecho "${NGX_LUAMYSQLLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAMYSQLLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAMYSQLLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAMYSQLLINK} -O ${NGX_LUAMYSQLLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -716,7 +716,7 @@ echo ""
 if [ -s ${NGX_LUAREDISLINKFILE} ]; then
   cecho "${NGX_LUAREDISLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAREDISLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAREDISLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAREDISLINK} -O ${NGX_LUAREDISLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -744,7 +744,7 @@ echo ""
 if [ -s ${NGX_LUADNSLINKFILE} ]; then
   cecho "${NGX_LUADNSLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUADNSLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUADNSLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUADNSLINK} -O ${NGX_LUADNSLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -772,7 +772,7 @@ echo ""
 if [ -s ${NGX_LUAUPLOADLINKFILE} ]; then
   cecho "${NGX_LUAUPLOADLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAUPLOADLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAUPLOADLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAUPLOADLINK} -O ${NGX_LUAUPLOADLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -800,7 +800,7 @@ echo ""
 if [ -s ${NGX_LUAWEBSOCKETLINKFILE} ]; then
   cecho "${NGX_LUAWEBSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAWEBSOCKETLINK} -O ${NGX_LUAWEBSOCKETLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -828,7 +828,7 @@ echo ""
 if [ -s ${NGX_LUALOCKLINKFILE} ]; then
   cecho "${NGX_LUALOCKLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUALOCKLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUALOCKLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUALOCKLINK} -O ${NGX_LUALOCKLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -856,7 +856,7 @@ echo ""
 if [ -s ${NGX_LUASTRINGLINKFILE} ]; then
   cecho "${NGX_LUASTRINGLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUASTRINGLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUASTRINGLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUASTRINGLINK} -O ${NGX_LUASTRINGLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -884,7 +884,7 @@ echo ""
 if [ -s ${NGX_LUAREDISPARSERLINKFILE} ]; then
   cecho "${NGX_LUAREDISPARSERLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAREDISPARSERLINK} -O ${NGX_LUAREDISPARSERLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -912,7 +912,7 @@ echo ""
 if [ -s ${NGX_LUAUPSTREAMCHECKLINKFILE} ]; then
   cecho "${NGX_LUAUPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCHECKLINK} -O ${NGX_LUAUPSTREAMCHECKLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -940,7 +940,7 @@ echo ""
 if [ -s ${NGX_LUALRUCACHELINKFILE} ]; then
   cecho "${NGX_LUALRUCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUALRUCACHELINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUALRUCACHELINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUALRUCACHELINK} -O ${NGX_LUALRUCACHELINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -968,7 +968,7 @@ echo ""
 if [ -s ${NGX_LUARESTYCORELINKFILE} ]; then
   cecho "${NGX_LUARESTYCORELINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUARESTYCORELINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUARESTYCORELINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUARESTYCORELINK} -O ${NGX_LUARESTYCORELINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -996,7 +996,7 @@ echo ""
 if [ -s ${NGX_LUAUPSTREAMLINKFILE} ]; then
   cecho "${NGX_LUAUPSTREAMLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMLINK} -O ${NGX_LUAUPSTREAMLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1024,7 +1024,7 @@ echo ""
 if [ -s ${NGX_LUALOGGERSOCKETLINKFILE} ]; then
   cecho "${NGX_LUALOGGERSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUALOGGERSOCKETLINK} -O ${NGX_LUALOGGERSOCKETLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1052,7 +1052,7 @@ echo ""
 if [ -s ${NGX_LUACOOKIELINKFILE} ]; then
   cecho "${NGX_LUACOOKIELINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUACOOKIELINK} -O ${NGX_LUACOOKIELINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1080,7 +1080,7 @@ echo ""
 if [ -s ${NGX_LUAUPSTREAMCACHELINKFILE} ]; then
   cecho "${NGX_LUAUPSTREAMCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCACHELINK} -O ${NGX_LUAUPSTREAMCACHELINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1108,7 +1108,7 @@ echo ""
 if [ -s ${NGX_LUACJSONLINKFILE} ]; then
   cecho "${NGX_LUACJSONLINKFILE} Archive found, skipping download..." $boldgreen
   else
-  cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!!download now......"
+  cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!! Downloading now......"
         wget -c --progress=bar --no-check-certificate ${NGX_LUACJSONLINK} -O ${NGX_LUACJSONLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1195,7 +1195,7 @@ libeventtarball() {
 if [ -s ${LIBEVENTLINKFILE} ]; then
   cecho "${LIBEVENTLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${LIBEVENTLINKFILE} not found !!! Download now......"
+  echo "Error: ${LIBEVENTLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar --no-check-certificate ${LIBEVENTLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1231,7 +1231,7 @@ imagickphpextlocaltarball() {
 if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
   cecho "${PHPEXT_IMAGICKLINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_IMAGICKLINKFILE} local not found !!! Download now......"
+  echo "Error: ${PHPEXT_IMAGICKLINKFILE} local not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1265,7 +1265,7 @@ imagickphpexttarball() {
 if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
   cecho "${PHPEXT_IMAGICKLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_IMAGICKLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_IMAGICKLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1302,7 +1302,7 @@ memcacheextlocaltarball() {
 if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
   cecho "${PHPEXT_MEMCACHELINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1336,7 +1336,7 @@ memcacheexttarball() {
 if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
   cecho "${PHPEXT_MEMCACHELINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1373,7 +1373,7 @@ memcachedphplocaltarball() {
 if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
   cecho "${PHPEXT_MEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1407,7 +1407,7 @@ memcachedphptarball() {
 if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
   cecho "${PHPEXT_MEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1444,7 +1444,7 @@ redisphplocaltarball() {
 if [ -s ${PHPEXT_REDISLINKFILE} ]; then
   cecho "${PHPEXT_REDISLINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINKLOCAL} -O ${PHPEXT_REDISLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1478,7 +1478,7 @@ redisphptarball() {
 if [ -s ${PHPEXT_REDISLINKFILE} ]; then
   cecho "${PHPEXT_REDISLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINK} -O ${PHPEXT_REDISLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1515,7 +1515,7 @@ mongodbphplocaltarball() {
 if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
   cecho "${PHPEXT_MONGODBLINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINKLOCAL} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1549,7 +1549,7 @@ mongodbphptarball() {
 if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
   cecho "${PHPEXT_MONGODBLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINK} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -1587,7 +1587,7 @@ if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
 if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1624,7 +1624,7 @@ if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
 if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Download now......"
+  echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......"
         wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -1661,7 +1661,7 @@ twemperftarball() {
 if [ -s ${TWEMPERF_LINKFILE} ]; then
   cecho "${TWEMPERF_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${TWEMPERF_LINKFILE} not found !!! Download now......"
+  echo "Error: ${TWEMPERF_LINKFILE} not found !!! Downloading now......"
         
      wget ${WGETOPT} --progress=bar --no-check-certificate ${TWEMPERF_LINK} -O ${TWEMPERF_LINKFILE} --tries=3 
 
@@ -1723,7 +1723,7 @@ libeventtarball
 if [ -s ${MEMCACHEDSERVER_LINKFILE} ]; then
   cecho "${MEMCACHEDSERVER_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Download now......"
+  echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Downloading now......"
   		wget ${WGETOPT} --progress=bar ${MEMCACHEDSERVER_LINK} --tries=3
         # wget ${WGETOPT} --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
 ERROR=$?
@@ -2238,7 +2238,7 @@ PYTHONUPDATE='y'
 if [ -s ${PYTHON_LINKFILE} ]; then
   cecho "${PYTHON_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PYTHON_LINKFILE} not found !!! Download now......"
+  echo "Error: ${PYTHON_LINKFILE} not found !!! Downloading now......"
         $DOWNLOADAPP http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -2266,7 +2266,7 @@ echo ""
 if [ -s ${PYTHON_SETUPTOOLSLINKFILE} ]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Download now......"
+  echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Downloading now......"
         wget -c --no-check-certificate ${PYTHON_SETUPTOOLSLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

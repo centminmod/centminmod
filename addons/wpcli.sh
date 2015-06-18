@@ -33,7 +33,7 @@ echo ""
 if [ -s /usr/bin/wp ]; then
   echo "/usr/bin/wp [found]"
   else
-  echo "Error: /usr/bin/wp not found !!! Download now......"
+  echo "Error: /usr/bin/wp not found !!! Downloading now......"
   wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /usr/bin/wp --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -50,7 +50,7 @@ echo ""
 if [ -s "${WPCLIDIR}/wp-completion.bash" ]; then
   echo "${WPCLIDIR}/wp-completion.bash [found]"
   else
-  echo "Error: ${WPCLIDIR}/wp-completion.bash not found !!! Download now......"
+  echo "Error: ${WPCLIDIR}/wp-completion.bash not found !!! Downloading now......"
   wget -cnv --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

@@ -20,7 +20,7 @@ cd ${DIR_TMP}
 if [ -s pigz-${PIGZ_VER}.tar.gz ]; then
   echo "pigz-${PIGZ_VER}.tar.gz [found]"
   else
-  echo "Error: pigz-${PIGZ_VER}.tar.gz not found!!! download now......"
+  echo "Error: pigz-${PIGZ_VER}.tar.gz not found!!!  Downloading now......"
   wget -c --no-check-certificate http://zlib.net/pigz/pigz-${PIGZ_VER}.tar.gz --tries=3
 fi
 
@@ -51,7 +51,7 @@ cd ${DIR_TMP}
 if [ -s pbzip2-${PBZIP_VER}.tar.gz ]; then
   echo "pbzip2-${PBZIP_VER}.tar.gz [found]"
   else
-  echo "Error: pbzip2-${PBZIP_VER}.tar.gz not found!!!download now......"
+  echo "Error: pbzip2-${PBZIP_VER}.tar.gz not found!!! Downloading now......"
   # wget -c http://compression.ca/pbzip2/pbzip2-${PBZIP_VER}.tar.gz --tries=3
   wget -c https://launchpad.net/pbzip2/1.1/${PBZIP_VER}/+download/pbzip2-${PBZIP_VER}.tar.gz --tries=3
 fi
@@ -80,7 +80,7 @@ cd ${DIR_TMP}
 if [ -s lbzip2-${LBZIP_VER}.tar.gz ]; then
   echo "lbzip2-${LBZIP_VER}.tar.gz [found]"
   else
-  echo "Error: lbzip2-${LBZIP_VER}.tar.gz not found!!!download now......"
+  echo "Error: lbzip2-${LBZIP_VER}.tar.gz not found!!! Downloading now......"
   wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-${LBZIP_VER}.tar.gz --tries=3
 fi
 
@@ -109,7 +109,7 @@ cd ${DIR_TMP}
 if [ -s lzip-${LZIP_VER}.tar.gz ]; then
   echo "lzip-${LZIP_VER}.tar.gz [found]"
   else
-  echo "Error: lzip-${LZIP_VER}.tar.gz not found!!!download now......"
+  echo "Error: lzip-${LZIP_VER}.tar.gz not found!!! Downloading now......"
   wget -c http://download.savannah.gnu.org/releases/lzip/lzip-${LZIP_VER}.tar.gz --tries=3
 fi
 
@@ -138,14 +138,14 @@ cd ${DIR_TMP}
 if [ -s lzlib-${LZLIB_VER}.tar.gz ]; then
   echo "lzlib-${LZLIB_VER}.tar.gz [found]"
   else
-  echo "Error: lzlib-${LZLIB_VER}.tar.gz not found!!!download now......"
+  echo "Error: lzlib-${LZLIB_VER}.tar.gz not found!!! Downloading now......"
   wget -c http://download.savannah.gnu.org/releases/lzip/lzlib/lzlib-${LZLIB_VER}.tar.gz --tries=3
 fi
 
 if [ -s plzip-${PLZIP_VER}.tar.gz ]; then
   echo "plzip-${PLZIP_VER}.tar.gz [found]"
   else
-  echo "Error: plzip-${PLZIP_VER}.tar.gz not found!!!download now......"
+  echo "Error: plzip-${PLZIP_VER}.tar.gz not found!!! Downloading now......"
   wget -c http://download.savannah.gnu.org/releases/lzip/plzip/plzip-${PLZIP_VER}.tar.gz --tries=3
 fi
 
@@ -183,7 +183,7 @@ cd ${DIR_TMP}
 if [ -s p7zip_${PZIP_VER}_src_all.tar.bz2 ]; then
   echo "p7zip_${PZIP_VER}_src_all.tar.bz2 [found]"
   else
-  echo "Error: p7zip_${PZIP_VER}_src_all.tar.bz2 not found!!!download now......"
+  echo "Error: p7zip_${PZIP_VER}_src_all.tar.bz2 not found!!! Downloading now......"
   wget -c -O p7zip_${PZIP_VER}_src_all.tar.bz2 http://sourceforge.net/projects/p7zip/files/p7zip/${PZIP_VER}/p7zip_${PZIP_VER}_src_all.tar.bz2/download?use_mirror=softlayer-sng --tries=3
 fi
 

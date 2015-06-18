@@ -11,7 +11,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
 	if [ -s "${CENTOSFIVEEPELFILE}" ]; then
   	echo "${CENTOSFIVEEPELFILE} [found]"
   	else
-  	echo "Error: ${CENTOSFIVEEPELFILE} not found !!! Download now......"
+  	echo "Error: ${CENTOSFIVEEPELFILE} not found !!! Downloading now......"
   	wget ${WGETOPT} ${CENTOSFIVEEPEL} --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
@@ -50,7 +50,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	if [ -s "${CENTOSFIVERPMFORGEFILE}" ]; then
   	echo "${CENTOSFIVERPMFORGEFILE} [found]"
   	else
-  	echo "Error: ${CENTOSFIVERPMFORGEFILE} not found !!! Download now......"
+  	echo "Error: ${CENTOSFIVERPMFORGEFILE} not found !!! Downloading now......"
   	wget ${WGETOPT} ${CENTOSFIVERPMFORGE} --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
@@ -82,7 +82,7 @@ if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 if [ -s ${CENTOSFIVECENTALTFILE} ]; then
   echo "${CENTOSFIVECENTALTFILE} [found]"
   else
-  echo "Error: ${CENTOSFIVECENTALTFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSFIVECENTALTFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSFIVECENTALT} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -104,7 +104,7 @@ fi # CENTALTREPO_DISABLE
 if [ -s "${CENTOSFIVEPERCONARELEASEFILE}" ]; then
   echo "${CENTOSFIVEPERCONARELEASEFILE} [found]"
   else
-  echo "Error: ${CENTOSFIVEPERCONARELEASEFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSFIVEPERCONARELEASEFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSFIVEPERCONARELEASE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -133,7 +133,7 @@ fi
 if [ -s "${CENTOSFIVEVARNISHFILE}" ]; then
   echo "${CENTOSFIVEVARNISHFILE} [found]"
   else
-  echo "Error: ${CENTOSFIVEVARNISHFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSFIVEVARNISHFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSFIVEVARNISH} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

@@ -7,7 +7,7 @@ if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 if [ -s "${CENTOSSEVENAXIVOFILE}" ]; then
   echo "${CENTOSSEVENAXIVOFILE} [found]"
   else
-  echo "Error: ${CENTOSSEVENAXIVOFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSSEVENAXIVOFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENAXIVO} --tries=3
   # wget ${WGETOPT} ${CENTOSSEVENAXIVOLOCAL} --tries=3
 ERROR=$?
@@ -49,7 +49,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -s "${CENTOSSEVENREMIFILE}" ]; then
     echo "${CENTOSSEVENREMIFILE} [found]"
     else
-    echo "Error: ${CENTOSSEVENREMIFILE} not found !!! Download now......"
+    echo "Error: ${CENTOSSEVENREMIFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENREMI} --tries=3
     # wget ${WGETOPT} ${CENTOSSEVENREMILOCAL} --tries=3
   ERROR=$?
@@ -106,7 +106,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
   if [ -s "${CENTOSSEVENEPELFILE}" ]; then
     echo "${CENTOSSEVENEPELFILE} [found]"
     else
-    echo "Error: ${CENTOSSEVENEPELFILE} not found !!! Download now......"
+    echo "Error: ${CENTOSSEVENEPELFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENEPEL} --tries=3
     # wget ${WGETOPT} ${CENTOSSEVENEPELLOCAL} --tries=3
   ERROR=$?
@@ -146,7 +146,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
   if [ -s "${CENTOSSEVENRPMFORGEFILE}" ]; then
     echo "${CENTOSSEVENRPMFORGEFILE} [found]"
     else
-    echo "Error: ${CENTOSSEVENRPMFORGEFILE} not found !!! Download now......"
+    echo "Error: ${CENTOSSEVENRPMFORGEFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENRPMFORGE} --tries=3 
   ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -178,7 +178,7 @@ if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 if [ -s "${CENTOSSEVENCENTALTFILE}" ]; then
   echo "${CENTOSSEVENCENTALTFILE} [found]"
   else
-  echo "Error: ${CENTOSSEVENCENTALTFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSSEVENCENTALTFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENCENTALT} --tries=3
   # wget ${WGETOPT} ${CENTOSSEVENCENTALTLOCAL} --tries=3
 ERROR=$?
@@ -202,7 +202,7 @@ fi # CENTALTREPO_DISABLE
 if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSEVENPERCONALRELEASEFILE} [found]"
   else
-  echo "Error: ${CENTOSSEVENPERCONALRELEASEFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSSEVENPERCONALRELEASEFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENPERCONALRELEASE} --tries=3 
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
@@ -231,7 +231,7 @@ fi
 if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
   echo "${CENTOSSEVENVARNISHFILE} [found]"
   else
-  echo "Error: ${CENTOSSEVENVARNISHFILE} not found !!! Download now......"
+  echo "Error: ${CENTOSSEVENVARNISHFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENVARNISH} --tries=3
   # wget ${WGETOPT} ${CENTOSSEVENVARNISHLOCAL} --tries=3
 ERROR=$?

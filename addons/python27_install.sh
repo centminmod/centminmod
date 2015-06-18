@@ -72,7 +72,7 @@ pythontarball() {
 if [ -s ${PYTHON_LINKFILE} ]; then
   cecho "${PYTHON_LINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PYTHON_LINKFILE} not found !!! Download now......"
+  echo "Error: ${PYTHON_LINKFILE} not found !!! Downloading now......"
         wget -cnv http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -100,7 +100,7 @@ echo ""
 if [ -s ${PYTHON_SETUPTOOLSLINKFILE} ]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
   else
-  echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Download now......"
+  echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Downloading now......"
         wget -c --no-check-certificate ${PYTHON_SETUPTOOLSLINK} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

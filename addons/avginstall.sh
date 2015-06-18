@@ -70,7 +70,7 @@ cd $SRCDIR
 if [ -s $AVGRPMNAME ]; then
   echo "$AVGRPMNAME [found]"
   else
-  echo "Error: $AVGRPMNAME not found !!! Download now......"
+  echo "Error: $AVGRPMNAME not found !!! Downloading now......"
   wget -c $AVGDOWNLOADRPM --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

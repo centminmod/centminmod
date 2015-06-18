@@ -11,7 +11,7 @@ cd $DIR_TMP
 if [ -s suhosin-${SUHOSINVER}.tar.gz ]; then
   echo "suhosin-${SUHOSINVER}.tar.gz [found]"
   else
-  echo "Error: suhosin-${SUHOSINVER}.tar.gz not found!!!download now......"
+  echo "Error: suhosin-${SUHOSINVER}.tar.gz not found!!! Downloading now......"
   wget -c --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tar.gz --tries=3
 fi
 
