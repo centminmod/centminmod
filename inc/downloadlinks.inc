@@ -135,7 +135,7 @@ CENTOSSEVENREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENR
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
 # PCRELINK="ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${PCRELINKFILE}"
-PCRELINK="http://softlayer-dal.dl.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+PCRELINK="http://superb-dca2.dl.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
 PCRELINKLOCAL="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 
 # wget renamed
