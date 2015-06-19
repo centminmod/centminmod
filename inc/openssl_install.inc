@@ -45,6 +45,8 @@ installopenssl() {
         cd portable-${LIBRESSL_VERSION}
         make clean
         if [ ! -f configure ]; then
+            # https://github.com/libressl-portable/portable/issues/99
+            sed -i 's|patch -p0 < patches\/tls.h.patch|patch -R -p0 < patches\/tls.h.patch|g' update.sh
             bash autogen.sh
         fi
         if [[ "$CLANG" = [yY] ]]; then
