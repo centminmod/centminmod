@@ -86,6 +86,10 @@ echo "--------------------------------------------------------------------------
         fi
 done
 
+fi # /usr/local/src/curlinstall_yum.txt
+
+if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
+
 ## grouped devels for faster install
 if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
 
