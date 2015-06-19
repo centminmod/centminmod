@@ -270,6 +270,10 @@ PACKAGEEXTRA='clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegopt
 declare -a arrays
 arrays=(${PACKAGEEXTRA})
 
+# if curl one liner is used and detected should skip this yum install routine
+# since it's already done by curl installer script
+if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
+
 for pkgs in ${arrays[@]}
 do
 echo Processing package: $pkgs
@@ -290,6 +294,8 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
         fi
 done
+
+fi # /usr/local/src/curlinstall_yum.txt
 
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yuminstall_centos7.log
 
