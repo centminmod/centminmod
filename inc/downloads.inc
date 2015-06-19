@@ -2662,7 +2662,12 @@ if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; 
 # less likely to encounter broken 3rd party
 # urls and speed up initial install
 # unzip svr-setup.zip
-/usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/svr-setup.zip -d /
+if [ -f "${CM_INSTALLDIR}/downloads/svr-setup.zip" ]; then
+    /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/svr-setup.zip -d /
+fi
+if [ -f "${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE}" ]; then
+    cp ${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE} $DIR_TMP
+fi
 
 CCACHE_ERROR=$?
     if [[ "$CCACHE_ERROR" != '0' ]]; then
