@@ -2647,17 +2647,6 @@ echo "*****************************************************"
 cecho "Downloading all required software for install routines." $boldgreen
 echo "*****************************************************"
 
-yuminstall
-
-questions
-
-# yum double check
-if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; then
-
-    echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
-    echo ${CUR_DIR}
-    echo ${CM_INSTALLDIR}    
-
 # use local download source files first 
 # less likely to encounter broken 3rd party
 # urls and speed up initial install
@@ -2673,6 +2662,17 @@ CCACHE_ERROR=$?
     if [[ "$CCACHE_ERROR" != '0' ]]; then
         /usr/bin/unzip -qo /usr/local/src/centminmod-${branchname}/downloads/svr-setup.zip -d /
     fi
+
+yuminstall
+
+questions
+
+# yum double check
+if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; then
+
+    # echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
+    # echo ${CUR_DIR}
+    # echo ${CM_INSTALLDIR}    
 
 ccachetarball
 
