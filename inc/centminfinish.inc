@@ -96,7 +96,7 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 yum repolist
 
-echo ""
+# echo ""
 	fi # unattended
 
 if [[ "$NSD_DISABLED" = [yY] ]]; then
@@ -175,7 +175,7 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
 	cecho "--------------------------------------------------------" $boldyellow
 fi
 
-echo ""
+	echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "mytimes check:" $boldyellow
 	cecho "/usr/bin/mytimes" $boldyellow
