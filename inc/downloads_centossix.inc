@@ -138,7 +138,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	if [[ -f /etc/yum.repos.d/rpmforge.repo || -f /etc/yum.repos.d/rpmforge.OLD ]]; then
 		rm -rf /etc/yum.repos.d/rpmforge.repo
 		rm -rf /etc/yum.repos.d/rpmforge.OLD
-		rm -rf ${DIR_TMP}/rpmforge-release*
+		# rm -rf ${DIR_TMP}/rpmforge-release*
 	
 		FORGERPM=$(rpm -qa | grep rpmforge-release)
 		rpm -e $FORGERPM

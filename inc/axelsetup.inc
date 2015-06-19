@@ -14,7 +14,7 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
     cd $DIR_TMP
 
 if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
-	if [ -s rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm ]; then
+	if [ -s "rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm" ]; then
   	echo "rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm [found]"
   	else
   	echo "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm not found !!! Downloading now......"
@@ -44,7 +44,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	fi
 fi # RPMFORGEREPO_DISABLE = n
 
-if [ -s axel-2.4-1.el5.rf.${ARCH}.rpm ]; then
+if [ -s "axel-2.4-1.el5.rf.${ARCH}.rpm" ]; then
   echo "axel-2.4-1.el5.rf.${ARCH}.rpm [found]"
   else
   echo "Error: axel-2.4-1.el5.rf.${ARCH}.rpm not found !!! Downloading now......"
@@ -89,7 +89,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     cd $DIR_TMP
 
 if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then    
-	if [ -s rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm ]; then
+	if [ -s "rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm" ]; then
   	echo "rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm [found]"
   	else
   	echo "Error: rpmforge-release-0.5.3-1.el6.rf.${AARCH}.rpm not found !!! Downloading now......"
@@ -119,7 +119,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	fi
 fi # RPMFORGEREPO_DISABLE = n
 
-if [ -s axel-2.4-1.el6.rf.${AARCH}.rpm ]; then
+if [ -s "axel-2.4-1.el6.rf.${AARCH}.rpm" ]; then
   echo "axel-2.4-1.el6.rf.${AARCH}.rpm [found]"
   else
   echo "Error: axel-2.4-1.el6.rf.${AARCH}.rpm not found !!! Downloading now......"
@@ -163,7 +163,7 @@ if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$
 
     cd $DIR_TMP
 
-if [ -s rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm ]; then
+if [ -s "rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm" ]; then
   echo "rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm [found]"
   else
   echo "Error: rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm not found !!! Downloading now......"
@@ -192,7 +192,7 @@ rpm -i rpmforge-release-0.5.3-1.el7.rf.${AARCH}.rpm
 
 fi
 
-if [ -s axel-2.4-1.el6.rf.${AARCH}.rpm ]; then
+if [ -s "axel-2.4-1.el6.rf.${AARCH}.rpm" ]; then
   echo "axel-2.4-1.el6.rf.${AARCH}.rpm [found]"
   else
   echo "Error: axel-2.4-1.el6.rf.${AARCH}.rpm not found !!! Downloading now......"
