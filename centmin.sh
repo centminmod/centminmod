@@ -18,7 +18,7 @@ branchname='123.08beta03'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/03/2015'
+SCRIPT_DATE='07/07/2015'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
@@ -407,7 +407,7 @@ XCACHE_VERSION='3.2.0'       # Use this version of Xcache
 APCCACHE_VERSION='3.1.13'       # Use this version of APC Cache
 IGBINARY_VERSION='1.2.1'
 IGBINARYGIT='y'
-ZOPCACHEDFT='n'
+ZOPCACHEDFT='y'
 ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
