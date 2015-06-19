@@ -2076,7 +2076,8 @@ libressldownload() {
     if [ -s ${LIBRESSL_LINKFILE} ]; then
         cecho "LibreSSL ${LIBRESSL_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} $WGETRETRY 
+        # $DOWNLOADAPP ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} $WGETRETRY 
+        $DOWNLOADAPP ${LIBRESSL_LINK} $WGETRETRY 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
