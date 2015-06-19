@@ -311,13 +311,16 @@ OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
 OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
 # OPENSSL_LINK="http://centminmod.com/centminmodparts/openssl/${OPENSSL_LINKFILE}"
 
-# wget renamed
-LIBRESSL_LINKFILE="libressl-portable-v${LIBRESSL_VERSION}.tar.gz"
-LIBRESSL_LINK="https://github.com/libressl-portable/portable/archive/v${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LINK="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
+
+# wget renamed github
+# LIBRESSL_LINKFILE="libressl-portable-v${LIBRESSL_VERSION}.tar.gz"
+# LIBRESSL_LINK="https://github.com/libressl-portable/portable/archive/v${LIBRESSL_VERSION}.tar.gz"
 # LIBRESSL_LINK="http://centminmod.com/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
 
 # libressl non-renamed
-LIBRESSL_LOCALLINKFILE="portable-${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LOCALLINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
 
 SIEGE_LINKFILE="siege-${SIEGE_VERSION}.tar.gz"
 SIEGE_LINK="http://download.joedog.org/siege/${SIEGE_LINKFILE}"

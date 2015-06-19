@@ -17,7 +17,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-		LIBRESSLOPT=" --with-openssl=../portable-${LIBRESSL_VERSION}"
+		LIBRESSLOPT=" --with-openssl=../libressl-${LIBRESSL_VERSION}"
 		OPENSSLOPT=""
 		LRT='-lrt '
 	else
@@ -242,7 +242,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 else
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-		LIBRESSLOPT=" --with-openssl=../portable-${LIBRESSL_VERSION}"
+		LIBRESSLOPT=" --with-openssl=../libressl-${LIBRESSL_VERSION}"
 		OPENSSLOPT=""
 		LRT='-lrt '
 	else
