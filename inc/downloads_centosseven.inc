@@ -142,6 +142,8 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
     FORGERPM=$(rpm -qa | grep rpmforge-release)
     rpm -e $FORGERPM
   fi
+
+  cd $DIR_TMP  
   
   if [ -s "${CENTOSSEVENRPMFORGEFILE}" ]; then
     echo "${CENTOSSEVENRPMFORGEFILE} [found]"
@@ -198,6 +200,7 @@ echo ""
 fi
 fi # CENTALTREPO_DISABLE
 
+  cd $DIR_TMP
 
 if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSEVENPERCONALRELEASEFILE} [found]"
