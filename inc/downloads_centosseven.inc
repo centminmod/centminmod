@@ -52,6 +52,15 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -s "${CENTOSSEVENREMIFILE}" ]; then
     echo "${CENTOSSEVENREMIFILE} [found]"
     rpm -ivh --nosignature ${CENTOSSEVENREMIFILE}
+    ERR=$?
+    CCREMICHECK="$ERR"
+      if [ "$CCREMICHECK" == '0' ]; then
+        yumpriorremi
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSEVENREMIFILE} install." $boldgreen
+        exit $ERR
+      fi    
     else
     echo "Error: ${CENTOSSEVENREMIFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENREMI} --tries=3
@@ -153,6 +162,15 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
     echo "${CENTOSSEVENRPMFORGEFILE} [found]"
   rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
   rpm -i ${CENTOSSEVENRPMFORGEFILE}    
+    ERR=$?
+    CCRPMFORGECHECK="$ERR"
+      if [ "$CCRPMFORGECHECK" == '0' ]; then
+        yumpriorrpmforge
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSEVENRPMFORGEFILE} install." $boldgreen
+        #exit $ERR
+      fi  
     else
     echo "Error: ${CENTOSSEVENRPMFORGEFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENRPMFORGE} --tries=3 
@@ -212,6 +230,15 @@ if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSEVENPERCONALRELEASEFILE} [found]"
   rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
   rpm -i ${CENTOSSEVENPERCONALRELEASEFILE}  
+  ERR=$?
+  CCPERCONACHECK="$ERR"
+    if [ "$CCPERCONACHECK" == '0' ]; then
+      yumpriorpercona
+      echo ""
+    else
+      cecho "Error: problem with ${CENTOSSEVENPERCONALRELEASEFILE} install." $boldgreen
+      exit $ERR
+    fi  
   else
   echo "Error: ${CENTOSSEVENPERCONALRELEASEFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENPERCONALRELEASE} --tries=3 
@@ -244,6 +271,15 @@ fi
 if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
   echo "${CENTOSSEVENVARNISHFILE} [found]"
   rpm --nosignature -i ${CENTOSSEVENVARNISHFILE}
+  ERR=$?
+  CCVARNISHCHECK="$ERR"
+    if [ "$CCVARNISHCHECK" == '0' ]; then
+      yumpriorvarnish
+      echo ""
+    else
+      cecho "Error: problem with ${CENTOSSEVENVARNISHFILE} install." $boldgreen
+      exit $ERR
+    fi  
   else
   echo "Error: ${CENTOSSEVENVARNISHFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENVARNISH} --tries=3

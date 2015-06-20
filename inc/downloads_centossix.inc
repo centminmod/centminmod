@@ -52,6 +52,15 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 	if [ -s "${CENTOSSIXREMIFILE}" ]; then
   	echo "${CENTOSSIXREMIFILE} [found]"
   	rpm -ivh --nosignature ${CENTOSSIXREMIFILE}
+		ERR=$?
+		CCREMICHECK="$ERR"
+			if [ "$CCREMICHECK" == '0' ]; then
+				yumpriorremi
+				echo ""
+			else
+				cecho "Error: problem with ${CENTOSSIXREMIFILE} install." $boldgreen
+				exit $ERR
+			fi  	
   	else
   	echo "Error: ${CENTOSSIXREMIFILE} not found !!! Downloading now......"
   	wget ${WGETOPT} ${CENTOSSIXREMI} --tries=3
@@ -153,7 +162,16 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	if [ -s "${CENTOSSIXRPMFORGEFILE}" ]; then
   	echo "${CENTOSSIXRPMFORGEFILE} [found]"
 	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-	rpm -i ${CENTOSSIXRPMFORGEFILE}  	
+	rpm -i ${CENTOSSIXRPMFORGEFILE}
+		ERR=$?
+		CCRPMFORGECHECK="$ERR"
+			if [ "$CCRPMFORGECHECK" == '0' ]; then
+				yumpriorrpmforge
+				echo ""
+			else
+				cecho "Error: problem with ${CENTOSSIXRPMFORGEFILE} install." $boldgreen
+				#exit $ERR
+			fi	 	
   	else
   	echo "Error: ${CENTOSSIXRPMFORGEFILE} not found !!! Downloading now......"
   	wget ${WGETOPT} ${CENTOSSIXRPMFORGE} --tries=3 
@@ -212,6 +230,15 @@ if [ -s "${CENTOSSIXPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSIXPERCONALRELEASEFILE} [found]"
 	rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
 	rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
+	ERR=$?
+	CCPERCONACHECK="$ERR"
+		if [ "$CCPERCONACHECK" == '0' ]; then
+			yumpriorpercona
+			echo ""
+		else
+			cecho "Error: problem with ${CENTOSSIXPERCONALRELEASEFILE} install." $boldgreen
+			exit $ERR
+		fi	
   else
   echo "Error: ${CENTOSSIXPERCONALRELEASEFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSIXPERCONALRELEASE} --tries=3 
@@ -244,6 +271,15 @@ fi
 if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
   echo "${CENTOSSIXVARNISHFILE} [found]"
   rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
+	ERR=$?
+	CCVARNISHCHECK="$ERR"
+		if [ "$CCVARNISHCHECK" == '0' ]; then
+			yumpriorvarnish
+			echo ""
+		else
+			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
+			exit $ERR
+		fi  
   else
   echo "Error: ${CENTOSSIXVARNISHFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSIXVARNISH} --tries=3
