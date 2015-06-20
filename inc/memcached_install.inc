@@ -347,9 +347,9 @@ fi # php 7 or not
 # cd $DIR_TMP
 # echo "cd twemperf-${TWEMPERF_VER}"
 # cd twemperf-${TWEMPERF_VER}
-if [[ "$INITIALINSTALL" != [yY] ]]; then# 
-    make clean
-fi
+#if [[ "$INITIALINSTALL" != [yY] ]]; then
+#    make clean
+#fi
 # ./configure
 # make${MAKETHREADS}
 # make install
