@@ -4,6 +4,8 @@ if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
 
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 
+    cd $DIR_TMP	
+
 if [ -s "${CENTOSSIXAXIVOFILE}" ]; then
   echo "${CENTOSSIXAXIVOFILE} [found]"
   else
@@ -45,6 +47,7 @@ remisixyum() {
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
 # if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    cd $DIR_TMP
 
 	if [ -s "${CENTOSSIXREMIFILE}" ]; then
   	echo "${CENTOSSIXREMIFILE} [found]"
@@ -230,6 +233,8 @@ rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
 	fi
 
 fi
+
+    cd $DIR_TMP
 
 if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
   echo "${CENTOSSIXVARNISHFILE} [found]"

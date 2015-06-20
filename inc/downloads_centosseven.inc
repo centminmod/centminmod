@@ -4,6 +4,8 @@ if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
 
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 
+    cd $DIR_TMP  
+
 if [ -s "${CENTOSSEVENAXIVOFILE}" ]; then
   echo "${CENTOSSEVENAXIVOFILE} [found]"
   else
@@ -45,6 +47,7 @@ remisevenyum() {
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
 # if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    cd $DIR_TMP
 
   if [ -s "${CENTOSSEVENREMIFILE}" ]; then
     echo "${CENTOSSEVENREMIFILE} [found]"
@@ -230,6 +233,8 @@ rpm -i ${CENTOSSEVENPERCONALRELEASEFILE}
   fi
 
 fi
+
+    cd $DIR_TMP
 
 if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
   echo "${CENTOSSEVENVARNISHFILE} [found]"
