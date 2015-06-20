@@ -145,6 +145,7 @@ yumcentossixdownload
 yumcentossevendownload
 axelsetup
 geoipinstall
+customrpms
 
 # use Remi's ImageMagicK 6.9.* package
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
