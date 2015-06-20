@@ -51,6 +51,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
   if [ -s "${CENTOSSEVENREMIFILE}" ]; then
     echo "${CENTOSSEVENREMIFILE} [found]"
+    rpm -ivh --nosignature ${CENTOSSEVENREMIFILE}
     else
     echo "Error: ${CENTOSSEVENREMIFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENREMI} --tries=3
@@ -150,6 +151,8 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
   
   if [ -s "${CENTOSSEVENRPMFORGEFILE}" ]; then
     echo "${CENTOSSEVENRPMFORGEFILE} [found]"
+  rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
+  rpm -i ${CENTOSSEVENRPMFORGEFILE}    
     else
     echo "Error: ${CENTOSSEVENRPMFORGEFILE} not found !!! Downloading now......"
     wget ${WGETOPT} ${CENTOSSEVENRPMFORGE} --tries=3 
@@ -207,6 +210,8 @@ fi # CENTALTREPO_DISABLE
 
 if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSEVENPERCONALRELEASEFILE} [found]"
+  rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
+  rpm -i ${CENTOSSEVENPERCONALRELEASEFILE}  
   else
   echo "Error: ${CENTOSSEVENPERCONALRELEASEFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENPERCONALRELEASE} --tries=3 
@@ -238,6 +243,7 @@ fi
 
 if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
   echo "${CENTOSSEVENVARNISHFILE} [found]"
+  rpm --nosignature -i ${CENTOSSEVENVARNISHFILE}
   else
   echo "Error: ${CENTOSSEVENVARNISHFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSEVENVARNISH} --tries=3

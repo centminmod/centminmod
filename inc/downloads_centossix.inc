@@ -51,6 +51,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
 	if [ -s "${CENTOSSIXREMIFILE}" ]; then
   	echo "${CENTOSSIXREMIFILE} [found]"
+  	rpm -ivh --nosignature ${CENTOSSIXREMIFILE}
   	else
   	echo "Error: ${CENTOSSIXREMIFILE} not found !!! Downloading now......"
   	wget ${WGETOPT} ${CENTOSSIXREMI} --tries=3
@@ -151,6 +152,8 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	
 	if [ -s "${CENTOSSIXRPMFORGEFILE}" ]; then
   	echo "${CENTOSSIXRPMFORGEFILE} [found]"
+	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
+	rpm -i ${CENTOSSIXRPMFORGEFILE}  	
   	else
   	echo "Error: ${CENTOSSIXRPMFORGEFILE} not found !!! Downloading now......"
   	wget ${WGETOPT} ${CENTOSSIXRPMFORGE} --tries=3 
@@ -207,6 +210,8 @@ fi # CENTALTREPO_DISABLE
 
 if [ -s "${CENTOSSIXPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSIXPERCONALRELEASEFILE} [found]"
+	rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
+	rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
   else
   echo "Error: ${CENTOSSIXPERCONALRELEASEFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSIXPERCONALRELEASE} --tries=3 
@@ -238,6 +243,7 @@ fi
 
 if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
   echo "${CENTOSSIXVARNISHFILE} [found]"
+  rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
   else
   echo "Error: ${CENTOSSIXVARNISHFILE} not found !!! Downloading now......"
   wget ${WGETOPT} ${CENTOSSIXVARNISH} --tries=3
