@@ -38,8 +38,8 @@ phpsededit() {
 
     echo "max_execution_time = 60" >> ${CUSTOMPHPINIFILE}
     echo "short_open_tag = On" >> ${CUSTOMPHPINIFILE}
-    echo "realpath_cache_size = 8192k" >> ${CUSTOMPHPINIFILE}
-    echo "realpath_cache_ttl = 600" >> ${CUSTOMPHPINIFILE}
+    echo "realpath_cache_size = 1024k" >> ${CUSTOMPHPINIFILE}
+    echo "realpath_cache_ttl = 720" >> ${CUSTOMPHPINIFILE}
     echo "upload_max_filesize = 20M" >> ${CUSTOMPHPINIFILE}
     echo "memory_limit = $PHP_MEMORYLIMIT" >> ${CUSTOMPHPINIFILE}
     echo "post_max_size = 20M" >> ${CUSTOMPHPINIFILE}
