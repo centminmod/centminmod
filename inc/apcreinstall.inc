@@ -49,8 +49,10 @@ cd APC-${apcver}
 
 fi # 5.5 & 5.6 fix 
 
-make clean
-/usr/local/bin/phpize -clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    make clean
+    /usr/local/bin/phpize -clean
+fi
 /usr/local/bin/phpize
 
 if [ "$apcver" == '3.1.10' ]; then

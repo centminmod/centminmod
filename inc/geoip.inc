@@ -11,7 +11,9 @@ if [[ -d /usr/share/GeoIP ]]; then
 		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
 	fi
 	cd geoip
-	make clean
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		make clean
+	fi
 	/usr/local/bin/phpize
 	./configure --with-php-config=/usr/local/bin/php-config
 	make$MAKETHREADS

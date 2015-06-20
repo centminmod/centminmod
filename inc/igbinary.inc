@@ -27,7 +27,9 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             export PHP_AUTOHEADER=/usr/bin/autoheader
         
         cd igbinary-php7
-        make clean
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
         autoconf -V | head -n1
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize
@@ -50,7 +52,9 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             export PHP_AUTOHEADER=/usr/bin/autoheader
         
         cd ${DIR_TMP}/igbinary-igbinary-*/
-        make clean
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
         autoconf -V | head -n1
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize
@@ -77,7 +81,9 @@ else
 
 tar -xzvf igbinary-${IGBINARY_VERSION}.tgz
 cd ${DIR_TMP}/igbinary-${IGBINARY_VERSION}/
-make clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    make clean
+fi
 autoconf -V | head -n1
 /usr/local/bin/phpize -clean
 /usr/local/bin/phpize

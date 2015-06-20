@@ -59,7 +59,9 @@ checkredistar
     cd $DIR_TMP
 #tar xvzf ${PHPEXT_REDISLINKFILE}
 cd ${DIR_TMP}/phpredis-${REDISPHP_VER}
-make clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    make clean
+fi
 /usr/local/bin/phpize
 if [[ -f "${PHPEXTDIRD}/igbinary.so" ]]; then
     ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary

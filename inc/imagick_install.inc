@@ -40,14 +40,18 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
     echo
     echo "compiling imagick PHP extension for PHP 7.x ..."
     cd imagick-php7
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     /usr/local/bin/phpize
     ./configure --with-php-config=/usr/local/bin/php-config
     make${MAKETHREADS}
     make install
 else    
     cd imagick-${IMAGICKPHP_VER}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     /usr/local/bin/phpize
     ./configure --with-php-config=/usr/local/bin/php-config
     make${MAKETHREADS}

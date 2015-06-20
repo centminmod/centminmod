@@ -26,7 +26,9 @@ if [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$PHPMVER" != '7.0' || "$PHPCURRENTVER" != 
 #tar xvzf zendopcache-7.0.5.tgz
 #cd zendopcache-7.0.5
 cd zendopcache-${ZOPCACHECACHE_VERSION}
-make clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+	make clean
+fi
 /usr/local/bin/phpize
 ./configure --with-php-config=/usr/local/bin/php-config
 make${MAKETHREADS}

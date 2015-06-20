@@ -31,7 +31,9 @@ checkmongodbtar
     cd $DIR_TMP
 #tar xvzf ${PHPEXT_MONGODBLINKFILE}
 cd ${DIR_TMP}/mongo-php-driver-${MONGODBPHP_VER}
-make clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    make clean
+fi
 /usr/local/bin/phpize
 if [[ "$MONGODB_SASL" = [yY] ]]; then
     ./configure --with-php-config=/usr/local/bin/php-config --with-mongo-sasl=/usr/local

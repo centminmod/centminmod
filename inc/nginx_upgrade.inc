@@ -279,7 +279,9 @@ then
 
     tar xvzf libunwind-${LIBUNWIND_VERSION}.tar.gz
     cd libunwind-${LIBUNWIND_VERSION}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     ./configure
     make${MAKETHREADS}
     make install
@@ -296,7 +298,9 @@ then
 
     tar xvzf google-perftools-${GPERFTOOLS_VERSION}.tar.gz
     cd google-perftools-${GPERFTOOLS_VERSION}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     ./configure --enable-frame-pointers
     make${MAKETHREADS}
     make install
@@ -331,7 +335,9 @@ then
 
     tar xvzf pcre-${PCRE_VERSION}.tar.gz
     cd pcre-${PCRE_VERSION}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     ./configure
     make${MAKETHREADS}
     make install
@@ -356,7 +362,9 @@ check_requestscheme
 
     tar xvfz nginx-${ngver}.tar.gz
     cd nginx-${ngver}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
 
 # set_intelflags
 

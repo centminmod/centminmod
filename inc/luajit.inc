@@ -8,7 +8,9 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     if [[ "$LUAJIT_GITINSTALL" = [nN] ]]; then
         cd $DIR_TMP
         cd LuaJIT-${ORESTY_LUAGITVER}
-        make clean
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
         make${MAKETHREADS}
         make install
     
@@ -29,7 +31,9 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
             git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
             cd LuaJIT-${LUAJIT_GITINSTALLVER}
         fi
-        make clean
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
         make${MAKETHREADS}
         make install
 

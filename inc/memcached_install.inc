@@ -182,7 +182,9 @@ else
     cd $DIR_TMP
     #tar xfz release-${LIBEVENT_VERSION}-stable.tar.gz
     cd libevent-release-${LIBEVENT_VERSION}-stable
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     ./autogen.sh
     ./configure --prefix=/usr/${LIBDIR}
     make${MAKETHREADS}
@@ -213,7 +215,9 @@ else
     cd $DIR_TMP
     #tar xzf memcached-${MEMCACHED_VERSION}.tar.gz
     cd ${DIR_TMP}/memcached-${MEMCACHED_VERSION}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     ./configure --with-libevent=/usr/${LIBDIR} --enable-sasl --enable-sasl-pwdb
     # ./configure --with-libevent=/usr/${LIBDIR} --enable-memcached --enable-memcached-igbinary --enable-memcached-json --with-php- config=/usr/local/bin/php-config
     make${MAKETHREADS}
@@ -237,7 +241,9 @@ cmservice memcached start
     cd $DIR_TMP
 #tar -xvf memcache-${MEMCACHE_VERSION}.tgz
 cd ${DIR_TMP}/memcache-${MEMCACHE_VERSION}
-make clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    make clean
+fi
 /usr/local/bin/phpize
 ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
 make${MAKETHREADS}
@@ -262,7 +268,9 @@ if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
         cd $DIR_TMP
         #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
         cd ${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}
-        make clean
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
         ./config/autorun.sh
         ./configure
         time make${MAKETHREADS}
@@ -275,7 +283,9 @@ else
     cd $DIR_TMP
     #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
     cd ${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     ./config/autorun.sh
     ./configure
     time make${MAKETHREADS}
@@ -299,7 +309,9 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
     rm -rf memcached-php7
     git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
     cd memcached-php7
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
         ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
@@ -314,7 +326,9 @@ else
     echo
     echo "compiling memcached PHP extension ${MEMCACHEDPHP_VER} ..."
     cd ${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}
-    make clean
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
     /usr/local/bin/phpize
     if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
         ./configure --with-php-config=/usr/local/bin/php-config --enable-memcached-json --with-libmemcached-dir=/usr/local
@@ -333,7 +347,9 @@ fi # php 7 or not
 # cd $DIR_TMP
 # echo "cd twemperf-${TWEMPERF_VER}"
 # cd twemperf-${TWEMPERF_VER}
-# make clean
+if [[ "$INITIALINSTALL" != [yY] ]]; then# 
+    make clean
+fi
 # ./configure
 # make${MAKETHREADS}
 # make install
