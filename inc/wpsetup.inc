@@ -37,8 +37,8 @@ CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 pureftpinstall
 
 wpinstall
-  WPSALT=$(openssl rand -base64 18 | cut -c1-18 | sed -e s'|/||' -e s'|+||')
-  WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e s'|/|| -e s'|+||'')
+  WPSALT=$(openssl rand -base64 18 | cut -c1-18 | sed -e 's|/||' -e 's|+||')
+  WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e 's|/||' -e 's|+||')
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
