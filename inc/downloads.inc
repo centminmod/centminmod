@@ -1616,7 +1616,7 @@ fi #LIBMEMCACHED_YUM
 ###############################################
 libmemcachedtarball() {
 
-if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
+if [[ "$LIBMEMCACHED_YUM" = [nN] || "$LIBMEMCACHED_YUM" = [yY] ]]; then
 
     cd $DIR_TMP
 
