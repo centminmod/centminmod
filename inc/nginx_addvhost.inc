@@ -378,6 +378,9 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   cecho "domain: https://$vhostname" $boldyellow
   cecho "vhost ssl conf file for $vhostname created: /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
   cecho "/usr/local/nginx/conf/ssl_include.conf created" $boldwhite
+  cecho "Self-signed SSL Certificate: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldyellow
+  cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
+  cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
