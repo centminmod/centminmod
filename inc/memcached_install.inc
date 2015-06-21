@@ -299,6 +299,12 @@ wait
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
+if [ -f /usr/bin/re2c ]; then
+    if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
+        rerpm
+    fi
+fi
+
 php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
