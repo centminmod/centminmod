@@ -221,7 +221,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # if unsure use return 302 before using return 301
 # server {
 #   server_name ${vhostname} www.${vhostname};
-#    return 302 https://$server_name$request_uri;
+#    return 302 https://\$server_name\$request_uri;
 # }
 
 server {
