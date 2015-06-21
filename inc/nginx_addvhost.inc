@@ -1,4 +1,42 @@
-function funct_nginxaddvhost {
+sslvhost() {
+
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "SSL Vhost Setup..." $boldgreen
+cecho "---------------------------------------------------------------" $boldyellow
+echo ""
+
+if [ ! -f /usr/local/nginx/conf/ssl ]; then
+  mkdir -p /usr/local/nginx/conf/ssl
+fi
+
+if [ ! -f /usr/local/nginx/conf/ssl/${vhostname} ]; then
+  mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
+fi
+
+if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
+cat > "/usr/local/nginx/conf/ssl_include.conf"<<EVS
+ssl_session_cache      shared:SSL:10m;
+ssl_session_timeout    60m;
+ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;  
+EVS
+fi
+
+cd /usr/local/nginx/conf/ssl/${vhostname}
+
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Generating self signed SSL certificate..." $boldgreen
+sleep 5
+
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=US/ST=Los Angeles/L=California/O=${vhostname}/CN=${vhostname}"
+openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
+
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
+
+openssl dhparam -out dhparam.pem 2048
+}
+
+funct_nginxaddvhost() {
 PUREUSER=nginx
 PUREGROUP=nginx
 CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
@@ -6,8 +44,15 @@ pureftpinstall
 
 echo ""
 cecho "---------------------------------------------" $boldyellow
+echo
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
+
+if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
+  echo
+  read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
+fi
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   if [ ! -f /usr/sbin/cracklib-check ]; then
     yum -y -q install cracklib
@@ -15,8 +60,10 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   if [ ! -f /usr/bin/pwgen ]; then
     yum -y -q install pwgen
   fi
+  echo
   read -ep "Create FTP username for vhost domain (enter username): " ftpuser
   read -ep "Do you want to auto generate FTP password (recommended) [y/n]: " autogenpass
+  # echo
 
   if [[ "$autogenpass" = [yY] ]]; then
     ftppass=$(pwgen -1cnys 21)
@@ -93,7 +140,153 @@ chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # Setting up Nginx mapping
-cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf" <<END
+
+if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
+  sslvhost
+fi
+
+if [[ "$vhostssl" = [yY] ]]; then
+
+# main non-ssl vhost at yourdomain.com.conf
+cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+
+# redirect from non-www to www 
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+#server {
+#            listen   80;
+#            server_name $vhostname;
+#            return 301 \$scheme://www.${vhostname}\$request_uri;
+#       }
+
+server {
+  server_name $vhostname www.$vhostname;
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  root /home/nginx/domains/$vhostname/public;
+
+  location / {
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Enable for vBulletin usage WITHOUT vbSEO installed
+  # More example Nginx vhost configurations at
+  # http://centminmod.com/nginx_configure.html
+  #try_files    \$uri \$uri/ /index.php;
+
+  }
+
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}
+ENSS
+
+# separate ssl vhost at yourdomain.com.ssl.conf
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+# For SPDY SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+
+# redirect from www to non-www  forced SSL
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+# server {
+#   server_name ${vhostname} www.${vhostname};
+#    return 302 https://$server_name$request_uri;
+# }
+
+server {
+  listen 443 ssl spdy;
+  server_name $vhostname www.$vhostname;
+
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl_include.conf;
+
+  # mozilla recommended
+  ssl_ciphers ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
+  ssl_prefer_server_ciphers   on;
+  add_header Alternate-Protocol  443:npn-spdy/3;
+  add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+  #add_header  X-Content-Type-Options "nosniff";
+  #add_header X-Frame-Options DENY;
+  spdy_headers_comp 5;
+  ssl_buffer_size 1400;
+  ssl_session_tickets on;
+  
+  # enable ocsp stapling
+  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver_timeout 10s;
+  #ssl_stapling on;
+  #ssl_stapling_verify on;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  root /home/nginx/domains/$vhostname/public;
+
+  location / {
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Enable for vBulletin usage WITHOUT vbSEO installed
+  # More example Nginx vhost configurations at
+  # http://centminmod.com/nginx_configure.html
+  #try_files    \$uri \$uri/ /index.php;
+
+  }
+
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}
+ESS
+
+else
+
+cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
 
@@ -148,8 +341,10 @@ server {
 }
 END
 
+fi
+
 echo 
-cecho "---------------------------------------------" $boldyellow
+cecho "-------------------------------------------------------------" $boldyellow
 cmservice nginx reload
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
@@ -157,7 +352,7 @@ fi
 
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-cecho "---------------------------------------------" $boldyellow
+cecho "-------------------------------------------------------------" $boldyellow
 cecho "FTP hostname : $CNIP" $boldwhite
 cecho "FTP port : 21" $boldwhite
 cecho "FTP mode : FTP (explicit SSL)" $boldwhite
@@ -165,9 +360,19 @@ cecho "FTP Passive (PASV) : ensure is checked/enabled" $boldwhite
 cecho "FTP username created for $vhostname : $ftpuser" $boldwhite
 cecho "FTP password created for $vhostname : $ftppass" $boldwhite
 fi
-cecho "---------------------------------------------" $boldyellow
+cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
+echo
+cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
+  echo
+  cecho "vhost ssl for $vhostname created successfully" $boldwhite
+  cecho "domain: https://$vhostname" $boldyellow
+  cecho "vhost ssl conf file for $vhostname created: /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
+  cecho "/usr/local/nginx/conf/ssl_include.conf created" $boldwhite
+fi
+echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
 cecho "vhost log files directory is /home/nginx/domains/$vhostname/log" $boldwhite
 
@@ -176,15 +381,15 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-cecho "---------------------------------------------" $boldyellow
+cecho "-------------------------------------------------------------" $boldyellow
 
 else
 
 echo ""
-cecho "---------------------------------------------" $boldyellow
+cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname already exists" $boldwhite
 cecho "/home/nginx/domains/$vhostname already exists" $boldwhite
-cecho "---------------------------------------------" $boldyellow
+cecho "-------------------------------------------------------------" $boldyellow
 echo ""
 
 fi
