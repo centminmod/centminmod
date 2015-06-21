@@ -239,6 +239,13 @@ cmservice memcached start
     pwd
     echo "cd $DIR_TMP"
     cd $DIR_TMP
+
+if [ -f /usr/bin/re2c ]; then
+    if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
+        rerpm
+    fi
+fi
+
 #tar -xvf memcache-${MEMCACHE_VERSION}.tgz
 cd ${DIR_TMP}/memcache-${MEMCACHE_VERSION}
 if [[ "$INITIALINSTALL" != [yY] ]]; then
