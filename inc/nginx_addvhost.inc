@@ -27,7 +27,7 @@ cecho "---------------------------------------------------------------" $boldyel
 cecho "Generating self signed SSL certificate..." $boldgreen
 sleep 5
 
-openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=US/ST=Los Angeles/L=California/O=${vhostname}/CN=${vhostname}"
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
 cecho "---------------------------------------------------------------" $boldyellow
