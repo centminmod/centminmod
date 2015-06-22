@@ -141,7 +141,7 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # Setting up Nginx mapping
 
-if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
   sslvhost
 fi
 
