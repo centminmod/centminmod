@@ -394,10 +394,32 @@ cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
 cecho "vhost log files directory is /home/nginx/domains/$vhostname/log" $boldwhite
 
 echo
+cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
-
+echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
+if [[ "$sslconfig" = [yY] ]]; then
+echo
+cecho "-------------------------------------------------------------" $boldyellow
+cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
+echo
+ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
+fi
+
+echo
+cecho "-------------------------------------------------------------" $boldyellow
+cecho "Commands to remove ${vhostname}" $boldwhite
+echo
+cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+if [[ "$sslconfig" = [yY] ]]; then
+cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
+fi
+cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
+cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldwhite
+cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldwhite
+cecho " rm -rf /home/nginx/domains/$vhostname" $boldwhite
+cecho " service nginx restart" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 
 else
