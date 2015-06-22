@@ -82,6 +82,8 @@ installopenssl() {
         # make${MAKETHREADS} check
         make${MAKETHREADS}
         make install
+        cp -a /etc/pki/tls/openssl.cnf /etc/pki/tls/openssl.cnf-bakb4libressl
+        ln -s /etc/pki/tls/openssl.cnf /etc/ssl/openssl.cnf
 
         if [[ "$CLANG" = [yY] ]]; then
             unset CC
