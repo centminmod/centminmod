@@ -33,7 +33,14 @@ openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
 
+dhparamstarttime=$(date +%s.%N)
+
 openssl dhparam -out dhparam.pem 2048
+
+dhparamendtime=$(date +%s.%N)
+DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
+cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
+
 }
 
 funct_nginxaddvhost() {
