@@ -34,7 +34,7 @@ fi
     sed -i 's/DYNDNS = \"0\"/DYNDNS = \"300\"/' /etc/csf/csf.conf
     sed -i 's/DYNDNS_IGNORE = \"0\"/DYNDNS_IGNORE = \"1\"/' /etc/csf/csf.conf
 
-    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(modprobe -l | grep ip_set)" ]]; then
+    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset')" ]]; then
         if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
             # from iptables so uses less server resources to handle many IPs
