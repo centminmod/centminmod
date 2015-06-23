@@ -73,10 +73,10 @@ EOF
 nvcheck() {
 	if [[ -f "${SCRIPT_DIR}/tools/nv.sh" && -f /usr/bin/nv ]]; then
 		# auto update /usr/bin/nv if different from centmin mod tools/nv.sh copy
-		if [[ "$(diff -qr ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv; echo $?)" != '0' ]]; then
+		# if [[ "$(diff -qr ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv; echo $?)" != '0' ]]; then
 		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
 		chmod +x /usr/bin/nv
-		fi
+		# fi
 	fi		
 }
 
