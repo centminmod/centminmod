@@ -105,6 +105,7 @@ centaltoff
 csfipsetcheck
 checkaliases
 checkcmdircmd
+nvcheck
 
 }
 
