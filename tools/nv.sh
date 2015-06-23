@@ -92,7 +92,12 @@ while getopts ":d:s:u:" opt; do
    RUN=y
 	 if [ "$ftpuser" ]; then
 	 	PUREFTPD_DISABLED=n
-	 	pureftpinstall
+	 	if [ ! -f /usr/bin/pure-pw ]; then
+      PUREFTPD_INSTALLED=n
+      # echo "Error: pure-ftpd not installed"
+    else
+      autogenpass=y
+    fi
 	 fi
 	;;
 	*)
@@ -275,7 +280,9 @@ funct_nginxaddvhost() {
 PUREUSER=nginx
 PUREGROUP=nginx
 CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
-pureftpinstall
+if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
+  pureftpinstall
+fi
 
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Nginx Vhost Setup..." $boldgreen
