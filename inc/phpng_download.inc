@@ -1,6 +1,6 @@
 ########################################################################
 phpng_download() {
-	if [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$PHPMU_ALPHAVER" != '7.0.0alpha1' || "$PHPMU_ALPHAVER" != '7.0.0alpha2' || "$PHPMU_ALPHAVER" != '7.0.0alpha3' ]]; then
+	if [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' ]]; then
 		if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
 			PHPNGVER='NGDEBUG'
 		elif [[ "$PHPMUVER" = '5.7' ]]; then
