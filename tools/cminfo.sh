@@ -214,7 +214,7 @@ echo " Site Nginx Vhost Config Files:"
 echo "------------------------------------------------------------------"
 echo
 for c in $VHOSTSCONF; do 
-    echo "* $c"; 
+    echo "* /usr/local/nginx/conf/conf.d/$c"; 
 done
 
 if [[ -z "$(service mysql status | grep not)" ]]; then
