@@ -7,6 +7,8 @@ branchname='123.08beta03'
 CUR_DIR="/usr/local/src/centminmod-${branchname}"
 
 DEBUG='n'
+# CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
+# CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
 ################################################################
 # Setup Colours
 black='\E[30;40m'
