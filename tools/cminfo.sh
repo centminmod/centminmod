@@ -9,6 +9,7 @@ USER='root'
 PASS=''
 MYSQLHOST='localhost'
 #####################################################
+CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 VIRTUALCORES=$(grep -c ^processor /proc/cpuinfo)
 PHYSICALCPUS=$(grep 'physical id' /proc/cpuinfo | sort -u | wc -l)
 CPUCORES=$(grep 'cpu cores' /proc/cpuinfo | head -n 1 | cut -d: -f2)
@@ -16,7 +17,8 @@ CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c)
 CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c)
 CPUCACHE=$(awk -F: '/cache size/{print $2}' /proc/cpuinfo | sort | uniq -c)
 
-VHOSTS=$(ls /usr/local/nginx/conf/conf.d | grep '.conf' | egrep -v 'virtual.conf|ssl.con|demodomain.com.conf' | sed -e 's/.conf//')
+VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' | uniq)
 
 CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
 
@@ -137,6 +139,11 @@ echo "------------------------------------------------------------------"
 echo " Centmin Mod Quick Info:"
 echo "------------------------------------------------------------------"
 
+echo "Server Location Info"
+# echo
+curl -s ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
+
+echo
 echo "Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"
 echo
 echo "$CPUSPEED"
@@ -197,7 +204,17 @@ echo " Site Nginx Vhost Accounts:"
 echo "------------------------------------------------------------------"
 echo
 for d in $VHOSTS; do 
-    echo "* $d - /usr/local/nginx/conf/conf.d/${d}.conf"; 
+    echo "* $d - /home/nginx/domains/${d}"; 
+done
+
+echo "------------------------------------------------------------------"
+echo
+echo "------------------------------------------------------------------"
+echo " Site Nginx Vhost Config Files:"
+echo "------------------------------------------------------------------"
+echo
+for c in $VHOSTSCONF; do 
+    echo "* $c"; 
 done
 
 if [[ -z "$(service mysql status | grep not)" ]]; then
