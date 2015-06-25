@@ -1,0 +1,55 @@
+[pool3]
+user = nginx
+group = nginx
+
+listen = 127.0.0.1:9003
+listen.allowed_clients = 127.0.0.1
+listen.backlog = 65535
+
+;listen = /tmp/php5-fpm-pool3.sock
+listen.owner = nginx
+listen.group = nginx
+listen.mode = 0666
+
+pm = ondemand
+pm.max_children = 4
+; Default Value: min_spare_servers + (max_spare_servers - min_spare_servers) / 2
+pm.start_servers = 4
+pm.min_spare_servers = 2
+pm.max_spare_servers = 6
+pm.max_requests = 1000
+
+; PHP 5.3.9 setting
+; The number of seconds after which an idle process will be killed.
+; Note: Used only when pm is set to 'ondemand'
+; Default Value: 10s
+pm.process_idle_timeout = 10s;
+
+rlimit_files = 65536
+rlimit_core = 0
+
+; The timeout for serving a single request after which the worker process will
+; be killed. This option should be used when the 'max_execution_time' ini option
+; does not stop script execution for some reason. A value of '0' means 'off'.
+; Available units: s(econds)(default), m(inutes), h(ours), or d(ays)
+; Default Value: 0
+;request_terminate_timeout = 0
+; Default Value: 0
+;request_slowlog_timeout = 0
+slowlog = /var/log/php-fpm/www-slow-pool3.log
+
+pm.status_path = /phpstatus-pool3
+ping.path = /phpping-pool3
+ping.response = pong
+
+; Limits the extensions of the main script FPM will allow to parse. This can
+; prevent configuration mistakes on the web server side. You should only limit
+; FPM to .php extensions to prevent malicious users to use other extensions to
+; exectute php code.
+; Note: set an empty value to allow all extensions.
+; Default Value: .php
+security.limit_extensions = .php .php3 .php4 .php5
+
+; catch_workers_output = yes
+php_admin_value[error_log] = /var/log/php-fpm/www-php.error-pool3.log
+php_admin_value[disable_functions] = shell_exec
