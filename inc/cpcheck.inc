@@ -80,6 +80,19 @@ nvcheck() {
 	fi		
 }
 
+multiphpcheck() {
+	if [[ -d /usr/local/nginx/conf ]] && [[ ! -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool2.conf-disabled || ! -f /usr/local/nginx/conf/php-pool5.conf ]]; then
+		# check to see if multiple php-fpm pool files exist and copy over if they don't
+		# exist on existing server
+		if [ -f "${SCRIPT_DIR}/config/nginx/php-pool5.conf" ]; then
+			\cp -f ${SCRIPT_DIR}/config/nginx/php-pool* /usr/local/nginx/conf/
+		fi
+		if [ -f "${SCRIPT_DIR}/config/nginx/phpfpmd/phpfpm_pool2.conf-disabled" ]; then
+			\cp -f ${SCRIPT_DIR}/config/nginx/phpfpmd/phpfpm_pool* /usr/local/nginx/conf/phpfpmd/
+		fi
+	fi			
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -106,6 +119,7 @@ csfipsetcheck
 checkaliases
 checkcmdircmd
 nvcheck
+multiphpcheck
 
 }
 
