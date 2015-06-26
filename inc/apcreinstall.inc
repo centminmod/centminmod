@@ -1,5 +1,23 @@
 function funct_apcreinstall {
 
+if [[ -f ${CONFIGSCANDIR}/zendopcache.ini ]]; then
+    echo ""
+    echo "detected Zend Opcache configuration."
+    echo "if you want to switch to APC Cache"
+    echo "use centmin.sh menu option 9 instead"
+    echo "aborting in 8 seconds..."
+    sleep 8
+    exit 0
+elif [[ -f ${CONFIGSCANDIR}/xcache.ini ]]; then
+    echo ""
+    echo "detected Xcache configuration."
+    echo "if you want to switch to APC Cache"
+    echo "use centmin.sh menu option 9 instead"
+    echo "aborting in 8 seconds..."
+    sleep 8    
+    exit 0
+fi
+
 echo " "
 read -ep "APC reinstall - Would you like to continue? [y/n] " apckeyd
 if [[ "$apckeyd" = [nN] ]]; then

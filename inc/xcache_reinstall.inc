@@ -1,5 +1,23 @@
 function funct_xcachereinstall {
 
+if [[ -f ${CONFIGSCANDIR}/zendopcache.ini ]]; then
+    echo ""
+    echo "detected Zend Opcache configuration."
+    echo "if you want to switch to XCache"
+    echo "use centmin.sh menu option 8 instead"
+    echo "aborting in 8 seconds..."
+    sleep 8
+    exit 0
+elif [[ -f ${CONFIGSCANDIR}/apc.ini ]]; then
+    echo ""
+    echo "detected APC Cache configuration."
+    echo "if you want to switch to XCache"
+    echo "use centmin.sh menu option 8 instead"
+    echo "aborting in 8 seconds..."
+    sleep 8    
+    exit 0
+fi    
+
 echo " "
 read -ep "Xcache reinstall - Would you like to continue? [y/n] " xcachekey
 if [[ "$xcachekey" = [nN] ]]; then
