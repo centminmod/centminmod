@@ -132,10 +132,10 @@ cat > "/etc/security/limits.d/90-nproc.conf" <<EOF
 # accidental fork bombs.
 # See rhbz #432903 for reasoning.
 
-*          soft    nproc     4096
-*          hard    nproc     4096
-nginx      soft    nproc     16384
-nginx      hard    nproc     16384
+*          soft    nproc     8192
+*          hard    nproc     8192
+nginx      soft    nproc     32278
+nginx      hard    nproc     32278
 root       soft    nproc     unlimited
 
 EOF
@@ -144,6 +144,7 @@ fi # raise user process limits
 if [[ ! -f /proc/user_beancounters ]]; then
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
+fs.nr_open=12000000
 fs.file-max=9000000
 net.core.wmem_max=16777216
 net.core.rmem_max=16777216
