@@ -39,15 +39,20 @@ phpsededit() {
     echo "max_execution_time = 60" >> ${CUSTOMPHPINIFILE}
     echo "short_open_tag = On" >> ${CUSTOMPHPINIFILE}
     echo "realpath_cache_size = 1024k" >> ${CUSTOMPHPINIFILE}
-    echo "realpath_cache_ttl = 720" >> ${CUSTOMPHPINIFILE}
-    echo "upload_max_filesize = 20M" >> ${CUSTOMPHPINIFILE}
+    echo "realpath_cache_ttl = 14400" >> ${CUSTOMPHPINIFILE}
+    echo "upload_max_filesize = 40M" >> ${CUSTOMPHPINIFILE}
     echo "memory_limit = $PHP_MEMORYLIMIT" >> ${CUSTOMPHPINIFILE}
-    echo "post_max_size = 20M" >> ${CUSTOMPHPINIFILE}
+    echo "post_max_size = 40M" >> ${CUSTOMPHPINIFILE}
     echo "expose_php = Off" >> ${CUSTOMPHPINIFILE}
     echo "mail.add_x_header = Off" >> ${CUSTOMPHPINIFILE}
     echo "max_input_nesting_level = 128" >> ${CUSTOMPHPINIFILE}
     echo "max_input_vars = 2000" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.net_cmd_buffer_size = 16384" >> ${CUSTOMPHPINIFILE}
+    if [[ "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
+        echo "always_populate_raw_post_data=-1" >> ${CUSTOMPHPINIFILE}
+    else
+        echo ";always_populate_raw_post_data=-1" >> ${CUSTOMPHPINIFILE}
+    fi
     #echo "cgi.fix_pathinfo=0" >> ${CUSTOMPHPINIFILE}
     #echo "disable_functions=exec,passthru,shell_exec,system,proc_open,popen" >> ${CUSTOMPHPINIFILE}
 
