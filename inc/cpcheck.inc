@@ -81,14 +81,25 @@ nvcheck() {
 }
 
 multiphpcheck() {
-	if [[ -d /usr/local/nginx/conf ]] && [[ ! -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool2.conf-disabled || ! -f /usr/local/nginx/conf/php-pool5.conf ]]; then
+	if [[ -d /usr/local/nginx/conf ]] && [[ ! -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool2.conf || ! -f /usr/local/nginx/conf/php-pool5.conf ]]; then
 		# check to see if multiple php-fpm pool files exist and copy over if they don't
 		# exist on existing server
 		if [ -f "${SCRIPT_DIR}/config/nginx/php-pool5.conf" ]; then
 			\cp -f ${SCRIPT_DIR}/config/nginx/php-pool* /usr/local/nginx/conf/
 		fi
-		if [ -f "${SCRIPT_DIR}/config/nginx/phpfpmd/phpfpm_pool2.conf-disabled" ]; then
+		if [ -f "${SCRIPT_DIR}/config/nginx/phpfpmd/phpfpm_pool2.conf" ]; then
 			\cp -f ${SCRIPT_DIR}/config/nginx/phpfpmd/phpfpm_pool* /usr/local/nginx/conf/phpfpmd/
+			if [[ "$USEEDITOR" = 'vim' ]]; then
+    			echo "vim /usr/local/nginx/conf/phpfpmd/phpfpm_pool2.conf" >/usr/bin/fpmconf2 ; chmod 700 /usr/bin/fpmconf2
+    			echo "vim /usr/local/nginx/conf/phpfpmd/phpfpm_pool3.conf" >/usr/bin/fpmconf3 ; chmod 700 /usr/bin/fpmconf3
+    			echo "vim /usr/local/nginx/conf/phpfpmd/phpfpm_pool4.conf" >/usr/bin/fpmconf4 ; chmod 700 /usr/bin/fpmconf4
+    			echo "vim /usr/local/nginx/conf/phpfpmd/phpfpm_pool5.conf" >/usr/bin/fpmconf5 ; chmod 700 /usr/bin/fpmconf5
+			else
+    			echo "nano -w /usr/local/nginx/conf/phpfpmd/phpfpm_pool2.conf" >/usr/bin/fpmconf2 ; chmod 700 /usr/bin/fpmconf2
+    			echo "nano -w /usr/local/nginx/conf/phpfpmd/phpfpm_pool3.conf" >/usr/bin/fpmconf3 ; chmod 700 /usr/bin/fpmconf3
+    			echo "nano -w /usr/local/nginx/conf/phpfpmd/phpfpm_pool4.conf" >/usr/bin/fpmconf4 ; chmod 700 /usr/bin/fpmconf4
+    			echo "nano -w /usr/local/nginx/conf/phpfpmd/phpfpm_pool5.conf" >/usr/bin/fpmconf5 ; chmod 700 /usr/bin/fpmconf5    
+			fi # USEEDITOR			
 		fi
 	fi			
 }
