@@ -1,6 +1,26 @@
 #################
 zopcachereinstall() {
 
+if [[ -f ${CONFIGSCANDIR}/xcache.ini ]]; then
+    echo ""
+    echo "detected Zend Opcache configuration."
+    echo "if you want to switch to Zend Opcache"
+    echo "use centmin.sh menu option 12 -> submenu"
+    echo "option 1 instead"
+    echo "aborting in 8 seconds..."
+    sleep 8
+    break
+elif [[ -f ${CONFIGSCANDIR}/apc.ini ]]; then
+    echo ""
+    echo "detected APC Cache configuration."
+    echo "if you want to switch to Zend Opcache"
+    echo "use centmin.sh menu option 12 -> submenu"
+    echo "option 1 instead"
+    echo "aborting in 8 seconds..."
+    sleep 8    
+    break
+fi    	
+
     echo "*************************************************"
     cecho "* Re-Installing Zend Optimizer Plus OPcache" $boldgreen
     echo "*************************************************"
