@@ -233,6 +233,10 @@ ENABLE_MENU='y'
 FIREWALLD_DISABLE='y'
 
 #####################################################
+# MariaDB Jemalloc
+MARIADB_JEMALLOC='y'
+
+#####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
 CCACHE_VER="3.2.2"

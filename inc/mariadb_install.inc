@@ -521,6 +521,7 @@ fi
     echo "*************************************************"
 
 mysql_upgrade --force --verbose
+mjemalloc
 cmservice mysql restart
 #mysql_secure_installation
 

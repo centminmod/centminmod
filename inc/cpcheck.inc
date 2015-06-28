@@ -104,6 +104,15 @@ multiphpcheck() {
 	fi			
 }
 
+mjemalloc() {
+    if [[ "$MARIADB_JEMALLOC" = [yY] && ! "$(grep libjemalloc /usr/bin/mysqld_safe)" && -f /usr/lib64/libjemalloc.so.1 ]]; then
+        # echo "switching MariaDB to jemalloc malloc method"
+        sed -i 's|^mysqld_ld_preload=|mysqld_ld_preload=/usr/lib64/libjemalloc.so.1|' /usr/bin/mysqld_safe
+        # service mysql restart
+        # pmap `pidof mysqld` | grep jemalloc
+    fi    
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -131,6 +140,7 @@ checkaliases
 checkcmdircmd
 nvcheck
 multiphpcheck
+mjemalloc
 
 }
 
