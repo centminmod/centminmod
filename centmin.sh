@@ -234,7 +234,8 @@ FIREWALLD_DISABLE='y'
 
 #####################################################
 # MariaDB Jemalloc
-MARIADB_JEMALLOC='y'
+# doh forgot MariaDB already uses jemalloc by default
+MARIADB_JEMALLOC='n'
 
 #####################################################
 # CCACHE Configuration
