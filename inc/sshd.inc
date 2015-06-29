@@ -112,10 +112,13 @@ fi
 # safeguard checks that existing port is entered and matches the system
 # detected sshd existing port
 if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
-	sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
-	
-	#echo "Port $PORTNUM" >> /etc/ssh/sshd_config
-	sed -i 's/Port.*[0-9]$/Port '$PORTNUM'/gI' /etc/ssh/sshd_config
+	if [ "$(grep '#Port' /etc/ssh/sshd_config)" ]; then
+		sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
+		sed -i 's/Port.*[0-9]$/Port '$PORTNUM'/gI' /etc/ssh/sshd_config		
+	elif [ "$(grep '^Port' /etc/ssh/sshd_config)" ]; then
+		#echo "Port $PORTNUM" >> /etc/ssh/sshd_config
+		sed -i 's/Port.*[0-9]$/Port '$PORTNUM'/gI' /etc/ssh/sshd_config		
+	fi
 	
 	echo ""
 	echo "Post $PORTNUM configured in /etc/ssh/sshd_config"
