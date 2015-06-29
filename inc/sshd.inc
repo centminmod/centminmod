@@ -46,6 +46,17 @@ fi
 function funct_sshd {
 
 CURRENTSSHDPORT=$(echo ${SSH_CLIENT##* })
+CHECK_CURRENTPORT=$(awk '/^Port/ {print $2}' /etc/ssh/sshd_config)
+
+if [ -z "$CHECK_CURRENTPORT" ]; then
+	CHECK_CURRENTPORT=$(awk '/#Port/ {print $2}' /etc/ssh/sshd_config | head -n1)
+fi
+
+if [[ "$CURRENTSSHDPORT" = "$CHECK_CURRENTPORT" ]]; then
+	CURRENTSSHDPORT=$(echo ${SSH_CLIENT##* })
+else
+	CURRENTSSHDPORT=$CHECK_CURRENTPORT
+fi
 
 echo "*************************************************"
 cecho "* Setup sshd" $boldgreen
@@ -61,16 +72,28 @@ cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config-backup
 echo "--------------------------"
 echo "change ssh port"
 echo "--------------------------"
-cecho "You'll be asked what your current default SSH port is (default = 22)." $boldyellow
+cecho "You'll be asked what your current default SSH port is (default = 22 or $CURRENTSSHDPORT)." $boldyellow
+echo
 cecho "Then asked which SSH port number you want to change to." $boldyellow
 cecho "New SSH port should be a number below and less than <1024." $boldyellow
 sleep 15
 echo
 
 cecho "Your current default SSH port is: $CURRENTSSHDPORT" $boldyellow
+cecho "or $CHECK_CURRENTPORT" $boldyellow
 echo ""
 
 read -ep "Enter existing SSH port number (default = 22 for fresh installs): " EXISTPORTNUM
+
+# safeguard checks that existing port is entered and matches the system
+# detected sshd existing port
+while [[ "$CURRENTSSHDPORT" != "$EXISTPORTNUM" ]]; do
+	echo
+	cecho "Error: you did not enter your existing SSH port number = $CURRENTSSHDPORT !" $boldyellow
+	cecho "or $CHECK_CURRENTPORT" $boldyellow
+	echo
+	read -ep "Enter existing SSH port number (default = 22 for fresh installs or $CURRENTSSHDPORT): " EXISTPORTNUM
+done
 
 echo ""
 
@@ -86,67 +109,62 @@ if [ -f /etc/csf/csf.conf ]; then
 	fi
 fi
 
-sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
-
-#echo "Port $PORTNUM" >> /etc/ssh/sshd_config
-sed -i 's/Port.*[0-9]$/Port '$PORTNUM'/gI' /etc/ssh/sshd_config
-
-echo ""
-echo "Post $PORTNUM configured in /etc/ssh/sshd_config"
-grep "Port $PORTNUM" /etc/ssh/sshd_config
-echo ""
+# safeguard checks that existing port is entered and matches the system
+# detected sshd existing port
+if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
+	sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
+	
+	#echo "Port $PORTNUM" >> /etc/ssh/sshd_config
+	sed -i 's/Port.*[0-9]$/Port '$PORTNUM'/gI' /etc/ssh/sshd_config
+	
+	echo ""
+	echo "Post $PORTNUM configured in /etc/ssh/sshd_config"
+	grep "Port $PORTNUM" /etc/ssh/sshd_config
+	echo ""
+fi
 
 sshdtweaks
 
-echo "iptables -I INPUT -p tcp --dport $EXISTPORTNUM -j REJECT"
-iptables -I INPUT -p tcp --dport $EXISTPORTNUM -j REJECT
-
-echo "iptables -I INPUT -p tcp --dport $PORTNUM -j ACCEPT"
-iptables -I INPUT -p tcp --dport $PORTNUM -j ACCEPT
-
-cmservice iptables restart
-
-if [ -f /etc/csf/csf.conf ]; then
-
-# OLD v1.2.2 method
-#sed -i "s/TCP_IN = \"/TCP_IN = \"$PORTNUM,/g" /etc/csf/csf.conf
-
-#check if portnum already exists
-EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '(TCP_IN|TCP_OUT)' | grep ",${PORTNUM},")
-
-EXISTPORTCHECKED=${EXISTPORTCHECK:-novalue}
-
-#echo "$EXISTPORTCHECKED"
-
-	if [[ "$EXISTPORTCHECKED" = 'novalue' ]]; then
-
-	TCPIN=$(cat /etc/csf/csf.conf | grep ^TCP_IN)
-
-	TCPINNEW=$(cat /etc/csf/csf.conf | grep ^TCP_IN | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
-
-sed -i "s/$TCPIN/$TCPINNEW/g" /etc/csf/csf.conf
-
-	TCPOUT=$(cat /etc/csf/csf.conf | grep ^TCP_OUT)
-
-	TCPOUTNEW=$(cat /etc/csf/csf.conf | grep ^TCP_OUT | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
-
-sed -i "s/$TCPOUT/$TCPOUTNEW/g" /etc/csf/csf.conf
-
-	cmservice csf restart
-	csf -r
-
-	else
-
-	echo ""
-	echo "Port Number $PORTNUM already exists, please pick another port"
-	exit
-
-	fi
-
+# safeguard checks that existing port is entered and matches the system
+# detected sshd existing port
+if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
+	echo "iptables -I INPUT -p tcp --dport $EXISTPORTNUM -j REJECT"
+	iptables -I INPUT -p tcp --dport $EXISTPORTNUM -j REJECT
+	
+	echo "iptables -I INPUT -p tcp --dport $PORTNUM -j ACCEPT"
+	iptables -I INPUT -p tcp --dport $PORTNUM -j ACCEPT
+	
+	cmservice iptables restart
 fi
 
-cmservice sshd  restart
+# safeguard checks that existing port is entered and matches the system
+# detected sshd existing port
+if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
+	if [ -f /etc/csf/csf.conf ]; then
+	#check if portnum already exists
+	EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '(TCP_IN|TCP_OUT)' | grep ",${PORTNUM},")
+	EXISTPORTCHECKED=${EXISTPORTCHECK:-novalue}
+		
+		if [[ "$EXISTPORTCHECKED" = 'novalue' ]]; then
+			TCPIN=$(cat /etc/csf/csf.conf | grep ^TCP_IN)
+			TCPINNEW=$(cat /etc/csf/csf.conf | grep ^TCP_IN | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
+			sed -i "s/$TCPIN/$TCPINNEW/g" /etc/csf/csf.conf
+			TCPOUT=$(cat /etc/csf/csf.conf | grep ^TCP_OUT)
+			TCPOUTNEW=$(cat /etc/csf/csf.conf | grep ^TCP_OUT | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
+			sed -i "s/$TCPOUT/$TCPOUTNEW/g" /etc/csf/csf.conf
+			cmservice csf restart
+			csf -r
+		else
+			echo ""
+			echo "Port Number $PORTNUM already exists, please pick another port"
+			exit
+		fi
+	fi
+	
+	cmservice sshd  restart
+fi # safeguard line 129
 
+if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
 echo ""
 echo "*************************************************"
 cecho "* Setup sshd complete" $boldgreen
@@ -161,5 +179,6 @@ echo "connection, edit and check /etc/csf/csf.conf and your iptables"
 echo "/etc/sysconfig/iptables and service iptables status"
 echo "making sure the new port number you specified is correctly set"
 echo "*************************************************"
+fi
 
 }
