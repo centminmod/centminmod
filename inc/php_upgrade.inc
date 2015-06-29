@@ -509,7 +509,7 @@ mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
 chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
 fi
 
-if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]; then
+if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
     cat ${CENTMINLOGDIR}/zendopcache_passfile.txt
 fi
 
