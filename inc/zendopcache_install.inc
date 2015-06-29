@@ -1,3 +1,66 @@
+###############
+opprotectinstall() {
+
+######################################################
+# Randomize ${N}_opcache.php filename
+
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
+
+hname=$(hostname)
+OPSALT=$(openssl rand 3 -base64)
+OPUSER=$(echo "opadmin${CSALT}")
+OPPASS=$(openssl rand 16 -base64)
+
+	echo ""
+	cecho "Creating htpasswd_opcache user/pass..." $boldyellow
+	echo "/usr/local/nginx/conf/htpasswd.sh create /usr/local/nginx/conf/htpasswd_opcache $OPUSER $OPPASS"
+	# if [ ! -f /usr/local/nginx/conf/htpasswd_opcache ]; then
+	# 	touch /usr/local/nginx/conf/htpasswd_opcache
+	# fi
+	/usr/local/nginx/conf/htpasswd.sh create /usr/local/nginx/conf/htpasswd_opcache $OPUSER $OPPASS
+	OPDETAILS=$(cat /usr/local/nginx/conf/htpasswd_opcache)
+
+	echo ""
+	cecho "Create include file /usr/local/nginx/conf/include_opcache.conf" $boldyellow
+	echo ""
+
+cat > "/usr/local/nginx/conf/include_opcache.conf" <<EOF
+            location ~ ^/(${N}_opcache.php) {
+    include /usr/local/nginx/conf/php.conf;
+	auth_basic "Password Protected";
+	auth_basic_user_file /usr/local/nginx/conf/htpasswd_opcache;
+            }
+EOF
+
+	cat /usr/local/nginx/conf/include_opcache.conf
+
+echo ""
+cecho "Setup virtual.conf" $boldyellow
+cecho "Adding /usr/local/nginx/conf/include_opcache.conf include entry" $boldyellow
+
+CHECKCOPINFO=$(grep include_opcache.conf /usr/local/nginx/conf/conf.d/virtual.conf)
+
+if [[ -z "$CHECKCOPINFO" ]]; then
+
+sed -i '/include \/usr\/local\/nginx\/conf\/staticfiles.conf;/a \include \/usr\/local\/nginx\/conf\/include_opcache.conf;' /usr/local/nginx/conf/conf.d/virtual.conf
+
+fi
+
+echo ""
+cmservice nginx reload
+
+	echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "Password protected ${hname}/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "Username: $OPUSER" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "Password: $OPPASS" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+	echo "" >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+}
+###############
+
 zopcacheinstall() {
 
     echo "*************************************************"
@@ -57,6 +120,7 @@ N=$(echo ${N} | sed -e 's/\s//')
 if [[ ! -f /usr/local/nginx/html/opcache.php ]]; then
 	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	opprotectinstall
 fi
 
 ######################################################
