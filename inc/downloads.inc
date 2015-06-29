@@ -2657,6 +2657,9 @@ fi
 if [ -f "${CM_INSTALLDIR}/downloads/rpms.zip" ]; then
     /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/rpms.zip -d $DIR_TMP/
 fi
+if [ -f "${CM_INSTALLDIR}/downloads/curlrpms.zip" ]; then
+    /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/curlrpms.zip -d $DIR_TMP/
+fi
 if [ -f "${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE}" ]; then
     cp ${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE} $DIR_TMP
 fi
