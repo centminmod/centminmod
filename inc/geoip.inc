@@ -21,6 +21,7 @@ if [[ -d /usr/share/GeoIP ]]; then
 
 cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
+geoip.custom_directory=/usr/share/GeoIP
 EOF
 fi
 }
