@@ -149,10 +149,12 @@ if [[ -f /usr/local/nginx/html/opcache.php ]]; then
 	mv /usr/local/nginx/html/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
 	opprotect
+	OLD_OPCACHEPHP=n
 elif [[ -z "$(ls /usr/local/nginx/html/ | grep opcache.php)" ]]; then
 	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
 	opprotect
+	OLD_OPCACHEPHP=n
 elif [[ "$(ls /usr/local/nginx/html/ | grep opcache.php)" ]]; then
 	# rm -rf /usr/local/nginx/html/*_opcache.php
 	# cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
@@ -163,6 +165,7 @@ elif [[ "$(ls /usr/local/nginx/html/ | grep opcache.php)" ]]; then
 	  	echo "removing duplicate _opcache.php files"
 		echo "rm -rf /usr/local/nginx/html/$f";
 		rm -rf /usr/local/nginx/html/$f
+		OLD_OPCACHEPHP=y
 	done
 fi
 ######################################################
