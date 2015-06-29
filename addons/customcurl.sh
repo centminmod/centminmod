@@ -127,7 +127,7 @@ if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
 	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.i686.rpm
 	rpm -Uvh libcurl7112-7.11.2-25.cf.rhel6.i686.rpm
 	
-	rpm -qa | grep curl
+	rpm -qa curl libcurl libcurl-devel libssh2 libssh2-devel libcurl7155 libcurl7112 c-ares
 	else
 		echo "Error: expected curl related named rpm files are not found"
 		echo "could be their source names have changed etc..."
@@ -182,13 +182,13 @@ elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
 	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
 	rpm -Uvh libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm
 	
-	rpm -qa | grep curl
+	rpm -qa curl libcurl libcurl-devel libssh2 libssh2-devel libcurl7155 libcurl7112 c-ares
 	else
 		echo "Error: expected curl related named rpm files are not found"
 		echo "could be their source names have changed etc..."
 	fi	
 
-if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	#############################
 	# el7 64bit
 	yum -y install libmetalink libssh2-devel nss-devel c-ares
@@ -219,7 +219,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	fi
 
 	# only process with custom curl rpm update if the rpm files exist
-	if [[ -f "libcurl-${CUSTOM_CURLRPMVER}.0-1.0.cf.rhel7.x86_64.rpm" && -f "libcurl-devel-${CUSTOM_CURLRPMVER}.0-1.0.cf.rhel7.x86_64.rpm" && -f "curl-${CUSTOM_CURLRPMVER}.0-1.0.cf.rhel7.x86_64.rpm" && -f "libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm" && -f "libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm" && -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" && -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" ]] ; then
+	if [[ -f "libcurl-${CUSTOM_CURLRPMVER}.0-1.0.cf.rhel7.x86_64.rpm" && -f "libcurl-devel-${CUSTOM_CURLRPMVER}.0-1.0.cf.rhel7.x86_64.rpm" && -f "curl-${CUSTOM_CURLRPMVER}.0-1.0.cf.rhel7.x86_64.rpm" && -f "libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm" && -f "libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm" && -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" && -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" ]]; then
 
 	rpm --nodeps -e curl
 	rpm --nodeps -e libcurl
@@ -236,7 +236,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
 	rpm -Uvh libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm
 	
-	rpm -qa | grep curl
+	rpm -qa curl libcurl libcurl-devel libssh2 libssh2-devel libcurl7155 libcurl7112 c-ares
 	else
 		echo "Error: expected curl related named rpm files are not found"
 		echo "could be their source names have changed etc..."
