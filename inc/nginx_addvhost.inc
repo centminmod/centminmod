@@ -55,7 +55,7 @@ echo ""
 cecho "---------------------------------------------" $boldyellow
 echo
 
-read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
+read -ep "Enter vhost domain name to add (without www. prefix): " vhostname
 
 if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
@@ -71,7 +71,7 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   fi
   echo
   read -ep "Create FTP username for vhost domain (enter username): " ftpuser
-  read -ep "Do you want to auto generate FTP password (recommended) [y/n]: " autogenpass
+  read -ep "Auto generate FTP password (recommended) [y/n]: " autogenpass
   # echo
 
   if [[ "$autogenpass" = [yY] ]]; then
