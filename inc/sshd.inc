@@ -152,9 +152,11 @@ if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
 			TCPIN=$(cat /etc/csf/csf.conf | grep ^TCP_IN)
 			TCPINNEW=$(cat /etc/csf/csf.conf | grep ^TCP_IN | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
 			sed -i "s/$TCPIN/$TCPINNEW/g" /etc/csf/csf.conf
-			TCPOUT=$(cat /etc/csf/csf.conf | grep ^TCP_OUT)
-			TCPOUTNEW=$(cat /etc/csf/csf.conf | grep ^TCP_OUT | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
-			sed -i "s/$TCPOUT/$TCPOUTNEW/g" /etc/csf/csf.conf
+			# don't need to change TCP_OUT or you would have problems connecting to remote ssh servers
+			# on port 22
+			# TCPOUT=$(cat /etc/csf/csf.conf | grep ^TCP_OUT)
+			# TCPOUTNEW=$(cat /etc/csf/csf.conf | grep ^TCP_OUT | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
+			# sed -i "s/$TCPOUT/$TCPOUTNEW/g" /etc/csf/csf.conf
 			cmservice csf restart
 			csf -r
 		else
