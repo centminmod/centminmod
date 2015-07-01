@@ -1703,13 +1703,13 @@ else
             cecho "8).  XCache Install" $boldgreen
             cecho "9).  APC Cache Install" $boldgreen
             cecho "10). Memcached Server Re-install" $boldgreen
-            cecho "11). MariaDB 5.2, 5.5, 10, 10.1 Upgrade Sub-Menu" $boldgreen
+            cecho "11). MariaDB 5.2/5.5 & 10.x Upgrade Sub-Menu" $boldgreen
             cecho "12). Zend OpCache Install/Re-install" $boldgreen
             cecho "13). Install ioping.sh vbtechsupport.com/1239/" $boldgreen
             cecho "14). SELinux disable" $boldgreen
-            cecho "15). Install/Re-install ImageMagick PHP Extension" $boldgreen
+            cecho "15). Install/Reinstall ImagicK PHP Extension" $boldgreen
             cecho "16). Change SSHD Port Number" $boldgreen
-            cecho "17). Multi-thread compression: pigz,pbzip2,lbzip2,p7zip etc" $boldgreen
+            cecho "17). Multi-thread compression: pigz,pbzip2,lbzip2..." $boldgreen
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Re-install" $boldgreen
