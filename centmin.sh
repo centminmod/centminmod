@@ -562,6 +562,7 @@ source "inc/centminfinish.inc"
 
 checkcentosver
 mysqltmpdir
+cpcheck
 
 if [ ! -f /etc/centminmod-release ];then
 echo "$SCRIPT_VERSION" > /etc/centminmod-release

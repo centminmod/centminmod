@@ -50,8 +50,12 @@ csfipsetcheck() {
 }
 
 checkaliases() {
-	if [[ "$(grep 'centminmod-123.08centos7beta01' /root/.bashrc)" && -d /usr/local/src/centminmod-123.08centos7beta02 ]]; then
-        sed -i 's/centminmod-123.08centos7beta01/centminmod-123.08centos7beta02/' /root/.bashrc
+	if [[ "$(grep 'centminmod-123.08centos7beta01' /root/.bashrc)" ]]; then
+        sed -i 's/centminmod-123.08centos7beta01/centminmod-123.08beta03/' /root/.bashrc
+    elif [[ "$(grep 'centminmod-123.08centos7beta02' /root/.bashrc)" ]]; then
+        sed -i 's/centminmod-123.08centos7beta02/centminmod-123.08beta03/' /root/.bashrc
+    elif [[ "$(grep 'centminmod-123.08centos7beta03' /root/.bashrc)" && -d /usr/local/src/centminmod-123.08beta03 ]]; then
+        sed -i 's/centminmod-123.08centos7beta03/centminmod-123.08beta03/' /root/.bashrc
     fi
 }
 
@@ -77,6 +81,9 @@ nvcheck() {
 		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
 		chmod +x /usr/bin/nv
 		# fi
+	else
+		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
+		chmod +x /usr/bin/nv
 	fi		
 }
 
@@ -133,14 +140,16 @@ echo "aborting script..."
 exit
 fi
 
-selinxcheck
-centaltoff
-csfipsetcheck
-checkaliases
-checkcmdircmd
-nvcheck
-multiphpcheck
-mjemalloc
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+	selinxcheck
+	centaltoff
+	csfipsetcheck
+	checkaliases
+	checkcmdircmd
+	nvcheck
+	multiphpcheck
+	mjemalloc
+fi
 
 }
 
