@@ -380,7 +380,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
+if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
