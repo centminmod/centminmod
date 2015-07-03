@@ -199,6 +199,7 @@ try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri 
 
 location ~* /(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
+    #limit_conn xwpconlimit 30;
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php.conf;
@@ -206,6 +207,7 @@ location ~* /(wp-login\.php) {
 
 location ~* /(xmlrpc\.php) {
     limit_req zone=xwplogin burst=2 nodelay;
+    #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php.conf;
 }
 
