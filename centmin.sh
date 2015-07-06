@@ -438,6 +438,17 @@ CENTALTREPO_DISABLE=y
 RPMFORGEREPO_DISABLE=n
 AXIVOREPO_DISABLE=n
 REMIREPO_DISABLE=n
+
+# custom curl/libcurl RPM for 7.43 and higher
+# enable with CUSTOM_CURLRPM=y
+# use at own risk as it can break the system
+# info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
+CUSTOM_CURLRPM=n
+CUSTOM_CURLRPMVER='7.43'             # custom curl/libcurl version
+CUSTOM_CURLLIBSSHVER='1.6.0-2.0'     # libssh2 version
+CUSTOM_CURLRPMCARESVER='1.10.0-5.0'  # c-ares version
+CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
+CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 ###############################################################
 
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
