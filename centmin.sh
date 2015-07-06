@@ -185,8 +185,8 @@ NGINX_GEOIP=n			 # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.9.32.3-beta'
-NGINX_PAGESPEEDPSOL_VER='1.9.32.3'
+NGXPGSPEED_VER='1.9.32.4-beta'
+NGINX_PAGESPEEDPSOL_VER='1.9.32.4'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV=y          # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'  # nginx-dav-ext-module version
@@ -231,7 +231,7 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.9.1'        # Use this version of Nginx
+NGINX_VERSION='1.9.2'        # Use this version of Nginx
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
@@ -247,7 +247,7 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.35'          # NO longer used/ignored
+PCRE_VERSION='8.37'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.1.2'   # PHP extension for imagick

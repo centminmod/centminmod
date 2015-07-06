@@ -49,7 +49,7 @@ CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
-PCRELINK="http://downloads.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+PCRELINK="http://superb-dca2.dl.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
 PCRELINKLOCAL="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 
 # wget renamed
