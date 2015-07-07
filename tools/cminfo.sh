@@ -124,6 +124,10 @@ else
     setupdate
 fi
 
+if [ ! -f /usr/bin/crontab ]; then
+    yum -q -y install cronie
+fi
+
 # insert itself into cronjob for auto updates
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
