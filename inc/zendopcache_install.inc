@@ -42,9 +42,15 @@ cecho "Adding /usr/local/nginx/conf/include_opcache.conf include entry" $boldyel
 CHECKCOPINFO=$(grep include_opcache.conf /usr/local/nginx/conf/conf.d/virtual.conf)
 
 if [[ -z "$CHECKCOPINFO" ]]; then
+	sed -i '/include \/usr\/local\/nginx\/conf\/staticfiles.conf;/a \include \/usr\/local\/nginx\/conf\/include_opcache.conf;' /usr/local/nginx/conf/conf.d/virtual.conf
+fi
 
-sed -i '/include \/usr\/local\/nginx\/conf\/staticfiles.conf;/a \include \/usr\/local\/nginx\/conf\/include_opcache.conf;' /usr/local/nginx/conf/conf.d/virtual.conf
+if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+	CHECKCOPINFO_PMA=$(grep include_opcache.conf /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf)
 
+	if [[ -z "$CHECKCOPINFO_PMA" ]]; then
+		sed -i '/include \/usr\/local\/nginx\/conf\/staticfiles.conf;/a \include \/usr\/local\/nginx\/conf\/include_opcache.conf;' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+	fi
 fi
 
 echo ""
