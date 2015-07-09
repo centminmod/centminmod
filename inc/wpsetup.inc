@@ -187,6 +187,11 @@ error_log /home/nginx/domains/${vhostname}/log/error.log;
 
 root /home/nginx/domains/${vhostname}/public;
 
+  # prevent access to ./directories and files
+  location ~ (?:^|/)\. {
+   deny all;
+  }
+
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 
 location / {

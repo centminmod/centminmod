@@ -192,6 +192,11 @@ server {
 
   root /home/nginx/domains/$vhostname/public;
 
+  # prevent access to ./directories and files
+  location ~ (?:^|/)\. {
+   deny all;
+  }
+
   location / {
 
 # block common exploits, sql injections etc
@@ -273,6 +278,11 @@ server {
 
   root /home/nginx/domains/$vhostname/public;
 
+  # prevent access to ./directories and files
+  location ~ (?:^|/)\. {
+   deny all;
+  }  
+
   location / {
 
 # block common exploits, sql injections etc
@@ -329,6 +339,11 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+
+  # prevent access to ./directories and files
+  location ~ (?:^|/)\. {
+   deny all;
+  }  
 
   location / {
 
