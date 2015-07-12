@@ -13,6 +13,15 @@ entropyup
     echo "*************************************************"
 letswait
 
+	if [[ -z "$(ps aufx | grep 'crond' | grep -v grep)" ]]; then
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Ensure crond service is running" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+		cmservice crond start
+		cmchkconfig crond on
+	fi
+
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check ccache Version:" $boldyellow
