@@ -18,8 +18,13 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond service is running" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-		cmservice crond start
-		cmchkconfig crond on
+		if [[ "$CENTOS_SEVEN" != '7' ]]; then
+			service crond restart
+			chkconfig crond on
+		else
+			systemctl restart crond.service
+			systemctl enable crond.service
+		fi
 	fi
 
 echo ""
