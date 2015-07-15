@@ -13,32 +13,38 @@ echo "FFMPEG install starting..."
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
 	echo "CentOS 6 detected"
 	echo "installing yum packages..."
-	yum -y -q install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel
+	yum -y install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 	echo "CentOS 7 detected"
 	echo "installing yum packages..."
 
-	if [[ -z "$(rpm -ql libnemesi | grep -v 'not installed')" ]]; then
-		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/l/libnemesi-0.7.0-0.5.20110215git.fc20.x86_64.rpm
-	fi
-       
-	if [[ -z "$(rpm -ql nas-libs | grep -v 'not installed')" ]]; then
-		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/n/nas-libs-1.9.4-1.fc20.x86_64.rpm
-	fi
-
-	if [[ -z "$(rpm -ql svgalib | grep -v 'not installed')" ]]; then
-		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/s/svgalib-1.9.25-14.fc20.x86_64.rpm
-	fi
-
-	if [[ -z "$(rpm -ql netembryo | grep -v 'not installed')" ]]; then
-		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/n/netembryo-0.1.1-5.fc20.x86_64.rpm
+	if [[ -z "$(rpm -ql libnemesi | grep -v 'not installed')" || -z "$(rpm -ql nas-libs | grep -v 'not installed')" || -z "$(rpm -ql svgalib | grep -v 'not installed')" || -z "$(rpm -ql netembryo | grep -v 'not installed')" ]]; then
+		if [ -f "${CM_INSTALLDIR}/downloads/ffmpeg-depends.zip" ]; then
+    		/usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/ffmpeg-depends.zip -d $DIR_TMP/
+    	else
+			if [[ -z "$(rpm -ql libnemesi | grep -v 'not installed')" ]]; then
+				wget ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/l/libnemesi-0.7.0-0.5.20110215git.fc20.x86_64.rpm
+			fi
+		       
+			if [[ -z "$(rpm -ql nas-libs | grep -v 'not installed')" ]]; then
+				wget ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/n/nas-libs-1.9.4-1.fc20.x86_64.rpm
+			fi
+		
+			if [[ -z "$(rpm -ql svgalib | grep -v 'not installed')" ]]; then
+				wget ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/s/svgalib-1.9.25-14.fc20.x86_64.rpm
+			fi
+		
+			if [[ -z "$(rpm -ql netembryo | grep -v 'not installed')" ]]; then
+				wget ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/n/netembryo-0.1.1-5.fc20.x86_64.rpm
+			fi    		
+		fi	
 	fi
 
 	if [[ -z "$(rpm -ql libnemesi | grep -v 'not installed')" || -z "$(rpm -ql nas-libs | grep -v 'not installed')" || -z "$(rpm -ql svgalib | grep -v 'not installed')" || -z "$(rpm -ql netembryo | grep -v 'not installed')" ]]; then
 		yum -y localinstall libnemesi-0.7.0-0.5.20110215git.fc20.x86_64.rpm nas-libs-1.9.4-1.fc20.x86_64.rpm svgalib-1.9.25-14.fc20.x86_64.rpm netembryo-0.1.1-5.fc20.x86_64.rpm                              
 	fi
 
-	yum -y -q install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel --disableplugin=priorities --enablerepo=atrpms
+	yum -y install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel --disableplugin=priorities --enablerepo=atrpms
 fi
 
 git clone https://github.com/tony2001/ffmpeg-php.git ffmpeg-php-git
