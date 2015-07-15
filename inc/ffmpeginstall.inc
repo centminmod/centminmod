@@ -10,35 +10,51 @@ cd ${DIR_TMP}
 
 echo "FFMPEG install starting..."
 
-#yum -y -q install --disablerepo=rpmforge dirac-libs dirac
-yum -y -q install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+	yum -y -q install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 
-if [ -s ffmpeg-php-${FFMPEGVER}.tbz2 ]; then
-  echo "ffmpeg-php-${FFMPEGVER}.tbz2 [found]"
-  else
-  echo "Error: ffmpeg-php-${FFMPEGVER}.tbz2 not found!!! Downloading now......"
-  wget -c --progress=bar http://downloads.sourceforge.net/project/ffmpeg-php/ffmpeg-php/${FFMPEGVER}/ffmpeg-php-${FFMPEGVER}.tbz2?use_mirror=aarnet -O ffmpeg-php-${FFMPEGVER}.tbz2 --tries=3
+	if [[ -z "$(rpm -ql libnemesi)" ]]; then
+		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/l/libnemesi-0.7.0-0.5.20110215git.fc20.x86_64.rpm
+	fi
+
+	if [[ -z "$(rpm -ql nas-libs)" ]]; then
+		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/n/nas-libs-1.9.4-1.fc20.x86_64.rpm
+	fi
+
+	if [[ -z "$(rpm -ql svgalib)" ]]; then
+		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/s/svgalib-1.9.25-14.fc20.x86_64.rpm
+	fi
+
+	if [[ -z "$(rpm -ql netembryo)" ]]; then
+		wget -cnv ftp://fr2.rpmfind.net/linux/fedora/linux/releases/20/Everything/x86_64/os/Packages/n/netembryo-0.1.1-5.fc20.x86_64.rpm
+	fi
+
+	if [[ -z "$(rpm -ql libnemesi)" || -z "$(rpm -ql nas-libs)" || -z "$(rpm -ql svgalib)" || -z "$(rpm -ql netembryo)" ]]; then
+		yum -y localinstall *.rpm
+	fi
+
+	yum -y -q install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel --disableplugin=priorities --enablerepo=atrpms
 fi
 
-tar -xjf ffmpeg-php-${FFMPEGVER}.tbz2
-cd ffmpeg-php-${FFMPEGVER}
+git clone https://github.com/tony2001/ffmpeg-php.git ffmpeg-php-git
+cd ffmpeg-php-git
+# cd ffmpeg-php-${FFMPEGVER}
+
 make clean
 phpize -clean
 phpize
-wget -O ffmpeg.patch https://gist.github.com/centminmod/b3cd8785bed2a87c7ba8/raw/ffmpeg.patch
-patch < ffmpeg.patch
-./configure --with-php-config=/usr/local/bin/php-config
 
-sed -i 's/PIX_FMT_RGBA32/PIX_FMT_RGB32/g' ffmpeg_frame.c
+./configure --with-php-config=/usr/local/bin/php-config
 
 make${MAKETHREADS}
 make install
 
-FFMPEGCHECK=`grep 'extension=ffmpeg.so' /usr/local/lib/php.ini `
+FFMPEGCHECK=`grep 'extension=ffmpeg.so' ${CONFIGSCANDIR}/ffmpeg.ini `
 if [ -z "$FFMPEGCHECK" ]; then
-echo "" >> /usr/local/lib/php.ini
-echo "[ffmpeg]" >> /usr/local/lib/php.ini
-echo "extension=ffmpeg.so" >> /usr/local/lib/php.ini
+echo "" >> ${CONFIGSCANDIR}/ffmpeg.ini
+echo "[ffmpeg]" >> ${CONFIGSCANDIR}/ffmpeg.ini
+echo "extension=ffmpeg.so" >> ${CONFIGSCANDIR}/ffmpeg.ini
 fi
 
 echo ""
@@ -52,7 +68,7 @@ echo ""
 echo "check phpinfo for FFMPEG PHP Extension..."
 echo ""
 
-php -i | grep ^ffmpeg
+php --ri ffmpeg
 
 echo ""
 echo "check FFMPEG"
