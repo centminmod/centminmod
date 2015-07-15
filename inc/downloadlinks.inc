@@ -58,6 +58,10 @@ CENTOSSIXREMIFILE="remi-release-6.rpm"
 CENTOSSIXREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSIXREMIFILE}"
 CENTOSSIXREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXREMIFILE}"
 
+CENTOSSIXATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
+CENTOSSIXATRPMS="http://dl.atrpms.net/all/${CENTOSSIXATRPMSFILE}"
+CENTOSSIXATRPMSLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXATRPMSFILE}"
+
 # dynamic mirror check for EPEL below overrides these values now
 CENTOSSEVENEPELFILE="epel-release-7-2.noarch.rpm"
 CENTOSSEVENEPEL="http://mirror.sfo12.us.leaseweb.net/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
@@ -132,6 +136,10 @@ CENTOSSEVENAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVEN
 CENTOSSEVENREMIFILE="remi-release-7.rpm"
 CENTOSSEVENREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSEVENREMIFILE}"
 CENTOSSEVENREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
+
+CENTOSSEVENATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
+CENTOSSEVENATRPMS="http://dl.atrpms.net/all/${CENTOSSEVENATRPMSFILE}"
+CENTOSSEVENATRPMSLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENATRPMSFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
 # PCRELINK="ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${PCRELINKFILE}"

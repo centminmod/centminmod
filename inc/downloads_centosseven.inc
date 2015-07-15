@@ -1,3 +1,60 @@
+###############################################
+atrpmssevenyum() {
+
+if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
+
+# if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    cd $DIR_TMP
+
+  if [ -s "${CENTOSSEVENATRPMSFILE}" ]; then
+    echo "${CENTOSSEVENATRPMSFILE} [found]"
+    rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
+    rpm -ivh ${CENTOSSEVENATRPMSFILE}
+    sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/atrpms.repo
+    ERR=$?
+    CCATRPMSCHECK="$ERR"
+      if [ "$CCATRPMSCHECK" == '0' ]; then
+        yumprioratrpms
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSEVENATRPMSFILE} install." $boldgreen
+        exit $ERR
+      fi    
+    else
+    echo "Error: ${CENTOSSEVENATRPMSFILE} not found !!! Downloading now......"
+    wget ${WGETOPT} ${CENTOSSEVENATRPMS} --tries=3
+    # wget ${WGETOPT} ${CENTOSSEVENATRPMSLOCAL} --tries=3
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${CENTOSSEVENATRPMSFILE} download failed." $boldgreen
+  FAILATRPMS='y'
+  checklogdetails
+    # exit #$ERROR
+  else 
+    cecho "Download done." $boldyellow
+    rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
+    rpm -ivh ${CENTOSSEVENATRPMSFILE}
+    sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/atrpms.repo
+    ERR=$?
+    CCATRPMSCHECK="$ERR"
+      if [ "$CCATRPMSCHECK" == '0' ]; then
+        yumprioratrpms
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSEVENATRPMSFILE} install." $boldgreen
+        exit $ERR
+      fi
+    fi
+  
+  fi
+
+# fi # MACHINE_TYPE
+
+fi # ATRPMSREPO_DISABLE
+
+}
+
+###############################################
 axivoseven() {
 
 if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
@@ -313,6 +370,7 @@ fi
 # axivoseven
 ####
 remisevenyum
+atrpmssevenyum
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
 PACKAGEEXTRA='clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'

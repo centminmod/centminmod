@@ -1,3 +1,35 @@
+yumprioratrpms() {
+if [ -f /etc/yum.repos.d/atrpms.repo ]; then
+cp -p /etc/yum.repos.d/atrpms.repo /etc/yum.repos.d/atrpms.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/atrpms.repo)" ]
+        then
+                #echo priorities already set for atrpms.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for atrpms.repo"
+                ex -s /etc/yum.repos.d/atrpms.repo << EOF
+:/\[atrpms/ , /gpgkey/
+:a
+priority=90
+.
+:w
+:/\[atrpms-debuginfo/ , /gpgkey/
+:a
+priority=90
+.
+:w
+:q
+EOF
+
+cecho "*************************************************" $boldgreen
+cecho "Fixing atrpms.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+cat /etc/yum.repos.d/atrpms.repo
+echo ""
+fi
+fi # repo file check
+}
+
 yumprior() {
 
 # check for Oracle Linux repo
@@ -15,7 +47,7 @@ if [[ "$OLSEXISTS" = [yY] || "$OLS" = [yY] ]]; then
                         #echo priorities already set for public-yum-ol6.repo
                 PRIOREXISTS=1
                 else
-                        echo setting yum priorities for public-yum-ol6.repo
+                        echo "setting yum priorities for public-yum-ol6.repo"
                 ex -s /etc/yum.repos.d/public-yum-ol6.repo << EOF
 :/\[ol6_latest/ , /gpgkey/
 :a
@@ -127,7 +159,7 @@ else
                         #echo priorities already set for CentOS-Base.repo
 	       PRIOREXISTS=1
                 else
-                        echo setting yum priorities for CentOS-Base.repo
+                        echo "setting yum priorities for CentOS-Base.repo"
                 ex -s /etc/yum.repos.d/CentOS-Base.repo << EOF
 :/\[base/ , /gpgkey/
 :a
@@ -174,7 +206,7 @@ EOF
                         #echo priorities already set for CentOS-CR.repo
 	       PRIOREXISTS=1
                 else
-                        echo setting yum priorities for CentOS-CR.repo
+                        echo "setting yum priorities for CentOS-CR.repo"
                 ex -s /etc/yum.repos.d/CentOS-CR.repo << EOF
 :/\[cr/ , /gpgkey/
 :a
@@ -205,7 +237,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/epel.repo)" ]
                 #echo priorities already set for epel.repo
 PRIOREXISTS=1
         else
-                echo setting yum priorities for epel.repo
+                echo "setting yum priorities for epel.repo"
                 ex -s /etc/yum.repos.d/epel.repo << EOF
 :/\[epel\]/ , /gpgkey/
 :a
@@ -234,7 +266,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/rpmforge.repo)" ]
                 #echo priorities already set for rpmforge.repo
 PRIOREXISTS=1
         else
-                echo setting yum priorities for rpmforge.repo
+                echo "setting yum priorities for rpmforge.repo"
                 ex -s /etc/yum.repos.d/rpmforge.repo << EOF
 :/\[rpmforge\]/ , /gpgcheck/
 :a
@@ -261,7 +293,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/centalt.repo)" ]
                 #echo priorities already set for centalt.repo
 PRIOREXISTS=1
         else
-                echo setting yum priorities for centalt.repo
+                echo "setting yum priorities for centalt.repo"
                 ex -s /etc/yum.repos.d/centalt.repo << EOF
 :/\[CentALT\]/ , /gpgkey/
 :a
@@ -289,7 +321,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/percona-release.repo)" ]
                 #echo priorities already set for percona-release.repo
 PRIOREXISTS=1
         else
-                echo setting yum priorities for percona-release.repo
+                echo "setting yum priorities for percona-release.repo"
                 ex -s /etc/yum.repos.d/percona-release.repo << EOF
 :/\[percona-release-\$basearch\]/ , /gpgcheck/
 :a
@@ -319,7 +351,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/varnish.repo)" ]
                 #echo priorities already set for varnish.repo
 PRIOREXISTS=1
         else
-                echo setting yum priorities for varnish.repo
+                echo "setting yum priorities for varnish.repo"
                 ex -s /etc/yum.repos.d/varnish.repo << EOF
 :/\[rpmforge\]/ , /gpgcheck/
 :a
@@ -349,7 +381,7 @@ if [ -f /etc/yum.repos.d/axivo.repo ]; then
                         #echo priorities already set for axivo.repo
         PRIOREXISTS=1
                 else
-                        echo setting yum priorities for axivo.repo
+                        echo "setting yum priorities for axivo.repo"
 ex -s /etc/yum.repos.d/axivo.repo << EOF
 :/\[axivo\]/ , /gpgkey/
 :a
@@ -379,7 +411,7 @@ if [ -f /etc/yum.repos.d/remi.repo ]; then
                         #echo priorities already set for remi.repo
         PRIOREXISTS=1
                 else
-                        echo setting yum priorities for remi.repo
+                        echo "setting yum priorities for remi.repo"
 ex -s /etc/yum.repos.d/remi.repo << EOF
 :/\[remi/ , /gpgkey/
 :a

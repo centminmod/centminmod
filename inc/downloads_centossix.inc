@@ -1,3 +1,60 @@
+###############################################
+atrpmssixyum() {
+
+if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
+
+# if [ ${MACHINE_TYPE} == 'x86_64' ]; then
+    cd $DIR_TMP
+
+  if [ -s "${CENTOSSIXATRPMSFILE}" ]; then
+    echo "${CENTOSSIXATRPMSFILE} [found]"
+    rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
+    rpm -ivh ${CENTOSSIXATRPMSFILE}
+    sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/atrpms.repo
+    ERR=$?
+    CCATRPMSCHECK="$ERR"
+      if [ "$CCATRPMSCHECK" == '0' ]; then
+        yumprioratrpms
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSIXATRPMSFILE} install." $boldgreen
+        exit $ERR
+      fi    
+    else
+    echo "Error: ${CENTOSSIXATRPMSFILE} not found !!! Downloading now......"
+    wget ${WGETOPT} ${CENTOSSIXATRPMS} --tries=3
+    # wget ${WGETOPT} ${CENTOSSIXATRPMSLOCAL} --tries=3
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${CENTOSSIXATRPMSFILE} download failed." $boldgreen
+  FAILATRPMS='y'
+  checklogdetails
+    # exit #$ERROR
+  else 
+    cecho "Download done." $boldyellow
+    rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
+    rpm -ivh ${CENTOSSIXATRPMSFILE}
+    sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/atrpms.repo
+    ERR=$?
+    CCATRPMSCHECK="$ERR"
+      if [ "$CCATRPMSCHECK" == '0' ]; then
+        yumprioratrpms
+        echo ""
+      else
+        cecho "Error: problem with ${CENTOSSIXATRPMSFILE} install." $boldgreen
+        exit $ERR
+      fi
+    fi
+  
+  fi
+
+# fi # MACHINE_TYPE
+
+fi # ATRPMSREPO_DISABLE
+
+}
+
+###############################################
 axivosixyum() {
 
 if [[ "$AXIVOREPO_DISABLE" = [nN] ]]; then
@@ -313,6 +370,7 @@ fi
 # axivosixyum
 ####
 remisixyum
+atrpmssixyum
 
 
 # CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version
