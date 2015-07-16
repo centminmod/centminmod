@@ -20,6 +20,8 @@ priority=90
 :w
 :q
 EOF
+fi
+fi # repo file check
 
 if [ -f /etc/yum.repos.d/atrpms-bleeding.repo ]; then
 cp -p /etc/yum.repos.d/atrpms-bleeding.repo /etc/yum.repos.d/atrpms-bleeding.OLD
@@ -29,7 +31,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/atrpms-bleeding.repo)" ]
 PRIOREXISTS=1
         else
                 echo "setting yum priorities for atrpms-bleeding.repo"
-                ex -s /etc/yum.repos.d/atrpms-bleeding.repo << EOF
+                ex -s /etc/yum.repos.d/atrpms-bleeding.repo << EFF
 :/\[atrpms-bleeding/ , /gpgkey/
 :a
 priority=90
@@ -41,7 +43,9 @@ priority=90
 .
 :w
 :q
-EOF
+EFF
+fi
+fi # repo file check
 
 if [ -f /etc/yum.repos.d/atrpms-testing.repo ]; then
 cp -p /etc/yum.repos.d/atrpms-testing.repo /etc/yum.repos.d/atrpms-testing.OLD
@@ -51,7 +55,7 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/atrpms-testing.repo)" ]
 PRIOREXISTS=1
         else
                 echo "setting yum priorities for atrpms-testing.repo"
-                ex -s /etc/yum.repos.d/atrpms-testing.repo << EOF
+                ex -s /etc/yum.repos.d/atrpms-testing.repo << EFE
 :/\[atrpms-testing/ , /gpgkey/
 :a
 priority=90
@@ -63,15 +67,14 @@ priority=90
 .
 :w
 :q
-EOF
+EFE
 
 cecho "*************************************************" $boldgreen
 cecho "Fixing atrpms.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
-echo "
-cat /etc/yum.repos.d/atrpms.repo
-cat /etc/yum.repos.d/atrpms-bleeding.repo
-cat /etc/yum.repos.d/atrpms-testing.repo"
+echo "cat /etc/yum.repos.d/atrpms.repo"
+echo "cat /etc/yum.repos.d/atrpms-bleeding.repo"
+echo "cat /etc/yum.repos.d/atrpms-testing.repo"
 cat /etc/yum.repos.d/atrpms.repo
 cat /etc/yum.repos.d/atrpms-bleeding.repo
 cat /etc/yum.repos.d/atrpms-testing.repo
