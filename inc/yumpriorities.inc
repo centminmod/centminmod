@@ -21,10 +21,60 @@ priority=90
 :q
 EOF
 
+if [ -f /etc/yum.repos.d/atrpms-bleeding.repo ]; then
+cp -p /etc/yum.repos.d/atrpms-bleeding.repo /etc/yum.repos.d/atrpms-bleeding.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/atrpms-bleeding.repo)" ]
+        then
+                #echo priorities already set for atrpms-bleeding.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for atrpms-bleeding.repo"
+                ex -s /etc/yum.repos.d/atrpms-bleeding.repo << EOF
+:/\[atrpms-bleeding/ , /gpgkey/
+:a
+priority=90
+.
+:w
+:/\[atrpms-bleeding-debuginfo/ , /gpgkey/
+:a
+priority=90
+.
+:w
+:q
+EOF
+
+if [ -f /etc/yum.repos.d/atrpms-testing.repo ]; then
+cp -p /etc/yum.repos.d/atrpms-testing.repo /etc/yum.repos.d/atrpms-testing.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/atrpms-testing.repo)" ]
+        then
+                #echo priorities already set for atrpms-testing.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for atrpms-testing.repo"
+                ex -s /etc/yum.repos.d/atrpms-testing.repo << EOF
+:/\[atrpms-testing/ , /gpgkey/
+:a
+priority=90
+.
+:w
+:/\[atrpms-testing-debuginfo/ , /gpgkey/
+:a
+priority=90
+.
+:w
+:q
+EOF
+
 cecho "*************************************************" $boldgreen
 cecho "Fixing atrpms.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
+echo "
 cat /etc/yum.repos.d/atrpms.repo
+cat /etc/yum.repos.d/atrpms-bleeding.repo
+cat /etc/yum.repos.d/atrpms-testing.repo"
+cat /etc/yum.repos.d/atrpms.repo
+cat /etc/yum.repos.d/atrpms-bleeding.repo
+cat /etc/yum.repos.d/atrpms-testing.repo
 echo ""
 fi
 fi # repo file check
