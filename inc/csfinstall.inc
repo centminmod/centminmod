@@ -113,6 +113,7 @@ EOF
 
 fi # check to see if csf.pignore already has custom apps added
 
+    csf -u
     cmchkconfig csf on
     cmservice csf restart
     csf -r
