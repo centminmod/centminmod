@@ -22,6 +22,11 @@ OPPASS=$(openssl rand 16 -base64)
 	OPDETAILS=$(cat /usr/local/nginx/conf/htpasswd_opcache)
 
 	echo ""
+	cecho "Insert Username/Password into /usr/local/nginx/html/${N}_opcache.php file itself" $boldyellow
+	sed -i "s|OPCACHEUSERNAME|$OPUSER|" /usr/local/nginx/html/${N}_opcache.php
+	sed -i "s|OPCACHEPASSWORD|$OPPASS|" /usr/local/nginx/html/${N}_opcache.php
+
+	echo ""
 	cecho "Create include file /usr/local/nginx/conf/include_opcache.conf" $boldyellow
 	echo ""
 
