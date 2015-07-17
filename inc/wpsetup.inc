@@ -157,6 +157,9 @@ if [[ -z "$WPRATECHECK" ]]; then
   sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:16m rate=40r\/m;\n/g' /usr/local/nginx/conf/nginx.conf
 fi
 
+\cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-wpsc.conf
+sed -i "s|fastcgi_param  SERVER_NAME        \$server_name;|fastcgi_param  SERVER_NAME        \$http_host;|" /usr/local/nginx/conf/php-wpsc.conf
+
 # Setting up Nginx vhost mapping for Wordpress
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf" <<END
 # Centmin Mod Getting Started Guide
@@ -207,17 +210,17 @@ location ~* /(wp-login\.php) {
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
-    include /usr/local/nginx/conf/php.conf;
+    include /usr/local/nginx/conf/php-wpsc.conf;
 }
 
 location ~* /(xmlrpc\.php) {
     limit_req zone=xwplogin burst=2 nodelay;
     #limit_conn xwpconlimit 30;
-    include /usr/local/nginx/conf/php.conf;
+    include /usr/local/nginx/conf/php-wpsc.conf;
 }
 
 include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
-include /usr/local/nginx/conf/php.conf;
+include /usr/local/nginx/conf/php-wpsc.conf;
 include /usr/local/nginx/conf/staticfiles.conf;
 include /usr/local/nginx/conf/drop.conf;
 #include /usr/local/nginx/conf/errorpage.conf;
