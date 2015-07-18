@@ -110,7 +110,7 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 			echo
 		else 
 			echo ""
-			cecho "Ok: MySQL user: $newmysqluser MySQL database: $db created successfully" $boldyellow
+			cecho "Ok: MySQL user: $u MySQL database: $db created successfully" $boldyellow
 			echo
 		fi
 	done < $dbfile
