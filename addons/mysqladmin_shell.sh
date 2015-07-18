@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.1
+VER=0.0.2
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -20,6 +20,7 @@ VER=0.0.1
 #############
 MYSQLHOSTNAME='localhost'
 
+MYSQLEXTRA_FILE='/root/.my.cnf'
 ###############################################################
 # Setup Colours
 black='\E[30;40m'
@@ -62,17 +63,19 @@ cecho "--------------------------------------------------------------" $boldyell
 cecho "Basic MySQL Admin - create mysql user & databases " $boldgreen
 cecho "--------------------------------------------------------------" $boldyellow
 
-read -ep "Do you have mysql root user password set ? [y/n]: " rootset
-
-if [[ "$rootset" = [yY] ]]; then
-
-read -ep "Enter your mysql root username i.e. root: " myrootuser
-read -ep "Enter your mysql root password: " myrootpass
-
+if [ ! -f "$MYSQLEXTRA_FILE" ]; then
+	read -ep " Do you have mysql root user password set ? [y/n]: " rootset
+	
+	if [[ "$rootset" = [yY] ]]; then
+		read -ep " Enter your mysql root username i.e. root: " myrootuser
+		read -ep " Enter your mysql root password: " myrootpass
+		MYSQLOPTS="-u$myrootuser -p$myrootpass"
+	else
+		rootset='n'
+	fi
 else
-
-rootset='n'
-
+	MYSQLOPTS="--defaults-extra-file=${MYSQLEXTRA_FILE}"
+	rootset=y
 fi
 
 cecho "--------------------------------------------------------------" $boldyellow
@@ -80,89 +83,121 @@ echo ""
 
 }
 
+multicreatedb() {
+	cecho "----------------------------------------------------------------------------" $boldyellow
+	cecho "Create Multiple MySQL Databases, User & Pass From specified filepath/name" $boldgreen
+	cecho "i.e. /home/nginx/domains/domain.com/dbfile.txt" $boldgreen
+	cecho "One entry per line in dbfile.txt in format of:" $boldgreen
+	cecho "databasename databaseuser databasepass" $boldgreen
+	cecho "----------------------------------------------------------------------------" $boldyellow
+
+	echo
+	read -ep " Enter full path to db list file i.e. /home/nginx/domains/domain.com/dbfile.txt (to exit type = x): " dbfile
+	echo
+
+if [[ "$dbfile" = [xX] || -z "$dbfile" ]]; then
+	exit
+fi
+
+if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
+	while read -r db u p; do
+		mysql ${MYSQLOPTS} -e "CREATE DATABASE $db; CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p'; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $db.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';"
+
+		ERROR=$?
+		if [[ "$ERROR" != '0' ]]; then
+			echo ""
+			cecho "Error: command was unsuccessful" $boldgreen
+			echo
+		else 
+			echo ""
+			cecho "Ok: MySQL user: $newmysqluser MySQL database: $db created successfully" $boldyellow
+			echo
+		fi
+	done < $dbfile
+fi
+}
+
 createuserdb() {
 
 read -ep " Do you want to create a new MySQL username (type = y) or `echo $'\n '`Add a new database name to existing MySQL username (type = n) ? `echo $'\n '`Enter y or n: " createnewuser
 
 if [[ "$createnewuser" = [yY] ]]; then
+	cecho "---------------------------------" $boldyellow
+	cecho "Create MySQL username:" $boldgreen
+	cecho "---------------------------------" $boldyellow
 
-cecho "---------------------------------" $boldyellow
-cecho "Create MySQL username:" $boldgreen
-cecho "---------------------------------" $boldyellow
-
-read -ep "Enter new MySQL username you want to create: " newmysqluser
-read -ep "Enter new MySQL username's password: " newmysqluserpass
-
+	read -ep " Enter new MySQL username you want to create: " newmysqluser
+	read -ep " Enter new MySQL username's password: " newmysqluserpass
 else
-
-createnewuser='n'
-
-cecho "-------------------------------------------------------------------------" $boldyellow
-cecho "Add new database name to existing MySQL username:" $boldgreen
-cecho "-------------------------------------------------------------------------" $boldyellow
-
-read -ep "Enter existing MySQL username you want to add new database name to: " existingmysqluser
-
+	createnewuser='n'
+	cecho "-------------------------------------------------------------------------" $boldyellow
+	cecho "Add new database name to existing MySQL username:" $boldgreen
+	cecho "-------------------------------------------------------------------------" $boldyellow
+	read -ep " Enter existing MySQL username you want to add new database name to: " existingmysqluser
 fi
 
 cecho "---------------------------------" $boldyellow
 cecho "Create MySQL database:" $boldgreen
 cecho "---------------------------------" $boldyellow
 
-read -ep "Enter new MySQL database name: " newdbname
+read -ep " Enter new MySQL database name: " newdbname
 
 echo
 
 if [[ "$rootset" = [yY] && "$createnewuser" = [yY] ]]; then
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
 
-mysql -u$myrootuser -p$myrootpass -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
-
-ERROR=$?
+	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: command was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: MySQL user: $newmysqluser MySQL database: $newdbname created successfully" $boldyellow
+		echo
 	fi
 
 elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
+	mysql -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
 
-mysql -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
-
-ERROR=$?
+	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: command was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: MySQL user: $newmysqluser MySQL database: $newdbname created successfully" $boldyellow
+		echo
 	fi
 
 elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
+	mysql -e "CREATE DATABASE $newdbname; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
 
-mysql -e "CREATE DATABASE $newdbname; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
-
-ERROR=$?
+	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: command was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: New MySQL database: $newdbname assigned to existing MySQL user: $existingmysqluser" $boldyellow
+		echo
 	fi
 
 elif [[ "$rootset" = [yY] && "$createnewuser" = [nN] ]]; then
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
 
-mysql -u$myrootuser -p$myrootpass -e "CREATE DATABASE $newdbname; GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
-
-ERROR=$?
+	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: command was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: New MySQL database: $newdbname assigned to existing MySQL user: $existingmysqluser" $boldyellow
+		echo
 	fi
 
 fi
@@ -175,20 +210,22 @@ cecho "--------------------------------------------------------------" $boldyell
 cecho "Change Existing MySQL username's password:" $boldgreen
 cecho "--------------------------------------------------------------" $boldyellow
 
-read -ep "Enter MySQL username you want to change password for: " changemysqluserpass
-read -ep "Enter MySQL username's new password to change to: " changenewmysqlpass
+read -ep " Enter MySQL username you want to change password for: " changemysqluserpass
+read -ep " Enter MySQL username's new password to change to: " changenewmysqlpass
 
 if [[ "$rootset" = [yY] ]]; then
 
-mysql -u$myrootuser -p$myrootpass -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
+mysql ${MYSQLOPTS} -e "set password for '$changemysqluserpass'@'$MYSQLHOSTNAME' = password('$changenewmysqlpass');"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: Changing MySQL password for $changemysqluserpass was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: Changing MySQL password for $changemysqluserpass was successful" $boldyellow
+		echo
 	fi
 
 else
@@ -199,9 +236,11 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: Changing MySQL password for $changemysqluserpass was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: Changing MySQL password for $changemysqluserpass was successful" $boldyellow
+		echo
 	fi
 
 fi
@@ -214,19 +253,21 @@ cecho "---------------------------------" $boldyellow
 cecho "Delete MySQL username:" $boldgreen
 cecho "---------------------------------" $boldyellow
 
-read -ep "Enter MySQL username you want to delete: " delmysqluser
+read -ep " Enter MySQL username you want to delete: " delmysqluser
 
 if [[ "$rootset" = [yY] ]]; then
 
-mysql -u$myrootuser -p$myrootpass -e "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;"
+mysql ${MYSQLOPTS} -e "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: Deleting '$delmysqluser'@'$MYSQLHOSTNAME' was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: Deleting '$delmysqluser'@'$MYSQLHOSTNAME' was successful" $boldyellow
+		echo
 	fi
 
 else
@@ -237,9 +278,11 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: Deleting '$delmysqluser'@'$MYSQLHOSTNAME' was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: Deleting '$delmysqluser'@'$MYSQLHOSTNAME' was successful" $boldyellow
+		echo
 	fi
 
 fi
@@ -252,19 +295,21 @@ cecho "---------------------------------" $boldyellow
 cecho "Show Grants for MySQL username:" $boldgreen
 cecho "---------------------------------" $boldyellow
 
-read -ep "Enter MySQL username to Show Grant permissions: " showmysqluser
+read -ep " Enter MySQL username to Show Grant permissions: " showmysqluser
 
 if [[ "$rootset" = [yY] ]]; then
 
-mysql -u$myrootuser -p$myrootpass -e "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';"
+mysql ${MYSQLOPTS} -e "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME' was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME' was successful" $boldyellow
+		echo
 	fi
 
 else
@@ -275,9 +320,11 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		echo ""
 		cecho "Error: SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME' was unsuccessful" $boldgreen
+		echo
 	else 
 		echo ""
 		cecho "Ok: SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME' was successful" $boldyellow
+		echo
 	fi
 
 fi
@@ -286,6 +333,10 @@ fi
 
 ###############################################################
 case "$1" in
+	multidb)
+		mysqlperm
+		multicreatedb
+		;;	
 	setuserdb)
 		mysqlperm
 		createuserdb
@@ -304,7 +355,7 @@ case "$1" in
 		;;
 	*)
 		echo ""
-		cecho "$0 {setuserdb|setpass|deluser|showgrants}" $boldyellow
+		cecho "$0 {multidb|setuserdb|setpass|deluser|showgrants}" $boldyellow
 		echo ""
 		;;
 esac
