@@ -234,6 +234,21 @@ location ~* /(?:uploads|files)/.*\.php\$ {
 deny all;
 }
 
+# Block PHP files in content directory.
+location ~* /wp-content/.*\.php\$ {
+  deny all;
+}
+
+# Block PHP files in includes directory.
+location ~* /wp-includes/.*\.php\$ {
+  deny all;
+}
+
+# Block PHP files in uploads, content, and includes directory.
+location ~* /(?:uploads|files|wp-content|wp-includes)/.*\.php\$ {
+  deny all;
+}
+
 # Make sure files with the following extensions do not get loaded by nginx because nginx would display the source code, and these files can contain PASSWORDS!
 location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)\$|^(\..*|Entries.*|Repository|Root|Tag|Template)\$|\.php_
 {
@@ -305,6 +320,7 @@ cd /home/nginx/domains/${vhostname}/public
 
 chmod 0770 wp-content
 chmod 0400 readme.html
+rm -rf readme.html
 
 # installed + activated by default
 cecho "------------------------------------------------------------" $boldgreen
