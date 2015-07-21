@@ -275,6 +275,7 @@ NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_m
 NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
 NGINX_FLV=n                  # http://nginx.org/en/docs/http/ngx_http_flv_module.html
 NGINX_MP4=n                  # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
+NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
 NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
