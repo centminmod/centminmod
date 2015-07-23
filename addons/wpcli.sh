@@ -18,6 +18,22 @@ CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 
 # functions
+# 
+updatewpcli() {
+	if [ -f /usr/bin/wp ]; then
+		echo "update wp-cli"
+		rm -rf /usr/bin/wp
+		wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /usr/bin/wp --tries=3
+		chmod 0700 /usr/bin/wp
+		/usr/bin/wp --info --allow-root	
+		echo ""
+		echo "-------------------------------------------------------------"
+		echo "wp-cli update completed"
+		echo "Read http://wp-cli.org/ for full usage info"
+		echo "-------------------------------------------------------------"
+		echo
+	fi	
+}
 
 installwpcli() {
 
@@ -111,8 +127,21 @@ INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
 echo "Total WPCLI Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
 ;;
+update)
+ustarttime=$(date +%s.%N)
+{
+echo "updating..."
+updatewpcli
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_wpcli_update_${DT}.log
+
+uendtime=$(date +%s.%N)
+
+UINSTALLTIME=$(echo "scale=2;$uendtime - $ustarttime"|bc )
+echo "" >> ${CENTMINLOGDIR}/centminmod_wpcli_update_${DT}.log
+echo "Total WPCLI Upgrade Time: $UINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_wpcli_update_${DT}.log
+;;
 *)
-echo "$0 install"
+echo "$0 {install|update}"
 ;;
 esac
 
