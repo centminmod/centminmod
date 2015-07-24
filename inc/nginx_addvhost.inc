@@ -416,7 +416,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
@@ -429,7 +429,7 @@ cecho "-------------------------------------------------------------" $boldyello
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
 cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
 fi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
