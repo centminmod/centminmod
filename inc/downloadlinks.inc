@@ -205,6 +205,14 @@ NGX_SETMISCLINK="https://github.com/openresty/set-misc-nginx-module/archive/v${O
 NGX_ECHOLINKFILE="echo-nginx-module_v${ORESTY_ECHOVER}.tar.gz"
 NGX_ECHOLINK="https://github.com/openresty/echo-nginx-module/archive/v${ORESTY_ECHOVER}.tar.gz"
 
+# wget renamed
+NGX_REDISLINKFILE="redis2-nginx-module_v${ORESTY_REDISVER}.tar.gz"
+NGX_REDISLINK="https://github.com/openresty/redis2-nginx-module/archive/v${ORESTY_REDISVER}.tar.gz"
+
+# wget renamed
+NGX_HTTPREDISLINKFILE="ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
+NGX_HTTPREDISLINK="http://people.freebsd.org/~osa/ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
+
 ##############
 # lua
 

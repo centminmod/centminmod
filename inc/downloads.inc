@@ -445,6 +445,33 @@ else
 echo ""
 	fi
 
+        cecho "Download ${NGX_HTTPREDISLINKFILE} ..." $boldyellow
+    if [ -s ${NGX_HTTPREDISLINKFILE} ]; then
+        cecho "ngx_http_redis Archive found, skipping download..." $boldgreen
+    else
+        wget -c ${NGX_HTTPREDISLINK} --tries=3
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_HTTPREDISLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_HTTPREDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_HTTPREDISLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_HTTPREDISLINKFILE} valid file." $boldyellow
+echo ""
+    fi    
+
 nginxpcretarball
 nginxwebdavtarball
 nginxpgspeedtarball
@@ -596,6 +623,34 @@ else
          cecho "${NGX_ECHOLINKFILE} valid file." $boldyellow
 echo ""
     fi
+
+        cecho "Download ${NGX_REDISLINKFILE} ..." $boldyellow
+if [ -s ${NGX_REDISLINKFILE} ]; then
+  cecho "${NGX_REDISLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_REDISLINKFILE} not found!!! Downloading now......"
+        wget -c --progress=bar --no-check-certificate ${NGX_REDISLINK} -O ${NGX_REDISLINKFILE} --tries=3 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_REDISLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf ${NGX_REDISLINKFILE} 
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_REDISLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_REDISLINKFILE} valid file." $boldyellow
+echo ""
+    fi # redis2    
 
     # ORESTY_LUANGINX=y|n
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
