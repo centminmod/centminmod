@@ -16,7 +16,7 @@ letswait
 	if [[ -z "$(ps aufx | grep 'crond' | grep -v grep)" ]]; then
 echo ""
 	if [[ -z "$(rpm -qa sysstat)" || -z "$(rpm -qa cronie)" ]]; then
-		yum -yq install sysstat cronie
+		yum -y -q install sysstat cronie
 	fi
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond service is running" $boldyellow
