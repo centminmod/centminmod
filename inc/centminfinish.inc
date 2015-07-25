@@ -19,16 +19,20 @@ echo ""
 		yum -y -q install sysstat cronie
 	fi
 	cecho "--------------------------------------------------------" $boldyellow
-	cecho "Ensure crond service is running" $boldyellow
+	cecho "Ensure crond & sysstat service are running" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 		if [[ "$CENTOS_SEVEN" != '7' ]]; then
 			pkill crond
 			service crond restart
+			service sysstat restart
 			chkconfig crond on
+			chkconfig sysstat on
 		else
 			pkill crond
 			systemctl restart crond.service
 			systemctl enable crond.service
+			systemctl restart sysstat.service
+			systemctl enable sysstat.service
 		fi
 	fi
 

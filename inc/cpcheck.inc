@@ -199,6 +199,13 @@ fi
 
 if [ ! -f /usr/bin/sar ]; then
 	yum -y -q install sysstat
+		if [[ "$CENTOS_SEVEN" != '7' ]]; then
+			service sysstat restart
+			chkconfig sysstat on
+		else
+			systemctl restart sysstat.service
+			systemctl enable sysstat.service
+		fi		
 fi
 
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
