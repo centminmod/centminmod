@@ -287,6 +287,8 @@ NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing add
 NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
 NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
+NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
+NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.261'
@@ -295,18 +297,19 @@ NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-g
 NGINX_STICKYVER='1.2.5'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
-NGINX_OPENRESTY='y'            # Agentzh's openresty Nginx modules
+NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCVER='0.29'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.9.16'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.9.16'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
