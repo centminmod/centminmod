@@ -188,6 +188,17 @@ chmod 0700 /usr/bin/cminfo_updater
 # insert itself into cronjob for auto updates
 if [ ! -f /usr/bin/crontab ]; then
 	yum -y -q install cronie
+		if [[ "$CENTOS_SEVEN" != '7' ]]; then
+			service crond restart
+			chkconfig crond on
+		else
+			systemctl restart crond.service
+			systemctl enable crond.service
+		fi	
+fi
+
+if [ ! -f /usr/bin/sar ]; then
+	yum -y -q install sysstat
 fi
 
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
