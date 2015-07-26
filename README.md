@@ -37,7 +37,7 @@ Type as root user in SSH these commands, Centmin Mod will have it's install setu
 
 Then to install either type
 
-for menu mode
+for menu mode run centmin.sh and select menu option 1 to install
 
     ./centmin.sh
 
@@ -70,7 +70,7 @@ Actual install, type as root user in SSH these commands, Centmin Mod will have i
 
 Then to install either type
 
-for menu mode
+for menu mode run centmin.sh and select menu option 1 to install
 
     ./centmin.sh
 
