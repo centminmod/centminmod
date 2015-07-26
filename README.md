@@ -21,7 +21,7 @@ or
 
     curl -sL http://centminmod.com/installer.sh | bash
 
-### For latest 1.2.3-eva2000.08 beta install
+### For latest 1.2.3-eva2000.09 beta install
 
 
     curl -sL http://centminmod.com/betainstaller.sh | bash
