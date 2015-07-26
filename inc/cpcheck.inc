@@ -51,11 +51,16 @@ csfipsetcheck() {
 
 checkaliases() {
 	if [[ "$(grep 'centminmod-123.08centos7beta01' /root/.bashrc)" ]]; then
-        sed -i 's/centminmod-123.08centos7beta01/centminmod-123.08beta03/' /root/.bashrc
-    elif [[ "$(grep 'centminmod-123.08centos7beta02' /root/.bashrc)" ]]; then
-        sed -i 's/centminmod-123.08centos7beta02/centminmod-123.08beta03/' /root/.bashrc
-    elif [[ "$(grep 'centminmod-123.08centos7beta03' /root/.bashrc)" && -d /usr/local/src/centminmod-123.08beta03 ]]; then
-        sed -i 's/centminmod-123.08centos7beta03/centminmod-123.08beta03/' /root/.bashrc
+        sed -i 's/centminmod-123.08centos7beta01/centminmod/' /root/.bashrc
+    fi
+    if [[ "$(grep 'centminmod-123.08centos7beta02' /root/.bashrc)" ]]; then
+        sed -i 's/centminmod-123.08centos7beta02/centminmod/' /root/.bashrc
+    fi
+    if [[ "$(grep 'centminmod-123.08centos7beta03' /root/.bashrc)" ]]; then
+        sed -i 's/centminmod-123.08centos7beta03/centminmod/' /root/.bashrc
+	fi
+	if [[ "$(grep 'centminmod-123.08beta03' /root/.bashrc)" ]]; then
+        sed -i 's/centminmod-123.08beta03/centminmod/' /root/.bashrc        
     fi
 }
 

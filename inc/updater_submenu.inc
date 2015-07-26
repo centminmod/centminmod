@@ -32,6 +32,7 @@ centminlog
 	cd /usr/local/src
 	
 	# wipe /usr/local/src clean of non-git based directories
+	rm -rf centminmod*
 	rm -rf centminmod-${branchname}
 	rm -rf centmin-v1.2.3mod*
 	rm -rf centminmod-123.06*
@@ -40,8 +41,8 @@ centminlog
 	
 	echo  
 	cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-	git clone ${CMGIT} centminmod-${branchname}
-	cd centminmod-${branchname}
+	git clone ${CMGIT} centminmod
+	cd centminmod
 	git checkout -f ${branchname}
 	chmod +x centmin.sh
 	
@@ -57,7 +58,7 @@ centminlog
 	
 	echo
 	cecho "to update centmin mod ${branchname} branch repo via git" $boldyellow
-	cecho "	cd /usr/local/src/centminmod-${branchname}" $boldgreen
+	cecho "	cd /usr/local/src/centminmod" $boldgreen
 	cecho "	git stash" $boldgreen
 	cecho "	git pull" $boldgreen
 	cecho "	chmod +x centmin.sh" $boldgreen
@@ -71,11 +72,11 @@ centminlog
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "Updating Current Centmin Mod code branch via git" $boldyellow
-	cecho "	cd /usr/local/src/centminmod-${branchname}" $boldgreen
+	cecho "	cd /usr/local/src/centminmod" $boldgreen
 	cecho "	git stash" $boldgreen
 	cecho "	git pull" $boldgreen
 	cecho "	chmod +x centmin.sh" $boldgreen
-	cd /usr/local/src/centminmod-${branchname} 2>/dev/null
+	cd /usr/local/src/centminmod 2>/dev/null
 	git stash
 	git pull
 	chmod +x centmin.sh
@@ -111,6 +112,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	else
 		cd /usr/local/src
 		# wipe /usr/local/src clean of non-git based directories
+		rm -rf centminmod*
 		rm -rf centminmod-*
 		rm -rf centmin-v1.2.3mod*
 		rm -rf centminmod-123.06*
@@ -119,8 +121,8 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	
 		echo  
 		cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-		git clone ${CMGIT} centminmod-${branchname}
-		cd centminmod-${branchname} 2>/dev/null
+		git clone ${CMGIT} centminmod
+		cd centminmod 2>/dev/null
 		git checkout -f ${branchname}
 		chmod +x centmin.sh
 		
@@ -136,7 +138,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		
 		echo
 		cecho "to update centmin mod ${branchname} branch repo via git" $boldyellow
-		cecho "	cd /usr/local/src/centminmod-${branchname}" $boldgreen
+		cecho "	cd /usr/local/src/centminmod" $boldgreen
 		cecho "	git stash" $boldgreen
 		cecho "	git pull" $boldgreen
 		cecho "	chmod +x centmin.sh" $boldgreen		

@@ -4,7 +4,7 @@
 # base to github version for easier updates
 # https://community.centminmod.com/threads/working-with-git-command-line-for-updating-centmin-mod-local-copies.2150/
 ######################################################
-branchname='123.08beta03'
+branchname='123.08stable'
 
 ######################################################
 # Setup Colours
@@ -43,12 +43,13 @@ return
 echo
 cecho "setup Centmin Mod git sourced install..." $boldyellow
 cd /usr/local/src
-rm -rf centminmod-${branchname}
+rm -rf centminmod
+rm -rf centminmod*
 
 echo  
 cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-git clone https://github.com/centminmod/centminmod.git centminmod-${branchname}
-cd centminmod-${branchname}
+git clone https://github.com/centminmod/centminmod.git centminmod
+cd centminmod
 git checkout -f ${branchname}
 chmod +x centmin.sh
 
@@ -64,7 +65,7 @@ git log -1
 
 echo
 cecho "to update centmin mod ${branchname} branch repo via git" $boldyellow
-cecho "	cd /usr/local/src/centminmod-${branchname}" $boldgreen
+cecho "	cd /usr/local/src/centminmod" $boldgreen
 cecho "	git stash" $boldgreen
 cecho "	git pull" $boldgreen
 cecho "	chmod +x centmin.sh" $boldgreen

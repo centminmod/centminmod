@@ -3,8 +3,9 @@
 # standalone nginx vhost creation script for centminmod.com
 # .08 beta03 and higher written by George Liu
 ################################################################
-branchname='123.08beta03'
-CUR_DIR="/usr/local/src/centminmod-${branchname}"
+branchname='123.08stable'
+#CUR_DIR="/usr/local/src/centminmod-${branchname}"
+CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')

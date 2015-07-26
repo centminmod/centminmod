@@ -2724,7 +2724,7 @@ fi
 
 CCACHE_ERROR=$?
     if [[ "$CCACHE_ERROR" != '0' ]]; then
-        /usr/bin/unzip -qo /usr/local/src/centminmod-${branchname}/downloads/svr-setup.zip -d /
+        /usr/bin/unzip -qo /usr/local/src/centminmod/downloads/svr-setup.zip -d /
     fi
 
 yuminstall
