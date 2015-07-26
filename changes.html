@@ -1,3 +1,79 @@
+<b>v1.2.3-eva2000.08 31/07/2015</b>
+<ul>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/new-08-beta-menu-option-updating-centmin-mod-via-git.3084/">centmin.sh menu option 23</a> for updating Centmin Mod code via github repo</li>
+<li class="li-bullet">Add cminfo <a href="https://community.centminmod.com/threads/how-to-help-test-08-centos-7-betas-with-github-code.813/page-15#post-11326">quick info summary CLI command</a></li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/how-to-help-test-08-centos-7-betas-with-github-code.813/page-22#post-13288">custom_config.inc persistent centmin.sh option file support</a></li>
+<li class="li-bullet">Add CentOS 7.0 &amp; CentOS 7.1 support</li>
+<li class="li-bullet">Add CentOS 6.6 support</li>
+<li class="li-bullet">Add Clang compiler support for faster source compiles and installs for select software</li>
+<li class="li-bullet">Add SSH command line support for <a href="https://community.centminmod.com/threads/add-nginx-vhost-via-ssh-command-line-via-nv-sh-usr-bin-nv.3616/">creating new Nginx vhosts with SPDY SSL vhost auto generation support</a></li>
+<li class="li-bullet">Add PHP 7 / PHP NG support <a href="https://community.centminmod.com/threads/php-5-7-phpng-support-testing-for-centmin-mod-betas.892/">PHP-FPM - PHP 5.7 (PHPNG)</a></li>
+<li class="li-bullet">Add to centmin.sh menu option 2 <a href="https://community.centminmod.com/posts/15627/">support for SPDY SSL Nginx vhost generator setup</a></li>
+<li class="li-bullet"><a href="https://community.centminmod.com/threads/centmin-mod-08-beta03-multiple-php-fpm-pools-support-added.3672/">Add basic Multiple PHP-FPM pool support for 4 additional pools</a></li>
+<li class="li-bullet">Add pure-ftpd virtual FTP user support per Nginx vhost <a href="https://community.centminmod.com/threads/how-to-help-test-08-centos-7-betas-with-github-code.813/page-13#post-10138">isolated to domain's vhost directory</a></li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/how-to-help-test-08-centos-7-betas-with-github-code.813/page-18#post-12444">centmin.sh menu option 22 for quick Wordpress Nginx vhost + Wordpress installation</a></li>
+<li class="li-bullet">Add EMAIL and PUSHOVER_EMAIL variable support in centmin.sh - if EMAIL variable is populated with an email address, CSF Firewall's alert email field will be populated with EMAIL value so you will get CSF Firewall notification emails when certain actions are taken i.e. blocking IPs from SSHD brute force attacks etc</li>
+<li class="li-bullet">Add new default Nginx index page design (<a href="https://community.centminmod.com/threads/new-default-nginx-index-html-design.1278/">new default Nginx index.html design</a>)</li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/centmin-mod-nginx-lua-luajit-support-preview-discussions.3023/">Nginx Lua modules + LuaJIT support</a></li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/centmin-mod-nginx-live-vhost-traffic-statistics-preview-discussion.3022/">Nginx Vhost Traffic Statistics module support</a></li>
+<li class="li-bullet">Add <a href="https://github.com/arut/nginx-rtmp-module" target="_blank">RTMP Nginx Module</a> to Nginx configuration - default is disabled</li>
+<li class="li-bullet">Add Nginx Sticky module to Nginx configuration <a href="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng" target="_blank">nginx-goodies / nginx-sticky-module-ng — Bitbucket</a> (<a href="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/downloads#tag-downloads" target="_blank">downloads</a>) for cookie or route based session persistence for upstream load balancing. This is a feature that is available in the commercial paid Nginx Plus releases <a href="http://nginx.org/en/docs/http/ngx_http_upstream_module.html#sticky" target="_blank">Module ngx_http_upstream_module</a> (details <a href="http://nginx.com/blog/load-balancing-with-nginx-plus-part2/" target="_blank">here</a> and <a href="http://nginx.com/products/application-load-balancing/" target="_blank">here</a>). Disabled by default as Nginx 1.9.0 has added equivalent support for persistence in upstream backends.</li>
+<li class="li-bullet">Add Nginx Upstream Check module to Nginx configuration <a href="https://github.com/yaoweibin/nginx_upstream_check_module" target="_blank">yaoweibin/nginx_upstream_check_module · GitHub</a> which allows you to check the health of an upstream load balancer backend. Yet another Nginx module which is packaged with commercial paid Nginx Plus release <a href="http://nginx.org/en/docs/http/ngx_http_upstream_module.html#health_check" target="_blank">Module ngx_http_upstream_module</a> (details <a href="http://nginx.com/products/application-health-checks/" target="_blank">here</a>). Nginx Upstream Check module 0.3.0 adds Tengine patch</li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/openresty-echo-nginx-module-set-misc-nginx-module-ngx_devel_kit-added-to-08-beta.2895/">Openresty echo-nginx-module Nginx module support</a></li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/openresty-echo-nginx-module-set-misc-nginx-module-ngx_devel_kit-added-to-08-beta.2895/">Openresty set-misc-nginx-module Nginx module support</a></li>
+<li class="li-bullet">Add <a href="https://github.com/openresty/redis2-nginx-module" target="_blank">OpenResty Redis2 Module</a> and <a href="http://wiki.nginx.org/HttpRedisModule" target="_blank">Nginx http-redis module</a> support</li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/openresty-echo-nginx-module-set-misc-nginx-module-ngx_devel_kit-added-to-08-beta.2895/">ngx_devel_kit Nginx module support</a></li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/maldet-linux-malware-detect-addon-discussion.846/">Linux Malware Detect + ClamAV Addon</a> (maldet + clamAV scanner)</li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/threads/how-to-help-test-08-centos-7-betas-with-github-code.813/page-6#post-6785">Remi YUM repository support</a> to replace removed CentALT YUM repo</li>
+<li class="li-bullet">Add <a href="https://community.centminmod.com/posts/16488/">ATrpms YUM repository support</a> for ffmpeg-php extension YUM packages on CentOS 7<br>
+</li>
+<li class="li-bullet">Add individual YUM repository disabling for Axivo and Remi YUM repo at initial install time</li>
+<li class="li-bullet">Add optional <a href="https://community.centminmod.com/threads/centmin-mod-08-beta-03-addon-curl-7-43-custom-rpms.3703/">custom RPM support for installing curl/libcurl 7.43</a><br>
+</li>
+<li class="li-bullet">Add alternative PHP include file configuration support phpalt.conf</li>
+<li class="li-bullet">Add automatic OpenSSL version checker on Nginx upgrade routine</li>
+<li class="li-bullet">Add <a href="https://github.com/phpredis/phpredis" target="_blank">redis PHP extension support</a> and <a href="https://github.com/mongodb/mongo-php-driver" target="_blank">mongodb PHP extension support</a></li>
+<li class="li-bullet">Updated default PHP opcache from APC Cache switch to Zend Opcache</li>
+<li class="li-bullet">Update /tmp creation routine which sets either ramdisk tmpfs or non-tmpfs based on system memory available/installed</li>
+<li class="li-bullet">Update centmin.sh menu option 16 for changing SSHD Port</li>
+<li class="li-bullet">Update custom /etc/sysctl.conf settings to re-enable tcp_sack</li>
+<li class="li-bullet">Update system max file descriptor limits for Nginx, PHP-FPM and Memcached server</li>
+<li class="li-bullet">Update Nginx 1.9.3 default with <a href="http://nginx.org/en/docs/stream/ngx_stream_core_module.html" target="_blank">ngx_stream_core_module support</a> and reuseport support + jemalloc for memory management + <a href="https://community.centminmod.com/threads/nginx-and-libressl-alternative-to-openssl.3146/">LibreSSL alternative to OpenSSL</a></li>
+<li class="li-bullet">Update Nginx ngx_pagespeed to 1.9.32.4 beta</li>
+<li class="li-bullet">Update ccache from 3.1.9 to 3.2.2 and switch from EPEL YUM install to source compile</li>
+<li class="li-bullet">Updated OpenSSL 1.0.2d for POODLE SSLv3 and other security fixes</li>
+<li class="li-bullet">Update PHP default installed version from PHP 5.3.x to 5.4 series with default Zend Opcache installed</li>
+<li class="li-bullet">Update and set MariaDB 10.x as default installed MySQL server version</li>
+<li class="li-bullet">Update PHP configuration and upgrade routine to support PHP 5.6 and 5.7 (PHP 7.0 / PHP NG)</li>
+<li class="li-bullet">Update PHP compile configuration to add libvps and t1lib support</li>
+<li class="li-bullet">Update PHP-FPM log_level to default to warning only</li>
+<li class="li-bullet">Update system ImageMagicK version from 6.5.4 system package to Remi YUM repo provided ImageMagicK 6.9.0</li>
+<li class="li-bullet">Update Nginx OpenResty module support for Nginx configuration</li>
+<li class="li-bullet">Update AVG Anti-Virus Addon</li>
+<li class="li-bullet">Update command shortcuts for Nginx, PHP-FPM, MariaDB MySQL reload command</li>
+<li class="li-bullet">Update htpasswd.sh function</li>
+<li class="li-bullet">Update postfix configuration settings</li>
+<li class="li-bullet">Update CSF firewall install routine &amp; configuration settings including IPSET support for non-OpenVZ VPS</li>
+<li class="li-bullet">Update PHP download url</li>
+<li class="li-bullet">Update Zend OpCache upgrade routine</li>
+<li class="li-bullet">Update Siege benchmark 3.1.0 version</li>
+<li class="li-bullet">Update Suhosin 0.9.37.1 PHP Extension</li>
+<li class="li-bullet">Update Python 2.7.10 optional version</li>
+<li class="li-bullet">Update ImageMagicK 3.3.0RC2 PHP extension</li>
+<li class="li-bullet">Update to fix FFMPEG PHP extension support for PHP =&gt;5.4</li>
+<li class="li-bullet">Update Libevent from <a href="https://raw.github.com/libevent/libevent/release-2.0.22-stable/ChangeLog" target="_blank">2.0.21 to 2.0.22 stable</a></li>
+<li class="li-bullet">Update Memcached server from <a href="http://code.google.com/p/memcached/wiki/ReleaseNotes1424" target="_blank">1.4.21 to 1.4.24</a></li>
+<li class="li-bullet">Update igbinary PHP extension from <a href="http://pecl.php.net/package-changelog.php?package=igbinary&amp;release=1.2.1" target="_blank">1.1.1-dev to 1.2.1 stable</a></li>
+<li class="li-bullet">Update havegd entropy configuration to increase available entropy to <a href="https://community.centminmod.com/threads/centmin-mod-nginx-vhost-spdy-ssl-generator-testing.990/">support ECC 256 bit SSL certificates &amp; ECDSA signature algorithm usage</a></li>
+<li class="li-bullet">Update passenger.sh Addon's node js version</li>
+<li class="li-bullet">Update Axivo YUM repo download url &amp; moved installation to end of initial Centmin Mod install</li>
+<li class="li-bullet">Update Percona YUM repo download url and YUM priorities routine</li>
+<li class="li-bullet">Update EPEL YUM repo to take advantage of their mirror system, so it always get's the most updated download version for their rpm.</li>
+<li class="li-bullet">Update and switch to /dev/urandom based random number generator to include letters</li>
+<li class="li-bullet">Update multi-threaded parallel compression install tool versions</li>
+<li class="li-bullet">Removed outdated /Extras* files from downloaded package</li>
+</ul>
+
 <b>v1.2.3-eva2000.07 30/06/2014</b>
 <ul>
 	<li>Improvements to speed up install process - up to 40-60% faster install time than previous versions.</li>
