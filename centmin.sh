@@ -14,11 +14,11 @@ CMVERSION_CHECK='n'
 #####################################################
 DT=`date +"%d%m%y-%H%M%S"`
 # for github support
-branchname='123.08stable'
+branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
-SCRIPT_MINORVER='08'
+SCRIPT_MINORVER='09'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/07/2015'
+SCRIPT_DATE='31/09/2015'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'

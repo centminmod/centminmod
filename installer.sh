@@ -5,7 +5,7 @@
 # curl -sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
 #######################################################
 DT=`date +"%d%m%y-%H%M%S"`
-branchname=123.08stable
+branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
 
 INSTALLDIR='/usr/local/src'

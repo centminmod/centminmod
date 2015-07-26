@@ -3,7 +3,7 @@
 # standalone nginx vhost creation script for centminmod.com
 # .08 beta03 and higher written by George Liu
 ################################################################
-branchname='123.08stable'
+branchname='123.09beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 

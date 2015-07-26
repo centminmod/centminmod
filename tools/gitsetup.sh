@@ -4,7 +4,7 @@
 # base to github version for easier updates
 # https://community.centminmod.com/threads/working-with-git-command-line-for-updating-centmin-mod-local-copies.2150/
 ######################################################
-branchname='123.08stable'
+branchname='123.09beta01'
 
 ######################################################
 # Setup Colours
