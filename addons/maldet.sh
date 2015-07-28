@@ -163,7 +163,12 @@ clamavinstall() {
 	# it it to half the number of cpu threads detected
     sed -i "s|^MaxThreads 50|MaxThreads $MAXTHREADS|" /etc/clamd.conf
     cat /etc/clamd.conf | grep MaxThreads
-    	
+
+    if [ ! -d /var/run/clamav/ ]; then
+    	mkdir -p /var/run/clamav/
+    	chown clamav:clamav /var/run/clamav/
+    fi
+
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam
