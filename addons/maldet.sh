@@ -50,6 +50,14 @@ echo -e "$color$message" ; $Reset
 return
 }
 #########################################################
+CPUS=$(cat "/proc/cpuinfo" | grep "processor"|wc -l)
+
+if [[ "$CPUS" = '1' ]]; then
+    MAXTHREADS=1
+else
+    MAXTHREADS=$(echo $CPUS/2 | bc)
+fi
+
 if [[ ! -f /etc/redhat-release ]] ; then
 	cecho "No CentOS / RHEL system detected" $boldyellow
 	cecho "Please only install on CentOS / RHEL systems" $boldyellow
@@ -150,6 +158,12 @@ clamavinstall() {
 	if [[ -z "$(grep '/var/run/clamav' /etc/init.d/clamd)" ]]; then
 		sed -i 's|# config: \/etc\/clamav.conf|# config: \/etc\/clamav.conf\n\nif [ ! -d /var/run/clamav ]; then\n\tmkdir -p \/var\/run\/clamav\n\tchown -R clamav:clamav \/var\/run\/clamav\n\tchmod -R 700 \/var\/run\/clamav\nfi|' /etc/init.d/clamd
 	fi
+
+	# tweak threads to reduce cpu load - default is 50 threads !
+	# it it to half the number of cpu threads detected
+    sed -i "s|^MaxThreads 50|MaxThreads $MAXTHREADS|" /etc/clamd.conf
+    cat /etc/clamd.conf | grep MaxThreads
+    	
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam
