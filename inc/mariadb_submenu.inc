@@ -1,7 +1,7 @@
 #######################################################################################
 # MariaDB MySQL Upgrade sub menu
 #######################################################################################
-ENABLE_MARIADBTENUPGRADE='n'
+ENABLE_MARIADBTENUPGRADE='y'
 
 mariadbsubmenu() {
 
@@ -82,7 +82,7 @@ fi
 
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
 	if [ "$MARIADBVERCHECK" == '10.0' ]; then
 
 		echo ""
@@ -102,7 +102,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
 	if [ "$MARIADBVERCHECK" == '10.1' ]; then
 
 		echo ""
@@ -123,7 +123,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 
 centminlog
 {
-MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
 	if [ "$MARIADBVERCHECK" == '10.1' ]; then
 
 		echo ""
