@@ -59,7 +59,8 @@ if [[ ! -f "${DOWNLOAD}" ]]; then
 fi
 #export CUR_DIR
 #export CM_INSTALLDIR
-cd centminmod-${branchname}
+mv centminmod-${branchname} centminmod
+cd centminmod
 chmod +x centmin.sh
 
 # disable nginx lua and luajit by uncommenting these 2 lines
