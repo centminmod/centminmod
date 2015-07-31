@@ -1,4 +1,5 @@
 #!/bin/sh
+#####################################################
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
 ZONEINFO=Etc/UTC  # Set Timezone
@@ -34,6 +35,11 @@ DISCLAIMER='This software is provided "as is" in the hope that it will be useful
 #
 # PLEASE MODIFY VALUES BELOW THIS LINE ++++++++++++++++++++++++++++++++++++++
 # Note: Please enter y for yes or n for no.
+#####################################################
+shopt -s expand_aliases
+for g in "" e f; do
+    alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
+done
 #####################################################
 HN=$(uname -n)
 # Pre-Checks to prevent screw ups
