@@ -117,10 +117,10 @@ exit
 fi
 
 TESTEDCENTOSVER='7.1'
-CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
-    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
         CENTOS_SEVEN='7'
     fi
@@ -180,12 +180,12 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
+    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
     CPUS=$(echo $CPUS+1 | bc)
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
+    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
     CPUS=$(echo $CPUS+1 | bc)
     MAKETHREADS=" -j$CPUS"
 fi

@@ -112,7 +112,7 @@ yum clean all
 CENTOSVER=`cat /etc/redhat-release | awk '{ print $3 }'`
 
 if [ "$CENTOSVER" == 'release' ]; then
-    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
         CENTOS_SEVEN='7'
     fi
