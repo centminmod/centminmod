@@ -835,7 +835,7 @@ systemctl is-enabled tmp.mount
 
 elif [[ ! -f /proc/user_beancounters ]]; then
 
-    # TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+    # TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
     CURRENT_TMPSIZE=$(df /tmp | awk '/tmp/ {print $2}')
 
     # only mount /tmp on tmpfs if CentOS system

@@ -7,7 +7,7 @@ LANG=en_US.UTF-8
 fpmconfdir
 
 #############################################################
-TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 ISLOWMEMPHP='530000'
 #############################################################
 # Formulas
