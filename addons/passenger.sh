@@ -8,7 +8,7 @@ VER='0.0.2'
 RUBYVER='2.2.2'
 RUBYBUILD=''
 
-NODEJSVER='0.12.4'
+NODEJSVER='0.12.7'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
