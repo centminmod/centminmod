@@ -106,16 +106,16 @@ chmod +x centmin.sh
     sed -i '/cmdir=/d' /root/.bashrc
     sed -i '/centmin=/d' /root/.bashrc
     rm -rf /usr/bin/cmdir
-    alias cmdir="pushd /usr/local/src/centminmod-${branchname}"
-    echo "alias cmdir='pushd /usr/local/src/centminmod-${branchname}'" >> /root/.bashrc
-    echo -e "pushd /usr/local/src/centminmod-${branchname}; bash centmin.sh" > /usr/bin/centmin
+    alias cmdir="pushd /usr/local/src/centminmod"
+    echo "alias cmdir='pushd /usr/local/src/centminmod'" >> /root/.bashrc
+    echo -e "pushd /usr/local/src/centminmod; bash centmin.sh" > /usr/bin/centmin
     chmod 0700 /usr/bin/centmin
   echo
   echo "Created command shortcuts:"
   echo "* type cmdir to change to Centmin Mod install directory"
-  echo "  at /usr/local/src/centminmod-${branchname}"
+  echo "  at /usr/local/src/centminmod"
   echo "* type centmin call and run centmin.sh"
-  echo "  at /usr/local/src/centminmod-${branchname}/centmin.sh"
+  echo "  at /usr/local/src/centminmod/centmin.sh"
 }
 
 if [[ "$DEF" = 'novalue' ]]; then
