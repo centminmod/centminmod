@@ -169,6 +169,19 @@ clamavinstall() {
     	chown clamav:clamav /var/run/clamav/
     fi
 
+if [ -f /proc/user_beancounters ]; then
+    echo ""
+    echo "*************************************************"
+    cecho "* Correct service's stack size for OpenVZ systems. Please wait...." $boldgreen
+    echo "*************************************************"
+
+sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 512\nfi\n/g' /etc/init.d/clamd
+
+echo "checking stack size ulimit -s set properly: "
+head -n 5  /etc/init.d/clamd
+fi    
+
+	/etc/init.d/clamd stop
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam
