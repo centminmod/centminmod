@@ -28,7 +28,7 @@ selinxcheck() {
 }
 
 blockeditorcheck() {
-	if [[ -z "$(grep 17222 /usr/local/nginx/conf/drop.conf)" ]]; then
+	if [[ -z "$(grep 17234 /usr/local/nginx/conf/drop.conf)" ]]; then
 		if [ -f "${SCRIPT_DIR}/config/nginx/drop.conf" ]; then
 		rm -rf /usr/local/nginx/conf/drop.conf
 		\cp -f ${SCRIPT_DIR}/config/nginx/drop.conf /usr/local/nginx/conf/drop.conf
