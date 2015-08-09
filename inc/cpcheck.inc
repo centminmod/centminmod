@@ -27,6 +27,15 @@ selinxcheck() {
 	fi
 }
 
+blockeditorcheck() {
+	if [[ -z "$(grep 17222 /usr/local/nginx/conf/drop.conf)" ]]; then
+		if [ -f "${SCRIPT_DIR}/config/nginx/drop.conf" ]; then
+		rm -rf /usr/local/nginx/conf/drop.conf
+		\cp -f ${SCRIPT_DIR}/config/nginx/drop.conf /usr/local/nginx/conf/drop.conf
+		fi
+	fi
+}
+
 centaltoff() {
 	if [[ -f /etc/yum.repos.d/centalt.repo ]]; then
 		sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/centalt.repo
@@ -168,6 +177,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	nvcheck
 	multiphpcheck
 	mjemalloc
+	blockeditorcheck
 fi
 
 }
