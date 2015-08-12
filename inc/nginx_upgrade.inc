@@ -375,6 +375,7 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
     sleep $NGINXPATCH_DELAY
+    patchnginx
 fi
 
 funct_nginxconfigure
