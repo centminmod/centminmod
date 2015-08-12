@@ -353,6 +353,12 @@ check_requestscheme
     # Install nginx
     cd $DIR_TMP
 
+if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] ]]; then
+    # if centmin.sh option NGINXPATCH=n then disable patches by 
+    # wiping the nginx downloaded source and redownloading a fresh copy
+    rm -rf nginx-${ngver}*
+fi
+
     echo "Compiling nginx..."
     if [ -s nginx-${ngver}.tar.gz ]; then
         cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
@@ -369,9 +375,8 @@ check_requestscheme
 # set_intelflags
 
 if [[ "$NGINXPATCH" = [yY] ]]; then
-
     echo "*************************************************"
-    cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
+    cecho "Nginx Patch Time - $NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
     sleep $NGINXPATCH_DELAY
