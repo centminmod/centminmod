@@ -162,6 +162,16 @@ else
   CHACHACIPHERS=""
 fi
 
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+  HTTPTWO=y
+  LISTENOPT='ssl http2'
+  COMP_HEADER='#spdy_headers_comp 5'
+else
+  HTTPTWO=n
+  LISTENOPT='ssl spdy'
+  COMP_HEADER='spdy_headers_comp 5'
+fi
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -239,7 +249,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # }
 
 server {
-  listen 443 ssl spdy;
+  listen 443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -254,7 +264,7 @@ server {
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
   #add_header  X-Content-Type-Options "nosniff";
   #add_header X-Frame-Options DENY;
-  spdy_headers_comp 5;
+  $COMP_HEADER;
   ssl_buffer_size 1400;
   ssl_session_tickets on;
   
