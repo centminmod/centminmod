@@ -164,6 +164,30 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		done
 	fi
 
+	if [[ ! -f /usr/bin/xml2-config ]]; then
+
+		# double check libxml2 has been installed
+		CHECKXML='libxml2-devel'
+		
+		declare -a arraysxml
+		arraysxml=(${CHECKXML})
+		
+		for pkgx in ${arraysxml[@]}
+		do
+		echo Processing package: $pkgx
+		XMLRPMCHECKS=`yum${CACHESKIP} -q list installed $pkgx | awk '/Installed/ {print $1}' &>/dev/null`
+		#echo $XMLRPMCHECKS
+        		if [ "$XMLRPMCHECKS" != 'Installed' ]; then
+		echo "----------------------------------------------------------------------------------"
+		cecho "Installing $pkgx" $boldyellow
+		echo "----------------------------------------------------------------------------------"
+        		yum${CACHESKIP} -q -y install $pkgx
+        		# yum${CACHESKIP} -q list $pkgx
+		echo "----------------------------------------------------------------------------------"
+        		fi
+		done
+	fi	
+
 fi
 
 # set_intelflags
