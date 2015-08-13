@@ -451,12 +451,12 @@ AXIVOREPO_DISABLE=n
 REMIREPO_DISABLE=n
 ATRPMSREPO_DISABLE=n
 
-# custom curl/libcurl RPM for 7.43 and higher
+# custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM=y
 # use at own risk as it can break the system
 # info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
 CUSTOM_CURLRPM=n
-CUSTOM_CURLRPMVER='7.43'             # custom curl/libcurl version
+CUSTOM_CURLRPMVER='7.44'             # custom curl/libcurl version
 CUSTOM_CURLLIBSSHVER='1.6.0-2.0'     # libssh2 version
 CUSTOM_CURLRPMCARESVER='1.10.0-5.0'  # c-ares version
 CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
