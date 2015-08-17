@@ -1,22 +1,70 @@
 #!/bin/bash
-VER='0.0.1'
-######################################################
-# python 2.7 installer for Centminmod.com
-# written by George Liu (eva2000) vbtechsupport.com
-######################################################
-PYTHON_VERSION=2.7.10
-
-######################################################
+###########################################################
+# installs IUS Community YUM Repository
+# https://iuscommunity.org/pages/Repos.html
+# for access to Python 2.7, 3.2, 3.3 and 3.4 on CentOS as default
+# is Python 2.6
+#
+# i.e. python 2.7
+# yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
+# rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv
+# 
+# rpm -ql python27 python27-pip python27-virtualenv | grep bin
+# /usr/bin/pydoc27
+# /usr/bin/python2.7
+# /usr/bin/pip2.7
+# /usr/bin/virtualenv-2.7
+# 
+# i.e. python 3.4
+# yum -y install python34u python34u-devel python34u-pip python34u-setuptools python34u-tools --enablerepo=ius
+# rpm -ql python34u python34u-devel python34u-pip python34u-setuptools python34u-tools python34u-tkinter
+# 
+# rpm -ql python34u python34u-pip | grep bin
+# /usr/bin/pydoc3
+# /usr/bin/pydoc3.4
+# /usr/bin/python3
+# /usr/bin/python3.4
+# /usr/bin/python3.4m
+# /usr/bin/pyvenv
+# /usr/bin/pyvenv-3.4
+# /usr/bin/pip3
+# /usr/bin/pip3.4
+# 
+# https://docs.python.org/3/library/venv.html
+###########################################################
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 
-PYTHON_LINKFILE="Python-${PYTHON_VERSION}.tgz"
-PYTHON_LINK="http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE}"
+###########################################################
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
-EZSETUPLINKFILE='ez_setup.py'
-EZSETUPLINK="https://bitbucket.org/pypa/setuptools/raw/bootstrap/${EZSETUPLINKFILE}"
-######################################################
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
+fi
+
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    echo
+    echo "detected CentOS 7.x OS, python 2.7 is already"
+    echo "the default version for CentOS 7.x"
+    echo "aborting install..."
+    echo
+    exit
+fi
+
+###########################################################
 # Setup Colours
 black='\E[30;40m'
 red='\E[31;40m'
@@ -48,177 +96,63 @@ color=$2
 echo -e "$color$message" ; $Reset
 return
 }
-######################################################
 
-if [ -f /proc/user_beancounters ]; then
-    # CPUS='1'
-    # MAKETHREADS=" -j$CPUS"
-    # speed up make
-    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
-    MAKETHREADS=" -j$CPUS"
-else
-    # speed up make
-    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
-    MAKETHREADS=" -j$CPUS"
-fi
-
-pythontarball() {
-
-    cd $DIR_TMP
-
-        cecho "Download ${PYTHON_LINKFILE} ..." $boldyellow
-if [ -s ${PYTHON_LINKFILE} ]; then
-  cecho "${PYTHON_LINKFILE} found, skipping download..." $boldgreen
-  else
-  echo "Error: ${PYTHON_LINKFILE} not found !!! Downloading now......"
-        wget -cnv http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "${PYTHON_LINKFILE} download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-	fi
-fi
-
-tar xzf ${PYTHON_LINKFILE} 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${PYTHON_LINKFILE} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "${PYTHON_LINKFILE} valid file." $boldyellow
-echo ""
-	fi
-
-        cecho "Download ${PYTHON_SETUPTOOLSLINKFILE} ..." $boldyellow
-if [ -s ${PYTHON_SETUPTOOLSLINKFILE} ]; then
-  cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
-  else
-  echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Downloading now......"
-        wget -c --no-check-certificate ${PYTHON_SETUPTOOLSLINK} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "${PYTHON_SETUPTOOLSLINKFILE} download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download ${PYTHON_SETUPTOOLSLINKFILE} done." $boldyellow
-echo ""
-	fi
-fi
-
-}
-
+###########################################################
 
 installpythonfuct() {
-
-
-    cecho "*************************************************" $boldyellow
-    cecho "* Install Python 2.7 at /usr/local/bin/python2.7 ... " $boldgreen
-    cecho "*************************************************" $boldyellow
-
-cecho "Downloading..." $boldyellow
-
-pythontarball
-
-cecho "Installing..." $boldyellow
-
-if [[ ! -f /usr/bin/python-config ]]; then
-	yum -y install python-devel python-paramiko python-recaptcha-client
+if [[ "$CENTOS_SIX" = '6' ]]; then
+    yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-14.ius.centos6.noarch.rpm
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-14.ius.centos7.noarch.rpm
 fi
 
-cd $DIR_TMP
+# disable by default the ius.repo
+sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/ius.repo
 
-#download python tarball
-# Feb 28, 2014 changed install method to outlined one at
-# http://toomuchdata.com/2014/02/16/how-to-install-python-on-centos/
+if [ -f /etc/yum.repos.d/ius.repo ]; then
+cp -p /etc/yum.repos.d/ius.repo /etc/yum.repos.d/ius.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/ius.repo)" ]
+        then
+                #echo priorities already set for ius.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for ius.repo"
+                ex -s /etc/yum.repos.d/ius.repo << EOF
+:/\[ius/ , /gpgkey/
+:a
+priority=98
+.
+:w
+:/\[ius-debuginfo/ , /gpgkey/
+:a
+priority=98
+.
+:w
+:/\[ius-source/ , /gpgkey/
+:a
+priority=98
+.
+:w
+:q
+EOF
 
-cecho "Compiling Python 2.7..." $boldyellow
-
-#tar xvfz Python-${PYTHON_VERSION}.tgz
-cd Python-${PYTHON_VERSION}
-./configure --prefix=/usr/local --with-threads --enable-unicode=ucs4 --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
-make${MAKETHREADS}
-make altinstall
-
-if [[ -f /usr/local/bin/python2.7 ]]; then
-
-cd $DIR_TMP
-
-        cecho "Download ${EZSETUPLINKFILE} ..." $boldyellow
-    if [ -s ${EZSETUPLINKFILE} ]; then
-        cecho "${EZSETUPLINKFILE} found, skipping download..." $boldgreen
-    else
-        wget $EZSETUPLINK --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${EZSETUPLINKFILE} download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download ${EZSETUPLINKFILE} done." $boldyellow
-#echo ""
-	fi
-    fi
-
-echo "python2.7 ez_setup.py
-easy_install-2.7 pip
-pip2.7 install virtualenv
-pip2.7 install uwsgi"
-
-python2.7 ez_setup.py
-easy_install-2.7 pip
-pip2.7 install virtualenv
-pip2.7 install uwsgi
-
-virtualenvonly() {
-easy_install-2.7 ElementTree
-easy_install-2.7 Markdown
-easy_install-2.7 html5lib
-easy_install-2.7 python-openid
-easy_install-2.7 requests
-easy_install-2.7 psutil
-easy_install-2.7 Pillow
-easy_install-2.7 path.py
-easy_install-2.7 pytz
-easy_install-2.7 unidecode
-easy_install-2.7 Whoosh
-easy_install-2.7 South
-pip2.7 install Django
-pip2.7 install django-debug-toolbar
-pip2.7 install Django-MPTT
-pip2.7 install Coffin
-pip2.7 install django-haystack
-pip2.7 install Jinja2
-pip2.7 install reCAPTCHA-client
-}
-
-echo
-
-echo "---------------------"
-cecho "python --version" $boldyellow
-python --version
-which python
-which pip
-which easy_install
-echo "---------------------"
-cecho "python2.7 --version" $boldyellow
-python2.7 --version
-which python2.7
-which pip2.7
-which easy_install-2.7
-echo "---------------------"
-
-    cecho "*************************************************" $boldyellow
-    cecho "* python2.7 installed " $boldgreen
-    cecho "*************************************************" $boldyellow
+cecho "*************************************************" $boldgreen
+cecho "Fixing ius.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+echo "cat /etc/yum.repos.d/ius.repo"
+cat /etc/yum.repos.d/ius.repo
+echo ""
 fi
+fi # repo file check
+
+cecho "*************************************************" $boldgreen
+cecho "Installing Python 2.7" $boldgreen
+cecho "*************************************************" $boldgreen
+
+# install Python 2.7 besides system default Python 2.6
+yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
+
+rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv | grep bin
 }
 
 ###########################################################################
@@ -227,13 +161,13 @@ case $1 in
 starttime=$(date +%s.%N)
 {
   installpythonfuct
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_python27_install_${DT}.log
+} 2>&1 | tee ${CENTMINLOGDIR}/python27_install_${DT}.log
 
 endtime=$(date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/centminmod_python27_install_${DT}.log
-echo "Total python 2.7 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_python27_install_${DT}.log
+echo "" >> ${CENTMINLOGDIR}/python27_install_${DT}.log
+echo "Total python 2.7 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/python27_install_${DT}.log
   ;;
   *)
     echo "$0 install"
