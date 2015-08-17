@@ -32,9 +32,7 @@
 # 
 # https://docs.python.org/3/library/venv.html
 ###########################################################
-DT=`date +"%d%m%y-%H%M%S"`
-CENTMINLOGDIR='/root/centminlogs'
-DIR_TMP='/svr-setup'
+
 
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
@@ -88,8 +86,6 @@ return
 }
 
 ###########################################################
-starttime=$(date +%s.%N)
-{
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
 	yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-14.ius.centos6.noarch.rpm
@@ -99,6 +95,12 @@ fi
 
 # disable by default the ius.repo
 sed -i 's/enabled=1/enabled=0/' /etc/yum.repos.d/ius.repo
+
+# example 
+# install Python 2.7 besides system default Python 2.6
+# yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
+# install Python 3.4 besides system default Python 2.6
+# yum -y install python34u python34u-devel python34u-pip python34u-setuptools python34u-tools --enablerepo=ius
 
 if [ -f /etc/yum.repos.d/ius.repo ]; then
 cp -p /etc/yum.repos.d/ius.repo /etc/yum.repos.d/ius.OLD
@@ -135,20 +137,3 @@ cat /etc/yum.repos.d/ius.repo
 echo ""
 fi
 fi # repo file check
-
-cecho "*************************************************" $boldgreen
-cecho "Installing Python 2.7" $boldgreen
-cecho "*************************************************" $boldgreen
-
-# install Python 2.7 besides system default Python 2.6
-yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
-
-rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv | grep bin
-
-} 2>&1 | tee ${CENTMINLOGDIR}/python27-install_${DT}.log
-
-endtime=$(date +%s.%N)
-
-INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/python27-install_${DT}.log
-echo "Python 2.7 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/python27-install_${DT}.log
