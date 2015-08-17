@@ -98,13 +98,12 @@ return
 }
 
 ###########################################################
-starttime=$(date +%s.%N)
-{
 
+installpythonfuct() {
 if [[ "$CENTOS_SIX" = '6' ]]; then
-	yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-14.ius.centos6.noarch.rpm
+    yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-14.ius.centos6.noarch.rpm
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-	yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-14.ius.centos7.noarch.rpm
+    yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-14.ius.centos7.noarch.rpm
 fi
 
 # disable by default the ius.repo
@@ -154,11 +153,24 @@ cecho "*************************************************" $boldgreen
 yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
 
 rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv | grep bin
+}
 
-} 2>&1 | tee ${CENTMINLOGDIR}/python27-install_${DT}.log
+###########################################################################
+case $1 in
+  install)
+starttime=$(date +%s.%N)
+{
+  installpythonfuct
+} 2>&1 | tee ${CENTMINLOGDIR}/python27_install_${DT}.log
 
 endtime=$(date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/python27-install_${DT}.log
-echo "Python 2.7 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/python27-install_${DT}.log
+echo "" >> ${CENTMINLOGDIR}/python27_install_${DT}.log
+echo "Total python 2.7 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/python27_install_${DT}.log
+  ;;
+  *)
+    echo "$0 install"
+  ;;
+esac
+exit
