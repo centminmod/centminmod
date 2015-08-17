@@ -54,6 +54,16 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
 fi
+
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    echo
+    echo "detected CentOS 7.x OS, python 2.7 is already"
+    echo "the default version for CentOS 7.x"
+    echo "aborting install..."
+    echo
+    exit
+fi
+
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
