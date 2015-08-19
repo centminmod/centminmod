@@ -1,6 +1,6 @@
 ########################################################################
 phpng_download() {
-	if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.0.0beta'  ]]; then
+	if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.0.0RC'  ]]; then
 			PHPNGVER=$PHPMU_ALPHAVER
 		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~ab/" $boldyellow
 		cd $DIR_TMP
@@ -39,7 +39,7 @@ phpng_download() {
 				echo ""
 			fi		
 ####################################################################		
-	elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' ]]; then
+	elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
 		if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
 			PHPNGVER='NGDEBUG'
 		elif [[ "$PHPMUVER" = '5.7' ]]; then
