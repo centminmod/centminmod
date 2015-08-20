@@ -907,7 +907,7 @@ if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/
   cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
   cecho "wp-login.php protection Username: $HTUSER" $boldyellow
   cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-  cecho "http://{$HTUSER}:${HTPASS}@${vhostname}/wp-login.php" $boldyellow
+  cecho "http://${HTUSER}:${HTPASS}@${vhostname}/wp-login.php" $boldyellow
   echo
   cecho "Resetting wp-login.php protection:" $boldyellow
   cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
