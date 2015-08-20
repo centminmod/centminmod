@@ -45,6 +45,10 @@ return
 }
 ###############################################################
 
+if [ ! -d /root/tools ]; then
+  mkdir -p /root/tools
+fi
+
 if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
   LISTENOPT='ssl http2'
@@ -471,7 +475,7 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files $uri $uri/ /index.php?q=\$uri&\$args;  
+  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -492,7 +496,6 @@ location ~* /(xmlrpc\.php) {
   include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
   include /usr/local/nginx/conf/php-wpsc.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
-  include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -570,7 +573,7 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files $uri $uri/ /index.php?q=\$uri&\$args;  
+  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -591,7 +594,6 @@ location ~* /(xmlrpc\.php) {
   include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
   include /usr/local/nginx/conf/php-wpsc.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
-  include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -638,7 +640,7 @@ server {
   #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files $uri $uri/ /index.php?q=\$uri&\$args;  
+  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -659,7 +661,6 @@ location ~* /(xmlrpc\.php) {
   include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
   include /usr/local/nginx/conf/php-wpsc.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
-  include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -725,9 +726,9 @@ EFF
 # only proceed in creating vhost if VHOSTNAME directory exist
 if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
-  cecho "------------------------------------------------------------" $boldgreen
-  cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
-  cecho "------------------------------------------------------------" $boldgreen
+  cecho "---------------------------------------------------------------" $boldgreen
+  cecho "Setup Wordpress + Super Cache (vhost only disabled by default) for $vhostname" $boldyellow
+  cecho "---------------------------------------------------------------" $boldgreen
 
   cd /home/nginx/domains/${vhostname}
 
