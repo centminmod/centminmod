@@ -785,6 +785,64 @@ mysql -e "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user
 fi # wp install if web root exists
 ######### Wordpress Manual Install no WP-CLI ######################
 
+  cecho "------------------------------------------------------------" $boldgreen
+  cecho "Created uninstall script" $boldyellow
+  cecho "/root/tools/wp_uninstall_${vhostname}.sh" $boldyellow
+  cecho "------------------------------------------------------------" $boldgreen
+
+cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
+#/bin/bash
+rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.conf
+rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+rm -rf /home/nginx/domains/${vhostname}
+rm -rf /usr/local/nginx/conf/wpsecure_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpsupercache_${vhostname}.conf
+rm -rf /root/tools/wp_updater_${vhostname}.sh
+rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt"
+rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key"
+rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr"
+crontab -l > cronjoblist
+sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
+crontab cronjoblist
+rm -rf cronjoblist
+service nginx restart
+END
+
+chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
+
+#   cecho "------------------------------------------------------------" $boldgreen
+#   cecho "Created wp_updater_${vhostname}.sh script" $boldyellow
+#   cecho "/root/tools/wp_updater_${vhostname}.sh" $boldyellow
+#   cecho "------------------------------------------------------------" $boldgreen
+
+# cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
+# #!/bin/bash
+# PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin
+# EMAIL=$WPADMINEMAIL
+
+# {
+# cd /home/nginx/domains/${vhostname}/public
+# echo "/home/nginx/domains/${vhostname}/public"
+# /usr/bin/wp cli update --allow-root
+# /usr/bin/wp plugin status --allow-root
+# /usr/bin/wp plugin update --all --allow-root
+# } 2>&1 | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+# ENDA
+
+# chmod 0700 /root/tools/wp_updater_${vhostname}.sh
+
+# if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
+#     # generate random number of seconds to delay cron start
+#     # making sure wp_updater for several wordpress nginx installs
+#     # do not run at very same time during cron scheduling
+#     DELAY=$(echo ${RANDOM:0:3})
+#     crontab -l > cronjoblist
+#     echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
+#     crontab cronjoblist
+#     rm -rf cronjoblist
+#     crontab -l
+# fi
+
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
 service nginx restart
@@ -821,6 +879,42 @@ fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
 cecho "vhost log files directory is /home/nginx/domains/$vhostname/log" $boldwhite
+echo
+cecho "------------------------------------------------------------" $boldgreen
+cecho "SSH commands to uninstall created Wordpress install and Nginx vhost:" $boldyellow
+cecho "  /root/tools/wp_uninstall_${vhostname}.sh" $boldyellow
+cecho "------------------------------------------------------------" $boldgreen
+echo
+# cecho "------------------------------------------------------------" $boldgreen
+# cecho "Wordpress Auto Updater created at:" $boldyellow
+# cecho "  /root/tools/wp_updater_${vhostname}.sh" $boldyellow
+# cecho "cronjob set for every 8 hours update (3x times per day)" $boldyellow
+# cecho "------------------------------------------------------------" $boldgreen
+# echo
+cecho "Wordpress domain: $vhostname" $boldyellow
+cecho "Wordpress DB Name: $DB" $boldyellow
+cecho "Wordpress DB User: $DBUSER" $boldyellow
+cecho "Wordpress DB Pass: $DBPASS" $boldyellow
+cecho "Wordpress Admin User ID: ${WUID}" $boldyellow
+cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
+cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
+cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
+
+if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+  echo  
+  cecho "Wordpress wp-login.php password protection info:" $boldyellow
+  cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+  cecho "wp-login.php protection Username: $HTUSER" $boldyellow
+  cecho "wp-login.php protection Password: $HTPASS" $boldyellow
+  echo
+  cecho "Resetting wp-login.php protection:" $boldyellow
+  cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+  cecho "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+  cecho "Step 2. run command:" $boldyellow
+  cecho "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" $boldyellow
+  cecho "Step 3. restart Nginx + PHP-FPM services" $boldyellow
+  cecho "     nprestart" $boldyellow
+fi
 
 echo
 cecho "-------------------------------------------------------------" $boldyellow
@@ -835,21 +929,6 @@ cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname
 echo
 ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 fi
-
-echo
-cecho "-------------------------------------------------------------" $boldyellow
-cecho "Commands to remove ${vhostname}" $boldwhite
-echo
-cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
-cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
-fi
-cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
-cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldwhite
-cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldwhite
-cecho " rm -rf /home/nginx/domains/$vhostname" $boldwhite
-cecho " service nginx restart" $boldwhite
-cecho "-------------------------------------------------------------" $boldyellow
 
 else
 
