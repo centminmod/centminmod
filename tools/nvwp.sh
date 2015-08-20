@@ -471,7 +471,7 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files $uri $uri/ /index.php?q=$request_uri;  
+  try_files $uri $uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -570,7 +570,7 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files $uri $uri/ /index.php?q=$request_uri;  
+  try_files $uri $uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -638,7 +638,7 @@ server {
   #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files $uri $uri/ /index.php?q=$request_uri;  
+  try_files $uri $uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -763,8 +763,8 @@ sed -i "/define('WPLANG', '');/ a\
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
-WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
-mysql -e "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user_id=${WUID} WHERE user_id=1" ${DB}
+# WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
+# mysql -e "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user_id=${WUID} WHERE user_id=1" ${DB}
 
   chown nginx:nginx /home/nginx/domains/${vhostname}/public
   chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
@@ -895,10 +895,10 @@ cecho "Wordpress domain: $vhostname" $boldyellow
 cecho "Wordpress DB Name: $DB" $boldyellow
 cecho "Wordpress DB User: $DBUSER" $boldyellow
 cecho "Wordpress DB Pass: $DBPASS" $boldyellow
-cecho "Wordpress Admin User ID: ${WUID}" $boldyellow
-cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
-cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
-cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
+# cecho "Wordpress Admin User ID: ${WUID}" $boldyellow
+# cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
+# cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
+# cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
 
 if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
   echo  
