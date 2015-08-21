@@ -759,8 +759,19 @@ NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
 sed -i "/define('WPLANG', '');/ a\
-/** Enable core updates for minor releases (default) **/\ndefine( 'WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
+/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', true);\ndefine( 'WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
 " wp-config.php
+
+if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
+    # generate random number of seconds to delay cron start
+    # making sure they do not run at very same time during cron scheduling
+    DELAY=$(echo ${RANDOM:0:3})
+    crontab -l > cronjoblist
+    echo "*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    crontab cronjoblist
+    rm -rf cronjoblist
+    crontab -l
+fi
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
@@ -804,6 +815,7 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key"
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr"
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
+sed -i "/\/${vhostname}/wp-cron.php/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
 service nginx restart
@@ -947,7 +959,9 @@ fi
 }
 
 if [[ "$RUN" = [yY] ]]; then
-  funct_nginxaddvhost
+  {
+    funct_nginxaddvhost
+  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost_nvwp.log
 else
   usage
 fi
