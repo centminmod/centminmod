@@ -817,7 +817,7 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key"
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr"
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
-sed -i "/\/${vhostname}/wp-cron.php/d" cronjoblist
+sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
 service nginx restart

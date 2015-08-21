@@ -432,7 +432,7 @@ rm -rf /usr/local/nginx/conf/wpsupercache_${vhostname}.conf
 rm -rf /root/tools/wp_updater_${vhostname}.sh
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
-sed -i "/\/${vhostname}/wp-cron.php/d" cronjoblist
+sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
 END
