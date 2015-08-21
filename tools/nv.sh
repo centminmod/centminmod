@@ -10,6 +10,8 @@ CUR_DIR="/usr/local/src/centminmod"
 DEBUG='n'
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
+CENTMINLOGDIR='/root/centminlogs'
+DT=`date +"%d%m%y-%H%M%S"`
 ################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -665,7 +667,7 @@ fi
 if [[ "$RUN" = [yY] ]]; then
   {
     funct_nginxaddvhost
-  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost_nv.log
+  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log
 else
   usage
 fi
