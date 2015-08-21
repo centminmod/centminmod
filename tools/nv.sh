@@ -663,7 +663,9 @@ fi
 }
 
 if [[ "$RUN" = [yY] ]]; then
-  funct_nginxaddvhost
+  {
+    funct_nginxaddvhost
+  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost_nv.log
 else
   usage
 fi
