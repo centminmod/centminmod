@@ -297,7 +297,7 @@ wp core config --dbname=$DB --dbuser=$DBUSER --dbpass=$DBPASS --allow-root
 NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
-sed -i "/define('WPLANG', '');/ a\
+sed -i "/define('DB_COLLATE', '');/ a\
 /** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', true);\ndefine( 'WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
 " wp-config.php
 
