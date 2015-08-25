@@ -62,6 +62,15 @@ centminlog
 	cecho "	git stash" $boldgreen
 	cecho "	git pull" $boldgreen
 	cecho "	chmod +x centmin.sh" $boldgreen
+
+	echo
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho " To complete update exit centmin.sh" $boldyellow
+	cecho " and re-run cd /usr/local/src/centminmod" $boldyellow
+	cecho " before invoking centmin.sh again" $boldyellow
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	echo
+	break
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log
 
 ;;
@@ -80,6 +89,14 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	git stash
 	git pull
 	chmod +x centmin.sh
+
+	echo
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho " To complete update exit centmin.sh" $boldyellow
+	cecho " and re-run cd /usr/local/src/centminmod" $boldyellow
+	cecho " before invoking centmin.sh again" $boldyellow
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	echo	
 else
 	echo
 	echo "Error: you do not have git environment setup for github based updates"
@@ -141,13 +158,22 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		cecho "	cd /usr/local/src/centminmod" $boldgreen
 		cecho "	git stash" $boldgreen
 		cecho "	git pull" $boldgreen
-		cecho "	chmod +x centmin.sh" $boldgreen		
+		cecho "	chmod +x centmin.sh" $boldgreen	
+
+	echo
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho " To complete update exit centmin.sh" $boldyellow
+	cecho " and re-run cd /usr/local/src/centminmod" $boldyellow
+	cecho " before invoking centmin.sh again" $boldyellow
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	echo			
+		break
 	fi	
 else
 	echo
 	echo "Error: you do not have git environment setup for github based updates"
 	echo "       run submenu option 1 to setup github environment first"
-	break
+	exit
 fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatenew_branch.log
 ;;
