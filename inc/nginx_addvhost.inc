@@ -25,11 +25,59 @@ cd /usr/local/nginx/conf/ssl/${vhostname}
 
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating self signed SSL certificate..." $boldgreen
-sleep 5
+cecho "CSR file can also be used to be submitted for paid SSL certificates" $boldgreen
+cecho "If using for paid SSL certificates be sure to keey both private key and CSR safe" $boldgreen
+cecho "creating CSR File: ${vhostname}.csr" $boldgreen
+cecho "creating private key: ${vhostname}.key" $boldgreen
+cecho "creating self-signed SSL certificate: ${vhostname}.crt" $boldgreen
+sleep 9
 
-openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/CN=${vhostname}"
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/OU=IT/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
+cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
+cecho "creating private key: ${vhostname}-backup.key" $boldgreen
+sleep 5
+
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/OU=IT/CN=${vhostname}"
+
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
+cecho "private key's SPKI - Subject Public Key Information" $boldgreen
+cecho "Primary private key - ${vhostname}.key" $boldgreen
+cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
+cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
+sleep 5
+
+echo
+cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
+
+openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
+
+echo
+cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
+
+openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
+
+echo
+cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
+
+echo
+cecho "for 7 days max-age including subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=604800; includeSubDomains';"
+
+echo
+cecho "for 7 days max-age excluding subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=604800';"
+
+
+echo
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
 
@@ -261,6 +309,12 @@ server {
   ssl_ciphers ${CHACHACIPHERS}ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
   ssl_prefer_server_ciphers   on;
   add_header Alternate-Protocol  443:npn-spdy/3;
+  # HTTP Public Key Pinning Header uncomment only one that applies include or exclude domains. 
+  # You'd want to include subdomains if you're using SSL wildcard certificates
+  # include subdomain
+  #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=604800; includeSubDomains';
+  # exclude subdomains
+  #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=604800';
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
   #add_header  X-Content-Type-Options "nosniff";
   #add_header X-Frame-Options DENY;
@@ -415,6 +469,8 @@ if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]]; then
   cecho "Self-signed SSL Certificate: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldyellow
   cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
+  cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
+  cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
