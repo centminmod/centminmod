@@ -26,7 +26,7 @@ cd /usr/local/nginx/conf/ssl/${vhostname}
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating self signed SSL certificate..." $boldgreen
 cecho "CSR file can also be used to be submitted for paid SSL certificates" $boldgreen
-cecho "If using for paid SSL certificates be sure to keey both private key and CSR safe" $boldgreen
+cecho "If using for paid SSL certificates be sure to keep both private key and CSR safe" $boldgreen
 cecho "creating CSR File: ${vhostname}.csr" $boldgreen
 cecho "creating private key: ${vhostname}.key" $boldgreen
 cecho "creating self-signed SSL certificate: ${vhostname}.crt" $boldgreen
