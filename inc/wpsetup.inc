@@ -820,7 +820,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -880,7 +880,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
