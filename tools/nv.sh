@@ -280,7 +280,19 @@ cecho "creating private key: ${vhostname}.key" $boldgreen
 cecho "creating self-signed SSL certificate: ${vhostname}.crt" $boldgreen
 sleep 9
 
-openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/OU=IT/CN=${vhostname}"
+if [[ -z "$SELFSIGNEDSSL_O" ]]; then
+  SELFSIGNEDSSL_O="$vhostname"
+else
+  SELFSIGNEDSSL_O="$SELFSIGNEDSSL_O"
+fi
+
+if [[ -z "$SELFSIGNEDSSL_OU" ]]; then
+  SELFSIGNEDSSL_OU="$vhostname"
+else
+  SELFSIGNEDSSL_OU="$SELFSIGNEDSSL_OU"
+fi
+
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
 echo
@@ -290,7 +302,7 @@ cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
 cecho "creating private key: ${vhostname}-backup.key" $boldgreen
 sleep 5
 
-openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/OU=IT/CN=${vhostname}"
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 
 echo
 cecho "---------------------------------------------------------------" $boldyellow
