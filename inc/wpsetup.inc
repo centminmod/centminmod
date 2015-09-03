@@ -339,10 +339,10 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   #autoindex  on;
 
   # for wordpress super cache plugin
-  #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -443,10 +443,10 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   #autoindex  on;
 
   # for wordpress super cache plugin
-  #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
   }
 
@@ -510,10 +510,10 @@ server {
   #autoindex  on;
 
   # for wordpress super cache plugin
-  #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
   }
 
