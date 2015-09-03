@@ -12,7 +12,11 @@ wpinstall() {
       cecho "------------------------------------------------------------" $boldgreen
       cecho "Update wp-cli tool" $boldyellow
       cecho "------------------------------------------------------------" $boldgreen
-      wp cli update --allow-root
+      if [ -d "${SCRIPT_DIR}/addons" ]; then
+        cd ${SCRIPT_DIR}/addons      
+      fi
+      chmod +x wpcli.sh
+      ./wpcli.sh update
     fi
 }
 
