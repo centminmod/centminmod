@@ -1,6 +1,49 @@
+rpcnfsports() {
+    # remove RPC/portmapper and NFS ports 111 and 2049 
+    # from CSF Firewall whitelist by default so that folks who 
+    # only need it can open it up to specific server IP addresses
+    # see advance CSF Firewall rules at https://community.centminmod.com/posts/3731/
+    # examples for allowing 111, 2049 TCP/UDP ports for only 
+    # source/destination IP = 11.22.33.44 to be added to /etc/csf/csf.allow
+    # restart of CSF service is required
+    # 
+    # tcp|in|d=111|s=11.22.33.44
+    # tcp|in|d=2049|s=11.22.33.44
+    # tcp|out|d=111|d=11.22.33.44
+    # tcp|out|d=2049|d=11.22.33.44
+    # udp|in|d=111|s=11.22.33.44
+    # udp|in|d=2049|s=11.22.33.44
+    # udp|out|d=111|d=11.22.33.44
+    # udp|out|d=2049|d=11.22.33.44
+    
+    # only remove ports 111, 2049 from TCP/UDP whitelist if detected NFS 
+    # package not installed
+    if [[ ! -z "$(rpm -ql nfs-utils | grep 'not installed')" && -f /etc/csf/csf.conf ]]; then
+        if [[ "$INITIALINSTALL" = [yY] ]]; then 
+            echo
+            echo "Before RPC/NFS port tweak"
+        fi
+        egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
+        egrep --color ',111,|,2049,' /etc/csf/csf.conf
+        sed -e 's|,111,|,|g' /etc/csf/csf.conf | egrep --color ',111,|,2049,'
+        sed -e 's|,2049,|,|g' /etc/csf/csf.conf | egrep --color ',111,|,2049,'
+        
+        sed -i 's|,111,|,|g' /etc/csf/csf.conf
+        sed -i 's|,2049,|,|g' /etc/csf/csf.conf
+        
+        if [[ "$INITIALINSTALL" = [yY] ]]; then 
+            echo
+            echo "After RPC/NFS port tweak"
+        fi
+        egrep --color ',111,|,2049,' /etc/csf/csf.conf
+        egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
+    fi
+}
+
 csftweaks() {
 if [ -f /etc/csf/csf.conf ]; then
     echo "Custom configure CSF settings...set"
+    rpcnfsports
 if [ ! -z "$EMAIL" ]; then
     sed -i "s/LF_ALERT_TO = \"\"/LF_ALERT_TO = \"$EMAIL\"/g" /etc/csf/csf.conf
 fi

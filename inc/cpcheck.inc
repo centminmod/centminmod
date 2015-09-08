@@ -178,6 +178,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	multiphpcheck
 	mjemalloc
 	blockeditorcheck
+	rpcnfsports
 fi
 
 }
