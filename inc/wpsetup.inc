@@ -199,7 +199,7 @@ while [[ "$TESTEMAIL" = "" ]]; do
   echo
   echo "!! make sure email address is valid and typed correctly !!"
   read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
-  TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
+  TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
   echo
 done
 
