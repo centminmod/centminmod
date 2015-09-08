@@ -22,11 +22,13 @@ rpcnfsports() {
         if [[ "$INITIALINSTALL" = [yY] ]]; then 
             echo
             echo "Before RPC/NFS port tweak"
+            egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
+            egrep --color ',111,|,2049,' /etc/csf/csf.conf
         fi
-        egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
-        egrep --color ',111,|,2049,' /etc/csf/csf.conf
-        sed -e 's|,111,|,|g' /etc/csf/csf.conf | egrep --color ',111,|,2049,'
-        sed -e 's|,2049,|,|g' /etc/csf/csf.conf | egrep --color ',111,|,2049,'
+        if [[ "$INITIALINSTALL" = [yY] ]]; then 
+            sed -e 's|,111,|,|g' /etc/csf/csf.conf | egrep --color ',111,|,2049,'
+            sed -e 's|,2049,|,|g' /etc/csf/csf.conf | egrep --color ',111,|,2049,'
+        fi
         
         sed -i 's|,111,|,|g' /etc/csf/csf.conf
         sed -i 's|,2049,|,|g' /etc/csf/csf.conf
@@ -34,9 +36,9 @@ rpcnfsports() {
         if [[ "$INITIALINSTALL" = [yY] ]]; then 
             echo
             echo "After RPC/NFS port tweak"
+            egrep --color ',111,|,2049,' /etc/csf/csf.conf
+            egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
         fi
-        egrep --color ',111,|,2049,' /etc/csf/csf.conf
-        egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
     fi
 }
 
