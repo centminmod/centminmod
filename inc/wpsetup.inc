@@ -193,7 +193,7 @@ fi
 
 read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
 
-TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
+TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
 # echo "$TESTEMAIL"
 while [[ "$TESTEMAIL" = "" ]]; do
   echo
