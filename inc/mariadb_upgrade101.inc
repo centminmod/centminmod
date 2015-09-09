@@ -330,6 +330,8 @@ echo ""
 
 cmservice mysql start
 
+sleep 10
+
 if [ ! -f /root/.my.cnf ]; then
     echo ""
     echo "------------------------------------------------"
