@@ -294,8 +294,10 @@ fi
 # sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
 # sed -i 's/innodb_additional_mem_pool_size/#innodb_additional_mem_pool_size/g' /etc/my.cnf
 # sed -i 's/skip-innodb/innodb=ON/g' /etc/my.cnf
+sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
 
 cat >>/etc/my.cnf<<FFF
+
 
 [mariadb-10.1]
 ## wsrep specific
