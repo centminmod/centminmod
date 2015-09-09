@@ -348,8 +348,8 @@ fi
 if [[ "$mysqlrootset" == [yY] ]]; then
     echo "Enter MySQL root password when prompted"
     echo "or hit enter to continue"
-    echo "mysql_upgrade -u root -p"
-    mysql_upgrade -u root -p
+    echo "mysql_upgrade -u root -p --verbose"
+    mysql_upgrade -u root -p --verbose
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
@@ -379,8 +379,8 @@ if [[ "$mysqlrootset" == [yY] ]]; then
 
     # sed -i 's/innodb=ON/innodb=OFF/g' /etc/my.cnf
 else
-    echo "mysql_upgrade"
-    mysql_upgrade
+    echo "mysql_upgrade --verbose"
+    mysql_upgrade --verbose
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
     echo "------------------------------------------------"
