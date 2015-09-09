@@ -134,8 +134,8 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 		if [[ "$ENABLE_MARIADBTENUPGRADE" = [nN] ]]; then
 			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
 		else
-			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
-			# mariadbtentotenoneupgrade
+			# echo "Place holder for now until MariaDB 10.1.x is ready to be added"
+			mariadbtentotenoneupgrade
 		fi
 	fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-to-10-1_upgrade.log
