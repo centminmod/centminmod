@@ -331,8 +331,11 @@ FFF
 echo ""
 
 cmservice mysql start
+cmservice mysql restart
 
-sleep 10
+ls -lAhrt /var/lib/mysql/
+
+sleep 3
 
 if [ ! -f /root/.my.cnf ]; then
     echo ""
