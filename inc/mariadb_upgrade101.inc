@@ -3,13 +3,16 @@ backupmsg101() {
 echo ""
 cat <<EOF
 --------------------------------------------------------------------------------
- This script's MariaDB 10.1.x upgrade process is still in 
- beta testing stages. So please test on a test server 
- and not a live production server. But if you use on 
- live server or if MySQL databases already exist, 
- please back them up before running this upgrade 
- script via mysqldump - instructions at: 
+ This script's MariaDB 10.1.x upgrade process is still in beta testing stages. 
+ So please test on a test server and not a live production server. But if you use 
+ on live server or if MySQL databases already exist, please back them up before 
+ running this upgrade script via mysqldump - instructions at: 
  http://dev.mysql.com/doc/refman/5.6/en/mysqldump.html.
+
+ ###############################################################
+ ###        IMPORTANT MYSQLDUMP BACKUP BEFORE UPGRADE        ###
+ ###      OR RISK DATA LOSS DUE TO MARIADB 10.1 Changes      ###
+ ###############################################################
 
  For each DATABASENAME backup via mysqldump i.e.
 
@@ -230,6 +233,10 @@ mariadbtentotenoneupgrade() {
 if [ -z "$OLDMARIADBVERS" ]; then
 backupmsg101
 #mariadb101uninstall
+
+OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
+rpm -e $OLDMARIADBSERVER
+
 mariadb101install
 
 if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then
