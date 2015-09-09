@@ -330,12 +330,16 @@ echo ""
 
 cmservice mysql start
 
-echo ""
-echo "------------------------------------------------"
-echo "Updating MySQL database tables"
-echo "------------------------------------------------"
-read -p "Do you have a MySQL root password set ? [y/n]: " mysqlrootset
-echo ""
+if [ ! -f /root/.my.cnf ]; then
+    echo ""
+    echo "------------------------------------------------"
+    echo "Updating MySQL database tables"
+    echo "------------------------------------------------"
+    read -p "Do you have a MySQL root password set ? [y/n]: " mysqlrootset
+    echo ""
+else
+    mysqlrootset=n
+fi
 
 if [[ "$mysqlrootset" == [yY] ]]; then
     echo "Enter MySQL root password when prompted"
