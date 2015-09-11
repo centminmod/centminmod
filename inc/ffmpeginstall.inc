@@ -2,6 +2,8 @@
 # http://ffmpeg.org/download.html
 ffmpegsetup() {
 
+	if [ -f /etc/yum.repos.d/atrpms.repo ]; then
+
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
 if [[ "$PHPVERCHECK" != '5.8' ]]; then
@@ -96,6 +98,14 @@ echo ""
 echo ""
 
 fi # PHPVERCHECK
+
+else
+
+	echo
+	echo "ATrpms YUM Repository is not installed"
+	echo
+
+	fi # check for /etc/yum.repos.d/atrpms.repo
 
 } # ffmpeg
 ################################
