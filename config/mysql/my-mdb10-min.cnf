@@ -51,7 +51,7 @@ query_prealloc_size = 262144
 query_alloc_block_size = 65536
 transaction_alloc_block_size = 8192
 transaction_prealloc_size = 4096
-default-storage-engine = MyISAM
+default-storage-engine = InnoDB
 
 log_warnings=1
 slow_query_log=0

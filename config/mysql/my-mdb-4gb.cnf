@@ -56,7 +56,7 @@ query_prealloc_size = 262144
 query_alloc_block_size = 65536
 transaction_alloc_block_size = 8192
 transaction_prealloc_size = 4096
-default-storage-engine = MyISAM
+default-storage-engine = InnoDB
 #max_write_lock_count = 8
 
 log_warnings=1
