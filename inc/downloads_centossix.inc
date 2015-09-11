@@ -22,7 +22,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
       fi    
     else
     echo "Error: ${CENTOSSIXATRPMSFILE} not found !!! Downloading now......"
-    wget ${WGETOPT} ${CENTOSSIXATRPMS} --tries=3
+    wget ${WGETOPT} ${CENTOSSIXATRPMS} --tries=2 --timeout=3
     # wget ${WGETOPT} ${CENTOSSIXATRPMSLOCAL} --tries=3
   ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
