@@ -463,9 +463,6 @@ fi
 
     cmservice php-fpm restart
 
-funct_showtempfile
-	cleanup_msg
-
 if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename
 NPHP=$(od -vAn -N4 -tx < /dev/urandom)
