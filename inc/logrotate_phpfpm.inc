@@ -28,6 +28,7 @@ touch /etc/logrotate.d/php-fpm
 cat > "/etc/logrotate.d/php-fpm" <<END
 /var/log/php-fpm/*.log {
         daily
+        dateext
         missingok
         rotate 10
         size=500M
@@ -35,7 +36,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         delaycompress
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 `cat /var/run/php-fpm/php-fpm.pid 2>/dev/null` 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END
