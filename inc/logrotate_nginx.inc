@@ -38,6 +38,7 @@ touch /etc/logrotate.d/nginx
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
         daily
+        dateext
         missingok
         rotate 10
         size=500M
@@ -45,8 +46,8 @@ cat > "/etc/logrotate.d/nginx" <<END
         delaycompress
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 `cat /usr/local/nginx/logs/nginx.pid 2>/dev/null` 2>/dev/null || true
-        endscript            
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript           
 }
 END
 
