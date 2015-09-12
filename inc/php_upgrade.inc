@@ -316,24 +316,11 @@ funct_phpconfigure
 
 	ERR=$?
 	if [ $ERR != 0 ]; then
-	NOTIFY_MESSAGE="\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
-	exit
-	
+    	echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
+    	exit
 	else
-
-	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP configure ok\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-    cmservice php-fpm restart
-
-funct_showtempfile
-	cleanup_msg
-
+    	echo -e "\n`date`\nSuccess: PHP configure ok\n"
+        cmservice php-fpm restart
 	fi
 
 # error check
@@ -347,24 +334,11 @@ echo "make${MAKETHREADS}"
 
 	ERR=$?
 	if [ $ERR != 0 ]; then
-	NOTIFY_MESSAGE="\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
-	exit
-	
+		echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
+    	exit
 	else
-
-	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP make ok\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-    cmservice php-fpm restart
-
-funct_showtempfile
-	cleanup_msg
-
+    	echo -e "\n`date`\nSuccess: PHP make ok\n"
+        cmservice php-fpm restart
 	fi
 
 # error check
@@ -390,23 +364,14 @@ fi
 
 	ERR=$?
 	if [ $ERR != 0 ]; then
-	NOTIFY_MESSAGE="\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
-	exit
-	
+		echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
+    	exit
 	else
+    	echo -e "\n`date`\nSuccess: PHP was installed properly\n"
+        echo
+        echo
 
-	NOTIFY_MESSAGE="\n`date`\nSuccess: PHP was installed properly\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-echo
-echo
-
-# read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
+        # read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
 
 if [[ "$overwritephpfpmconf" = [yY] ]]; then
 
