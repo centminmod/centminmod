@@ -384,22 +384,10 @@ funct_nginxconfigure
 
 	ERR=$?
 	if [ $ERR != 0 ]; then
-	NOTIFY_MESSAGE="\n`date`\nError: $ERR, Nginx configure failed\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
-	exit
-	
+    	echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
+        exit
 	else
-
-	NOTIFY_MESSAGE="\n`date`\nSuccess: Nginx configure ok\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
+    	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
 	fi
 
 # error check
@@ -425,22 +413,10 @@ funct_showtempfile
 
 	ERR=$?
 	if [ $ERR != 0 ]; then
-	NOTIFY_MESSAGE="\n`date`\nError: $ERR, Nginx make failed\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
-	exit
-	
+    	echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
+    	exit
 	else
-
-	NOTIFY_MESSAGE="\n`date`\nSuccess: Nginx make ok\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
+	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
 	fi
 
 # error check
@@ -485,41 +461,28 @@ fi
 
 	ERR=$?
 	if [ $ERR != 0 ]; then
-	NOTIFY_MESSAGE="\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
-
-funct_showtempfile
-	cleanup_msg
-
-	exit
-	
+    	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
+    	exit
 	else
+    	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
+        /etc/init.d/nginx start
 
-	NOTIFY_MESSAGE="\n`date`\nSuccess: Nginx was installed properly\n"
-	echo -e "$NOTIFY_MESSAGE" >> "$TMP_MSGFILE"
+        # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
+        # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
+        # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
+        # echo $OPENSSLVER_CHECK
 
-    /etc/init.d/nginx start
+        CBODYCHECK=`grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf`
+        if [ $CBODYCHECK ]; then
+            sed -i 's/client_body_in_file_only on/client_body_in_file_only off/g' /usr/local/nginx/conf/nginx.conf
+        fi
 
-    # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
-    # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
-    # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
-    # echo $OPENSSLVER_CHECK
+        geoinccheck
+        geoipphp
 
-funct_showtempfile
-	cleanup_msg
-
-CBODYCHECK=`grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf`
-if [ $CBODYCHECK ]; then
-sed -i 's/client_body_in_file_only on/client_body_in_file_only off/g' /usr/local/nginx/conf/nginx.conf
-fi
-
-geoinccheck
-geoipphp
-
-    echo "*************************************************"
-    cecho "* nginx updated" $boldgreen
-    echo "*************************************************"
-
+        echo "*************************************************"
+        cecho "* nginx updated" $boldgreen
+        echo "*************************************************"
 	fi
 
 # error check
