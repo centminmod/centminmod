@@ -1623,11 +1623,11 @@ TMP_MSGFILE="$DIR_TMP/msglogs/$RANDOM.msg"
 
 function cleanup_msg {
 	rm -f "$TMP_MSGFILE"
-	exit 1
+	#exit 1
 }
 
 # http://linuxcommand.org/wss0160.php
-trap cleanup_msg SIGHUP SIGINT SIGTERM
+trap clean_msg SIGHUP SIGINT SIGTERM
 
 # end functions
 #####################################################################
