@@ -14,17 +14,11 @@ Fastest method of install and allows fully unattended installation. Just type th
 
 ### For latest 1.2.3-eva2000.08 stable install
 
-
-    curl -sL http://centminmod.com/stableinstaller.sh | bash
-
-or
-
-    curl -sL http://centminmod.com/installer.sh | bash
+    curl -O https://centminmod.com/installer.sh && chmod 0700 installer.sh && bash installer.sh
 
 ### For latest 1.2.3-eva2000.09 beta install
 
-
-    curl -sL http://centminmod.com/betainstaller.sh | bash
+    curl -O https://centminmod.com/betainstaller.sh && chmod 0700 betainstaller.sh && bash betainstaller.sh
 
 ## Centmin Mod installed via Git    
 
