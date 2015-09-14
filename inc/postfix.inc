@@ -67,6 +67,20 @@ postconf -n | grep '^smtpd_tls_mandatory_exclude_ciphers'
 # postconf -e 'smtpd_tls_dh1024_param_file = /path/to/dhparams.pem'
 # postconf -n | grep '^smtpd_tls_dh1024_param_file'
 
+# setup Postfix Opportunistic TLS connections for outgoing emails from server
+# http://www.postfix.org/TLS_README.html#client_tls_may
+# With opportunistic TLS, mail delivery continues even if the server certificate is untrusted or bears the wrong name. 
+# When the TLS handshake fails for an opportunistic TLS session, rather than give up on mail delivery, the Postfix 
+# SMTP client retries the transaction with TLS disabled. Trying an unencrypted connection makes it possible to 
+# deliver mail to sites with non-interoperable server TLS implementations.
+postconf -d smtp_tls_CAfile smtp_tls_security_level smtp_tls_loglevel smtp_tls_session_cache_database
+postconf -e 'smtp_tls_CAfile=/etc/pki/tls/certs/ca-bundle.crt'
+postconf -e 'smtp_tls_security_level = may'
+postconf -e 'smtp_tls_loglevel = 1'
+postconf -e 'smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache'
+service postfix reload
+postconf -n smtp_tls_CAfile smtp_tls_security_level smtp_tls_loglevel smtp_tls_session_cache_database
+
 cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
