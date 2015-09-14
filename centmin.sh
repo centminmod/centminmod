@@ -269,6 +269,7 @@ NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time b
 NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGINX_INSTALL=y              # Install Nginx (Webserver)
+NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_GEOIP=y                # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
