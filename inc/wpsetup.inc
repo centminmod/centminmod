@@ -777,7 +777,12 @@ EMAIL=$WPADMINEMAIL
 {
 cd /home/nginx/domains/${vhostname}/public
 echo "/home/nginx/domains/${vhostname}/public"
-/usr/bin/wp cli update --allow-root
+#/usr/bin/wp cli update --allow-root
+echo "update wp-cli"
+rm -rf /usr/bin/wp
+wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /usr/bin/wp --tries=3
+chmod 0700 /usr/bin/wp
+/usr/bin/wp --info --allow-root
 /usr/bin/wp plugin status --allow-root
 /usr/bin/wp plugin update --all --allow-root
 } 2>&1 | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
