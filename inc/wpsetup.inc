@@ -785,6 +785,9 @@ chmod 0700 /usr/bin/wp
 /usr/bin/wp --info --allow-root
 /usr/bin/wp plugin status --allow-root
 /usr/bin/wp plugin update --all --allow-root
+#/usr/bin/wp core check-update --allow-root
+#/usr/bin/wp core update --allow-root
+#/usr/bin/wp core update-db --allow-root
 } 2>&1 | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
 
