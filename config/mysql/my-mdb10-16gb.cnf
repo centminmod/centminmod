@@ -19,32 +19,32 @@ innodb=ON
 #skip-archive
 #skip-name-resolve
 #old_passwords
-back_log = 256
-max_connections = 300
-key_buffer_size = 32M
-myisam_sort_buffer_size = 64M
-myisam_max_sort_file_size = 2048M
-join_buffer_size = 128K
-read_buffer_size = 128K
-sort_buffer_size = 256K
+back_log = 768
+max_connections = 900
+key_buffer_size = 512M
+myisam_sort_buffer_size = 512M
+myisam_max_sort_file_size = 4096M
+join_buffer_size = 1M
+read_buffer_size = 1M
+sort_buffer_size = 2M
 table_definition_cache = 8192
-table_open_cache = 4096
-thread_cache_size = 128
+table_open_cache = 8192
+thread_cache_size = 384
 wait_timeout = 120
 connect_timeout = 10
-tmp_table_size = 128M
-max_heap_table_size = 128M
-max_allowed_packet = 64M
+tmp_table_size = 768M
+max_heap_table_size = 768M
+max_allowed_packet = 128M
 max_seeks_for_key = 1000
 group_concat_max_len = 1024
 max_length_for_sort_data = 1024
 net_buffer_length = 16384
 max_connect_errors = 100000
 concurrent_insert = 2
-read_rnd_buffer_size = 256K
+read_rnd_buffer_size = 512K
 bulk_insert_buffer_size = 8M
 query_cache_limit = 512K
-query_cache_size = 16M
+query_cache_size = 64M
 query_cache_type = 1
 query_cache_min_res_unit = 2K
 query_prealloc_size = 262144
@@ -66,14 +66,14 @@ innodb_file_format = Barracuda
 innodb_file_per_table = 1
 innodb_open_files = 1000
 innodb_data_file_path= ibdata1:10M:autoextend
-innodb_buffer_pool_size = 192M
+innodb_buffer_pool_size = 4096M
 
 ## https://mariadb.com/kb/en/mariadb/xtradbinnodb-server-system-variables/#innodb_buffer_pool_instances
-#innodb_buffer_pool_instances=2
+innodb_buffer_pool_instances=4
 
 innodb_log_files_in_group = 2
-innodb_log_file_size = 128M
-innodb_log_buffer_size = 8M
+innodb_log_file_size = 640M
+innodb_log_buffer_size = 16M
 innodb_flush_log_at_trx_commit = 2
 innodb_thread_concurrency = 0
 innodb_lock_wait_timeout=50
@@ -81,8 +81,8 @@ innodb_flush_method = O_DIRECT
 innodb_support_xa=1
 
 # 200 * # DISKS
-innodb_io_capacity = 200
-innodb_read_io_threads = 2
+innodb_io_capacity = 500
+innodb_read_io_threads = 4
 innodb_write_io_threads = 2
 
 # mariadb settings
@@ -97,10 +97,10 @@ userstat = 0
 key_cache_segments = 1
 aria_group_commit = none
 aria_group_commit_interval = 0
-aria_log_file_size = 32M
+aria_log_file_size = 64M
 aria_log_purge_type = immediate 
-aria_pagecache_buffer_size = 32M
-aria_sort_buffer_size = 32M
+aria_pagecache_buffer_size = 128M
+aria_sort_buffer_size = 128M
 
 [mariadb-5.5]
 #ignore_db_dirs=
@@ -122,14 +122,14 @@ open-files-limit = 8192
 
 [mysqldump]
 quick
-max_allowed_packet = 64M
+max_allowed_packet = 128M
 
 [myisamchk] 
 tmpdir=/home/mysqltmp
-key_buffer = 32M 
-sort_buffer = 16M
-read_buffer = 16M
-write_buffer = 16M
+key_buffer = 768M 
+sort_buffer = 128M
+read_buffer = 128M
+write_buffer = 128M
 
 [mysqlhotcopy]
 interactive-timeout
