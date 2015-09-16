@@ -379,21 +379,7 @@ echo
 #echo
 #echo
 
-if [[ "$lessmem" = [yY] ]]; then
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb-min.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb-min.cnf /etc/my.cnf
-
-else
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb.cnf /etc/my.cnf
-
-fi
+setmycnf
 
 #download mariadb rpms
 
