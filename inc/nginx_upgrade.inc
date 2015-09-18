@@ -353,6 +353,22 @@ check_requestscheme
     # Install nginx
     cd $DIR_TMP
 
+    CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
+    CUR_NGINXUPGRADEVER=$(echo $ngver |sed -e 's|\.|0|g' | head -n1)    
+
+if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] ]]; then
+    # if centmin.sh option NGINXPATCH=n then disable patches by 
+    # wiping the nginx downloaded source and redownloading a fresh copy
+    rm -rf nginx-${ngver}*
+fi
+
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+    # if existing Nginx server is detected to have HTTP/2 patch compiled, then
+    # wipe nginx download source and redownload a fresh copy to ensure you're
+    # patching with latest patch http://nginx.org/patches/http2/ available
+    rm -rf nginx-${ngver}*
+fi
+
     echo "Compiling nginx..."
     if [ -s nginx-${ngver}.tar.gz ]; then
         cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
@@ -369,12 +385,12 @@ check_requestscheme
 # set_intelflags
 
 if [[ "$NGINXPATCH" = [yY] ]]; then
-
     echo "*************************************************"
-    cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
+    cecho "Nginx Patch Time - $NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
     sleep $NGINXPATCH_DELAY
+    patchnginx
 fi
 
 funct_nginxconfigure
@@ -465,6 +481,17 @@ fi
     	exit
 	else
     	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
+
+    if [[ "$NGINX_HTTP2" = [yY] ]]; then
+        # only apply auto vhost changes forNginx HTTP/2 
+        # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
+        if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
+            for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl spdy|ssl http2|g' $v; sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' $v; egrep -n 'ssl http2|spdy_headers_comp' $v;done
+        fi
+    elif [[ "$NGINX_HTTP2" = [nN] || "$NGINX_SPDY" = [yY] ]]; then
+        for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl http2|#spdy_headers_comp' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v;done
+    fi
+
         /etc/init.d/nginx start
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow

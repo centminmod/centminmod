@@ -266,6 +266,18 @@ luajitinstall
 
 # set_intelflags
 
+SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
+
+if [[ "$NGINXPATCH" = [yY] ]]; then
+
+    echo "*************************************************"
+    cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
+    cecho "to allow you to patch files" $boldgreen
+    echo "*************************************************"
+    sleep $NGINXPATCH_DELAY
+    patchnginx
+fi
+
 funct_nginxconfigure
 
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
