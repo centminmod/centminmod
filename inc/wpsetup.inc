@@ -502,6 +502,8 @@ server {
 
   root /home/nginx/domains/$vhostname/public;
 
+  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;    
+
   location / {
 
   # Enables directory listings when index file not found
