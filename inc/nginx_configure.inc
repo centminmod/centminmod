@@ -10,7 +10,7 @@ function funct_nginxconfigure {
 			NGX_VEREVAL=${CUR_NGINXUPGRADEVER}
 		else
 			NGX_VEREVAL=${SET_NGINXVER}
-		fi	
+		fi
 
 if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
 then
@@ -32,9 +32,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		STRIPNGINX=n
 	else
 		NGINX_DEBUGOPT=""
-	fi	
+	fi
 
-		if [[ "$NGINX_HTTP2" = [yY] ]]; then	
+	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
 		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
 		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
 			NGINX_SPDY=n		
@@ -305,8 +305,8 @@ else
 		HTTPTWOOPT=""
 		if [[ "$NGX_VEREVAL" -lt '10903' ]]; then
 			NGINX_SPDY=y
-		fi
-	fi		
+		fi		
+	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"

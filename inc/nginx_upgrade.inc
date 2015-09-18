@@ -367,7 +367,7 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
     # wipe nginx download source and redownload a fresh copy to ensure you're
     # patching with latest patch http://nginx.org/patches/http2/ available
     rm -rf nginx-${ngver}*
-fi   
+fi
 
     echo "Compiling nginx..."
     if [ -s nginx-${ngver}.tar.gz ]; then
@@ -385,12 +385,12 @@ fi
 # set_intelflags
 
 if [[ "$NGINXPATCH" = [yY] ]]; then
-
     echo "*************************************************"
-    cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
+    cecho "Nginx Patch Time - $NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
     sleep $NGINXPATCH_DELAY
+    patchnginx
 fi
 
 funct_nginxconfigure
