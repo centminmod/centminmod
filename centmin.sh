@@ -265,13 +265,14 @@ NGINXUPGRADESLEEP='6'
 NSD_INSTALL=y                # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
-NGINXPATCH=n                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
-NGINXPATCH_DELAY='120'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
+NGINXPATCH=y                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NGINXPATCH_DELAY='10'       # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGINX_INSTALL=y              # Install Nginx (Webserver)
 NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
+NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_GEOIP=y                # Nginx GEOIP module install
-NGINX_SPDY=y                 # Nginx SPDY support
+NGINX_SPDY=n                 # Nginx SPDY support
 NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
 NGINX_FLV=n                  # http://nginx.org/en/docs/http/ngx_http_flv_module.html
@@ -544,6 +545,7 @@ source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
 source "inc/luajit.inc"
+source "inc/nginx_patch.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/imagick_install.inc"
