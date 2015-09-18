@@ -266,6 +266,8 @@ luajitinstall
 
 # set_intelflags
 
+SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
+
 if [[ "$NGINXPATCH" = [yY] ]]; then
 
     echo "*************************************************"

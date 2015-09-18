@@ -1,5 +1,17 @@
 function funct_nginxconfigure {
 
+# CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
+# CUR_NGINXUPGRADEVER=$(echo $ngver |sed -e 's|\.|0|g' | head -n1)
+# SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
+
+		# assign NGX_VEREVAL nginx version based on if it's an initial
+		# centmin mod fresh install or a nginx upgrade run
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			NGX_VEREVAL=${CUR_NGINXUPGRADEVER}
+		else
+			NGX_VEREVAL=${SET_NGINXVER}
+		fi
+
 if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
 then
 
@@ -23,9 +35,16 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
-		HTTPTWOOPT=' --with-http_v2_module'
+		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
+		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
+			NGINX_SPDY=n		
+			HTTPTWOOPT=' --with-http_v2_module'
+		fi
 	else
 		HTTPTWOOPT=""
+		if [[ "$NGX_VEREVAL" -lt '10903' ]]; then
+			NGINX_SPDY=y
+		fi
 	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
@@ -277,10 +296,17 @@ else
 	fi	
 
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
-		HTTPTWOOPT=' --with-http_v2_module'
+		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
+		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
+			NGINX_SPDY=n		
+			HTTPTWOOPT=' --with-http_v2_module'
+		fi
 	else
 		HTTPTWOOPT=""
-	fi	
+		if [[ "$NGX_VEREVAL" -lt '10903' ]]; then
+			NGINX_SPDY=y
+		fi		
+	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
