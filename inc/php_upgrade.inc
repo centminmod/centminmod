@@ -458,7 +458,9 @@ zendopcacheextfix
 
 if [ ! -f ${CONFIGSCANDIR}/geoip.ini ]; then
     # always install geoip module
-    geoipphpext
+    if [[ "$PHPGEOIP_ALWAYS" = [yY] ]]; then
+        geoipphpext
+    fi
 fi
 
     cmservice php-fpm restart
