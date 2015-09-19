@@ -349,6 +349,8 @@ PHPINTL=y                    # Disable or Enable PHP intl extension
 PHPRECODE=n                  # Disable or Enable PHP Recode extension
 PHPSNMP=y                    # Disable or Enable PHP SNMP extension
 SHORTCUTS=y	                 # shortcuts
+
+POSTGRESQL=n                 # set to =y to install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
 # If MDB_YUMREPOINSTALL=y and MDB_INSTALL=n then MDB_VERONLY version 
