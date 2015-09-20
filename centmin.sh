@@ -348,7 +348,8 @@ PHPPCNTL=y                   # Disable or Enable PHP Process Control extension
 PHPINTL=y                    # Disable or Enable PHP intl extension
 PHPRECODE=n                  # Disable or Enable PHP Recode extension
 PHPSNMP=y                    # Disable or Enable PHP SNMP extension
-SHORTCUTS=y	                 # shortcuts
+PHPIMAGICK=y                 # Disable or Enable PHP ImagicK extension
+SHORTCUTS=y                  # shortcuts
 
 POSTGRESQL=n                 # set to =y to install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
 ########################################################

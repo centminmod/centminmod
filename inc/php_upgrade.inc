@@ -54,6 +54,10 @@ if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
         echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
         rm -rf ${CONFIGSCANDIR}/imagick.ini
     fi
+    if [[ "$PHPIMAGICK" != [yY] ]]; then
+        echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
+        rm -rf ${CONFIGSCANDIR}/imagick.ini        
+    fi
 fi
 
 if [ -f ${CONFIGSCANDIR}/geoip.ini ]; then
