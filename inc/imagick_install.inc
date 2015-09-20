@@ -1,7 +1,5 @@
 checkphpext() {
 
-    if [[ "$PHPIMAGICK" = [yY] ]]; then
-
 cecho "Check for php extensions" $boldyellow
 if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" ]]; then
 echo "Downloading imagick extension"
@@ -11,6 +9,8 @@ fi
 }
 
 imagickinstall() {
+
+    if [[ "$PHPIMAGICK" = [yY] ]]; then
 
 checkphpext
 
