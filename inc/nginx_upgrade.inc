@@ -486,10 +486,10 @@ fi
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
-            for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl spdy|ssl http2|g' $v; sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' $v; egrep -n 'ssl http2|spdy_headers_comp' $v;done
+            for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl spdy|ssl http2|g' $v; sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' $v; sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' $v; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
         fi
     elif [[ "$NGINX_HTTP2" = [nN] || "$NGINX_SPDY" = [yY] ]]; then
-        for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl http2|#spdy_headers_comp' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v;done
+        for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl http2|#spdy_headers_comp|#Alternate-Protocol' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' $v; sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v;done
     fi
 
         /etc/init.d/nginx start
