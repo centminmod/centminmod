@@ -274,7 +274,6 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
     echo "*************************************************"
-    sleep $NGINXPATCH_DELAY
     patchnginx
 fi
 
