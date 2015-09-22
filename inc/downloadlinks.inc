@@ -167,7 +167,7 @@ NGX_CACHEPURGEFILE="ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
 NGX_CACHEPURGE="http://centminmod.com/centminmodparts/nginx/modules/${NGX_CACHEPURGEFILE}"
 
 NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.3.tar.gz"
-NGX_ACCESSKEYLINK="http://wiki.nginx.org/images/5/51/${NGX_ACCESSKEYLINKFILE}"
+NGX_ACCESSKEYLINK="http://centminmod.com/centminmodparts/nginx/modules/${NGX_ACCESSKEYLINKFILE}"
 
 # wget renamed
 NGX_CONCATLINKFILE="nginx-http-concat-master.tar.gz"
