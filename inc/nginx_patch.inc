@@ -1,4 +1,5 @@
 patchnginx() {
+	sleep $NGINXPATCH_DELAY
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then
 		# assign NGX_VEREVAL nginx version based on if it's an initial
 		# centmin mod fresh install or a nginx upgrade run
