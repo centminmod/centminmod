@@ -47,6 +47,54 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		fi
 	fi
 
+	if [[ "$NGINX_STUBSTATUS" = [yY] ]]; then
+		STUBSTATUSOPT=" --with-http_stub_status_module"
+	else
+		STUBSTATUSOPT=""
+	fi	
+
+	if [[ "$NGINX_SUB" = [yY] ]]; then
+		SUBOPT=" --with-http_sub_module"
+	else
+		SUBOPT=""
+	fi	
+
+	if [[ "$NGINX_ADDITION" = [yY] ]]; then
+		ADDITIONOPT=" --with-http_addition_module"
+	else
+		ADDITIONOPT=""
+	fi	
+
+	if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
+		IMAGEFILTEROPT=" --with-http_image_filter_module"
+	else
+		IMAGEFILTEROPT=""
+	fi	
+
+	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
+		CACHEPURGEOPT=" --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}"
+	else
+		CACHEPURGEOPT=""
+	fi	
+
+	if [[ "$NGINX_ACCESSKEY" = [yY] ]]; then
+		ACCESSKEYOPT=" --add-module=../nginx-accesskey-2.0.3"
+	else
+		ACCESSKEYOPT=""
+	fi		
+
+	if [[ "$NGINX_HTTPCONCAT" = [yY] ]]; then
+		HTTPCONCATOPT=" --add-module=../nginx-http-concat-master"
+	else
+		HTTPCONCATOPT=""
+	fi				
+
+	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
+		HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+	else
+		HEADERSMOREOPT=""
+	fi				
+
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
 	else
@@ -308,6 +356,54 @@ else
 		fi		
 	fi
 
+	if [[ "$NGINX_STUBSTATUS" = [yY] ]]; then
+		STUBSTATUSOPT=" --with-http_stub_status_module"
+	else
+		STUBSTATUSOPT=""
+	fi	
+
+	if [[ "$NGINX_SUB" = [yY] ]]; then
+		SUBOPT=" --with-http_sub_module"
+	else
+		SUBOPT=""
+	fi	
+
+	if [[ "$NGINX_ADDITION" = [yY] ]]; then
+		ADDITIONOPT=" --with-http_addition_module"
+	else
+		ADDITIONOPT=""
+	fi	
+
+	if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
+		IMAGEFILTEROPT=" --with-http_image_filter_module"
+	else
+		IMAGEFILTEROPT=""
+	fi	
+
+	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
+		CACHEPURGEOPT=" --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}"
+	else
+		CACHEPURGEOPT=""
+	fi	
+
+	if [[ "$NGINX_ACCESSKEY" = [yY] ]]; then
+		ACCESSKEYOPT=" --add-module=../nginx-accesskey-2.0.3"
+	else
+		ACCESSKEYOPT=""
+	fi		
+
+	if [[ "$NGINX_HTTPCONCAT" = [yY] ]]; then
+		HTTPCONCATOPT=" --add-module=../nginx-http-concat-master"
+	else
+		HTTPCONCATOPT=""
+	fi			
+
+	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
+		HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+	else
+		HEADERSMOREOPT=""
+	fi	
+
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
 	else
@@ -494,6 +590,16 @@ else
 	THREADS=""
 fi
 
+if [[ "$NGINX_THREADS" = [yY] ]]; then
+	if [[ "$NGX_VEREVAL" -ge '10800' ]]; then
+		THREADS=' --with-threads'
+	else
+		THREADS=""
+	fi
+else
+	THREADS=""
+fi	
+
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
 gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_native.log
@@ -534,13 +640,13 @@ fi
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
       	echo "nginx configure options:"
-      	echo "./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
-		./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+      	echo "./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
     	echo "nginx configure options:"
-    	echo "./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
-		./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER} --add-module=../nginx-accesskey-2.0.3 --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+    	echo "./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     fi   
 
 }
