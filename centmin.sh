@@ -277,6 +277,7 @@ STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGINX_INSTALL=y              # Install Nginx (Webserver)
 NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_NJS=n                  # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
 NGINX_GEOIP=y                # Nginx GEOIP module install
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
