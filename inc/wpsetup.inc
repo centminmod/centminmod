@@ -910,7 +910,7 @@ cecho "To complete setup:" $boldyellow
 cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
 2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
 3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
-   (Recommended) & hit Update Status
+   (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
 4. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
 5. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
 6. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
