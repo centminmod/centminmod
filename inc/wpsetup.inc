@@ -285,9 +285,116 @@ if [[ -z "$WPRATECHECK" ]]; then
   sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:16m rate=40r\/m;\n/g' /usr/local/nginx/conf/nginx.conf
 fi
 
+################################################################################
+# create wp super cache's included php config file php-wpsc.conf
 \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-wpsc.conf
 sed -i "s|fastcgi_param  SERVER_NAME        \$server_name;|fastcgi_param  SERVER_NAME        \$http_host;|" /usr/local/nginx/conf/php-wpsc.conf
 
+################################################################################
+# create nginx level redis cache included php config file php-rediscache.conf
+# https://community.centminmod.com/posts/18828/
+# \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-rediscache.conf
+
+cat > "/usr/local/nginx/conf/php-rediscache.conf"<<HFF
+location ~ \.php\$ {
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
+    srcache_fetch_skip \$skip_cache;
+    srcache_store_skip \$skip_cache;
+    srcache_response_cache_control off;
+    set_escape_uri \$escaped_key \$key;
+    srcache_fetch GET /redis-fetch \$key;
+    srcache_store PUT /redis-store key=\$escaped_key;
+    more_set_headers 'X-Cache \$srcache_fetch_status';
+    more_set_headers 'X-Cache-2 \$srcache_store_status';
+
+    try_files \$uri =404;
+    fastcgi_split_path_info ^(.+\.php)(/.+)\$;
+    fastcgi_pass   127.0.0.1:9000;
+    #fastcgi_pass   unix:/tmp/php5-fpm.sock;
+    fastcgi_index  index.php;
+    #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+    fastcgi_param  SCRIPT_FILENAME    \$request_filename;
+    fastcgi_param PHP_ADMIN_VALUE open_basedir=\$document_root/:/usr/local/lib/php/:/tmp/;
+
+# might shave 200+ ms off PHP requests
+# which don't pass on a content length header
+# slightly faster page response time at the
+# expense of throughput / scalability
+#sendfile on;
+#tcp_nopush off;
+#keepalive_requests 0;
+
+fastcgi_connect_timeout 60;
+fastcgi_send_timeout 180;
+fastcgi_read_timeout 180;
+fastcgi_buffer_size 512k;
+fastcgi_buffers 512 16k;
+fastcgi_busy_buffers_size 1m;
+fastcgi_temp_file_write_size 4m;
+fastcgi_max_temp_file_size 4m;
+fastcgi_intercept_errors on;
+
+# next 3 lines when uncommented / enabled
+# allow Nginx to handle uploads which then 
+# passes back the completed upload to PHP
+#fastcgi_pass_request_body off;
+#client_body_in_file_only clean;
+#fastcgi_param  REQUEST_BODY_FILE  \$request_body_file;
+
+#new .04+ map method
+fastcgi_param HTTPS \$server_https;
+
+# comment out PATH_TRANSLATED line if /usr/local/lib/php.ini sets following:
+# cgi.fix_pathinfo=0 
+# as of centminmod v1.2.3-eva2000.01 default is set to cgi.fix_pathinfo=1
+
+fastcgi_param  PATH_INFO          \$fastcgi_path_info;
+fastcgi_param  PATH_TRANSLATED    \$document_root\$fastcgi_path_info;
+
+fastcgi_param  QUERY_STRING       \$query_string;
+fastcgi_param  REQUEST_METHOD     \$request_method;
+fastcgi_param  CONTENT_TYPE       \$content_type;
+fastcgi_param  CONTENT_LENGTH     \$content_length;
+
+fastcgi_param  SCRIPT_NAME        \$fastcgi_script_name;
+fastcgi_param  REQUEST_URI        \$request_uri;
+fastcgi_param  DOCUMENT_URI       \$document_uri;
+fastcgi_param  DOCUMENT_ROOT      \$document_root;
+fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
+fastcgi_param  REQUEST_SCHEME     \$scheme;
+fastcgi_param  HTTPS              \$https if_not_empty;
+
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
+
+fastcgi_param  REMOTE_ADDR        \$remote_addr;
+fastcgi_param  REMOTE_PORT        \$remote_port;
+fastcgi_param  SERVER_ADDR        \$server_addr;
+fastcgi_param  SERVER_PORT        \$server_port;
+fastcgi_param  SERVER_NAME        \$server_name;
+
+# Set php-fpm geoip variables
+fastcgi_param GEOIP_COUNTRY_CODE \$geoip_country_code;
+fastcgi_param GEOIP_COUNTRY_CODE3 \$geoip_country_code3;
+fastcgi_param GEOIP_COUNTRY_NAME \$geoip_country_name;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE \$geoip_city_country_code;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE3 \$geoip_city_country_code3;
+fastcgi_param GEOIP_CITY_COUNTRY_NAME \$geoip_city_country_name;
+fastcgi_param GEOIP_REGION \$geoip_region;
+fastcgi_param GEOIP_CITY \$geoip_city;
+fastcgi_param GEOIP_POSTAL_CODE \$geoip_postal_code;
+fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;
+fastcgi_param GEOIP_LATITUDE \$geoip_latitude;
+fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;
+
+# PHP only, required if PHP was built with --enable-force-cgi-redirect
+fastcgi_param  REDIRECT_STATUS    200;
+
+                   }
+HFF
+
+
+################################################################################
 # Setting up Nginx mapping
 
 if [[ "$vhostssl" = [yY] ]]; then
@@ -337,7 +444,9 @@ server {
    deny all;
   }
 
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
+include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+# https://community.centminmod.com/posts/18828/
+#include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
   location / {
 
@@ -350,6 +459,10 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
 
+  # Nginx level redis Wordpress
+  # https://community.centminmod.com/posts/18828/
+  #try_files \$uri \$uri/ /index.php?\$args;
+
   }
 
 location ~* /(wp-login\.php) {
@@ -358,16 +471,22 @@ location ~* /(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
 location ~* /(xmlrpc\.php) {
     limit_req zone=xwplogin burst=2 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
   include /usr/local/nginx/conf/php-wpsc.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/php-rediscache.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -441,7 +560,9 @@ server {
    deny all;
   }
 
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
+include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+# https://community.centminmod.com/posts/18828/
+#include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
   location / {
 
@@ -452,7 +573,11 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
+
+  # Nginx level redis Wordpress
+  # https://community.centminmod.com/posts/18828/
+  #try_files \$uri \$uri/ /index.php?\$args;
 
   }
 
@@ -462,16 +587,22 @@ location ~* /(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
 location ~* /(xmlrpc\.php) {
     limit_req zone=xwplogin burst=2 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
   include /usr/local/nginx/conf/php-wpsc.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/php-rediscache.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -510,7 +641,9 @@ server {
 
   root /home/nginx/domains/$vhostname/public;
 
-  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
+  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
   location / {
 
@@ -521,7 +654,11 @@ server {
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
+
+  # Nginx level redis Wordpress
+  # https://community.centminmod.com/posts/18828/
+  #try_files \$uri \$uri/ /index.php?\$args;
 
   }
 
@@ -531,16 +668,22 @@ location ~* /(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
 location ~* /(xmlrpc\.php) {
     limit_req zone=xwplogin burst=2 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
   include /usr/local/nginx/conf/php-wpsc.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/php-rediscache.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -591,6 +734,7 @@ return 444;
 location ~ /(\.|wp-config\.php|wp-config\.txt|readme\.html|license\.txt) { deny all; }
 EEF
 
+# WP super cache
 cat > "/usr/local/nginx/conf/wpsupercache_${vhostname}.conf" <<EFF
 set \$cache_uri \$request_uri;
 
@@ -602,6 +746,44 @@ if (\$request_uri ~* "/(\?add-to-cart=|cart|my-account|checkout|addons|wp-admin/
 
 if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") { set \$cache_uri 'null cache'; }
 EFF
+
+# for nginx level redis cache
+cat > "/usr/local/nginx/conf/rediscache_${vhostname}.conf" <<XFF
+set \$skip_cache 0;
+
+# POST requests and urls with a query string should always go to PHP
+if (\$request_method = POST) {
+  set \$skip_cache 1;
+}
+
+if (\$query_string != "") {
+  set \$skip_cache 1;
+}
+
+# Don't cache uris containing the following segments
+if (\$request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") {
+  set \$skip_cache 1;
+}
+
+# Don't use the cache for logged in users or recent commenters
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") {
+  set \$skip_cache 1;
+}
+
+location /redis-fetch {
+  internal  ;
+  set  \$redis_key \$args;
+  redis_pass  127.0.0.1:6379;
+}
+
+location /redis-store {
+  internal  ;
+  set_unescape_uri \$key \$arg_key ;
+  redis2_query set \$key \$echo_request_body;
+  redis2_query expire \$key 6h;
+  redis2_pass  127.0.0.1:6379;
+}
+XFF
 
 ########### WP Super Cache Start ##############################
 # only proceed in creating vhost if VHOSTNAME directory exist
@@ -665,8 +847,8 @@ wp plugin install wp-super-cache --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-widget-cache --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
+# wp plugin install wp-widget-cache --activate --allow-root
+# cecho "------------------------------------------------------------" $boldgreen
 wp plugin install autoptimize --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install rocket-lazy-load --activate --allow-root
@@ -703,6 +885,8 @@ wp plugin install google-analytics-for-wordpress --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
 # installed but disabled by default
+cecho "------------------------------------------------------------" $boldgreen
+wp plugin install nginx-helper --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install query-monitor --allow-root
 cecho "------------------------------------------------------------" $boldgreen
@@ -758,6 +942,7 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt"
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key"
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr"
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
+rm -rf /usr/local/nginx/conf/rediscache_${vhostname}.conf
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
