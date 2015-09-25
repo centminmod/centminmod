@@ -34,6 +34,7 @@ if [ -z "$SUHOSINCHECK" ]; then
 
 cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
 extension=suhosin.so
+suhosin.executor.include.whitelist = phar
 suhosin.simulation = 0
 suhosin.cookie.encrypt = 0
 suhosin.executor.disable_eval = 0
