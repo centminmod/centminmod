@@ -1,5 +1,6 @@
 function funct_igbinaryinstall {
 
+if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP
 
@@ -115,6 +116,10 @@ igbinary.compact_strings=On
 END
 
 fi
+else
+    # remove igbinary PHP support if IGBINARY_INSTALL=n
+    rm -rf ${CONFIGSCANDIR}/igbinary.ini
+fi # IGBINARY_INSTALL = y
 
 APCSOCHECK=`grep 'extension=apc.so' ${CONFIGSCANDIR}/apc.ini`
 

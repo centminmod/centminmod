@@ -233,7 +233,7 @@ cmservice memcached stop
 cmservice memcached start
 
 #############################################
-
+if [ "$PHP_MEMCACHE" == 'y' ]; then
     cecho "Compiling PHP memcache extension..." $boldgreen
 
     pwd
@@ -255,8 +255,13 @@ fi
 ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
 make${MAKETHREADS}
 make install
+else
+    # if PHP_MEMCACHE=n remove memcache PHP extension setting file
+    rm -rf ${CONFIGSCANDIR}/memcache.ini
+fi # PHP_MEMCACHE = y
 
 #############################################
+if [ "$PHP_MEMCACHED" == 'y' ]; then
 if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
@@ -299,6 +304,7 @@ else
     time make install
 fi 
 wait
+
 #############################################
     cecho "Compiling PHP memcached-${MEMCACHEDPHP_VER} extension..." $boldgreen
 
@@ -427,6 +433,11 @@ fi # memcached.so check
             CLANG_CFLAGOPT=""
             CFLAGS=""            
         fi   
+
+else
+    # if PHP_MEMCACHED=n remove memcached PHP extension setting file
+    rm -rf ${CONFIGSCANDIR}/memcached.ini
+fi # PHP_MEMCACHED = y
 
 killall memcached
 sleep 2
