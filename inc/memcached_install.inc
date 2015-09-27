@@ -227,7 +227,11 @@ fi # FPMRPM_MEMCACHED
 
     cecho "Compiled memcached..." $boldgreen
 
-killall memcached
+if [[ "$CENTOS_SIX" = '6' ]]; then
+    killall memcached
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    systemctl kill memcached
+fi
 sleep 2
 cmservice memcached stop
 cmservice memcached start
@@ -439,7 +443,11 @@ else
     rm -rf ${CONFIGSCANDIR}/memcached.ini
 fi # PHP_MEMCACHED = y
 
-killall memcached
+if [[ "$CENTOS_SIX" = '6' ]]; then
+    killall memcached
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    systemctl kill memcached
+fi
 sleep 2
 cmservice memcached stop
 cmservice memcached start
