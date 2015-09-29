@@ -904,6 +904,8 @@ wp plugin install search-regex --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install disable-emojis --allow-root
 cecho "------------------------------------------------------------" $boldgreen
+wp plugin install wp-user-avatar --allow-root
+cecho "------------------------------------------------------------" $boldgreen
 # update all plugins to make sure they are latest available
 wp plugin update --all --allow-root
 echo
