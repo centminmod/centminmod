@@ -883,6 +883,8 @@ wp plugin install updraftplus --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install google-analytics-for-wordpress --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
+wp plugin install heartbeat-control --activate --allow-root
+cecho "------------------------------------------------------------" $boldgreen
 
 # installed but disabled by default
 cecho "------------------------------------------------------------" $boldgreen
