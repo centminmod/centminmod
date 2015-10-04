@@ -767,7 +767,7 @@ return 444;
 }
 
 #disallow
-location ~* (roundcube|webdav|smtp|http\:|soap|w00tw00t) {
+location ~* (w00tw00t) {
 return 444;
 }
 
