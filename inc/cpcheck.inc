@@ -203,7 +203,7 @@ pureftpdupdates() {
 	fi
 	CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
 	if [ "$CHECKCSF_PASSIVEPORTS" ]; then
-		sed -i 's/3000:3050/30001:50011/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
 		csf -r
 		echo
 		echo "adjusting pure-ftpd passive port range for CSF Firewall"
