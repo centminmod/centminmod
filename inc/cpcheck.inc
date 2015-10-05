@@ -188,6 +188,29 @@ END
 	fi
 }
 
+pureftpdupdates() {
+	# auto updates
+	# raise max number of concurrent ftp connections from 50/2 to 20010/2
+	CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
+	if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
+		sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+		if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+			service pure-ftpd restart
+		fi
+		echo
+		echo "increasing pure-ftpd passive port range"
+		echo
+	fi
+	CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
+	if [ "$CHECKCSF_PASSIVEPORTS" ]; then
+		sed -i 's/3000:3050/30001:50011/' /etc/pure-ftpd/pure-ftpd.conf
+		csf -r
+		echo
+		echo "adjusting pure-ftpd passive port range for CSF Firewall"
+		echo
+	fi	
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -220,6 +243,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	blockeditorcheck
 	rpcnfsports
 	fixlogrotate
+	pureftpdupdates
 fi
 
 }
