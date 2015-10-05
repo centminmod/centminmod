@@ -194,6 +194,8 @@ pureftpdupdates() {
 	CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
 	if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
 		sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's|MaxClientsNumber            50|MaxClientsNumber            500|' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's|MaxClientsPerIP             8|MaxClientsPerIP             200|' /etc/pure-ftpd/pure-ftpd.conf
 		if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
 			service pure-ftpd restart
 		fi
