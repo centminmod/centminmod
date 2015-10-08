@@ -280,9 +280,14 @@ fi
 
 # rate limit setup
 WPRATECHECK=$(grep 'zone=xwplogin' /usr/local/nginx/conf/nginx.conf)
+WPRATERPCCHECK=$(grep 'zone=xwprpc' /usr/local/nginx/conf/nginx.conf)
+
+if [[ -z "$WPRATERPCCHECK" ]]; then
+  sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwprpc:10m rate=30r\/s;\n/g' /usr/local/nginx/conf/nginx.conf
+fi
 
 if [[ -z "$WPRATECHECK" ]]; then
-  sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:16m rate=40r\/m;\n/g' /usr/local/nginx/conf/nginx.conf
+  sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:10m rate=40r\/m;\n/g' /usr/local/nginx/conf/nginx.conf
 fi
 
 ################################################################################
@@ -476,7 +481,7 @@ location ~* /(wp-login\.php) {
 }
 
 location ~* /(xmlrpc\.php) {
-    limit_req zone=xwplogin burst=2 nodelay;
+    limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
     # https://community.centminmod.com/posts/18828/
@@ -592,7 +597,7 @@ location ~* /(wp-login\.php) {
 }
 
 location ~* /(xmlrpc\.php) {
-    limit_req zone=xwplogin burst=2 nodelay;
+    limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
     # https://community.centminmod.com/posts/18828/
@@ -673,7 +678,7 @@ location ~* /(wp-login\.php) {
 }
 
 location ~* /(xmlrpc\.php) {
-    limit_req zone=xwplogin burst=2 nodelay;
+    limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
     # https://community.centminmod.com/posts/18828/
