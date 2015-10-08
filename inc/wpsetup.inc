@@ -908,6 +908,8 @@ wp plugin install wp-user-avatar --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install lazy-load-for-videos --allow-root
 cecho "------------------------------------------------------------" $boldgreen
+#wp plugin install disable-xml-rpc-pingback --allow-root
+#cecho "------------------------------------------------------------" $boldgreen
 # update all plugins to make sure they are latest available
 wp plugin update --all --allow-root
 echo
