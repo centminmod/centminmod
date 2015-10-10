@@ -36,11 +36,12 @@ cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
 extension=suhosin.so
 suhosin.executor.include.whitelist = phar
 suhosin.simulation = 0
+suhosin.log.file.name = /var/log/suhosin.log
 suhosin.cookie.encrypt = 0
 suhosin.executor.disable_eval = 0
 suhosin.get.max_value_length = 2048
 suhosin.get.max_vars = 1000
-suhosin.memory_limit = 0
+suhosin.memory_limit = 512M
 suhosin.post.max_value_length = 1000000
 suhosin.post.max_vars = 4096
 suhosin.post.max_array_index_length = 256
