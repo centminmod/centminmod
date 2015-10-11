@@ -186,7 +186,11 @@ fi
     if [ -s ${NGX_PAGESPEEDPSOLINKLFILE} ]; then
         cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
     else
-    cd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
+        if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+            cd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
+        elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+            cd $DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}
+        fi
         wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDPSOLINKL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
