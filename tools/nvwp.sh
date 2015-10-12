@@ -885,9 +885,9 @@ rm -rf /home/nginx/domains/${vhostname}
 rm -rf /usr/local/nginx/conf/wpsecure_${vhostname}.conf
 rm -rf /usr/local/nginx/conf/wpsupercache_${vhostname}.conf
 rm -rf /root/tools/wp_updater_${vhostname}.sh
-rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt"
-rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key"
-rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr"
+rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt
+rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key
+rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
