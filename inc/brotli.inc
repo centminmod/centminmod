@@ -55,5 +55,22 @@ ngxbrotli_download() {
 			git pull
 		fi
 		echo
+cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
+brotli on;
+brotli_static on;
+brotli_min_length 1000;
+brotli_buffers 32 8k;
+brotli_comp_level 5;
+brotli_types text/plain text/css text/xml application/javascript application/x-javascript application/xml application/xml+rss application/ecmascript application/json image/svg+xml;
+EIF
+
+BROTLI_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/brotli_inc.conf' /usr/local/nginx/conf/nginx.conf)
+
+		if [[ -z "$BROTLI_INCLUDECHECK" && -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
+       		sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/brotli_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
+    	fi
+    	sed -i 's|^#include \/usr\/local\/nginx\/conf\/brotli_inc.conf|include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+    else
+    	sed -i 's|^include \/usr\/local\/nginx\/conf\/brotli_inc.conf|#include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
 	fi
 }
