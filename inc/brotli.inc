@@ -17,6 +17,10 @@ libbroti_install() {
 		# if devtoolset-3 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
 		if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
 			scl_install
+    		unset CC
+    		unset CXX
+    		export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
+		    export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"				
 		elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
     		unset CC
     		unset CXX
@@ -39,8 +43,14 @@ libbroti_install() {
 		make install
 		echo
 
-	unset CC
-	unset CXX
+		if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+			scl_install
+    		unset CC
+    		unset CXX		
+		elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+    		unset CC
+    		unset CXX	
+		fi		
 	fi
 }
 
