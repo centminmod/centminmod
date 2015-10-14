@@ -296,6 +296,7 @@ NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_reque
 NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
 NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
+NGINX_LIBBROTLI=y            # https://github.com/google/ngx_brotli
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.9.32.10-beta'
@@ -565,6 +566,7 @@ source "inc/logrotate_nginx.inc"
 source "inc/logrotate_phpfpm.inc"
 source "inc/nginx_mimetype.inc"
 source "inc/openssl_install.inc"
+source "inc/brotli.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
