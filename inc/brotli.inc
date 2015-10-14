@@ -3,6 +3,12 @@
 
 libbroti_install() {
 	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+
+    unset CC
+    unset CXX
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++ -std=c++0x"
+
 		echo "install libbrotli"
 		cd $DIR_TMP
 		git clone https://github.com/bagder/libbrotli
