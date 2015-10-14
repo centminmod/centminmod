@@ -14,6 +14,7 @@ scl_install() {
 libbroti_install() {
 	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 
+		# if devtoolset-3 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
 		if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
 			scl_install
 		elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
@@ -39,7 +40,7 @@ libbroti_install() {
 		echo
 
 	unset CC
-    unset CXX
+	unset CXX
 	fi
 }
 
