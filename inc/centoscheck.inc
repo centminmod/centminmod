@@ -97,7 +97,7 @@ if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
     ccacheinstall
 fi
 
-if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
+if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}" && "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')" ]]; then
     ccacheinstall
 fi
 
