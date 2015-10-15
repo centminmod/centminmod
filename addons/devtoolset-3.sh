@@ -39,7 +39,7 @@ fi
 install() {
 	if [[ "$(uname -m)" = 'x86_64' ]]; then
 		echo "installing devtoolset-3 from softwarecollections.org"
-		if [[ "$CENTOS_SIX" = '6' ]]; then
+		if [[ "$CENTOS_SIX" = '6' && ! -f /etc/yum.repos.d/slc6-scl.repo ]]; then
 			cd $DIR_TMP
 			wget https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/epel-6-x86_64/download/rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
 			wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-6-x86_64/download/rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
@@ -49,7 +49,12 @@ install() {
 			echo
 			/opt/rh/devtoolset-3/root/usr/bin/gcc --version
 			/opt/rh/devtoolset-3/root/usr/bin/g++ --version
-		else
+		elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
+			yum -y install devtoolset-3
+			echo
+			/opt/rh/devtoolset-3/root/usr/bin/gcc --version
+			/opt/rh/devtoolset-3/root/usr/bin/g++ --version			
+		elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 			cd $DIR_TMP
 			wget https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/epel-7-x86_64/download/rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
 			wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-7-x86_64/download/rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
