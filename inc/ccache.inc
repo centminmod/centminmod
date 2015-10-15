@@ -11,7 +11,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 		tar xzf ${CCACHEFILE}
 	fi
 
-	if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
+	if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}/" ]]; then
 		echo "install ccache $CCACHE_VER"
 		sleep 2
 		# echo "cd ${DIR_TMP}/ccache-${CCACHE_VER}/"
