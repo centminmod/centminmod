@@ -274,6 +274,7 @@ NTP_INSTALL=y                # Install Network time protocol daemon
 NGINXPATCH=y                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
+NGXMODULE_ALTORDER='n'       # nginx configure module ordering alternative order
 NGINX_INSTALL=y              # Install Nginx (Webserver)
 NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
