@@ -97,6 +97,10 @@ if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
     ccacheinstall
 fi
 
+if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
+    ccacheinstall
+fi
+
 if [ -f /etc/centminmod-release ];then
 	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release >/dev/null)" ]]; then
 	setupmotd

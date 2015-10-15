@@ -1,7 +1,7 @@
 ccacheinstall() {
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
-	if [[ -f /usr/bin/ccache || ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
+	if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
 		echo "update ccache version... one time task"
 		sleep 2
 		echo "download ccache $CCACHE_VER"
@@ -11,7 +11,7 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 		tar xzf ${CCACHEFILE}
 	fi
 
-	if [ ! -f /usr/local/bin/ccache ]; then
+	if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
 		echo "install ccache $CCACHE_VER"
 		sleep 2
 		# echo "cd ${DIR_TMP}/ccache-${CCACHE_VER}/"
