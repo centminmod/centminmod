@@ -13,7 +13,7 @@
 
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
 CCCACHELINK="http://samba.org/ftp/ccache/${CCACHEFILE}"
-# CCCACHELINKLOCAL="http://samba.org/ftp/ccache/${CCACHEFILE}"
+CCCACHELINKLOCAL="http://centminmod.com/centminmodparts/ccache/${CCACHEFILE}"
 
 # dynamic mirror check for EPEL below overrides these values now
 CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
