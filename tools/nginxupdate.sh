@@ -1,0 +1,931 @@
+#!/bin/bash
+###################################################################################
+# standalone centmin mod nginx updater for cli command line run
+# still requires to be run only from tools/nginxupdate.sh though due to source
+# file variable dependencies
+###################################################################################
+NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
+UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
+###################################################################################
+DT=`date +"%d%m%y-%H%M%S"`
+# for github support
+branchname='123.09beta01'
+SCRIPT_MAJORVER='1.2.3'
+SCRIPT_MINORVER='09'
+SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
+SCRIPT_DATE='31/09/2015'
+SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
+SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
+SCRIPT_URL='http://centminmod.com'
+COPYRIGHT="Copyright 2011-2015 CentminMod.com"
+DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
+###################################################################################
+shopt -s expand_aliases
+for g in "" e f; do
+    alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
+done
+
+HN=$(uname -n)
+# Pre-Checks to prevent screw ups
+DIR_TMP='/svr-setup'
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+# account for tools directory placement of tools/nginxupdate.sh
+SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
+
+# source "inc/memcheck.inc"
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
+fi
+
+cmservice() {
+        servicename=$1
+        action=$2
+        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+        echo "service ${servicename} $action"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                service ${servicename} $action
+        fi
+        else
+        echo "systemctl $action ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $action ${servicename}.service
+        fi
+        fi
+}
+
+cmchkconfig() {
+        servicename=$1
+        status=$2
+        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+        echo "chkconfig ${servicename} $status"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                chkconfig ${servicename} $status
+        fi
+        else
+                if [ "$status" = 'on' ]; then
+                        status=enable
+                fi
+                if [ "$status" = 'off' ]; then
+                        status=disable
+                fi
+        echo "systemctl $status ${servicename}.service"
+        if [[ "$CMSDEBUG" = [nN] ]]; then
+                systemctl $status ${servicename}.service
+        fi
+        fi
+}
+
+if [ -f /proc/user_beancounters ]; then
+    # CPUS='1'
+    # MAKETHREADS=" -j$CPUS"
+    # speed up make
+    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
+    CPUS=$(echo $CPUS+1 | bc)
+    MAKETHREADS=" -j$CPUS"
+else
+    # speed up make
+    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
+    CPUS=$(echo $CPUS+1 | bc)
+    MAKETHREADS=" -j$CPUS"
+fi
+
+###################################################################################
+# compiler related
+CLANG='y'                     # Nginx and LibreSSL
+CLANG_PHP='n'                 # PHP
+CLANG_APC='n'                 # APC Cache
+CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
+
+# When set to =y, will disable those listed installed services 
+# by default. The service is still installed but disabled 
+# by default and can be re-enabled with commands:
+# service servicename start; chkconfig servicename on
+NSD_DISABLED=n                # when set to =y, NSD disabled by default with chkconfig off
+MEMCACHED_DISABLED=n          # when set to =y,  Memcached server disabled by default via chkconfig off
+PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
+PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
+
+# General Configuration
+NGINXUPGRADESLEEP='6'
+NSD_INSTALL=y                # Install NSD (DNS Server)
+NSD_VERSION='3.2.18'         # NSD Version
+NTP_INSTALL=y                # Install Network time protocol daemon
+NGINXPATCH=y                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
+STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
+NGXMODULE_ALTORDER='y'       # nginx configure module ordering alternative order
+NGINX_INSTALL=y              # Install Nginx (Webserver)
+NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
+NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_NJS=n                  # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
+NGINX_GEOIP=y                # Nginx GEOIP module install
+NGINX_SPDY=y                 # Nginx SPDY support
+NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
+NGINX_SUB=y                  # http://nginx.org/en/docs/http/ngx_http_sub_module.html
+NGINX_ADDITION=y             # http://nginx.org/en/docs/http/ngx_http_addition_module.html
+NGINX_IMAGEFILTER=y          # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
+NGINX_CACHEPURGE=y           # https://github.com/FRiCKLE/ngx_cache_purge/
+NGINX_ACCESSKEY=y            #
+NGINX_HTTPCONCAT=y           # https://github.com/alibaba/nginx-http-concat
+NGINX_THREADS=y              # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
+NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
+NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
+NGINX_FLV=n                  # http://nginx.org/en/docs/http/ngx_http_flv_module.html
+NGINX_MP4=n                  # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
+NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
+NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
+NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
+NGINX_LIBBROTLI=n            # https://github.com/google/ngx_brotli
+NGINX_PAGESPEED=y            # Install ngx_pagespeed
+NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
+NGXPGSPEED_VER='1.9.32.10-beta'
+NGINX_PAGESPEEDPSOL_VER='1.9.32.10'
+NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
+NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
+NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
+NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
+NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
+NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
+NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
+NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
+ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
+NGINX_HEADERSMORE='0.261'
+NGINX_CACHEPURGEVER='2.3'
+NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
+NGINX_STICKYVER='1.2.5'
+NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
+NGINX_UPSTREAMCHECKVER='0.3.0'
+NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
+ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SETMISCVER='0.29'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
+
+LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
+LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
+
+ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
+ORESTY_LUANGINXVER='0.9.16'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
+ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.20'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
+ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
+ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
+ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
+ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.0'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.03'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
+ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
+ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
+LUACJSONVER='2.1.0.2'              # https://github.com/openresty/lua-cjson
+
+STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
+
+NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
+NGINXBACKUP='y'
+NGINXDIR='/usr/local/nginx'
+NGINXCONFDIR="${NGINXDIR}/conf"
+NGINXBACKUPDIR='/usr/local/nginxbackup'
+
+##################################
+## Nginx SSL options
+# OpenSSL
+NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
+OPENSSL_VERSION='1.0.2d'   # Use this version of OpenSSL http://openssl.org/
+CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
+
+# LibreSSL
+LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+LIBRESSL_VERSION='2.2.3'   # Use this version of LibreSSL http://www.libressl.org/
+##################################
+
+# Choose whether to compile Nginx --with-google_perftools_module
+# no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
+GPERFTOOLS_SOURCEINSTALL=n
+LIBUNWIND_VERSION='0.99'     # note google perftool specifically requies v0.99 and no other
+GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
+
+WGETOPT='-cnv --no-dns-cache -4'
+
+###############################################################
+# experimental Intel compiled optimisations 
+# when auto detect Intel based processors
+INTELOPT='n'
+
+###############################################################
+# Settings for centmin.sh menu option 2 and option 22 for
+# the details of the self-signed SSL certificate that is auto 
+# generated. The default values where vhostname variable is 
+# auto added based on what you input for your site name
+# 
+# -subj "/C=US/ST=California/L=Los Angeles/O=${vhostname}/OU=${vhostname}/CN=${vhostname}"
+# 
+# You can only customise the first 5 variables for 
+# C = Country 2 digit code
+# ST = state 
+# L = Location as in city 
+# 0 = organisation
+# OU = organisational unit
+# 
+# if left blank # defaults to same as vhostname that is your domain
+# if set it overrides that
+SELFSIGNEDSSL_C='US'
+SELFSIGNEDSSL_ST='California'
+SELFSIGNEDSSL_L='Los Angeles'
+SELFSIGNEDSSL_O=''
+SELFSIGNEDSSL_OU=''
+###############################################################
+
+MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
+
+if [ "${ARCH_OVERRIDE}" != '' ]
+then
+    ARCH=${ARCH_OVERRIDE}
+else
+    if [ ${MACHINE_TYPE} == 'x86_64' ];
+    then
+        ARCH='x86_64'
+        MDB_ARCH='amd64'
+    else
+        ARCH='i386'
+    fi
+fi
+
+# ensure if ORESTY_LUANGINX is enabled, that the other required
+# Openresty modules are enabled if folks forget to enable them
+if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+    NGINX_OPENRESTY='y'
+fi
+
+###################################################################################
+# source file dependencies for variables
+source "../inc/customrpms.inc"
+source "../inc/pureftpd.inc"
+source "../inc/htpasswdsh.inc"
+source "../inc/gcc.inc"
+source "../inc/entropy.inc"
+source "../inc/cpucount.inc"
+source "../inc/motd.inc"
+source "../inc/cpcheck.inc"
+source "../inc/memcheck.inc"
+source "../inc/ccache.inc"
+source "../inc/bookmark.inc"
+source "../inc/centminlogs.inc"
+source "../inc/yumskip.inc"
+source "../inc/downloads_centosfive.inc"
+source "../inc/downloads_centossix.inc"
+source "../inc/downloads_centosseven.inc"
+source "../inc/downloadlinks.inc"
+source "../inc/downloads.inc"
+source "../inc/yumpriorities.inc"
+source "../inc/yuminstall.inc"
+source "../inc/centoscheck.inc"
+source "../inc/axelsetup.inc"
+source "../inc/phpfpmdir.inc"
+source "../inc/nginx_backup.inc"
+source "../inc/logrotate_nginx.inc"
+source "../inc/nginx_mimetype.inc"
+source "../inc/openssl_install.inc"
+if [ -f ../inc/brotli.inc ]; then
+source "../inc/brotli.inc"
+fi
+source "../inc/nginx_configure.inc"
+source "../inc/geoip.inc"
+source "../inc/luajit.inc"
+source "../inc/nginx_patch.inc"
+source "../inc/nginx_install.inc"
+source "../inc/mysql_proclimit.inc"
+source "../inc/mysqltmp.inc"
+source "../inc/nginx_pagespeed.inc"
+source "../inc/nginx_modules.inc"
+source "../inc/nginx_modules_openresty.inc"
+source "../inc/sshd.inc"
+source "../inc/openvz_stack.inc"
+source "../inc/nginx_addvhost.inc"
+source "../inc/nginx_errorpage.inc"
+source "../inc/compress.inc"
+source "../inc/shortcuts_install.inc"
+source "../inc/updater_submenu.inc"
+source "../inc/centminfinish.inc"
+
+cpcheck
+
+CUR_DIR=$SCRIPT_DIR # Get current directory.
+CM_INSTALLDIR=$CUR_DIR
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
+WGETRETRY='--tries=3'
+AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
+AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.gz"
+else
+DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
+WGETRETRY='--tries=3'
+AXELPHPTARGZ=''
+AXELPHPUPGRADETARGZ=''
+fi
+
+###################################################################################
+# Setup Colours
+black='\E[30;40m'
+red='\E[31;40m'
+green='\E[32;40m'
+yellow='\E[33;40m'
+blue='\E[34;40m'
+magenta='\E[35;40m'
+cyan='\E[36;40m'
+white='\E[37;40m'
+
+boldblack='\E[1;30;40m'
+boldred='\E[1;31;40m'
+boldgreen='\E[1;32;40m'
+boldyellow='\E[1;33;40m'
+boldblue='\E[1;34;40m'
+boldmagenta='\E[1;35;40m'
+boldcyan='\E[1;36;40m'
+boldwhite='\E[1;37;40m'
+
+Reset="tput sgr0"      #  Reset text attributes to normal
+                       #+ without clearing screen.
+
+cecho ()                     # Coloured-echo.
+                             # Argument $1 = message
+                             # Argument $2 = color
+{
+message=$1
+color=$2
+echo -e "$color$message" ; $Reset
+return
+}
+
+###################################################################################
+check_requestscheme() {
+# check for REQUEST_SCHEME parameter added in nginx 1.9.2 
+# add it if it doesn't exist in fastcgi_param and php include files
+for f in $(grep -Rl 'fastcgi_param  SERVER_PROTOCOL    \$server_protocol;' /usr/local/nginx/conf/*); 
+  do
+    echo "$f"
+    ff=$(grep 'REQUEST_SCHEME' $f)
+    fff=$(grep 'https if_not_empty' $f)
+    if [[ -z "$ff" && -z "$fff" ]]; then
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;\nfastcgi_param  HTTPS              \$https if_not_empty;|" $f
+    elif [[ -z "$ff" && "$fff" ]]; then
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;|" $f
+    fi
+done
+
+## DOES NOT WORK due to invalid version comparison for 2 dot
+## numbers i.e. 2.0.0 < 1.9.1 would return false
+# # check for REQUEST_SCHEME parameter added in nginx 1.9.2 
+# # if nginx upgrade or downgrade is less than 1.9.2 comment out
+# # REQUEST_SCHEME, if greater or equal to 1.9.2 uncomment
+# for f in $(grep -Rl 'REQUEST_SCHEME' /usr/local/nginx/conf/*); 
+#   do
+#     echo "$f"
+#     if [[ "$(expr $ngver \<= 1.9.1)" = 1 ]]; then
+#         sed -i "s|fastcgi_param  REQUEST_SCHEME|#fastcgi_param  REQUEST_SCHEME|" $f
+#     elif [[ "$(expr $ngver \>= 1.9.2)" = 1 ]]; then
+#         sed -i "s|#fastcgi_param  REQUEST_SCHEME|fastcgi_param  REQUEST_SCHEME|" $f
+#     fi
+# done
+}
+
+checkgeoip() {
+    GEOIP_CHECK=$(nginx -V 2>&1 | grep geoip)
+
+    if [[ ! -z "$GEOIP_CHECK" && "$(grep 'NGINX_GEOIP=n' centmin.sh)" ]]; then
+        cecho "Detected existing Nginx has NGINX_GEOIP=y enabled" $boldyellow
+        cecho "however, you are recompiling Nginx with NGINX_GEOIP=n" $boldyellow
+        cecho "Is this incorrect and you want to set NGINX_GEOIP=y enabled ? " $boldyellow
+        read -ep "Answer y or n. Typing y will set NGINX_GEOIP=y [y/n]: " setgeoip
+        if [[ "$setgeoip" = [yY] ]]; then
+            NGINX_GEOIP=y 
+        fi
+    fi
+}
+
+checkmap() {
+VTSHTTP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)
+VTSMAIN_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+
+if [[ -z "$VTSHTTP_INCLUDECHECK" ]]; then
+    if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+        sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
+    else
+        sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
+else
+    if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+        if [[ "$(grep '#include \/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+        sed -i 's/#include \/usr\/local\/nginx\/conf\/vts_http.conf/include \/usr\/local\/nginx\/conf\/vts_http.conf/g' /usr/local/nginx/conf/nginx.conf
+        fi
+        if [[ "$(grep '#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+        sed -i 's|#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|g' /usr/local/nginx/conf/conf.d/virtual.conf
+        fi
+    else
+        if [[ "$(grep '^include \/usr\/local\/nginx\/conf\/vts_http.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+        sed -i 's/include \/usr\/local\/nginx\/conf\/vts_http.conf/#include \/usr\/local\/nginx\/conf\/vts_http.conf/g' /usr/local/nginx/conf/nginx.conf
+        fi
+        if [[ "$(grep '^include \/usr\/local\/nginx\/conf\/vts_mainserver.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+        sed -i 's|^include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|g' /usr/local/nginx/conf/conf.d/virtual.conf
+        fi        
+    fi    
+fi
+
+if [[ -z "$VTSMAIN_INCLUDECHECK" ]]; then
+    if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+        sed -i 's/include \/usr\/local\/nginx\/conf\/errorpage.conf;/include \/usr\/local\/nginx\/conf\/errorpage.conf; \ninclude \/usr\/local\/nginx\/conf\/vts_mainserver.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+        sed -i 's|#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|' /usr/local/nginx/conf/conf.d/virtual.conf
+    else
+        sed -i 's/include \/usr\/local\/nginx\/conf\/errorpage.conf;/include \/usr\/local\/nginx\/conf\/errorpage.conf; \n#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+        sed -i 's|include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|#include \/usr\/local\/nginx\/conf\/vts_mainserver.conf|' /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
+fi
+
+if [[ ! -f /usr/local/nginx/conf/vts_http.conf ]]; then
+    \cp $CUR_DIR/config/nginx/vts_http.conf /usr/local/nginx/conf/vts_http.conf
+fi
+
+if [[ ! -f /usr/local/nginx/conf/vts_mainserver.conf ]]; then
+    \cp $CUR_DIR/config/nginx/vts_mainserver.conf /usr/local/nginx/conf/vts_mainserver.conf
+fi
+
+if [[ ! -f /usr/local/nginx/conf/vts_server.conf ]]; then
+    \cp $CUR_DIR/config/nginx/vts_server.conf /usr/local/nginx/conf/vts_server.conf
+fi
+
+if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+    if [[ "$(grep '^#vhost_traffic_status_zone' /usr/local/nginx/conf/vts_http.conf)" ]]; then
+    sed -i 's/#vhost_traffic_status_zone/vhost_traffic_status_zone/' /usr/local/nginx/conf/vts_http.conf
+    fi
+    if [[ "$(grep '^#vhost_traffic_status on' /usr/local/nginx/conf/vts_server.conf)" ]]; then
+    sed -i 's/#vhost_traffic_status on/vhost_traffic_status on/' /usr/local/nginx/conf/vts_server.conf
+    fi
+else
+    if [[ "$(grep '^vhost_traffic_status_zone' /usr/local/nginx/conf/vts_http.conf)" ]]; then
+    sed -i 's/vhost_traffic_status_zone/#vhost_traffic_status_zone/' /usr/local/nginx/conf/vts_http.conf
+    fi
+    if [[ "$(grep '^vhost_traffic_status on' /usr/local/nginx/conf/vts_server.conf)" ]]; then
+    sed -i 's/vhost_traffic_status on/#vhost_traffic_status on/' /usr/local/nginx/conf/vts_server.conf
+    fi
+fi
+
+MAPCHECK=$(grep '/usr/local/nginx/conf/fastcgi_param_https_map.conf' /usr/local/nginx/conf/nginx.conf)
+
+if [[ -z "$MAPCHECK" ]]; then
+	sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;/g' /usr/local/nginx/conf/nginx.conf
+fi
+
+if [[ ! -f /usr/local/nginx/conf/fastcgi_param_https_map.conf ]]; then
+	\cp $CUR_DIR/config/nginx/fastcgi_param_https_map.conf /usr/local/nginx/conf/fastcgi_param_https_map.conf
+fi
+
+if [[ -z "$(grep 'fastcgi_param HTTPS $server_https;' /usr/local/nginx/conf/php.conf)" ]]; then
+	replace -s '#fastcgi_param HTTPS on;' 'fastcgi_param HTTPS $server_https;' -- /usr/local/nginx/conf/php.conf
+fi
+}
+
+checknginxmodules() {
+
+    if [[ "$NGINX_RTMP" = [yY] ]]; then
+        if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
+            echo
+            echo "download nginx-rtmp-module from github"
+            cd $DIR_TMP
+            git clone git://github.com/arut/nginx-rtmp-module.git
+        elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then
+            echo
+            echo "get latest updates nginx-rtmp-module from github"
+            cd $DIR_TMP
+            git stash
+            git pull
+            git log -3
+        fi
+    fi
+
+cecho "Check for old ngx_pagespeed master branch existence" $boldyellow
+if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-master" ]]; then
+    # rm -rf ${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}
+    rm -rf ${DIR_TMP}/ngx_pagespeed-release-*
+    rm -rf ${DIR_TMP}/ngx_pagespeed-*
+    rm -rf ${DIR_TMP}/release-1.9.32*
+    nginxpgspeedtarball
+fi
+
+cecho "Check for missing nginx modules" $boldyellow
+if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -d "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]]; then
+ngxmoduletarball
+openssldownload
+libressldownload
+fi
+
+if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
+    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]]; then
+    openrestytarball
+    fi
+
+    # ORESTY_LUANGINX=y|n
+    if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+        if [[ ! -f "${DIR_TMP}/${NGX_LUANGINXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMEMCACHEDLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMYSQLLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUADNSLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPLOADLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAWEBSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOCKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTRINGLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISPARSERLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALRUCACHELINKFILE}"  || ! -f "${DIR_TMP}/${NGX_LUARESTYCORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOGGERSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACOOKIELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCACHELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACJSONLINKFILE}" ]]; then
+            openrestytarball
+        fi
+    fi
+fi
+
+if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
+    # if option to download official github based master ngx_pagespeed
+    # remove old version downloaded & download master tarball instead
+    cd $DIR_TMP
+    rm -rf release-${NGXPGSPEED_VER}*
+    nginxpgspeedtarball
+fi
+
+}
+
+function tools_nginxupgrade {
+
+checkmap
+
+cecho "**********************************************************************" $boldyellow
+cecho "* tools/nginxupdate.sh - unattended nginx updater" $boldgreen
+cecho "* Version: $SCRIPT_VERSION - Date: $SCRIPT_DATE - $COPYRIGHT" $boldgreen
+cecho "**********************************************************************" $boldyellow
+
+echo " "
+nukey=y
+
+if [[ "$nukey" = [nN] ]];
+then
+    exit 0
+fi
+
+# DIR_TMP="/svr-setup"
+if [ ! -d "$DIR_TMP" ]; then
+mkdir $DIR_TMP
+fi
+
+funct_mktempfile
+
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [ ! -f /etc/init.d/nginx ]; then
+    cp $CUR_DIR/init/nginx /etc/init.d/nginx
+    chmod +x /etc/init.d/nginx
+    chkconfig --levels 235 nginx on
+fi
+fi # CENTOS_SEVEN != 7
+
+echo ""
+# pass nginx version on command line
+# i.e. tools/nginxupdate.sh 1.9.5
+ngver=$1
+
+    # auto check if static compiled Nginx openssl version matches
+    # the one defined in centmin.sh OPENSSL_VERSION variable
+    # if doesn't match then auto recompile the statically set
+    # OPENSSL_VERSION
+    AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
+    if [[ "$AUTOOPENSSLCHECK" ]]; then
+        recompileopenssl='n'
+    else
+        recompileopenssl='y'
+    fi
+    echo ""
+    checkgeoip
+
+## grab newer custom written htpasswd.sh as well
+gethtpasswdsh
+
+# Backup Nginx CONF
+if [ "$NGINXBACKUP" == 'y' ]; then
+	nginxbackup
+fi
+
+# Backup ngx_pagespeed pagespeed.conf
+if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+	if [[ -f /usr/local/nginx/conf/pagespeed.conf ]]; then
+		pagespeedbackup
+	fi
+fi
+
+# tasks for updated ngx_pagespeed module parity
+pagespeeduptasks
+
+    echo "*************************************************"
+    cecho "* Updating nginx" $boldgreen
+    echo "*************************************************"
+
+    cd $DIR_TMP
+
+    # nginx Modules / Prerequisites
+	cecho "Installing nginx Modules / Prerequisites..." $boldgreen
+
+checknginxmodules
+
+if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
+then
+    echo "*************************************************"
+    cecho "* Source Upgrade Google Perftools" $boldgreen
+    echo "*************************************************"
+
+    # Install libunwind
+    echo "Compiling libunwind..."
+    if [ -s libunwind-${LIBUNWIND_VERSION}.tar.gz ]; then
+        cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
+    else
+        $DOWNLOADAPP http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz $WGETRETRY
+    fi
+
+    tar xvzf libunwind-${LIBUNWIND_VERSION}.tar.gz
+    cd libunwind-${LIBUNWIND_VERSION}
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
+    ./configure
+    make${MAKETHREADS}
+    make install
+
+    # Install google-perftools
+    cd $DIR_TMP
+
+    echo "Compiling google-perftools..."
+    if [ -s google-perftools-${GPERFTOOLS_VERSION}.tar.gz ]; then
+        cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz $WGETRETRY
+    fi
+
+    tar xvzf google-perftools-${GPERFTOOLS_VERSION}.tar.gz
+    cd google-perftools-${GPERFTOOLS_VERSION}
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
+    ./configure --enable-frame-pointers
+    make${MAKETHREADS}
+    make install
+    #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
+    #/sbin/ldconfig
+
+fi # GPERFTOOL_SOURCEINSTALL
+
+# echo ""
+# read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
+# echo ""
+
+if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]]; then
+    installopenssl
+fi # recompileopenssl
+
+if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
+then
+    echo "*************************************************"
+    cecho "* Source Install PCRE" $boldgreen
+    echo "*************************************************"
+
+    # Install PCRE
+    cd $DIR_TMP
+
+    echo "Compiling PCRE..."
+    if [ -s pcre-${PCRE_VERSION}.tar.gz ]; then
+        cecho "pcre ${PCRE_VERSION} Archive found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz $WGETRETRY
+    fi
+
+    tar xvzf pcre-${PCRE_VERSION}.tar.gz
+    cd pcre-${PCRE_VERSION}
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
+    ./configure
+    make${MAKETHREADS}
+    make install
+
+fi
+
+luajitinstall
+
+funct_nginxmodules
+
+check_requestscheme
+
+    # Install nginx
+    cd $DIR_TMP
+
+    CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
+    CUR_NGINXUPGRADEVER=$(echo $ngver |sed -e 's|\.|0|g' | head -n1)    
+
+if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] ]]; then
+    # if centmin.sh option NGINXPATCH=n then disable patches by 
+    # wiping the nginx downloaded source and redownloading a fresh copy
+    rm -rf nginx-${ngver}*
+fi
+
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+    # if existing Nginx server is detected to have HTTP/2 patch compiled, then
+    # wipe nginx download source and redownload a fresh copy to ensure you're
+    # patching with latest patch http://nginx.org/patches/http2/ available
+    rm -rf nginx-${ngver}*
+fi
+
+    echo "Compiling nginx..."
+    if [ -s nginx-${ngver}.tar.gz ]; then
+        cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+    fi
+
+    tar xvfz nginx-${ngver}.tar.gz
+    cd nginx-${ngver}
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
+
+# set_intelflags
+
+if [[ "$NGINXPATCH" = [yY] ]]; then
+    echo "*************************************************"
+    cecho "Nginx Patch Time - $NGINXPATCH_DELAY seconds delay" $boldgreen
+    cecho "to allow you to patch files" $boldgreen
+    echo "*************************************************"
+    patchnginx
+fi
+
+funct_nginxconfigure
+
+################
+# error check
+
+	ERR=$?
+	if [ $ERR != 0 ]; then
+    	echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
+        exit
+	else
+    	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
+	fi
+
+# error check
+################
+
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+        time make${MAKETHREADS}
+    else
+        time make
+    fi
+
+    if [[ "$STRIPNGINX" = [yY] ]]; then
+        echo
+        echo "strip nginx binary..."
+        ls -lah objs/nginx
+        strip -s objs/nginx
+        ls -lah objs/nginx
+        echo
+    fi
+
+################
+# error check
+
+	ERR=$?
+	if [ $ERR != 0 ]; then
+    	echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
+    	exit
+	else
+	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
+	fi
+
+# error check
+################
+
+# cmservice nginx stop
+/usr/local/sbin/nginx -s stop
+
+    # speed up nginx wait time if not many vhosts are on server
+    if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
+        NGINXUPGRADESLEEP=4
+    fi
+
+# sleep $NGINXUPGRADESLEEP
+
+sleep 3
+NGINXPSCHECK=`ps --no-heading -C nginx`
+
+if [ ! -z "$NGINXPSCHECK" ]; then
+echo ""
+echo "nginx seems to be still running, trying to stop it again..."
+echo ""
+# /etc/init.d/nginx stop and suppress any error messages
+/usr/local/sbin/nginx -s stop 2>/dev/null
+sleep $NGINXUPGRADESLEEP
+fi
+
+    time make install
+
+if [[ "$CLANG" = [yY] ]]; then
+    unset CC
+    unset CXX
+    #unset CCACHE_CPP2
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++"
+fi        
+
+# unset_intelflags
+
+################
+# error check
+
+	ERR=$?
+	if [ $ERR != 0 ]; then
+    	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
+    	exit
+	else
+    	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
+
+    if [[ "$NGINX_HTTP2" = [yY] ]]; then
+        # only apply auto vhost changes forNginx HTTP/2 
+        # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
+        if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
+            for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl spdy|ssl http2|g' $v; sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' $v; sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' $v; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
+        fi
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+            sed -i 's|ssl spdy|ssl http2|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
+    elif [[ "$NGINX_HTTP2" = [nN] || "$NGINX_SPDY" = [yY] ]]; then
+        for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl http2|#spdy_headers_comp|#Alternate-Protocol' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' $v; sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v;done
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+            sed -i 's|ssl http2|ssl spdy|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi        
+    fi
+
+        /etc/init.d/nginx start
+
+        # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
+        # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
+        # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
+        # echo $OPENSSLVER_CHECK
+
+        CBODYCHECK=`grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf`
+        if [ $CBODYCHECK ]; then
+            sed -i 's/client_body_in_file_only on/client_body_in_file_only off/g' /usr/local/nginx/conf/nginx.conf
+        fi
+
+        geoinccheck
+        geoipphp
+
+        echo "*************************************************"
+        cecho "* nginx updated" $boldgreen
+        echo "*************************************************"
+	fi
+
+# error check
+################
+}
+
+#################
+starttime=$(date +%s.%N)
+{
+    if [ "$1" ]; then
+        tools_nginxupgrade
+    else
+        echo
+        echo " you need to pass nginx version number on command line i.e."
+        echo " $0 1.9.5"
+        echo
+    fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log
