@@ -922,6 +922,8 @@ fi
         geoinccheck
         geoipphp
 
+        nginx -V
+
         echo "*************************************************"
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
