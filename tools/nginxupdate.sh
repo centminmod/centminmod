@@ -30,6 +30,7 @@ HN=$(uname -n)
 # Pre-Checks to prevent screw ups
 DIR_TMP='/svr-setup'
 CONFIGSCANBASE='/etc/centminmod'
+CENTMINLOGDIR='/root/centminlogs'
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 # account for tools directory placement of tools/nginxupdate.sh
 SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
