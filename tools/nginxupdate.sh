@@ -4,6 +4,7 @@
 # still requires to be run only from tools/nginxupdate.sh though due to source
 # file variable dependencies
 ###################################################################################
+ngver=$1
 NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
 UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 ###################################################################################
@@ -28,6 +29,7 @@ done
 HN=$(uname -n)
 # Pre-Checks to prevent screw ups
 DIR_TMP='/svr-setup'
+CONFIGSCANBASE='/etc/centminmod'
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 # account for tools directory placement of tools/nginxupdate.sh
 SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
@@ -575,6 +577,18 @@ fi
 
 }
 
+function funct_mktempfile {
+
+if [[ ! -d "$DIR_TMP"/msglogs ]]; then
+cd $DIR_TMP
+mkdir msglogs
+chmod 1777 $DIR_TMP/msglogs
+fi
+
+TMP_MSGFILE="$DIR_TMP/msglogs/$RANDOM.msg"
+
+}
+
 function tools_nginxupgrade {
 
 checkmap
@@ -611,7 +625,7 @@ fi # CENTOS_SEVEN != 7
 echo ""
 # pass nginx version on command line
 # i.e. tools/nginxupdate.sh 1.9.5
-ngver=$1
+# ngver=$1
 
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
