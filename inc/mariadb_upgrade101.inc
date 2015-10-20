@@ -32,6 +32,7 @@ fi
 echo ""
 echo "MariaDB 10.1.x no longer works with mydumper"
 echo "MySQL backup tool. But still works with MariaDB 5.2.x"
+echo
 read -ep "Do you want to continue with upgrade to MariaDB 10.1.x ? [y/n] " contbackup
 
 if [[ "$contbackup" == [nN] ]]; then
@@ -40,7 +41,40 @@ cecho "Aborting MariaDB 10.1.x upgrade..." $boldyellow
 exit
 fi
 
+echo
+echo "checking mysql root password works in /root/.my.cnf"
+echo "mysqladmin ver"
+mysqladmin ver
 
+CHECK_MYSQLPASS=$?
+if [[ "$CHECK_MYSQLPASS" != '0' ]]; then
+    echo
+    echo "mysql root user password in /root/.my.cnf is not correct"
+    if [ ! -f /root/.my.cnf ]; then
+        echo "or"
+        echo "/root/.my.cnf file doesn't exist"
+    fi
+    cecho "Aborting MariaDB 10.1.x upgrade..." $boldyellow
+    exit
+fi
+
+# full purge and change buffer merge before shutting down to ensure data files are in sync 
+# prior to upgrade
+echo
+mysql -e "set global innodb_fast_shutdown=0;"
+echo "continuing upgrade in ~120 seconds..."
+echo "..."
+sleep 20
+echo "..... continue in 100s"
+sleep 20
+echo "....... continue in 80s"
+sleep 20
+echo "......... continue in 60s"
+sleep 20
+echo "........... continue in 40s"
+sleep 20
+echo "............. continue in 20s"
+sleep 20
 
 }
 
@@ -231,10 +265,27 @@ fi # centos5 check
 }
 
 mariadbtentotenoneupgrade() {
-#check if MariaDB 5.5 RPM already installed
+#check if MariaDB 10.1 RPM already installed
 if [ -z "$OLDMARIADBVERS" ]; then
+MYSQLDATADIR=$(mysqladmin var | grep 'datadir' | awk '{ print $4}')
+
 backupmsg101
 #mariadb101uninstall
+
+# shutdown existing mysql server
+echo
+echo "shut down existing MariaDB server for upgrade.."
+mysql -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
+sleep 10
+service mysql stop
+echo
+# move aside existing ib_logfile* files
+cd $MYSQLDATADIR
+ls -lah $MYSQLDATADIR
+rm -rf ib_logfile0.gz ib_logfile1.gz
+mv ib_logfile0 ib_logfile0.bak
+mv ib_logfile1 ib_logfile1.bak
+echo
 
 OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
 rpm -e $OLDMARIADBSERVER
