@@ -412,8 +412,37 @@ FFF
 echo ""
 
 cmservice mysql start
+sleep 15
 cmservice mysql restart
 
+if [[ "$(echo $?)" != '0' ]]; then
+    echo
+    echo "## !! mysql failed to start properly !! ##"
+    echo "journalctl -xn"
+    journalctl -xn
+    echo
+    echo "tail -50 /var/log/mysqld.log"
+    tail -50 /var/log/mysqld.log
+    echo
+    echo "possible errors / warnings"
+    tail -50 /var/log/mysqld.log | egrep -v 'Dumping|dump' | egrep --color '\[ERROR\]|\[Warning\]'
+    echo
+    echo "possible unknown or incompatible /etc/my.cnf set options below"
+    echo "maybe need to comment out or remove these in /etc/my.cnf"
+    UNKNOWNOPT=$(tail -50 /var/log/mysqld.log | egrep -v 'Dumping|dump' | egrep --color '\[ERROR\]|\[Warning\]' | grep 'unknown option' | awk '{print $8}' | uniq | sed -e "s|'--||g" -e "s|'||g")
+    for u in $UNKNOWNOPT; do
+        echo "$u"
+    done
+    echo
+    echo "attempting auto commenting out of invalid options"
+    \cp -af /etc/my.cnf /etc/my.cnf-b4autocommenting
+    for u in $UNKNOWNOPT; do
+        echo "auto comment out $u in /etc/my.cnf"
+        sed -i "s|^${u}|#${u}|g" /etc/my.cnf
+    done
+    cmservice mysql restart
+fi
+echo
 ls -lAhrt /var/lib/mysql/
 
 sleep 3
