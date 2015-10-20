@@ -18,6 +18,7 @@ cat <<EOF
 
   mysqldump --opt --routines DATABASENAME > /path/to/DATABASENAME_backup.sql
 EOF
+sleep 5
 
 echo "--------------------------------------------------------------------------------"
 echo ""
@@ -32,6 +33,7 @@ fi
 echo ""
 echo "MariaDB 10.1.x no longer works with mydumper"
 echo "MySQL backup tool. But still works with MariaDB 5.2.x"
+sleep 5
 echo
 read -ep "Do you want to continue with upgrade to MariaDB 10.1.x ? [y/n] " contbackup
 
@@ -43,6 +45,7 @@ fi
 
 echo
 echo "checking mysql root password works in /root/.my.cnf"
+sleep 5
 echo "mysqladmin ver"
 mysqladmin ver
 
@@ -62,18 +65,36 @@ fi
 # prior to upgrade
 echo
 mysql -e "set global innodb_fast_shutdown=0;"
-echo "continuing upgrade in ~120 seconds..."
+echo "continuing upgrade in ~300 seconds..."
 echo "..."
 sleep 20
-echo "..... continue in 100s"
+echo "..... continue in 300s"
 sleep 20
-echo "....... continue in 80s"
+echo "....... continue in 280s"
 sleep 20
-echo "......... continue in 60s"
+echo "......... continue in 260s"
 sleep 20
-echo "........... continue in 40s"
+echo "........... continue in 240s"
 sleep 20
-echo "............. continue in 20s"
+echo "............. continue in 220s"
+sleep 20
+echo "............... continue in 200s"
+sleep 20
+echo "................. continue in 180s"
+sleep 20
+echo ".................. continue in 160s"
+sleep 20
+echo ".................... continue in 140s"
+sleep 20
+echo "...................... continue in 120s"
+sleep 20
+echo "........................ continue in 80s"
+sleep 20
+echo ".......................... continue in 60s"
+sleep 20
+echo "............................ continue in 40s"
+sleep 20
+echo ".............................. continue in 20s"
 sleep 20
 
 }
