@@ -33,7 +33,13 @@ fi
 echo ""
 echo "MariaDB 10.1.x no longer works with mydumper"
 echo "MySQL backup tool. But still works with MariaDB 5.2.x"
-sleep 5
+echo 
+echo "!! Note !!"
+echo "upgrade process can take more >5 minutes.. you may"
+echo "want to shutdown nginx server to not show mysql errors"
+echo "to visitors on your site or put site(s) into maintenance"
+echo "mode before proceeding with mysql upgrade."
+sleep 15
 echo
 read -ep "Do you want to continue with upgrade to MariaDB 10.1.x ? [y/n] " contbackup
 
