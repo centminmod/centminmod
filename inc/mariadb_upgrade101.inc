@@ -40,6 +40,8 @@ cecho "Aborting MariaDB 10.1.x upgrade..." $boldyellow
 exit
 fi
 
+
+
 }
 
 mysqlinitfix() {
@@ -295,6 +297,13 @@ fi
 # sed -i 's/innodb_additional_mem_pool_size/#innodb_additional_mem_pool_size/g' /etc/my.cnf
 # sed -i 's/skip-innodb/innodb=ON/g' /etc/my.cnf
 sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 
 cat >>/etc/my.cnf<<FFF
 
@@ -421,6 +430,9 @@ fi
 # sed -i 's/innodb_doublewrite = 1/#innodb_doublewrite = 1/g' /etc/my.cnf
 # sed -i 's/innodb_doublewrite=1/#innodb_doublewrite=1/g' /etc/my.cnf
 cmservice mysql restart
+
+sed -i 's|^#innodb_buffer_pool_dump_at_shutdown|innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^#innodb_buffer_pool_load_at_startup|innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 
 echo ""
 
