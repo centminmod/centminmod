@@ -537,6 +537,7 @@ fi
 # sed -i 's/innodb_doublewrite = 1/#innodb_doublewrite = 1/g' /etc/my.cnf
 # sed -i 's/innodb_doublewrite=1/#innodb_doublewrite=1/g' /etc/my.cnf
 cmservice mysql restart
+cmchkconfig mariadb on
 
 sed -i 's|^#innodb_buffer_pool_dump_at_shutdown|innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
 sed -i 's|^#innodb_buffer_pool_load_at_startup|innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
