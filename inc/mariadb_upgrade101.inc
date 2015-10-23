@@ -413,6 +413,14 @@ innodb_sort_buffer_size=2M
 innodb_online_alter_log_max_size=128M
 query_cache_strip_comments=0
 log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+
+# Defragmenting unused space on InnoDB tablespace
+innodb_defragment=1
+innodb_defragment_n_pages=7
+innodb_defragment_stats_accuracy=0
+innodb_defragment_fill_factor_n_recs=20
+innodb_defragment_fill_factor=0.9
+innodb_defragment_frequency=40
 FFF
 
 echo ""
