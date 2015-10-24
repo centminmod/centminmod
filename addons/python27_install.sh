@@ -101,9 +101,9 @@ return
 
 installpythonfuct() {
 if [[ "$CENTOS_SIX" = '6' ]]; then
-    yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-14.ius.centos6.noarch.rpm
+    yum -y install https://centos6.iuscommunity.org/ius-release.rpm
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-    yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-14.ius.centos7.noarch.rpm
+    yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 fi
 
 # disable by default the ius.repo
