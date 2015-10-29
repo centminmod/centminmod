@@ -39,7 +39,7 @@ or for CLI install mode
 
     ./centmin.sh install    
 
-## Centmin Mod installed via Github zip download
+##   installed via Github zip download
 
 
 ### Step 1.
