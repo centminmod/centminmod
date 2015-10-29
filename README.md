@@ -45,14 +45,14 @@ or for CLI install mode
 ### Step 1.
 
 
-Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and define it in the variable named branchname typed on SSH command line as follows.
+Select the branch you want to install from list at https://github.com/centminmod/centminmod/branches and use the following command (in your SSH console) to set it:
 
     branchname=123.08stable
 
 ### Step 2.
 
 
-Actual install, type as root user in SSH these commands, Centmin Mod will have it's install setup at /usr/local/src/centminmod
+To get the Centmin Mod files, run the following commands in a console as root. These commands will download the files to `/usr/local/src/centminmod`
 
     yum -y install wget nano bc unzip
     branchname=123.08stable
@@ -62,12 +62,10 @@ Actual install, type as root user in SSH these commands, Centmin Mod will have i
     mv centminmod-${branchname} centminmod
     cd centminmod
 
-Then to install either type
-
-for menu mode run centmin.sh and select menu option 1 to install
+To run the actual install in menu mode run `centmin.sh` (still as root) and select menu option 1 to install:
 
     ./centmin.sh
 
-or for CLI install mode
+or to install in CLI mode:
 
     ./centmin.sh install
