@@ -26,6 +26,7 @@ fi
 CHECKVALUES=$(grep 'ClientAliveInterval 3600' /etc/ssh/sshd_config)
 
 if [[ -z "$CHECKVALUES" ]]; then
+	echo -e "\n" >> /etc/ssh/sshd_config
 	echo "ClientAliveInterval 3600" >> /etc/ssh/sshd_config
 	echo "ClientAliveCountMax 120" >> /etc/ssh/sshd_config
 	echo "UseDNS no" >> /etc/ssh/sshd_config
