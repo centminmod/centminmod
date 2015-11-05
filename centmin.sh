@@ -454,7 +454,7 @@ ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/Zend
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'       # Use this version of Python
-SIEGE_VERSION='3.1.2'
+SIEGE_VERSION='3.1.3'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
