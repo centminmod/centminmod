@@ -188,6 +188,14 @@ END
 	fi
 }
 
+leupdates() {
+	# update .well-known content-type
+	CHECKCONTENTTYPE=$(grep 'application\/jose+json' /usr/local/nginx/conf/staticfiles.conf)
+	if [ "$CHECKCONTENTTYPE" ]; then
+		sed -i "s|application\/jose+json|text\/plain|" /usr/local/nginx/conf/staticfiles.conf
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -220,6 +228,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	blockeditorcheck
 	rpcnfsports
 	fixlogrotate
+	leupdates
 fi
 
 }
