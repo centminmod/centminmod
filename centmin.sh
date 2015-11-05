@@ -293,7 +293,7 @@ NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
-NGINX_HEADERSMORE='0.261'
+NGINX_HEADERSMORE='0.28'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.5'
@@ -311,7 +311,7 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.9.16'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.9.18'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
@@ -325,7 +325,7 @@ ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-
 ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
 ORESTY_LUARESTYCOREVER='0.1.0'     # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUAUPSTREAMVER='0.03'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUAUPSTREAMVER='0.04'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
