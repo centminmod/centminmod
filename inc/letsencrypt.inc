@@ -65,6 +65,37 @@ EOF
 		echo "You only do this once, so that Letsencrypt can notify &"
 		echo "contact you via email regarding your SSL certificates"
 		read -ep "Enter your email address to setup Letsencrypt account: " letemail
+
+		if [ -z "$letemail" ]; then
+			echo
+			echo "!! Error: email address is empty"
+		else
+			echo
+			echo "You are registering $letemail address for Letsencrypt"
+		fi
+
+		# check email domain has MX records which letsencrypt client checks for
+		CHECKLE_MXEMAIL=$(echo "$letemail" | awk -F '@' '{print $2}')
+		while [[ -z "$(dig -t MX +short @8.8.8.8 $CHECKLE_MXEMAIL)" || -z "$letemail" ]]; do
+			echo
+			if [[ -z "$(dig -t MX +short @8.8.8.8 $CHECKLE_MXEMAIL)" ]]; then
+				echo "!! Error: $letemail does not have a DNS MX record !!"
+			fi
+			if [ -z "$letemail" ]; then
+				echo "!! Error: email address is empty"
+			fi
+			echo
+			read -ep "Re-Enter your email address to setup Letsencrypt account: " letemail
+			if [ -z "$letemail" ]; then
+				echo
+				echo "!! Error: email address is empty"
+			else
+				echo
+				echo "You are registering $letemail address for Letsencrypt"
+			fi
+			CHECKLE_MXEMAIL=$(echo "$letemail" | awk -F '@' '{print $2}')
+		done
+
 		sed -i "s|foo@example.com|$letemail|" /etc/letsencrypt/webroot.ini
 		echo
 	fi
