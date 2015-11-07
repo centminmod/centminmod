@@ -627,6 +627,7 @@ source "inc/ffmpeginstall.inc"
 source "inc/shortcuts_install.inc"
 source "inc/memcacheadmin.inc"
 source "inc/mysqlsecure.inc"
+source "inc/letsencrypt.inc"
 source "inc/updater_submenu.inc"
 source "inc/centminfinish.inc"
 
