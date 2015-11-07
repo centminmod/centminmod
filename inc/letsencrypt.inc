@@ -26,14 +26,15 @@ leclientsetup() {
 	LE_SERVER='https://acme-staging.api.letsencrypt.org/directory'
 	# live and beta invitee trusted cert endpoint
 	# LE_SERVER='https://acme-v01.api.letsencrypt.org/directory'
-	if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
-		/root/.local/share/letsencrypt/bin/letsencrypt --agree-dev-preview --server $LE_SERVER
+	if [ -f ./letsencrypt-auto ]; then
+		./letsencrypt-auto --agree-dev-preview --server $LE_SERVER
 	else
-		cecho "/root/.local/share/letsencrypt/bin/letsencrypt not found" $boldgreen
+		cecho "./letsencrypt-auto not found" $boldgreen
 	fi
 
 	if [ ! -f /etc/letsencrypt/webroot.ini ]; then
 	cecho "setup general /etc/letsencrypt/webroot.ini letsencrypt config file" $boldgreen
+	touch /etc/letsencrypt/webroot.ini
 cat > "/etc/letsencrypt/webroot.ini" <<EOF
 # webroot.ini general config ini
 
