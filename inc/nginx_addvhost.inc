@@ -124,6 +124,16 @@ fi
 
 if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   echo
+  echo "To get Letsencrypt SSL certificate, you must already have updated intended"
+  echo "domain vhost name's DNS A record to this server's IP addresss otherwise"
+  echo "Letsencrypt domain name validation will fail."
+  echo
+  echo -n "current DNS A record IP address for $vhostname is:" $(dig -t A +short @8.8.8.8 $vhostname)
+  echo
+  read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record first? [y/n]: " letabort
+  if [[ "$leabort" = [yY] ]]; then
+    exit
+  fi 
   read -ep "Obtain Letsencrypt Free SSL certificate (90 day expiry / renew every 60 days) ? [y/n]: " levhostssl
   if [[ "$levhostssl" = [yY] ]]; then
     vhostssl=y
