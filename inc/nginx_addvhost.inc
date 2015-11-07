@@ -122,6 +122,14 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
 fi
 
+if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
+  echo
+  read -ep "Obtain Letsencrypt Free SSL certificate (90 day expiry / renew every 60 days) ? [y/n]: " levhostssl
+  if [[ "$levhostssl" = [yY] ]]; then
+    vhostssl=y
+  fi
+fi
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   if [ ! -f /usr/sbin/cracklib-check ]; then
     yum -y -q install cracklib
@@ -458,6 +466,45 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
 
+# letsencrypt client webroot authentication to
+# obtain LE ssl certificate to replace selfsigned
+# SSL certificate
+if [[ "$levhostssl" = [yY] ]]; then
+  leclientsetup
+  if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
+    echo
+    cecho "obtaining Letsencrypt SSL certificate via webroot authentication..." $boldgreen
+    echo
+    /root/.local/share/letsencrypt/bin/letsencrypt -c webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
+
+    # setup cronjob
+    echo "/root/.local/share/letsencrypt/bin/letsencrypt -c webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+    if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
+        # generate random number of seconds to delay cron start
+        # making sure they do not run at very same time during cron scheduling
+        DELAY=$(echo ${RANDOM:0:3})
+        crontab -l > cronjoblist
+        echo "* * * */2 * sleep ${DELAY}s ; /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
+        crontab cronjoblist
+        rm -rf cronjoblist
+        crontab -l
+    fi
+
+    # replace self signed ssl cert with letsencrypt ssl certificate and enable ssl stapling
+    sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/etc\/letsencrypt\/live\/${vhostname}\/privkey.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|#resolver |resolver |" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|#resolver_timeout|resolver_timeout|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|#ssl_stapling on|ssl_stapling on|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    cmservice nginx restart 
+  else
+    cecho "/root/.local/share/letsencrypt/bin/letsencrypt not found" $boldgreen
+  fi  
+fi
+
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
@@ -484,7 +531,15 @@ if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]]; then
   cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
   cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
-  cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
+  cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow   
+  if [[ "$levhostssl" = [yY] ]]; then
+    echo
+    cecho "Letsencrypt SSL Certificate: /etc/letsencrypt/live/${vhostname}/cert.pem" $boldyellow
+    cecho "Letsencrypt SSL Certificate Private Key: /etc/letsencrypt/live/${vhostname}/privkey.pem" $boldyellow
+    cecho "Letsencrypt SSL Certificate Chain: /etc/letsencrypt/live/${vhostname}/chain.pem" $boldyellow
+    cecho "Letsencrypt SSL Certificate Full Chain: /etc/letsencrypt/live/${vhostname}/fullchain.pem" $boldyellow
+    cecho "Letsencrypt $vhostname cronjob file: /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron" $boldyellow
+  fi 
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite

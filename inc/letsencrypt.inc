@@ -10,7 +10,7 @@ leclientsetup() {
 	# setup letsencrypt client and virtualenv
 	# https://community.centminmod.com/posts/19914/
 	echo
-	echo "installing or updating letsencrypt client"
+	cecho "installing or updating letsencrypt client" $boldgreen
 	echo
 	python_setup
 	echo
@@ -29,11 +29,11 @@ leclientsetup() {
 	if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
 		/root/.local/share/letsencrypt/bin/letsencrypt --agree-dev-preview --server $LE_SERVER
 	else
-		echo "/root/.local/share/letsencrypt/bin/letsencrypt not found"
+		cecho "/root/.local/share/letsencrypt/bin/letsencrypt not found" $boldgreen
 	fi
 
 	if [ ! -f /etc/letsencrypt/webroot.ini ]; then
-	echo "setup general /etc/letsencrypt/webroot.ini letsencrypt config file"
+	cecho "setup general /etc/letsencrypt/webroot.ini letsencrypt config file" $boldgreen
 cat > "/etc/letsencrypt/webroot.ini" <<EOF
 # webroot.ini general config ini
 
@@ -60,7 +60,7 @@ EOF
 
 	if [[ "$(grep 'foo@example.com' /etc/letsencrypt/webroot.ini)" ]]; then
 		echo
-		echo "Registering an account with Letsencrypt"
+		cecho "Registering an account with Letsencrypt" $boldgreen
 		echo "You only do this once, so that Letsencrypt can notify &"
 		echo "contact you via email regarding your SSL certificates"
 		read -ep "Enter your email address to setup Letsencrypt account: " letemail
