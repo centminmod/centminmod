@@ -476,30 +476,37 @@ if [[ "$levhostssl" = [yY] ]]; then
     cecho "obtaining Letsencrypt SSL certificate via webroot authentication..." $boldgreen
     echo
     /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
+    LECHECK=$?
 
-    # setup cronjob
-    echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
-    if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
-        # generate random number of seconds to delay cron start
-        # making sure they do not run at very same time during cron scheduling
-        DELAY=$(echo ${RANDOM:0:3})
-        crontab -l > cronjoblist
-        echo "* * * */2 * sleep ${DELAY}s ; /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
-        crontab cronjoblist
-        rm -rf cronjoblist
-        crontab -l
-    fi
-
-    # replace self signed ssl cert with letsencrypt ssl certificate and enable ssl stapling
-    sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/etc\/letsencrypt\/live\/${vhostname}\/privkey.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|#resolver |resolver |" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|#resolver_timeout|resolver_timeout|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|#ssl_stapling on|ssl_stapling on|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-    cmservice nginx restart 
+    if [[ "$LECHECK" = '0' ]]; then
+      # setup cronjob only if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
+      # otherwise leave original self signed SSL certificates in place
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${ vhostname}-cron
+      if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
+          # generate random number of seconds to delay cron start
+          # making sure they do not run at very same time during cron scheduling
+          echo
+          DELAY=$(echo ${RANDOM:0:3})
+          crontab -l > cronjoblist
+          echo "* * * */2 * sleep ${DELAY}s ; /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
+          crontab cronjoblist
+          rm -rf cronjoblist
+          crontab -l
+      fi
+  
+      # replace self signed ssl cert with letsencrypt ssl certificate and enable ssl stapling
+      # if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
+      # otherwise leave original self signed SSL certificates in place
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/etc\/letsencrypt\/live\/${vhostname}\/privkey.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#resolver |resolver |" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#resolver_timeout|resolver_timeout|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#ssl_stapling on|ssl_stapling on|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      cmservice nginx restart 
+    fi # LECHECK
   else
     cecho "/root/.local/share/letsencrypt/bin/letsencrypt not found" $boldgreen
   fi  
@@ -532,7 +539,7 @@ if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]]; then
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
   cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
   cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow   
-  if [[ "$levhostssl" = [yY] ]]; then
+  if [[ "$levhostssl" = [yY] ]] && [[ "$LECHECK" = '0' ]]; then
     echo
     cecho "Letsencrypt SSL Certificate: /etc/letsencrypt/live/${vhostname}/cert.pem" $boldyellow
     cecho "Letsencrypt SSL Certificate Private Key: /etc/letsencrypt/live/${vhostname}/privkey.pem" $boldyellow
