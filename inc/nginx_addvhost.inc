@@ -475,10 +475,10 @@ if [[ "$levhostssl" = [yY] ]]; then
     echo
     cecho "obtaining Letsencrypt SSL certificate via webroot authentication..." $boldgreen
     echo
-    /root/.local/share/letsencrypt/bin/letsencrypt -c webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
+    /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
 
     # setup cronjob
-    echo "/root/.local/share/letsencrypt/bin/letsencrypt -c webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+    echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
     if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
         # generate random number of seconds to delay cron start
         # making sure they do not run at very same time during cron scheduling
