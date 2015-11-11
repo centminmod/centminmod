@@ -150,28 +150,28 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   fi
   echo
   if [[ "$TOPLEVEL" = [yY] ]]; then
-    echo "$vhostname is a top level domain"    
+    cecho "$vhostname is a top level domain" $boldyellow  
     if [ "$VHOST_ACHECK" ]; then
-      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
     else
-      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
-      echo "!! Error: missing DNS A record for $vhostname"
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
+      cecho "!! Error: missing DNS A record for $vhostname" $boldyellow
     fi
     if [ "$VHOST_AWWWCHECK" ]; then
-      echo "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK"
+      cecho "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK" $boldyellow
     else
-      echo "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK"
-      echo "!! Error: missing DNS A record for www.$vhostname"
+      cecho "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK" $boldyellow
+      cecho "!! Error: missing DNS A record for www.$vhostname" $boldyellow
     fi
   elif [[ "$TOPLEVEL" = 'z' ]]; then
-    echo "$vhostname DNS records not found or setup properly yet or $vhostname invalid"
+    cecho "!! Error: $vhostname DNS records not found or setup properly yet or $vhostname invalid" $boldyellow
   else
-    echo "$vhostname is not a top level domain"    
+    cecho "$vhostname is not a top level domain" $boldyellow
     if [ "$VHOST_ACHECK" ]; then
-      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
     else
-      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
-      echo "!! Error: missing DNS A record for $vhostname"
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
+      cecho "!! Error: missing DNS A record for $vhostname" $boldyellow
     fi
   fi
   echo
