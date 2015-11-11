@@ -140,29 +140,32 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   fi
   echo
   if [[ "$TOPLEVEL" = [yY] ]]; then
-    echo "$vhostname is a top level domain"
     VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname)
     VHOST_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname | grep -v $vhostname)
   else
-    echo "$vhostname is not a top level domain"
     VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname)
   fi
   echo
   if [[ "$TOPLEVEL" = [yY] ]]; then
+    echo "$vhostname is a top level domain"    
     if [ "$VHOST_ACHECK" ]; then
       echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
     else
+      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
       echo "!! Error: missing DNS A record for $vhostname"
     fi
     if [ "$VHOST_AWWWCHECK" ]; then
       echo "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK"
     else
+      echo "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK"
       echo "!! Error: missing DNS A record for www.$vhostname"
     fi
   else
+    echo "$vhostname is not a top level domain"    
     if [ "$VHOST_ACHECK" ]; then
       echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
     else
+      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
       echo "!! Error: missing DNS A record for $vhostname"
     fi
   fi
