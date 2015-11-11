@@ -125,13 +125,49 @@ fi
 if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   echo
   cecho "To get Letsencrypt SSL certificate, you must already have updated intended" $boldgreen
-  cecho "domain vhost name's DNS A record to this server's IP addresss otherwise" $boldgreen
-  cecho "Letsencrypt domain name validation will fail." $boldgreen
+  cecho "domain vhost name's DNS A record to this server's IP addresss." $boldgreen
+  cecho "If top level domain, DNS A record is needed also for www. version of domain" $boldgreen
+  cecho "otherwise, Letsencrypt domain name validation will fail." $boldgreen
+  # check if entered vhostname is top level domain or a subdomain if top level, need the ssl certificate
+  # to also cover www. version of the top level domain vhostname via a multi-domain SAN LE ssl certificate
+  TOPLEVELCHECK=$(dig soa $vhostname | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//')
+  if [[ "$TOPLEVELCHECK" = "$vhostname" ]]; then
+    # top level domain
+    TOPLEVEL=y
+  else
+    # subdomain or non top level domain
+    TOPLEVEL=n
+  fi
   echo
-  echo -n "current DNS A record IP address for $vhostname is:" $(dig -t A +short @8.8.8.8 $vhostname)
+  if [[ "$TOPLEVEL" = [yY] ]]; then
+    echo "$vhostname is a top level domain"
+    VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname)
+    VHOST_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname | grep -v $vhostname)
+  else
+    echo "$vhostname is not a top level domain"
+    VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname)
+  fi
   echo
+  if [[ "$TOPLEVEL" = [yY] ]]; then
+    if [ "$VHOST_ACHECK" ]; then
+      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
+    else
+      echo "!! Error: missing DNS A record for $vhostname"
+    fi
+    if [ "$VHOST_AWWWCHECK" ]; then
+      echo "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK"
+    else
+      echo "!! Error: missing DNS A record for www.$vhostname"
+    fi
+  else
+    if [ "$VHOST_ACHECK" ]; then
+      echo "current DNS A record IP address for $vhostname is: $VHOST_ACHECK"
+    else
+      echo "!! Error: missing DNS A record for $vhostname"
+    fi
+  fi
   echo
-  read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record first? [y/n]: " letabort
+  read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
   if [[ "$letabort" = [yY] ]]; then
     exit
   fi 
@@ -486,17 +522,25 @@ if [[ "$levhostssl" = [yY] ]]; then
     echo
     cecho "obtaining Letsencrypt SSL certificate via webroot authentication..." $boldgreen
     echo
-    /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
+    if [[ "$TOPLEVEL" = [yY] ]]; then
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} auth"
+      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} auth
+    else
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth"
+      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
+    fi
     LECHECK=$?
 
     if [[ "$LECHECK" = '0' ]]; then
       # setup cronjob only if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
       # otherwise leave original self signed SSL certificates in place
-      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${ vhostname}-cron
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      cat /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
           # generate random number of seconds to delay cron start
           # making sure they do not run at very same time during cron scheduling
           echo
+          echo "setup cronjob for /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron"
           DELAY=$(echo ${RANDOM:0:3})
           crontab -l > cronjoblist
           echo "* * * */2 * sleep ${DELAY}s ; /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
