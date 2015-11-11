@@ -134,6 +134,9 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   if [[ "$TOPLEVELCHECK" = "$vhostname" ]]; then
     # top level domain
     TOPLEVEL=y
+  elif [[ -z "$TOPLEVELCHECK" ]]; then
+    # vhost dns not setup
+    TOPLEVEL=z
   else
     # subdomain or non top level domain
     TOPLEVEL=n
@@ -160,6 +163,8 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
       echo "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK"
       echo "!! Error: missing DNS A record for www.$vhostname"
     fi
+  elif [[ "$TOPLEVEL" = 'z' ]]; then
+    echo "$vhostname DNS records not found or setup properly yet or $vhostname invalid"
   else
     echo "$vhostname is not a top level domain"    
     if [ "$VHOST_ACHECK" ]; then
