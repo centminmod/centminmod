@@ -547,6 +547,7 @@ if [[ "$levhostssl" = [yY] ]]; then
       # setup cronjob only if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
       # otherwise leave original self signed SSL certificates in place
       echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "/usr/bin/nprestart" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       cat /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
           # generate random number of seconds to delay cron start
@@ -555,7 +556,7 @@ if [[ "$levhostssl" = [yY] ]]; then
           echo "setup cronjob for /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron"
           DELAY=$(echo ${RANDOM:0:3})
           crontab -l > cronjoblist
-          echo "* * * */2 * sleep ${DELAY}s ; /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
+          echo "* * * */2 * sleep ${DELAY}s ; bash /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
           crontab cronjoblist
           rm -rf cronjoblist
           crontab -l
