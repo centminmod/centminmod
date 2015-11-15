@@ -152,8 +152,10 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   if [[ "$TOPLEVEL" = [yY] ]]; then
     cecho "$vhostname is a top level domain" $boldyellow  
     if [ "$VHOST_ACHECK" ]; then
+      cecho "your server IP address: $CNIP" $boldyellow
       cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
     else
+      cecho "your server IP address: $CNIP" $boldyellow
       cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
       cecho "!! Error: missing DNS A record for $vhostname" $boldyellow
     fi
@@ -168,6 +170,7 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   else
     cecho "$vhostname is not a top level domain" $boldyellow
     if [ "$VHOST_ACHECK" ]; then
+      cecho "your server IP address: $CNIP" $boldyellow
       cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
     else
       cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
