@@ -123,6 +123,7 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
 fi
 
 if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
+  getuseragent
   echo
   cecho "To get Letsencrypt SSL certificate, you must already have updated intended" $boldgreen
   cecho "domain vhost name's DNS A record to this server's IP addresss." $boldgreen
@@ -534,18 +535,18 @@ if [[ "$levhostssl" = [yY] ]]; then
     cecho "obtaining Letsencrypt SSL certificate via webroot authentication..." $boldgreen
     echo
     if [[ "$TOPLEVEL" = [yY] ]]; then
-      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} auth"
-      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} auth
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} auth"
+      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} auth
     else
-      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth"
-      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth"
+      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth
     fi
     LECHECK=$?
 
     if [[ "$LECHECK" = '0' ]]; then
       # setup cronjob only if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
       # otherwise leave original self signed SSL certificates in place
-      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} auth" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       cat /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
           # generate random number of seconds to delay cron start

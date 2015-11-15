@@ -1,3 +1,14 @@
+getuseragent() {
+	# build Centmin Mod's identifying letsencrypt user agent
+	# --user-agent=
+	if [[ "$CENTOS_SIX" = '6' ]]; then
+		LE_OSVER=centos6
+	elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+		LE_OSVER=centos7
+	fi
+	LE_USERAGENT="centminmod-$LE_OSVER-webroot"
+}
+
 python_setup() {
 	if [ -f /usr/local/src/centminmod/addons/python27_install.sh ]; then
 		if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/python2.7 ]]; then
