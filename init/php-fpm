@@ -71,6 +71,8 @@ wait_for_pid () {
 
 }
 
+kill -0 `cat /var/run/php-fpm/php-fpm.pid 2>/dev/null` &> /dev/null
+running=$?
 case "$1" in
         start)
                 echo -n "Starting php-fpm "
@@ -137,6 +139,14 @@ case "$1" in
                 $0 start
         ;;
 
+        status)
+                if [ "$running" = '0' ]; then
+                    echo "php-fpm is running"
+                else
+                    echo "php-fpm is not running"
+                fi
+        ;;
+
         reload)
 
                 echo -n "Reload service php-fpm "
@@ -152,7 +162,7 @@ case "$1" in
         ;;
 
         *)
-                echo "Usage: $0 {start|stop|force-quit|restart|reload}"
+                echo "Usage: $0 {start|stop|force-quit|restart|status|reload}"
                 exit 1
         ;;
 
