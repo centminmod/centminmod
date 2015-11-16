@@ -20,7 +20,9 @@ python_setup() {
 leclientsetup() {
 	# build letsencrypt version timestamp
 	# find last github commit date to compare with current client version number
-	LECOMMIT_DATE=$(cd /root/tools/letsencrypt; date -d @$(git log -n1 --format="%at") +%Y%m%d)
+	if [ -d /root/tools/letsencrypt ]; then
+		LECOMMIT_DATE=$(cd /root/tools/letsencrypt; date -d @$(git log -n1 --format="%at") +%Y%m%d)
+	fi
 	# setup letsencrypt client and virtualenv
 	# https://community.centminmod.com/posts/19914/
 	echo
