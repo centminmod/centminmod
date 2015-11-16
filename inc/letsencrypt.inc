@@ -18,6 +18,9 @@ python_setup() {
 }
 
 leclientsetup() {
+	# build letsencrypt version timestamp
+	# find last github commit date to compare with current client version number
+	LECOMMIT_DATE=$(cd /root/tools/letsencrypt; date -d @$(git log -n1 --format="%at") +%Y%m%d)
 	# setup letsencrypt client and virtualenv
 	# https://community.centminmod.com/posts/19914/
 	echo
@@ -27,9 +30,23 @@ leclientsetup() {
 	echo
 	mkdir -p /root/tools
 	cd /root/tools
-	rm -rf /root/tools/letsencrypt
-	git clone https://github.com/letsencrypt/letsencrypt
-	cd letsencrypt
+	if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
+		# compare current letsencrypt version timestamp with last github commit date YYMMDD
+		LE_CLIENTVER=$(/root/.local/share/letsencrypt/bin/letsencrypt --version 2>&1 | awk '{print $2}')
+		LE_CLIENTCOMPARE=$(echo $LE_CLIENTVER | grep $LECOMMIT_DATE)
+		if [[ "$LE_CLIENTCOMPARE" ]]; then
+			cd letsencrypt
+			git pull
+		else
+			rm -rf /root/tools/letsencrypt
+			git clone https://github.com/letsencrypt/letsencrypt
+			cd letsencrypt
+		fi
+	elif [ ! -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
+		git clone https://github.com/letsencrypt/letsencrypt
+		cd letsencrypt
+	fi
+		
 	if [[ "$CENTOS_SIX" = '6' && -f /usr/bin/python2.7 ]]; then
 		sed -i "s|--python python2|--python python2.7|" letsencrypt-auto
 	fi
