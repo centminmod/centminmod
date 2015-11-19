@@ -563,7 +563,7 @@ if [[ "$levhostssl" = [yY] ]]; then
           echo "setup cronjob for /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron"
           DELAY=$(echo ${RANDOM:0:3})
           crontab -l > cronjoblist
-          echo "* * * */2 * sleep ${DELAY}s ; bash /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
+          echo "15 1 1 */2 * sleep ${DELAY}s ; bash /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
           crontab cronjoblist
           rm -rf cronjoblist
           crontab -l
