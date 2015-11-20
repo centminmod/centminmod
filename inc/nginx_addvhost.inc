@@ -554,6 +554,9 @@ if [[ "$levhostssl" = [yY] ]]; then
       fi
       
       echo "/usr/bin/nprestart" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+
+      echo
+      echo "/usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron contents:"      
       cat /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       
       if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
