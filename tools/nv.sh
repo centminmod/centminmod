@@ -8,7 +8,6 @@ branchname='123.09beta01'
 CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
-NGINX_LEVHOSTSSL='y'
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
 CENTMINLOGDIR='/root/centminlogs'
@@ -69,27 +68,29 @@ usage() {
 # if pure-ftpd service running = 0
 if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '0' ]]; then
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n] [-u ftpusername]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|le] [-u ftpusername]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
-  cecho "  -s  ssl self-signed create = y or n" $boldyellow
+  cecho "  -s  ssl self-signed create = y or n or le (for letsencrypt ssl certs)" $boldyellow
   cecho "  -u  your FTP username" $boldyellow
   echo
   cecho "  example:" $boldyellow
   echo
   cecho "  $0 -d yourdomain.com -s y -u ftpusername" $boldyellow
+  cecho "  $0 -d yourdomain.com -s le -u ftpusername" $boldyellow
   echo
   exit 1;
 else
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|le]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
-  cecho "  -s  ssl self-signed create = y or n" $boldyellow
+  cecho "  -s  ssl self-signed create = y or n or le (for letsencrypt ssl certs)" $boldyellow
   echo
   cecho "  example:" $boldyellow
   echo
-  cecho "  $0 -d yourdomain.com -s y" $boldyellow  
+  cecho "  $0 -d yourdomain.com -s y" $boldyellow
+  cecho "  $0 -d yourdomain.com -s le" $boldyellow
   echo  
   exit 1;
 fi
@@ -502,13 +503,13 @@ cecho "---------------------------------------------------------------" $boldyel
 
 # read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$sslconfig" = [yY] || "$sslconfig" = 'le' ]]; then
   echo
   vhostssl=y
   # read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
 fi
 
-if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
+if [[ "$sslconfig" = 'le' ]]; then
   getuseragent
   echo
   cecho "To get Letsencrypt SSL certificate, you must already have updated intended" $boldgreen
@@ -938,7 +939,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$sslconfig" = [yY] || "$sslconfig" = 'le' ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -969,7 +970,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$sslconfig" = [yY] || "$sslconfig" = 'le' ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
@@ -982,7 +983,7 @@ cecho "-------------------------------------------------------------" $boldyello
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
 cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$sslconfig" = [yY] || "$sslconfig" = 'le' ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
 fi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
