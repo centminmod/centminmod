@@ -1,0 +1,16 @@
+--- /etc/init.d/memcached       2015-11-24 00:22:37.512363496 +0000
++++ /etc/init.d/memcached.new   2015-11-23 23:53:57.166708853 +0000
+@@ -26,6 +26,13 @@
+ PIDA='/var/run/memcached/memcached1.pid'
+ PIDB='/var/run/memcached/memcached2.pid'
+ 
++# 1.4.25 new slab options
++# https://github.com/memcached/memcached/wiki/ReleaseNotes1425
++MEM_CURVER=$(/usr/local/bin/memcached -V | awk '{print $2}' | head -n1 | sed -e 's|\.|00|g')
++if [[ "$MEM_CURVER" -ge '10040025' ]]; then
++        OPTIONS='-o slab_reassign,slab_automove,lru_crawler,lru_maintainer,maxconns_fast,hash_algorithm=murmur3'
++fi
++
+ if [ -f /proc/user_beancounters ]; then
+ ulimit -s 256
+ fi
