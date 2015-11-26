@@ -553,7 +553,7 @@ if [[ "$levhostssl" = [yY] ]]; then
         echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} certonly" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       fi
       
-      echo "/usr/bin/nprestart" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "/usr/bin/ngxreload" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
 
       echo
       echo "/usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron contents:"      
