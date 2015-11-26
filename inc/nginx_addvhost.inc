@@ -548,7 +548,7 @@ if [[ "$levhostssl" = [yY] ]]; then
       # otherwise leave original self signed SSL certificates in place
       
       # EMAIL and LOGGING for cron
-      echo "EMAIL=$(awk '/email/ {print $3}' /etc/letsencrypt/webroot.ini)" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "EMAIL=\$(awk '/email/ {print $3}' /etc/letsencrypt/webroot.ini)" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       echo "ERRORLOG=\$(tail /var/log/letsencrypt/letsencrypt.log)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
 
       if [[ "$TOPLEVEL" = [yY] ]]; then
