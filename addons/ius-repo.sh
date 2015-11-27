@@ -88,9 +88,15 @@ return
 ###########################################################
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
-	yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/6/x86_64/ius-release-1.0-14.ius.centos6.noarch.rpm
+    if [ ! -f /etc/yum.repos.d/ius.repo ]; then
+        rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
+        yum -y install https://centos6.iuscommunity.org/ius-release.rpm
+    fi
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-	yum -y install https://dl.iuscommunity.org/pub/ius/stable/CentOS/7/x86_64/ius-release-1.0-14.ius.centos7.noarch.rpm
+    if [ ! -f /etc/yum.repos.d/ius.repo ]; then
+        rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
+        yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+    fi
 fi
 
 # disable by default the ius.repo

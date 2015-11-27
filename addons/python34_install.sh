@@ -92,8 +92,10 @@ starttime=$(date +%s.%N)
 {
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
+    rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
     yum -y install https://centos6.iuscommunity.org/ius-release.rpm
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
     yum -y install https://centos7.iuscommunity.org/ius-release.rpm
 fi
 
