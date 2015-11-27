@@ -648,15 +648,21 @@ else
 	THREADS=""
 fi	
 
+if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    if [ "$(grep 'NGX_FOPENOPT' ${CM_INSTALLDIR}/inc/z_custom.inc)" ]; then
+        fastopenconfig
+    fi
+fi
+
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
 gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_native.log
 if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
-	MTUNEOPT="-m${CCM} -mtune=native "
+	MTUNEOPT="-m${CCM} -mtune=native${NGX_FOPENOPT} "
 elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=32
-	MTUNEOPT="-m${CCM} -mtune=generic "
+	MTUNEOPT="-m${CCM} -mtune=generic${NGX_FOPENOPT} "
 else
 	MTUNEOPT=""
 fi
