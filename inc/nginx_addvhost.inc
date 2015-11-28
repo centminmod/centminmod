@@ -548,21 +548,33 @@ if [[ "$levhostssl" = [yY] ]]; then
       # otherwise leave original self signed SSL certificates in place
       
       # EMAIL and LOGGING for cron
-      echo "EMAIL=\$(awk '/email/ {print $3}' /etc/letsencrypt/webroot.ini)" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "EMAIL=\$(awk '/email/ {print \$3}' /etc/letsencrypt/webroot.ini)" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       echo "ERRORLOG=\$(tail /var/log/letsencrypt/letsencrypt.log)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "CERT=\"/etc/letsencrypt/live/\${vhostname}/cert.pem\"" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+
+echo "if [[ -f "\$CERT" ]]; then" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  expiry=\$(openssl x509 -enddate -noout -in \$CERT | cut -d'=' -f2 | awk '{print \$2 " " \$1 " " \$4}')" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  epochExpirydate=\$(date -d"\${expiry}" +%s)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  epochToday=\$(date +%s)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  secondsToExpire=\$(echo \${epochExpirydate} - \${epochToday} | bc)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  daysToExpire=\$(echo "\${secondsToExpire} / 60 / 60 / 24" | bc)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  if [ "$daysToExpire" -lt '30' ]; then" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
 
       if [[ "$TOPLEVEL" = [yY] ]]; then
-        echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} certonly" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+        echo "    /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} certonly" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       else
-        echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} certonly" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+        echo "    /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} certonly" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
       fi
       
       # cronjob error check and email send
 cat >> "/usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron" <<CFF
-if [ \$? -ne 0 ]; then
-    sleep 1; echo -e "The Lets Encrypt SSL Certificate for ${vhostname} has not been renewed! \n \n" \$ERRORLOG | mail -s "Lets Encrypt Cert Alert" \$EMAIL
-  else
-    /usr/bin/ngxreload
+    if [ \$? -ne 0 ]; then
+        sleep 1; echo -e "The Lets Encrypt SSL Certificate for ${vhostname} has not been renewed! \n \n" \$ERRORLOG | mail -s "Lets Encrypt Cert Alert" \$EMAIL
+      else
+        /usr/bin/ngxreload
+    fi
+  fi
 fi
 exit 0
 CFF
@@ -578,7 +590,7 @@ CFF
           echo "setup cronjob for /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron"
           DELAY=$(echo ${RANDOM:0:3})
           crontab -l > cronjoblist
-          echo "15 1 1 */2 * sleep ${DELAY}s ; bash /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
+          echo "10 1 */9 * * sleep ${DELAY}s ; bash /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
           crontab cronjoblist
           rm -rf cronjoblist
           crontab -l
