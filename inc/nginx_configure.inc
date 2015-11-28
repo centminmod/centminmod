@@ -654,6 +654,12 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     fi
 fi
 
+# on low memory systems <=768MB or when NGINX_GEOIPMEM=n
+# optimise nginx memory usage when nginx geoip module is 
+# enabled (by default) by changing from in memory caching
+# of geoip country, city databases to on disk caching 
+ngxgeoipmemtweak
+
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
 gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_native.log

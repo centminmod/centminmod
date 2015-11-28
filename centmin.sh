@@ -280,6 +280,7 @@ NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/d
 NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_NJS=n                  # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
 NGINX_GEOIP=y                # Nginx GEOIP module install
+NGINX_GEOIPMEM=y             # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
 NGINX_SUB=y                  # http://nginx.org/en/docs/http/ngx_http_sub_module.html

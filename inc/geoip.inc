@@ -1,3 +1,14 @@
+ngxgeoipmemtweak() {
+	# on low memory systems <=768MB or when NGINX_GEOIPMEM=n
+	# optimise nginx memory usage when nginx geoip module is 
+	# enabled (by default) by changing from in memory caching
+	# of geoip country, city databases to on disk caching 
+	if [[ "$TOTALMEM" -le '759000' || "$NGINX_GEOIPMEM" = [nN] ]]; then
+		sed -i "s|_MEMORY_CACHE|_STANDARD|g" src/http/modules/ngx_http_geoip_module.c
+		grep -n _STANDARD src/http/modules/ngx_http_geoip_module.c
+	fi
+}
+
 geoipphpext() {
 if [[ -d /usr/share/GeoIP ]]; then
 	if [ ! -f /usr/bin/svn ]; then
