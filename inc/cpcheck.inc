@@ -223,12 +223,14 @@ leupdates() {
 
 memcachedupdatechecks() {
 	# 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
-	if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
-		if [ -f /usr/local/src/centminmod/config/memcached/memcached1425.patch ]; then
-			\cp -f /usr/local/src/centminmod/config/memcached/memcached1425.patch /etc/init.d/memcached1425.patch
-			cd /etc/init.d/
-			patch -s < memcached1425.patch
-			rm -rf memcached1425.patch
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
+			if [ -f /usr/local/src/centminmod/config/memcached/memcached1425.patch ]; then
+				\cp -f /usr/local/src/centminmod/config/memcached/memcached1425.patch /etc/init.d/memcached1425.patch
+				cd /etc/init.d/
+				patch -s < memcached1425.patch
+				rm -rf memcached1425.patch
+			fi
 		fi
 	fi
 }
