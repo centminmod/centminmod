@@ -191,26 +191,28 @@ END
 pureftpdupdates() {
 	# auto updates
 	# raise max number of concurrent ftp connections from 50/2 to 20010/2
-	CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
-	if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
-		sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
-		sed -i 's|MaxClientsNumber            50|MaxClientsNumber            500|' /etc/pure-ftpd/pure-ftpd.conf
-		sed -i 's|MaxClientsPerIP             8|MaxClientsPerIP             200|' /etc/pure-ftpd/pure-ftpd.conf
-		if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
-			service pure-ftpd restart
+	if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
+		CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
+		if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
+			sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+			sed -i 's|MaxClientsNumber            50|MaxClientsNumber            500|' /etc/pure-ftpd/pure-ftpd.conf
+			sed -i 's|MaxClientsPerIP             8|MaxClientsPerIP             200|' /etc/pure-ftpd/pure-ftpd.conf
+			if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+				service pure-ftpd restart
+			fi
+			echo
+			echo "increasing pure-ftpd passive port range"
+			echo
 		fi
-		echo
-		echo "increasing pure-ftpd passive port range"
-		echo
+		CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
+		if [ "$CHECKCSF_PASSIVEPORTS" ]; then
+			sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
+			csf -r
+			echo
+			echo "adjusting pure-ftpd passive port range for CSF Firewall"
+			echo
+		fi	
 	fi
-	CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
-	if [ "$CHECKCSF_PASSIVEPORTS" ]; then
-		sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
-		csf -r
-		echo
-		echo "adjusting pure-ftpd passive port range for CSF Firewall"
-		echo
-	fi	
 }
 
 leupdates() {
