@@ -2,6 +2,36 @@
 # http://ffmpeg.org/download.html
 ffmpegsetup() {
 
+	if [ "$(uname -m)" == 'x86_64' ]; then
+		ATRPMARCH='x86_64'
+	else
+		ATRPMARCH='i386'
+	fi
+
+	if [[ "$CENTOS_SEVEN" != '7' ]]; then
+cat > "/etc/yum.repos.d/atrpms.repo" <<EOF
+[atrpms]
+name=Red Hat Enterprise Linux $releasever - $basearch - ATrpms
+failovermethod=priority
+baseurl=http://www.mirrorservice.org/sites/dl.atrpms.net/el6-${ATRPMARCH}/atrpms/stable
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-atrpms
+priority=90
+EOF
+	elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+cat > "/etc/yum.repos.d/atrpms.repo" <<EOF
+[atrpms]
+name=Red Hat Enterprise Linux $releasever - $basearch - ATrpms
+failovermethod=priority
+baseurl=http://www.mirrorservice.org/sites/dl.atrpms.net/el7-${ATRPMARCH}/atrpms/stable
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-atrpms
+priority=90
+EOF
+	fi	
+
 	if [ -f /etc/yum.repos.d/atrpms.repo ]; then
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
