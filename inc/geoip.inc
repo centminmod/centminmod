@@ -6,6 +6,9 @@ ngxgeoipmemtweak() {
 	if [[ "$TOTALMEM" -le '759000' || "$NGINX_GEOIPMEM" = [nN] ]]; then
 		sed -i "s|_MEMORY_CACHE|_STANDARD|g" src/http/modules/ngx_http_geoip_module.c
 		grep -n _STANDARD src/http/modules/ngx_http_geoip_module.c
+	elif [[ "$NGINX_GEOIPMEM" = [yY] ]]; then
+		sed -i "s|_STANDARD|_MEMORY_CACHE|g" src/http/modules/ngx_http_geoip_module.c
+		grep -n _MEMORY_CACHE src/http/modules/ngx_http_geoip_module.c
 	fi
 }
 
