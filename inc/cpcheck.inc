@@ -237,6 +237,17 @@ memcachedupdatechecks() {
 	fi
 }
 
+cronpathadjust() {
+	# if [[ "$INITIALINSTALL" = [yY] ]]; then
+		# append /usr/local/bin to /etc/crontab PATH variable for /usr/local/bin/php to work
+		if [[ -z "$(grep '\/usr\/local\bin' /etc/crontab)" ]]; then
+			echo "adjust /etc/crontab \$PATH for /usr/local/bin support"
+			sed -i 's|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/usr\/local\/bin|' /etc/crontab
+			cmservice crond restart
+		fi
+	# fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -256,6 +267,8 @@ echo "DirectAdmin detected.. centmin mod NOT compatible"
 echo "aborting script..."
 exit
 fi
+
+cronpathadjust
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
