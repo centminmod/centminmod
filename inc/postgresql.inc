@@ -12,14 +12,14 @@ postgresqlinstall() {
     
         cd $DIR_TMP
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
-            wget http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-1.noarch.rpm
-            rpm -ivh pgdg-centos94-9.4-1.noarch.rpm
+            wget http://yum.postgresql.org/9.4/redhat/rhel-7-x86_64/pgdg-centos94-9.4-2.noarch.rpm
+            rpm -ivh pgdg-centos94-9.4-2.noarch.rpm
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
-            wget http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-1.noarch.rpm
-            rpm -ivh pgdg-centos94-9.4-1.noarch.rpm
+            wget http://yum.postgresql.org/9.4/redhat/rhel-6-x86_64/pgdg-centos94-9.4-2.noarch.rpm
+            rpm -ivh pgdg-centos94-9.4-2.noarch.rpm
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
-            wget http://yum.postgresql.org/9.4/redhat/rhel-6-i386/pgdg-centos94-9.4-1.noarch.rpm
-            rpm -ivh pgdg-centos94-9.4-1.noarch.rpm
+            wget http://yum.postgresql.org/9.4/redhat/rhel-6-i386/pgdg-centos94-9.4-2.noarch.rpm
+            rpm -ivh pgdg-centos94-9.4-2.noarch.rpm
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-94-centos.repo
