@@ -833,6 +833,22 @@ wp db query "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET u
 # add index on autoload
 wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx('autoload')" --allow-root
 
+# change permalinks out of the box
+wp rewrite structure '/%post_id%/%postname%/' --allow-root
+
+if [[ "$WPCLI_SUPERCACHEPLUGIN" = [yY] && ! -f /root/.wp-cli/commands/super-cache/cli.php ]]; then
+  # https://github.com/wp-cli/wp-super-cache-cli.git
+  mkdir -p /root/.wp-cli/commands
+  git clone https://github.com/wp-cli/wp-super-cache-cli.git /root/.wp-cli/commands/super-cache
+  echo "require:" > /root/.wp-cli/config.yml
+  echo "  - commands/super-cache/cli.php" >> /root/.wp-cli/config.yml
+elif [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then
+  cd /root/.wp-cli/commands/super-cache
+  git stash
+  git pull
+  cd /home/nginx/domains/${vhostname}/public
+fi
+
 cecho "------------------------------------------------------------" $boldgreen
 wp theme install responsive --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
@@ -920,6 +936,10 @@ wp plugin update --all --allow-root
 echo
 wp plugin status --allow-root
 cecho "------------------------------------------------------------" $boldgreen
+
+if [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then
+  wp super-cache enable --allow-root
+fi
 
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public/wp-content/plugins/
 
