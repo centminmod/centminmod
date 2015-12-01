@@ -506,6 +506,10 @@ SELFSIGNEDSSL_L='Los Angeles'
 SELFSIGNEDSSL_O=''
 SELFSIGNEDSSL_OU=''
 ###############################################################
+# centmin.sh menu option 22 specific options
+WPPLUGINS_ALL='n'           # do not install additional plugins
+WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
+###############################################################
 
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 

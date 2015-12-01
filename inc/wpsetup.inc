@@ -193,6 +193,8 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
 fi
 
+read -ep "Do you want to install WP Cache Enabler Plugin instead of WP Super Cache ? [y/n]: " cacheenabler
+
 read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
@@ -294,6 +296,42 @@ fi
 # create wp super cache's included php config file php-wpsc.conf
 \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-wpsc.conf
 sed -i "s|fastcgi_param  SERVER_NAME        \$server_name;|fastcgi_param  SERVER_NAME        \$http_host;|" /usr/local/nginx/conf/php-wpsc.conf
+
+################################################################################
+# create wp enable enabler included files https://community.centminmod.com/posts/21220/
+
+cat > "/usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf"<<HFA
+    set \$cache_uri \$request_uri;
+
+    # bypass cache if POST requests or URLs with a query string
+    if (\$request_method = POST) {
+        set \$cache_uri 'nullcache';
+    }
+    if (\$query_string != "") {
+        set \$cache_uri 'nullcache';
+    }
+
+    # bypass cache if URLs containing the following strings
+    if (\$request_uri ~* "(/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
+        set \$cache_uri 'nullcache';
+    }
+
+    # bypass cache if the cookies containing the following strings
+    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+        set \$cache_uri 'nullcache';
+    }
+
+    # custom sub directory e.g. /blog
+    set \$custom_subdir '';
+
+    # default html file
+    set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index.html';
+
+    # webp html file
+    if (\$http_accept ~* "image/webp") {
+        set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index-webp.html';
+    }
+HFA
 
 ################################################################################
 # create nginx level redis cache included php config file php-rediscache.conf
@@ -449,6 +487,7 @@ server {
    deny all;
   }
 
+#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 # https://community.centminmod.com/posts/18828/
 #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
@@ -460,6 +499,9 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 
   # for wordpress super cache plugin
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+
+  # for wp cache enabler plugin
+  #try_files $cache_enabler_uri $uri $uri/ $custom_subdir/index.php?$args;
 
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
@@ -565,6 +607,7 @@ server {
    deny all;
   }
 
+#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 # https://community.centminmod.com/posts/18828/
 #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
@@ -576,6 +619,9 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 
   # for wordpress super cache plugin
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+
+  # for wp cache enabler plugin
+  #try_files $cache_enabler_uri $uri $uri/ $custom_subdir/index.php?$args;  
 
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
@@ -646,6 +692,7 @@ server {
 
   root /home/nginx/domains/$vhostname/public;
 
+  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
   include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
@@ -657,6 +704,9 @@ server {
 
   # for wordpress super cache plugin
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+
+  # for wp cache enabler plugin
+  #try_files $cache_enabler_uri $uri $uri/ $custom_subdir/index.php?$args;   
 
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
@@ -863,94 +913,151 @@ chmod 0400 readme.html
 rm -rf readme.html
 
 # installed + activated by default
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-super-cache --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-# wp plugin install wp-widget-cache --activate --allow-root
-# cecho "------------------------------------------------------------" $boldgreen
-wp plugin install autoptimize --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install rocket-lazy-load --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-security-scan --activate --allow-root
+# wp super cache
+if [[ "$cacheenabler" != [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-super-cache --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  # wp plugin install wp-widget-cache --activate --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+elif [[ "$cacheenabler" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-super-cache --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-super-cache-clear-cache-menu --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  # wp plugin install wp-widget-cache --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+fi
+
+# wp cache enabler
+if [[ "$cacheenabler" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install cache-enabler --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install optimus --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+else
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install cache-enabler --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install optimus --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
+
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install sucuri-scanner --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install disable-xml-rpc --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install limit-login-attempts --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-updates-notifier --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install no-longer-in-directory --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-# wp plugin install google-sitemap-generator --activate --allow-root
-# cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-optimize --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-# wp plugin install wp-smushit --activate --allow-root
-# cecho "------------------------------------------------------------" $boldgreen
-wp plugin install tpc-memory-usage --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install gtmetrix-for-wordpress --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install p3-profiler --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wordpress-seo --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install updraftplus --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install google-analytics-for-wordpress --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install heartbeat-control --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
 
-# installed but disabled by default
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install nginx-helper --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install query-monitor --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install go-newrelic --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install db-cache-reloaded-fix --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install google-authenticator --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install addthis-smart-layers --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install search-regex --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install disable-emojis --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-user-avatar --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install lazy-load-for-videos --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-#wp plugin install disable-xml-rpc-pingback --allow-root
-#cecho "------------------------------------------------------------" $boldgreen
+if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  wp plugin install autoptimize --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install rocket-lazy-load --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-security-scan --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install limit-login-attempts --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-updates-notifier --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install no-longer-in-directory --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  # wp plugin install google-sitemap-generator --activate --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-optimize --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  # wp plugin install wp-smushit --activate --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install tpc-memory-usage --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install gtmetrix-for-wordpress --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install p3-profiler --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wordpress-seo --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install updraftplus --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install google-analytics-for-wordpress --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install heartbeat-control --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  
+  # installed but disabled by default
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install nginx-helper --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install query-monitor --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install go-newrelic --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install db-cache-reloaded-fix --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install google-authenticator --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install addthis-smart-layers --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install search-regex --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install disable-emojis --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install wp-user-avatar --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  wp plugin install lazy-load-for-videos --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  #wp plugin install disable-xml-rpc-pingback --allow-root
+  #cecho "------------------------------------------------------------" $boldgreen
+fi # WPPLUGINS_ALL=y
+
 # update all plugins to make sure they are latest available
 wp plugin update --all --allow-root
 echo
 wp plugin status --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
-if [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then
+if [[ -f /root/.wp-cli/commands/super-cache/cli.php && "$cacheenabler" != [yY] ]]; then
   wp super-cache enable --allow-root
 fi
 
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public/wp-content/plugins/
 
 # write permissions for log
-chmod 0660 wp-content/plugins/tpc-memory-usage/logs/tpcmem.log
+if [ -f wp-content/plugins/tpc-memory-usage/logs/tpcmem.log ]; then
+  chmod 0660 wp-content/plugins/tpc-memory-usage/logs/tpcmem.log
+fi
 
 # fix tcpmem.css incorrect reference to images
-sed -i 's|(images\/|(..\/images\/|g' wp-content/plugins/tpc-memory-usage/css/tpcmem.css
+if [ -f wp-content/plugins/tpc-memory-usage/css/tpcmem.css ]; then
+  sed -i 's|(images\/|(..\/images\/|g' wp-content/plugins/tpc-memory-usage/css/tpcmem.css
+fi
 
-\cp -af wp-content/plugins/wp-super-cache/wp-cache-config-sample.php wp-content/wp-cache-config.php
-\cp -af wp-content/plugins/wp-super-cache/advanced-cache.php wp-content/advanced-cache.php
+if [[ "$cacheenabler" = [yY] ]]; then
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
+        sed -i "s|^#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|#include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+    fi
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+        sed -i "s|^#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|#include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    fi
+fi
+
+if [[ "$cacheenabler" != [yY] ]]; then
+  if [ -f wp-content/plugins/wp-super-cache/wp-cache-config-sample.php ]; then
+    \cp -af wp-content/plugins/wp-super-cache/wp-cache-config-sample.php wp-content/wp-cache-config.php
+  fi
+  if [ -f wp-content/plugins/wp-super-cache/advanced-cache.php ]; then
+    \cp -af wp-content/plugins/wp-super-cache/advanced-cache.php wp-content/advanced-cache.php
+  fi
+fi
 mkdir -p wp-content/cache/
 mkdir -p wp-content/cache/supercache/
 chown -R nginx:nginx wp-content/
@@ -978,6 +1085,7 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
 rm -rf /usr/local/nginx/conf/rediscache_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
