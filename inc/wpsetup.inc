@@ -845,7 +845,11 @@ XFF
 if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   cecho "------------------------------------------------------------" $boldgreen
-  cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
+  if [[ "$cacheenabler" = [yY] ]]; then
+    cecho "Setup Wordpress + Cache Enabler for $vhostname" $boldyellow
+  else
+    cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
+  fi
   cecho "------------------------------------------------------------" $boldgreen
 
 cd /home/nginx/domains/${vhostname}/public
@@ -1235,27 +1239,55 @@ fi
 echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
+if [[ "$cacheenabler" = [yY] ]]; then
+cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+2. Settings Menu > Cache Enabler set options and hit Save Changes
+3. Settings Menu > Optimus set options and hit Save Changes
+4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+10. WP-Optimize Menu and configure as needed
+11. Memory Usage Menu > Settings and adjust accordingly
+12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+17. Seo Menu (Yoast SEO) > configure accordingly
+18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+fi
+cecho "------------------------------------------------------------" $boldgreen
+else
 cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
 2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
 3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
    (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
-4. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
-5. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
-6. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
-7. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
-8. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
-9. WP-Optimize Menu and configure as needed
-10. Memory Usage Menu > Settings and adjust accordingly
-11. GTmetrix Menu > setup and register your GTmetrix Account and API Key
-12. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
-13. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
-14. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
-15. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
-16. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option
+4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+cecho "
+5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+10. WP-Optimize Menu and configure as needed
+11. Memory Usage Menu > Settings and adjust accordingly
+12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
 17. Seo Menu (Yoast SEO) > configure accordingly
 18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
 19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+fi
 cecho "------------------------------------------------------------" $boldgreen
+fi
 } 2>&1 | tee /tmp/setupwp.log
 cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
 rm -rf /tmp/setupwp.log
