@@ -193,6 +193,73 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
 fi
 
+if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
+  getuseragent
+  echo
+  cecho "To get Letsencrypt SSL certificate, you must already have updated intended" $boldgreen
+  cecho "domain vhost name's DNS A record to this server's IP addresss." $boldgreen
+  cecho "If top level domain, DNS A record is needed also for www. version of domain" $boldgreen
+  cecho "otherwise, Letsencrypt domain name validation will fail." $boldgreen
+  # check if entered vhostname is top level domain or a subdomain if top level, need the ssl certificate
+  # to also cover www. version of the top level domain vhostname via a multi-domain SAN LE ssl certificate
+  TOPLEVELCHECK=$(dig soa $vhostname | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//')
+  if [[ "$TOPLEVELCHECK" = "$vhostname" ]]; then
+    # top level domain
+    TOPLEVEL=y
+  elif [[ -z "$TOPLEVELCHECK" ]]; then
+    # vhost dns not setup
+    TOPLEVEL=z
+  else
+    # subdomain or non top level domain
+    TOPLEVEL=n
+  fi
+  echo
+  if [[ "$TOPLEVEL" = [yY] ]]; then
+    VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname)
+    VHOST_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname | grep -v $vhostname)
+  else
+    VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname)
+  fi
+  echo
+  if [[ "$TOPLEVEL" = [yY] ]]; then
+    cecho "$vhostname is a top level domain" $boldyellow  
+    if [ "$VHOST_ACHECK" ]; then
+      cecho "your server IP address: $CNIP" $boldyellow
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
+    else
+      cecho "your server IP address: $CNIP" $boldyellow
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
+      cecho "!! Error: missing DNS A record for $vhostname" $boldyellow
+    fi
+    if [ "$VHOST_AWWWCHECK" ]; then
+      cecho "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK" $boldyellow
+    else
+      cecho "current DNS A record IP address for www.$vhostname is: $VHOST_AWWWCHECK" $boldyellow
+      cecho "!! Error: missing DNS A record for www.$vhostname" $boldyellow
+    fi
+  elif [[ "$TOPLEVEL" = 'z' ]]; then
+    cecho "!! Error: $vhostname DNS records not found or setup properly yet or $vhostname invalid" $boldyellow
+  else
+    cecho "$vhostname is not a top level domain" $boldyellow
+    if [ "$VHOST_ACHECK" ]; then
+      cecho "your server IP address: $CNIP" $boldyellow
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
+    else
+      cecho "current DNS A record IP address for $vhostname is: $VHOST_ACHECK" $boldyellow
+      cecho "!! Error: missing DNS A record for $vhostname" $boldyellow
+    fi
+  fi
+  echo
+  read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
+  if [[ "$letabort" = [yY] ]]; then
+    exit
+  fi 
+  read -ep "Obtain Letsencrypt Free SSL certificate (90 day expiry / renew every 60 days) ? [y/n]: " levhostssl
+  if [[ "$levhostssl" = [yY] ]]; then
+    vhostssl=y
+  fi
+fi
+
 read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
@@ -1016,6 +1083,95 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
 
+# letsencrypt client webroot authentication to
+# obtain LE ssl certificate to replace selfsigned
+# SSL certificate
+if [[ "$levhostssl" = [yY] ]]; then
+  leclientsetup
+  if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
+    echo
+    cecho "obtaining Letsencrypt SSL certificate via webroot authentication..." $boldgreen
+    echo
+    if [[ "$TOPLEVEL" = [yY] ]]; then
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} certonly"
+      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} certonly
+    else
+      echo "/root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} certonly"
+      /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} certonly
+    fi
+    LECHECK=$?
+
+    if [[ "$LECHECK" = '0' ]]; then
+      # setup cronjob only if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
+      # otherwise leave original self signed SSL certificates in place
+      
+      # EMAIL and LOGGING for cron
+      echo "EMAIL=\$(awk '/email/ {print \$3}' /etc/letsencrypt/webroot.ini)" > /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "ERRORLOG=\$(tail /var/log/letsencrypt/letsencrypt.log)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "CERT=\"/etc/letsencrypt/live/\${vhostname}/cert.pem\"" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      echo "" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+
+echo "if [[ -f "\$CERT" ]]; then" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  expiry=\$(openssl x509 -enddate -noout -in \$CERT | cut -d'=' -f2 | awk '{print \$2 " " \$1 " " \$4}')" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  epochExpirydate=\$(date -d"\${expiry}" +%s)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  epochToday=\$(date +%s)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  secondsToExpire=\$(echo \${epochExpirydate} - \${epochToday} | bc)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  daysToExpire=\$(echo "\${secondsToExpire} / 60 / 60 / 24" | bc)" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+echo "  if [ "$daysToExpire" -lt '30' ]; then" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+
+      if [[ "$TOPLEVEL" = [yY] ]]; then
+        echo "    /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} -d www.${vhostname} certonly" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      else
+        echo "    /root/.local/share/letsencrypt/bin/letsencrypt -c /etc/letsencrypt/webroot.ini --user-agent $LE_USERAGENT --webroot-path /home/nginx/domains/${vhostname}/public -d ${vhostname} certonly" >> /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      fi
+      
+      # cronjob error check and email send
+cat >> "/usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron" <<CFF
+    if [ \$? -ne 0 ]; then
+        sleep 1; echo -e "The Lets Encrypt SSL Certificate for ${vhostname} has not been renewed! \n \n" \$ERRORLOG | mail -s "Lets Encrypt Cert Alert" \$EMAIL
+      else
+        /usr/bin/ngxreload
+    fi
+  fi
+fi
+exit 0
+CFF
+
+      echo
+      echo "/usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron contents:"      
+      cat /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron
+      
+      if [[ -z "$(crontab -l 2>&1 | grep 'letsencrypt-${vhostname}-cron')" ]]; then
+          # generate random number of seconds to delay cron start
+          # making sure they do not run at very same time during cron scheduling
+          echo
+          echo "setup cronjob for /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron"
+          DELAY=$(echo ${RANDOM:0:3})
+          crontab -l > cronjoblist
+          echo "10 1 */9 * * sleep ${DELAY}s ; /bin/bash /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron > /dev/null 2>&1" >> cronjoblist
+          crontab cronjoblist
+          rm -rf cronjoblist
+          crontab -l
+      fi
+  
+      # replace self signed ssl cert with letsencrypt ssl certificate and enable ssl stapling
+      # if letsencrypt webroot authentication was sUccessfully ran and SSL certificate obtained
+      # otherwise leave original self signed SSL certificates in place
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/etc\/letsencrypt\/live\/${vhostname}\/privkey.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#resolver |resolver |" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#resolver_timeout|resolver_timeout|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#ssl_stapling on|ssl_stapling on|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/etc\/letsencrypt\/live\/${vhostname}\/fullchain.pem|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+      cmservice nginx restart 
+    fi # LECHECK
+  else
+    cecho "/root/.local/share/letsencrypt/bin/letsencrypt not found" $boldgreen
+  fi  
+fi
+
 if [ -f /tmp/setupwp.log ]; then
   rm -rf /tmp/setupwp.log
 fi
@@ -1048,6 +1204,14 @@ if [[ "$vhostssl" = [yY] ]]; then
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
   cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
   cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow  
+  if [[ "$levhostssl" = [yY] ]] && [[ "$LECHECK" = '0' ]]; then
+    echo
+    cecho "Letsencrypt SSL Certificate: /etc/letsencrypt/live/${vhostname}/cert.pem" $boldyellow
+    cecho "Letsencrypt SSL Certificate Private Key: /etc/letsencrypt/live/${vhostname}/privkey.pem" $boldyellow
+    cecho "Letsencrypt SSL Certificate Chain: /etc/letsencrypt/live/${vhostname}/chain.pem" $boldyellow
+    cecho "Letsencrypt SSL Certificate Full Chain: /etc/letsencrypt/live/${vhostname}/fullchain.pem" $boldyellow
+    cecho "Letsencrypt $vhostname cronjob file: /usr/local/nginx/conf/ssl/${vhostname}/letsencrypt-${vhostname}-cron" $boldyellow
+  fi  
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
