@@ -431,22 +431,22 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
 <title>$vhostname</title>
 </head>
 <body>
-<p>Welcome to $vhostname. This index.html page can be removed.</p>
+    <p>Welcome to $vhostname. This index.html page can be removed.</p>
 
-<p>Useful Centmin Mod info and links to bookmark.</p>
+    <p>Useful Centmin Mod info and links to bookmark.</p>
 
-<ul>
-  <li>Getting Started Guide - <a href="http://centminmod.com/getstarted.html" target="_blank">http://centminmod.com/getstarted.html</a></li>
-  <li>Latest Centmin Mod version - <a href="http://centminmod.com" target="_blank">http://centminmod.com</a></li>
-  <li>Centmin Mod FAQ - <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a></li>
-  <li>Change Log - <a href="http://centminmod.com/changelog.html" target="_blank">http://centminmod.com/changelog.html</a></li>
-  <li>Google+ Page latest news <a href="http://centminmod.com/gpage" target="_blank">http://centminmod.com/gpage</a></li>
-  <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
-  <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
-  <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
-</ul>
+    <ul>
+        <li>Getting Started Guide - <a href="http://centminmod.com/getstarted.html" target="_blank">http://centminmod.com/getstarted.html</a></li>
+        <li>Latest Centmin Mod version - <a href="http://centminmod.com" target="_blank">http://centminmod.com</a></li>
+        <li>Centmin Mod FAQ - <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a></li>
+        <li>Change Log - <a href="http://centminmod.com/changelog.html" target="_blank">http://centminmod.com/changelog.html</a></li>
+        <li>Google+ Page latest news <a href="http://centminmod.com/gpage" target="_blank">http://centminmod.com/gpage</a></li>
+        <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
+        <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
+        <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
+    </ul>
 
-<p><a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Cheap VPS Hosting at Digitalocean</a></p>
+    <p><a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Cheap VPS Hosting at Digitalocean</a></p>
 
 </body>
 </html>
@@ -513,61 +513,61 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 #       }
 
 server {
-  server_name $vhostname www.$vhostname;
+    server_name $vhostname www.$vhostname;
 
-# ngx_pagespeed & ngx_pagespeed handler
-#include /usr/local/nginx/conf/pagespeed.conf;
-#include /usr/local/nginx/conf/pagespeedhandler.conf;
-#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+    # ngx_pagespeed & ngx_pagespeed handler
+    #include /usr/local/nginx/conf/pagespeed.conf;
+    #include /usr/local/nginx/conf/pagespeedhandler.conf;
+    #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
-  # limit_conn limit_per_ip 16;
-  # ssi  on;
+    # limit_conn limit_per_ip 16;
+    # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
-  error_log /home/nginx/domains/$vhostname/log/error.log;
+    access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+    error_log /home/nginx/domains/$vhostname/log/error.log;
 
-  root /home/nginx/domains/$vhostname/public;
+    root /home/nginx/domains/$vhostname/public;
 
-  # prevent access to ./directories and files
-  location ~ (?:^|/)\. {
-   deny all;
-  }
+    # prevent access to ./directories and files
+    location ~ (?:^|/)\. {
+        deny all;
+    }
 
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
+    include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 
-  location / {
+    location / {
 
-  # Enables directory listings when index file not found
-  #autoindex  on;
+        # Enables directory listings when index file not found
+        #autoindex  on;
 
-  # for wordpress super cache plugin
-  #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+        # for wordpress super cache plugin
+        #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
-  # Wordpress Permalinks
-  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+        # Wordpress Permalinks
+        try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
-  }
+    }
 
-location ~* /(wp-login\.php) {
-    limit_req zone=xwplogin burst=1 nodelay;
-    #limit_conn xwpconlimit 30;
-    auth_basic "Private";
-    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
+    location ~* /(wp-login\.php) {
+        limit_req zone=xwplogin burst=1 nodelay;
+        #limit_conn xwpconlimit 30;
+        auth_basic "Private";
+        auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;
+        include /usr/local/nginx/conf/php-wpsc.conf;
+    }
+
+    location ~* /(xmlrpc\.php) {
+        limit_req zone=xwprpc burst=45 nodelay;
+        #limit_conn xwpconlimit 30;
+        include /usr/local/nginx/conf/php-wpsc.conf;
+    }
+
+    include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
     include /usr/local/nginx/conf/php-wpsc.conf;
-}
-
-location ~* /(xmlrpc\.php) {
-    limit_req zone=xwprpc burst=45 nodelay;
-    #limit_conn xwpconlimit 30;
-    include /usr/local/nginx/conf/php-wpsc.conf;
-}
-
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
-  include /usr/local/nginx/conf/php-wpsc.conf;
-  include /usr/local/nginx/conf/staticfiles.conf;
-  include /usr/local/nginx/conf/drop.conf;
-  #include /usr/local/nginx/conf/errorpage.conf;
-  include /usr/local/nginx/conf/vts_server.conf;
+    include /usr/local/nginx/conf/staticfiles.conf;
+    include /usr/local/nginx/conf/drop.conf;
+    #include /usr/local/nginx/conf/errorpage.conf;
+    include /usr/local/nginx/conf/vts_server.conf;
 }
 ENSS
 
@@ -587,85 +587,85 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # }
 
 server {
-  listen 443 $LISTENOPT;
-  server_name $vhostname www.$vhostname;
+    listen 443 $LISTENOPT;
+    server_name $vhostname www.$vhostname;
 
-  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
-  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
-  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
-  include /usr/local/nginx/conf/ssl_include.conf;
+    ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+    ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+    ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+    include /usr/local/nginx/conf/ssl_include.conf;
 
-  # mozilla recommended
-  ssl_ciphers ${CHACHACIPHERS}ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA:!DES-CBC3-SHA;
-  ssl_prefer_server_ciphers   on;
-  $SPDY_HEADER
-  #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-  #add_header  X-Content-Type-Options "nosniff";
-  #add_header X-Frame-Options DENY;
-  $COMP_HEADER;
-  ssl_buffer_size 1400;
-  ssl_session_tickets on;
-  
-  # enable ocsp stapling
-  #resolver 8.8.8.8 8.8.4.4 valid=10m;
-  #resolver_timeout 10s;
-  #ssl_stapling on;
-  #ssl_stapling_verify on;
-  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
+    # mozilla recommended
+    ssl_ciphers ${CHACHACIPHERS}ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA:!DES-CBC3-SHA;
+    ssl_prefer_server_ciphers   on;
+    $SPDY_HEADER
+    #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+    #add_header  X-Content-Type-Options "nosniff";
+    #add_header X-Frame-Options DENY;
+    $COMP_HEADER;
+    ssl_buffer_size 1400;
+    ssl_session_tickets on;
 
-# ngx_pagespeed & ngx_pagespeed handler
-#include /usr/local/nginx/conf/pagespeed.conf;
-#include /usr/local/nginx/conf/pagespeedhandler.conf;
-#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+    # enable ocsp stapling
+    #resolver 8.8.8.8 8.8.4.4 valid=10m;
+    #resolver_timeout 10s;
+    #ssl_stapling on;
+    #ssl_stapling_verify on;
+    #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;
 
-  # limit_conn limit_per_ip 16;
-  # ssi  on;
+    # ngx_pagespeed & ngx_pagespeed handler
+    #include /usr/local/nginx/conf/pagespeed.conf;
+    #include /usr/local/nginx/conf/pagespeedhandler.conf;
+    #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
-  error_log /home/nginx/domains/$vhostname/log/error.log;
+    # limit_conn limit_per_ip 16;
+    # ssi  on;
 
-  root /home/nginx/domains/$vhostname/public;
+    access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+    error_log /home/nginx/domains/$vhostname/log/error.log;
 
-  # prevent access to ./directories and files
-  location ~ (?:^|/)\. {
-   deny all;
-  }
+    root /home/nginx/domains/$vhostname/public;
 
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
+    # prevent access to ./directories and files
+    location ~ (?:^|/)\. {
+        deny all;
+    }
 
-  location / {
+    include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 
-  # Enables directory listings when index file not found
-  #autoindex  on;
+    location / {
 
-  # for wordpress super cache plugin
-  #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+        # Enables directory listings when index file not found
+        #autoindex  on;
 
-  # Wordpress Permalinks
-  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+        # for wordpress super cache plugin
+        #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
-  }
+        # Wordpress Permalinks
+        try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
-location ~* /(wp-login\.php) {
-    limit_req zone=xwplogin burst=1 nodelay;
-    #limit_conn xwpconlimit 30;
-    auth_basic "Private";
-    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
+    }
+
+    location ~* /(wp-login\.php) {
+        limit_req zone=xwplogin burst=1 nodelay;
+        #limit_conn xwpconlimit 30;
+        auth_basic "Private";
+        auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;
+        include /usr/local/nginx/conf/php-wpsc.conf;
+    }
+
+    location ~* /(xmlrpc\.php) {
+        limit_req zone=xwprpc burst=45 nodelay;
+        #limit_conn xwpconlimit 30;
+        include /usr/local/nginx/conf/php-wpsc.conf;
+    }
+
+    include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
     include /usr/local/nginx/conf/php-wpsc.conf;
-}
-
-location ~* /(xmlrpc\.php) {
-    limit_req zone=xwprpc burst=45 nodelay;
-    #limit_conn xwpconlimit 30;
-    include /usr/local/nginx/conf/php-wpsc.conf;
-}
-
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
-  include /usr/local/nginx/conf/php-wpsc.conf;
-  include /usr/local/nginx/conf/staticfiles.conf;
-  include /usr/local/nginx/conf/drop.conf;
-  #include /usr/local/nginx/conf/errorpage.conf;
-  include /usr/local/nginx/conf/vts_server.conf;
+    include /usr/local/nginx/conf/staticfiles.conf;
+    include /usr/local/nginx/conf/drop.conf;
+    #include /usr/local/nginx/conf/errorpage.conf;
+    include /usr/local/nginx/conf/vts_server.conf;
 }
 ESS
 
@@ -685,54 +685,54 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 #       }
 
 server {
-  server_name $vhostname www.$vhostname;
+    server_name $vhostname www.$vhostname;
 
-# ngx_pagespeed & ngx_pagespeed handler
-#include /usr/local/nginx/conf/pagespeed.conf;
-#include /usr/local/nginx/conf/pagespeedhandler.conf;
-#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+    # ngx_pagespeed & ngx_pagespeed handler
+    #include /usr/local/nginx/conf/pagespeed.conf;
+    #include /usr/local/nginx/conf/pagespeedhandler.conf;
+    #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
-  # limit_conn limit_per_ip 16;
-  # ssi  on;
+    # limit_conn limit_per_ip 16;
+    # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
-  error_log /home/nginx/domains/$vhostname/log/error.log;
+    access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+    error_log /home/nginx/domains/$vhostname/log/error.log;
 
-  root /home/nginx/domains/$vhostname/public;
+    root /home/nginx/domains/$vhostname/public;
 
-  location / {
+    location / {
 
-  # Enables directory listings when index file not found
-  #autoindex  on;
+        # Enables directory listings when index file not found
+        #autoindex  on;
 
-  # for wordpress super cache plugin
-  #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+        # for wordpress super cache plugin
+        #try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
-  # Wordpress Permalinks
-  try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+        # Wordpress Permalinks
+        try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
-  }
+    }
 
-location ~* /(wp-login\.php) {
-    limit_req zone=xwplogin burst=1 nodelay;
-    #limit_conn xwpconlimit 30;
-    auth_basic "Private";
-    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
+    location ~* /(wp-login\.php) {
+        limit_req zone=xwplogin burst=1 nodelay;
+        #limit_conn xwpconlimit 30;
+        auth_basic "Private";
+        auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;
+        include /usr/local/nginx/conf/php-wpsc.conf;
+    }
+
+    location ~* /(xmlrpc\.php) {
+        limit_req zone=xwprpc burst=45 nodelay;
+        #limit_conn xwpconlimit 30;
+        include /usr/local/nginx/conf/php-wpsc.conf;
+    }
+
+    include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
     include /usr/local/nginx/conf/php-wpsc.conf;
-}
-
-location ~* /(xmlrpc\.php) {
-    limit_req zone=xwprpc burst=45 nodelay;
-    #limit_conn xwpconlimit 30;
-    include /usr/local/nginx/conf/php-wpsc.conf;
-}
-
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
-  include /usr/local/nginx/conf/php-wpsc.conf;
-  include /usr/local/nginx/conf/staticfiles.conf;
-  include /usr/local/nginx/conf/drop.conf;
-  #include /usr/local/nginx/conf/errorpage.conf;
-  include /usr/local/nginx/conf/vts_server.conf;
+    include /usr/local/nginx/conf/staticfiles.conf;
+    include /usr/local/nginx/conf/drop.conf;
+    #include /usr/local/nginx/conf/errorpage.conf;
+    include /usr/local/nginx/conf/vts_server.conf;
 }
 END
 
@@ -742,38 +742,38 @@ cat > "/usr/local/nginx/conf/wpsecure_${vhostname}.conf" <<EEF
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
 location ~* /(?:uploads|files)/.*\.php\$ {
-deny all;
+    deny all;
 }
 
 # Block PHP files in content directory.
 location ~* /wp-content/.*\.php\$ {
-  deny all;
+    deny all;
 }
 
 # Block PHP files in includes directory.
 location ~* /wp-includes/.*\.php\$ {
-  deny all;
+    deny all;
 }
 
 # Block PHP files in uploads, content, and includes directory.
 location ~* /(?:uploads|files|wp-content|wp-includes)/.*\.php\$ {
-  deny all;
+    deny all;
 }
 
 # Make sure files with the following extensions do not get loaded by nginx because nginx would display the source code, and these files can contain PASSWORDS!
 location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|theme|tpl(\.php)?|xtmpl)\$|^(\..*|Entries.*|Repository|Root|Tag|Template)\$|\.php_
 {
-return 444;
+    return 444;
 }
 
 #nocgi
 location ~* \.(pl|cgi|py|sh|lua)\$ {
-return 444;
+    return 444;
 }
 
 #disallow
 location ~* (w00tw00t) {
-return 444;
+    return 444;
 }
 
 location ~ /(\.|wp-config\.php|wp-config\.txt|readme\.html|license\.txt) { deny all; }
