@@ -501,7 +501,7 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
-  #try_files $cache_enabler_uri $uri $uri/ $custom_subdir/index.php?$args;
+  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;
 
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
@@ -621,7 +621,7 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
-  #try_files $cache_enabler_uri $uri $uri/ $custom_subdir/index.php?$args;  
+  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;  
 
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
@@ -706,7 +706,7 @@ server {
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
-  #try_files $cache_enabler_uri $uri $uri/ $custom_subdir/index.php?$args;   
+  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;   
 
   # Wordpress Permalinks
   #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
