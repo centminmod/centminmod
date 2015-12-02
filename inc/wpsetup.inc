@@ -940,7 +940,7 @@ fi
 if [[ "$cacheenabler" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install cache-enabler --activate --allow-root
-  cecho "------------------------------------------------------------" $boldgreen
+  cecho "------------------------------------------------------------" $boldgreen 
   wp plugin install optimus --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
 else
@@ -955,6 +955,8 @@ cecho "------------------------------------------------------------" $boldgreen
 wp plugin install sucuri-scanner --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install disable-xml-rpc --activate --allow-root
+cecho "------------------------------------------------------------" $boldgreen
+wp plugin install cdn-enabler --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
 if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
