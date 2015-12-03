@@ -82,7 +82,7 @@ email = foo@example.com
 # Uncomment to use a text interface instead of ncurses
 text = True
 agree-tos = True
-agree-dev-preview = True
+#agree-dev-preview = True
 renew-by-default = True
 
 authenticator = webroot
