@@ -53,9 +53,9 @@ leclientsetup() {
 		sed -i "s|--python python2|--python python2.7|" letsencrypt-auto
 	fi
 	# staging endpoint
-	LE_SERVER='https://acme-staging.api.letsencrypt.org/directory'
+	# LE_SERVER='https://acme-staging.api.letsencrypt.org/directory'
 	# live and beta invitee trusted cert endpoint
-	# LE_SERVER='https://acme-v01.api.letsencrypt.org/directory'
+	LE_SERVER='https://acme-v01.api.letsencrypt.org/directory'
 	if [ -f ./letsencrypt-auto ]; then
 		./letsencrypt-auto --agree-dev-preview --server $LE_SERVER
 	else
@@ -71,10 +71,10 @@ cat > "/etc/letsencrypt/webroot.ini" <<EOF
 rsa-key-size = 2048
 
 # Always use the staging/testing server
-server = https://acme-staging.api.letsencrypt.org/directory
+#server = https://acme-staging.api.letsencrypt.org/directory
 
 # for beta invitees
-# server = https://acme-v01.api.letsencrypt.org/directory
+server = https://acme-v01.api.letsencrypt.org/directory
 
 # Uncomment and update to register with the specified e-mail address
 email = foo@example.com
