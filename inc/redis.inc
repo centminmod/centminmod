@@ -91,7 +91,7 @@ else
     fi
     make${MAKETHREADS}
     make install
-if # php 7 or not
+fi # php 7 or not
 
 #######################################################
 # check to see if redis.so already loaded in php.ini
