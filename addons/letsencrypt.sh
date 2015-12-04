@@ -61,9 +61,10 @@ return
 ##################################################################
 
 lememstats() {
+	AVAILABLE_MEM=$(egrep '^MemFree|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
 	echo
 	cecho "----------------------------------------------------" $boldyellow
-	cecho "system memory profile: " $boldgreen
+	cecho "system memory profile: $((AVAILABLE_MEM/1024)) MB available" $boldgreen
 	cecho "----------------------------------------------------" $boldyellow
 	free -ml
 }
