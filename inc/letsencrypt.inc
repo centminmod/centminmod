@@ -130,4 +130,13 @@ EOF
 		echo
 	fi
 
+if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
+	echo
+	cecho "----------------------------------------------------" $boldyellow
+	cecho "letsencrypt client is installed at:" $boldgreen
+	cecho "/root/.local/share/letsencrypt/bin/letsencrypt" $boldgreen
+	cecho "----------------------------------------------------" $boldyellow	
+	echo
+fi	
+
 }
