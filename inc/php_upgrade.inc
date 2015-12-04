@@ -195,8 +195,21 @@ else
     echo "existing php.ini will be backed up at /usr/local/lib/php.ini-oldversion_$DT"
     echo "existing php-fpm.conf will be backed up at /usr/local/etc/php-fpm.conf-oldversion_$DT"
     echo "----------------------------------------------------------------"
-    read -ep "Update & overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
-    echo "----------------------------------------------------------------"
+
+    # only prompt for php-fpm.conf overwrite if the existing /usr/local/nginx/conf/php.conf file
+    # differs from the current centmin mod template file
+    if [[ -f /usr/local/nginx/conf/php.conf && -f "$CUR_DIR/config/nginx/php.conf" ]]; then
+        diff -u /usr/local/nginx/conf/php.conf $CUR_DIR/config/nginx/php.conf &>/dev/null
+        PHPCONF_DIFFCHECK=$?
+    else
+        PHPCONF_DIFFCHECK=1
+    fi
+    if [[ "$PHPCONF_DIFFCHECK" != '0' ]]; then
+        read -ep "Update & overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
+        echo "----------------------------------------------------------------"
+    else
+        overwritephpfpmconf=n
+    fi
     
     # switch to auto calculate system memory instead of prompting for user input
     IS_PHPLOWMEM='2097152'
