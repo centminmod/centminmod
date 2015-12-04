@@ -119,7 +119,7 @@ leclientsetup() {
 	# live and beta invitee trusted cert endpoint
 	LE_SERVER='https://acme-v01.api.letsencrypt.org/directory'
 	if [ -f ./letsencrypt-auto ]; then
-		./letsencrypt-auto --agree-dev-preview --server $LE_SERVER
+		./letsencrypt-auto --server $LE_SERVER
 	else
 		cecho "./letsencrypt-auto not found" $boldgreen
 	fi
