@@ -60,6 +60,14 @@ return
 
 ##################################################################
 
+lememstats() {
+	echo
+	cecho "----------------------------------------------------" $boldyellow
+	cecho "system memory profile: " $boldgreen
+	cecho "----------------------------------------------------" $boldyellow
+	free -ml
+}
+
 getuseragent() {
 	# build Centmin Mod's identifying letsencrypt user agent
 	# --user-agent=
@@ -87,6 +95,7 @@ leclientsetup() {
 	fi
 	# setup letsencrypt client and virtualenv
 	# https://community.centminmod.com/posts/19914/
+	lememstats
 	echo
 	cecho "installing or updating letsencrypt client" $boldgreen
 	echo
@@ -193,6 +202,7 @@ EOF
 	fi
 
 if [ -f /root/.local/share/letsencrypt/bin/letsencrypt ]; then
+	lememstats
 	echo
 	cecho "----------------------------------------------------" $boldyellow
 	cecho "letsencrypt client is installed at:" $boldgreen
