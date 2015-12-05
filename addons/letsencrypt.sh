@@ -484,7 +484,7 @@ lemsgdns() {
 deploycert() {
 	if [[ -f /etc/letsencrypt/webroot.ini && -f /root/.local/share/letsencrypt/bin/letsencrypt ]]; then
 		echo
-		read -ep "Enter the nginx vhostdomain you want to renew SSL cert for: " levhostname			
+		read -ep "Enter the nginx vhost domain you want to SSL cert setup for: " levhostname			
 		echo
 		if [[ -d "/home/nginx/domains/${levhostname}/public" && -f "/usr/local/nginx/conf/conf.d/${levhostname}.ssl.conf" ]]; then
 			lemsgdns			
@@ -684,7 +684,7 @@ fi # if levhostssl=y line 291
 renewcert() {
 	if [[ -f /etc/letsencrypt/webroot.ini && -f /root/.local/share/letsencrypt/bin/letsencrypt ]]; then
 		echo
-		read -ep "Enter the nginx vhostdomain you want to renew SSL cert for: " levhostname
+		read -ep "Enter the nginx vhost domain you want to renew SSL cert for: " levhostname
 		echo
 		if [ -f "/usr/local/nginx/conf/ssl/${levhostname}/letsencrypt-${levhostname}-cron" ]; then
 			lemsgdns			
