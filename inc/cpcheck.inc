@@ -248,6 +248,22 @@ cronpathadjust() {
 	# fi
 }
 
+xpowerby() {
+	# add x-powered-by header check
+	XPB_CHECKA=$(grep 'more_set_headers \"Server: nginx\";' /usr/local/nginx/conf/nginx.conf)
+	XPB_CHECKB=$(grep 'more_set_headers \"X-Powered-By: centminmod\";' /usr/local/nginx/conf/nginx.conf)
+	XPB_CHECKC=$(grep 'more_set_headers \"Server: nginx centminmod\";' /usr/local/nginx/conf/nginx.conf)
+	if [[ "$XPB_CHECKA" ]]; then
+		sed -i "s|^more_set_headers \"Server: nginx\";|more_set_headers \"Server: nginx\";\nmore_set_headers \"X-Powered-By: centminmod\";|" /usr/local/nginx/conf/nginx.conf
+	elif [[ -z "$XPB_CHECKB" ]]; then
+		if [[ "$XPB_CHECKC" ]]; then
+			sed -i "s|^more_set_headers \"Server: nginx centminmod\";|more_set_headers \"Server: nginx centminmod\";\nmore_set_headers \"X-Powered-By: centminmod\";|" /usr/local/nginx/conf/nginx.conf
+		else
+			sed -i "s|include \/usr\/local\/nginx\/conf\/vts_http.conf;|more_set_headers \"X-Powered-By: centminmod\";\n\ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;|" /usr/local/nginx/conf/nginx.conf
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -285,6 +301,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	pureftpdupdates
 	leupdates
 	memcachedupdatechecks
+	xpowerby
 fi
 
 }
