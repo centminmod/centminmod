@@ -203,6 +203,17 @@ if [[ "$NGINX_LEVHOSTSSL" = [yY] ]]; then
   # check if entered vhostname is top level domain or a subdomain if top level, need the ssl certificate
   # to also cover www. version of the top level domain vhostname via a multi-domain SAN LE ssl certificate
   TOPLEVELCHECK=$(dig soa $vhostname | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//')
+  # check if domain is behind Cloudflare proxies as Letsencrypt doesn't work if Cloudflare is in
+  # front of your intended domain server
+  CFCHECK=$(dig +short -t NS $vhostname | grep cloudflare.com)
+  if [[ "$CFCHECK" ]]; then
+    echo
+    cecho "!! $vhostname seems to be using Cloudflare DNS !!" $boldyellow
+    cecho "If you're using Cloudflare caching, you will" $boldyellow
+    cecho "need to temporarily disable it for Letsencrypt" $boldyellow
+    cecho "SSL validation. Note auto renewal will not work" $boldyellow
+    cecho "as Cloudflare cache would need to be disabled each time" $boldyellow
+  fi  
   if [[ "$TOPLEVELCHECK" = "$vhostname" ]]; then
     # top level domain
     TOPLEVEL=y
