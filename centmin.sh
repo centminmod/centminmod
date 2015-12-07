@@ -310,7 +310,7 @@ NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
 NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
 ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
 NGINX_HEADERSMORE='0.28'
 NGINX_CACHEPURGEVER='2.3'
@@ -419,7 +419,7 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.37'          # NO longer used/ignored
+PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.3.0RC2'   # PHP extension for imagick
