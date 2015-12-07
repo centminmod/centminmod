@@ -252,12 +252,12 @@ fi
 if [[ "$PHPMUVER" = '7.0' ]]; then
 	opcachehugepages
 elif [[ "$PHPMUVER" != '7.0' ]]; then	
-	if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
-		if [[ "$(grep 'opcache.huge_code_pages' /etc/centminmod/php.d/zendopcache.ini)" ]]; then
-			sed -i 's|^opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
-			sed -i 's|^;opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
-			sed -i 's|^opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
-			sed -i 's|^;opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini			
+	if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
+		if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+			sed -i 's|^opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+			sed -i 's|^;opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+			sed -i 's|^opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+			sed -i 's|^;opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini			
 		fi		
 	fi	
 fi

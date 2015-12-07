@@ -6,45 +6,45 @@ opcachehugepages() {
 		# cat /sys/kernel/mm/redhat_transparent_hugepage/enabled
 		HP_CHECK=$(cat /sys/kernel/mm/redhat_transparent_hugepage/enabled | grep -o '\[.*\]')
 		if [[ "$CENTOS_SIX" = '6' ]]; then
-			if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
+			if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
 				OPCACHEHUGEPAGES_OPT=''
 				echo $OPCACHEHUGEPAGES_OPT
-				if [[ "$(grep 'opcache.huge_code_pages' /etc/centminmod/php.d/zendopcache.ini)" ]]; then
-					sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
-					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
+				if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+					sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 				else
-					echo "opcache.huge_code_pages=0" >> /etc/centminmod/php.d/zendopcache.ini
+					echo "opcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
 				fi
 			fi			
 		elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
-			if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
+			if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
 				OPCACHEHUGEPAGES_OPT=' --enable-huge-code-pages'
 				echo $OPCACHEHUGEPAGES_OPT
-				if [[ "$(grep 'opcache.huge_code_pages' /etc/centminmod/php.d/zendopcache.ini)" ]]; then
-					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=1|' /etc/centminmod/php.d/zendopcache.ini
+				if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=1|' ${CONFIGSCANDIR}/zendopcache.ini
 				else
-					echo "opcache.huge_code_pages=1" >> /etc/centminmod/php.d/zendopcache.ini
+					echo "opcache.huge_code_pages=1" >> ${CONFIGSCANDIR}/zendopcache.ini
 				fi
 			fi
 		elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' ]]; then
-			if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
+			if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
 				OPCACHEHUGEPAGES_OPT=''
 				echo $OPCACHEHUGEPAGES_OPT
-				if [[ "$(grep 'opcache.huge_code_pages' /etc/centminmod/php.d/zendopcache.ini)" ]]; then
-					sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
-					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
+				if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+					sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 				else
-					echo "opcache.huge_code_pages=0" >> /etc/centminmod/php.d/zendopcache.ini
+					echo "opcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
 				fi
 			fi				
 		fi
 	else
-		if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
-			if [[ "$(grep 'opcache.huge_code_pages' /etc/centminmod/php.d/zendopcache.ini)" ]]; then
-				sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
-				sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
+		if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
+			if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+				sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+				sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 			else
-				echo "opcache.huge_code_pages=0" >> /etc/centminmod/php.d/zendopcache.ini
+				echo "opcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
 			fi		
 		fi
 	fi
