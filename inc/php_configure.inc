@@ -249,7 +249,9 @@ else
 fi
 
 # zend opcache hugepages
-opcachehugepages
+if [[ "$PHPMUVER" = '7.0' ]]; then
+	opcachehugepages
+fi
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
