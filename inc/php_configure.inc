@@ -251,6 +251,15 @@ fi
 # zend opcache hugepages
 if [[ "$PHPMUVER" = '7.0' ]]; then
 	opcachehugepages
+elif [[ "$PHPMUVER" != '7.0' ]]; then	
+	if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
+		if [[ "$(grep 'opcache.huge_code_pages' /etc/centminmod/php.d/zendopcache.ini)" ]]; then
+			sed -i 's|^opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
+			sed -i 's|^;opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
+			sed -i 's|^opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini
+			sed -i 's|^;opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' /etc/centminmod/php.d/zendopcache.ini			
+		fi		
+	fi	
 fi
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
