@@ -26,7 +26,7 @@ opcachehugepages() {
 					echo "opcache.huge_code_pages=1" >> /etc/centminmod/php.d/zendopcache.ini
 				fi
 			fi
-		if [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' ]]; then
+		elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' ]]; then
 			if [ -f /etc/centminmod/php.d/zendopcache.ini ]; then
 				OPCACHEHUGEPAGES_OPT=''
 				echo $OPCACHEHUGEPAGES_OPT
