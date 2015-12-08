@@ -506,7 +506,9 @@ SELFSIGNEDSSL_L='Los Angeles'
 SELFSIGNEDSSL_O=''
 SELFSIGNEDSSL_OU=''
 ###############################################################
-
+# letsencrypt settings
+CFCHECK_ENABLE='n'
+###############################################################
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
 if [ "${ARCH_OVERRIDE}" != '' ]
