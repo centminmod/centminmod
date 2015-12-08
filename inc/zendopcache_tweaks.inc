@@ -20,7 +20,7 @@ opcachehugepages() {
 					sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 				else
-					echo "opcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
+					echo -e "\nopcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
 				fi
 			fi			
 		elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
@@ -30,7 +30,7 @@ opcachehugepages() {
 				if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
 					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=1|' ${CONFIGSCANDIR}/zendopcache.ini
 				else
-					echo "opcache.huge_code_pages=1" >> ${CONFIGSCANDIR}/zendopcache.ini
+					echo -e "\nopcache.huge_code_pages=1" >> ${CONFIGSCANDIR}/zendopcache.ini
 				fi
 			fi
 		elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' ]]; then
@@ -41,7 +41,7 @@ opcachehugepages() {
 					sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 				else
-					echo "opcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
+					echo -e "\nopcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
 				fi
 			fi				
 		fi
@@ -51,7 +51,7 @@ opcachehugepages() {
 				sed -i 's|^opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 				sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
 			else
-				echo "opcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
+				echo -e "\nopcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
 			fi		
 		fi
 	fi
