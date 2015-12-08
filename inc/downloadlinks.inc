@@ -142,8 +142,8 @@ CENTOSSEVENATRPMS="http://dl.atrpms.net/all/${CENTOSSEVENATRPMSFILE}"
 CENTOSSEVENATRPMSLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENATRPMSFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
-# PCRELINK="ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/${PCRELINKFILE}"
-PCRELINK="http://superb-dca2.dl.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+#PCRELINK="http://superb-dca2.dl.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+PCRELINK="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 PCRELINKLOCAL="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 
 # wget renamed
