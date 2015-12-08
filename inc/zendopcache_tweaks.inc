@@ -1,4 +1,11 @@
 opcachehugepages() {
+	# check if redis installed as redis server requires huge pages disabled
+	if [[ ! "$(rpm -ql redis | grep not)" ]]; then
+		if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
+			echo never > /sys/kernel/mm/transparent_hugepage/enabled 
+		fi
+	fi
+
 	# https://www.kernel.org/doc/Documentation/vm/transhuge.txt
 	# only enable PHP zend opcache opcache.huge_code_pages=1 support if on CentOS 7.x and kernel
 	# supports transparent hugepages. Otherwise, disable it in PHP zend opcache
