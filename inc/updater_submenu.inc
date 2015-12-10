@@ -98,6 +98,12 @@ source "${CM_INSTALLDIR}/inc/ffmpeginstall.inc"
 source "${CM_INSTALLDIR}/inc/shortcuts_install.inc"
 source "${CM_INSTALLDIR}/inc/memcacheadmin.inc"
 source "${CM_INSTALLDIR}/inc/mysqlsecure.inc"
+if [ -f "${CM_INSTALLDIR}/inc/letsencrypt.inc" ]; then
+	source "${CM_INSTALLDIR}/inc/letsencrypt.inc"
+fi
+# if [ -f "${CM_INSTALLDIR}/addons/letsencrypt.sh" ]; then
+# 	source "${CM_INSTALLDIR}/addons/letsencrypt.sh"
+# fi
 source "${CM_INSTALLDIR}/inc/updater_submenu.inc"
 source "${CM_INSTALLDIR}/inc/centminfinish.inc"
 
