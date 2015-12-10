@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.3'
+VER='0.0.4'
 ######################################################
 # ruby, rubygem, rails and passenger installer
 # for Centminmod.com
@@ -8,7 +8,7 @@ VER='0.0.3'
 RUBYVER='2.2.3'
 RUBYBUILD=''
 
-NODEJSVER='4.1.1'
+NODEJSVER='4.2.3'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
