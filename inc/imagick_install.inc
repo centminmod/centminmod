@@ -24,7 +24,7 @@ php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
-if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
     if [[ -d "imagick-php7" && -d "imagick-php7/.git" ]]; then       
         cd imagick-php7
         git stash
