@@ -1,6 +1,120 @@
 #######################################################################################
 # Centmin Mod code updater sub menu
 #######################################################################################
+re_sourcefiles() {
+source "${CM_INSTALLDIR}/centmin.sh"
+source "${CM_INSTALLDIR}/inc/customrpms.inc"
+source "${CM_INSTALLDIR}/inc/pureftpd.inc"
+source "${CM_INSTALLDIR}/inc/htpasswdsh.inc"
+source "${CM_INSTALLDIR}/inc/gcc.inc"
+source "${CM_INSTALLDIR}/inc/entropy.inc"
+source "${CM_INSTALLDIR}/inc/cpucount.inc"
+source "${CM_INSTALLDIR}/inc/motd.inc"
+source "${CM_INSTALLDIR}/inc/cpcheck.inc"
+source "${CM_INSTALLDIR}/inc/memcheck.inc"
+source "${CM_INSTALLDIR}/inc/ccache.inc"
+source "${CM_INSTALLDIR}/inc/bookmark.inc"
+source "${CM_INSTALLDIR}/inc/centminlogs.inc"
+source "${CM_INSTALLDIR}/inc/yumskip.inc"
+source "${CM_INSTALLDIR}/inc/questions.inc"
+source "${CM_INSTALLDIR}/inc/downloads_centosfive.inc"
+source "${CM_INSTALLDIR}/inc/downloads_centossix.inc"
+source "${CM_INSTALLDIR}/inc/downloads_centosseven.inc"
+source "${CM_INSTALLDIR}/inc/downloadlinks.inc"
+source "${CM_INSTALLDIR}/inc/downloads.inc"
+source "${CM_INSTALLDIR}/inc/yumpriorities.inc"
+source "${CM_INSTALLDIR}/inc/yuminstall.inc"
+source "${CM_INSTALLDIR}/inc/centoscheck.inc"
+source "${CM_INSTALLDIR}/inc/axelsetup.inc"
+source "${CM_INSTALLDIR}/inc/phpfpmdir.inc"
+source "${CM_INSTALLDIR}/inc/nginx_backup.inc"
+source "${CM_INSTALLDIR}/inc/nsd_install.inc"
+source "${CM_INSTALLDIR}/inc/nsdsetup.inc"
+source "${CM_INSTALLDIR}/inc/nsd_reinstall.inc"
+source "${CM_INSTALLDIR}/inc/logrotate_nginx.inc"
+source "${CM_INSTALLDIR}/inc/logrotate_phpfpm.inc"
+source "${CM_INSTALLDIR}/inc/nginx_mimetype.inc"
+source "${CM_INSTALLDIR}/inc/openssl_install.inc"
+source "${CM_INSTALLDIR}/inc/brotli.inc"
+source "${CM_INSTALLDIR}/inc/nginx_configure.inc"
+source "${CM_INSTALLDIR}/inc/geoip.inc"
+source "${CM_INSTALLDIR}/inc/luajit.inc"
+source "${CM_INSTALLDIR}/inc/nginx_patch.inc"
+source "${CM_INSTALLDIR}/inc/nginx_install.inc"
+source "${CM_INSTALLDIR}/inc/nginx_upgrade.inc"
+source "${CM_INSTALLDIR}/inc/imagick_install.inc"
+source "${CM_INSTALLDIR}/inc/memcached_install.inc"
+source "${CM_INSTALLDIR}/inc/redis.inc"
+source "${CM_INSTALLDIR}/inc/mongodb.inc"
+source "${CM_INSTALLDIR}/inc/mysql_proclimit.inc"
+source "${CM_INSTALLDIR}/inc/mysqltmp.inc"
+source "${CM_INSTALLDIR}/inc/setmycnf.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_install.inc"
+source "${CM_INSTALLDIR}/inc/mysql_install.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_submenu.inc"
+source "${CM_INSTALLDIR}/inc/postgresql.inc"
+if [ -f "${CM_INSTALLDIR}/inc/zendopcache_tweaks.inc" ]; then
+	source "${CM_INSTALLDIR}/inc/zendopcache_tweaks.inc"
+fi
+source "${CM_INSTALLDIR}/inc/php_configure.inc"
+source "${CM_INSTALLDIR}/inc/phpng_download.inc"
+source "${CM_INSTALLDIR}/inc/php_upgrade.inc"
+source "${CM_INSTALLDIR}/inc/suhosin_setup.inc"
+source "${CM_INSTALLDIR}/inc/nginx_pagespeed.inc"
+source "${CM_INSTALLDIR}/inc/nginx_modules.inc"
+source "${CM_INSTALLDIR}/inc/nginx_modules_openresty.inc"
+source "${CM_INSTALLDIR}/inc/sshd.inc"
+source "${CM_INSTALLDIR}/inc/openvz_stack.inc"
+source "${CM_INSTALLDIR}/inc/siegeinstall.inc"
+source "${CM_INSTALLDIR}/inc/python_install.inc"
+source "${CM_INSTALLDIR}/inc/nginx_addvhost.inc"
+source "${CM_INSTALLDIR}/inc/wpsetup.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_upgrade.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_upgrade53.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_upgrade55.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_upgrade10.inc"
+source "${CM_INSTALLDIR}/inc/mariadb_upgrade101.inc"
+source "${CM_INSTALLDIR}/inc/nginx_errorpage.inc"
+source "${CM_INSTALLDIR}/inc/sendmail.inc"
+source "${CM_INSTALLDIR}/inc/postfix.inc"
+source "${CM_INSTALLDIR}/inc/compress.inc"
+source "${CM_INSTALLDIR}/inc/diskalert.inc"
+source "${CM_INSTALLDIR}/inc/phpsededit.inc"
+source "${CM_INSTALLDIR}/inc/csfinstall.inc"
+source "${CM_INSTALLDIR}/inc/csftweaks.inc"
+source "${CM_INSTALLDIR}/inc/xcache_installask.inc"
+source "${CM_INSTALLDIR}/inc/xcache_install.inc"
+source "${CM_INSTALLDIR}/inc/xcache_reinstall.inc"
+source "${CM_INSTALLDIR}/inc/igbinary.inc"
+source "${CM_INSTALLDIR}/inc/apcprotect.inc"
+source "${CM_INSTALLDIR}/inc/apcinstall.inc"
+source "${CM_INSTALLDIR}/inc/apcreinstall.inc"
+source "${CM_INSTALLDIR}/inc/zendopcache_55ini.inc"
+source "${CM_INSTALLDIR}/inc/zendopcache_install.inc"
+source "${CM_INSTALLDIR}/inc/zendopcache_upgrade.inc"
+source "${CM_INSTALLDIR}/inc/zendopcache_reinstall.inc"
+source "${CM_INSTALLDIR}/inc/zendopcache_submenu.inc"
+source "${CM_INSTALLDIR}/inc/ffmpeginstall.inc"
+source "${CM_INSTALLDIR}/inc/shortcuts_install.inc"
+source "${CM_INSTALLDIR}/inc/memcacheadmin.inc"
+source "${CM_INSTALLDIR}/inc/mysqlsecure.inc"
+source "${CM_INSTALLDIR}/inc/updater_submenu.inc"
+source "${CM_INSTALLDIR}/inc/centminfinish.inc"
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/z_custom.inc"
+fi
+}
+
 updatersubmenu() {
 
 while :
@@ -45,6 +159,7 @@ centminlog
 	cd centminmod
 	git checkout -f ${branchname}
 	chmod +x centmin.sh
+	re_sourcefiles
 	
 	echo
 	cecho "list all available local branches" $boldyellow
@@ -89,6 +204,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	git stash
 	git pull
 	chmod +x centmin.sh
+	re_sourcefiles
 
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
@@ -119,7 +235,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	for k in `git branch -r|sed s/^..//`;do echo -e `git log -1 --pretty=format:"%Cgreen%ci %Cblue%cr%Creset" "$k" 2>/dev/null`\\t"$k";done| sed -e 's|origin\/||g' -e '/HEAD/d' | sort -r
 	
 	echo
-	read -ep "Enter the branch name you want to switch to i.e. 123.08beta03 : " branchname
+	read -ep "Enter the branch name you want to switch to i.e. 123.09beta01 : " branchname
 	echo
 
 	if [ ! "$(git branch -r | grep "${branchname}$")" ]; then
@@ -142,6 +258,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		cd centminmod 2>/dev/null
 		git checkout -f ${branchname}
 		chmod +x centmin.sh
+		re_sourcefiles
 		
 		echo
 		cecho "list all available local branches" $boldyellow
