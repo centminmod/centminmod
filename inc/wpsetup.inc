@@ -157,6 +157,26 @@ PUREGROUP=nginx
 CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 pureftpinstall
 
+# Support secondary dedicated IP configuration for centmin mod
+# nginx vhost generator, so out of the box, new nginx vhosts 
+# generated will use the defined SECOND_IP=111.222.333.444 where
+# the IP is a secondary IP addressed added to the server.
+# You define SECOND_IP variable is centmin mod persistent config
+# file outlined at http://centminmod.com/upgrade.html#persistent
+# you manually creat the file at /etc/centminmod/custom_config.inc
+# and add SECOND_IP=yoursecondary_IPaddress variable to it which
+# will be registered with nginx vhost generator routine so that 
+# any new nginx vhosts created via centmin.sh menu option 2 or
+# /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
+# SECOND_IP ip address set in the nginx vhost's listen directive
+if [[ -z "$SECOND_IP" ]]; then
+  DEDI_IP=""
+  DEDI_LISTEN=""
+elif [[ "$SECOND_IP" ]]; then
+  DEDI_IP=$(echo $(echo ${SECOND_IP}:))
+  DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+
 wpinstall
   WPSALT=$(openssl rand -base64 18 | cut -c1-18 | sed -e 's|/||' -e 's|+||')
   WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e 's|/||' -e 's|+||')
@@ -461,12 +481,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -557,7 +578,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # }
 
 server {
-  listen 443 $LISTENOPT;
+  listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -671,12 +692,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
