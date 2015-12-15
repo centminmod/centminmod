@@ -1,30 +1,32 @@
 function checkcentosver {
 
-VERCOMPARE=`expr $CENTOSVER \> $TESTEDCENTOSVER`
-
-if [[ "$VERCOMPARE" = "1"  ]]; then
-
-	echo "-----------------------------------------------------"
-        echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
-        echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
-        echo "No guarantee 100% working install with your CentOS $CENTOSVER"
-	echo "-----------------------------------------------------"
-        echo ""
-        read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
-
-        if [[ "$centoscheckcont" != [yY] ]]; then
-
-        echo ""
-        echo "Regularly check centminmod.com for news on new CentOS versions support"
-        echo "aborting script..."
-        exit
-
-        fi
-
-else
-
-        centoscheckcont='y'
-
+if [[ "$INITIALINSTALL" = [yY] ]]; then
+    VERCOMPARE=`expr $CENTOSVER \> $TESTEDCENTOSVER`
+    
+    if [[ "$VERCOMPARE" = "1"  ]]; then
+    
+	   echo "-----------------------------------------------------"
+            echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
+            echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
+            echo "No guarantee 100% working install with your CentOS $CENTOSVER"
+	   echo "-----------------------------------------------------"
+            echo ""
+            read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
+    
+            if [[ "$centoscheckcont" != [yY] ]]; then
+    
+            echo ""
+            echo "Regularly check centminmod.com for news on new CentOS versions support"
+            echo "aborting script..."
+            exit
+    
+            fi
+    
+    else
+    
+            centoscheckcont='y'
+    
+    fi
 fi
 
 if [ ! -f /etc/ld.so.preload ]; then
