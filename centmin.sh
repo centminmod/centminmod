@@ -122,7 +122,7 @@ echo "aborting script..."
 exit
 fi
 
-TESTEDCENTOSVER='7.1'
+TESTEDCENTOSVER='7.9'
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
