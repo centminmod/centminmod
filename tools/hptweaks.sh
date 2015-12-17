@@ -20,7 +20,7 @@ if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]];
 fi
 
 	# check if redis installed as redis server requires huge pages disabled
-	if [[ ! "$(rpm -ql redis | grep not)" ]]; then
+	if [[ "$(rpm -ql redis | grep -o not)" != 'not' ]]; then
 		if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
 			echo never > /sys/kernel/mm/transparent_hugepage/enabled 
 		fi
