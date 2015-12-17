@@ -28,6 +28,9 @@ fi
 
 if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
 	HP_CHECK=$(cat /sys/kernel/mm/redhat_transparent_hugepage/enabled | grep -o '\[.*\]')
+fi
+
+if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
 	if [[ "$CENTOS_SIX" = '6' && "$HP_CHECK" = '[always]' ]]; then
 		FREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
 		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16))
