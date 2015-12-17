@@ -867,10 +867,10 @@ echo "Centmin Mod secure /tmp # `date`"
 
 # centos 7 + openvz /tmp workaround
 if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
+    echo "CentOS 7 Setup /tmp"
+    echo "CentOS 7 + OpenVZ virtualisation detected"
+    systemctl is-enabled tmp.mount
 
-echo "CentOS 7 Setup /tmp"
-echo "CentOS 7 + OpenVZ virtualisation detected"
-systemctl is-enabled tmp.mount
 ## leave CentOS 7 + OpenVZ systems /tmp mounted on disk in ##
 ## partition / ##
 # systemctl enable tmp.mount
@@ -891,7 +891,10 @@ systemctl is-enabled tmp.mount
 # rm -rf /var/tmp
 # ln -s /tmp /var/tmp
 # mount -o remount /tmp
-
+elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
+    echo "CentOS 7 Setup /tmp"
+    echo "CentOS 7 + non-OpenVZ virtualisation detected"
+    systemctl is-enabled tmp.mount
 elif [[ ! -f /proc/user_beancounters ]]; then
 
     # TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
