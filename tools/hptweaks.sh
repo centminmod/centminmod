@@ -19,6 +19,13 @@ if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]];
     CENTOS_SIX='6'
 fi
 
+	# check if redis installed as redis server requires huge pages disabled
+	if [[ ! "$(rpm -ql redis | grep not)" ]]; then
+		if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
+			echo never > /sys/kernel/mm/transparent_hugepage/enabled 
+		fi
+	fi
+
 if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
 	HP_CHECK=$(cat /sys/kernel/mm/redhat_transparent_hugepage/enabled | grep -o '\[.*\]')
 	if [[ "$CENTOS_SIX" = '6' && "$HP_CHECK" = '[always]' ]]; then
