@@ -66,9 +66,14 @@ if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
 		cat /etc/security/limits.conf
 		echo
 	fi
+elif [[ "$HP_CHECK" = '[never]' ]]; then
+	echo
+	echo "transparent huge pages not enabled"
+	echo "no tweaks needed"
+	echo	
 else
 	echo
-	echo "transparent huge pages not enabled or supported"
+	echo "transparent huge pages not supported"
 	echo "no tweaks needed"
 	echo
 fi
