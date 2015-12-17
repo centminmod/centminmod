@@ -45,8 +45,10 @@ if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
 		echo "set vm.nr.hugepages in /etc/sysctl.conf"
 		if [[ -z "$(grep '^vm.nr_hugepages' /etc/sysctl.conf)" ]]; then
 			echo "vm.nr_hugepages=$NRHUGEPAGES_COUNT" >> /etc/sysctl.conf
+			sysctl -p
 		else
 			sed -i "s|vm.nr_hugepages=.*|vm.nr_hugepages=$NRHUGEPAGES_COUNT|" /etc/sysctl.conf
+			sysctl -p
 		fi
 		echo
 		echo "set system max locked memory limit"
