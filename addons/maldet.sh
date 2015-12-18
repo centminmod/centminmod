@@ -132,6 +132,8 @@ echo ""
 	# enable auto quarantine of malware hits
 	sed -i 's/quar_hits=0/quar_hits=1/g' /usr/local/maldetect/conf.maldet
 	sed -i 's/quar_hits=\"0\"/quar_hits=\"1\"/g' /usr/local/maldetect/conf.maldet
+	sed -i 's/quarantine_hits=0/quarantine_hits=1/g' /usr/local/maldetect/conf.maldet
+	sed -i 's/quarantine_hits=\"0\"/quarantine_hits=\"1\"/g' /usr/local/maldetect/conf.maldet	
 
 	# append Centmin Mod specific scan paths into cron.daily/malet
 	sed -i '/\/home?\/?\/public_html/ a\                \/usr\/local\/maldetect\/maldet -b -r \/home\/nginx\/domains\/?\/public 2 >> \/dev\/null 2>&1' /etc/cron.daily/maldet
