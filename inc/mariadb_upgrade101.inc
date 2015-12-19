@@ -544,6 +544,22 @@ fi
 
 # sed -i 's/innodb_doublewrite = 1/#innodb_doublewrite = 1/g' /etc/my.cnf
 # sed -i 's/innodb_doublewrite=1/#innodb_doublewrite=1/g' /etc/my.cnf
+
+# mariadb 10.1 systemd changes https://community.centminmod.com/posts/22696/
+if [[ "$CENTOS_SEVEN" = '7' ]] ; then
+    if [ -f /etc/systemd/system/mariadb.service.d/migrated-from-my.cnf-settings.conf ]; then
+        rm -rf /etc/systemd/system/mariadb.service.d/migrated-from-my.cnf-settings.conf
+cat > "/etc/systemd/system/mariadb.service.d/mdb101.conf" <<EFF
+[Service]
+OOMScoreAdjust=-600
+LimitNOFILE=262144
+LimitNPROC=16384
+Nice=-5
+EFF
+    systemctl daemon-reload
+    fi
+fi
+
 cmservice mysql restart
 cmchkconfig mariadb on
 
