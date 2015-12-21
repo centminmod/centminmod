@@ -1238,7 +1238,7 @@ else
 echo ""
 	fi
 
-if [[ "$PARALLEL_MODE" = [yY] ]]; then
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   ngxmoduletarball &
   openrestytarball &
   wait
@@ -2753,7 +2753,7 @@ ccacheinstall
 
 nginxtarball
 
-if [[ "$PARALLEL_MODE" = [yY] ]]; then
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   csftarball &
   pythontarball &
   wait
@@ -2762,7 +2762,7 @@ else
   pythontarball
 fi
 
-if [[ "$PARALLEL_MODE" = [yY] ]]; then
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   phptarball &
   xcachetarball &
   apctarball &
@@ -2775,7 +2775,7 @@ else
   zopcachetarball
 fi
 
-if [[ "$PARALLEL_MODE" = [yY] ]]; then
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   memcachetarball &
   imagickphpexttarball &
   redisphptarball &
@@ -2788,7 +2788,7 @@ else
   mongodbphptarball
 fi
 
-if [[ "$PARALLEL_MODE" = [yY] ]]; then
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   gperftools &
   openssldownload &
   libressldownload &
@@ -2801,7 +2801,7 @@ else
   pcretarball
 fi
 
-if [[ "$PARALLEL_MODE" = [yY] ]]; then
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   siegetarball &
   mysqltools &
   nsdtarball &
