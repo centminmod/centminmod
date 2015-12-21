@@ -331,7 +331,7 @@ LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGIT
 
 ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
 ORESTY_LUANGINXVER='0.9.20'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
-ORESTY_LUAGITVER='2.1-20151219' # luagit http://luajit.org/
+ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
 ORESTY_LUAREDISVER='0.21'       # openresty https://github.com/openresty/lua-resty-redis
