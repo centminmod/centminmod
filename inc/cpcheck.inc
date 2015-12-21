@@ -28,11 +28,13 @@ selinxcheck() {
 }
 
 blockeditorcheck() {
+	if [ -f /usr/local/nginx/conf/drop.conf ]; then
 	if [[ -z "$(grep 17234 /usr/local/nginx/conf/drop.conf)" ]]; then
 		if [ -f "${SCRIPT_DIR}/config/nginx/drop.conf" ]; then
 		rm -rf /usr/local/nginx/conf/drop.conf
 		\cp -f ${SCRIPT_DIR}/config/nginx/drop.conf /usr/local/nginx/conf/drop.conf
 		fi
+	fi
 	fi
 }
 
@@ -149,6 +151,7 @@ mjemalloc() {
 }
 
 fixlogrotate() {
+	if [ -f /etc/logrotate.d/nginx ]; then
 	if [ -z "$(grep '\$' /etc/logrotate.d/nginx)" ]; then
 		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
 cat > "/etc/logrotate.d/nginx" <<END
@@ -167,7 +170,9 @@ cat > "/etc/logrotate.d/nginx" <<END
 }
 END
 	fi
+	fi
 
+	if [ -f /etc/logrotate.d/php-fpm ]; then
 	if [ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" ]; then
 		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/var\/run\/php-fpm\/php-fpm.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/php-fpm
 cat > "/etc/logrotate.d/php-fpm" <<END
@@ -185,6 +190,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         endscript            
 }
 END
+	fi
 	fi
 }
 
@@ -217,15 +223,18 @@ pureftpdupdates() {
 
 leupdates() {
 	# update .well-known content-type
+	if [ -f /usr/local/nginx/conf/staticfiles.conf ]; then
 	CHECKCONTENTTYPE=$(grep 'application\/jose+json' /usr/local/nginx/conf/staticfiles.conf)
 	if [ "$CHECKCONTENTTYPE" ]; then
 		sed -i "s|application\/jose+json|text\/plain|" /usr/local/nginx/conf/staticfiles.conf
+	fi
 	fi
 }
 
 memcachedupdatechecks() {
 	# 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		if [ -f /etc/init.d/memcached ]; then
 		if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
 			if [[ -f /usr/local/src/centminmod/config/memcached/memcached1425.patch && -f /etc/init.d/memcached ]]; then
 				\cp -f /usr/local/src/centminmod/config/memcached/memcached1425.patch /etc/init.d/memcached1425.patch
@@ -233,6 +242,7 @@ memcachedupdatechecks() {
 				patch -s < memcached1425.patch
 				rm -rf memcached1425.patch
 			fi
+		fi
 		fi
 	fi
 }
@@ -250,6 +260,7 @@ cronpathadjust() {
 
 xpowerby() {
 	# add x-powered-by header check
+	if [ -f /usr/local/nginx/conf/nginx.conf ]; then
 	XPB_CHECKA=$(grep 'more_set_headers \"Server: nginx\";' /usr/local/nginx/conf/nginx.conf)
 	XPB_CHECKB=$(grep 'more_set_headers \"X-Powered-By: centminmod\";' /usr/local/nginx/conf/nginx.conf)
 	XPB_CHECKC=$(grep 'more_set_headers \"Server: nginx centminmod\";' /usr/local/nginx/conf/nginx.conf)
@@ -261,6 +272,7 @@ xpowerby() {
 		else
 			sed -i "s|include \/usr\/local\/nginx\/conf\/vts_http.conf;|more_set_headers \"X-Powered-By: centminmod\";\n\ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;|" /usr/local/nginx/conf/nginx.conf
 		fi
+	fi
 	fi
 }
 
