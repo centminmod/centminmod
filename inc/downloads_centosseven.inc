@@ -108,6 +108,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
   if [ -s "${CENTOSSEVENREMIFILE}" ]; then
     echo "${CENTOSSEVENREMIFILE} [found]"
+    rpm --import http://rpms.remirepo.net/RPM-GPG-KEY-remi
     rpm -ivh --nosignature ${CENTOSSEVENREMIFILE}
     ERR=$?
     CCREMICHECK="$ERR"
@@ -130,6 +131,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     # exit #$ERROR
   else 
     cecho "Download done." $boldyellow
+    rpm --import http://rpms.remirepo.net/RPM-GPG-KEY-remi
     rpm -ivh --nosignature ${CENTOSSEVENREMIFILE}
     ERR=$?
     CCREMICHECK="$ERR"
