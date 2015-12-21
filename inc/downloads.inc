@@ -1238,8 +1238,14 @@ else
 echo ""
 	fi
 
-ngxmoduletarball
-openrestytarball
+if [[ "$PARALLEL_MODE" = [yY] ]]; then
+  ngxmoduletarball &
+  openrestytarball &
+  wait
+else
+  ngxmoduletarball
+  openrestytarball
+fi
 
 fi # NGINX INSTALL
 
@@ -2743,46 +2749,70 @@ if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; 
     # echo ${CM_INSTALLDIR}    
 
 ccachetarball
-
 ccacheinstall
-
-csftarball
-
-siegetarball
-
-pythontarball
 
 nginxtarball
 
-phptarball
+if [[ "$PARALLEL_MODE" = [yY] ]]; then
+  csftarball &
+  pythontarball &
+  wait
+else
+  csftarball
+  pythontarball
+fi
 
-xcachetarball
+if [[ "$PARALLEL_MODE" = [yY] ]]; then
+  phptarball &
+  xcachetarball &
+  apctarball &
+  zopcachetarball &
+  wait
+else
+  phptarball
+  xcachetarball
+  apctarball
+  zopcachetarball
+fi
 
-apctarball
+if [[ "$PARALLEL_MODE" = [yY] ]]; then
+  memcachetarball &
+  imagickphpexttarball &
+  redisphptarball &
+  mongodbphptarball &
+  wait
+else
+  memcachetarball
+  imagickphpexttarball
+  redisphptarball
+  mongodbphptarball
+fi
 
-zopcachetarball
+if [[ "$PARALLEL_MODE" = [yY] ]]; then
+  gperftools &
+  openssldownload &
+  libressldownload &
+  pcretarball &
+  wait
+else
+  gperftools
+  openssldownload
+  libressldownload
+  pcretarball
+fi
 
-memcachetarball
-
-imagickphpexttarball
-
-redisphptarball
-
-mongodbphptarball
-
-gperftools
-
-openssldownload
-
-libressldownload
-
-pcretarball
-
-mysqltools
-
-nsdtarball
-
-mariadbrpms
+if [[ "$PARALLEL_MODE" = [yY] ]]; then
+  siegetarball &
+  mysqltools &
+  nsdtarball &
+  mariadbrpms &
+  wait
+else
+  siegetarball
+  mysqltools
+  nsdtarball
+  mariadbrpms
+fi
 
 #mariadbyumrepo
 

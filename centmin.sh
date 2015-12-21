@@ -250,6 +250,9 @@ CCACHE_VER="3.2.4"
 CCACHESIZE='2.2G'
 
 #####################################################
+# experimental use of subshells to download some
+# tarballs in parallel for faster initial installs
+PARALLEL_MODE=y
 # compiler related
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_PHP='n'                 # PHP
