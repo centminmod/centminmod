@@ -27,6 +27,34 @@ selinxcheck() {
 	fi
 }
 
+rclocalchecks() {
+	if [ ! -x /etc/rc.d/rc.local ]; then
+		# centos 7 doesn't give rc.local executable permissions
+		# so /etc/rc.local isn't run on reboots like on centos 6
+		ls -lah /etc/rc.d/rc.local
+		chmod +x /etc/rc.d/rc.local
+		ls -lah /etc/rc.d/rc.local
+	fi
+}
+
+kernelchecks() {
+	if [[ "$(uname -r | cut -d . -f1)" = '4' ]]; then
+		echo "linux 4.x kernel related adjustments"
+		echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
+		cat /proc/sys/net/netfilter/nf_conntrack_helper
+		echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper
+		if [[ -z "$(grep 'nf_conntrack_helper' /etc/sysctl.conf)" ]]; then
+			echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
+			sysctl -p
+		fi
+		if [[ -z "$(grep 'nf_conntrack_helper' /etc/rc.local)" ]]; then
+			echo "echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper" >> /etc/rc.local
+		fi		
+		echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
+		cat /proc/sys/net/netfilter/nf_conntrack_helper		
+	fi
+}
+
 blockeditorcheck() {
 	if [ -f /usr/local/nginx/conf/drop.conf ]; then
 	if [[ -z "$(grep 17234 /usr/local/nginx/conf/drop.conf)" ]]; then
@@ -300,6 +328,8 @@ cronpathadjust
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
+	rclocalchecks
+	kernelchecks
 	centaltoff
 	csfipsetcheck
 	checkaliases
