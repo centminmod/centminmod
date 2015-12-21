@@ -325,6 +325,8 @@ exit
 fi
 
 cronpathadjust
+rclocalchecks
+kernelchecks
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
