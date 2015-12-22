@@ -163,7 +163,9 @@ wpinstall
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
+  WPADMINUSER=$(echo $WPADMINUSER | sed -e 's|\/||g')
   WPADMINPASS="z${WPSALTB}wps${WPN}"
+  WPADMINPASS=$(echo $WPADMINPASS | sed -e 's|\/||g')
  
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
@@ -273,7 +275,9 @@ if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostnam
   HTWPLOGIN=$RANDOM
   HTWPLOGINB=$RANDOM
   HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
+  HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
   HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
+  HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
   echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
   /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
 fi
