@@ -1932,7 +1932,7 @@ EOF
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log
         echo "Total Nginx Upgrade Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log
-        tail -1 "/root/centminlogs/$(ls -Art ${CENTMINLOGDIR}/ | grep 'nginx_upgrade.log' | tail -1)"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'nginx_upgrade.log' | tail -1)"
         
         ;;
         5|phpupgrade)
@@ -1968,7 +1968,7 @@ EOF
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log
         echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log
-        tail -1 "/root/centminlogs/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
         6|xcachereinstall)
@@ -2266,7 +2266,7 @@ EOF
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
         echo "Total Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
-        tail -1 "/root/centminlogs/$(ls -Art ${CENTMINLOGDIR}/ | grep 'update_all.log' | tail -1)"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'update_all.log' | tail -1)"
 
         ;;
         22|addwpvhost)
