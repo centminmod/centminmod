@@ -153,9 +153,17 @@ fi
 
 cecho "Check for missing nginx modules" $boldyellow
 if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -d "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]]; then
-ngxmoduletarball
-openssldownload
-libressldownload
+
+    if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
+        ngxmoduletarball &
+        openssldownload &
+        libressldownload &
+        wait
+    else
+        ngxmoduletarball
+        openssldownload
+        libressldownload
+    fi
 fi
 
 if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
