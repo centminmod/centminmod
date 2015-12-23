@@ -9,6 +9,9 @@ if [ "$IGBINARYGIT" == 'y' ]; then
     echo $PHPSEVEN_CHECKVER
 
     if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+        # php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
+        # disable it for now
+        DISABLESESSION=y
         if [[ -d "igbinary-php7" && -d "igbinary-php7/.git" ]]; then       
             cd igbinary-php7
             git stash
@@ -16,10 +19,10 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             git log -3
         elif [[ -d "igbinary-php7" && ! -d "igbinary-php7/.git" ]]; then
             rm -rf igbinary-php7
-            git clone -b php7-dev https://github.com/igbinary/igbinary.git igbinary-php7
+            git clone https://github.com/igbinary/igbinary7.git igbinary-php7
         else
             rm -rf igbinary-php7
-            git clone -b php7-dev https://github.com/igbinary/igbinary.git igbinary-php7
+            git clone https://github.com/igbinary/igbinary7.git igbinary-php7
         fi
         echo
         echo "compiling igbinary PHP extension for PHP 7.x ..."
@@ -123,8 +126,14 @@ fi # IGBINARY_INSTALL = y
 
 APCSOCHECK=`grep 'extension=apc.so' ${CONFIGSCANDIR}/apc.ini`
 
-if [[ $APCSOCHECK ]]; then
-sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
+if [[ "$APCSOCHECK" ]]; then
+    sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
+fi
+
+if [[ "$DISABLESESSION" = [yY] ]]; then
+# php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
+# disable it for now
+    sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' ${CONFIGSCANDIR}/igbinary.ini
 fi
 
 cmservice php-fpm reload
