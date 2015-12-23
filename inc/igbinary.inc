@@ -13,10 +13,8 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         # disable it for now
         DISABLESESSION=y
         if [[ -d "igbinary-php7" && -d "igbinary-php7/.git" ]]; then       
-            cd igbinary-php7
-            git stash
-            git pull
-            git log -3
+            rm -rf igbinary-php7
+            git clone https://github.com/igbinary/igbinary7.git igbinary-php7
         elif [[ -d "igbinary-php7" && ! -d "igbinary-php7/.git" ]]; then
             rm -rf igbinary-php7
             git clone https://github.com/igbinary/igbinary7.git igbinary-php7
