@@ -32,6 +32,7 @@ DIR_TMP='/svr-setup'
 CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+SCRIPT_SOURCEBASE=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 # account for tools directory placement of tools/nginxupdate.sh
 SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
 
@@ -157,8 +158,8 @@ NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI=n            # https://github.com/google/ngx_brotli
 NGINX_PAGESPEED=y            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.9.32.10-beta'
-NGINX_PAGESPEEDPSOL_VER='1.9.32.10'
+NGXPGSPEED_VER='1.9.32.11-beta'
+NGINX_PAGESPEEDPSOL_VER='1.9.32.11'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
@@ -166,9 +167,9 @@ NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
 NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
 ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
-NGINX_HEADERSMORE='0.261'
+NGINX_HEADERSMORE='0.29'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.5'
@@ -186,11 +187,11 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.9.16'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.9.20'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.20'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUAREDISVER='0.21'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
@@ -199,8 +200,8 @@ ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.0'     # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUAUPSTREAMVER='0.03'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUARESTYCOREVER='0.1.3'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.04'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
@@ -218,12 +219,12 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2d'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSION='1.0.2e'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.2.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.2.5'   # Use this version of LibreSSL http://www.libressl.org/
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
@@ -286,54 +287,55 @@ fi
 
 ###################################################################################
 # source file dependencies for variables
-source "../inc/customrpms.inc"
-source "../inc/pureftpd.inc"
-source "../inc/htpasswdsh.inc"
-source "../inc/gcc.inc"
-source "../inc/entropy.inc"
-source "../inc/cpucount.inc"
-source "../inc/motd.inc"
-source "../inc/cpcheck.inc"
-source "../inc/memcheck.inc"
-source "../inc/ccache.inc"
-source "../inc/bookmark.inc"
-source "../inc/centminlogs.inc"
-source "../inc/yumskip.inc"
-source "../inc/downloads_centosfive.inc"
-source "../inc/downloads_centossix.inc"
-source "../inc/downloads_centosseven.inc"
-source "../inc/downloadlinks.inc"
-source "../inc/downloads.inc"
-source "../inc/yumpriorities.inc"
-source "../inc/yuminstall.inc"
-source "../inc/centoscheck.inc"
-source "../inc/axelsetup.inc"
-source "../inc/phpfpmdir.inc"
-source "../inc/nginx_backup.inc"
-source "../inc/logrotate_nginx.inc"
-source "../inc/nginx_mimetype.inc"
-source "../inc/openssl_install.inc"
-if [ -f ../inc/brotli.inc ]; then
-source "../inc/brotli.inc"
+source "${SCRIPT_DIR}/inc/customrpms.inc"
+source "${SCRIPT_DIR}/inc/pureftpd.inc"
+source "${SCRIPT_DIR}/inc/htpasswdsh.inc"
+source "${SCRIPT_DIR}/inc/gcc.inc"
+source "${SCRIPT_DIR}/inc/entropy.inc"
+source "${SCRIPT_DIR}/inc/cpucount.inc"
+source "${SCRIPT_DIR}/inc/motd.inc"
+source "${SCRIPT_DIR}/inc/csftweaks.inc"
+source "${SCRIPT_DIR}/inc/cpcheck.inc"
+source "${SCRIPT_DIR}/inc/memcheck.inc"
+source "${SCRIPT_DIR}/inc/ccache.inc"
+source "${SCRIPT_DIR}/inc/bookmark.inc"
+source "${SCRIPT_DIR}/inc/centminlogs.inc"
+source "${SCRIPT_DIR}/inc/yumskip.inc"
+source "${SCRIPT_DIR}/inc/downloads_centosfive.inc"
+source "${SCRIPT_DIR}/inc/downloads_centossix.inc"
+source "${SCRIPT_DIR}/inc/downloads_centosseven.inc"
+source "${SCRIPT_DIR}/inc/downloadlinks.inc"
+source "${SCRIPT_DIR}/inc/downloads.inc"
+source "${SCRIPT_DIR}/inc/yumpriorities.inc"
+source "${SCRIPT_DIR}/inc/yuminstall.inc"
+source "${SCRIPT_DIR}/inc/centoscheck.inc"
+source "${SCRIPT_DIR}/inc/axelsetup.inc"
+source "${SCRIPT_DIR}/inc/phpfpmdir.inc"
+source "${SCRIPT_DIR}/inc/nginx_backup.inc"
+source "${SCRIPT_DIR}/inc/logrotate_nginx.inc"
+source "${SCRIPT_DIR}/inc/nginx_mimetype.inc"
+source "${SCRIPT_DIR}/inc/openssl_install.inc"
+if [ -f ${SCRIPT_DIR}/inc/brotli.inc ]; then
+source "${SCRIPT_DIR}/inc/brotli.inc"
 fi
-source "../inc/nginx_configure.inc"
-source "../inc/geoip.inc"
-source "../inc/luajit.inc"
-source "../inc/nginx_patch.inc"
-source "../inc/nginx_install.inc"
-source "../inc/mysql_proclimit.inc"
-source "../inc/mysqltmp.inc"
-source "../inc/nginx_pagespeed.inc"
-source "../inc/nginx_modules.inc"
-source "../inc/nginx_modules_openresty.inc"
-source "../inc/sshd.inc"
-source "../inc/openvz_stack.inc"
-source "../inc/nginx_addvhost.inc"
-source "../inc/nginx_errorpage.inc"
-source "../inc/compress.inc"
-source "../inc/shortcuts_install.inc"
-source "../inc/updater_submenu.inc"
-source "../inc/centminfinish.inc"
+source "${SCRIPT_DIR}/inc/nginx_configure.inc"
+source "${SCRIPT_DIR}/inc/geoip.inc"
+source "${SCRIPT_DIR}/inc/luajit.inc"
+source "${SCRIPT_DIR}/inc/nginx_patch.inc"
+source "${SCRIPT_DIR}/inc/nginx_install.inc"
+source "${SCRIPT_DIR}/inc/mysql_proclimit.inc"
+source "${SCRIPT_DIR}/inc/mysqltmp.inc"
+source "${SCRIPT_DIR}/inc/nginx_pagespeed.inc"
+source "${SCRIPT_DIR}/inc/nginx_modules.inc"
+source "${SCRIPT_DIR}/inc/nginx_modules_openresty.inc"
+source "${SCRIPT_DIR}/inc/sshd.inc"
+source "${SCRIPT_DIR}/inc/openvz_stack.inc"
+source "${SCRIPT_DIR}/inc/nginx_addvhost.inc"
+source "${SCRIPT_DIR}/inc/nginx_errorpage.inc"
+source "${SCRIPT_DIR}/inc/compress.inc"
+source "${SCRIPT_DIR}/inc/shortcuts_install.inc"
+source "${SCRIPT_DIR}/inc/updater_submenu.inc"
+source "${SCRIPT_DIR}/inc/centminfinish.inc"
 
 cpcheck
 
@@ -946,3 +948,8 @@ starttime=$(date +%s.%N)
         echo
     fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log
+endtime=$(date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log
+        echo "Total Nginx Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'nginxupdate.sh.log' | tail -1)"
