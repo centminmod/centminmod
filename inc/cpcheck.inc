@@ -88,6 +88,12 @@ csfipsetcheck() {
 	fi
 }
 
+checkovzkernels() {
+	if [[ -f /proc/user_beancounters ]]; then
+		sed -i 's|installonly_limit=.*|installonly_limit=3|' /etc/yum.conf
+	fi
+}
+
 checkaliases() {
 	if [[ "$(grep 'centminmod-123.08centos7beta01' /root/.bashrc)" ]]; then
         sed -i 's/centminmod-123.08centos7beta01/centminmod/' /root/.bashrc
@@ -326,10 +332,12 @@ fi
 
 cronpathadjust
 rclocalchecks
+checkovzkernels
 kernelchecks
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
+	checkovzkernels
 	rclocalchecks
 	kernelchecks
 	centaltoff
