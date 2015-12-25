@@ -44,7 +44,7 @@ rpcnfsports() {
 
 csftweaks() {
 if [ -f /etc/csf/csf.conf ]; then
-    echo "Custom configure CSF settings...set"
+    # echo "Custom configure CSF settings...set"
     rpcnfsports
 if [ ! -z "$EMAIL" ]; then
     sed -i "s/LF_ALERT_TO = \"\"/LF_ALERT_TO = \"$EMAIL\"/g" /etc/csf/csf.conf
