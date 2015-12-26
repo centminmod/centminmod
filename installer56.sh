@@ -92,7 +92,7 @@ chmod +x centmin.sh
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='5.6.15'|" centmin.sh
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='5.6.16'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
