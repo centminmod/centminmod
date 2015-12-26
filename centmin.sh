@@ -787,7 +787,7 @@ unsetramdisk() {
         mkdir -p ${DIR_TMP}_disk
         \cp -R ${DIR_TMP}/* ${DIR_TMP}_disk
         # ls -lah ${DIR_TMP}_disk
-        diff -qr ${DIR_TMP} ${DIR_TMP}_disk
+        # diff -qr ${DIR_TMP} ${DIR_TMP}_disk
         cmservice nginx stop
         cmservice php-fpm stop
         cmservice memcached stop
@@ -799,6 +799,7 @@ unsetramdisk() {
         cmservice memcached start
         \cp -R ${DIR_TMP}_disk/* ${DIR_TMP}
         # ls -lahrt ${DIR_TMP}
+        rm -rf ${DIR_TMP}_disk
         df -hT
         cecho "unmounted $DIR_TMP tmpfs ramdisk" $boldyellow
     fi
