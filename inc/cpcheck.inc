@@ -39,19 +39,21 @@ rclocalchecks() {
 
 kernelchecks() {
 	if [[ "$(uname -r | cut -d . -f1)" = '4' ]]; then
-		echo "linux 4.x kernel related adjustments"
-		echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
-		cat /proc/sys/net/netfilter/nf_conntrack_helper
-		echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper
-		if [[ -z "$(grep 'nf_conntrack_helper' /etc/sysctl.conf)" ]]; then
-			echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
-			sysctl -p
-		fi
-		if [[ -z "$(grep 'nf_conntrack_helper' /etc/rc.local)" ]]; then
-			echo "echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper" >> /etc/rc.local
-		fi		
-		echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
-		cat /proc/sys/net/netfilter/nf_conntrack_helper		
+		if [[ "$(cat /proc/sys/net/netfilter/nf_conntrack_helper)" != '0' ]]; then
+			echo "linux 4.x kernel related adjustments"
+			echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
+			cat /proc/sys/net/netfilter/nf_conntrack_helper
+			echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper
+			if [[ -z "$(grep 'nf_conntrack_helper' /etc/sysctl.conf)" ]]; then
+				echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
+				sysctl -p
+			fi
+			if [[ -z "$(grep 'nf_conntrack_helper' /etc/rc.local)" ]]; then
+				echo "echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper" >> /etc/rc.local
+			fi		
+			echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
+			cat /proc/sys/net/netfilter/nf_conntrack_helper
+		fi	
 	fi
 }
 
