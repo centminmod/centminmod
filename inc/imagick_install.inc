@@ -1,19 +1,28 @@
 checkphpext() {
+    cecho "Check for php extensions" $boldyellow
+    if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" ]]; then
+        echo "Downloading imagick extension"
+        imagickphpexttarball
+    fi
+    echo
+}
 
-cecho "Check for php extensions" $boldyellow
-if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" ]]; then
-echo "Downloading imagick extension"
-imagickphpexttarball
-fi
-
+checkimagicksys() {
+    cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
+    if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+        if [ -f /etc/yum.repos.d/remi.repo ]; then
+            if [[ "$(rpm -qa ImageMagick-last)" ]] && [[ -z "$(rpm -qa ImageMagick)" ]]; then
+                yum -y update ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+            fi
+        fi
+    fi
+    echo
 }
 
 imagickinstall() {
-
     if [[ "$PHPIMAGICK" = [yY] ]]; then
-
-checkphpext
-
+        checkphpext
+        checkimagicksys
     echo "*************************************************"
     cecho "* Installing imagick PHP Extension" $boldgreen
     echo "*************************************************"
