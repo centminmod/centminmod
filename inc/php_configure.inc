@@ -248,6 +248,23 @@ else
     fi
 fi
 
+# intel specific
+CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_php_native.log
+if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+	CCM=64
+	PHP_MTUNEOPT="-m${CCM} -march=native"
+	export CFLAGS="-O3 $PHP_MTUNEOPT"
+	export CXXFLAGS="$CFLAGS"
+elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+	CCM=32
+	PHP_MTUNEOPT="-m${CCM} -march=generic"
+	export CFLAGS="-O3 $PHP_MTUNEOPT"
+	export CXXFLAGS="$CFLAGS"
+else
+	PHP_MTUNEOPT=""
+fi
+
 # zend opcache hugepages
 if [[ "$PHPMUVER" = '7.0' ]]; then
 	opcachehugepages
@@ -305,7 +322,15 @@ if [[ "$CLANG_PHP" = [yY] ]]; then
     export CXX="ccache /usr/bin/g++"
     # PLACEHOLDER FOR CLAGS FOR PHP
     # CFLAGS=
-fi   
+fi
+
+if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+	unset CFLAGS
+	unset CXXFLAGS
+elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+	unset CFLAGS
+	unset CXXFLAGS
+fi
 
 # unset_intelflags
 
