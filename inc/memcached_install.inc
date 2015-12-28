@@ -238,27 +238,49 @@ cmservice memcached start
 
 #############################################
 if [ "$PHP_MEMCACHE" == 'y' ]; then
-    cecho "Compiling PHP memcache extension..." $boldgreen
-
-    pwd
-    echo "cd $DIR_TMP"
-    cd $DIR_TMP
-
-if [ -f /usr/bin/re2c ]; then
-    if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
-        rerpm
+    if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+        echo
+        echo "Compiling memcache PHP extension for PHP 7.x ..."
+    
+        if [ -f /usr/bin/re2c ]; then
+            if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
+                rerpm
+            fi
+        fi
+    
+        rm -rf memcache-php7
+        git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
+        cd memcache-php7
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
+        /usr/local/bin/phpize
+        ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
+        make${MAKETHREADS}
+        make install
+    else
+        cecho "Compiling PHP memcache extension..." $boldgreen
+        pwd
+        echo "cd $DIR_TMP"
+        cd $DIR_TMP
+    
+        if [ -f /usr/bin/re2c ]; then
+            if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
+                rerpm
+            fi
+        fi
+    
+        #tar -xvf memcache-${MEMCACHE_VERSION}.tgz
+        cd ${DIR_TMP}/memcache-${MEMCACHE_VERSION}
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
+        /usr/local/bin/phpize
+        ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
+        make${MAKETHREADS}
+        make install
+    
     fi
-fi
-
-#tar -xvf memcache-${MEMCACHE_VERSION}.tgz
-cd ${DIR_TMP}/memcache-${MEMCACHE_VERSION}
-if [[ "$INITIALINSTALL" != [yY] ]]; then
-    make clean
-fi
-/usr/local/bin/phpize
-./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
-make${MAKETHREADS}
-make install
 else
     # if PHP_MEMCACHE=n remove memcache PHP extension setting file
     rm -rf ${CONFIGSCANDIR}/memcache.ini
