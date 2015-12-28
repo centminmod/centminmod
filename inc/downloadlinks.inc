@@ -299,8 +299,8 @@ PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
 PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
 PHPEXT_REDISLINKLOCAL="http://centminmod.com/centminmodparts/redis/${PHPEXT_REDISLINKFILE}"
 
-PHPEXT_MONGODBLINKFILE="mongo-php-${MONGODBPHP_VER}.tgz"
-PHPEXT_MONGODBLINK="https://github.com/mongodb/mongo-php-driver/archive/${MONGODBPHP_VER}.tar.gz"
+PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
 PHPEXT_MONGODBLINKLOCAL="http://centminmod.com/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
 
 TWEMPERF_LINKFILE="twemperf-${TWEMPERF_VER}.tar.gz"

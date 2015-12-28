@@ -30,7 +30,7 @@ checkmongodbtar
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 #tar xvzf ${PHPEXT_MONGODBLINKFILE}
-cd ${DIR_TMP}/mongo-php-driver-${MONGODBPHP_VER}
+cd ${DIR_TMP}/mongodb-${MONGODBPHP_VER}
 if [[ "$INITIALINSTALL" != [yY] ]]; then
     make clean
 fi
@@ -44,20 +44,20 @@ make${MAKETHREADS}
 make install
 
 #######################################################
-# check to see if mongo.so already loaded in php.ini
+# check to see if mongodb.so already loaded in php.ini
 
-MONGODBSOCHECK=`grep 'mongo.so' /usr/local/lib/php.ini`
-MONGODBSOCHECKB=$(grep 'mongo.so' ${CONFIGSCANDIR}/mongodb.ini)
+MONGODBSOCHECK=`grep 'mongodb.so' /usr/local/lib/php.ini`
+MONGODBSOCHECKB=$(grep 'mongodb.so' ${CONFIGSCANDIR}/mongodb.ini)
 PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 
 if [[ -z "$MONGODBSOCHECK" || -z "$MONGODBSOCHECKB" ]]; then
     #echo "" >> /usr/local/lib/php.ini
-    echo "extension=mongo.so" > ${CONFIGSCANDIR}/mongodb.ini
+    echo "extension=mongodb.so" > ${CONFIGSCANDIR}/mongodb.ini
 else
     echo ""
-    echo "mongo.so already loaded in ${CONFIGSCANDIR}/mongodb.ini"
+    echo "mongodb.so already loaded in ${CONFIGSCANDIR}/mongodb.ini"
     echo "$MONGODBSOCHECK"
     echo ""
-fi # mongo.so check
+fi # mongodb.so check
 
 }
