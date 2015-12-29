@@ -31,9 +31,13 @@ rclocalchecks() {
 	if [ ! -x /etc/rc.d/rc.local ]; then
 		# centos 7 doesn't give rc.local executable permissions
 		# so /etc/rc.local isn't run on reboots like on centos 6
-		ls -lah /etc/rc.d/rc.local
+		if [[ "$INITIALINSTALL" = [yY] ]]; then
+			ls -lah /etc/rc.d/rc.local
+		fi
 		chmod +x /etc/rc.d/rc.local
-		ls -lah /etc/rc.d/rc.local
+		if [[ "$INITIALINSTALL" = [yY] ]]; then
+			ls -lah /etc/rc.d/rc.local
+		fi
 	fi
 }
 
