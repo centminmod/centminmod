@@ -254,7 +254,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 	gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_php_native.log
 	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
-		PHP_MTUNEOPT="-m${CCM} -march=native"
+		PHP_MTUNEOPT="-m${CCM} -march=native -mfpmath=sse"
 		export CFLAGS="-O3 $PHP_MTUNEOPT"
 		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
