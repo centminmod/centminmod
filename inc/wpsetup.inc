@@ -874,6 +874,7 @@ XFF
 
 cat > "/usr/local/nginx/conf/redisupstream.conf" <<GGG
 upstream redisbackend {
+  zone upstream_redis 64k;
   server 127.0.0.1:6379;
   #server 127.0.0.1:6380 backup;
   keepalive 2048;
