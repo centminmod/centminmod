@@ -854,7 +854,10 @@ if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_n
 location /redis-fetch {
   internal  ;
   set  \$redis_key \$args;
-  redis_pass  127.0.0.1:6379;
+  redis_pass  redisbackend;
+  redis_connect_timeout 60000;
+  redis_read_timeout 60000;
+  redis_send_timeout 60000;
 }
 
 location /redis-store {
@@ -862,9 +865,27 @@ location /redis-store {
   set_unescape_uri \$key \$arg_key ;
   redis2_query set \$key \$echo_request_body;
   redis2_query expire \$key 6h;
-  redis2_pass  127.0.0.1:6379;
+  redis2_pass  redisbackend;
+  redis_connect_timeout 60000;
+  redis_read_timeout 60000;
+  redis_send_timeout 60000;
 }
 XFF
+
+cat > "/usr/local/nginx/conf/redisupstream.conf" <<GGG
+upstream redisbackend {
+  server 127.0.0.1:6379;
+  #server 127.0.0.1:6380 backup;
+  keepalive 2048;
+}
+GGG
+
+REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$REDISUPSTREAM_INCLUDECHECK" ]]; then
+    echo
+    echo "include file /usr/local/nginx/conf/redisupstream.conf add to nginx.conf"
+      sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/redisupstream.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
 
 ########### WP Super Cache Start ##############################
 # only proceed in creating vhost if VHOSTNAME directory exist
