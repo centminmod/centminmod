@@ -27,6 +27,20 @@ selinxcheck() {
 	fi
 }
 
+reuseportchecks() {
+	if [[ "$INITIALINSTALL" = [yY] ]]; then
+		CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
+		if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+			SUPPORT_REUSEPORT=y
+		else
+			SUPPORT_REUSEPORT=n
+			if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+				sed -i 's| reuseport||' /usr/local/nginx/conf/conf.d/virtual.conf
+			fi
+		fi
+	fi
+}
+
 rclocalchecks() {
 	if [ ! -x /etc/rc.d/rc.local ]; then
 		# centos 7 doesn't give rc.local executable permissions

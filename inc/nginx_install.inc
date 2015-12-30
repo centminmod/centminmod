@@ -367,6 +367,8 @@ fi # check if custom open file descriptor limits already exist
     echo "Setup default hostname: $HN"
     sed -i "s/server_name localhost/server_name $HN/g" /usr/local/nginx/conf/conf.d/virtual.conf
     echo ""
+    reuseportchecks
+    echo ""
 
 ## only run for CentOS 6.x
 #if [[ "$CENTOS_SEVEN" != '7' ]]; then
