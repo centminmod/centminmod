@@ -32,6 +32,9 @@ reuseportchecks() {
 		CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
 		if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
 			SUPPORT_REUSEPORT=y
+			if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+				sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
+			fi
 		else
 			SUPPORT_REUSEPORT=n
 			if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
