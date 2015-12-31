@@ -866,18 +866,24 @@ location /redis-store {
   redis2_query set \$key \$echo_request_body;
   redis2_query expire \$key 6h;
   redis2_pass  redisbackend;
-  redis_connect_timeout 60000;
-  redis_read_timeout 60000;
-  redis_send_timeout 60000;
+  redis2_connect_timeout 60s;
+  redis2_read_timeout 60s;
+  redis2_send_timeout 60s;
 }
 XFF
 
 cat > "/usr/local/nginx/conf/redisupstream.conf" <<GGG
 upstream redisbackend {
   zone upstream_redis 64k;
-  server 127.0.0.1:6379;
+  server 127.0.0.1:6379 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6380 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6381 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6382 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6383 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6384 weight=1 max_fails=3 fail_timeout=30s;
+
   #server 127.0.0.1:6380 backup;
-  keepalive 2048;
+  keepalive 4096;
 }
 GGG
 
@@ -886,7 +892,7 @@ REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf
     echo
     echo "include file /usr/local/nginx/conf/redisupstream.conf add to nginx.conf"
       sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/redisupstream.conf;/g' /usr/local/nginx/conf/nginx.conf
-    fi
+  fi
 
 ########### WP Super Cache Start ##############################
 # only proceed in creating vhost if VHOSTNAME directory exist
