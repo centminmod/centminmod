@@ -366,6 +366,7 @@ PHPINTL=y                    # Disable or Enable PHP intl extension
 PHPRECODE=n                  # Disable or Enable PHP Recode extension
 PHPSNMP=y                    # Disable or Enable PHP SNMP extension
 PHPIMAGICK=y                 # Disable or Enable PHP ImagicK extension
+PHPMAILPARSE=y               # Disable or Enable PHP mailparse extension
 SHORTCUTS=y                  # shortcuts
 
 POSTGRESQL=n                 # set to =y to install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
@@ -427,6 +428,7 @@ PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.0RC4'   # PHP extension for imagick
+MAILPARSEPHP_VER='3.0.0'    # https://pecl.php.net/package/mailparse
 MEMCACHED_INSTALL=y         # Install Memcached
 LIBEVENT_VERSION='2.0.22'   # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'  # Use this version of Memcached server
@@ -584,6 +586,7 @@ source "inc/luajit.inc"
 source "inc/nginx_patch.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
+source "inc/mailparse.inc"
 source "inc/imagick_install.inc"
 source "inc/memcached_install.inc"
 source "inc/redis.inc"
@@ -1370,6 +1373,9 @@ siegeinstall
 
 echo "installpythonfuct"
 installpythonfuct
+
+echo "mailparseinstall"
+mailparseinstall
 
 echo "imagickinstall"
 imagickinstall

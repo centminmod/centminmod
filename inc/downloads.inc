@@ -1287,6 +1287,77 @@ echo ""
 }
 
 ###############################################
+mailparsephpextlocaltarball() {
+
+    cd $DIR_TMP
+    rm -rf mailparse*
+
+        cecho "Download local ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MAILPARSELINKFILE} ]; then
+  cecho "${PHPEXT_MAILPARSELINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MAILPARSELINKFILE} local not found !!! Downloading now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MAILPARSELINKLOCAL} --tries=3 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+  fi
+fi
+
+tar xzf ${PHPEXT_MAILPARSELINKFILE} 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local extraction failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "${PHPEXT_MAILPARSELINKFILE} local valid file." $boldyellow
+echo ""
+  fi
+}
+
+###############################################
+mailparsephpexttarball() {
+
+    cd $DIR_TMP
+
+        cecho "Download ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
+if [ -s ${PHPEXT_MAILPARSELINKFILE} ]; then
+  cecho "${PHPEXT_MAILPARSELINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MAILPARSELINKFILE} not found !!! Downloading now......"
+        wget ${WGETOPT} --progress=bar ${PHPEXT_MAILPARSELINK} --tries=3 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+fi
+
+tar xzf ${PHPEXT_MAILPARSELINKFILE} 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} extraction failed." $boldgreen
+  cecho "trying local mirror download..." $boldgreen
+  mailparsephpextlocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_MAILPARSELINKFILE} valid file." $boldyellow
+echo ""
+  fi
+}
+
+###############################################
 imagickphpextlocaltarball() {
 
     cd $DIR_TMP

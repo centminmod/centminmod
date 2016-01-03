@@ -279,6 +279,10 @@ LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
 LIBEVENTLINK="https://github.com/libevent/libevent/archive/${LIBEVENTLINKFILE}"
 
+PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
+PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
+PHPEXT_MAILPARSELINKLOCAL="http://centminmod.com/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
+
 PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
 PHPEXT_IMAGICKLINK="https://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
 PHPEXT_IMAGICKLINKLOCAL="http://centminmod.com/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
