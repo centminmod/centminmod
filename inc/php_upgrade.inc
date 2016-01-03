@@ -45,6 +45,15 @@ if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
     DETECTOPCACHE=y
 fi
 
+if [ -f ${CONFIGSCANDIR}/mailparse.ini ]; then
+    DETECTMAILPARSE=y
+   
+    if [[ "$PHPMAILPARSE" != [yY] ]]; then
+        echo "rm -rf ${CONFIGSCANDIR}/mailparse.ini"
+        rm -rf ${CONFIGSCANDIR}/mailparse.ini        
+    fi
+fi
+
 if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTIMAGICK=y
@@ -116,6 +125,11 @@ if [[ "$DETECTOPCACHE" = [yY] ]]; then
         cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
         zopcachereinstall        
     fi
+fi
+
+if [[ "$DETECTMAILPARSE" = [yY] ]]; then
+    cecho "Auto reinstalling previously detected mailparse extension" $boldyellow
+    mailparseinstall
 fi
 
 if [[ "$DETECTIMAGICK" = [yY] ]]; then
@@ -479,6 +493,11 @@ if [ ! -f ${CONFIGSCANDIR}/geoip.ini ]; then
     if [[ "$PHPGEOIP_ALWAYS" = [yY] ]]; then
         geoipphpext
     fi
+fi
+
+if [[ ! -f ${CONFIGSCANDIR}/mailparse.ini && "$PHPMAILPARSE" = [yY] ]]; then
+    # install mailparse if PHPMAILPARSE=y
+    mailparseinstall
 fi
 
     cmservice php-fpm restart
