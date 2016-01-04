@@ -47,7 +47,7 @@ fi #check if mailparse.so exists in php.ini
 
     cmservice php-fpm restart
     echo "*************************************************"
-    cecho "* imagick PHP installed" $boldgreen
+    cecho "* mailparse PHP installed" $boldgreen
     echo "*************************************************"
 
     fi
