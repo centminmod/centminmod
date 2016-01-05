@@ -936,10 +936,10 @@ wp core install --url=http://${vhostname} --title=${vhostname} --admin_email=${W
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
 WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
 # wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
-wp db query "UPDATE wp_users SET ID=${WUID} WHERE ID=1; UPDATE wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
 
 # add index on autoload
-wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx('autoload')" --allow-root
+wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx (autoload)" --allow-root
 
 # change permalinks out of the box
 wp rewrite structure '/%post_id%/%postname%/' --allow-root
