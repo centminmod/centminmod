@@ -333,6 +333,12 @@ xpowerby() {
 	fi
 }
 
+pathfixes() {
+	if [[ -z "$(grep '\$PATH:' /root/.bashrc)" ]]; then
+		sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -357,6 +363,7 @@ cronpathadjust
 rclocalchecks
 checkovzkernels
 kernelchecks
+pathfixes
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
@@ -377,6 +384,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	leupdates
 	memcachedupdatechecks
 	xpowerby
+	pathfixes
 fi
 
 }
