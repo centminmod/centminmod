@@ -5,7 +5,7 @@ VER='0.0.4'
 # for Centminmod.com
 # written by George Liu (eva2000) vbtechsupport.com
 ######################################################
-RUBYVER='2.2.3'
+RUBYVER='2.2.4'
 RUBYBUILD=''
 
 NODEJSVER='4.2.3'
@@ -189,15 +189,15 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
 	echo "--------------------------------"
 
 	echo "PATH echo..."
-	sed -i 's/export PATH/#export PATH/' ~/.bashrc
+	# sed -i 's/export PATH/#export PATH/' ~/.bashrc
 
 	# PATH=$(echo $PATH | tr ':' '\n' | sort | uniq | tr '\n' ':')
 
 	# echo "export PATH=\"$PATH:/usr/local/rvm/gems/ruby-${RUBYVER}/bin:/usr/local/rvm/gems/ruby-${RUBYVER}@global/bin:/usr/local/rvm/rubies/ruby-${RUBYVER}/bin\"" >> ~/.bashrc
 	# export PATH="$PATH:/usr/local/rvm/gems/ruby-${RUBYVER}/bin:/usr/local/rvm/gems/ruby-${RUBYVER}@global/bin:/usr/local/rvm/rubies/ruby-${RUBYVER}/bin"
 
-	echo "export PATH="$PATH"" >> ~/.bashrc
-	export PATH="$PATH"
+	# echo "export PATH="$PATH"" >> ~/.bashrc
+	# export PATH="$PATH"
 
 	echo "--------------------------------"
 	rvm rubygems current
