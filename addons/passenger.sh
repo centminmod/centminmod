@@ -5,10 +5,10 @@ VER='0.0.4'
 # for Centminmod.com
 # written by George Liu (eva2000) vbtechsupport.com
 ######################################################
-RUBYVER='2.2.4'
+RUBYVER='2.3.0'
 RUBYBUILD=''
 
-NODEJSVER='4.2.3'
+NODEJSVER='4.2.4'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
