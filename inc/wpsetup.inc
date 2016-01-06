@@ -812,7 +812,7 @@ location ~* (w00tw00t) {
 return 444;
 }
 
-location ~ /(\.|wp-config\.php|wp-config\.txt|readme\.html|license\.txt) { deny all; }
+location ~* /(\.|wp-config\.php|wp-config\.txt|readme\.html|license\.txt) { deny all; }
 EEF
 
 # WP super cache
