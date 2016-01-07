@@ -59,6 +59,7 @@ if [ -f "${CM_INSTALLDIR}/inc/zendopcache_tweaks.inc" ]; then
 fi
 source "${CM_INSTALLDIR}/inc/php_configure.inc"
 source "${CM_INSTALLDIR}/inc/phpng_download.inc"
+source "${CM_INSTALLDIR}/inc/php_extraopts.inc"
 source "${CM_INSTALLDIR}/inc/php_upgrade.inc"
 source "${CM_INSTALLDIR}/inc/suhosin_setup.inc"
 source "${CM_INSTALLDIR}/inc/nginx_pagespeed.inc"
