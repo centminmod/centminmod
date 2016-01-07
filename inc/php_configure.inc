@@ -255,16 +255,27 @@ fi
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 	# intel specific
 	CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
-	gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_php_native.log
-	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+	SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
+	gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee ${CENTMINLOGDIR}/gcc_php_native.log
+	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
 		PHP_MTUNEOPT="-m${CCM} -march=native -mfpmath=sse"
 		export CFLAGS="-O3 $PHP_MTUNEOPT"
 		export CXXFLAGS="$CFLAGS"
+	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[disabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=64
+		PHP_MTUNEOPT="-m${CCM} -march=native"
+		export CFLAGS="-O3 $PHP_MTUNEOPT"
+		export CXXFLAGS="$CFLAGS"
+	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && -z "$SSECHECK" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=64
+		PHP_MTUNEOPT="-m${CCM} -march=generic"
+		export CFLAGS="-O2 $PHP_MTUNEOPT"
+		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=32
 		PHP_MTUNEOPT="-m${CCM} -march=generic"
-		export CFLAGS="-O3 $PHP_MTUNEOPT"
+		export CFLAGS="-O2 $PHP_MTUNEOPT"
 		export CXXFLAGS="$CFLAGS"
 	else
 		PHP_MTUNEOPT=""
