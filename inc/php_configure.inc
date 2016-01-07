@@ -41,6 +41,10 @@ if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readli
 	fi
 fi
 
+if [[ ! -f /usr/bin/xslt-config ]]; then
+	yum -q -y install libxslt libxslt-devel
+fi
+
 if [[ ! -f /usr/bin/icu-config ]]; then
 	yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
 fi
