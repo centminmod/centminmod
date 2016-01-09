@@ -478,6 +478,12 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 		STREAM=""
 	fi
 	THREADS=' --with-threads'
+	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+		sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
+	fi
+	if [[ -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+		sed -i "s|backlog=.*|backlog=2048 reuseport;|" /usr/local/nginx/conf/conf.d/virtual.conf
+	fi
 	# workaround for nginx 1.9 compatibility
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
@@ -488,18 +494,42 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 		STREAM=""
 	fi
 	THREADS=' --with-threads'
+	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+		sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
+	fi
+	if [[ -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+		sed -i "s|backlog=.*|backlog=2048 reuseport;|" /usr/local/nginx/conf/conf.d/virtual.conf
+	fi
 	# workaround for nginx 1.9 compatibility
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c	
 elif [[ "$ngver" && "$NGXUPGRADE_VER" = '1.8' ]]; then
 	STREAM=""
 	THREADS=' --with-threads'
+	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+		sed -i "s|^include \/usr\/local\/nginx\/conf\/redisupstream.conf|#include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
+	fi
+	if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+		sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
+	fi
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.8' ]]; then
 	STREAM=""
-	THREADS=' --with-threads'	
+	THREADS=' --with-threads'
+	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+		sed -i "s|^include \/usr\/local\/nginx\/conf\/redisupstream.conf|#include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
+	fi
+	if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+		sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
+	fi
 else
 	STREAM=""
 	THREADS=""
+	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+		sed -i "s|^include \/usr\/local\/nginx\/conf\/redisupstream.conf|#include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
+	fi
+	if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+		sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
+	fi	
 fi
 
 # intel specific
