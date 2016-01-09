@@ -427,6 +427,11 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php.conf-oldversion_$DT
         ls -lhrt /usr/local/nginx/conf/ | grep php.conf
         cp -f $CUR_DIR/config/nginx/php.conf /usr/local/nginx/conf/php.conf
+    
+    # account for phpmyadmin.sh created php-fpm unix socket pool support
+    if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_myadmin.conf ]; then
+        sed -i 's/;include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/g' /usr/local/etc/php-fpm.conf
+    fi
 
     # recheck whether fastcgi_param GEOIP_ settings in php.conf need to be disabled or enabled
     if [[ "$NGINX_GEOIP" = [yY] ]]; then
