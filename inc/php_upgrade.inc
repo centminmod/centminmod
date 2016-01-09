@@ -396,11 +396,6 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         ls -lhrt /usr/local/nginx/conf/ | grep php.conf
         cp -f $CUR_DIR/config/nginx/php.conf /usr/local/nginx/conf/php.conf
     
-    # account for phpmyadmin.sh created php-fpm unix socket pool support
-    if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_myadmin.conf ]; then
-        sed -i 's/;include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/g' /usr/local/etc/php-fpm.conf
-    fi
-
     # recheck whether fastcgi_param GEOIP_ settings in php.conf need to be disabled or enabled
     if [[ "$NGINX_GEOIP" = [yY] ]]; then
         sed -i 's/#fastcgi_param GEOIP_/fastcgi_param GEOIP_/' /usr/local/nginx/conf/php.conf
@@ -427,6 +422,11 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
             cp -f $CUR_DIR/config/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
     
     fi # lessphpmem
+
+    # account for phpmyadmin.sh created php-fpm unix socket pool support
+    if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_myadmin.conf ]; then
+        sed -i 's/;include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/g' /usr/local/etc/php-fpm.conf
+    fi
 
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
