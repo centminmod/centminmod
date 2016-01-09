@@ -488,7 +488,7 @@ fi
 	else
     	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
 
-    if [[ "$NGINX_HTTP2" = [yY] ]]; then
+    if [[ "$NGINX_HTTP2" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10903' ]]; then
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
