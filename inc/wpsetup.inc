@@ -215,6 +215,21 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
 fi
 
+read -ep "Install Wordpress in subdirectory /blog ? [y/n]: " wpsubdirinstall
+
+if [[ "$wpsubdirinstall" = [yY] ]]; then
+  SUBDIR_INSTALL=y
+  read -ep "Enter subdirectory name i.e. /blog enter = blog ? : " wpsubdir_value
+  WPSUBDIR="/$wpsubdir_value"
+  SUBDIR_INCLUDE="include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;"
+  NONSUBDIR_INCLUDE=""
+elif [[ "$wpsubdirinstall" != [yY] ]]; then
+  SUBDIR_INSTALL=n
+  WPSUBDIR=""
+  SUBDIR_INCLUDE=""
+  NONSUBDIR_INCLUDE="include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;"
+fi
+
 read -ep "Do you want to install WP Cache Enabler Plugin instead of WP Super Cache ? [y/n]: " cacheenabler
 
 read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
@@ -277,13 +292,43 @@ dbsetup
 # Checking Permissions, making directories, example index.html
 umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
+if [[ "$wpsubdirinstall" = [yY] ]]; then
+  mkdir -p /home/nginx/domains/$vhostname/public/$wpsubdir_value
+fi
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
   pure-pw mkdb
 fi
 
-# where index.html was
+if [[ "$wpsubdirinstall" = [yY] ]]; then
+cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
+<html>
+<head>
+<title>$vhostname</title>
+</head>
+<body>
+<p>Welcome to $vhostname. This index.html page can be removed. You have auto installed Wordpress at $vhostname$WPSUBDIR</p>
+
+<p>Useful Centmin Mod info and links to bookmark.</p>
+
+<ul>
+  <li>Getting Started Guide - <a href="http://centminmod.com/getstarted.html" target="_blank">http://centminmod.com/getstarted.html</a></li>
+  <li>Latest Centmin Mod version - <a href="http://centminmod.com" target="_blank">http://centminmod.com</a></li>
+  <li>Centmin Mod FAQ - <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a></li>
+  <li>Change Log - <a href="http://centminmod.com/changelog.html" target="_blank">http://centminmod.com/changelog.html</a></li>
+  <li>Google+ Page latest news <a href="http://centminmod.com/gpage" target="_blank">http://centminmod.com/gpage</a></li>
+  <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
+  <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
+  <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
+</ul>
+
+<p><a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Cheap VPS Hosting at Digitalocean</a></p>
+
+</body>
+</html>
+END
+fi
 
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/$vhostname/public
 umask 022
@@ -346,7 +391,7 @@ cat > "/usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf"<<HFA
     }
 
     # custom sub directory e.g. /blog
-    set \$custom_subdir '';
+    set \$custom_subdir '${WPSUBDIR}';
 
     # default html file
     set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index.html';
@@ -517,27 +562,28 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 # https://community.centminmod.com/posts/18828/
 #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
-  location / {
+  location /$wpsubdir_value {
+  $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
   #autoindex  on;
 
   # for wordpress super cache plugin
-  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
   #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;  
 
   # Nginx level redis Wordpress
   # https://community.centminmod.com/posts/18828/
-  #try_files \$uri \$uri/ /index.php?\$args;
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
 
   }
 
-location ~* /(wp-login\.php) {
+location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
@@ -547,7 +593,7 @@ location ~* /(wp-login\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-location ~* /(xmlrpc\.php) {
+location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
@@ -555,7 +601,7 @@ location ~* /(xmlrpc\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
+  $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -637,27 +683,28 @@ include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
 # https://community.centminmod.com/posts/18828/
 #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
-  location / {
+  location /$wpsubdir_value {
+  $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
   #autoindex  on;
 
   # for wordpress super cache plugin
-  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
   #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;  
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
 
   # Nginx level redis Wordpress
   # https://community.centminmod.com/posts/18828/
-  #try_files \$uri \$uri/ /index.php?\$args;
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
 
   }
 
-location ~* /(wp-login\.php) {
+location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
@@ -667,7 +714,7 @@ location ~* /(wp-login\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-location ~* /(xmlrpc\.php) {
+location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
@@ -675,7 +722,7 @@ location ~* /(xmlrpc\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
+  $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -723,27 +770,28 @@ server {
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
-  location / {
+  location /$wpsubdir_value {
+  $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
   #autoindex  on;
 
   # for wordpress super cache plugin
-  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
   #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;   
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args; 
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
 
   # Nginx level redis Wordpress
   # https://community.centminmod.com/posts/18828/
-  #try_files \$uri \$uri/ /index.php?\$args;
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
 
   }
 
-location ~* /(wp-login\.php) {
+location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
@@ -753,7 +801,7 @@ location ~* /(wp-login\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-location ~* /(xmlrpc\.php) {
+location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
@@ -761,7 +809,7 @@ location ~* /(xmlrpc\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
+  $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -906,7 +954,7 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
   fi
   cecho "------------------------------------------------------------" $boldgreen
 
-cd /home/nginx/domains/${vhostname}/public
+cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
  
 wp core download --allow-root
  
@@ -930,7 +978,7 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     crontab -l
 fi
 
-wp core install --url=http://${vhostname} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
+wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
@@ -954,7 +1002,7 @@ elif [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then
   cd /root/.wp-cli/commands/super-cache
   git stash
   git pull
-  cd /home/nginx/domains/${vhostname}/public
+  cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 fi
 
 cecho "------------------------------------------------------------" $boldgreen
@@ -964,7 +1012,7 @@ cecho "------------------------------------------------------------" $boldgreen
 chown nginx:nginx /home/nginx/domains/${vhostname}/public
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
 
-cd /home/nginx/domains/${vhostname}/public
+cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 
 chmod 0770 wp-content
 chmod 0400 readme.html
@@ -1083,7 +1131,7 @@ if [[ -f /root/.wp-cli/commands/super-cache/cli.php && "$cacheenabler" != [yY] ]
   wp super-cache enable --allow-root
 fi
 
-chown -R nginx:nginx /home/nginx/domains/${vhostname}/public/wp-content/plugins/
+chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/
 
 # write permissions for log
 if [ -f wp-content/plugins/tpc-memory-usage/logs/tpcmem.log ]; then
@@ -1167,8 +1215,8 @@ PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/b
 EMAIL=$WPADMINEMAIL
 
 {
-cd /home/nginx/domains/${vhostname}/public
-echo "/home/nginx/domains/${vhostname}/public"
+cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
+echo "/home/nginx/domains/${vhostname}/public${WPSUBDIR}"
 #/usr/bin/wp cli update --allow-root
 echo "update wp-cli"
 rm -rf /usr/bin/wp
@@ -1201,6 +1249,7 @@ fi
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
 cmservice nginx reload
+cmservice php-fpm restart
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
@@ -1268,7 +1317,7 @@ if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/
   cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
   cecho "wp-login.php protection Username: $HTUSER" $boldyellow
   cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-  cecho "http://${HTUSER}:${HTPASS}@${vhostname}/wp-login.php" $boldyellow
+  cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
   echo
   cecho "Resetting wp-login.php protection:" $boldyellow
   cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
