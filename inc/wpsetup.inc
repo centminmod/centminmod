@@ -989,17 +989,17 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     crontab -l
 fi
 
-if [[ "$setdisplayname" = [yY] ]]; then
-  wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --display_name=${WPADMIN_DISPLAYNAME} --allow-root
-else
-  wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
-fi
+wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
 WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
 # wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
 wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+
+if [[ "$setdisplayname" = [yY] ]]; then
+  wp user update ${WUID} --display_name=${WPADMIN_DISPLAYNAME} --allow-root
+fi
 
 # add index on autoload
 wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx (autoload)" --allow-root
