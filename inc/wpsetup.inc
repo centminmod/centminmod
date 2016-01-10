@@ -1165,14 +1165,14 @@ fi
 
 if [[ "$cacheenabler" = [yY] ]]; then
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
-        sed -i "s|^#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
-        sed -i "s|^include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|#include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
     fi
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
-        sed -i "s|^#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-        sed -i "s|^include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|#include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
     fi
