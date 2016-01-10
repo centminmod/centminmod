@@ -215,6 +215,12 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
 fi
 
+echo
+echo "Theme Setup: "
+read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme/) [y/n]: " responsivetheme
+
+echo
+echo "Wordpress Setup: "
 read -ep "Install Wordpress in subdirectory /blog ? [y/n]: " wpsubdirinstall
 
 if [[ "$wpsubdirinstall" = [yY] ]]; then
@@ -1005,9 +1011,11 @@ elif [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then
   cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 fi
 
-cecho "------------------------------------------------------------" $boldgreen
-wp theme install responsive --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
+if [[ "$responsivetheme" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  wp theme install responsive --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
  
 chown nginx:nginx /home/nginx/domains/${vhostname}/public
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
