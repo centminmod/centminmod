@@ -215,7 +215,6 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
 fi
 
-echo
 echo "Theme Setup: "
 read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme/) [y/n]: " responsivetheme
 
