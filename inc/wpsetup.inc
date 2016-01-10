@@ -244,6 +244,9 @@ read -ep "Disable Auto Generated WP Admin Username / Password ? [y/n]: " disable
 read -ep "Disable wp-login.php password protection ? (less security) [y/n]: " disablepwdprotect
 
 if [[ "$disableautogen" = [yY] ]]; then
+  if [ ! -f /usr/sbin/cracklib-check ]; then
+    yum -y -q install cracklib
+  fi
   echo
   cecho "--------------------------" $boldgreen
   cecho "!! Security Note !!" $boldyellow
@@ -252,6 +255,19 @@ if [[ "$disableautogen" = [yY] ]]; then
   echo
   read -ep "Enter desired WP Admin Username: " WPADMINUSER
   read -ep "Enter desired WP Admin Password: " WPADMINPASS
+
+  CHECKWPADMINPASSWD="$(cracklib-check <<<"$WPADMINPASS")"
+  okay="$(awk -F': ' '{ print $2}' <<<"$CHECKWPADMINPASSWD")"
+  while [[ "$okay" != "OK" ]]; do
+    cecho "!! password strength not strong enough !! " $boldyellow
+    cecho "!! do not use common dictionary words !! " $boldyellow
+    cecho "!! do not use short passwords !! " $boldyellow
+    cecho "!! do not use simplistic passwords !! " $boldyellow
+    echo
+    read -ep "Re-Enter desired WP Admin Password: " WPADMINPASS
+    CHECKWPADMINPASSWD="$(cracklib-check <<<"$WPADMINPASS")"
+    okay="$(awk -F': ' '{ print $2}' <<<"$CHECKWPADMINPASSWD")"
+  done
 fi
 
 read -ep "Enter email address for Admin User for Wordpress Installation: " WPADMINEMAIL
