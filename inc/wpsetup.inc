@@ -240,9 +240,22 @@ elif [[ "$wpsubdirinstall" != [yY] ]]; then
   NONSUBDIR_INCLUDE="include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;"
 fi
 
-read -ep "Do you want to install WP Cache Enabler Plugin instead of WP Super Cache ? [y/n]: " cacheenabler
+read -ep "Disable Auto Generated WP Admin Username / Password ? [y/n]: " disableautogen
+read -ep "Disable wp-login.php password protection ? (less security) [y/n]: " disablepwdprotect
 
-read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
+if [[ "$disableautogen" = [yY] ]]; then
+  echo
+  echo "--------------------------"
+  echo "!! Security Note !!"
+  echo "--------------------------"
+  echo "Please choose a stronger Username/Password Combination"
+  echo
+  read -ep "Enter desired WP Admin Username: " WPADMINUSER
+  read -ep "Enter desired WP Admin Password: " WPADMINPASS
+fi
+
+read -ep "Enter email address for Admin User for Wordpress Installation: " WPADMINEMAIL
+read -ep "Do you want to install WP Cache Enabler Plugin instead of WP Super Cache ? (easier to setup) [y/n]: " cacheenabler
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
 # echo "$TESTEMAIL"
@@ -345,18 +358,20 @@ umask 022
 chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
-# wp-login.php password protection
-if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-  HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
-  HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
-  HTWPLOGIN=$RANDOM
-  HTWPLOGINB=$RANDOM
-  HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
-  HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
-  HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
-  HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
-  echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
-  /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
+if [[ "$disablepwdprotect" != [yY] ]]; then
+  # wp-login.php password protection
+  if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+    HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
+    HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
+    HTWPLOGIN=$RANDOM
+    HTWPLOGINB=$RANDOM
+    HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
+    HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
+    HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
+    HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
+    echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
+    /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
+  fi
 fi
 
 # rate limit setup
@@ -805,7 +820,7 @@ location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
-    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
+    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;  
     include /usr/local/nginx/conf/php-wpsc.conf;
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
@@ -1333,21 +1348,32 @@ if [[ "$setdisplayname" = [yY] ]]; then
   cecho "Wordpress Admin Display Name: $WPADMIN_DISPLAYNAME" $boldyellow
 fi
 
-if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-  echo  
-  cecho "Wordpress wp-login.php password protection info:" $boldyellow
-  cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
-  cecho "wp-login.php protection Username: $HTUSER" $boldyellow
-  cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-  cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
-  echo
-  cecho "Resetting wp-login.php protection:" $boldyellow
-  cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
-  cecho "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
-  cecho "Step 2. run command:" $boldyellow
-  cecho "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" $boldyellow
-  cecho "Step 3. restart Nginx + PHP-FPM services" $boldyellow
-  cecho "     nprestart" $boldyellow
+if [[ "$disablepwdprotect" != [yY] ]]; then
+  if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+    echo  
+    cecho "Wordpress wp-login.php password protection info:" $boldyellow
+    cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+    cecho "wp-login.php protection Username: $HTUSER" $boldyellow
+    cecho "wp-login.php protection Password: $HTPASS" $boldyellow
+    cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
+    echo
+    cecho "Resetting wp-login.php protection:" $boldyellow
+    cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+    cecho "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+    cecho "Step 2. run command:" $boldyellow
+    cecho "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" $boldyellow
+    cecho "Step 3. restart Nginx + PHP-FPM services" $boldyellow
+    cecho "     nprestart" $boldyellow
+  fi
+elif [[ "$disablepwdprotect" = [yY] ]]; then
+    # disable wp-login.php password protection if user opts to do so
+    sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf
+    sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.conf
+    if [[ "$vhostssl" = [yY] ]]; then
+      sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf
+      sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf
+    fi
+    /usr/bin/nprestart
 fi
 
 echo
