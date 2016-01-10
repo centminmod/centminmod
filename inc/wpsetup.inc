@@ -193,7 +193,7 @@ fi
 
 echo
 cecho "-------------------------------------------------------------" $boldyellow
-cecho "Setup full Nginx vhost + Wordpress + WP Super Cache" $boldgreen
+cecho "Setup full Nginx vhost + Wordpress + WP Plugins" $boldgreen
 cecho "-------------------------------------------------------------" $boldyellow
 echo
 
@@ -245,10 +245,10 @@ read -ep "Disable wp-login.php password protection ? (less security) [y/n]: " di
 
 if [[ "$disableautogen" = [yY] ]]; then
   echo
-  echo "--------------------------"
-  echo "!! Security Note !!"
-  echo "--------------------------"
-  echo "Please choose a stronger Username/Password Combination"
+  cecho "--------------------------" $boldgreen
+  cecho "!! Security Note !!" $boldyellow
+  cecho "--------------------------" $boldgreen
+  cecho "Please choose a stronger Username/Password Combination" $boldyellow
   echo
   read -ep "Enter desired WP Admin Username: " WPADMINUSER
   read -ep "Enter desired WP Admin Password: " WPADMINPASS
