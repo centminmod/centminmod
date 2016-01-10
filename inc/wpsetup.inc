@@ -1129,6 +1129,9 @@ if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
   #cecho "------------------------------------------------------------" $boldgreen
 fi # WPPLUGINS_ALL=y
 
+# remove hello plugin
+wp plugin uninstall hello --allow-root
+
 # update all plugins to make sure they are latest available
 wp plugin update --all --allow-root
 echo
