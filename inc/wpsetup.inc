@@ -346,18 +346,21 @@ chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # wp-login.php password protection
-if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-  HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
-  HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
-  HTWPLOGIN=$RANDOM
-  HTWPLOGINB=$RANDOM
-  HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
-  HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
-  HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
-  HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
-  echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
-  /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
-fi
+  read -ep "Do you want wp-login.php password protection (recommended) [Y/n]: " htpasswdprot
+  if [[ "$htpasswdprot" = [yY] ]]; then
+    if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+      HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
+      HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
+      HTWPLOGIN=$RANDOM
+      HTWPLOGINB=$RANDOM
+      HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
+      HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
+      HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
+      HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
+      echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
+      /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
+    fi
+  fi
 
 # rate limit setup
 WPRATECHECK=$(grep 'zone=xwplogin' /usr/local/nginx/conf/nginx.conf)
