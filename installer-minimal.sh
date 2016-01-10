@@ -101,7 +101,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 # sed -i "s|CUSTOM_CURLRPM=n|CUSTOM_CURLRPM=y|" centmin.sh
 
 mkdir -p /etc/centminmod
-cat >> "/etc/centminmod/custom_config.inc" <<FFF
+cat > "/etc/centminmod/custom_config.inc" <<FFF
 NSD_DISABLED=y               # when set to =y, NSD disabled by default with chkconfig off
 NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
 NGINX_FLV=n                  # http://nginx.org/en/docs/http/ngx_http_flv_module.html
