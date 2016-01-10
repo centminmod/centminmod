@@ -221,6 +221,11 @@ read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme
 
 echo
 echo "Wordpress Setup: "
+read -ep "Set custom WP Admin Display Name ? [y/n]: " setdisplayname
+if [[ "$setdisplayname" = [yY] ]]; then
+  read -ep "Enter Custom WP Admin Display Name: " displayname
+  WPADMIN_DISPLAYNAME=$displayname
+fi
 read -ep "Install Wordpress in subdirectory /blog ? [y/n]: " wpsubdirinstall
 
 if [[ "$wpsubdirinstall" = [yY] ]]; then
@@ -984,7 +989,11 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     crontab -l
 fi
 
-wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
+if [[ "$setdisplayname" = [yY] ]]; then
+  wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --display_name=${WPADMIN_DISPLAYNAME} --allow-root
+else
+  wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
+fi
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
@@ -1321,6 +1330,9 @@ cecho "Wordpress Admin User ID: ${WUID}" $boldyellow
 cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
 cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
 cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
+if [[ "$setdisplayname" = [yY] ]]; then
+  cecho "Wordpress Admin Display Name: $WPADMIN_DISPLAYNAME" $boldyellow
+fi
 
 if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
   echo  
