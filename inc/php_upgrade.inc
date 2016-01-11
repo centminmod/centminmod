@@ -80,37 +80,39 @@ fi
 ########################################################################
 autodetectinstallextensions() {
 
+PHPEXTDIR_AUTODETECT=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+
 cecho "----------------------------------------------------" $boldgreen
 cecho "Auto reinstalling previously detected PHP extensions" $boldyellow
 cecho "----------------------------------------------------" $boldgreen
 
 
-if [[ "$DETECTXCACHE" = [yY] ]]; then
+if [[ "$DETECTXCACHE" = [yY] ]] || [[ "$DETECTXCACHE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/xcache.so" ]]; then
     cecho "Auto reinstalling previously detected Xcache" $boldyellow
     funct_xcachereinstall
 fi
 
-if [[ "$DETECTAPC" = [yY] ]]; then
+if [[ "$DETECTAPC" = [yY] ]] || [[ "$DETECTAPC" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/apc.so" ]]; then
     cecho "Auto reinstalling previously detected APC Cache" $boldyellow
     funct_apcreinstall
 fi
 
-if [[ "$DETECTIGBINARY" = [yY] ]]; then
+if [[ "$DETECTIGBINARY" = [yY] ]] || [[ "$DETECTIGBINARY" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/igbinary.so" ]]; then
     cecho "Auto reinstalling previously detected igbinary extension" $boldyellow
     funct_igbinaryinstall
 fi
 
-if [[ "$DETECTMEMCACHED" = [yY] ]]; then
+if [[ "$DETECTMEMCACHED" = [yY] ]] || [[ "$DETECTMEMCACHED" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/memcached.so" ]]; then
     cecho "Auto reinstalling previously detected memcached/memcache php extension" $boldyellow
     funct_memcachedreinstall
 fi
 
-if [[ "$DETECTREDIS" = [yY] ]]; then
+if [[ "$DETECTREDIS" = [yY] ]] || [[ "$DETECTREDIS" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/redis.so" ]]; then
     cecho "Auto reinstalling previously detected redis PHP extension" $boldyellow
     redisinstall
 fi
 
-if [[ "$DETECTMONGODB" = [yY] ]]; then
+if [[ "$DETECTMONGODB" = [yY] ]] || [[ "$DETECTMONGODB" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mongodb.so" ]]; then
     cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
     mongodbinstall
 fi
@@ -127,17 +129,17 @@ if [[ "$DETECTOPCACHE" = [yY] ]]; then
     fi
 fi
 
-if [[ "$DETECTMAILPARSE" = [yY] ]]; then
+if [[ "$DETECTMAILPARSE" = [yY] ]] || [[ "$DETECTMAILPARSE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mailparse.so" ]]; then
     cecho "Auto reinstalling previously detected mailparse extension" $boldyellow
     mailparseinstall
 fi
 
-if [[ "$DETECTIMAGICK" = [yY] ]]; then
+if [[ "$DETECTIMAGICK" = [yY] ]] || [[ "$DETECTIMAGICK" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/imagick.so" ]]; then
     cecho "Auto reinstalling previously detected imagemagick extension" $boldyellow
     imagickinstall
 fi
 
-if [[ "$DETECTGEOIP" = [yY] ]]; then
+if [[ "$DETECTGEOIP" = [yY] ]] || [[ "$DETECTGEOIP" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/geoip.so" ]]; then
     cecho "Auto reinstalling previously detected geoip extension" $boldyellow
     geoipphpext
 fi
