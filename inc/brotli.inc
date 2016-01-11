@@ -7,7 +7,7 @@ scl_install() {
 		if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
 			echo "install scl for newer gcc and g++ versions"
 			wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
-			rpm --import http://linuxsoft.cern.ch/cern/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7
+			rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
 			yum -y install devtoolset-3 -q
 		fi
 	fi # centos 6 only needed
