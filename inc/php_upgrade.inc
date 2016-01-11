@@ -508,8 +508,8 @@ if [[ ! -f ${CONFIGSCANDIR}/mailparse.ini && "$PHPMAILPARSE" = [yY] ]]; then
 fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -print
-find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -exec rm -rf {} \;
+find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -print
+find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -exec rm -rf {} \;
 find $DIR_TMP -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -print
 find $DIR_TMP -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -exec rm -rf {} \;
 
