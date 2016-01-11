@@ -507,6 +507,12 @@ if [[ ! -f ${CONFIGSCANDIR}/mailparse.ini && "$PHPMAILPARSE" = [yY] ]]; then
     mailparseinstall
 fi
 
+# clean up /svr-setup downloads directory of older PHP source tarball/directories
+find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -print
+find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -exec rm -rf {} \;
+find $DIR_TMP -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -print
+find $DIR_TMP -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -exec rm -rf {} \;
+
     cmservice php-fpm restart
 
 if [ -f /usr/local/nginx/html/phpi.php ]; then

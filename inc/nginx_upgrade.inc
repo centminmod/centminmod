@@ -531,6 +531,19 @@ fi
         geoinccheck
         geoipphp
 
+
+# clean up /svr-setup downloads directory of older PHP source tarball/directories
+find $DIR_TMP -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -print
+find $DIR_TMP -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -exec rm -rf {} \;
+find $DIR_TMP -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -print
+find $DIR_TMP -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -exec rm -rf {} \;
+find $DIR_TMP -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -print
+find $DIR_TMP -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -exec rm -rf {} \;
+find $DIR_TMP -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -print
+find $DIR_TMP -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -exec rm -rf {} \;
+find $DIR_TMP -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -print
+find $DIR_TMP -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exec rm -rf {} \;
+
         echo "*************************************************"
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
