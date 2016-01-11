@@ -1,4 +1,18 @@
 checkphpextmailparse() {
+
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
+PHPSEVEN_CHECKVER=$?
+echo $PHPSEVEN_CHECKVER
+
+# mailparse 3.0.0 only works with PHP 7.0 branch
+# so use 2.1.6 if not PHP 7.0 branch
+if [[ "$PHPSEVEN_CHECKVER" != '0' ]]; then
+    MAILPARSEPHP_VER='2.1.6'
+    PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
+    PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
+    PHPEXT_MAILPARSELINKLOCAL="http://centminmod.com/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
+fi
+
     cecho "Check for php extensions" $boldyellow
     if [[ ! -f "${DIR_TMP}/mailparse-${MAILPARSEPHP_VER}.tgz" ]]; then
         echo "Downloading mailparse extension"
@@ -9,6 +23,7 @@ checkphpextmailparse() {
 
 mailparseinstall() {
     if [[ "$PHPMAILPARSE" = [yY] ]]; then
+
         checkphpextmailparse
         
     echo "*************************************************"
@@ -18,10 +33,6 @@ mailparseinstall() {
     pwd
     echo "cd $DIR_TMP"
     cd $DIR_TMP
-
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
-PHPSEVEN_CHECKVER=$?
-echo $PHPSEVEN_CHECKVER
 
     cd mailparse-${MAILPARSEPHP_VER}
     if [[ "$INITIALINSTALL" != [yY] ]]; then
