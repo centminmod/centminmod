@@ -443,6 +443,7 @@ REDISPHP_VER='2.2.7'        # redis PHP version
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.1.1'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
+PDOPGSQL_PHPVER='9.5'       # pdo-pgsql PHP extension version for postgresql
 
 PHP_FTPEXT='y'              # ftp PHP extension
 PHP_MEMCACHE='y'            # memcache PHP extension 
