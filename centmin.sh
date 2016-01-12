@@ -746,7 +746,7 @@ unsetramdisk() {
         mkdir -p ${DIR_TMP}_disk
         \cp -R ${DIR_TMP}/* ${DIR_TMP}_disk
         # ls -lah ${DIR_TMP}_disk
-        diff -qr ${DIR_TMP} ${DIR_TMP}_disk
+        # diff -qr ${DIR_TMP} ${DIR_TMP}_disk
         cmservice nginx stop
         cmservice php-fpm stop
         cmservice memcached stop
