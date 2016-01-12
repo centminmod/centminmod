@@ -37,7 +37,9 @@ mailparseinstall() {
     pwd
     echo "cd $DIR_TMP"
     cd $DIR_TMP
-
+    if [ ! -d "$DIR_TMP/mailparse-${MAILPARSEPHP_VER}" ]; then
+        tar xzf ${PHPEXT_MAILPARSELINKFILE}
+    fi
     cd mailparse-${MAILPARSEPHP_VER}
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
