@@ -598,10 +598,10 @@ server {
    deny all;
   }
 
-#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
-# https://community.centminmod.com/posts/18828/
-#include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
+  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
   $SUBDIR_INCLUDE
@@ -719,10 +719,10 @@ server {
    deny all;
   }
 
-#include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
-# https://community.centminmod.com/posts/18828/
-#include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
+  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
   $SUBDIR_INCLUDE
