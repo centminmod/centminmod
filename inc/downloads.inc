@@ -2844,10 +2844,12 @@ nginxtarball
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
   csftarball &
   pythontarball &
+  mailparsephpexttarball &
   wait
 else
   csftarball
   pythontarball
+  mailparsephpexttarball
 fi
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
