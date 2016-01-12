@@ -2822,7 +2822,7 @@ echo $PHPSEVEN_CHECKVER
 
 # mailparse 3.0.0 only works with PHP 7.0 branch
 # so use 2.1.6 if not PHP 7.0 branch
-if [[ "$PHPSEVEN_CHECKVER" != '0' ]]; then
+if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
     PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
     PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
