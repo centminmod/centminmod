@@ -156,7 +156,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		# and add to it the line:
 		# POSTGRESQL=y
  		postgresqlinstall
-		PDOPGSQL_OPT=" --with-pdo-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER}"
+		PDOPGSQL_OPT=" --with-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER} --with-pdo-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER}"
 	else
 		PDOPGSQL_OPT=""
 	fi
