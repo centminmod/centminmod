@@ -1,4 +1,5 @@
 nsdreinstall() {
+    axelsetup
 
     echo "*************************************************"
     cecho "* Re-Installing NSD" $boldgreen

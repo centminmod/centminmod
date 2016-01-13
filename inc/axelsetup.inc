@@ -43,6 +43,12 @@ axelsetup() {
 		if [[ ! -z "$(rpm -ql axel)" ]]; then
 			yum -q -y remove axel
 		fi
+	elif [[ "$INITIALINSTALL" != [yY] ]]; then
+		# remove any yum installed axel packages
+		# in favour of source compiled package
+		if [[ ! -z "$(rpm -ql axel)" ]]; then
+			yum -q -y remove axel
+		fi
 	fi
 
 	if [ ! -f /usr/bin/axel ]; then

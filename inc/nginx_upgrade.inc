@@ -125,6 +125,7 @@ fi
 }
 
 checknginxmodules() {
+    axelsetup
 
     if [[ "$NGINX_RTMP" = [yY] ]]; then
         if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then

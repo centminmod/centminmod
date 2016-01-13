@@ -1,5 +1,6 @@
 #################
 zopcachereinstall() {
+	axelsetup
 
 if [[ -f ${CONFIGSCANDIR}/xcache.ini ]]; then
     echo ""

@@ -1,5 +1,7 @@
 function funct_igbinaryinstall {
 
+    axelsetup
+
 if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP
