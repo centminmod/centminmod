@@ -244,7 +244,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
          	cecho "Download done." $boldyellow
 	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
 	rpm -i ${CENTOSSIXRPMFORGEFILE}
-		yum${CACHESKIP} -q list axel 2>&1 >/dev/null
+		# yum${CACHESKIP} -q list axel 2>&1 >/dev/null
 		ERR=$?
 		CCRPMFORGECHECK="$ERR"
 			if [ "$CCRPMFORGECHECK" == '0' ]; then

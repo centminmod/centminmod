@@ -267,16 +267,21 @@ echo "yum -y erase php*"
 
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
-DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-WGETRETRY='--tries=3'
-AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
-AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.gz"
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    DOWNLOADAPP='axel -a'
+    WGETRETRY=''
+    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
+    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
+elif [[ "$CENTOS_SIX" = '6' ]]; then
+    DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
+    WGETRETRY='--tries=3'
+    AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
+    AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.gz"
 else
-DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-WGETRETRY='--tries=3'
-AXELPHPTARGZ=''
-AXELPHPUPGRADETARGZ=''
+    DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
+    WGETRETRY='--tries=3'
+    AXELPHPTARGZ=''
+    AXELPHPUPGRADETARGZ=''
 fi
 
     if [ -s php-${phpver}.tar.gz ]; then

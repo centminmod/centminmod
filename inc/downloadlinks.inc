@@ -376,3 +376,8 @@ CSF_LINK="http://download.configserver.com/${CSF_LINKFILE}"
 
 EZSETUPLINKFILE='ez_setup.py'
 EZSETUPLINK="https://bitbucket.org/pypa/setuptools/raw/bootstrap/${EZSETUPLINKFILE}"
+
+# wget renamed github
+AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
+AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
+AXEK_LINKLOCAL="http://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
