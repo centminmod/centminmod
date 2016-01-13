@@ -725,10 +725,10 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
     AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
 elif [[ "$CENTOS_SIX" = '6' ]]; then
-    DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY='--tries=3'
-    AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"
-    AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.gz"
+    DOWNLOADAPP='axel -a'
+    WGETRETRY=''
+    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
+    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
 else
     DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
     WGETRETRY='--tries=3'
