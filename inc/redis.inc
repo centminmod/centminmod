@@ -12,29 +12,22 @@ fi
 }
 
 checkigbinary() {
-
-PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
-
+    PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
     cecho "Checking for igbinary.so ..." $boldgreen
+    cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
 
-cecho "Check if ${PHPEXTDIRD}/igbinary.so exists" $boldyellow
-if [ ! -f "${PHPEXTDIRD}/igbinary.so" ]; then
-funct_igbinaryinstall
-fi
-
-if [[ ! -f ${CONFIGSCANDIR}/igbinary.ini ]]; then
-	funct_igbinaryinstall
-	#echo "will need to reinstall memcached extensions if needed"
-fi
-
-# check for different igbinary versions
-
-if [ -f /usr/local/bin/php ]; then
-    if [[ "$(php --ri igbinary | awk '/igbinary version/ {print $4}')" != "${IGBINARY_VERSION}" ]]; then
-        funct_igbinaryinstall
+    if [[ ! -f ${CONFIGSCANDIR}/igbinary.ini || ! -f "${PHPEXTDIRD}/igbinary.so" ]]; then
+	   funct_igbinaryinstall
+	   #echo "will need to reinstall memcached extensions if needed"
     fi
-fi
-
+    
+    # check for different igbinary versions
+    if [ -f /usr/local/bin/php ]; then
+        if [[ "$(php --ri igbinary | awk '/igbinary version/ {print $4}')" != "${IGBINARY_VERSION}" ]]; then
+            cecho "Check for different igbinary versions ..." $boldgreen
+            funct_igbinaryinstall
+        fi
+    fi
 }
 
 #######################################################
@@ -48,7 +41,9 @@ PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} EN
     echo "Downloading redis PHP extension..."
     cd $DIR_TMP
 
-checkigbinary
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    checkigbinary
+fi
 
 checkredistar
 

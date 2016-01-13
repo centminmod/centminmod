@@ -1275,6 +1275,7 @@ if [[ "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDF
 fi
 
 # igbinary still needed for libmemcached PHP extension if ZOPCACHE=yY
+# or for redis php extension
 if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]]; then
 	funct_igbinaryinstall
 fi
