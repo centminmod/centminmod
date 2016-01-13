@@ -2186,14 +2186,7 @@ EOF
         ;;
         19|ffmpeginstall)
         centminlog
-        {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
-        fi
-        
-        ffmpegsetup
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_ffmpeg_install.log
+        ffmpegsubmenu
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         

@@ -1,3 +1,54 @@
+ffmpegsubmenu() {
+
+while :
+do
+	# clear
+        # display menu
+	echo
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "             FFMPEG Sub-Menu              " $boldgreen
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "1). Install FFMPEG Binary + FFMPEG PHP extension" $boldgreen
+	cecho "2). Update FFMPEG Binary + FFMPEG PHP extension" $boldgreen
+	cecho "3). Reinstall FFMPEG PHP extension" $boldgreen
+	cecho "4). Back to Main menu" $boldgreen
+	cecho "--------------------------------------------------------" $boldyellow
+
+	read -ep "Enter option [ 1 - 4 ] " ffmpegoption
+	cecho "--------------------------------------------------------" $boldyellow
+
+#########################################################
+
+case "$ffmpegoption" in
+1)
+centminlog
+if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
+	${CM_INSTALLDIR}/addons/ffmpeg.sh install
+fi
+
+;;
+2)
+centminlog
+if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
+	${CM_INSTALLDIR}/addons/ffmpeg.sh update
+fi
+
+;;
+3)
+centminlog
+if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
+	${CM_INSTALLDIR}/addons/ffmpeg.sh php
+fi
+
+;;
+4)
+	break
+;;
+esac
+done
+
+}
+
 ################################
 # http://ffmpeg.org/download.html
 ffmpegsetup() {
