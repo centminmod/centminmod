@@ -106,7 +106,7 @@ if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
     echo
-    PACKAGE='{libvpx,libvpx-devel} {ImageMagick,ImageMagick-devel} {ImageMagick-c++,ImageMagick-c++-devel}'
+    PACKAGEG='{libvpx,libvpx-devel} {ImageMagick,ImageMagick-devel} {ImageMagick-c++,ImageMagick-c++-devel}'
   else
     PACKAGEG='{libvpx,libvpx-devel} {t1lib,t1lib-devel} {expect,expect-devel} {readline,readline-devel} {libedit,libedit-devel} {openssl,openssl-devel} {curl,curl-devel} {openldap,openldap-devel} {zlib,zlib-devel} {gd,gd-devel} {pcre,pcre-devel} {gettext,gettext-devel} {libidn,libidn-devel} {libjpeg,libjpeg-devel} {libpng,libpng-devel} {freetype,freetype-devel} {libxml2,libxml2-devel} {glib2,glib2-devel} {bzip2,bzip2-devel} {ncurses,ncurses-devel} {e2fsprogs,e2fsprogs-devel} {libc-client,libc-client-devel} {ImageMagick,ImageMagick-devel} {ImageMagick-c++,ImageMagick-c++-devel} {cyrus-sasl,cyrus-sasl-devel} {pam,pam-devel} {libaio,libaio-devel} {libevent,libevent-devel} {recode,recode-devel} {libtidy,libtidy-devel} {net-snmp,net-snmp-devel} {enchant,enchant-devel} {lua,lua-devel}'
   fi
@@ -115,7 +115,7 @@ else
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
     echo
-    PACKAGE='{libvpx,libvpx-devel} {ImageMagicklast,ImageMagick-last-devel} {ImageMagick-last-c++,ImageMagick-last-c++-devel}'
+    PACKAGEG='{libvpx,libvpx-devel} {ImageMagicklast,ImageMagick-last-devel} {ImageMagick-last-c++,ImageMagick-last-c++-devel}'
   else
   PACKAGEG='{libvpx,libvpx-devel} {t1lib,t1lib-devel} {expect,expect-devel} {readline,readline-devel} {libedit,libedit-devel} {openssl,openssl-devel} {curl,curl-devel} {openldap,openldap-devel} {zlib,zlib-devel} {gd,gd-devel} {pcre,pcre-devel} {gettext,gettext-devel} {libidn,libidn-devel} {libjpeg,libjpeg-devel} {libpng,libpng-devel} {freetype,freetype-devel} {libxml2,libxml2-devel} {glib2,glib2-devel} {bzip2,bzip2-devel} {ncurses,ncurses-devel} {e2fsprogs,e2fsprogs-devel} {libc-client,libc-client-devel} {ImageMagicklast,ImageMagick-last-devel} {ImageMagick-last-c++,ImageMagick-last-c++-devel} {cyrus-sasl,cyrus-sasl-devel} {pam,pam-devel} {libaio,libaio-devel} {libevent,libevent-devel} {recode,recode-devel} {libtidy,libtidy-devel} {net-snmp,net-snmp-devel} {enchant,enchant-devel} {lua,lua-devel}'
   fi
