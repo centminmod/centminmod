@@ -81,9 +81,9 @@ cecho "Important instructions above to protect your apc.php page" $boldgreen
 	fi #unattended
 
 	if [ "$UNATTENDED" == 'n' ]; then
-	sleep 30
+	sleep 20
 	else
-	sleep 3
+	sleep 2
 	fi #unattended
 
 }

@@ -261,11 +261,9 @@ funct_centos6check
     cd $DIR_TMP
 
 if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
-
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
-echo "yum -y erase php*"
+    echo "yum -y erase php*"
     yum -y erase php*
-
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -325,9 +323,9 @@ diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT
 echo "--------------------------------------------------------------------------------------------"
 echo ""
     echo "*************************************************"
-echo "Automatically continuing upgrade in 6 seconds..."
+echo "Automatically continuing upgrade in 4 seconds..."
     echo "*************************************************"
-sleep 6
+sleep 4
 echo ""
 fi # PHPDIFF
 

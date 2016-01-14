@@ -5,7 +5,9 @@ cecho "* Remove unneeded YUM packages" $boldgreen
 echo "*************************************************"
 echo "please wait till completion."
 
-  yum -y remove httpd* php* samba* exim* bind* 
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
+    yum -y remove httpd* php* samba* exim* bind*
+  fi
 
 echo "*************************************************"
 cecho "* yum clean all & update" $boldgreen
