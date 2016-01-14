@@ -50,12 +50,18 @@ yumcentosfivedownload
 
 if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
+    echo
+    echo "skip unneeded yum package check/installs for curl installer routines"
+    echo
     PACKAGE='cracklib'
   else
     PACKAGE='virt-what gawk deltarpm cracklib ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
   fi
 else
   if [ -f /tmp/curlinstaller-yum ]; then
+    echo
+    echo "skip unneeded yum package check/installs for curl installer routines"
+    echo
     PACKAGE='cracklib'
   else
     PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
@@ -97,12 +103,18 @@ fi # /usr/local/src/curlinstall_yum.txt
 ## grouped devels for faster install
 if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
+    echo
+    echo "skip unneeded yum package check/installs for curl installer routines"
+    echo
     PACKAGE='{libvpx,libvpx-devel} {ImageMagick,ImageMagick-devel} {ImageMagick-c++,ImageMagick-c++-devel}'
   else
     PACKAGEG='{libvpx,libvpx-devel} {t1lib,t1lib-devel} {expect,expect-devel} {readline,readline-devel} {libedit,libedit-devel} {openssl,openssl-devel} {curl,curl-devel} {openldap,openldap-devel} {zlib,zlib-devel} {gd,gd-devel} {pcre,pcre-devel} {gettext,gettext-devel} {libidn,libidn-devel} {libjpeg,libjpeg-devel} {libpng,libpng-devel} {freetype,freetype-devel} {libxml2,libxml2-devel} {glib2,glib2-devel} {bzip2,bzip2-devel} {ncurses,ncurses-devel} {e2fsprogs,e2fsprogs-devel} {libc-client,libc-client-devel} {ImageMagick,ImageMagick-devel} {ImageMagick-c++,ImageMagick-c++-devel} {cyrus-sasl,cyrus-sasl-devel} {pam,pam-devel} {libaio,libaio-devel} {libevent,libevent-devel} {recode,recode-devel} {libtidy,libtidy-devel} {net-snmp,net-snmp-devel} {enchant,enchant-devel} {lua,lua-devel}'
   fi
 else
   if [ -f /tmp/curlinstaller-yum ]; then
+    echo
+    echo "skip unneeded yum package check/installs for curl installer routines"
+    echo
     PACKAGE='{libvpx,libvpx-devel} {ImageMagicklast,ImageMagick-last-devel} {ImageMagick-last-c++,ImageMagick-last-c++-devel}'
   else
   PACKAGEG='{libvpx,libvpx-devel} {t1lib,t1lib-devel} {expect,expect-devel} {readline,readline-devel} {libedit,libedit-devel} {openssl,openssl-devel} {curl,curl-devel} {openldap,openldap-devel} {zlib,zlib-devel} {gd,gd-devel} {pcre,pcre-devel} {gettext,gettext-devel} {libidn,libidn-devel} {libjpeg,libjpeg-devel} {libpng,libpng-devel} {freetype,freetype-devel} {libxml2,libxml2-devel} {glib2,glib2-devel} {bzip2,bzip2-devel} {ncurses,ncurses-devel} {e2fsprogs,e2fsprogs-devel} {libc-client,libc-client-devel} {ImageMagicklast,ImageMagick-last-devel} {ImageMagick-last-c++,ImageMagick-last-c++-devel} {cyrus-sasl,cyrus-sasl-devel} {pam,pam-devel} {libaio,libaio-devel} {libevent,libevent-devel} {recode,recode-devel} {libtidy,libtidy-devel} {net-snmp,net-snmp-devel} {enchant,enchant-devel} {lua,lua-devel}'
