@@ -1,3 +1,6 @@
+[client]
+socket=/var/lib/mysql/mysql.sock
+
 [mysqld]
 local-infile=0
 ignore-db-dir=lost+found
