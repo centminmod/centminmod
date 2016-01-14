@@ -519,6 +519,9 @@ SELFSIGNEDSSL_OU=''
 WPPLUGINS_ALL='n'           # do not install additional plugins
 WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 ###############################################################
+# php configured --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock
+PHP_MYSQLSOCKPATH='/var/lib/mysql'
+###############################################################
 
 MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
