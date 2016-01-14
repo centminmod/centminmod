@@ -14,6 +14,7 @@ DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
 ###############################################################################
+DISABLE_NETWORKFFMPEG='y'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.2'
 # http://downloads.xiph.org/releases/vorbis/
@@ -31,6 +32,10 @@ else
     CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
     CPUS=$(echo $CPUS+1 | bc)
     MAKETHREADS=" -j$CPUS"
+fi
+
+if [[ "$DISABLE_NETWORKFFMPEG" = [yY] ]]; then
+	DISABLE_FFMPEGNETWORK='--disable-network'
 fi
 
 install() {
@@ -130,7 +135,7 @@ make clean
 cd ${OPT}/ffmpeg_sources
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="-I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib" --bindir="${OPT}/bin" --pkg-config-flags="--static" --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-swscale --enable-shared
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="-I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib" --bindir="${OPT}/bin" --pkg-config-flags="--static" --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-swscale --enable-shared${DISABLE_FFMPEGNETWORK}
 make${MAKETHREADS}
 make install
 make distclean
