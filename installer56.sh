@@ -9,11 +9,23 @@ branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
 
 INSTALLDIR='/usr/local/src'
+DIR_TMP='/svr-setup'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 #CM_INSTALLDIR=$CUR_DIR
 #SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+
+# wget renamed github
+AXEL='n'
+AXEL_VER='2.5'
+AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
+AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
+AXEK_LINKLOCAL="http://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
 #######################################################
 # 
+
+if [ ! -d "$DIR_TMP" ]; then
+  mkdir -p $DIR_TMP
+fi
 
 DEF=${1:-novalue}
 
@@ -26,7 +38,7 @@ if [[ ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/
   echo
   yum -y install virt-what gawk unzip bc wget yum-plugin-fastestmirror lynx screen deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel
   yum -y install epel-release
-  yum -y install moreutils clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28
+  yum -y install moreutils clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -y install GeoIP GeoIP-devel --disablerepo=rpmforge
   else
@@ -47,12 +59,49 @@ yumupdater() {
   #yum -y install expect imake bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file libgcj gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel vim-minimal nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-ExtUtils-MakeMaker perl-Time-HiRes cyrus-sasl cyrus-sasl-devel strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git
 }
 
+install_axel() {
+  cd $DIR_TMP
+  echo "Download $AXEK_LINKFILE ..."
+  if [ -s $AXEK_LINKFILE ]; then
+    echo "Axel ${AXEL_VER} Archive found, skipping download..." 
+  else
+    wget -O $AXEK_LINKFILE $AXEK_LINK
+    ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+     echo "Error: $AXEK_LINKFILE download failed."
+      exit #$ERROR
+    else 
+      echo "Download $AXEK_LINKFILE done."
+    fi
+  fi
+
+  tar xzf $AXEK_LINKFILE
+  ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+    echo "Error: $AXEK_LINKFILE extraction failed."
+    exit #$ERROR
+  else 
+    echo "$AXEK_LINKFILE valid file."
+    echo ""
+  fi
+
+  cd axel-${AXEL_VER}
+  ./configure
+  make
+  make install
+  which axel
+}
+
 cminstall() {
 cd $INSTALLDIR
 if [[ ! -f "${DOWNLOAD}" ]]; then
   getcmstarttime=$(date +%s.%N)
   echo "downloading Centmin Mod..."
-  wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+  if [[ -f /usr/bin/axel && $AXEL = [yY] ]]; then
+    /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
+  else
+    wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+  fi
   getcmendtime=$(date +%s.%N)
   rm -rf centminmod-*
   unzip ${DOWNLOAD}
@@ -119,6 +168,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 }
 
 if [[ "$DEF" = 'novalue' ]]; then
+  install_axel
   cminstall
   echo
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
@@ -163,10 +213,12 @@ fi
 
 case "$1" in
   install)
+    install_axel
     cminstall
     ;;
   yumupdate)
     yumupdater
+    install_axel
     cminstall
     ;;
   *)
