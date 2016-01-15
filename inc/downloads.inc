@@ -13,11 +13,97 @@ checklogdetails() {
 # yumcentossevendownload moved
 
 ###############################################
+phpgeolocation() {
+  # deter server geo location country wise and setup php download mirror 
+  # closest to that country for faster downloads to speed up installs
+  # upgrades
+  # PHP_MIRRORURL='http://php.net'
+  # PHPUPGRADE_MIRRORURL='http://php.net'
+  
+  # Get server's 2 digit country code
+  SERVER_COUNTRY=$(curl -s ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
+
+  if [[ -z "$SERVER_COUNTRY" ]]; then
+    PHP_MIRRORURL="http://php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'AU' ]]; then
+    echo "AU server detected"
+    PHP_MIRRORURL="http://au1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'BR' ]]; then
+    echo "BR server detected"
+    PHP_MIRRORURL="http://br2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
+    echo "CA server detected"
+    PHP_MIRRORURL="http://ca1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'CN' ]]; then
+    echo "CN server detected"
+    PHP_MIRRORURL="http://cn2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
+    echo "DE server detected"
+    PHP_MIRRORURL="http://de1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
+    echo "FR server detected"
+    PHP_MIRRORURL="http://fr2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'GB' ]]; then
+    echo "GB server detected"
+    PHP_MIRRORURL="http://uk1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'HK' ]]; then
+    echo "HK server detected"
+    PHP_MIRRORURL="http://hk1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'ID' ]]; then
+    echo "ID server detected"
+    PHP_MIRRORURL="http://my1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
+    echo "IN server detected"
+    PHP_MIRRORURL="http://in1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
+    echo "JP server detected"
+    PHP_MIRRORURL="http://jp2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'PH' ]]; then
+    echo "PH server detected"
+    PHP_MIRRORURL="http://sg2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'RU' ]]; then
+    echo "RU server detected"
+    PHP_MIRRORURL="http://ua2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
+    echo "SG server detected"
+    PHP_MIRRORURL="http://sg2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'TH' ]]; then
+    echo "TH server detected"
+    PHP_MIRRORURL="http://th1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
+    echo "US server detected"
+    PHP_MIRRORURL="http://php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
+    echo "VN server detected"
+    PHP_MIRRORURL="http://my1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  fi
+}
+
+###############################################
 phptarball() {
 
 if [[ "$PHP_INSTALL" = [yY] ]]; 
 then
 
+    phpgeolocation
     cd $DIR_TMP
 
         cecho "Download php-${PHP_VERSION}.tar.gz ..." $boldyellow
