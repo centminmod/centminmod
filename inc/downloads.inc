@@ -94,6 +94,9 @@ phpgeolocation() {
     echo "VN server detected"
     PHP_MIRRORURL="http://my1.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  else
+    PHP_MIRRORURL="http://php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   fi
 }
 
