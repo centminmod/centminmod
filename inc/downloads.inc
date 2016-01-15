@@ -14,7 +14,7 @@ checklogdetails() {
 
 ###############################################
 phpgeolocation() {
-  # deter server geo location country wise and setup php download mirror 
+  # determine server geo location country wise and setup php download mirror 
   # closest to that country for faster downloads to speed up installs
   # upgrades
   # PHP_MIRRORURL='http://php.net'
