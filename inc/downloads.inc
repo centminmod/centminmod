@@ -106,14 +106,14 @@ then
     phpgeolocation
     cd $DIR_TMP
 
-        cecho "Download php-${PHP_VERSION}.tar.gz ..." $boldyellow
-    if [ -s php-${PHP_VERSION}.tar.gz ]; then
-        cecho "php-${PHP_VERSION}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow
+    if [ -s php-${PHP_VERSION}.tar.${PHPEXTSION} ]; then
+        cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.gz/from/this/mirror $AXELPHPTARGZ $WGETRETRY
+        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror $AXELPHPTARGZ $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: php-${PHP_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -122,14 +122,14 @@ else
 	fi
     fi
 
-tar xzf php-${PHP_VERSION}.tar.gz 
+tar $PHPTAR_FLAGS php-${PHP_VERSION}.tar.gz 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: php-${PHP_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "php-${PHP_VERSION}.tar.gz valid file." $boldyellow
+         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} valid file." $boldyellow
 echo ""
 	fi
 

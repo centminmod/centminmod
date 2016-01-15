@@ -269,13 +269,13 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     DOWNLOADAPP='axel -a'
     WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
+    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
 elif [[ "$CENTOS_SIX" = '6' ]]; then
     DOWNLOADAPP='axel -a'
     WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
+    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
 else
     DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
     WGETRETRY='--tries=3'
@@ -283,13 +283,13 @@ else
     AXELPHPUPGRADETARGZ=''
 fi
 
-    if [ -s php-${phpver}.tar.gz ]; then
+    if [ -s php-${phpver}.tar.${PHPEXTSION} ]; then
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${phpver}.tar.gz/from/this/mirror $AXELPHPUPGRADETARGZ $WGETRETRY
+        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror $AXELPHPUPGRADETARGZ $WGETRETRY
     fi
 
-    tar xzvf php-${phpver}.tar.gz
+    tar $PHPTAR_FLAGS php-${phpver}.tar.${PHPEXTSION}
 
     cd php-${phpver}
 

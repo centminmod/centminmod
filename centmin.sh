@@ -722,16 +722,24 @@ fi
 ###############################################################
 # FUNCTIONS
 
+if [ -f /usr/bin/pxz ]; then
+    PHPEXTSION='xz'
+    PHPTAR_FLAGS='xJf'
+else
+    PHPEXTSION='gz'
+    PHPTAR_FLAGS='xzf'
+fi
+
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     DOWNLOADAPP='axel -a'
     WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
+    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
 elif [[ "$CENTOS_SIX" = '6' ]]; then
     DOWNLOADAPP='axel -a'
     WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.gz"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.gz"
+    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
 else
     DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
     WGETRETRY='--tries=3'
