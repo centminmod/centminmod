@@ -722,7 +722,7 @@ fi
 ###############################################################
 # FUNCTIONS
 
-if [ -f /usr/bin/pxz ]; then
+if [ -f /usr/bin/xz ]; then
     PHPEXTSION='xz'
     PHPTAR_FLAGS='xJf'
 else
