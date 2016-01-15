@@ -282,7 +282,8 @@ else
     AXELPHPTARGZ=''
     AXELPHPUPGRADETARGZ=''
 fi
-
+    
+    phpgeolocation
     if [ -s php-${phpver}.tar.${PHPEXTSION} ]; then
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
