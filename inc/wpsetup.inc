@@ -932,7 +932,7 @@ cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performa
 19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
 cecho "------------------------------------------------------------" $boldgreen
 } 2>&1 | tee /tmp/setupwp.log
-cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
 rm -rf /tmp/setupwp.log
 
 echo
