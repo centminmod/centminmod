@@ -47,7 +47,7 @@ if [ ! -f /etc/ssh/ssh_host_ecdsa_key ]; then
 		echo "/etc/ssh/ssh_host_ecdsa_key setup in /etc/ssh/sshd_config"
 		sed -i 's|^HostKey \/etc\/ssh\/ssh_host_rsa_key|HostKey \/etc\/ssh\/ssh_host_ecdsa_key\nHostKey \/etc\/ssh\/ssh_host_rsa_key|' /etc/ssh/sshd_config
 		grep ssh_host_ecdsa_key /etc/ssh/sshd_config
-		echo "KexAlgorithms ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1" >> /etc/ssh/sshd_config
+		echo -e "\nKexAlgorithms ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1" >> /etc/ssh/sshd_config
 	fi
 fi
 

@@ -339,6 +339,17 @@ pathfixes() {
 	fi
 }
 
+sshdfixes() {
+	# forgot line break in sshd_config for centos 6.x systems
+	# centos 6.x openssh 5.3p1 backported ecdsa keys support but
+	# not configured out of the box https://community.centminmod.com/posts/19702/
+	# this sets up ecdh-sha2-* key exchange support but setup without a line break
+	# this fixes it
+	if [[ "$(grep 'UseDNS noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
+		sed -i 's|UseDNS noKexAlgorithms|UseDNS no\nKexAlgorithms|' /etc/ssh/sshd_config
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -385,6 +396,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	memcachedupdatechecks
 	xpowerby
 	pathfixes
+	sshdfixes
 fi
 
 }
