@@ -35,7 +35,7 @@ else
 fi
 
 if [[ "$DISABLE_NETWORKFFMPEG" = [yY] ]]; then
-	DISABLE_FFMPEGNETWORK='--disable-network'
+	DISABLE_FFMPEGNETWORK=' --disable-network'
 fi
 
 install() {
