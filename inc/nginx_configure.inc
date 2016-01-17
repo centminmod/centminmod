@@ -16,7 +16,7 @@ function funct_nginxconfigure {
 	if [[ -f /usr/local/modsecurity/lib/standalone.so && -f /usr/local/modsecurity/lib/mod_security2.so ]] && [[ "$NGINX_MODSECURITY" = [yY] ]]; then
     	MODSEC_INSTALLED=y
     	MODSEC_VER=$(strings /usr/local/modsecurity/lib/mod_security2.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
-    	if [[ -d "/svr-setup/modsecurity-${MODSEC_VER}" ]]; then
+    	if [[ -d "${DIR_TMP}/modsecurity-${MODSEC_VER}" ]]; then
         	MODSEC_OPT=" --add-module=../modsecurity-${MODSEC_VER}/nginx/modsecurity"
     	else
         	MODSEC_OPT=""
