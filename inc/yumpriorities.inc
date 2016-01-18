@@ -324,6 +324,7 @@ PRIOREXISTS=1
 :/\[rpmforge\]/ , /gpgcheck/
 :a
 priority=5
+exclude=pure-ftpd optipng
 .
 :w
 :q
