@@ -2,7 +2,10 @@ opcachehugepages() {
 	# check if redis installed as redis server requires huge pages disabled
 	if [[ -f /usr/bin/redis-cli ]]; then
 		if [[ -f /sys/kernel/mm/redhat_transparent_hugepage/enabled ]]; then
-			echo never > /sys/kernel/mm/transparent_hugepage/enabled 
+			echo never > /sys/kernel/mm/transparent_hugepage/enabled
+			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
+				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+			fi
 		fi
 	fi
 
