@@ -500,16 +500,38 @@ fi # overwritephpfpmconf
 
 zendopcacheextfix
 
-if [ ! -f ${CONFIGSCANDIR}/geoip.ini ]; then
+if [ ! -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     # always install geoip module
     if [[ "$PHPGEOIP_ALWAYS" = [yY] ]]; then
         geoipphpext
     fi
+elif [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
+    if [[ "$PHPGEOIP_ALWAYS" = [nN] ]]; then
+        rm -rf ${CONFIGSCANDIR}/geoip.ini
+    fi
 fi
 
-if [[ ! -f ${CONFIGSCANDIR}/mailparse.ini && "$PHPMAILPARSE" = [yY] ]]; then
+if [[ ! -f "${CONFIGSCANDIR}/mailparse.ini" && "$PHPMAILPARSE" = [yY] ]]; then
     # install mailparse if PHPMAILPARSE=y
     mailparseinstall
+fi
+
+if [[ "$PHPMONGODB" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
+        rm -rf ${CONFIGSCANDIR}/mongodb.ini
+    fi
+fi
+
+if [[ "$PHP_MEMCACHE" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/memcache.ini" ]; then
+        rm -rf ${CONFIGSCANDIR}/memcache.ini
+    fi
+fi
+
+if [[ "$PHP_MEMCACHED" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/memcached.ini" ]; then
+        rm -rf ${CONFIGSCANDIR}/memcached.ini
+    fi
 fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
