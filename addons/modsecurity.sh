@@ -96,10 +96,49 @@ modsec_install() {
 	make install
 	if [[ "$IS_UPDATE" != [yY] ]]; then
 		cp -a modsecurity.conf-recommended /usr/local/nginx/conf/modsecurity.conf
+		cp -a unicode.mapping /usr/local/nginx/conf/
+		sed -i 's|SecRequestBodyLimit .*|SecRequestBodyLimit 131072000|' /usr/local/nginx/conf/modsecurity.conf
+		sed -i 's|SecAuditLogType Serial|SecAuditLogType Concurrent|' /usr/local/nginx/conf/modsecurity.conf
+		sed -i 's|^#SecAuditLogStorageDir \/opt\/modsecurity\/var\/audit\/|SecAuditLogStorageDir \/var\/log\/modsecurity\/audit\/|' /usr/local/nginx/conf/modsecurity.conf
+		mkdir -p /var/log/modsecurity/audit/
+		chown -R nginx:nginx /var/log/modsecurity/audit/
 	else
 		if [ ! -f /usr/local/nginx/conf/modsecurity.conf ]; then
 			cp -a modsecurity.conf-recommended /usr/local/nginx/conf/modsecurity.conf
+			sed -i 's|SecRequestBodyLimit .*|SecRequestBodyLimit 131072000|' /usr/local/nginx/conf/modsecurity.conf
+			sed -i 's|SecAuditLogType Serial|SecAuditLogType Concurrent|' /usr/local/nginx/conf/modsecurity.conf
+			sed -i 's|^#SecAuditLogStorageDir \/opt\/modsecurity\/var\/audit\/|SecAuditLogStorageDir \/var\/log\/modsecurity\/audit\/|' /usr/local/nginx/conf/modsecurity.conf
+			mkdir -p /var/log/modsecurity/audit/
+			chown -R nginx:nginx /var/log/modsecurity/audit/
 		fi
+		if [ ! -f /usr/local/nginx/conf/unicode.mapping ]; then
+			cp -a unicode.mapping /usr/local/nginx/conf/
+		fi
+	fi
+	# configure OWASP Core Rule Set
+	cd $TMP_DIR
+	if [ ! -d owasp-modsecurity-crs ]; then
+		git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git
+	else
+		rm -rf owasp-modsecurity-crs
+		git clone https://github.com/SpiderLabs/owasp-modsecurity-crs.git
+	fi
+	cd owasp-modsecurity-crs
+	\cp -Rf base_rules/ /usr/local/nginx/conf/
+	if [[ -z "$(grep 'base_rule' /usr/local/nginx/conf/modsecurity.conf)" ]]; then
+cat >> "/usr/local/nginx/conf/modsecurity.conf" <<MDD
+#DefaultAction
+SecDefaultAction "log,deny,phase:1"
+
+#If you want to load single rule /usr/loca/nginx/conf
+#Include base_rules/modsecurity_crs_41_sql_injection_attacks.conf
+
+#Load all Rule
+Include base_rules/*.conf
+
+#Disable rule by ID from error message (for wordpress)
+SecRuleRemoveById 981172 981173 960032 960034 960017 960010 950117 981004 960015
+MDD
 	fi
 }
 
