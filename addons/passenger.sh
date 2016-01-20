@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.4'
+VER='0.0.5'
 ######################################################
 # ruby, rubygem, rails and passenger installer
 # for Centminmod.com
@@ -8,6 +8,7 @@ VER='0.0.4'
 RUBYVER='2.3.0'
 RUBYBUILD=''
 
+# switch to nodesource yum repo instead of source compile
 NODEJSVER='4.2.4'
 
 DT=`date +"%d%m%y-%H%M%S"`
@@ -81,49 +82,21 @@ installnodejs() {
 if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
 
     cd $DIR_TMP
+    curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+    yum -y install nodejs --disableplugin=priorities
+    npm install npm@latest -g
 
-        cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
-    if [ -s node-v${NODEJSVER}.tar.gz ]; then
-        cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
-    else
-        wget -c --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-	fi
-    fi
-
-tar xzf node-v${NODEJSVER}.tar.gz 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
-echo ""
-	fi
-
-cd node-v${NODEJSVER}
-./configure
-make${MAKETHREADS}
-make install
-make doc
-
-npm install forever -g
+# npm install forever -g
 # https://github.com/Unitech/pm2/issues/232
 # https://github.com/arunoda/node-usage/issues/19
 # npm install pm2@latest -g --unsafe-perm
 
 echo -n "Node.js Version: "
 node -v
-echo -n "forver Version: "
-forever -v
+echo -n "npm Version: "
+npm --version
+# echo -n "forver Version: "
+# forever -v
 # echo -n "pm2 Version: "
 # pm2 -V
 else
