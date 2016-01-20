@@ -18,12 +18,13 @@ DT=`date +"%d%m%y-%H%M%S"`
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/09/2015'
-SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
-SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
+SCRIPT_INCREMENTVER='001'
+SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}.${SCRIPT_INCREMENTVER}"
+SCRIPT_DATE='30/04/2016'
+SCRIPT_AUTHOR='eva2000 (centminmod.com)'
+SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='http://centminmod.com'
-COPYRIGHT="Copyright 2011-2015 CentminMod.com"
+COPYRIGHT="Copyright 2011-2016 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -271,7 +272,7 @@ MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled 
 PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # General Configuration
-NGINXUPGRADESLEEP='6'
+NGINXUPGRADESLEEP='3'
 NSD_INSTALL=y                # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
@@ -335,11 +336,11 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.9.20'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.0'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.21'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUAREDISVER='0.22'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
@@ -348,7 +349,7 @@ ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.3'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUARESTYCOREVER='0.1.4'     # openresty https://github.com/openresty/lua-resty-core
 ORESTY_LUAUPSTREAMVER='0.04'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
