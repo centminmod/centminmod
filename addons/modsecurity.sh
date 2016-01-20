@@ -127,6 +127,7 @@ modsec_install() {
 	\cp -Rf base_rules/ /usr/local/nginx/conf/
 	if [[ -z "$(grep 'base_rule' /usr/local/nginx/conf/modsecurity.conf)" ]]; then
 cat >> "/usr/local/nginx/conf/modsecurity.conf" <<MDD
+
 #DefaultAction
 SecDefaultAction "log,deny,phase:1"
 
