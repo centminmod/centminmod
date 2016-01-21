@@ -337,6 +337,12 @@ pathfixes() {
 	if [[ -z "$(grep '\$PATH:' /root/.bashrc)" ]]; then
 		sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
 	fi
+	# for sudo
+	if [ -d /etc/sudoers.d ]; then
+		if [ ! -f /etc/sudoers.d/addpaths ]; then
+			echo "secure_path += /usr/local/bin:/usr/local/sbin" > /etc/sudoers.d/addpaths
+		fi
+	fi
 }
 
 sshdfixes() {
