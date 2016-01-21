@@ -4,6 +4,7 @@
 # To run installer.sh type: 
 # curl -sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
 #######################################################
+export PATH="/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin"
 DT=`date +"%d%m%y-%H%M%S"`
 branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
