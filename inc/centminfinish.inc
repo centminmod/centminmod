@@ -16,7 +16,7 @@ letswait
 	if [[ -z "$(ps aufx | grep 'crond' | grep -v grep)" ]]; then
 echo ""
 	if [[ -z "$(rpm -qa sysstat)" || -z "$(rpm -qa cronie)" ]]; then
-		yum -y -q install sysstat cronie
+		$(which yum) -y -q install sysstat cronie
 	fi
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond & sysstat service are running" $boldyellow
@@ -40,26 +40,26 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check ccache Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	ccache -V
+	$(which ccache) -V
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check Nginx Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	nginx -V
+	$(which nginx) -V
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check PHP-FPM Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	php -v
+	$(which php) -v
 letswait
 
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check MariaDB installed RPM Versions:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	rpm -qa | grep -i MariaDB
+	$(which rpm) -qa | grep -i MariaDB
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
@@ -71,14 +71,14 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check CSF Firewall Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-csf -v
+$(which csf) -v
 letswait
 
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check Siege Benchmark Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-siege -V
+$(which siege) -V
 letswait
 if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
@@ -86,7 +86,7 @@ echo ""
 	cecho "Check ngx_pagespeed Control Script:" $boldyellow
 	cecho "http://centminmod.com/nginx_ngx_pagespeed.html" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-pscontrol
+/usr/bin/pscontrol
 letswait
 fi
 # echo ""
@@ -105,19 +105,19 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check NSD Bind Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-nsd -v
+$(which nsd) -v
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check pure-ftpd Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-pure-ftpd -h | head -n1 | awk '{print $1,$2}'
+$(which pure-ftpd) -h | head -n1 | awk '{print $1,$2}'
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check YUM Repo List" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-yum repolist
+$(which yum) repolist
 
 # echo ""
 	fi # unattended
