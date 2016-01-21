@@ -1805,7 +1805,7 @@ else
             # clear
                 # display menu
             cecho "--------------------------------------------------------" $boldyellow
-            cecho "Centmin Mod $SCRIPT_VERSION - $SCRIPT_URL" $boldgreen
+            cecho "Centmin Mod ${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER} - $SCRIPT_URL" $boldgreen
             #cecho "Menu/Mods Author: $SCRIPT_MODIFICATION_AUTHOR" $boldgreen
             #cecho "Centmin Original Author: $SCRIPT_AUTHOR" $boldgreen
             cecho "--------------------------------------------------------" $boldyellow
