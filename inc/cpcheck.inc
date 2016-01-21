@@ -340,7 +340,7 @@ pathfixes() {
 	# for sudo
 	if [ -d /etc/sudoers.d ]; then
 		if [ ! -f /etc/sudoers.d/addpaths ]; then
-			echo "Defaults secure_path += /usr/local/bin:/usr/local/sbin" > /etc/sudoers.d/addpaths
+			# echo "Defaults secure_path += /usr/local/bin:/usr/local/sbin" > /etc/sudoers.d/addpaths
 		fi
 	fi
 }
