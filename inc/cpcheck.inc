@@ -335,12 +335,17 @@ xpowerby() {
 
 pathfixes() {
 	if [[ -z "$(grep '\$PATH:' /root/.bashrc)" ]]; then
-		sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
+		# sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
+		sed -i 's|export PATH=.*|export PATH="\$PATH:\/usr\/lib64\/ccache:\/usr\/local\/sbin:\/usr\/local\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin"|' /root/.bashrc
 	fi
 	# for sudo
 	if [ -d /etc/sudoers.d ]; then
 		if [ ! -f /etc/sudoers.d/addpaths ]; then
-			# echo "Defaults secure_path += /usr/local/bin:/usr/local/sbin" > /etc/sudoers.d/addpaths
+			if [[ "$(uname -m)" = 'x86_64' ]]; then
+				echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+			else
+				echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+			fi
 		fi
 	fi
 }
