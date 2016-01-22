@@ -336,7 +336,7 @@ xpowerby() {
 pathfixes() {
 	if [[ -z "$(grep '\$PATH:' /root/.bashrc)" ]]; then
 		# sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
-		sed -i 's|export PATH=.*|export PATH="\$PATH:\/usr\/lib64\/ccache:\/usr\/local\/sbin:\/usr\/local\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin"|' /root/.bashrc
+		sed -i 's|export PATH=.*|export PATH="\$PATH:\/usr\/lib64\/ccache:\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin"|' /root/.bashrc
 	fi
 	# for sudo
 	if [ -d /etc/sudoers.d ]; then
