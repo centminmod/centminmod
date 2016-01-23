@@ -108,8 +108,52 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 elif [[ "$CENTOS_SIX" = '6' ]]; then
 	echo
 	echo "CentOS 6.x detected... "
-	echo "addons/nodejs.sh currently only works on CentOS 7.x systems"
-	exit
+	echo "addons/nodejs.sh nodesource YUM install currently only works on CentOS 7.x systems"
+	echo "compiling node.js from source instead..."
+	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+	
+    	cd $DIR_TMP
+	
+        	cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
+    	if [ -s node-v${NODEJSVER}.tar.gz ]; then
+        	cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
+    	else
+        	wget -c --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
+	ERROR=$?
+		if [[ "$ERROR" != '0' ]]; then
+		cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
+	checklogdetails
+		exit #$ERROR
+	else 
+         	cecho "Download done." $boldyellow
+	#echo ""
+		fi
+    	fi
+	
+		tar xzf node-v${NODEJSVER}.tar.gz 
+		ERROR=$?
+		if [[ "$ERROR" != '0' ]]; then
+		cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
+	checklogdetails
+		exit #$ERROR
+	else 
+         	cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
+			echo ""
+		fi
+	
+		cd node-v${NODEJSVER}
+		./configure
+		make${MAKETHREADS}
+		make install
+		make doc
+    	npm install npm@latest -g
+	
+		echo -n "Node.js Version: "
+		node -v
+		echo -n "npm Version: "
+		npm --version
+	else
+		echo "node.js install already detected"
 fi
 
 }
