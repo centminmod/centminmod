@@ -8,6 +8,7 @@ VER='0.0.2'
 # switch to nodesource yum repo instead of source compile
 NODEJSVER='4.2.4'
 NODEJS_SOURCEINSTALL='y'
+REINSTALL='y'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
@@ -92,7 +93,7 @@ scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
 	if [[ "$CENTOS_SIX" = '6' ]]; then
 		if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-			echo "install scl for newer gcc and g++ versions"
+			cecho "install scl for newer gcc and g++ versions" $boldgreen
 			wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
 			rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
 			yum -y install devtoolset-3 -q
@@ -103,8 +104,8 @@ scl_install() {
 			# export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc ${CCTOOLSET}"
 			# export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
 			CLANG_CCOPT=""
-			export CC="/usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
-			export CXX="/usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
+			export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
+			export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
 			export CCACHE_CPP2=yes
 			echo ""
 		else
@@ -125,29 +126,46 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     	yum -y install nodejs --disableplugin=priorities
     	npm install npm@latest -g
 	
-		echo -n "Node.js Version: "
+		echo
+		cecho "---------------------------" $boldyellow
+		cecho -n "Node.js Version: " $boldgreen
 		node -v
-		echo -n "npm Version: "
+		cecho "---------------------------" $boldyellow
+		cecho -n "npm Version: " $boldgreen
 		npm --version
+		cecho "---------------------------" $boldyellow
+		echo
+		cecho "node.js source install completed" $boldgreen
 	else
-		echo "node.js install already detected"
+		echo
+		cecho "node.js install already detected" $boldgreen
 	fi
 elif [[ "$CENTOS_SIX" = '6' ]]; then
 	echo
-	echo "--------------------------------------------------------------------"
-	echo "CentOS 6.x detected... "
-	echo "nodesource YUM install currently only works on CentOS 7.x systems"
-	echo "alternative is to compile node.js from source instead"
-	echo "due to devtoolset-3 & source compilation method it may"
-	echo "take between 10-45 minutes to compile depending on system"
+	cecho "--------------------------------------------------------------------" $boldyellow
+	cecho "CentOS 6.x detected... " $boldgreen
+	cecho "nodesource YUM install currently only works on CentOS 7.x systems" $boldgreen
+	cecho "alternative is to compile node.js from source instead" $boldgreen
+	cecho "due to devtoolset-3 & source compilation method it may" $boldgreen
+	cecho "take between 10-45 minutes to compile depending on system" $boldgreen
+	cecho "--------------------------------------------------------------------" $boldyellow
 	echo
 	read -ep "Do you want to continue with node.js source install ? [y/n]: " nodecontinue
 	echo
 	if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
-		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$REINSTALL" = [yY] ]]; then
 	
 			if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
 				scl_install
+			elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+				CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+				unset CC
+				unset CXX
+				CLANG_CCOPT=""
+				export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
+				export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
+				export CCACHE_CPP2=yes
+				echo ""
 			fi
 		
     		cd $DIR_TMP
@@ -187,22 +205,29 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 			make doc
     		npm install npm@latest -g
 		
-			echo -n "Node.js Version: "
+			echo
+			cecho "---------------------------" $boldyellow
+			cecho -n "Node.js Version: " $boldgreen
 			node -v
-			echo -n "npm Version: "
+			cecho "---------------------------" $boldyellow
+			cecho -n "npm Version: " $boldgreen
 			npm --version
+			cecho "---------------------------" $boldyellow
+			echo
+			cecho "node.js source install completed" $boldgreen
 		else
-			echo "node.js install already detected"
+			echo
+			cecho "node.js install already detected" $boldgreen
 		fi
 	else
 		if [[ "$NODEJS_SOURCEINSTALL" != [yY] ]]; then
 			echo
-			echo "NODEJS_SOURCEINSTALL=n is set"
-			echo "exiting..."
+			cecho "NODEJS_SOURCEINSTALL=n is set" $boldgreen
+			cecho "exiting..." $boldgreen
 			exit			
 		else	
 			echo
-			echo "exiting..."
+			cecho "exiting..." $boldgreen
 			exit
 		fi
 	fi # nodecontinue
