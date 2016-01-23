@@ -430,9 +430,31 @@ else
 	GEOIPOPT=''
 fi
 
-if [[ "$NGINX_PASSENGER" = [yY] && -d $(passenger-config --nginx-addon-dir) ]]; then
+if [[ "$NGINX_PASSENGER" = [yY] && "$RUBY_VERSION" ]]; then
+	export PATH=/usr/local/rvm/gems/${RUBY_VERSION}/bin:/usr/local/rvm/rubies/${RUBY_VERSION}/bin:$PATH
+	PASSENGERS_PATH=$(/bin/find /usr/local/rvm/gems -name 'passenger-config' | grep bin | tail -1)
+	echo
+	echo "RUBY_VERSION"
+	echo $RUBY_VERSION
+	echo
+	echo "passenger-config --nginx-addon-dir"
+	passenger-config --nginx-addon-dir
+	# sleep 10
+fi
+
+if [[ "$NGINX_PASSENGER" = [yY] && -d "$(passenger-config --nginx-addon-dir)" ]]; then
+	# [[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.
 	sed -i 's/#passenger_/passenger_/g' /usr/local/nginx/conf/passenger.conf
 	RUBYMODULE=" --add-module=$(passenger-config --nginx-addon-dir)"
+	echo
+	echo "RUBY_VERSION"
+	echo $RUBY_VERSION
+	echo
+	echo "RUBYMODULE"
+	echo $RUBYMODULE
+	echo
+	# /usr/bin/env
+	# echo
 else
 	RUBYMODULE=""
 fi
