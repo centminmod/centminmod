@@ -154,6 +154,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 		npm --version
 	else
 		echo "node.js install already detected"
+	fi
 fi
 
 }
