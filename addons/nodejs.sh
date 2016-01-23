@@ -7,6 +7,7 @@ VER='0.0.1'
 ######################################################
 # switch to nodesource yum repo instead of source compile
 NODEJSVER='4.2.4'
+NODEJS_SOURCEINSTALL='n'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
@@ -87,6 +88,31 @@ preyum() {
 	mkdir -p /home/.ccache/tmp
 }
 
+scl_install() {
+	# if gcc version is less than 4.7 (407) install scl collection yum repo
+	if [[ "$CENTOS_SIX" = '6' ]]; then
+		if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+			echo "install scl for newer gcc and g++ versions"
+			wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
+			rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
+			yum -y install devtoolset-3 -q
+
+			CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+			unset CC
+			unset CXX
+			# export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc ${CCTOOLSET}"
+			# export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
+			CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'
+			export CC="ccache /usr/bin/clang -ferror-limit=0${CCTOOLSET}${CLANG_CCOPT}"
+			export CXX="$CC"
+			export CCACHE_CPP2=yes
+			echo ""
+		else
+			CCTOOLSET=""
+		fi
+	fi # centos 6 only needed
+}
+
 installnodejs() {
 
 # nodesource yum only works on CentOS 7 right now
@@ -109,52 +135,74 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	echo
 	echo "CentOS 6.x detected... "
 	echo "addons/nodejs.sh nodesource YUM install currently only works on CentOS 7.x systems"
-	echo "compiling node.js from source instead..."
-	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+	echo "compiling node.js from source instead"
+	echo "this may take a while due to devtoolset-3 & source compilation"
+	echo
+	read -ep "Do you want to continue with node.js source install ? [y/n]: " nodecontinue
+	echo
+	if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
+		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
 	
-    	cd $DIR_TMP
-	
-        	cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
-    	if [ -s node-v${NODEJSVER}.tar.gz ]; then
-        	cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
-    	else
-        	wget -c --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
-	ERROR=$?
-		if [[ "$ERROR" != '0' ]]; then
-		cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
-	checklogdetails
-		exit #$ERROR
-	else 
-         	cecho "Download done." $boldyellow
-	#echo ""
-		fi
-    	fi
-	
-		tar xzf node-v${NODEJSVER}.tar.gz 
+			if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+				scl_install
+			fi
+		
+    		cd $DIR_TMP
+		
+        		cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
+    		if [ -s node-v${NODEJSVER}.tar.gz ]; then
+        		cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
+    		else
+        		wget -c --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
 		ERROR=$?
-		if [[ "$ERROR" != '0' ]]; then
-		cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
-	checklogdetails
-		exit #$ERROR
-	else 
-         	cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
-			echo ""
+			if [[ "$ERROR" != '0' ]]; then
+			cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
+		checklogdetails
+			exit #$ERROR
+		else 
+         		cecho "Download done." $boldyellow
+		#echo ""
+			fi
+    		fi
+		
+			tar xzf node-v${NODEJSVER}.tar.gz 
+			ERROR=$?
+			if [[ "$ERROR" != '0' ]]; then
+			cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
+		checklogdetails
+			exit #$ERROR
+		else 
+         		cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
+				echo ""
+			fi
+		
+			cd node-v${NODEJSVER}
+			make clean
+			./configure
+			make${MAKETHREADS}
+			make install
+			make doc
+    		npm install npm@latest -g
+		
+			echo -n "Node.js Version: "
+			node -v
+			echo -n "npm Version: "
+			npm --version
+		else
+			echo "node.js install already detected"
 		fi
-	
-		cd node-v${NODEJSVER}
-		./configure
-		make${MAKETHREADS}
-		make install
-		make doc
-    	npm install npm@latest -g
-	
-		echo -n "Node.js Version: "
-		node -v
-		echo -n "npm Version: "
-		npm --version
 	else
-		echo "node.js install already detected"
-	fi
+		if [[ "$NODEJS_SOURCEINSTALL" != [yY] ]]; then
+			echo
+			echo "NODEJS_SOURCEINSTALL=n is set"
+			echo "exiting..."
+			exit			
+		else	
+			echo
+			echo "exiting..."
+			exit
+		fi
+	fi # nodecontinue
 fi
 
 }
