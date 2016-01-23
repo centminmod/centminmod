@@ -48,6 +48,23 @@ return
 }
 
 ###########################################
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
+fi
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
@@ -79,30 +96,38 @@ preyum() {
 
 installnodejs() {
 
-if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
-
-    cd $DIR_TMP
-    curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
-    yum -y install nodejs --disableplugin=priorities
-    npm install npm@latest -g
-
-# npm install forever -g
-# https://github.com/Unitech/pm2/issues/232
-# https://github.com/arunoda/node-usage/issues/19
-# npm install pm2@latest -g --unsafe-perm
-
-echo -n "Node.js Version: "
-node -v
-echo -n "npm Version: "
-npm --version
-# echo -n "forver Version: "
-# forever -v
-# echo -n "pm2 Version: "
-# pm2 -V
-else
-	echo "node.js install already detected"
+# nodesource yum only works on CentOS 7 right now
+# https://github.com/nodesource/distributions/issues/128
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+	
+    	cd $DIR_TMP
+    	curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+    	yum -y install nodejs --disableplugin=priorities
+    	npm install npm@latest -g
+	
+	# npm install forever -g
+	# https://github.com/Unitech/pm2/issues/232
+	# https://github.com/arunoda/node-usage/issues/19
+	# npm install pm2@latest -g --unsafe-perm
+	
+	echo -n "Node.js Version: "
+	node -v
+	echo -n "npm Version: "
+	npm --version
+	# echo -n "forver Version: "
+	# forever -v
+	# echo -n "pm2 Version: "
+	# pm2 -V
+	else
+		echo "node.js install already detected"
+	fi
+elif [[ "$CENTOS_SIX" = '6' ]]; then
+	echo
+	echo "CentOS 6.x detected... "
+	echo "addons/nodejs.sh currently only works on CentOS 7.x systems"
+	# exit
 fi
-
 }
 
 installruby() {
