@@ -1,13 +1,13 @@
 #!/bin/bash
-VER='0.0.1'
+VER='0.0.2'
 ######################################################
 # node.js installer
 # for Centminmod.com
-# written by George Liu (eva2000) vbtechsupport.com
+# written by George Liu (eva2000) centminmod.com
 ######################################################
 # switch to nodesource yum repo instead of source compile
 NODEJSVER='4.2.4'
-NODEJS_SOURCEINSTALL='n'
+NODEJS_SOURCEINSTALL='y'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
@@ -102,9 +102,9 @@ scl_install() {
 			unset CXX
 			# export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc ${CCTOOLSET}"
 			# export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
-			CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'
-			export CC="ccache /usr/bin/clang -ferror-limit=0${CCTOOLSET}${CLANG_CCOPT}"
-			export CXX="$CC"
+			CLANG_CCOPT=""
+			export CC="/usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
+			export CXX="/usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
 			export CCACHE_CPP2=yes
 			echo ""
 		else
@@ -117,6 +117,7 @@ installnodejs() {
 
 # nodesource yum only works on CentOS 7 right now
 # https://github.com/nodesource/distributions/issues/128
+# https://github.com/nodesource/distributions/blob/master/OLDER_DISTROS.md
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
     	cd $DIR_TMP
@@ -133,10 +134,12 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	fi
 elif [[ "$CENTOS_SIX" = '6' ]]; then
 	echo
+	echo "--------------------------------------------------------------------"
 	echo "CentOS 6.x detected... "
-	echo "addons/nodejs.sh nodesource YUM install currently only works on CentOS 7.x systems"
-	echo "compiling node.js from source instead"
-	echo "this may take a while due to devtoolset-3 & source compilation"
+	echo "nodesource YUM install currently only works on CentOS 7.x systems"
+	echo "alternative is to compile node.js from source instead"
+	echo "due to devtoolset-3 & source compilation method it may"
+	echo "take between 10-45 minutes to compile depending on system"
 	echo
 	read -ep "Do you want to continue with node.js source install ? [y/n]: " nodecontinue
 	echo
