@@ -4,6 +4,7 @@ shortcutsinstall() {
 if [[ "$SHORTCUTS" = [yY] ]]; then
     cecho "**********************************************************************" $boldgreen
     cecho "* Add cmd shortcuts for php.ini, my.cnf, php-fpm.conf, nginx.conf and virtual.conf " $boldgreen
+    cecho "* Edit /etc/centminmod/custom_config.inc = customconfig" $boldgreen
     cecho "* Edit php.ini = phpedit " $boldgreen
     cecho "* Edit my.cnf = mycnf " $boldgreen
     cecho "* Edit php-fpm.conf = fpmconf " $boldgreen
@@ -18,6 +19,7 @@ if [[ "$SHORTCUTS" = [yY] ]]; then
     cecho "**********************************************************************" $boldgreen
 
 if [[ "$USEEDITOR" = 'vim' ]]; then
+    echo "vim /etc/centminmod/custom_config.inc" > /usr/bin/customconfig ; chmod 700 /usr/bin/customconfig
     echo "vim /usr/local/lib/php.ini" > /usr/bin/phpedit ; chmod 700 /usr/bin/phpedit
     echo "vim /etc/my.cnf" >/usr/bin/mycnf ; chmod 700 /usr/bin/mycnf
     echo "vim /usr/local/etc/php-fpm.conf" >/usr/bin/fpmconf ; chmod 700 /usr/bin/fpmconf
@@ -31,6 +33,7 @@ if [[ "$USEEDITOR" = 'vim' ]]; then
     echo "vim /usr/local/nginx/conf/drop.conf" >/usr/bin/dropinc ; chmod 700 /usr/bin/dropinc
     echo "vim /usr/local/nginx/conf/staticfiles.conf" >/usr/bin/statfilesinc ; chmod 700 /usr/bin/statfilesinc
 else
+    echo "nano -w /etc/centminmod/custom_config.inc" > /usr/bin/customconfig ; chmod 700 /usr/bin/customconfig
     echo "nano -w /usr/local/lib/php.ini" > /usr/bin/phpedit ; chmod 700 /usr/bin/phpedit
     echo "nano -w /etc/my.cnf" >/usr/bin/mycnf ; chmod 700 /usr/bin/mycnf
     echo "nano -w /usr/local/etc/php-fpm.conf" >/usr/bin/fpmconf ; chmod 700 /usr/bin/fpmconf
