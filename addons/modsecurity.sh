@@ -70,7 +70,9 @@ modsec_install() {
 	./configure --prefix=${PREFIX} --with-apr=${PREFIX} --with-openssl=$TMP_DIR/staticlibssl/lib --with-crypto
 	make -j2
 	make install
-	
+	echo "/opt/lib" > /etc/ld.so.conf.d/modsec_apr.conf
+	ldconfig
+
 	cd $TMP_DIR
 	mkdir modsec_pcre
 	cd modsec_pcre
@@ -81,7 +83,7 @@ modsec_install() {
 	./configure --prefix=${PCRE_PREFIX} --enable-jit --enable-pcre16 --enable-pcre32 --enable-unicode-properties
 	make -j2
 	make install
-	echo "/opt/pcre/lib" > /etc/ld.so.conf.d/modsec_pcre.conf
+	echo "/opt/pcre/lib/lib" > /etc/ld.so.conf.d/modsec_pcre.conf
 	ldconfig
 	
 	cd $TMP_DIR
