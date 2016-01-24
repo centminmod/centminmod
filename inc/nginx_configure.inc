@@ -635,6 +635,12 @@ if [[ "$NGINX_PASSENGER" = [yY] ]]; then
 	CLANG='n'
 fi
 
+# ngx_pagespeed => 1.10 switch back to GCC instead of Clang compiler
+# https://community.centminmod.com/posts/22882/
+if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+	CLANG='n'
+fi
+
 # if [[ "$(uname -m)" != 'x86_64' ]]; then
 # 	CLANG='n'
 # fi
@@ -767,26 +773,38 @@ if [[ "$CLANG" = [yY] ]]; then
 	if [[ ! -f /usr/bin/clang ]]; then
 		yum -q -y install clang clang-devel
 	fi
+	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		scl_install
+	fi
+	# ngx_pagespeed => 1.10
+	if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+		CCTOOLSET='--gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+		#CCTOOLSETOPT=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+		#export CFLAGS="$CCTOOLSET"
+	else
+		CCTOOLSET=""
+		CCTOOLSETOPT=""
+	fi
 	# ccache compiler has some initial overhead for compiles but speeds up subsequent
 	# recompiles. however on initial install ccache has no benefits, so for initial
 	# centmin mod install disabling ccache will in theory speed up first time installs
 	if [[ "$INITIALINSTALL" != [yY] ]]; then	
-		export CC="ccache /usr/bin/clang -ferror-limit=0"
+		export CC="ccache /usr/bin/clang -ferror-limit=0${CCTOOLSET}"
 		export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
 		export CCACHE_CPP2=yes
 		CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'
 echo "
-export CC=\"ccache /usr/bin/clang -ferror-limit=0\"
+export CC=\"ccache /usr/bin/clang -ferror-limit=0${CCTOOLSET}\"
 export CXX=\"ccache /usr/bin/clang++ -ferror-limit=0\"
 export CCACHE_CPP2=yes
 CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'"
 	else
-		export CC="/usr/bin/clang -ferror-limit=0"
+		export CC="/usr/bin/clang -ferror-limit=0${CCTOOLSET}"
 		export CXX="/usr/bin/clang++ -ferror-limit=0"
 		# export CCACHE_CPP2=yes
 		CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'
 echo "	
-export CC=\"/usr/bin/clang -ferror-limit=0\"
+export CC=\"/usr/bin/clang -ferror-limit=0${CCTOOLSET}\"
 export CXX=\"/usr/bin/clang++ -ferror-limit=0\"
 # export CCACHE_CPP2=yes
 CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion'"
@@ -794,6 +812,43 @@ CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declaration
 else
 	CLANG_CCOPT=""
 	echo "CLANG_CCOPT=\"\""
+fi
+
+# devtoolset-3 usage for ngx_pagespeed 1.10 branch which doesn't support
+# centos 6 based gcc 4.4.7
+if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
+	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		scl_install
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+		PS_FLAGS=""
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			unset CC
+			unset CXX
+			export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
+			export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+		else
+			unset CC
+			unset CXX
+			export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
+			export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
+		fi
+	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+		PS_FLAGS=""
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			unset CC
+			unset CXX
+			export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
+			export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+		else
+			unset CC
+			unset CXX
+			export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
+			export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
+		fi
+	fi
 fi
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "

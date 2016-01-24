@@ -11,6 +11,19 @@
         RPMFARCH='i386'
     fi
 
+    if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+        source "inc/custom_config.inc"
+    fi
+    
+    if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+        # default is at /etc/centminmod/custom_config.inc
+        source "${CONFIGSCANBASE}/custom_config.inc"
+    fi
+    
+    if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+        source "${CM_INSTALLDIR}/inc/z_custom.inc"
+    fi
+
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
 CCCACHELINK="http://samba.org/ftp/ccache/${CCACHEFILE}"
 CCCACHELINKLOCAL="http://centminmod.com/centminmodparts/ccache/${CCACHEFILE}"

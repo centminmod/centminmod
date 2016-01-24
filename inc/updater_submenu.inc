@@ -235,6 +235,9 @@ centminlog
 {
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
+	echo "fetching latest branch list..."
+	git fetch
+	echo
 	cecho "Update Centmin Mod to newer branch via git" $boldyellow
 	cecho "You need to input the name of the branch" $boldyellow
 	cecho "List of current remote branches by descending date order" $boldyellow

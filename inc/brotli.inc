@@ -8,7 +8,8 @@ scl_install() {
 			echo "install scl for newer gcc and g++ versions"
 			wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
 			rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
-			yum -y install devtoolset-3 -q
+			# yum -y install devtoolset-3 -q
+			yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
 		fi
 	fi # centos 6 only needed
 }
