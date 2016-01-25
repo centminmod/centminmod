@@ -2166,8 +2166,31 @@ EOF
         
         ;;
         15|imagick)
+
+        starttime=$(date +%s.%N)
+        
+        centminlog
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
         
         imagickinstall
+        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
+            fi
+        fi
+        
+        endtime=$(date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
+        echo "Total ImagicK PHP Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
         
         ;;
         16|sshdport)
@@ -2176,6 +2199,15 @@ EOF
         
         ;;
         17|multithreadcomp)
+
+        starttime=$(date +%s.%N)
+        
+        centminlog
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
         
         funct_pigzinstall
         funct_pbzip2install
@@ -2183,6 +2215,20 @@ EOF
         funct_lzipinstall
         funct_plzipinstall
         funct_p7zipinstall
+        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
+            fi
+        fi
+        
+        endtime=$(date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
+        echo "Total Multi-Threaded Compression Tools Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
         
         ;;
         18|suhosininstall)
