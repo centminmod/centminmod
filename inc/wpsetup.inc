@@ -183,9 +183,9 @@ wpinstall
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
-  WPADMINUSER=$(echo $WPADMINUSER | sed -e 's|\/||g')
+  WPADMINUSER=$(echo $WPADMINUSER | sed -e 's|\/||g' -e 's|\+||g')
   WPADMINPASS="z${WPSALTB}wps${WPN}"
-  WPADMINPASS=$(echo $WPADMINPASS | sed -e 's|\/||g')
+  WPADMINPASS=$(echo $WPADMINPASS | sed -e 's|\/||g' -e 's|\+||g')
  
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
