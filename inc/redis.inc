@@ -80,7 +80,11 @@ else
     fi
     /usr/local/bin/phpize
     if [[ -f "${PHPEXTDIRD}/igbinary.so" ]]; then
-        ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary
+        if [[ "$PHPMUVER" = '5.5' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '5.5' ]]; then
+            ./configure --with-php-config=/usr/local/bin/php-config
+        else
+            ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary
+        fi
     else
         ./configure --with-php-config=/usr/local/bin/php-config
     fi
