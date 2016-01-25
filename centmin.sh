@@ -399,7 +399,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.37'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.0RC2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.0RC5'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'    # Use this version of Memcached server
