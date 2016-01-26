@@ -43,11 +43,11 @@ cecho "Updating GeoIP databases..." $boldyellow
 
 \cp -f /usr/share/GeoIP/GeoIP.dat /usr/share/GeoIP/GeoIP.dat-backup
 rm -rf /usr/share/GeoIP/GeoIP.dat
-wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
 gzip -df /usr/share/GeoIP/GeoIP.dat.gz
 
 rm -rf /usr/share/GeoIP/GeoIPCity.dat
-wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
 gzip -df /usr/share/GeoIP/GeoLiteCity.dat.gz
 \cp -af /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 
