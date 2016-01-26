@@ -182,26 +182,25 @@ if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
 	rm -rf ${NGX_PAGESPEEDGITLINKFILE}
 fi
 
-        cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} ..." $boldyellow
-    if [ -s ${NGX_PAGESPEEDPSOLINKLFILE} ]; then
-        cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
-    else
+        cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} PSOL Library..." $boldyellow
         if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
             cd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
         elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
             cd $DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}
         fi
-        wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDPSOLINKL} --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-	fi
-    fi
+        if [ -s ${NGX_PAGESPEEDPSOLINKLFILE} ]; then
+          cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
+        else
+          wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDPSOLINKL} --tries=3 
+          ERROR=$?
+	        if [[ "$ERROR" != '0' ]]; then
+	          cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} download failed." $boldgreen
+            checklogdetails
+	          exit #$ERROR
+          else 
+            cecho "Download done." $boldyellow
+        	fi
+        fi
 
 tar xzf ${NGX_PAGESPEEDPSOLINKLFILE}
 ERROR=$?
