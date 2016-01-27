@@ -561,7 +561,11 @@ EFF
 fi
 
 cmservice mysql restart
-cmchkconfig mariadb on
+if [[ "$CENTOS_SEVEN" = '7' ]] ; then
+    cmchkconfig mariadb on
+else
+    cmchkconfig mysql on
+fi
 
 sed -i 's|^#innodb_buffer_pool_dump_at_shutdown|innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
 sed -i 's|^#innodb_buffer_pool_load_at_startup|innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
