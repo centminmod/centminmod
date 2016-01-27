@@ -14,7 +14,7 @@ DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
 ###############################################################################
-DISABLE_NETWORKFFMPEG='y'
+DISABLE_NETWORKFFMPEG='n'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.2'
 # http://downloads.xiph.org/releases/vorbis/
