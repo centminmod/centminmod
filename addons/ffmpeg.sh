@@ -19,6 +19,7 @@ DISABLE_NETWORKFFMPEG='n'
 LIBOGG_VER='1.3.2'
 # http://downloads.xiph.org/releases/vorbis/
 LIBVORBIS_VER='1.3.5'
+GD_ENABLE='n'
 ###############################################################################
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
@@ -252,6 +253,12 @@ phpext() {
 	
 	make clean
 	phpize -clean
+	if [[ "$GD_ENABLE" = [yY] ]]; then
+		sed -i 's/PIX_FMT_RGBA32/PIX_FMT_RGB32/g' ffmpeg_frame.c
+		GDOPT=' --enable-skip-gd-check'
+	else
+		GDOPT=""
+	fi
 	phpize
 	
 	# mkdir -p /usr/local/include
@@ -275,7 +282,7 @@ phpext() {
 	cd $DIR_TMP/ffmpeg-php-git
 	# http://stackoverflow.com/a/14947692/272648
 	
-	LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" ./configure --with-php-config=/usr/local/bin/php-config --with-ffmpeg=/opt/ffmpeg
+	LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" ./configure --with-php-config=/usr/local/bin/php-config --with-ffmpeg=/opt/ffmpeg${GDOPT}
 	
 	# mv /opt/ffmpeg/include/libavutil/time.h /opt/ffmpeg/include/libavutil/time.h_
 	make${MAKETHREADS}
