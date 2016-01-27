@@ -776,7 +776,9 @@ if [[ "$CLANG" = [yY] ]]; then
 		yum -q -y install clang clang-devel
 	fi
 	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-		scl_install
+		if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+			scl_install
+		fi
 	fi
 	# ngx_pagespeed => 1.10
 	if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
