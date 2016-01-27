@@ -231,13 +231,13 @@ if [[ "$wpsubdirinstall" = [yY] ]]; then
   SUBDIR_INSTALL=y
   read -ep "Enter subdirectory name i.e. /blog enter = blog ? : " wpsubdir_value
   WPSUBDIR="/$wpsubdir_value"
-  SUBDIR_INCLUDE="include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;"
+  SUBDIR_INCLUDE="include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf;"
   NONSUBDIR_INCLUDE=""
 elif [[ "$wpsubdirinstall" != [yY] ]]; then
   SUBDIR_INSTALL=n
   WPSUBDIR=""
   SUBDIR_INCLUDE=""
-  NONSUBDIR_INCLUDE="include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;"
+  NONSUBDIR_INCLUDE="include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf;"
 fi
 
 read -ep "Disable Auto Generated WP Admin Username / Password ? [y/n]: " disableautogen
@@ -335,6 +335,14 @@ if [[ "$wpsubdirinstall" = [yY] ]]; then
   mkdir -p /home/nginx/domains/$vhostname/public/$wpsubdir_value
 fi
 
+if [ ! -f /usr/local/nginx/conf/wpincludes ]; then
+  mkdir -p /usr/local/nginx/conf/wpincludes
+fi
+
+if [ ! -f "/usr/local/nginx/conf/wpincludes/$vhostname" ]; then
+  mkdir -p "/usr/local/nginx/conf/wpincludes/$vhostname"
+fi
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
   pure-pw mkdb
@@ -410,7 +418,7 @@ sed -i "s|fastcgi_param  SERVER_NAME        \$server_name;|fastcgi_param  SERVER
 ################################################################################
 # create wp enable enabler included files https://community.centminmod.com/posts/21220/
 
-cat > "/usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf"<<HFA
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf"<<HFA
     set \$cache_uri \$request_uri;
 
     # bypass cache if POST requests or URLs with a query string
@@ -598,10 +606,10 @@ server {
    deny all;
   }
 
-  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
-  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
   # https://community.centminmod.com/posts/18828/
-  #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
   $SUBDIR_INCLUDE
@@ -719,10 +727,10 @@ server {
    deny all;
   }
 
-  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
-  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
   # https://community.centminmod.com/posts/18828/
-  #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
   $SUBDIR_INCLUDE
@@ -806,10 +814,10 @@ server {
 
   root /home/nginx/domains/$vhostname/public;
 
-  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf;
-  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
   # https://community.centminmod.com/posts/18828/
-  #include /usr/local/nginx/conf/rediscache_${vhostname}.conf;  
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
   $SUBDIR_INCLUDE
@@ -863,7 +871,7 @@ END
 
 fi
 
-cat > "/usr/local/nginx/conf/wpsecure_${vhostname}.conf" <<EEF
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf" <<EEF
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
 location ~* /(?:uploads|files)/.*\.php\$ {
@@ -905,7 +913,7 @@ location ~* /(\.|wp-config\.php|wp-config\.txt|changelog\.txt|readme\.txt|readme
 EEF
 
 # WP super cache
-cat > "/usr/local/nginx/conf/wpsupercache_${vhostname}.conf" <<EFF
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf" <<EFF
 set \$cache_uri \$request_uri;
 
 if (\$request_method = POST) { set \$cache_uri 'null cache'; }
@@ -918,7 +926,7 @@ if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_l
 EFF
 
 # for nginx level redis cache
-cat > "/usr/local/nginx/conf/rediscache_${vhostname}.conf" <<XFF
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" <<XFF
 set \$skip_cache 0;
 
 # POST requests and urls with a query string should always go to PHP
@@ -1195,14 +1203,14 @@ fi
 
 if [[ "$cacheenabler" = [yY] ]]; then
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
-        sed -i "s|^  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
-        sed -i "s|^  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
     fi
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
-        sed -i "s|^  #include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-        sed -i "s|^  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
     fi
@@ -1235,15 +1243,15 @@ cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.conf
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
 rm -rf /home/nginx/domains/${vhostname}
-rm -rf /usr/local/nginx/conf/wpsecure_${vhostname}.conf
-rm -rf /usr/local/nginx/conf/wpsupercache_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf
 rm -rf /root/tools/wp_updater_${vhostname}.sh
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
-rm -rf /usr/local/nginx/conf/rediscache_${vhostname}.conf
-rm -rf /usr/local/nginx/conf/wpcacheenabler_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
