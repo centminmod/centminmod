@@ -250,7 +250,7 @@ if [[ "$UALL" = 'y' ]]; then
     recompileopenssl='n'
 else
     echo ""
-    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
+    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION): " ngver
 
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
