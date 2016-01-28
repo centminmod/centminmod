@@ -35,9 +35,10 @@ fi
 #########################################################
 
 SRCDIR='/usr/local/src'
+CURL_TIMEOUTS=' --max-time 30 --connect-timeout 10'
 # avg site blocks lynx calls switch to curl
 # AVGDOWNLOADRPM=$(lynx -dump http://free.avg.com/us-en/download-free-all-product | grep 'download.avgfree.com' | grep 'rpm' | awk -F " " '{print $2}')
-AVGDOWNLOADRPM=$(curl -s http://free.avg.com/us-en/download-free-all-product | grep -o '<a .*href=.*>' | sed -e 's/<a /\n<a /g' | sed -e 's/<a .*href=['"'"'"]//' -e 's/["'"'"'].*$//' -e '/^$/ d' | grep 'download.avgfree.com' | grep 'rpm')
+AVGDOWNLOADRPM=$(curl -s${CURL_TIMEOUTS} http://free.avg.com/us-en/download-free-all-product | grep -o '<a .*href=.*>' | sed -e 's/<a /\n<a /g' | sed -e 's/<a .*href=['"'"'"]//' -e 's/["'"'"'].*$//' -e '/^$/ d' | grep 'download.avgfree.com' | grep 'rpm')
 AVGRPMNAME=$(echo ${AVGDOWNLOADRPM##*/})
 
 #########################################################

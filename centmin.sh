@@ -468,6 +468,7 @@ ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zen
 PYTHON_VERSION='2.7.10'       # Use this version of Python
 SIEGE_VERSION='3.1.3'
 
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 WGETOPT='-cnv --no-dns-cache -4'
 AXEL_VER='2.5'                # Axel source compile version https://github.com/eribertomota/axel/releases
 ###############################################################

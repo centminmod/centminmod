@@ -9,10 +9,11 @@ branchname='123.09beta01'
 CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
-# CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
-# CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
 CENTMINLOGDIR='/root/centminlogs'
 DT=`date +"%d%m%y-%H%M%S"`
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
+# CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
+# CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 ################################################################
 # Setup Colours
 black='\E[30;40m'

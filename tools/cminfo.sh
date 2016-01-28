@@ -9,6 +9,7 @@ USER='root'
 PASS=''
 MYSQLHOST='localhost'
 #####################################################
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 VIRTUALCORES=$(grep -c ^processor /proc/cpuinfo)
 PHYSICALCPUS=$(grep 'physical id' /proc/cpuinfo | sort -u | wc -l)
@@ -144,7 +145,7 @@ echo "------------------------------------------------------------------"
 
 echo "Server Location Info"
 # echo
-curl -s ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
+curl -s${CURL_TIMEOUTS} ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
 
 echo
 echo "Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"
