@@ -1835,7 +1835,7 @@ else
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Re-install" $boldgreen
             cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
-            cecho "22). Add Wordpress Nginx vhost + WP Super Cache" $boldgreen
+            cecho "22). Add Wordpress Nginx vhost + Cache Plugin" $boldgreen
             cecho "23). Update Centmin Mod Code Base" $boldgreen
             cecho "24). Exit" $boldgreen
             cecho "--------------------------------------------------------" $boldyellow

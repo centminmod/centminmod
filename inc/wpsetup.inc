@@ -271,7 +271,14 @@ if [[ "$disableautogen" = [yY] ]]; then
 fi
 
 read -ep "Enter email address for Admin User for Wordpress Installation: " WPADMINEMAIL
-read -ep "Do you want to install WP Cache Enabler Plugin instead of WP Super Cache ? (easier to setup) [y/n]: " cacheenabler
+
+echo
+cecho "Default is to install KeyCDN WP Cache Enabler Plugin" $boldyellow
+cecho "as it's more stable and reliable than WP Super Cache." $boldyellow
+cecho "To install KeyCDN Cache Enabler, answer = n to next question" $boldyellow
+echo
+
+read -ep "Do you want to install WP Super Cache instead ? [y/n]: " wpscache
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
 # echo "$TESTEMAIL"
@@ -1001,7 +1008,7 @@ REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf
 if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   cecho "------------------------------------------------------------" $boldgreen
-  if [[ "$cacheenabler" = [yY] ]]; then
+  if [[ "$wpscache" != [yY] ]]; then
     cecho "Setup Wordpress + Cache Enabler for $vhostname" $boldyellow
   else
     cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
@@ -1091,7 +1098,7 @@ if [[ "$cacheenabler" != [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   # wp plugin install wp-widget-cache --activate --allow-root
   # cecho "------------------------------------------------------------" $boldgreen
-elif [[ "$cacheenabler" = [yY] ]]; then
+elif [[ "$wpscache" != [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install wp-super-cache --allow-root
   cecho "------------------------------------------------------------" $boldgreen
@@ -1102,7 +1109,7 @@ elif [[ "$cacheenabler" = [yY] ]]; then
 fi
 
 # wp cache enabler
-if [[ "$cacheenabler" = [yY] ]]; then
+if [[ "$wpscache" != [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install cache-enabler --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen 
@@ -1209,7 +1216,7 @@ if [ -f wp-content/plugins/tpc-memory-usage/css/tpcmem.css ]; then
   sed -i 's|(images\/|(..\/images\/|g' wp-content/plugins/tpc-memory-usage/css/tpcmem.css
 fi
 
-if [[ "$cacheenabler" = [yY] ]]; then
+if [[ "$wpscache" != [yY] ]]; then
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
@@ -1428,7 +1435,7 @@ fi
 echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
-if [[ "$cacheenabler" = [yY] ]]; then
+if [[ "$wpscache" != [yY] ]]; then
 cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
 2. Settings Menu > Cache Enabler set options and hit Save Changes
 3. Settings Menu > Optimus set options and hit Save Changes
