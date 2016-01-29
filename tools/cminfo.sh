@@ -132,7 +132,10 @@ fi
 # insert itself into cronjob for auto updates
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
+    mkdir -p /etc/centminmod/cronjobs
+    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-before-cminfo-setup.txt
     echo "*/4 * * * * /usr/bin/cminfo_updater" >> cronjoblist
+    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-after-cminfo-setup.txt
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
