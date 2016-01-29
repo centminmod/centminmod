@@ -417,7 +417,7 @@ CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch ht
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.2.5'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.2.6'   # Use this version of LibreSSL http://www.libressl.org/
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
