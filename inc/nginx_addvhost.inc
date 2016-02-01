@@ -282,6 +282,10 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;  
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
@@ -357,8 +361,9 @@ server {
   # exclude subdomains
   #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=86400';
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-  #add_header  X-Content-Type-Options "nosniff";
-  #add_header X-Frame-Options DENY;
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
   $COMP_HEADER;
   ssl_buffer_size 1400;
   ssl_session_tickets on;
@@ -374,6 +379,10 @@ server {
 #include /usr/local/nginx/conf/pagespeed.conf;
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;  
 
   # limit_conn limit_per_ip 16;
   # ssi  on;
@@ -437,6 +446,10 @@ server {
 #include /usr/local/nginx/conf/pagespeed.conf;
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  #add_header X-Content-Type-Options "nosniff" always;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;  
 
   # limit_conn limit_per_ip 16;
   # ssi  on;
