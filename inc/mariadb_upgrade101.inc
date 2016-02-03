@@ -387,6 +387,9 @@ cat >>/etc/my.cnf<<FFF
 
 
 [mariadb-10.1]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
 ## wsrep specific
 # wsrep_on=OFF
 # wsrep_provider
