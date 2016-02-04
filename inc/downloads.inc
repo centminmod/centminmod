@@ -384,6 +384,12 @@ if [[ "$PHP_INSTALL" = [yY] ]];
 then
 
     phpgeolocation
+    curl -sI --connect-timeout 5 --max-time 5 ${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror | grep 'HTTP\/' | grep '404'
+    PHPGEO_CURLCHECK=$?
+    if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
+        PHP_MIRRORURL="http://php.net"
+        PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+    fi
     cd $DIR_TMP
 
         cecho "Download php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow

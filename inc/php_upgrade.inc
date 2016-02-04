@@ -284,6 +284,12 @@ else
 fi
     
     phpgeolocation
+    curl -sI --connect-timeout 5 --max-time 5 ${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror | grep 'HTTP\/' | grep '404'
+    PHPGEO_CURLCHECK=$?
+    if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
+        PHP_MIRRORURL="http://php.net"
+        PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+    fi
     if [ -s php-${phpver}.tar.${PHPEXTSION} ]; then
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
