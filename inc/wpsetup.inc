@@ -560,6 +560,166 @@ location ~* /(?:uploads|files)/.*\.php\$ {
 deny all;
 }
 
+# Whitelist Exception for https://wordpress.org/plugins/theme-check/
+location ~ ^/wp-content/plugins/theme-check/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/woocommerce/
+location ~ ^/wp-content/plugins/woocommerce/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/woocommerce-csvimport/
+location ~ ^/wp-content/plugins/woocommerce-csvimport/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/advanced-custom-fields/
+location ~ ^/wp-content/plugins/advanced-custom-fields/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/contact-form-7/
+location ~ ^/wp-content/plugins/contact-form-7/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/duplicator/
+location ~ ^/wp-content/plugins/duplicator/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/jetpack/
+location ~ ^/wp-content/plugins/jetpack/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/nextgen-gallery/
+location ~ ^/wp-content/plugins/nextgen-gallery/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/tinymce-advanced/
+location ~ ^/wp-content/plugins/tinymce-advanced/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/updraftplus/
+location ~ ^/wp-content/plugins/updraftplus/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wordpress-importer/
+location ~ ^/wp-content/plugins/wordpress-importer/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wordpress-seo/
+location ~ ^/wp-content/plugins/wordpress-seo/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wpclef/
+location ~ ^/wp-content/plugins/wpclef/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/mailchimp-for-wp/
+location ~ ^/wp-content/plugins/mailchimp-for-wp/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wp-optimize/
+location ~ ^/wp-content/plugins/wp-optimize/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/si-contact-form/
+location ~ ^/wp-content/plugins/si-contact-form/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/akismet/
+location ~ ^/wp-content/plugins/akismet/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/bbpress/
+location ~ ^/wp-content/plugins/bbpress/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/buddypress/
+location ~ ^/wp-content/plugins/buddypress/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/all-in-one-seo-pack/
+location ~ ^/wp-content/plugins/all-in-one-seo-pack/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/google-analytics-for-wordpress/
+location ~ ^/wp-content/plugins/google-analytics-for-wordpress/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/regenerate-thumbnails/
+location ~ ^/wp-content/plugins/regenerate-thumbnails/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wp-pagenavi/
+location ~ ^/wp-content/plugins/wp-pagenavi/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wordfence/
+location ~ ^/wp-content/plugins/wordfence/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/really-simple-captcha/
+location ~ ^/wp-content/plugins/really-simple-captcha/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wp-pagenavi/
+location ~ ^/wp-content/plugins/wp-pagenavi/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/ml-slider/
+location ~ ^/wp-content/plugins/ml-slider/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/black-studio-tinymce-widget/
+location ~ ^/wp-content/plugins/black-studio-tinymce-widget/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/disable-comments/
+location ~ ^/wp-content/plugins/disable-comments/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/better-wp-security/
+location ~ ^/wp-content/plugins/better-wp-security/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for http://wlmsocial.com/
+location ~ ^/wp-content/plugins/wlm-social/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for mediagrid timthumb
+location ~ ^/wp-content/plugins/media-grid/classes/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
 # Block PHP files in content directory.
 location ~* /wp-content/.*\.php\$ {
   deny all;
