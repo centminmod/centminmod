@@ -270,13 +270,15 @@ setio() {
   # echo
   echo -n "existing value: "
   grep 'innodb_io_capacity' /etc/my.cnf
-  mysql -e "SHOW VARIABLES like '%innodb_io_capacity'"
+  mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 
   # sed -e "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf | grep 'innodb_io_capacity'
   sed -i "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf
   echo -n "new value: "
   grep 'innodb_io_capacity' /etc/my.cnf
   mysql -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
+  IOMAX=$((FIOWSET*2))
+  mysql -e "SET GLOBAL innodb_io_capacity_max = $IOMAX;"
   mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 }
 
