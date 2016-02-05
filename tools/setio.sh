@@ -233,6 +233,33 @@ setbp() {
   # grep 'innodb_buffer_pool_instances =' /etc/my.cnf
 }
 
+setthreads() {
+  IOTHREADS=$((2*CPUS/4))
+  if [ "$CPUS" -eq '1' ];then
+    IOTHREADS=2
+  fi
+  if [ "$IOTHREADS" -lt '2' ];then
+    IOTHREADS=2
+  fi
+  echo
+  echo "+------------------------+-------+"
+  echo "innodb io threads adjustment"
+  echo "+------------------------+-------+"
+  echo "existing value:"
+  echo "+------------------------+-------+"
+  grep '_io_threads' /etc/my.cnf
+  echo "+------------------------+-------+"
+  sed -i "s|innodb_read_io_threads = .*|innodb_read_io_threads = $IOTHREADS|g" /etc/my.cnf
+  sed -i "s|innodb_write_io_threads = .*|innodb_write_io_threads = $IOTHREADS|g" /etc/my.cnf
+  echo "new value:"
+  echo "+------------------------+-------+"
+  grep '_io_threads' /etc/my.cnf
+  echo "+------------------------+-------+"
+  echo
+  echo "Restart MySQL server for io thread changes"
+  echo
+}
+
 setio() {
   if [ -f /usr/bin/fio ]; then
     fiosetup
@@ -334,7 +361,9 @@ setio() {
   fi
 
   echo
+  echo "+------------------------+-------+"
   echo "/etc/my.cnf adjustment"
+  echo "+------------------------+-------+"
   # echo
   echo "existing value: "
   # grep 'innodb_io_capacity' /etc/my.cnf
@@ -368,6 +397,7 @@ case "$1" in
   set )
     setbp
     setio
+    setthreads
     ;;
   * )
     echo "$0 {check|set}"
