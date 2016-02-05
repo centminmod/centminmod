@@ -1577,7 +1577,7 @@ function funct_installiopingcentmin {
         echo ""
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installed"
-        ioping -v
+        /usr/bin/ioping -v
         cecho "--------------------------------------------------------" $boldyellow
         echo ""
     else
