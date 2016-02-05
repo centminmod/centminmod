@@ -5,6 +5,7 @@ VER=0.1
 DEBUG='n'
 CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
 TIME='n'
+MDB_SVER=$(mysql -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
 
 if [ ! -f /usr/bin/fio ]; then
   yum -q -y install fio
@@ -260,6 +261,40 @@ setthreads() {
   echo
 }
 
+setpurgethreads() {
+  if [[ "$MDB_SVER" = '10.0' || "$MDB_SVER" = '10.1' ]]; then
+    if [[ "$CPUS" -eq '1' ]]; then
+      sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 1|g" /etc/my.cnf
+      sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 1|g" /etc/my.cnf
+    elif [[ "$CPUS" -eq '2' ]]; then
+      sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 1|g" /etc/my.cnf
+      sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 1|g" /etc/my.cnf
+    elif [[ "$CPUS" -gt '2' && "$CPUS" -lt '4' ]]; then
+      sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 2|g" /etc/my.cnf
+      sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 2|g" /etc/my.cnf
+    elif [[ "$CPUS" -ge '4' && "$CPUS" -lt '8' ]]; then
+      sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 2|g" /etc/my.cnf
+      sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 2|g" /etc/my.cnf
+    elif [[ "$CPUS" -ge '8' && "$CPUS" -lt '16' ]]; then
+      sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 4|g" /etc/my.cnf
+      sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 4|g" /etc/my.cnf
+    elif [[ "$CPUS" -ge '16' ]]; then
+      sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 4|g" /etc/my.cnf
+      sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 4|g" /etc/my.cnf
+    fi
+  elif [[ "$MDB_SVER" = '5.5' ]]; then
+    sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 1|g" /etc/my.cnf
+    sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 1|g" /etc/my.cnf
+  fi
+}
+
+setconcurrency() {
+  INNODB_CONCURRENT=$(((CPUS+2)*2))
+  sed -i "s|innodb_thread_concurrency=.*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
+  sed -i "s|innodb_thread_concurrency = .*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
+  mysql -e "SET GLOBAL innodb_thread_concurrency = $INNODB_CONCURRENT;"
+}
+
 setio() {
   if [ -f /usr/bin/fio ]; then
     fiosetup
@@ -398,6 +433,8 @@ case "$1" in
     setbp
     setio
     setthreads
+    setpurgethreads
+    setconcurrency
     ;;
   * )
     echo "$0 {check|set}"
