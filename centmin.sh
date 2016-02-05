@@ -1568,61 +1568,23 @@ echo "********************************"
 }
 
 function funct_installiopingcentmin {
-
-echo ""
-	cecho "--------------------------------------------------------" $boldyellow
-echo "Where do you want the iopingcentmin.sh stored ? Enter path to download directory (i.e. /root or /usr/local/src): "
-read iopingdownloadpath
-
-    cd $iopingdownloadpath
-
-if [ -s iopingcentmin.sh ]; then
-
-	echo ""
-	echo "iopingcentmin.sh [found]"
-
-	echo ""
-	echo "Do you want to download latest iopincentmin.sh version ? [y/n]: "
-	read iopingdownloadupdate
-
-	if [[ $iopingdownloadupdate = [yY] ]]; then
-
-	rm -rf iopingcentmin.sh
-	$DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
-
-	echo ""
-	cecho "--------------------------------------------------------" $boldyellow
-	echo "script installed at $iopingdownloadpath/iopingcentmin.sh"
-	echo "to manually run iopingcentmin.sh type:"
-	echo "bash $iopingdownloadpath/iopingcentmin.sh"
-	cecho "--------------------------------------------------------" $boldyellow
-	echo ""
-
-	exit
-
-	else
-
-	exit
-
-	fi
-
-  else
-  echo "Error: iopingcentmin.sh not found!!! Downloading now......"
-  $DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
-
-fi
-
-chmod +x iopingcentmin.sh
-
-	echo ""
-	cecho "--------------------------------------------------------" $boldyellow
-	echo "script installed at $iopingdownloadpath/iopingcentmin.sh"
-	echo "to manually run iopingcentmin.sh type:"
-	echo "bash $iopingdownloadpath/iopingcentmin.sh"
-	cecho "--------------------------------------------------------" $boldyellow
-	echo ""
-
-
+    if [ ! -f /usr/bin/ioping ]; then
+        echo ""
+        cecho "--------------------------------------------------------" $boldyellow
+        echo "ioping installing..."
+        cecho "--------------------------------------------------------" $boldyellow
+        yum -q -y install ioping
+        echo ""
+        cecho "--------------------------------------------------------" $boldyellow
+        echo "ioping installed"
+        ioping -v
+        cecho "--------------------------------------------------------" $boldyellow
+        echo ""
+    else
+        echo "ioping already installed"
+        echo
+        exit
+    fi
 }
 
 function funct_selinux {
