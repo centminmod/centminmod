@@ -268,22 +268,27 @@ setio() {
   echo
   echo "/etc/my.cnf adjustment"
   # echo
-  echo -n "existing value: "
-  grep 'innodb_io_capacity' /etc/my.cnf
+  echo "existing value: "
+  # grep 'innodb_io_capacity' /etc/my.cnf
   mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 
   # sed -e "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf | grep 'innodb_io_capacity'
   sed -i "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf
-  echo -n "new value: "
-  grep 'innodb_io_capacity' /etc/my.cnf
+  echo "new value: "
+  # grep 'innodb_io_capacity' /etc/my.cnf
   mysql -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
   IOMAX=$((FIOWSET*2))
+  if [[ "$IOMAX" -gt "$FIOW" ]]; then
+    IOMAX=$(echo "$IOMAX*0.66/1"|bc)
+  fi
   IOMAXCHECK=$(grep 'innodb_io_capacity_max' /etc/my.cnf)
   if [[ -z "$IOMAXCHECK" ]]; then
     sed -i "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET\ninnodb_io_capacity_max = $IOMAX|g" /etc/my.cnf
   else
     sed -i "s|innodb_io_capacity_max = .*|innodb_io_capacity_max = $IOMAX|g" /etc/my.cnf
   fi
+  # echo "new value: "
+  # grep 'innodb_io_capacity_max' /etc/my.cnf
   mysql -e "SET GLOBAL innodb_io_capacity_max = $IOMAX;"
   mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 }
