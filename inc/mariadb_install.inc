@@ -525,7 +525,11 @@ else
     gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
     cmservice mysql start
 fi
-  
+
+# https://community.centminmod.com/posts/25691/
+if [ -f /usr/local/src/centminmod/tools/setio.sh ]; then
+    /usr/local/src/centminmod/tools/setio.sh set
+fi  
     echo "*************************************************"
     cecho "* MariaDB installed" $boldgreen
     echo "*************************************************"

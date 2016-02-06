@@ -1094,11 +1094,6 @@ ls -lah ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
 mariadbinstallfunct
 mysqlinstallfunct
 
-# https://community.centminmod.com/posts/25691/
-if [ -f /usr/local/src/centminmod/tools/setio.sh ]; then
-    /usr/local/src/centminmod/tools/setio.sh set
-fi
-
 if [[ "$PHP_INSTALL" = [yY] ]]; then
     phpinstallstarttime=$(date +%s.%N)
     echo "*************************************************"
