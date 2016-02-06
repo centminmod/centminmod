@@ -1814,7 +1814,7 @@ else
         
         case "$option" in
         1|install)
-        
+            CM_MENUOPT=1
             starttime=$(date +%s.%N)
             INITIALINSTALL='y'
 
@@ -1885,7 +1885,7 @@ EOF
         
         ;;
         2|addvhost)
-        
+        CM_MENUOPT=2
         centminlog
         {
         funct_nginxaddvhost
@@ -1893,7 +1893,7 @@ EOF
         
         ;;
         3|nsdsetup)
-        
+        CM_MENUOPT=3
         centminlog
         {
         funct_nsdsetup
@@ -1901,7 +1901,7 @@ EOF
         
         ;;
         4|nginxupgrade)
-        
+        CM_MENUOPT=4
         starttime=$(date +%s.%N)
         
         centminlog
@@ -1937,7 +1937,7 @@ EOF
         
         ;;
         5|phpupgrade)
-        
+        CM_MENUOPT=5
         starttime=$(date +%s.%N)
         
         centminlog
@@ -1973,7 +1973,7 @@ EOF
         
         ;;
         6|xcachereinstall)
-        
+        CM_MENUOPT=6
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2001,7 +2001,7 @@ EOF
         
         ;;
         7|apcreinstall)
-        
+        CM_MENUOPT=7
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2029,7 +2029,7 @@ EOF
         
         ;;
         8|installxcache)
-        
+        CM_MENUOPT=8
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2059,7 +2059,7 @@ EOF
         
         ;;
         9|installapc)
-        
+        CM_MENUOPT=9
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2087,7 +2087,7 @@ EOF
         
         ;;
         10|memcachedreinstall)
-        
+        CM_MENUOPT=10
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2115,27 +2115,27 @@ EOF
         
         ;;
         11|mariadbsubmenu)
-        
+        CM_MENUOPT=11
         mariadbsubmenu
         
         ;;
         12|zendoptcachesubmenu)
-        
+        CM_MENUOPT=12
         zendoptcachesubmenu
         
         ;;
         13|iopinginstall)
-        
+        CM_MENUOPT=13
         funct_installiopingcentmin
         
         ;;
         14|selinux)
-        
+        CM_MENUOPT=14
         funct_selinux
         
         ;;
         15|imagick)
-
+        CM_MENUOPT=15
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2163,12 +2163,12 @@ EOF
         
         ;;
         16|sshdport)
-        
+        CM_MENUOPT=16
         funct_sshd
         
         ;;
         17|multithreadcomp)
-
+        CM_MENUOPT=17
         starttime=$(date +%s.%N)
         
         centminlog
@@ -2201,6 +2201,7 @@ EOF
         
         ;;
         18|suhosininstall)
+        CM_MENUOPT=18
         centminlog
         {
         
@@ -2221,6 +2222,7 @@ EOF
         
         ;;
         19|ffmpeginstall)
+        CM_MENUOPT=19
         centminlog
         ffmpegsubmenu
         
@@ -2234,6 +2236,7 @@ EOF
         
         ;;
         20|nsdreinstall)
+        CM_MENUOPT=20
         centminlog
         {
         
@@ -2254,6 +2257,7 @@ EOF
         
         ;;
         21|update)
+        CM_MENUOPT=21
         UALL='y'
         starttime=$(date +%s.%N)
         centminlog
@@ -2310,7 +2314,7 @@ EOF
 
         ;;
         22|addwpvhost)
-        
+        CM_MENUOPT=22
         centminlog
         {
         wpacctsetup
@@ -2318,12 +2322,12 @@ EOF
         
         ;;        
         23|cmupdatemenu)
-
+        CM_MENUOPT=23
         updatersubmenu
 
         ;;
         24|exit)
-        
+        CM_MENUOPT=24
         bookmark
         
         exit 0
