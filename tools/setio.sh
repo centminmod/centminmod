@@ -1,11 +1,16 @@
 #!/bin/bash
+########################################################################################
 # https://community.centminmod.com/threads/help-test-innodbio-sh-for-mysql-tuning.6012/
 # for centminmod.com /etc/my.cnf
-VER=0.1
+########################################################################################
+DT=`date +"%d%m%y-%H%M%S"`
+VER=0.2
 DEBUG='n'
 CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
 TIME='n'
 MDB_SVER=$(mysql -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
+CENTMINLOGDIR='/root/centminlogs'
+########################################################################################
 
 if [ ! -f /usr/bin/fio ]; then
   yum -q -y install fio
@@ -430,11 +435,17 @@ case "$1" in
     infocheck
     ;;
   set )
+    {
+    mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
+    cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
     setbp
     setio
     setthreads
     setpurgethreads
     setconcurrency
+    mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
+    cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
+    } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_setio_${DT}.log
     ;;
   * )
     echo "$0 {check|set}"
