@@ -109,7 +109,7 @@ cat > "${CONFIGSCANDIR}/igbinary.ini" <<END
 [igbinary]
 extension=igbinary.so
 ;Use igbinary as session serializer
-session.serialize_handler=igbinary
+;session.serialize_handler=igbinary
 
 ;Enable or disable compacting of duplicate strings
 igbinary.compact_strings=On
