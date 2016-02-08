@@ -228,6 +228,20 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 # https://gitlab.com/centminmod/centminmod
 #CMGIT='https://gitlab.com/centminmod/centminmod.git'
 
+# With AUTO_GITUPDATE='y' if centmin mod code install 
+# directory has been setup with git environment via 
+# centmin.sh menu option 23 # submenu option 1, then 
+# allow centmin.sh to auto update # the centmin mod 
+# code at /usr/local/src/centminmod 
+# silently in background
+#
+# if you want to retain local centmin mod code changes
+# made to files in /usr/local/src/centminmod for variables
+# in centmin.sh, use persistent config file you create
+# or append to at /etc/centminmod/custom_config.inc as
+# outlined on official site at 
+# http://centminmod.com/upgrade.html#persistent
+AUTO_GITUPDATE='n'
 #####################################################
 # Timestamp Install
 TS_INSTALL='y'

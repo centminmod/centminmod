@@ -363,6 +363,21 @@ sshdfixes() {
 	fi
 }
 
+auto_gitupdate() {
+	# if centmin mod code install directory has been setup
+	# with git environment via centmin.sh menu option 23
+	# submenu option 1, then allow centmin.sh to auto update
+	# the centmin mod code at /usr/local/src/centminmod
+	# silently in background
+	if [[ -d "${SCRIPT_DIR}/.git" && "$AUTO_GITUPDATE" = [yY] ]]; then
+		cd ${SCRIPT_DIR}
+		# totally silence the output
+		git stash -q &> /dev/null
+		git fetch -q &> /dev/null
+		git pull -q &> /dev/null
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -410,6 +425,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	xpowerby
 	pathfixes
 	sshdfixes
+	auto_gitupdate
 fi
 
 }
