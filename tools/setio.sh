@@ -256,7 +256,7 @@ setthreads() {
   grep '_io_threads' /etc/my.cnf
   echo "+------------------------+-------+"
   sed -i "s|innodb_read_io_threads = .*|innodb_read_io_threads = $IOTHREADS|g" /etc/my.cnf
-  if [[ "$FIOW" -lt '200' ]]; then
+  if [[ "$FIOW" -lt '600' ]]; then
     IOTHREADS=2
   fi
   sed -i "s|innodb_write_io_threads = .*|innodb_write_io_threads = $IOTHREADS|g" /etc/my.cnf
