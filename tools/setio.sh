@@ -317,49 +317,49 @@ setio() {
     echo -n "Full Writes: "
     echo "$FIOW"
 
-    if [[ "$FIOW" -ge '1600001' ]]; then
+    if [[ "$FIOW" -ge '160001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/40))
+      FIOWSET=$((FIOW/55))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
-    elif [[ "$FIOW" -lt '160000' && "$FIOW" -ge '1400001' ]]; then
+    elif [[ "$FIOW" -lt '160000' && "$FIOW" -ge '140001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/35))
+      FIOWSET=$((FIOW/49))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
-    elif [[ "$FIOW" -lt '140000' && "$FIOW" -ge '1200001' ]]; then
+    elif [[ "$FIOW" -lt '140000' && "$FIOW" -ge '120001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/30))
+      FIOWSET=$((FIOW/44))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '120000' && "$FIOW" -ge '100001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/25))
+      FIOWSET=$((FIOW/36))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '100000' && "$FIOW" -ge '80001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/20))
+      FIOWSET=$((FIOW/33))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '80000' && "$FIOW" -ge '60001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/20))
+      FIOWSET=$((FIOW/24))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '60000' && "$FIOW" -ge '40001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/15))
+      FIOWSET=$((FIOW/20))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '40000' && "$FIOW" -ge '20001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/10))      
+      FIOWSET=$((FIOW/14))      
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '20000' && "$FIOW" -ge '10001' ]]; then
       echo -n "innodb_io_capacity = "
-      FIOWSET=$((FIOW/10))
+      FIOWSET=$((FIOW/11))
       FIOWSET=$(echo "$(echo "scale=2; $FIOWSET/10000*10000" | bc)/1" | bc)
       echo $FIOWSET
     elif [[ "$FIOW" -lt '10000' && "$FIOW" -ge '5001' ]]; then
