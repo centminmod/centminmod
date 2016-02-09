@@ -124,6 +124,7 @@ fi
 }
 
 updatersubmenu() {
+	CM_DIRSIZE=$(/usr/bin/df /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
 
 while :
 do
@@ -213,23 +214,27 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cd /usr/local/src/centminmod 2>/dev/null
 	git stash
 	git pull
-	# git reflog expire --all --expire=now
-	echo
-	git count-objects -v
-	echo
-	cecho "git gc..." $boldyellow
-	echo
-	if [ -f git-agg ]; then
-		git gc --prune=now
-	else
+
+	if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then
+		# git reflog expire --all --expire=now
 		echo
-		cecho "may take a few minutes" $boldyellow
+		git count-objects -v
 		echo
-		git gc --prune=now --aggressive
-		touch git-agg
+		cecho "git gc..." $boldyellow
+		echo
+		if [ -f git-agg ]; then
+			git gc --prune=now
+		else
+			echo
+			cecho "may take a few minutes" $boldyellow
+			echo
+			git gc --prune=now --aggressive
+			touch git-agg
+		fi
+		echo
+		git count-objects -v
 	fi
-	echo
-	git count-objects -v
+
 	chmod +x centmin.sh
 
 	echo
@@ -290,22 +295,26 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		git clone ${CMGIT} centminmod
 		cd centminmod 2>/dev/null
 		git checkout -f ${branchname}
-		echo
-		git count-objects -v
-		echo
-		cecho "git gc..." $boldyellow
-		echo
-		if [ -f git-agg ]; then
-			git gc --prune=now
-		else
+
+		if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then
 			echo
-			cecho "may take a few minutes" $boldyellow
+			git count-objects -v
 			echo
-			git gc --prune=now --aggressive
-			touch git-agg
+			cecho "git gc..." $boldyellow
+			echo
+			if [ -f git-agg ]; then
+				git gc --prune=now
+			else
+				echo
+				cecho "may take a few minutes" $boldyellow
+				echo
+				git gc --prune=now --aggressive
+				touch git-agg
+			fi
+			echo
+			git count-objects -v
 		fi
-		echo
-		git count-objects -v
+
 		chmod +x centmin.sh
 		
 		echo
