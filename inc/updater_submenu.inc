@@ -146,7 +146,7 @@ do
 
 case "$upmoption" in
 1)
-
+UPDATE_MENU=1
 centminlog
 {
 	echo
@@ -167,7 +167,6 @@ centminlog
 	cd centminmod
 	git checkout -f ${branchname}
 	chmod +x centmin.sh
-	re_sourcefiles
 	
 	echo
 	cecho "list all available local branches" $boldyellow
@@ -188,17 +187,20 @@ centminlog
 
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
-	cecho " To complete update exit centmin.sh" $boldyellow
-	cecho " and re-run cd /usr/local/src/centminmod" $boldyellow
+	cecho " To complete update exit centmin.sh by continually" $boldyellow
+	cecho " existing each submenu option until you are back at" $boldyellow
+	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	echo "  cd /usr/local/src/centminmod"
 	cecho " before invoking centmin.sh again" $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	echo
-	break
+	re_sourcefiles
+	break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log
 
 ;;
 2)
-
+UPDATE_MENU=2
 centminlog
 {
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
@@ -229,25 +231,28 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	git count-objects -v
 	chmod +x centmin.sh
-	re_sourcefiles
 
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
-	cecho " To complete update exit centmin.sh" $boldyellow
-	cecho " and re-run cd /usr/local/src/centminmod" $boldyellow
+	cecho " To complete update exit centmin.sh by continually" $boldyellow
+	cecho " existing each submenu option until you are back at" $boldyellow
+	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	echo "  cd /usr/local/src/centminmod"
 	cecho " before invoking centmin.sh again" $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
-	echo	
+	echo
+	re_sourcefiles
+	break 2
 else
 	echo
 	echo "Error: you do not have git environment setup for github based updates"
 	echo "       run submenu option 1 to setup github environment first"
-	break
+	break 2
 fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
 ;;
 3)
-
+UPDATE_MENU=3
 centminlog
 {
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
@@ -302,7 +307,6 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		echo
 		git count-objects -v
 		chmod +x centmin.sh
-		re_sourcefiles
 		
 		echo
 		cecho "list all available local branches" $boldyellow
@@ -322,13 +326,16 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		cecho "	chmod +x centmin.sh" $boldgreen	
 
 	echo
-	cecho "##################### IMPORTANT #####################" $boldgreen
-	cecho " To complete update exit centmin.sh" $boldyellow
-	cecho " and re-run cd /usr/local/src/centminmod" $boldyellow
+	cecho "####################### IMPORTANT #######################" $boldgreen
+	cecho " To complete update exit centmin.sh by continually" $boldyellow
+	cecho " existing each submenu option until you are back at" $boldyellow
+	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	echo "  cd /usr/local/src/centminmod"
 	cecho " before invoking centmin.sh again" $boldyellow
-	cecho "##################### IMPORTANT #####################" $boldgreen
-	echo			
-		break
+	cecho "####################### IMPORTANT #######################" $boldgreen
+	echo
+	re_sourcefiles
+	break 2
 	fi	
 else
 	echo
@@ -339,7 +346,8 @@ fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatenew_branch.log
 ;;
 4)
-	break
+	UPDATE_MENU=4
+	break 2
 ;;
 esac
 done
