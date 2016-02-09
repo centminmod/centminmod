@@ -62,6 +62,9 @@ fi
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 	libbroti_install
 	ngxbrotli_download
+	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
+		export NGX_BROTLI_STATIC_MODULE_ONLY=1
+	fi
 	BROTLIOPT=' --add-module=../ngx_brotli'
 else
 	BROTLIOPT=""
