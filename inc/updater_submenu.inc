@@ -189,7 +189,7 @@ centminlog
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
-	cecho " existing each submenu option until you are back at" $boldyellow
+	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
 	echo "  cd /usr/local/src/centminmod"
 	cecho " before invoking centmin.sh again" $boldyellow
@@ -240,7 +240,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
-	cecho " existing each submenu option until you are back at" $boldyellow
+	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
 	echo "  cd /usr/local/src/centminmod"
 	cecho " before invoking centmin.sh again" $boldyellow
@@ -337,7 +337,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "####################### IMPORTANT #######################" $boldgreen
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
-	cecho " existing each submenu option until you are back at" $boldyellow
+	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
 	echo "  cd /usr/local/src/centminmod"
 	cecho " before invoking centmin.sh again" $boldyellow
