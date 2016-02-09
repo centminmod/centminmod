@@ -1367,6 +1367,23 @@ fi # WPPLUGINS_ALL=y
 # remove hello plugin
 wp plugin uninstall hello --allow-root
 
+# allows user to add custom wp-cli commands after initiall install to
+# further customise their installation. you create a custom file at
+# /etc/centminmod/customwp_domain.com.inc where domain.com is the 
+# intended centmin.sh menu option 22 vhost site domain for your wp
+# installation. Then in that file add your wp-cli commands to the file
+# wrapped in a shell function named mywpcmds() { yourcode }. i.e. for
+# wp language install https://community.centminmod.com/posts/26045/
+# the below check will check for /etc/centminmod/customwp_domain.com.inc
+# file and then source include it into this routine and run the shell
+# function named mywpcmds which contains your custom wp-cli cmds that will
+# trigger and run
+if [ -f "${CONFIGSCANBASE}/customwp_${vhostname}.inc" ]; then
+    # default is at /etc/centminmod/customwp_${vhostname}.inc
+    source "${CONFIGSCANBASE}/customwp_${vhostname}.inc"
+    mywpcmds
+fi
+
 # update all plugins to make sure they are latest available
 wp plugin update --all --allow-root
 echo
