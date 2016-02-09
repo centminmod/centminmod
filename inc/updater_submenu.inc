@@ -196,7 +196,7 @@ centminlog
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	echo
 	re_sourcefiles
-	break 2
+	break
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log
 
 ;;
@@ -247,12 +247,12 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	echo
 	re_sourcefiles
-	break 2
+	break
 else
 	echo
 	echo "Error: you do not have git environment setup for github based updates"
 	echo "       run submenu option 1 to setup github environment first"
-	break 2
+	break
 fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
 ;;
@@ -344,7 +344,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho "####################### IMPORTANT #######################" $boldgreen
 	echo
 	re_sourcefiles
-	break 2
+	break
 	fi	
 else
 	echo
