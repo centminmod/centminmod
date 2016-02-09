@@ -247,7 +247,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     	cd ${DIR_TMP}
 	else
 		LUAOPT=""
-		LUALD_OPT=""
+		LUALD_OPT=" -Wl,-rpath,/usr/local/lib"
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
