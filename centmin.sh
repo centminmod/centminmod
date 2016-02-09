@@ -2346,7 +2346,7 @@ EOF
         24|exit)
         CM_MENUOPT=24
         bookmark
-        
+        break
         exit 0
         
         ;;
