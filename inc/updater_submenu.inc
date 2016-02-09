@@ -214,9 +214,11 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	# git reflog expire --all --expire=now
 	echo
 	git count-objects -v
+	echo "git gc..."
 	if [ -f git-agg ]; then
 		git gc --prune=now
 	else
+		echo "may take a few minutes"
 		git gc --prune=now --aggressive
 		touch git-agg
 	fi
@@ -281,9 +283,11 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		git checkout -f ${branchname}
 		echo
 		git count-objects -v
+		echo "git gc..."
 		if [ -f git-agg ]; then
 			git gc --prune=now
 		else
+			echo "may take a few minutes"
 			git gc --prune=now --aggressive
 			touch git-agg
 		fi
