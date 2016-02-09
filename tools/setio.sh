@@ -8,8 +8,11 @@ VER=0.2
 DEBUG='n'
 CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
 TIME='n'
-MDB_SVER=$(mysql -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
+MDB_SVER=$(/usr/bin/mysql -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
+MDB_DATADIRSIZE=$(/usr/bin/df $(mysqladmin var | grep datadir | tr -s ' ' | awk '{print $4}') | tail -1 | awk '{print $4}')
 CENTMINLOGDIR='/root/centminlogs'
+
+TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 ########################################################################################
 
 if [ ! -f /usr/bin/fio ]; then
@@ -24,6 +27,32 @@ if [ ! -f /proc/user_beancounters ]; then
   if [[ ! -f /usr/bin/lscpu ]]; then
     yum -q -y install util-linux-ng
   fi
+fi
+
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
+fi
+
+if [[ "$CENTOS_SIX" = '6' ]]; then
+  IFREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
+  CACHEDMEM=$(cat /proc/meminfo | grep '^Cached' | awk '{print $2}')
+  FREEMEM=$(echo "$IFREEMEM + $CACHEDMEM" | bc)
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+  FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
 fi
 
 baseinfo() {
@@ -177,64 +206,64 @@ setbp() {
   if [[ "$INNODB_BPSIZE" -le "$INNODB_BPTHRESHOLD" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   fi
   if [[ "$(echo "$INNODB_BPSIZE/$CPUS" | bc)" -le "$INNODB_BPTHRESHOLD" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*48" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*48" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 48|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 48|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 48;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 48;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*40" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*40" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 40|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 40|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 40;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 40;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*32" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*32" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 32|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 32|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 32;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 32;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*24" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*24" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 24|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 24|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 24;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 24;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*16" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*16" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 16|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 16|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 16;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 16;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*12" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*12" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 12|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 12|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 12;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 12;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*8" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*8" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 8|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 8|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 8;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 8;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*6" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*6" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 6|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 6|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 6;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 6;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*4" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*4" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 4|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 4|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 4;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 4;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*2" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD*$CPUS*2" | bc)" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 2|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 2|g" /etc/my.cnf
-    # mysql -e "SET GLOBAL innodb_buffer_pool_instances = 2;"
-    # mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 2;"
+    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   fi
   # grep 'innodb_buffer_pool_instances =' /etc/my.cnf
 }
@@ -300,7 +329,119 @@ setconcurrency() {
   INNODB_CONCURRENT=$(((CPUS+2)*2))
   sed -i "s|innodb_thread_concurrency=.*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
   sed -i "s|innodb_thread_concurrency = .*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
-  mysql -e "SET GLOBAL innodb_thread_concurrency = $INNODB_CONCURRENT;"
+  /usr/bin/mysql -e "SET GLOBAL innodb_thread_concurrency = $INNODB_CONCURRENT;"
+}
+
+ariatune() {
+  if [[ "$FREEMEM" -gt '1040000' && "$FREEMEM" -lt '2000000' ]]; then
+    ARIA_BUFFERSIZE='64M'
+    ARIA_SORTBUFFERSIZE='32M'
+    ARIA_LOGFILESIZE='128M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '1000000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  elif [[ "$FREEMEM" -gt '2080001' && "$FREEMEM" -lt '3120000' ]]; then
+    ARIA_BUFFERSIZE='256M'
+    ARIA_SORTBUFFERSIZE='64M'
+    ARIA_LOGFILESIZE='256M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '1400000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  elif [[ "$FREEMEM" -gt '3120001' && "$FREEMEM" -lt '4160000' ]]; then
+    ARIA_BUFFERSIZE='384M'
+    ARIA_SORTBUFFERSIZE='96M'
+    ARIA_LOGFILESIZE='384M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '2000000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  elif [[ "$FREEMEM" -gt '4160001' && "$FREEMEM" -lt '5200000' ]]; then
+    ARIA_BUFFERSIZE='512M'
+    ARIA_SORTBUFFERSIZE='128M'
+    ARIA_LOGFILESIZE='512M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '2000000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  elif [[ "$FREEMEM" -gt '5200001' && "$FREEMEM" -lt '6240000' ]]; then
+    ARIA_BUFFERSIZE='640M'
+    ARIA_SORTBUFFERSIZE='160M'
+    ARIA_LOGFILESIZE='640M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '2000000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  elif [[ "$FREEMEM" -gt '6240001' && "$FREEMEM" -lt '8320000' ]]; then
+    ARIA_BUFFERSIZE='768M'
+    ARIA_SORTBUFFERSIZE='192M'
+    ARIA_LOGFILESIZE='768M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '2500000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  elif [[ "$FREEMEM" -gt '8320001' ]]; then
+    ARIA_BUFFERSIZE='1024M'
+    ARIA_SORTBUFFERSIZE='256M'
+    ARIA_LOGFILESIZE='1024M'
+    sed -i "s|aria_pagecache_buffer_size=.*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_pagecache_buffer_size = .*|aria_pagecache_buffer_size = $ARIA_BUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size=.*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    sed -i "s|aria_sort_buffer_size = .*|aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE|g" /etc/my.cnf
+    if [[ "$MDB_DATADIRSIZE" -gt '4000000' ]]; then
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    elif [[ "$MDB_DATADIRSIZE" -gt '2500000' && "$MDB_DATADIRSIZE" -le '3999999' ]]; then
+      ARIA_LOGFILESIZE='768M'
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    elif [[ "$MDB_DATADIRSIZE" -gt '2000000' && "$MDB_DATADIRSIZE" -le '2499999' ]]; then
+      ARIA_LOGFILESIZE='512M'
+      sed -i "s|aria_log_file_size=.*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      sed -i "s|aria_log_file_size = .*|aria_log_file_size = $ARIA_LOGFILESIZE|g" /etc/my.cnf
+      # /usr/bin/mysql -e "SET GLOBAL aria_log_file_size = $ARIA_LOGFILESIZE;"
+    fi
+      # /usr/bin/mysql -e "SET GLOBAL aria_sort_buffer_size = $ARIA_SORTBUFFERSIZE;"
+  fi
 }
 
 setio() {
@@ -410,13 +551,13 @@ setio() {
   # echo
   echo "existing value: "
   # grep 'innodb_io_capacity' /etc/my.cnf
-  mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
+  /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 
   # sed -e "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf | grep 'innodb_io_capacity'
   sed -i "s|innodb_io_capacity = .*|innodb_io_capacity = $FIOWSET|g" /etc/my.cnf
   echo "new value: "
   # grep 'innodb_io_capacity' /etc/my.cnf
-  mysql -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
+  /usr/bin/mysql -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
   IOMAX=$((FIOWSET*2))
   if [[ "$IOMAX" -gt "$FIOW" ]]; then
     IOMAX=$(echo "$IOMAX*0.66/1"|bc)
@@ -429,8 +570,8 @@ setio() {
   fi
   # echo "new value: "
   # grep 'innodb_io_capacity_max' /etc/my.cnf
-  mysql -e "SET GLOBAL innodb_io_capacity_max = $IOMAX;"
-  mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
+  /usr/bin/mysql -e "SET GLOBAL innodb_io_capacity_max = $IOMAX;"
+  /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_io_capacity%'"
 }
 
 case "$1" in
@@ -439,14 +580,15 @@ case "$1" in
     ;;
   set )
     {
-    mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
+    /usr/bin/mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
     cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-before-${DT}.log
     setbp
     setio
     setthreads
     setpurgethreads
     setconcurrency
-    mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
+    ariatune
+    /usr/bin/mysql -e "show engine innodb status\G" 2>&1 > ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
     cat /etc/my.cnf >> ${CENTMINLOGDIR}/setio_innodbstatus-after-${DT}.log
     } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_setio_${DT}.log
     ;;
