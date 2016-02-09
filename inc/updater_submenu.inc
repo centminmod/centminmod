@@ -283,11 +283,15 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		git checkout -f ${branchname}
 		echo
 		git count-objects -v
-		echo "git gc..."
+		echo
+		cecho "git gc..." $boldyellow
+		echo
 		if [ -f git-agg ]; then
 			git gc --prune=now
 		else
-			echo "may take a few minutes"
+			echo
+			cecho "may take a few minutes" $boldyellow
+			echo
 			git gc --prune=now --aggressive
 			touch git-agg
 		fi
