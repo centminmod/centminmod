@@ -214,7 +214,12 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	# git reflog expire --all --expire=now
 	echo
 	git count-objects -v
-	git gc --prune=now --aggressive
+	if [ -f git-agg ]; then
+		git gc --prune=now
+	else
+		git gc --prune=now --aggressive
+		touch git-agg
+	fi
 	echo
 	git count-objects -v
 	chmod +x centmin.sh
@@ -276,7 +281,12 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		git checkout -f ${branchname}
 		echo
 		git count-objects -v
-		git gc --prune=now --aggressive
+		if [ -f git-agg ]; then
+			git gc --prune=now
+		else
+			git gc --prune=now --aggressive
+			touch git-agg
+		fi
 		echo
 		git count-objects -v
 		chmod +x centmin.sh
