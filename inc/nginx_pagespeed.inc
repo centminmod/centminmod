@@ -413,6 +413,15 @@ if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
     done
   fi
 fi # NGINX_PAGESPEED=n
+
+if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+  PSADMINCHECK=$(grep '^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
+
+  # re-enable pagespeedadmin.conf if commented out
+  if [[ "$PSADMINCHECK" ]]; then
+    sed -i 's/^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
+fi
 #####################################################
 
 	if [ -d /var/ngx_pagespeed_cache ]; then
