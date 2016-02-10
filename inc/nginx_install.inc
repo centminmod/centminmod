@@ -431,6 +431,13 @@ funct_logrotate
 geoinccheck
 geoipphp
 
+    if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+        echo
+        echo "dynamic module directory at /usr/local/nginx/modules"
+        ls -lah /usr/local/nginx/modules
+        echo
+    fi
+
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"

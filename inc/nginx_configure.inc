@@ -1,5 +1,21 @@
 function funct_nginxconfigure {
 
+	#################################################################################
+	# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
+	NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' auto/options)
+	if [ "$NGX_DYNAMICCHECK" ]; then
+		DYNAMIC_SUPPORT=y
+		# create include file to load nginx dynamic modules in main context in nginx.conf
+		rm -rf /usr/local/nginx/conf/dynamic-modules.conf
+		touch /usr/local/nginx/conf/dynamic-modules.conf
+		# setup include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
+		if [[ ! "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+			sed -i 's|^pcre_jit on;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
+			sed -i 's|^pcre_jit off;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
+		fi
+	fi
+	#################################################################################
+
 	# if centmin.sh variable NGINX_MODSECURITY=y is enabled or
 	# persistent config setup http://centminmod.com/upgrade.html#persistent
 	# with variable NGINX_MODSECURITY=y, then Nginx Modsecurity module
@@ -46,17 +62,11 @@ function funct_nginxconfigure {
 			NGX_VEREVAL=${SET_NGINXVER}
 		fi
 
-if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
-then
-
-GPERFOPT=" --with-google_perftools_module"
-
+if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
+	GPERFOPT=" --with-google_perftools_module"
 else
-
-GPERFOPT=""
-
+	GPERFOPT=""
 #sed -i 's/google_perftools_profiles \/var\/tmp\/tcmalloc;//g' /usr/local/nginx/conf/nginx.conf
-
 fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
@@ -138,10 +148,17 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi	
 
 	if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
-		IMAGEFILTEROPT=" --with-http_image_filter_module"
+		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+			IMAGEFILTEROPT=" --with-http_image_filter_module=dynamic"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_image_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			IMAGEFILTEROPT=" --with-http_image_filter_module"
+		fi
 	else
 		IMAGEFILTEROPT=""
-	fi	
+	fi
 
 	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
 		CACHEPURGEOPT=" --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}"
@@ -467,10 +484,17 @@ else
 	fi	
 
 	if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
-		IMAGEFILTEROPT=" --with-http_image_filter_module"
+		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+			IMAGEFILTEROPT=" --with-http_image_filter_module=dynamic"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_image_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			IMAGEFILTEROPT=" --with-http_image_filter_module"
+		fi
 	else
 		IMAGEFILTEROPT=""
-	fi	
+	fi
 
 	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
 		CACHEPURGEOPT=" --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}"
@@ -609,7 +633,14 @@ if [[ "$NGINX_GEOIP" = [yY] ]]; then
 	if [[ ! -d /usr/share/GeoIP ]]; then
 		geoipinstall
 	fi
-	GEOIPOPT=' --with-http_geoip_module'
+	if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+		GEOIPOPT=' --with-http_geoip_module=dynamic'
+		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+			echo "load_module \"modules/ngx_http_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+		fi
+	else
+		GEOIPOPT=' --with-http_geoip_module'
+	fi
 else
 	GEOIPOPT=''
 fi
@@ -689,7 +720,14 @@ NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
 if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
-		STREAM=' --with-stream --with-stream_ssl_module'
+		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_stream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			STREAM=' --with-stream --with-stream_ssl_module'
+		fi
 	else
 		STREAM=""
 	fi
@@ -705,7 +743,14 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
-		STREAM=' --with-stream --with-stream_ssl_module'
+		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_stream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			STREAM=' --with-stream --with-stream_ssl_module'
+		fi
 	else
 		STREAM=""
 	fi
@@ -872,6 +917,12 @@ fi
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
     	if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       		pwd
+      		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+      			echo
+      			echo "dynamic module directory at /usr/local/nginx/modules"
+      			ls -lah /usr/local/nginx/modules
+      			echo
+      		fi
       		echo "nginx configure options (alternate ordering):"
       		echo "./configure --with-ld-opt=\"${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 ${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-openssl-opt=\"enable-tlsext\"${VTSOPT}${LIBATOMICOPT}${THREADS}${STREAM} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGINX_NJSOPT}${PCREJITOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}"
 			./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 ${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-openssl-opt="enable-tlsext"${VTSOPT}${LIBATOMICOPT}${THREADS}${STREAM} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGINX_NJSOPT}${PCREJITOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
