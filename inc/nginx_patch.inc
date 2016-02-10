@@ -55,3 +55,16 @@ luaopensslpatch() {
 	patch -p1 < nginx-1.9.7-ssl_cert_cb_yield.patch
 	popd
 }
+
+ngxpagespeed_patched() {
+	echo "patching ngx_pagespeed for nginx 1.9.11 support"
+	if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+		pushd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
+		wget -O $DIR_TMP//ngx_pagespeed-release-${NGXPGSPEED_VER}/nginxpagespeed.patch https://github.com/pagespeed/ngx_pagespeed/commit/daa6031294403a25a4fd2f4c7b6a16a349df8af2.patch
+	elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+		pushd $DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}
+		wget -O $DIR_TMP//ngx_pagespeed-${NGXPGSPEED_VER}/nginxpagespeed.patch https://github.com/pagespeed/ngx_pagespeed/commit/daa6031294403a25a4fd2f4c7b6a16a349df8af2.patch
+	fi
+	patch -p1 < nginxpagespeed.patch
+	popd
+}

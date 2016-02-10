@@ -407,7 +407,10 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
             PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
         elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
             PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
-        fi			
+        fi
+     if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+     		ngxpagespeed_patched
+     fi
 	else
 		PGSPEEDOPT=""
 	fi
@@ -626,6 +629,9 @@ else
         elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
             PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
         fi		
+     if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+     		ngxpagespeed_patched
+     fi
 	else
 		PGSPEEDOPT=""
 	fi
