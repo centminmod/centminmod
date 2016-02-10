@@ -1,4 +1,15 @@
 function funct_nginxconfigure {
+	#################################################################################
+	# work around for lua-nginx-module 0.10 branch which adds new futures supported by
+	# openssl but not by libressl which nginx compiles against so this routine checks
+	# if lua-nginx-module 0.10 branch is loaded and switches back to openssl if detected
+	# https://community.centminmod.com/posts/24549/
+	CHECK_LUAVERSIONMID=$(echo $ORESTY_LUANGINXVER  | cut -d . -f2)
+	CHECK_LUAVERSIONSTART=$(echo $ORESTY_LUANGINXVER  | cut -d . -f1)
+	if [[ "$CHECK_LUAVERSIONMID" -ge '10' && "$CHECK_LUAVERSIONSTART" -ge '0' ]]; then
+		LIBRESSL_SWITCH='n'
+		luaopensslpatch
+	fi
 
 	#################################################################################
 	# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+

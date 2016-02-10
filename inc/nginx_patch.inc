@@ -30,6 +30,8 @@ patchnginx() {
 
 luapatch() {
 	if [ ! -f lua.patch ]; then
+		# echo
+		echo "patching lua for nginx 1.9.11 workaround"
 		# patch for nginx 1.9.11 and lua nginx 0.9.20
 		# from https://github.com/openresty/lua-nginx-module/pull/669
 		# https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945
@@ -38,4 +40,18 @@ luapatch() {
 		patch -p1 < lua.patch
 		popd
 	fi
+}
+
+luaopensslpatch() {
+	# for lua-nginx-module 0.10 https://community.centminmod.com/posts/24549/
+	# echo
+	echo "patching nginx for lua 0.10+ branch support"
+	if [ "$ngver" ]; then
+		pushd $DIR_TMP/nginx-${ngver}
+	else
+		pushd $DIR_TMP/nginx-${NGINX_VERSION}
+	fi
+	wget https://github.com/openresty/ngx_openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch
+	patch -p1 < nginx-1.9.7-ssl_cert_cb_yield.patch
+	popd
 }
