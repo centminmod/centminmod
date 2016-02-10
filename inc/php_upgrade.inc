@@ -479,7 +479,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
 
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
-    if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]]; then
+    if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]] || [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
         autodetectinstallextensions
     fi
 
@@ -495,7 +495,7 @@ else
 
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
-    if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]]; then
+    if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]] || [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
         autodetectinstallextensions
     fi
 

@@ -376,6 +376,7 @@ LUACJSONVER='2.1.0.2'              # https://github.com/openresty/lua-cjson
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
+AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 
 PHPGEOIP_ALWAYS=y            # GeoIP php extension is always reinstalled on php recompiles
 PHPDEBUGMODE=n               # --enable-debug PHP compile flag
