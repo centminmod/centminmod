@@ -3,9 +3,13 @@ autodetectextensions() {
 
 if [ -f ${CONFIGSCANDIR}/xcache.ini ]; then
     DETECTXCACHE=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTXCACHE=y
 fi
 
 if [ -f ${CONFIGSCANDIR}/apc.ini ]; then
+    DETECTAPC=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTAPC=y
 fi
 
@@ -18,6 +22,8 @@ if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
         echo "rm -rf ${CONFIGSCANDIR}/igbinary.ini"
         rm -rf ${CONFIGSCANDIR}/igbinary.ini
     fi
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTIGBINARY=y
 fi
 
 if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; then
@@ -31,27 +37,36 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
         rm -rf ${CONFIGSCANDIR}/memcache.ini
         # rm -rf ${CONFIGSCANDIR}/memcached.ini
     fi
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTMEMCACHED=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/redis.ini" || "$PHPREDIS" = [yY] ]]; then
+    DETECTREDIS=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTREDIS=y
 fi
 
 if [[ -f "${CONFIGSCANDIR}/mongodb.ini" || "$PHPMONGODB" = [yY] ]]; then
     DETECTMONGODB=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTMONGODB=y
 fi
 
 if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+    DETECTOPCACHE=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTOPCACHE=y
 fi
 
 if [ -f ${CONFIGSCANDIR}/mailparse.ini ]; then
     DETECTMAILPARSE=y
-   
     if [[ "$PHPMAILPARSE" != [yY] ]]; then
         echo "rm -rf ${CONFIGSCANDIR}/mailparse.ini"
         rm -rf ${CONFIGSCANDIR}/mailparse.ini        
     fi
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTMAILPARSE=y
 fi
 
 if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
@@ -67,6 +82,8 @@ if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
         echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
         rm -rf ${CONFIGSCANDIR}/imagick.ini        
     fi
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTIMAGICK=y
 fi
 
 if [ -f ${CONFIGSCANDIR}/geoip.ini ]; then
