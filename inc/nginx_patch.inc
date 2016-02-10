@@ -33,8 +33,8 @@ luapatch() {
 		# patch for nginx 1.9.11 and lua nginx 0.9.20
 		# from https://github.com/openresty/lua-nginx-module/pull/669
 		# https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945
-		wget -O /svr-setup/lua-nginx-module-${ORESTY_LUANGINXVER}/lua.patch https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945.patch
-		pushd /svr-setup/lua-nginx-module-${ORESTY_LUANGINXVER}/
+		wget -O $DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/lua.patch https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945.patch
+		pushd $DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/
 		patch -p1 < lua.patch
 		popd
 	fi
