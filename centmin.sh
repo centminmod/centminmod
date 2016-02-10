@@ -281,7 +281,7 @@ NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_reque
 NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
 NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
-NGINX_PAGESPEED=y            # Install ngx_pagespeed
+NGINX_PAGESPEED=n            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.9.32.13-beta'
 NGINX_PAGESPEEDPSOL_VER='1.9.32.13'
@@ -310,7 +310,7 @@ ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
-ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
+ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
 ORESTY_LUANGINXVER='0.9.18'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
@@ -369,7 +369,7 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.9.10'        # Use this version of Nginx
+NGINX_VERSION='1.9.11'        # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
@@ -396,7 +396,7 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.37'          # NO longer used/ignored
+PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.0RC5'   # PHP extension for imagick
