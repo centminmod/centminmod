@@ -13,6 +13,15 @@ function funct_nginxconfigure {
 			sed -i 's|^pcre_jit on;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
 			sed -i 's|^pcre_jit off;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
 		fi
+	else
+		# comment out include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
+		# in it exists and you're moving to an nginx version that doesn't support dynamic module
+		# loading
+		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+			if [[ "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+				sed -i 's|^include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|#include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|g' /usr/local/nginx/conf/nginx.conf
+			fi
+		fi
 	fi
 	#################################################################################
 
