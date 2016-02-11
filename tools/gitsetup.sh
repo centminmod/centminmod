@@ -48,9 +48,8 @@ rm -rf centminmod*
 
 echo  
 cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-git clone https://github.com/centminmod/centminmod.git centminmod
+time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
 cd centminmod
-git checkout -f ${branchname}
 chmod +x centmin.sh
 
 echo
