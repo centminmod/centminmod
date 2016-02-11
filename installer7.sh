@@ -211,8 +211,8 @@ echo "--------------------------------------------------------------------------
 echo "---------------------------------------------------------------------------"
 fi
 
-if [ -f ${INSTALLDIR}/curlinstall_yum.txt ]; then
-  rm -rf ${INSTALLDIR}/curlinstall_yum.txt
+if [ -f "${INSTALLDIR}/curlinstall_yum.txt" ]; then
+  rm -rf "${INSTALLDIR}/curlinstall_yum.txt"
 fi
 
 case "$1" in
