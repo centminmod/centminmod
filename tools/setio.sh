@@ -4,12 +4,14 @@
 # for centminmod.com /etc/my.cnf
 ########################################################################################
 DT=`date +"%d%m%y-%H%M%S"`
-VER=0.2
+VER=0.3
 DEBUG='n'
 CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
 TIME='n'
 MDB_SVER=$(/usr/bin/mysql -V | awk '{print $5}' | cut -d . -f1,2 | head -n1)
 MDB_DATADIRSIZE=$(/usr/bin/df $(mysqladmin var | grep datadir | tr -s ' ' | awk '{print $4}') | tail -1 | awk '{print $4}')
+MDB_DATADIR=$(mysqladmin var | grep datadir | tr -s ' ' | awk '{print $4}' | tail -1)
+FIOBASEDIR="$MDB_DATADIR/cmsetiofiotest"
 CENTMINLOGDIR='/root/centminlogs'
 
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
@@ -19,8 +21,13 @@ if [ ! -f /usr/bin/fio ]; then
   yum -q -y install fio
 fi
 
-if [ ! -d /root/tools/fio ]; then
-  mkdir -p /root/tools/fio
+if [ ! -d "$FIOBASEDIR" ]; then
+  mkdir -p $FIOBASEDIR
+  if [[ ! "$(grep 'cmsetiofiotest' /etc/my.cnf)" ]]; then
+    cp -a /etc/my.cnf /etc/my.cnf-setiobackup
+    sed -i 's|\[mysqld\]|\[mysqld\]\nignore-db-dir=cmsetiofiotest|' /etc/my.cnf
+    # /usr/bin/mysqlreload
+  fi
 fi
 
 if [ ! -f /proc/user_beancounters ]; then
@@ -76,8 +83,8 @@ baseinfo() {
 }
 
 fiosetup() {
-  cd /root/tools/fio
-  if [[ ! -f /root/tools/fio/reads.ini || ! -f /root/tools/fio/reads.ini || ! -f /root/tools/fio/reads-16k.ini || ! -f /root/tools/fio/writes-16k.ini ]]; then
+  cd ${FIOBASEDIR}
+  if [[ ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/reads-16k.ini" || ! -f "${FIOBASEDIR}/writes-16k.ini" ]]; then
     rm -rf reads.ini writes.ini reads-16k.ini writes-16k.ini
     wget -q https://gist.github.com/centminmod/5edc872cbd97b213aed5/raw/c6b2e25f860fc4f0e06011c910b2778addeff693/reads.ini
     wget -q https://gist.github.com/centminmod/5edc872cbd97b213aed5/raw/c6b2e25f860fc4f0e06011c910b2778addeff693/writes.ini
@@ -93,7 +100,7 @@ fiosetup() {
 fiocheck() {
   if [ -f /usr/bin/fio ]; then
     fiosetup
-    cd /root/tools/fio
+    cd ${FIOBASEDIR}
     FIOR=$(fio --minimal reads-16k.ini | awk -F ';' '{print $8}')
     FIOW=$(fio --minimal writes-16k.ini | awk -F ';' '{print $49}')
     FIOR=$((FIOR*100000))
@@ -447,7 +454,7 @@ ariatune() {
 setio() {
   if [ -f /usr/bin/fio ]; then
     fiosetup
-    cd /root/tools/fio
+    cd ${FIOBASEDIR}
     FIOR=$(fio --minimal reads-16k.ini | awk -F ';' '{print $8}')
     FIOW=$(fio --minimal writes-16k.ini | awk -F ';' '{print $49}')
     FIOR=$((FIOR*100000))
