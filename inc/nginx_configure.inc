@@ -176,7 +176,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi	
 
 	if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
-		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_IMAGEFILTER" = [yY] ]]; then
 			IMAGEFILTEROPT=" --with-http_image_filter_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_image_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -207,7 +207,16 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi				
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
-		HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/headers-more-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_HEADERSMORE" = [yY] ]]; then
+			HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+		fi
 	else
 		HEADERSMOREOPT=""
 	fi				
@@ -251,9 +260,31 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		REDISDIR=`ls -rt $DIR_TMP | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
-		SETMISCOPT=" --add-module=../${SETMISCDIR}"
+
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/set-misc-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_SETMISC" = [yY] ]]; then
+			SETMISCOPT=" --add-dynamic-module=../${SETMISCDIR}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_set_misc_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			SETMISCOPT=" --add-module=../${SETMISCDIR}"
+		fi
+
 		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
-		ECHOOPT=" --add-module=../${ECHODIR}"
+
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/echo-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ECHO" = [yY] ]]; then
+			ECHOOPT=" --add-dynamic-module=../${ECHODIR}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_echo_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			ECHOOPT=" --add-module=../${ECHODIR}"
+		fi
+
 		REDISOPT=" --add-module=../${REDISDIR}"
 	else
 		MEMCOPT=""
@@ -266,7 +297,18 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 		luapatch
-		LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER} --add-module=../lua-upstream-cache-nginx-module-${ORESTY_LUAUPSTREAMCACHEVER}"
+
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/echo-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_LUA" = [yY] ]]; then
+			LUAOPT=" --add-dynamic-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER} --add-module=../lua-upstream-cache-nginx-module-${ORESTY_LUAUPSTREAMCACHEVER}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_lua_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER} --add-module=../lua-upstream-cache-nginx-module-${ORESTY_LUAUPSTREAMCACHEVER}"
+		fi
+
 		LUALD_OPT=" -Wl,-rpath,$LUAJIT_LIB"
 		if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
 			yum -q -y install lua lua-devel
@@ -516,7 +558,7 @@ else
 	fi	
 
 	if [[ "$NGINX_IMAGEFILTER" = [yY] ]]; then
-		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_IMAGEFILTER" = [yY] ]]; then
 			IMAGEFILTEROPT=" --with-http_image_filter_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_image_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -547,7 +589,16 @@ else
 	fi			
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
-		HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/headers-more-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_HEADERSMORE" = [yY] ]]; then
+			HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+		fi
 	else
 		HEADERSMOREOPT=""
 	fi	
@@ -668,7 +719,7 @@ if [[ "$NGINX_GEOIP" = [yY] ]]; then
 	if [[ ! -d /usr/share/GeoIP ]]; then
 		geoipinstall
 	fi
-	if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_GEOIP" = [yY] ]]; then
 		GEOIPOPT=' --with-http_geoip_module=dynamic'
 		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 			echo "load_module \"modules/ngx_http_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -755,7 +806,7 @@ NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
 if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
-		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
 			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_stream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -778,7 +829,7 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
-		if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
 			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_stream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf

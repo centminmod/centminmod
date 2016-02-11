@@ -286,6 +286,15 @@ PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default wit
 MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
 PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
+# Nginx Dynamic Module Switches
+NGXDYNAMIC_IMAGEFILTER=y
+NGXDYNAMIC_GEOIP=y
+NGXDYNAMIC_STREAM=y
+NGXDYNAMIC_HEADERSMORE=n
+NGXDYNAMIC_SETMISC=n
+NGXDYNAMIC_ECHO=n
+NGXDYNAMIC_LUA=n
+
 # General Configuration
 NGINXUPGRADESLEEP='3'
 NSD_INSTALL=y                # Install NSD (DNS Server)
