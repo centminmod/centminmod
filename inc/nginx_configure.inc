@@ -4,8 +4,8 @@ function funct_nginxconfigure {
 	# openssl but not by libressl which nginx compiles against so this routine checks
 	# if lua-nginx-module 0.10 branch is loaded and switches back to openssl if detected
 	# https://community.centminmod.com/posts/24549/
-	CHECK_LUAVERSIONMID=$(echo $ORESTY_LUANGINXVER  | cut -d . -f2)
-	CHECK_LUAVERSIONSTART=$(echo $ORESTY_LUANGINXVER  | cut -d . -f1)
+	CHECK_LUAVERSIONMID=$(echo "$ORESTY_LUANGINXVER"  | cut -d . -f2)
+	CHECK_LUAVERSIONSTART=$(echo "$ORESTY_LUANGINXVER"  | cut -d . -f1)
 	if [[ "$CHECK_LUAVERSIONMID" -ge '10' && "$CHECK_LUAVERSIONSTART" -ge '0' ]]; then
 		LIBRESSL_SWITCH='n'
 		luaopensslpatch
@@ -13,8 +13,19 @@ function funct_nginxconfigure {
 
 	#################################################################################
 	# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
-	NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' auto/options)
+	echo
+	echo "NGX_DYNAMICCHECK nginx_configure"
+	pwd
+	if [ "$ngver" ]; then
+		NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+	else
+		NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+	fi
+	NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' "$NGINX_DIRINSTALL/auto/options")
 	if [ "$NGX_DYNAMICCHECK" ]; then
+		echo
+		echo "nginx dynamic module support detected"
+		echo
 		DYNAMIC_SUPPORT=y
 		# create include file to load nginx dynamic modules in main context in nginx.conf
 		rm -rf /usr/local/nginx/conf/dynamic-modules.conf

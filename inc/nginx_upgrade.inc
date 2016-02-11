@@ -127,6 +127,28 @@ fi
 checknginxmodules() {
     axelsetup
 
+    #################################################################################
+    # detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
+    echo
+    echo "NGX_DYNAMICCHECK nginx_upgrade.inc"
+    pwd
+    echo
+    echo "nginx dynamic module support detected"
+    echo
+    if [ "$ngver" ]; then
+        NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    else
+        NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
+
+    # NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' auto/options)
+    # if [ "$NGX_DYNAMICCHECK" ]; then
+    #     DYNAMIC_SUPPORT=y
+    # else
+    #     # remove patches meant for 1.9.11 dynamic module support
+    #     rm -rf "${DIR_TMP}/${NGX_LUANGINXLINKFILE}"
+    # fi
+
     if [[ "$NGINX_RTMP" = [yY] ]]; then
         if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
             echo
