@@ -63,7 +63,7 @@ if [ ! -d "$DIR_TMP" ]; then
         fi
 fi
 
-if [[ -z $(cat /etc/resolv.conf) ]]; then
+if [[ -z "$(cat /etc/resolv.conf)" ]]; then
 echo ""
 echo "/etc/resolv.conf is empty. No nameserver resolvers detected !! "
 echo "Please configure your /etc/resolv.conf correctly or you will not"
@@ -152,12 +152,12 @@ cmservice() {
         if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "service ${servicename} $action"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                service ${servicename} $action
+                service "${servicename}" "$action"
         fi
         else
         echo "systemctl $action ${servicename}.service"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl $action ${servicename}.service
+                systemctl "$action" "${servicename}.service"
         fi
         fi
 }
@@ -168,7 +168,7 @@ cmchkconfig() {
         if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "chkconfig ${servicename} $status"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                chkconfig ${servicename} $status
+                chkconfig "${servicename}" $status
         fi
         else
                 if [ "$status" = 'on' ]; then
@@ -179,7 +179,7 @@ cmchkconfig() {
                 fi
         echo "systemctl $status ${servicename}.service"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl $status ${servicename}.service
+                systemctl "$status" "${servicename}.service"
         fi
         fi
 }
@@ -188,13 +188,13 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
     CPUS=$(echo $CPUS+1 | bc)
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo "$CPUS+1" | bc)
     MAKETHREADS=" -j$CPUS"
 fi
 
@@ -553,13 +553,13 @@ WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 PHP_MYSQLSOCKPATH='/var/lib/mysql'
 ###############################################################
 
-MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
+MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
 if [ "${ARCH_OVERRIDE}" != '' ]
 then
     ARCH=${ARCH_OVERRIDE}
 else
-    if [ ${MACHINE_TYPE} == 'x86_64' ];
+    if [ "${MACHINE_TYPE}" == 'x86_64' ];
     then
         ARCH='x86_64'
         MDB_ARCH='amd64'
@@ -868,7 +868,7 @@ unsetramdisk() {
 }
 ###
 
-function funct_centmininstall {
+funct_centmininstall() {
 
 #check centmin install previously
 
@@ -915,7 +915,7 @@ exclude=*.i386 *.i586 *.i686
 EOF
         echo "Your origional yum configuration has been backed up to /etc/yum.bak"
     else
-        rm -rf $CUR_DIR/config/yum
+        rm -rf "$CUR_DIR/config/yum"
     fi
 fi
 
@@ -1016,7 +1016,7 @@ elif [[ ! -f /proc/user_beancounters ]]; then
     fi
 fi # centos 7 + openvz /tmp workaround
 fi
-} 2>&1 | tee ${CENTMINLOGDIR}/securedtmp.log
+} 2>&1 | tee "${CENTMINLOGDIR}/securedtmp.log"
 
 #questions
 
@@ -1114,15 +1114,15 @@ fi
 ngxinstallstarttime=$(date +%s.%N)
 {    
 ngxinstallmain
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
+} 2>&1 | tee "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 wait
 
 ngxinstallendtime=$(date +%s.%N)
 NGXINSTALLTIME=$(echo "scale=2;$ngxinstallendtime - $ngxinstallstarttime"|bc )
 
-echo "" >> ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
-echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log
-ls -lah ${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log 
+echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
+echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
+ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
 mariadbinstallfunct
 mysqlinstallfunct
@@ -1140,7 +1140,7 @@ funct_centos6check
 
     cd $DIR_TMP
 
-if [ "$(rpm -qa | grep ^php*)" ]; then
+if [ "$(rpm -qa | grep '^php*')" ]; then
 
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
 echo "yum -y erase php*"
@@ -1167,7 +1167,7 @@ funct_phpconfigure
 #######################################################
 # check to see if centmin custom php.ini already in place
 
-CUSTOMPHPINICHECK=`grep 'realpath_cache_size = 1024k' /usr/local/lib/php.ini 2>/dev/null`
+CUSTOMPHPINICHECK=$(grep 'realpath_cache_size = 1024k' /usr/local/lib/php.ini 2>/dev/null)
 
 if [[ -z $CUSTOMPHPINICHECK ]]; then
 
@@ -1188,28 +1188,28 @@ echo
 
 if [[ "$lessphpmem" = [yY] ]]; then
 
-echo $lessphpmem
+echo "$lessphpmem"
 
 echo -e "\nCopying php-fpm-min.conf /usr/local/etc/php-fpm.conf\n"
-    cp $CUR_DIR/config/php-fpm/php-fpm-min.conf /usr/local/etc/php-fpm.conf
+    cp "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf
 
 else
 
-echo $lessphpmem
+echo "$lessphpmem"
 
 echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
-    cp $CUR_DIR/config/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
+    cp "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
 
 fi
 
 
-    cp $CUR_DIR/init/php-fpm /etc/init.d/php-fpm
+    cp "$CUR_DIR/init/php-fpm" /etc/init.d/php-fpm
 
 # add check for Windows CLRF line endings
 if [ ! -f /usr/bin/file ]; then
     yum -q -y install file
 fi
-if [[ $(file /etc/init.d/php-fpm) =~ CRLF && -f /etc/init.d/php-fpm ]]; then
+if [[ "$(file /etc/init.d/php-fpm)" =~ CRLF && -f /etc/init.d/php-fpm ]]; then
     if [ ! -f /usr/bin/dos2unix ]; then
         yum -q -y install dos2unix
     fi
@@ -1238,30 +1238,23 @@ fi
     # /etc/init.d/php-fpm force-quit
     /etc/init.d/php-fpm start
 
-if [[ `grep exclude /etc/yum.conf` && $MDB_INSTALL = y ]]; then
-
-cecho "exclude line exists... adding nginx* mysql* php* exclusions" $boldgreen
-
-sed -i "s/exclude=\*.i386 \*.i586 \*.i686 mysql\*/exclude=\*.i386 \*.i586 \*.i686 nginx\* mysql\* php\*/" /etc/yum.conf
-
-sed -i "s/exclude=mysql\*/exclude=mysql\* php\*/" /etc/yum.conf
-
-elif [[ `grep exclude /etc/yum.conf` ]]; then
-
-cecho "exclude line exists... adding nginx* php* exclusions" $boldgreen
-
-sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 nginx\* php\*/" /etc/yum.conf 
-
+if [[ "$(grep exclude /etc/yum.conf)" && $MDB_INSTALL = y ]]; then
+    cecho "exclude line exists... adding nginx* mysql* php* exclusions" $boldgreen
+    sed -i "s/exclude=\*.i386 \*.i586 \*.i686 mysql\*/exclude=\*.i386 \*.i586 \*.i686 nginx\* mysql\* php\*/" /etc/yum.conf
+    sed -i "s/exclude=mysql\*/exclude=mysql\* php\*/" /etc/yum.conf
+elif [[ "$(grep exclude /etc/yum.conf)" ]]; then
+    cecho "exclude line exists... adding nginx* php* exclusions" $boldgreen
+    sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 nginx\* php\*/" /etc/yum.conf 
 fi
 
 
-if [[ ! `grep exclude /etc/yum.conf` && $MDB_INSTALL = y ]]; then
+if [[ ! "$(grep exclude /etc/yum.conf)" && $MDB_INSTALL = y ]]; then
 
 cecho "Can't find exclude line in /etc/yum.conf.. adding exclude line for nginx* mysql* php*" $boldgreen
 
 echo "exclude=nginx* mysql* php*">> /etc/yum.conf
 
-elif [[ ! `grep exclude /etc/yum.conf` ]]; then
+elif [[ ! "$(grep exclude /etc/yum.conf)" ]]; then
 
 cecho "Can't find exclude line in /etc/yum.conf... adding exclude line for nginx* php*" $boldgreen
 
@@ -1277,9 +1270,9 @@ funct_logphprotate
     phpinstallendtime=$(date +%s.%N)
     PHPINSTALLTIME=$(echo "scale=2;$phpinstallendtime - $phpinstallstarttime"|bc )
 
-    echo "" >> ${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log
-    echo "Total PHP First Time Install Time: $PHPINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log
-    ls -lah ${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log 
+    echo "" >> "${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log"
+    echo "Total PHP First Time Install Time: $PHPINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log"
+    ls -lah "${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log" 
 fi
 
 xcacheinstall_ask
@@ -1454,9 +1447,9 @@ nsdinstall
 echo "pureftpinstall"
 pureftpinstall
 
-if [ -f $CUR_DIR/Extras/nginx-update.sh ];
+if [ -f "$CUR_DIR/Extras/nginx-update.sh" ];
 then
-    chmod +x $CUR_DIR/Extras/nginx-update.sh
+    chmod +x "$CUR_DIR/Extras/nginx-update.sh"
 fi
 
 echo " "
@@ -1502,10 +1495,10 @@ if [[ "$ENABLE_MENU" != [yY] ]]; then
 ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
 if [[ "$key" = [yY] ]];
 then
-    rm -rf $DIR_TMP
-    rm -rf $CUR_DIR/config
-    rm -rf $CUR_DIR/init
-    rm -rf $CUR_DIR/sysconfig
+    rm -rf "$DIR_TMP"
+    rm -rf "$CUR_DIR/config"
+    rm -rf "$CUR_DIR/init"
+    rm -rf "$CUR_DIR/sysconfig"
     echo "Temporary files/folders removed"
 fi
 
@@ -1517,7 +1510,7 @@ then
     echo "*************************************************"
     echo "Removing..."
 
-rm -f $0
+rm -f "$0"
 
     echo "*************************************************"
     cecho "* Centmin script deleted" $boldgreen
@@ -1568,7 +1561,7 @@ fi
 #####################################################################
 # functions
 
-function funct_centos6check {
+funct_centos6check() {
 
 
 if [[ "$CENTOSVER" == '5.6' || "$CENTOSVER" == '5.7'|| "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '6.0' || "$CENTOSVER" == '6.1' || "$CENTOSVER" == '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
@@ -1587,7 +1580,7 @@ fi
 # funct_phpupgrade was here
 # funct_memcachedreinstall was here
 
-function funct_timestamp {
+funct_timestamp() {
 
 
 echo "..."
@@ -1600,7 +1593,7 @@ echo "********************************"
 
 }
 
-function funct_installiopingcentmin {
+funct_installiopingcentmin() {
     if [ ! -f /usr/bin/ioping ]; then
         echo ""
         cecho "--------------------------------------------------------" $boldyellow
@@ -1620,10 +1613,10 @@ function funct_installiopingcentmin {
     fi
 }
 
-function funct_selinux {
+funct_selinux() {
 
 SELINUXCONFIGFILE='/etc/selinux/config'
-SELINUXCHECK=`grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2`
+SELINUXCHECK=$(grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2)
 
 if [[ $SELINUXCHECK == 'enforcing' ]]; then
 
@@ -1636,7 +1629,7 @@ cecho "---------------------------------------------" $boldyellow
 cecho "---------------------------------------------" $boldyellow
 	echo ""
 
-	if [[ $disableselinux == [yY] ]]; then
+	if [[ "$disableselinux" == [yY] ]]; then
 
 	echo ""
 cecho "---------------------------------------------" $boldyellow
@@ -1679,7 +1672,7 @@ fi
 
 }
 
-function funct_showtempfile {
+funct_showtempfile() {
 
     echo "*************************************************"
 	cat "$TMP_MSGFILE"
@@ -1687,7 +1680,7 @@ function funct_showtempfile {
 
 }
 
-function funct_mktempfile {
+funct_mktempfile() {
 
 if [[ ! -d "$DIR_TMP"/msglogs ]]; then
 cd $DIR_TMP
@@ -1734,7 +1727,7 @@ if [[ "$1" = 'install' ]]; then
     diskalert
     {
     
-    CHECKCENTMINMODINSTALL=`ls /etc/init.d | grep -E '(csf|lfd|nginx|php-fpm|^nsd)'`
+    CHECKCENTMINMODINSTALL=$(ls /etc/init.d | grep -E '(csf|lfd|nginx|php-fpm|^nsd)')
     if [ ! -z "$CHECKCENTMINMODINSTALL" ]; then
     echo ""
     echo "Centmin Mod previous installation detected. "
@@ -1750,15 +1743,15 @@ if [[ "$1" = 'install' ]]; then
     dlstarttime=$(date +%s.%N)
     {    
     alldownloads
-    } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
     wait
 
     dlendtime=$(date +%s.%N)
     DOWNLOADTIME=$(echo "scale=2;$dlendtime - $dlstarttime"|bc )
 
-    echo "" >> ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
-    echo "Total YUM + Source Download Time: $DOWNLOADTIME seconds" >> ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
-    ls -lah ${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log
+    echo "" >> "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
+    echo "Total YUM + Source Download Time: $DOWNLOADTIME seconds" >> "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
+    ls -lah "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
 
     funct_centmininstall
 
@@ -1780,20 +1773,20 @@ EOF
 
     echo "$SCRIPT_VERSION" > /etc/centminmod-release
     #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
-    } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
     
     if [ "$CCACHEINSTALL" == 'y' ]; then
     
         # check if ccache installed first
         if [ -f /usr/bin/ccache ]; then
-    { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
+    { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
         fi
     fi
     
     endtime=$(date +%s.%N)
     INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-    echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
-    echo "Total Centmin Mod Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
+    echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+    echo "Total Centmin Mod Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
     
     exit 0
 else
@@ -1860,7 +1853,7 @@ else
             diskalert
             {
             
-            CHECKCENTMINMODINSTALL=`ls /etc/init.d | grep -E '(csf|lfd|nginx|php-fpm|^nsd)'`
+            CHECKCENTMINMODINSTALL=$(ls /etc/init.d | grep -E '(csf|lfd|nginx|php-fpm|^nsd)')
             if [ ! -z "$CHECKCENTMINMODINSTALL" ]; then
             echo ""
             echo "Centmin Mod previous installation detected. "
@@ -1894,20 +1887,20 @@ EOF
 
             echo "$SCRIPT_VERSION" > /etc/centminmod-release
             #echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
-            } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
+            } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
             
             if [ "$CCACHEINSTALL" == 'y' ]; then
             
                 # check if ccache installed first
                 if [ -f /usr/bin/ccache ]; then
-            { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
+            { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
                 fi
             fi
             
             endtime=$(date +%s.%N)
             INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-            echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
-            echo "Total Centmin Mod Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log
+            echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
+            echo "Total Centmin Mod Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
             
             exit 0
         
@@ -1917,7 +1910,7 @@ EOF
         centminlog
         {
         funct_nginxaddvhost
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log"
         
         ;;
         3|nsdsetup)
@@ -1925,7 +1918,7 @@ EOF
         centminlog
         {
         funct_nsdsetup
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_setup.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_setup.log"
         
         ;;
         4|nginxupgrade)
@@ -1947,20 +1940,20 @@ EOF
         yuminstall
         fi
         funct_nginxupgrade
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log
-        echo "Total Nginx Upgrade Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        echo "Total Nginx Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'nginx_upgrade.log' | tail -1)"
         
         ;;
@@ -1983,20 +1976,20 @@ EOF
         yuminstall
         fi
         funct_phpupgrade
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log
-        echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
@@ -2012,20 +2005,20 @@ EOF
         fi
         
         funct_xcachereinstall
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log
-        echo "Total Xcache Re-Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
+        echo "Total Xcache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
         
         ;;
         7|apcreinstall)
@@ -2040,20 +2033,20 @@ EOF
         fi
         
         funct_apcreinstall
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log
-        echo "Total APC Cache Re-Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
+        echo "Total APC Cache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
         
         ;;
         8|installxcache)
@@ -2070,20 +2063,20 @@ EOF
         MANXCACHEINSTALL='y'
         
         funct_installxcache
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log
-        echo "Total Xcache Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
+        echo "Total Xcache Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
         
         ;;
         9|installapc)
@@ -2098,20 +2091,20 @@ EOF
         fi
         
         funct_installapc
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log
-        echo "Total APC Cache Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log"
+        echo "Total APC Cache Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log"
         
         ;;
         10|memcachedreinstall)
@@ -2126,20 +2119,20 @@ EOF
         fi
         
         funct_memcachedreinstall
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log
-        echo "Total Memcached Re-Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
+        echo "Total Memcached Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
         
         ;;
         11|mariadbsubmenu)
@@ -2174,20 +2167,20 @@ EOF
         fi
         
         imagickinstall
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
-        echo "Total ImagicK PHP Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
+        echo "Total ImagicK PHP Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
         
         ;;
         16|sshdport)
@@ -2212,20 +2205,20 @@ EOF
         funct_lzipinstall
         funct_plzipinstall
         funct_p7zipinstall
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
             fi
         fi
         
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
-        echo "Total Multi-Threaded Compression Tools Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
+        echo "Total Multi-Threaded Compression Tools Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
         
         ;;
         18|suhosininstall)
@@ -2238,13 +2231,13 @@ EOF
         fi
         
         suhosinsetup
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log"
             fi
         fi
         
@@ -2258,7 +2251,7 @@ EOF
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_ffmpeg_install.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_ffmpeg_install.log"
             fi
         fi
         
@@ -2273,13 +2266,13 @@ EOF
         fi
         
         nsdreinstall
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_reinstall.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_reinstall.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_reinstall.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_reinstall.log"
             fi
         fi
         
@@ -2324,20 +2317,20 @@ EOF
             cecho "--------------------------------------------------------" $boldyellow
         siege -V
 
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
         
             # check if ccache installed first
             if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
             fi
         fi
 
         endtime=$(date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
-        echo "Total Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
+        echo "Total Update Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'update_all.log' | tail -1)"
 
         ;;
@@ -2346,7 +2339,7 @@ EOF
         centminlog
         {
         wpacctsetup
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log"
         
         ;;        
         23|cmupdatemenu)
