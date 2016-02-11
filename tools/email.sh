@@ -57,6 +57,7 @@ setupemails() {
 
 	if [ -z "$mainemail" ]; then
 		mainemail=""
+		rm -rf /etc/centminmod/email-primary.ini
 		cecho "primary email setup skipped..." $boldyellow
 	else
 		echo
@@ -70,6 +71,7 @@ setupemails() {
 	fi
 	if [ -z "$secondemail" ]; then
 		secondemail=$mainemail
+		rm -rf /etc/centminmod/email-secondary.ini
 		cecho "secondary email setup skipped..." $boldyellow
 	else
 		cecho "Secondary: $secondemail" $boldyellow

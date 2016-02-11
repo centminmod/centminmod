@@ -1,3 +1,25 @@
+setupemailcheck() {
+	if [ -f /etc/centminmod/email-primary.ini ]; then
+		if [ -z /etc/centminmod/email-primary.ini ]; then
+			PEMAIL_NOSET='y'
+		fi
+	else
+		PEMAIL_NOSET='y'
+	fi
+	if [ -f /etc/centminmod/email-secondary.ini ]; then
+		if [ -z /etc/centminmod/email-secondary.ini ]; then
+			SEMAIL_NOSET='y'
+		fi
+	else
+		SEMAIL_NOSET='y'
+	fi
+	if [[ "$PEMAIL_NOSET" = 'y' || "$SEMAIL_NOSET" = 'y' ]]; then
+		if [ -f "${SCRIPT_DIR}/tools/email.sh" ]; then
+			${SCRIPT_DIR}/tools/email.sh
+		fi
+	fi
+}
+
 selinxcheck() {
 	# check if selinux is disabled, if not abort and prompt to reboot
 
@@ -406,6 +428,7 @@ pathfixes
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
+	setupemailcheck
 	checkovzkernels
 	rclocalchecks
 	kernelchecks
