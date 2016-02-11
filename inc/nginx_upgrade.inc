@@ -4,12 +4,12 @@ check_requestscheme() {
 for f in $(grep -Rl 'fastcgi_param  SERVER_PROTOCOL    \$server_protocol;' /usr/local/nginx/conf/*); 
   do
     echo "$f"
-    ff=$(grep 'REQUEST_SCHEME' $f)
-    fff=$(grep 'https if_not_empty' $f)
+    ff=$(grep 'REQUEST_SCHEME' "$f")
+    fff=$(grep 'https if_not_empty' "$f")
     if [[ -z "$ff" && -z "$fff" ]]; then
-        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;\nfastcgi_param  HTTPS              \$https if_not_empty;|" $f
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;\nfastcgi_param  HTTPS              \$https if_not_empty;|" "$f"
     elif [[ -z "$ff" && "$fff" ]]; then
-        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;|" $f
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;|" "$f"
     fi
 done
 
@@ -82,15 +82,15 @@ if [[ -z "$VTSMAIN_INCLUDECHECK" ]]; then
 fi
 
 if [[ ! -f /usr/local/nginx/conf/vts_http.conf ]]; then
-    \cp $CUR_DIR/config/nginx/vts_http.conf /usr/local/nginx/conf/vts_http.conf
+    \cp "$CUR_DIR/config/nginx/vts_http.conf" /usr/local/nginx/conf/vts_http.conf
 fi
 
 if [[ ! -f /usr/local/nginx/conf/vts_mainserver.conf ]]; then
-    \cp $CUR_DIR/config/nginx/vts_mainserver.conf /usr/local/nginx/conf/vts_mainserver.conf
+    \cp "$CUR_DIR/config/nginx/vts_mainserver.conf" /usr/local/nginx/conf/vts_mainserver.conf
 fi
 
 if [[ ! -f /usr/local/nginx/conf/vts_server.conf ]]; then
-    \cp $CUR_DIR/config/nginx/vts_server.conf /usr/local/nginx/conf/vts_server.conf
+    \cp "$CUR_DIR/config/nginx/vts_server.conf" /usr/local/nginx/conf/vts_server.conf
 fi
 
 if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
@@ -116,7 +116,7 @@ if [[ -z "$MAPCHECK" ]]; then
 fi
 
 if [[ ! -f /usr/local/nginx/conf/fastcgi_param_https_map.conf ]]; then
-	\cp $CUR_DIR/config/nginx/fastcgi_param_https_map.conf /usr/local/nginx/conf/fastcgi_param_https_map.conf
+	\cp "$CUR_DIR/config/nginx/fastcgi_param_https_map.conf" /usr/local/nginx/conf/fastcgi_param_https_map.conf
 fi
 
 if [[ -z "$(grep 'fastcgi_param HTTPS $server_https;' /usr/local/nginx/conf/php.conf)" ]]; then
@@ -154,12 +154,12 @@ checknginxmodules() {
         if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
             echo
             echo "download nginx-rtmp-module from github"
-            cd $DIR_TMP
+            cd "$DIR_TMP"
             git clone git://github.com/arut/nginx-rtmp-module.git
         elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then
             echo
             echo "get latest updates nginx-rtmp-module from github"
-            cd $DIR_TMP
+            cd "$DIR_TMP"
             git stash
             git pull
             git log -3
@@ -222,7 +222,7 @@ fi
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
     # if option to download official github based master ngx_pagespeed
     # remove old version downloaded & download master tarball instead
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf release-${NGXPGSPEED_VER}*
     nginxpgspeedtarball
 fi
@@ -254,7 +254,7 @@ fi
 
 # DIR_TMP="/svr-setup"
 if [ ! -d "$DIR_TMP" ]; then
-mkdir $DIR_TMP
+mkdir "$DIR_TMP"
 fi
 
 funct_mktempfile
@@ -311,7 +311,7 @@ pagespeeduptasks
     cecho "* Updating nginx" $boldgreen
     echo "*************************************************"
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     # nginx Modules / Prerequisites
 	cecho "Installing nginx Modules / Prerequisites..." $boldgreen
@@ -326,38 +326,38 @@ then
 
     # Install libunwind
     echo "Compiling libunwind..."
-    if [ -s libunwind-${LIBUNWIND_VERSION}.tar.gz ]; then
+    if [ -s "libunwind-${LIBUNWIND_VERSION}.tar.gz" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz $WGETRETRY
+        $DOWNLOADAPP "http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz" $WGETRETRY
     fi
 
-    tar xvzf libunwind-${LIBUNWIND_VERSION}.tar.gz
-    cd libunwind-${LIBUNWIND_VERSION}
+    tar xvzf "libunwind-${LIBUNWIND_VERSION}.tar.gz"
+    cd "libunwind-${LIBUNWIND_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./configure
-    make${MAKETHREADS}
+    make"${MAKETHREADS}"
     make install
 
     # Install google-perftools
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     echo "Compiling google-perftools..."
-    if [ -s google-perftools-${GPERFTOOLS_VERSION}.tar.gz ]; then
+    if [ -s "google-perftools-${GPERFTOOLS_VERSION}.tar.gz" ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz $WGETRETRY
+        $DOWNLOADAPP "http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz" $WGETRETRY
     fi
 
-    tar xvzf google-perftools-${GPERFTOOLS_VERSION}.tar.gz
-    cd google-perftools-${GPERFTOOLS_VERSION}
+    tar xvzf "google-perftools-${GPERFTOOLS_VERSION}.tar.gz"
+    cd "google-perftools-${GPERFTOOLS_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./configure --enable-frame-pointers
-    make${MAKETHREADS}
+    make"${MAKETHREADS}"
     make install
     #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
     #/sbin/ldconfig
@@ -379,22 +379,22 @@ then
     echo "*************************************************"
 
     # Install PCRE
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     echo "Compiling PCRE..."
-    if [ -s pcre-${PCRE_VERSION}.tar.gz ]; then
+    if [ -s "pcre-${PCRE_VERSION}.tar.gz" ]; then
         cecho "pcre ${PCRE_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz $WGETRETRY
+        $DOWNLOADAPP "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz" $WGETRETRY
     fi
 
-    tar xvzf pcre-${PCRE_VERSION}.tar.gz
-    cd pcre-${PCRE_VERSION}
+    tar "xvzf pcre-${PCRE_VERSION}.tar.gz"
+    cd "pcre-${PCRE_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./configure
-    make${MAKETHREADS}
+    make"${MAKETHREADS}"
     make install
 
 fi
@@ -406,10 +406,10 @@ funct_nginxmodules
 check_requestscheme
 
     # Install nginx
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
-    CUR_NGINXUPGRADEVER=$(echo $ngver |sed -e 's|\.|0|g' | head -n1)    
+    CUR_NGINXUPGRADEVER=$(echo "$ngver" |sed -e 's|\.|0|g' | head -n1)    
 
 if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] ]]; then
     # if centmin.sh option NGINXPATCH=n then disable patches by 
@@ -425,14 +425,14 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
 fi
 
     echo "Compiling nginx..."
-    if [ -s nginx-${ngver}.tar.gz ]; then
+    if [ -s "nginx-${ngver}.tar.gz" ]; then
         cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
     else
         $DOWNLOADAPP "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
     fi
 
-    tar xvfz nginx-${ngver}.tar.gz
-    cd nginx-${ngver}
+    tar xvfz "nginx-${ngver}.tar.gz"
+    cd "nginx-${ngver}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
@@ -464,7 +464,7 @@ funct_nginxconfigure
 ################
 
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-        time make${MAKETHREADS}
+        time make"${MAKETHREADS}"
     else
         time make
     fi
@@ -500,10 +500,10 @@ funct_nginxconfigure
         NGINXUPGRADESLEEP=4
     fi
 
-# sleep $NGINXUPGRADESLEEP
+# sleep "$NGINXUPGRADESLEEP"
 
 sleep 3
-NGINXPSCHECK=`ps --no-heading -C nginx`
+NGINXPSCHECK=$(ps --no-heading -C nginx)
 
 if [ ! -z "$NGINXPSCHECK" ]; then
 echo ""
@@ -511,7 +511,7 @@ echo "nginx seems to be still running, trying to stop it again..."
 echo ""
 # /etc/init.d/nginx stop and suppress any error messages
 /usr/local/sbin/nginx -s stop 2>/dev/null
-sleep $NGINXUPGRADESLEEP
+sleep "$NGINXUPGRADESLEEP"
 fi
 
     time make install
@@ -540,7 +540,7 @@ fi
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
-            for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl spdy|ssl http2|g' $v; sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' $v; sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' $v; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
+            for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo "$v"; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' "$v"; echo "---"; sed -i 's|ssl spdy|ssl http2|g' "$v"; sed -i 's|spdy_headers_comp|#spdy_headers_comp|g' "$v"; sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' "$v"; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' "$v";done
         fi
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
             sed -i 's|ssl spdy|ssl http2|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
@@ -548,7 +548,7 @@ fi
             sed -i 's|add_header Alternate-Protocol|#add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
         fi
     elif [[ "$NGINX_HTTP2" = [nN] || "$NGINX_SPDY" = [yY] ]] || [[ "$NGX_VEREVAL" -lt '10903' ]]; then
-        for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo $v; egrep -n 'ssl http2|#spdy_headers_comp|#Alternate-Protocol' $v; egrep -n 'ssl spdy|spdy_headers_comp' $v; echo "---"; sed -i 's|ssl http2|ssl spdy|g' $v; sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' $v; sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' $v; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v;done
+        for v in $(ls /usr/local/nginx/conf/conf.d/*.conf); do echo "$v"; egrep -n 'ssl http2|#spdy_headers_comp|#Alternate-Protocol' "$v"; egrep -n 'ssl spdy|spdy_headers_comp' "$v"; echo "---"; sed -i 's|ssl http2|ssl spdy|g' "$v"; sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' "$v"; sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' "$v"; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' "$v";done
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
             sed -i 's|ssl http2|ssl spdy|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
@@ -563,7 +563,7 @@ fi
         # OPENSSLVER_CHECK=$(strings $SSLIB | grep "^OpenSSL ")
         # echo $OPENSSLVER_CHECK
 
-        CBODYCHECK=`grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf`
+        CBODYCHECK=$(grep 'client_body_in_file_only on' /usr/local/nginx/conf/nginx.conf)
         if [ $CBODYCHECK ]; then
             sed -i 's/client_body_in_file_only on/client_body_in_file_only off/g' /usr/local/nginx/conf/nginx.conf
         fi
@@ -573,16 +573,16 @@ fi
 
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find $DIR_TMP -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -print
-find $DIR_TMP -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -exec rm -rf {} \;
-find $DIR_TMP -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -print
-find $DIR_TMP -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -exec rm -rf {} \;
-find $DIR_TMP -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -print
-find $DIR_TMP -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -exec rm -rf {} \;
-find $DIR_TMP -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -print
-find $DIR_TMP -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -exec rm -rf {} \;
-find $DIR_TMP -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -print
-find $DIR_TMP -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exec rm -rf {} \;
 
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo
