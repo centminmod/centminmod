@@ -60,10 +60,10 @@ ngxpagespeed_patched() {
 	echo "patching ngx_pagespeed for nginx 1.9.11 support"
 	if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
 		pushd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
-		wget -O $DIR_TMP//ngx_pagespeed-release-${NGXPGSPEED_VER}/nginxpagespeed.patch https://github.com/pagespeed/ngx_pagespeed/commit/daa6031294403a25a4fd2f4c7b6a16a349df8af2.patch
+		wget -O $DIR_TMP//ngx_pagespeed-release-${NGXPGSPEED_VER}/nginxpagespeed.patch https://github.com/pagespeed/ngx_pagespeed/commit/1748d934f3b374d11edfeb3e38605c5c75eef14b.patch
 	elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
 		pushd $DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}
-		wget -O $DIR_TMP//ngx_pagespeed-${NGXPGSPEED_VER}/nginxpagespeed.patch https://github.com/pagespeed/ngx_pagespeed/commit/daa6031294403a25a4fd2f4c7b6a16a349df8af2.patch
+		wget -O $DIR_TMP//ngx_pagespeed-${NGXPGSPEED_VER}/nginxpagespeed.patch https://github.com/pagespeed/ngx_pagespeed/commit/1748d934f3b374d11edfeb3e38605c5c75eef14b.patch
 	fi
 	patch -p1 < nginxpagespeed.patch
 	popd
