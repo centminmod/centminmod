@@ -164,9 +164,8 @@ centminlog
 	
 	echo  
 	cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-	git clone ${CMGIT} centminmod
+	time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
 	cd centminmod
-	git checkout -f ${branchname}
 	chmod +x centmin.sh
 	
 	echo
@@ -272,13 +271,27 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho "List of current remote branches by descending date order" $boldyellow
 	echo
 
-	for k in `git branch -r|sed s/^..//`;do echo -e `git log -1 --pretty=format:"%Cgreen%ci %Cblue%cr%Creset" "$k" 2>/dev/null`\\t"$k";done| sed -e 's|origin\/||g' -e '/HEAD/d' | sort -r
+	# for k in `git branch -r|sed s/^..//`;do echo -e `git log -1 --pretty=format:"%Cgreen%ci %Cblue%cr%Creset" "$k" 2>/dev/null`\\t"$k";done| sed -e 's|origin\/||g' -e '/HEAD/d' | sort -r
+	# grab branch listings using curl
+	if [[ "$(echo $CMGIT | grep github)" ]]; then
+		GITCURLSTATUS=$(curl -sI https://github.com/centminmod/centminmod/branches/active | grep 'HTTP\/' | awk '/200/ {print $2}')
+		if [[ "$GITCURLSTATUS" = '200' ]]; then
+			CMBRANCHLIST=$(curl -s https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc')
+			echo "$CMBRANCHLIST"
+		fi
+	else
+		GITCURLSTATUS=$(curl -sI https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep 'HTTP\/' | awk '/200/ {print $2}')
+		if [[ "$GITCURLSTATUS" = '200' ]]; then
+		CMBRANCHLIST=$(curl -s https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc')
+		echo "$CMBRANCHLIST"
+		fi
+	fi
 	
 	echo
 	read -ep "Enter the branch name you want to switch to i.e. 123.09beta01 : " branchname
 	echo
 
-	if [ ! "$(git branch -r | grep "${branchname}$")" ]; then
+	if [ ! "$(echo $CMBRANCHLIST | grep -o "${branchname}")" ]; then
 	   	echo "$branchname branch does not exists"
 	   	echo "try again..."
 	   	break
@@ -294,9 +307,8 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	
 		echo  
 		cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-		git clone ${CMGIT} centminmod
+		time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
 		cd centminmod 2>/dev/null
-		git checkout -f ${branchname}
 
 		if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then
 			echo
@@ -365,4 +377,3 @@ esac
 done
 
 }
-
