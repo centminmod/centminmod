@@ -1,4 +1,56 @@
-function funct_nginxconfigure {
+ngx_dynamicfunction() {
+	if [ ! -d /usr/local/nginx/conf ]l then
+		mkdir -p /usr/local/nginx/conf
+	fi
+	if [ -d /usr/local/nginx/conf ]l then
+		# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
+  	if [ -f "$(which figlet)" ]; then
+      	figlet -ckf standard "Check Nginx Dynamic Module Support"
+  	fi
+		echo
+		echo "NGX_DYNAMICCHECK nginx_configure"
+		pwd
+		if [ "$ngver" ]; then
+			NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+		else
+			NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+		fi
+		NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' "$NGINX_DIRINSTALL/auto/options")
+		if [ "$NGX_DYNAMICCHECK" ]; then
+			echo
+			echo "nginx dynamic module support detected"
+			echo
+			DYNAMIC_SUPPORT=y
+			# create include file to load nginx dynamic modules in main context in nginx.conf
+			rm -rf /usr/local/nginx/conf/dynamic-modules.conf
+			touch /usr/local/nginx/conf/dynamic-modules.conf
+			# setup include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
+			if [[ ! "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+				sed -i 's|^pcre_jit on;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
+				sed -i 's|^pcre_jit off;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
+			fi
+			if [[ "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+				sed -i 's|^#include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|g' /usr/local/nginx/conf/nginx.conf
+			fi
+			# custom dynamic loading module flag include sourced file
+			if [ -f "${CONFIGSCANBASE}/custom_nginxmodules.inc" ]; then
+    			# default is at /etc/centminmod/custom_nginxmodules.inc
+    			source "${CONFIGSCANBASE}/custom_nginxmodules.inc"
+			fi
+		else
+			# comment out include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
+			# in it exists and you're moving to an nginx version that doesn't support dynamic module
+			# loading
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				if [[ "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
+					sed -i 's|^include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|#include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|g' /usr/local/nginx/conf/nginx.conf
+				fi
+			fi
+		fi # NGX_DYNAMICCHECK check
+	fi # check for /usr/local/nginx/conf
+}
+
+funct_nginxconfigure() {
 	#################################################################################
 	# work around for lua-nginx-module 0.10 branch which adds new futures supported by
 	# openssl but not by libressl which nginx compiles against so this routine checks
@@ -15,47 +67,7 @@ function funct_nginxconfigure {
 	fi
 
 	#################################################################################
-	# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
-	echo
-	echo "NGX_DYNAMICCHECK nginx_configure"
-	pwd
-	if [ "$ngver" ]; then
-		NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
-	else
-		NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
-	fi
-	NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' "$NGINX_DIRINSTALL/auto/options")
-	if [ "$NGX_DYNAMICCHECK" ]; then
-		echo
-		echo "nginx dynamic module support detected"
-		echo
-		DYNAMIC_SUPPORT=y
-		# create include file to load nginx dynamic modules in main context in nginx.conf
-		rm -rf /usr/local/nginx/conf/dynamic-modules.conf
-		touch /usr/local/nginx/conf/dynamic-modules.conf
-		# setup include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
-		if [[ ! "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
-			sed -i 's|^pcre_jit on;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
-			sed -i 's|^pcre_jit off;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
-		fi
-		if [[ "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
-			sed -i 's|^#include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|g' /usr/local/nginx/conf/nginx.conf
-		fi
-		# custom dynamic loading module flag include sourced file
-		if [ -f "${CONFIGSCANBASE}/custom_nginxmodules.inc" ]; then
-    		# default is at /etc/centminmod/custom_nginxmodules.inc
-    		source "${CONFIGSCANBASE}/custom_nginxmodules.inc"
-		fi
-	else
-		# comment out include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
-		# in it exists and you're moving to an nginx version that doesn't support dynamic module
-		# loading
-		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-			if [[ "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
-				sed -i 's|^include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|#include \/usr\/local\/nginx\/conf\/dynamic-modules.conf;|g' /usr/local/nginx/conf/nginx.conf
-			fi
-		fi
-	fi
+	ngx_dynamicfunction
 	#################################################################################
 
 	# if centmin.sh variable NGINX_MODSECURITY=y is enabled or
