@@ -1,32 +1,32 @@
 ########################################################################
 autodetectextensions() {
 
-if [ -f ${CONFIGSCANDIR}/xcache.ini ]; then
+if [ -f "${CONFIGSCANDIR}/xcache.ini" ]; then
     DETECTXCACHE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTXCACHE=y
 fi
 
-if [ -f ${CONFIGSCANDIR}/apc.ini ]; then
+if [ -f "${CONFIGSCANDIR}/apc.ini" ]; then
     DETECTAPC=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTAPC=y
 fi
 
-if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
+if [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTIGBINARY=y
     else
         # remove igbinary.ini when PHP NGDEBUG detected on upgrade
         DETECTIGBINARY=n
         echo "rm -rf ${CONFIGSCANDIR}/igbinary.ini"
-        rm -rf ${CONFIGSCANDIR}/igbinary.ini
+        rm -rf "${CONFIGSCANDIR}/igbinary.ini"
     fi
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTIGBINARY=y
 fi
 
-if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; then
+if [[ -f "${CONFIGSCANDIR}/memcache.ini" || -f "${CONFIGSCANDIR}/memcached.ini" ]]; then
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTMEMCACHED=y
     else
@@ -34,8 +34,8 @@ if [[ -f ${CONFIGSCANDIR}/memcache.ini || -f ${CONFIGSCANDIR}/memcached.ini ]]; 
         DETECTMEMCACHED=n
         echo "rm -rf ${CONFIGSCANDIR}/memcache.ini"
         # echo "rm -rf ${CONFIGSCANDIR}/memcached.ini"
-        rm -rf ${CONFIGSCANDIR}/memcache.ini
-        # rm -rf ${CONFIGSCANDIR}/memcached.ini
+        rm -rf "${CONFIGSCANDIR}/memcache.ini"
+        # rm -rf "${CONFIGSCANDIR}/memcached.ini"
     fi
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMEMCACHED=y
@@ -53,40 +53,40 @@ elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMONGODB=y
 fi
 
-if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
     DETECTOPCACHE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTOPCACHE=y
 fi
 
-if [ -f ${CONFIGSCANDIR}/mailparse.ini ]; then
+if [ -f "${CONFIGSCANDIR}/mailparse.ini" ]; then
     DETECTMAILPARSE=y
     if [[ "$PHPMAILPARSE" != [yY] ]]; then
         echo "rm -rf ${CONFIGSCANDIR}/mailparse.ini"
-        rm -rf ${CONFIGSCANDIR}/mailparse.ini        
+        rm -rf "${CONFIGSCANDIR}/mailparse.ini"        
     fi
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMAILPARSE=y
 fi
 
-if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
+if [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
         DETECTIMAGICK=y
     else
         # remove imagick.ini when PHP NGDEBUG detected on upgrade
         DETECTIMAGICK=n
         echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
-        rm -rf ${CONFIGSCANDIR}/imagick.ini
+        rm -rf "${CONFIGSCANDIR}/imagick.ini"
     fi
     if [[ "$PHPIMAGICK" != [yY] ]]; then
         echo "rm -rf ${CONFIGSCANDIR}/imagick.ini"
-        rm -rf ${CONFIGSCANDIR}/imagick.ini        
+        rm -rf "${CONFIGSCANDIR}/imagick.ini"      
     fi
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTIMAGICK=y
 fi
 
-if [ -f ${CONFIGSCANDIR}/geoip.ini ]; then
+if [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     DETECTGEOIP=y
 else
     DETECTGEOIP=y
@@ -97,7 +97,7 @@ fi
 ########################################################################
 autodetectinstallextensions() {
 
-PHPEXTDIR_AUTODETECT=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 cecho "----------------------------------------------------" $boldgreen
 cecho "Auto reinstalling previously detected PHP extensions" $boldyellow
@@ -163,15 +163,15 @@ fi
 
 # Fix extension directory on major PHP version changes 
 # Zend Opcache related when downgrading PHP major versions
-PHPEXTDIRDNEW=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+PHPEXTDIRDNEW=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 OLD=$(echo $PHPEXTDIRDOLD | sed 's/\//\\\//g')
 NEW=$(echo $PHPEXTDIRDNEW | sed 's/\//\\\//g')
 
 for ini in $(ls ${CONFIGSCANDIR}/ | grep .ini)
  do 
-    echo $ini
-    sed -i "s/$OLD/$NEW/g" ${CONFIGSCANDIR}/${ini} 2>&1>/dev/null
+    echo "$ini"
+    sed -i "s/$OLD/$NEW/g" "${CONFIGSCANDIR}/${ini}" /dev/null 2>&1
 done
 
 }
@@ -180,7 +180,7 @@ done
 funct_phpupgrade() {
     axelsetup
 
-    if [ ${MACHINE_TYPE} == 'x86_64' ];
+    if [ "${MACHINE_TYPE}" == 'x86_64' ];
     then
         ARCH='x86_64'
     else
@@ -188,7 +188,7 @@ funct_phpupgrade() {
     fi
 
 # Set LIBDIR
-if [ ${ARCH} == 'x86_64' ];
+if [ "${ARCH}" == 'x86_64' ];
 then
     LIBDIR='lib64'
 else
@@ -208,7 +208,7 @@ fi # UALL
 
 DIR_TMP="$DIR_TMP"
 if [ ! -d "$DIR_TMP" ]; then
-mkdir $DIR_TMP
+mkdir "$DIR_TMP"
 fi
 
 funct_mktempfile
@@ -230,7 +230,7 @@ else
     # only prompt for php-fpm.conf overwrite if the existing /usr/local/nginx/conf/php.conf file
     # differs from the current centmin mod template file
     if [[ -f /usr/local/nginx/conf/php.conf && -f "$CUR_DIR/config/nginx/php.conf" ]]; then
-        diff -u /usr/local/nginx/conf/php.conf $CUR_DIR/config/nginx/php.conf &>/dev/null
+        diff -u /usr/local/nginx/conf/php.conf "$CUR_DIR/config/nginx/php.conf" &>/dev/null
         PHPCONF_DIFFCHECK=$?
     else
         PHPCONF_DIFFCHECK=1
@@ -248,7 +248,7 @@ else
     
     # switch to auto calculate system memory instead of prompting for user input
     IS_PHPLOWMEM='2097152'
-    CHECK_PHPLOWMEM=`expr $TOTALMEM \< $IS_PHPLOWMEM`
+    CHECK_PHPLOWMEM=$(expr $TOTALMEM \< $IS_PHPLOWMEM)
     if [ "$CHECK_PHPLOWMEM" == "1" ]; then
         lessphpmem=y
     fi
@@ -275,7 +275,7 @@ funct_centos6check
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
 if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
@@ -305,21 +305,21 @@ else
     AXELPHPUPGRADETARGZ=''
 fi   
     phpgeolocation
-    curl -sI --connect-timeout 5 --max-time 5 ${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror | grep 'HTTP\/' | grep '404'
+    curl -sI --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
     PHPGEO_CURLCHECK=$?
     if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
         PHP_MIRRORURL="http://php.net"
         PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
     fi
-    if [ -s php-${phpver}.tar.${PHPEXTSION} ]; then
+    if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror $AXELPHPUPGRADETARGZ $WGETRETRY
+        $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPUPGRADETARGZ $WGETRETRY
     fi
 
-    tar $PHPTAR_FLAGS php-${phpver}.tar.${PHPEXTSION}
+    tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
 
-    cd php-${phpver}
+    cd "php-${phpver}"
 
 ##############################################
 # begin update php.ini
@@ -339,7 +339,7 @@ echo "..."
 
 phpsededit
 
-PHPDIFF=`diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT`
+PHPDIFF=$(diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT)
 echo ""
 if [ ! -z "$PHPDIFF" ]; then
 echo "checking updated php.ini compared to old /usr/local/lib/php.ini-oldversion_$DT"
@@ -347,7 +347,7 @@ echo "please note the following differences: "
 echo "if APC, Xcache, Memcache, Suhosin or FFMPEG Extensions are listed please re-install them"
 echo ""
 echo "--------------------------------------------------------------------------------------------"
-diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT
+diff /usr/local/lib/php.ini "/usr/local/lib/php.ini-oldversion_$DT"
 echo "--------------------------------------------------------------------------------------------"
 echo ""
     echo "*************************************************"
@@ -393,7 +393,7 @@ funct_phpconfigure
 ################
 
 echo "make${MAKETHREADS}"
-    time make${MAKETHREADS}
+    time make"${MAKETHREADS}"
 
 ################
 # error check
@@ -448,7 +448,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     echo "If you have made an custom changes to /usr/local/etc/php-fpm.conf, you will find"
     echo "they still exist in backup at /usr/local/etc/php-fpm.conf-oldversion_$DT"
     
-        cp -f /usr/local/etc/php-fpm.conf /usr/local/etc/php-fpm.conf-oldversion_$DT
+        cp -f /usr/local/etc/php-fpm.conf "/usr/local/etc/php-fpm.conf-oldversion_$DT"
         ls -lhrt /usr/local/etc/ | grep php-fpm.conf
     
     sleep 9
@@ -458,9 +458,9 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     echo "If you have made an custom changes to /usr/local/nginx/conf/php.conf, you will find"
     echo "they still exist in backup at /usr/local/nginx/conf/php.conf-oldversion_$DT"
     
-        cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php.conf-oldversion_$DT
+        cp -f /usr/local/nginx/conf/php.conf "/usr/local/nginx/conf/php.conf-oldversion_$DT"
         ls -lhrt /usr/local/nginx/conf/ | grep php.conf
-        cp -f $CUR_DIR/config/nginx/php.conf /usr/local/nginx/conf/php.conf
+        cp -f "$CUR_DIR/config/nginx/php.conf" /usr/local/nginx/conf/php.conf
     
     # recheck whether fastcgi_param GEOIP_ settings in php.conf need to be disabled or enabled
     if [[ "$NGINX_GEOIP" = [yY] ]]; then
@@ -475,17 +475,17 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
 
     if [[ "$lessphpmem" = [yY] ]]; then
     
-        echo $lessphpmem
+        echo "$lessphpmem"
         
         echo -e "\nCopying php-fpm-min.conf /usr/local/etc/php-fpm.conf\n"
-            cp -f $CUR_DIR/config/php-fpm/php-fpm-min.conf /usr/local/etc/php-fpm.conf
+            cp -f "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf
     
     else
     
-        echo $lessphpmem
+        echo "$lessphpmem"
         
         echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
-            cp -f $CUR_DIR/config/php-fpm/php-fpm.conf /usr/local/etc/php-fpm.conf
+            cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
     
     fi # lessphpmem
 
@@ -504,7 +504,7 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
-            rm -rf ${CONFIGSCANDIR}/redis.ini
+            rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
     fi
 
@@ -520,7 +520,7 @@ else
         if [[ ! -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [yY] ]]; then
             redisinstall
         elif [[ -f "${CONFIGSCANDIR}/redis.ini" && "$PHPREDIS" = [nN] ]]; then
-            rm -rf ${CONFIGSCANDIR}/redis.ini
+            rm -rf "${CONFIGSCANDIR}/redis.ini"
         fi
     fi
 fi # overwritephpfpmconf
@@ -534,7 +534,7 @@ if [ ! -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     fi
 elif [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     if [[ "$PHPGEOIP_ALWAYS" = [nN] ]]; then
-        rm -rf ${CONFIGSCANDIR}/geoip.ini
+        rm -rf "${CONFIGSCANDIR}/geoip.ini"
     fi
 fi
 
@@ -545,27 +545,27 @@ fi
 
 if [[ "$PHPMONGODB" = [nN] ]]; then
     if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
-        rm -rf ${CONFIGSCANDIR}/mongodb.ini
+        rm -rf "${CONFIGSCANDIR}/mongodb.ini"
     fi
 fi
 
 if [[ "$PHP_MEMCACHE" = [nN] ]]; then
     if [ -f "${CONFIGSCANDIR}/memcache.ini" ]; then
-        rm -rf ${CONFIGSCANDIR}/memcache.ini
+        rm -rf "${CONFIGSCANDIR}/memcache.ini"
     fi
 fi
 
 if [[ "$PHP_MEMCACHED" = [nN] ]]; then
     if [ -f "${CONFIGSCANDIR}/memcached.ini" ]; then
-        rm -rf ${CONFIGSCANDIR}/memcached.ini
+        rm -rf "${CONFIGSCANDIR}/memcached.ini"
     fi
 fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -print
-find $DIR_TMP -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -exec rm -rf {} \;
-find $DIR_TMP -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -print
-find $DIR_TMP -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -print
+find "$DIR_TMP" -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -exec rm -rf {} \;
 
     cmservice php-fpm restart
 
@@ -573,18 +573,18 @@ if [ -f /usr/local/nginx/html/phpi.php ]; then
 # Randomize phpi.php filename
 NPHP=$(od -vAn -N4 -tx < /dev/urandom)
 NPHP=$(echo ${NPHP} | sed -e 's/\s//')
-mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
-chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
+mv /usr/local/nginx/html/phpi.php "/usr/local/nginx/html/${NPHP}_phpi.php"
+chown nginx:nginx "/usr/local/nginx/html/${NPHP}_phpi.php"
 fi
 
 if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
-    cat ${CENTMINLOGDIR}/zendopcache_passfile.txt
+    cat "${CENTMINLOGDIR}/zendopcache_passfile.txt"
 fi
 
 # notes for users if PHP 7.0 detected
 php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
 PHPSEVEN_CHECKVER=$?
-echo $PHPSEVEN_CHECKVER
+echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
@@ -618,7 +618,7 @@ if [[ "$ENABLE_MENU" != [yY] ]]; then
 ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
 if [[ "$key" = [yY] ]];
 then
-    rm -rf $DIR_TMP
+    rm -rf "$DIR_TMP"
     echo "Temporary files/folders removed"
 fi
 
@@ -630,7 +630,7 @@ then
     echo "*************************************************"
     echo "Removing..."
 
-rm -f $0
+rm -f "$0"
 
     echo "*************************************************"
     cecho "* Centmin script deleted" $boldgreen

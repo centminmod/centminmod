@@ -374,12 +374,12 @@ pagespeedbackup() {
 echo ""
 echo "backup ngx_pagespeed pagespeed.conf"
 echo "cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}"
-cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}
+cp -a /usr/local/nginx/conf/pagespeed.conf "/usr/local/nginx/conf/pagespeed.conf_${DT}"
 
 echo ""
 echo "backup ngx_pagespeed pagespeedhandler.conf"
 echo "cp -a /usr/local/nginx/conf/pagespeedhandler.conf /usr/local/nginx/conf/pagespeedhandler.conf_${DT}"
-cp -a /usr/local/nginx/conf/pagespeedhandler.conf /usr/local/nginx/conf/pagespeedhandler.conf_${DT}
+cp -a /usr/local/nginx/conf/pagespeedhandler.conf "/usr/local/nginx/conf/pagespeedhandler.conf_${DT}"
 }
 
 pagespeeduptasks() {
@@ -407,9 +407,9 @@ if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
     do
       echo
       echo "commenting out pagespeed includes in $v"
-      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeed.conf;/#include \/usr\/local\/nginx\/conf\/pagespeed.conf;/g' $v
-      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/g' $v
-      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/g' $v
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeed.conf;/#include \/usr\/local\/nginx\/conf\/pagespeed.conf;/g' "$v"
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/g' "$v"
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/g' "$v"
     done
   fi
 fi # NGINX_PAGESPEED=n
