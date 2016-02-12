@@ -15,7 +15,7 @@ setupemailcheck() {
 	fi
 	if [[ "$PEMAIL_NOSET" = 'y' || "$SEMAIL_NOSET" = 'y' ]]; then
 		if [ -f "${SCRIPT_DIR}/tools/email.sh" ]; then
-			${SCRIPT_DIR}/tools/email.sh
+			"${SCRIPT_DIR}/tools/email.sh"
 		fi
 	fi
 }
@@ -105,7 +105,7 @@ blockeditorcheck() {
 	if [[ -z "$(grep 17234 /usr/local/nginx/conf/drop.conf)" ]]; then
 		if [ -f "${SCRIPT_DIR}/config/nginx/drop.conf" ]; then
 		rm -rf /usr/local/nginx/conf/drop.conf
-		\cp -f ${SCRIPT_DIR}/config/nginx/drop.conf /usr/local/nginx/conf/drop.conf
+		\cp -f "${SCRIPT_DIR}/config/nginx/drop.conf" /usr/local/nginx/conf/drop.conf
 		fi
 	fi
 	fi
@@ -173,11 +173,11 @@ nvcheck() {
 	if [[ -f "${SCRIPT_DIR}/tools/nv.sh" && -f /usr/bin/nv ]]; then
 		# auto update /usr/bin/nv if different from centmin mod tools/nv.sh copy
 		# if [[ "$(diff -qr ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv; echo $?)" != '0' ]]; then
-		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
+		\cp -f "${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv"
 		chmod +x /usr/bin/nv
 		# fi
 	else
-		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
+		\cp -f "${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv"
 		chmod +x /usr/bin/nv
 	fi		
 }

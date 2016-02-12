@@ -168,7 +168,7 @@ cmchkconfig() {
         if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "chkconfig ${servicename} $status"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                chkconfig "${servicename}" $status
+                chkconfig "${servicename}" "$status"
         fi
         else
                 if [ "$status" = 'on' ]; then
@@ -189,7 +189,7 @@ if [ -f /proc/user_beancounters ]; then
     # MAKETHREADS=" -j$CPUS"
     # speed up make
     CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(echo "$CPUS+1" | bc)
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
@@ -203,13 +203,13 @@ CONFIGSCANBASE='/etc/centminmod'
 CONFIGSCANDIR="${CONFIGSCANBASE}/php.d"
 
 if [ ! -d "$CONFIGSCANBASE" ]; then
-	mkdir -p $CONFIGSCANBASE
+	mkdir -p "$CONFIGSCANBASE"
 fi
 
 if [ ! -d "$CONFIGSCANDIR" ]; then
-	mkdir -p $CONFIGSCANDIR
+	mkdir -p "$CONFIGSCANDIR"
 	if [ -d /root/centminmod/php.d/ ]; then
-    	cp -a /root/centminmod/php.d/* ${CONFIGSCANDIR}/
+    	cp -a /root/centminmod/php.d/* "${CONFIGSCANDIR}/"
     fi
 fi
 
