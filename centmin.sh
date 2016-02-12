@@ -456,7 +456,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.0RC5'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.0RC6'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.0' # For PHP 7
 MEMCACHED_INSTALL=y         # Install Memcached
@@ -492,7 +492,7 @@ ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/Zend
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'       # Use this version of Python
-SIEGE_VERSION='3.1.3'
+SIEGE_VERSION='3.1.4'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 WGETOPT='-cnv --no-dns-cache -4'
