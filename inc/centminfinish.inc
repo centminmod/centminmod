@@ -46,7 +46,11 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check Nginx Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	$(which nginx) -V
+	if [ -f "$(which nginx)" ]; then
+		$(which nginx) -V
+	else
+		echo "can not find nginx binary.. install failed"
+	fi
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
@@ -204,16 +208,16 @@ fi
 	cecho "/usr/bin/mytimes" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 	if [ ! -f /usr/bin/mytimes ]; then
-		cp $CUR_DIR/tools/mytimes.sh /usr/bin/mytimes
+		cp "$CUR_DIR/tools/mytimes.sh" /usr/bin/mytimes
 		chmod +x /usr/bin/mytimes
 	fi
 	/usr/bin/mytimes
 	cecho "--------------------------------------------------------" $boldyellow
 
 	if [ -f "$CUR_DIR/tools/nv.sh" ]; then
-		cp $CUR_DIR/tools/nv.sh /usr/bin/nv
+		cp "$CUR_DIR/tools/nv.sh" /usr/bin/nv
 		chmod +x /usr/bin/nv
-	fi	
+	fi
 }
 
 centminfinish() {
@@ -234,7 +238,7 @@ fi
 installchecks
 DATENOW=$(date +"%b %d")
 YUMLOG=$(grep -h "$DATENOW" /var/log/yum.log)
-echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
+echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log"
 
 
     echo "*************************************************"
@@ -242,7 +246,7 @@ echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.lo
     echo "*************************************************"
 
 if [[ "$TS_INSTALL" = [yY] ]]; then
-	curl -s${CURL_TIMEOUTS} http://check.centminmod.com/utctime > ${CENTMINLOGDIR}/install.utc.time.log 2>&1
+	curl -s"${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
 fi
 
 }
