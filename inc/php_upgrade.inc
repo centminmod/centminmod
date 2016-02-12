@@ -99,6 +99,10 @@ autodetectinstallextensions() {
 
 PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "PHP: Auto Detect Previous Extensions"
+    fi
+
 cecho "----------------------------------------------------" $boldgreen
 cecho "Auto reinstalling previously detected PHP extensions" $boldyellow
 cecho "----------------------------------------------------" $boldgreen
@@ -180,6 +184,10 @@ done
 funct_phpupgrade() {
     axelsetup
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "PHP: Upgrade"
+    fi
+
     if [ "${MACHINE_TYPE}" == 'x86_64' ];
     then
         ARCH='x86_64'
@@ -218,6 +226,7 @@ if [[ "$UALL" = 'y' ]]; then
     overwritephpfpmconf='n'
     lessphpmem='y'
 else
+    echo
     echo "----------------------------------------------------------------"
     echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.0, NGDEBUG)"
     echo "PHP 7.0.0 is GA Stable but still may have broken PHP extensions."
@@ -304,6 +313,11 @@ else
     AXELPHPTARGZ=''
     AXELPHPUPGRADETARGZ=''
 fi   
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "PHP: Download"
+    fi
+
     phpgeolocation
     curl -sI --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
     PHPGEO_CURLCHECK=$?
@@ -375,6 +389,10 @@ fi # PHPDIFF
     #mkdir -p /usr/${LIBDIR}/mysql
     #ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "PHP: Configure"
+    fi
+
 funct_phpconfigure
 
 ################
@@ -391,6 +409,10 @@ funct_phpconfigure
 
 # error check
 ################
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "PHP: Make"
+    fi
 
 echo "make${MAKETHREADS}"
     time make${MAKETHREADS}
@@ -409,6 +431,10 @@ echo "make${MAKETHREADS}"
 
 # error check
 ################
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "PHP: Make Install"
+    fi
 
 echo "make install"
     time make install

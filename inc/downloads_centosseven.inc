@@ -375,7 +375,7 @@ remisevenyum
 atrpmssevenyum
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='moreutils clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
+PACKAGEEXTRA='figlet moreutils clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
 
 declare -a arrays
 arrays=(${PACKAGEEXTRA})

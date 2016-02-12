@@ -87,6 +87,10 @@ ngxinstallmain() {
 
 if [[ "$NGINX_INSTALL" = [yY] ]]; then
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Install Nginx"
+    fi
+
     echo "*************************************************"
     cecho "* Installing nginx" $boldgreen
     echo "*************************************************"
@@ -252,10 +256,18 @@ then
 
 fi
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "luajit install"
+    fi
+
 luajitinstall
 
     # Install nginx
     cd $DIR_TMP
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Compiling Nginx"
+    fi
 
     echo "Compiling nginx..."
 #download nginx tarball
@@ -276,6 +288,10 @@ SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
 
 if [[ "$NGINXPATCH" = [yY] ]]; then
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Patch Nginx"
+    fi
+
     echo "*************************************************"
     cecho "Nginx Patch Time - NGINXPATCH_DELAY seconds delay" $boldgreen
     cecho "to allow you to patch files" $boldgreen
@@ -284,6 +300,10 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
 fi
 
 funct_nginxconfigure
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Make"
+    fi
 
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
@@ -298,6 +318,10 @@ funct_nginxconfigure
         strip -s objs/nginx
         ls -lah objs/nginx
         echo
+    fi
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Make Install"
     fi
 
     time make install

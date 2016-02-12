@@ -400,6 +400,12 @@ auto_gitupdate() {
 	fi
 }
 
+figletcheck() {
+    if [ ! -f "$(which figlet)" ]; then
+        yum -y -q install figlet
+    fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -449,6 +455,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	pathfixes
 	sshdfixes
 	auto_gitupdate
+	figletcheck
 fi
 
 }

@@ -42,7 +42,7 @@ if [[ ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
   yum -y install epel-release
-  yum -y install moreutils clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28
+  yum -y install figlet moreutils clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -y install GeoIP GeoIP-devel --disablerepo=rpmforge
   else

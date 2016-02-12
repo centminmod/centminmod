@@ -127,6 +127,10 @@ fi
 checknginxmodules() {
     axelsetup
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Check Nginx Modules"
+    fi
+
     #################################################################################
     # detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
     echo
@@ -292,6 +296,10 @@ fi # UALL
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Auto Backup Conf Directories"
+    fi
+
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
 	nginxbackup
@@ -399,6 +407,10 @@ then
 
 fi
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "luajit install"
+    fi
+
 luajitinstall
 
 funct_nginxmodules
@@ -424,6 +436,10 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
     rm -rf nginx-${ngver}*
 fi
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Compile Nginx"
+    fi
+
     echo "Compiling nginx..."
     if [ -s "nginx-${ngver}.tar.gz" ]; then
         cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
@@ -447,6 +463,10 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     patchnginx
 fi
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Configure"
+    fi
+
 funct_nginxconfigure
 
 ################
@@ -462,6 +482,10 @@ funct_nginxconfigure
 
 # error check
 ################
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Make"
+    fi
 
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
@@ -513,6 +537,10 @@ echo ""
 /usr/local/sbin/nginx -s stop 2>/dev/null
 sleep "$NGINXUPGRADESLEEP"
 fi
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Make Install"
+    fi
 
     time make install
 
@@ -571,6 +599,9 @@ fi
         geoinccheck
         geoipphp
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Cleanup"
+    fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
 find "$DIR_TMP" -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -print
