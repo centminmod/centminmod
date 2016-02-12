@@ -4,9 +4,12 @@ function funct_nginxconfigure {
 	# openssl but not by libressl which nginx compiles against so this routine checks
 	# if lua-nginx-module 0.10 branch is loaded and switches back to openssl if detected
 	# https://community.centminmod.com/posts/24549/
+	CHECK_LUAVERSIONEND=$(echo "$ORESTY_LUANGINXVER"  | cut -d . -f3)
 	CHECK_LUAVERSIONMID=$(echo "$ORESTY_LUANGINXVER"  | cut -d . -f2)
 	CHECK_LUAVERSIONSTART=$(echo "$ORESTY_LUANGINXVER"  | cut -d . -f1)
-	if [[ "$CHECK_LUAVERSIONMID" -ge '10' && "$CHECK_LUAVERSIONSTART" -ge '0' ]]; then
+	if [[ "$CHECK_LUAVERSIONEND" != '0' && "$CHECK_LUAVERSIONMID" -ge '10' && "$CHECK_LUAVERSIONSTART" -ge '0' ]]; then
+		LIBRESSL_SWITCH='n'
+	elif [[ "$CHECK_LUAVERSIONEND" -eq '0' && "$CHECK_LUAVERSIONMID" -ge '10' && "$CHECK_LUAVERSIONSTART" -ge '0' ]]; then
 		LIBRESSL_SWITCH='n'
 		luaopensslpatch
 	fi
