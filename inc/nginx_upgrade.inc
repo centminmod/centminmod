@@ -338,7 +338,7 @@ then
         make clean
     fi
     ./configure
-    make"${MAKETHREADS}"
+    make${MAKETHREADS}
     make install
 
     # Install google-perftools
@@ -357,7 +357,7 @@ then
         make clean
     fi
     ./configure --enable-frame-pointers
-    make"${MAKETHREADS}"
+    make${MAKETHREADS}
     make install
     #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
     #/sbin/ldconfig
@@ -394,7 +394,7 @@ then
         make clean
     fi
     ./configure
-    make"${MAKETHREADS}"
+    make${MAKETHREADS}
     make install
 
 fi
@@ -464,7 +464,7 @@ funct_nginxconfigure
 ################
 
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-        time make"${MAKETHREADS}"
+        time make${MAKETHREADS}
     else
         time make
     fi

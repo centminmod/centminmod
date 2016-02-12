@@ -393,7 +393,7 @@ funct_phpconfigure
 ################
 
 echo "make${MAKETHREADS}"
-    time make"${MAKETHREADS}"
+    time make${MAKETHREADS}
 
 ################
 # error check
