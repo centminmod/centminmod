@@ -401,7 +401,7 @@ auto_gitupdate() {
 }
 
 figletcheck() {
-    if [ ! -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ ! -f "$(rpm -ql figlet | grep 'bin\/figlet')" ]; then
         yum -y -q install figlet
     fi
 }
