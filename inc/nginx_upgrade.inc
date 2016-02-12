@@ -127,7 +127,7 @@ fi
 checknginxmodules() {
     axelsetup
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Check Nginx Modules"
     fi
 
@@ -296,7 +296,7 @@ fi # UALL
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Auto Backup Conf Directories"
     fi
 
@@ -407,7 +407,7 @@ then
 
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "luajit install"
     fi
 
@@ -436,7 +436,7 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
     rm -rf nginx-${ngver}*
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Compile Nginx"
     fi
 
@@ -463,7 +463,7 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
     patchnginx
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Configure"
     fi
 
@@ -483,7 +483,7 @@ funct_nginxconfigure
 # error check
 ################
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Make"
     fi
 
@@ -538,7 +538,7 @@ echo ""
 sleep "$NGINXUPGRADESLEEP"
 fi
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Make Install"
     fi
 
@@ -599,7 +599,7 @@ fi
         geoinccheck
         geoipphp
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Cleanup"
     fi
 
@@ -626,7 +626,7 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Updated"
     fi
 

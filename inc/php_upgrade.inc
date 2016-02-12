@@ -99,7 +99,7 @@ autodetectinstallextensions() {
 
 PHPEXTDIR_AUTODETECT=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "PHP: Auto Detect Previous Extensions"
     fi
 
@@ -184,7 +184,7 @@ done
 funct_phpupgrade() {
     axelsetup
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "PHP: Upgrade"
     fi
 
@@ -314,7 +314,7 @@ else
     AXELPHPUPGRADETARGZ=''
 fi   
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "PHP: Download"
     fi
 
@@ -389,7 +389,7 @@ fi # PHPDIFF
     #mkdir -p /usr/${LIBDIR}/mysql
     #ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "PHP: Configure"
     fi
 
@@ -410,7 +410,7 @@ funct_phpconfigure
 # error check
 ################
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "PHP: Make"
     fi
 
@@ -432,7 +432,7 @@ echo "make${MAKETHREADS}"
 # error check
 ################
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "PHP: Make Install"
     fi
 
@@ -633,7 +633,7 @@ fi
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
     echo "***************************************************"
 
-    if [ -f "$(which figlet)" ]; then
+    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
         figlet -ckf standard "Nginx Upgraded"
     fi
 
