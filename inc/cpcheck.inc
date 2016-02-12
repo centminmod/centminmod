@@ -165,7 +165,7 @@ checkcmdircmd() {
 		echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
-pushd $SCRIPT_DIR; bash centmin.sh
+pushd "$SCRIPT_DIR"; bash centmin.sh
 EOF
 		chmod 0700 /usr/bin/centmin
 	fi
@@ -175,11 +175,11 @@ nvcheck() {
 	if [[ -f "${SCRIPT_DIR}/tools/nv.sh" && -f /usr/bin/nv ]]; then
 		# auto update /usr/bin/nv if different from centmin mod tools/nv.sh copy
 		# if [[ "$(diff -qr ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv; echo $?)" != '0' ]]; then
-		\cp -f "${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv"
+		\cp -f "${SCRIPT_DIR}/tools/nv.sh" /usr/bin/nv
 		chmod +x /usr/bin/nv
 		# fi
 	else
-		\cp -f "${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv"
+		\cp -f "${SCRIPT_DIR}/tools/nv.sh" /usr/bin/nv
 		chmod +x /usr/bin/nv
 	fi		
 }
