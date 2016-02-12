@@ -105,9 +105,14 @@ install_axel() {
 }
 
 cminstall() {
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Centmin Mod Install"
+    fi
+
 cd $INSTALLDIR
   if [[ "$GITINSTALLED" = [yY] ]]; then
-    if [[ -f "${INSTALLDIR}/centminmod" ]]; then
+    if [[ ! -f "${INSTALLDIR}/centminmod" ]]; then
       getcmstarttime=$(date +%s.%N)
       echo "git clone Centmin Mod repo..."
       time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod

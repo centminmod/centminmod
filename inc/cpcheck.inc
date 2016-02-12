@@ -1,21 +1,23 @@
 setupemailcheck() {
-	if [ -f /etc/centminmod/email-primary.ini ]; then
-		if [ -z /etc/centminmod/email-primary.ini ]; then
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		if [ -f /etc/centminmod/email-primary.ini ]; then
+			if [ -s /etc/centminmod/email-primary.ini ]; then
+				PEMAIL_NOSET='y'
+			fi
+		else
 			PEMAIL_NOSET='y'
 		fi
-	else
-		PEMAIL_NOSET='y'
-	fi
-	if [ -f /etc/centminmod/email-secondary.ini ]; then
-		if [ -z /etc/centminmod/email-secondary.ini ]; then
+		if [ -f /etc/centminmod/email-secondary.ini ]; then
+			if [ -s /etc/centminmod/email-secondary.ini ]; then
+				SEMAIL_NOSET='y'
+			fi
+		else
 			SEMAIL_NOSET='y'
 		fi
-	else
-		SEMAIL_NOSET='y'
-	fi
-	if [[ "$PEMAIL_NOSET" = 'y' || "$SEMAIL_NOSET" = 'y' ]]; then
-		if [ -f "${SCRIPT_DIR}/tools/email.sh" ]; then
-			"${SCRIPT_DIR}/tools/email.sh"
+		if [[ "$PEMAIL_NOSET" = 'y' || "$SEMAIL_NOSET" = 'y' ]]; then
+			if [ -f "${SCRIPT_DIR}/tools/email.sh" ]; then
+				"${SCRIPT_DIR}/tools/email.sh"
+			fi
 		fi
 	fi
 }
