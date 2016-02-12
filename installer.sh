@@ -14,7 +14,15 @@ DIR_TMP='/svr-setup'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 #CM_INSTALLDIR=$CUR_DIR
 #SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
-
+#####################################################
+# Centmin Mod Git Repo URL - primary repo
+# https://github.com/centminmod/centminmod
+GITINSTALLED='y'
+CMGIT='https://github.com/centminmod/centminmod.git'
+# Gitlab backup repo 
+# https://gitlab.com/centminmod/centminmod
+#CMGIT='https://gitlab.com/centminmod/centminmod.git'
+#####################################################
 # wget renamed github
 AXEL='n'
 AXEL_VER='2.5'
@@ -98,23 +106,34 @@ install_axel() {
 
 cminstall() {
 cd $INSTALLDIR
-if [[ ! -f "${DOWNLOAD}" ]]; then
-  getcmstarttime=$(date +%s.%N)
-  echo "downloading Centmin Mod..."
-  if [[ -f /usr/bin/axel && $AXEL = [yY] ]]; then
-    /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
+  if [[ "$GITINSTALLED" = [yY] ]]; then
+    if [[ -f "${INSTALLDIR}/centminmod" ]]; then
+      getcmstarttime=$(date +%s.%N)
+      echo "git clone Centmin Mod repo..."
+      time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
+      cd centminmod
+      chmod +x centmin.sh
+      getcmendtime=$(date +%s.%N)   
+    fi
   else
-    wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+    if [[ ! -f "${DOWNLOAD}" ]]; then
+    getcmstarttime=$(date +%s.%N)
+    echo "downloading Centmin Mod..."
+    if [[ -f /usr/bin/axel && $AXEL = [yY] ]]; then
+      /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
+    else
+      wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+    fi
+    getcmendtime=$(date +%s.%N)
+    rm -rf centminmod-*
+    unzip ${DOWNLOAD}
+    fi
+    #export CUR_DIR
+    #export CM_INSTALLDIR
+    mv centminmod-${branchname} centminmod
+    cd centminmod
+    chmod +x centmin.sh
   fi
-  getcmendtime=$(date +%s.%N)
-  rm -rf centminmod-*
-  unzip ${DOWNLOAD}
-fi
-#export CUR_DIR
-#export CM_INSTALLDIR
-mv centminmod-${branchname} centminmod
-cd centminmod
-chmod +x centmin.sh
 
 # disable nginx lua and luajit by uncommenting these 2 lines
 #sed -i "s|LUAJIT_GITINSTALL='y'|LUAJIT_GITINSTALL='n'|" centmin.sh
