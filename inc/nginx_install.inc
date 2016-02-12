@@ -87,7 +87,7 @@ ngxinstallmain() {
 
 if [[ "$NGINX_INSTALL" = [yY] ]]; then
 
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Install Nginx"
     fi
 
@@ -256,7 +256,7 @@ then
 
 fi
 
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "luajit install"
     fi
 
@@ -265,7 +265,7 @@ luajitinstall
     # Install nginx
     cd $DIR_TMP
 
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Compiling Nginx"
     fi
 
@@ -288,7 +288,7 @@ SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
 
 if [[ "$NGINXPATCH" = [yY] ]]; then
 
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Patch Nginx"
     fi
 
@@ -301,7 +301,7 @@ fi
 
 funct_nginxconfigure
 
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make"
     fi
 
@@ -320,7 +320,7 @@ funct_nginxconfigure
         echo
     fi
 
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make Install"
     fi
 
@@ -466,7 +466,7 @@ geoipphp
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"
    
-    if [ -f "$(which figlet >/dev/null 2>&1 )" ]; then
+    if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Installed"
     fi
 
