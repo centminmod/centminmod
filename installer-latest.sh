@@ -5,7 +5,7 @@
 # curl -sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
 #######################################################
 export PATH="/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
 
@@ -14,7 +14,15 @@ DIR_TMP='/svr-setup'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 #CM_INSTALLDIR=$CUR_DIR
 #SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
-
+#####################################################
+# Centmin Mod Git Repo URL - primary repo
+# https://github.com/centminmod/centminmod
+GITINSTALLED='y'
+CMGIT='https://github.com/centminmod/centminmod.git'
+# Gitlab backup repo 
+# https://gitlab.com/centminmod/centminmod
+#CMGIT='https://gitlab.com/centminmod/centminmod.git'
+#####################################################
 # wget renamed github
 AXEL='n'
 AXEL_VER='2.5'
@@ -97,24 +105,40 @@ install_axel() {
 }
 
 cminstall() {
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Centmin Mod Install"
+    fi
+
 cd $INSTALLDIR
-if [[ ! -f "${DOWNLOAD}" ]]; then
-  getcmstarttime=$(date +%s.%N)
-  echo "downloading Centmin Mod..."
-  if [[ -f /usr/bin/axel && $AXEL = [yY] ]]; then
-    /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
+  if [[ "$GITINSTALLED" = [yY] ]]; then
+    if [[ ! -f "${INSTALLDIR}/centminmod" ]]; then
+      getcmstarttime=$(date +%s.%N)
+      echo "git clone Centmin Mod repo..."
+      time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
+      cd centminmod
+      chmod +x centmin.sh
+      getcmendtime=$(date +%s.%N)   
+    fi
   else
-    wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+    if [[ ! -f "${DOWNLOAD}" ]]; then
+    getcmstarttime=$(date +%s.%N)
+    echo "downloading Centmin Mod..."
+    if [[ -f /usr/bin/axel && $AXEL = [yY] ]]; then
+      /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
+    else
+      wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+    fi
+    getcmendtime=$(date +%s.%N)
+    rm -rf centminmod-*
+    unzip ${DOWNLOAD}
+    fi
+    #export CUR_DIR
+    #export CM_INSTALLDIR
+    mv centminmod-${branchname} centminmod
+    cd centminmod
+    chmod +x centmin.sh
   fi
-  getcmendtime=$(date +%s.%N)
-  rm -rf centminmod-*
-  unzip ${DOWNLOAD}
-fi
-#export CUR_DIR
-#export CM_INSTALLDIR
-mv centminmod-${branchname} centminmod
-cd centminmod
-chmod +x centmin.sh
 
 # disable nginx lua and luajit by uncommenting these 2 lines
 #sed -i "s|LUAJIT_GITINSTALL='y'|LUAJIT_GITINSTALL='n'|" centmin.sh
@@ -145,15 +169,18 @@ chmod +x centmin.sh
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='5.6.17'|" centmin.sh
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='5.6.18'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
 #sed -i "s|AXIVOREPO_DISABLE=n|AXIVOREPO_DISABLE=y|" centmin.sh
 
-sed -i "s|CUSTOM_CURLRPM=n|CUSTOM_CURLRPM=y|" centmin.sh
-
-./centmin.sh install
+# bypass initial setup email prompt
+echo "1" > /etc/centminmod/email-primary.ini
+echo "2" > /etc/centminmod/email-secondary.ini
+${INSTALLDIR}/centminmod/centmin.sh install
+rm -rf /etc/centminmod/email-primary.ini
+rm -rf /etc/centminmod/email-secondary.ini
 
     # setup command shortcut aliases 
     # given the known download location
@@ -188,13 +215,13 @@ echo "--------------------------------------------------------------------------
   tail -1 /root/centminlogs/firstyum_installtime_*.log
   tail -1 /root/centminlogs/centminmod_yumtimes_*.log
   DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
-  DTIME_SEC=$(echo $DTIME |awk '{print $7}')
+  DTIME_SEC=$(echo "$DTIME" |awk '{print $7}')
   NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
-  NTIME_SEC=$(echo $NTIME |awk '{print $7}')
+  NTIME_SEC=$(echo "$NTIME" |awk '{print $7}')
   PTIME=$(tail -1 /root/centminlogs/centminmod_phpinstalltime_*.log)
-  PTIME_SEC=$(echo $PTIME |awk '{print $7}')
+  PTIME_SEC=$(echo "$PTIME" |awk '{print $7}')
   CMTIME=$(tail -1 /root/centminlogs/*_install.log)
-  CMTIME_SEC=$(echo $CMTIME |awk '{print $6}')
+  CMTIME_SEC=$(echo "$CMTIME" |awk '{print $6}')
   CMTIME_SEC=$(printf "%0.4f\n" $CMTIME_SEC)
   CURLT=$(awk '{print $6}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
   CT=$(awk '{print $6}' /root/centminlogs/*_install.log | tail -1)
@@ -213,8 +240,8 @@ echo "--------------------------------------------------------------------------
 echo "---------------------------------------------------------------------------"
 fi
 
-if [ -f ${INSTALLDIR}/curlinstall_yum.txt ]; then
-  rm -rf ${INSTALLDIR}/curlinstall_yum.txt
+if [ -f "${INSTALLDIR}/curlinstall_yum.txt" ]; then
+  rm -rf "${INSTALLDIR}/curlinstall_yum.txt"
 fi
 
 case "$1" in
