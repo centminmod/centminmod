@@ -17,7 +17,7 @@ DIR_TMP='/svr-setup'
 #####################################################
 # Centmin Mod Git Repo URL - primary repo
 # https://github.com/centminmod/centminmod
-GITINSTALLED='y'
+GITINSTALLED='n'
 CMGIT='https://github.com/centminmod/centminmod.git'
 # Gitlab backup repo 
 # https://gitlab.com/centminmod/centminmod
