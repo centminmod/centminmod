@@ -625,6 +625,11 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
         echo "*************************************************"
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Updated"
+    fi
+
 	fi
 
 # error check

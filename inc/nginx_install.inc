@@ -466,6 +466,10 @@ geoipphp
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"
    
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Installed"
+    fi
+
 fi
 
 }

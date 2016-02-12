@@ -633,6 +633,10 @@ fi
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
     echo "***************************************************"
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Nginx Upgraded"
+    fi
+
 	fi
 
 # error check
