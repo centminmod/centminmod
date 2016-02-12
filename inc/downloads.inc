@@ -390,7 +390,7 @@ then
         PHP_MIRRORURL="http://php.net"
         PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
     fi
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow
     if [ -s php-${PHP_VERSION}.tar.${PHPEXTSION} ]; then
@@ -430,7 +430,7 @@ fi
 
 nginxpcretarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PCRELINKFILE} ..." $boldyellow
     if [ -s ${PCRELINKFILE} ]; then
@@ -463,7 +463,7 @@ echo ""
 
 nginxwebdavtarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NGX_WEBDAVLINKFILE} ..." $boldyellow
     if [ -s ${NGX_WEBDAVLINKFILE} ]; then
@@ -497,16 +497,16 @@ nginxpgspeedtarball() {
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     # official github master zip renamed
     if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
 
             cecho "Download ${NGX_PAGESPEEDGITLINKFILE} ..." $boldyellow
-    		if [ -s ${NGX_PAGESPEEDGITLINKFILE} ]; then
+    		if [ -s "${NGX_PAGESPEEDGITLINKFILE}" ]; then
         	cecho "${NGX_PAGESPEEDGITLINKFILE} Archive found, skipping download..." $boldgreen
     else
-    	    wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDGITLINK} -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3 
+    	    wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3 
 			ERROR=$?
 				if [[ "$ERROR" != '0' ]]; then
 					cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} download failed." $boldgreen
@@ -521,10 +521,10 @@ nginxpgspeedtarball() {
 	fi # NGINX_PAGESPEEDGITMASTER
 
         cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_PAGESPEEDLINKFILE} ]; then
+    if [ -s "${NGX_PAGESPEEDLINKFILE}" ]; then
         cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O ${NGX_PAGESPEEDLINKFILE} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
@@ -536,7 +536,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_PAGESPEEDLINKFILE}
+tar xzf "${NGX_PAGESPEEDLINKFILE}"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -549,18 +549,21 @@ echo ""
 	fi
 
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
-	\cp -Rf ngx_pagespeed-master ngx_pagespeed-release-${NGXPGSPEED_VER}
+  if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+    rm -rf "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
+  fi
+	\cp -Rf ngx_pagespeed-master "ngx_pagespeed-release-${NGXPGSPEED_VER}"
 	rm -rf ngx_pagespeed-master
-	rm -rf ${NGX_PAGESPEEDGITLINKFILE}
+	rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
 fi
 
         cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} PSOL Library..." $boldyellow
         if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-            cd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
+            cd "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
         elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
-            cd $DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}
+            cd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}"
         fi
-        if [ -s ${NGX_PAGESPEEDPSOLINKLFILE} ]; then
+        if [ -s "${NGX_PAGESPEEDPSOLINKLFILE}" ]; then
           cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
         else
           wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDPSOLINKL} --tries=3 
@@ -582,7 +585,7 @@ checklogdetails
 	exit #$ERROR
 else 
          cecho "${NGX_PAGESPEEDPSOLINKLFILE} valid file." $boldyellow
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 echo ""
 	fi
 
@@ -593,7 +596,7 @@ echo ""
 ngxmoduletarball() {
 ### nginx modules ###
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
     if [ -s ${NGX_FANCYINDEXLINKFILE} ]; then
@@ -1580,7 +1583,7 @@ echo ""
 	asknginxipv="$NGINX_IPV"
 	fi #unattended
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NGX_LINKFILE} ..." $boldyellow
     if [ -s ${NGX_LINKFILE} ]; then
@@ -1625,7 +1628,7 @@ fi # NGINX INSTALL
 ###############################################
 libeventtarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${LIBEVENTLINKFILE} ..." $boldyellow
 if [ -s ${LIBEVENTLINKFILE} ]; then
@@ -1660,7 +1663,7 @@ echo ""
 ###############################################
 mailparsephpextlocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf mailparse*
 
         cecho "Download local ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
@@ -1695,7 +1698,7 @@ echo ""
 ###############################################
 mailparsephpexttarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_MAILPARSELINKFILE} ]; then
@@ -1731,7 +1734,7 @@ echo ""
 ###############################################
 imagickphpextlocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf imagick*
 
         cecho "Download local ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
@@ -1766,7 +1769,7 @@ echo ""
 ###############################################
 imagickphpexttarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
@@ -1802,7 +1805,7 @@ echo ""
 ###############################################
 memcacheextlocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf memcache*
 
         cecho "Download local ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
@@ -1837,7 +1840,7 @@ echo ""
 ###############################################
 memcacheexttarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
@@ -1873,7 +1876,7 @@ echo ""
 ###############################################
 memcachedphplocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf memcached*
 
         cecho "Download local ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
@@ -1908,7 +1911,7 @@ echo ""
 ###############################################
 memcachedphptarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
@@ -1944,7 +1947,7 @@ echo ""
 ###############################################
 redisphplocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf redis*
 
         cecho "Download local ${PHPEXT_REDISLINKFILE} ..." $boldyellow
@@ -1979,7 +1982,7 @@ echo ""
 ###############################################
 redisphptarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_REDISLINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_REDISLINKFILE} ]; then
@@ -2015,7 +2018,7 @@ echo ""
 ###############################################
 mongodbphplocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf mongo*
 
         cecho "Download local ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
@@ -2050,7 +2053,7 @@ echo ""
 ###############################################
 mongodbphptarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
@@ -2088,7 +2091,7 @@ libmemcachedlocaltarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download local ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
@@ -2125,7 +2128,7 @@ libmemcachedtarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] || "$LIBMEMCACHED_YUM" = [yY] ]]; then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
 if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
@@ -2162,7 +2165,7 @@ fi #LIBMEMCACHED_YUM
 ###############################################
 twemperftarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${TWEMPERF_LINKFILE} ..." $boldyellow
 if [ -s ${TWEMPERF_LINKFILE} ]; then
@@ -2323,7 +2326,7 @@ then
         ARCH='i386'
     fi
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm ..." $boldyellow
     if [ -s MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
@@ -2415,7 +2418,7 @@ mariadbyumrepo() {
 if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ourdelta-release-5-1.noarch.rpm ..." $boldyellow
     if [ -s ourdelta-release-5-1.noarch.rpm ]; then
@@ -2444,7 +2447,7 @@ gperftools() {
 if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download libunwind-${LIBUNWIND_VERSION}.tar.gz ..." $boldyellow
     if [ -s libunwind-${LIBUNWIND_VERSION}.tar.gz ]; then
@@ -2508,7 +2511,7 @@ fi
 openssldownload() {
 
 if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '5.12' || "$CENTOSVER" == '5.13' || "$CENTOSVER" == '5.14' ]]; then
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
     if [ -s ${OPENSSL_LINKFILE} ]; then
@@ -2541,7 +2544,7 @@ fi # for nginx openssl
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
     # Install OpenSSL
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
     if [ -s ${OPENSSL_LINKFILE} ]; then
@@ -2578,7 +2581,7 @@ fi # openssl centos 6
 libressldownload() {
     # Install LibreSSL
     libresslgeolocation
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${LIBRESSL_LINKFILE} ..." $boldyellow
     if [ -s ${LIBRESSL_LINKFILE} ]; then
@@ -2618,7 +2621,7 @@ pcretarball() {
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download pcre-${PCRE_VERSION}.tar.gz ..." $boldyellow
     if [ -s pcre-${PCRE_VERSION}.tar.gz ]; then
@@ -2665,7 +2668,7 @@ if [[ "$asksiegeinstall" = [yY] ]];
 then
 SIEGEINSTALL='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${SIEGE_LINKFILE} ..." $boldyellow
     if [ -s ${SIEGE_LINKFILE} ]; then
@@ -2741,7 +2744,7 @@ if [[ "$askpythonupdate" = [yY] ]];
 then
 PYTHONUPDATE='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PYTHON_LINKFILE} ..." $boldyellow
 if [ -s ${PYTHON_LINKFILE} ]; then
@@ -2812,7 +2815,7 @@ fi
 if [[ "$askxcacheinstall" = [yY] ]];then
 XCACHESRCINSTALL='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${XCACHE_LINKFILE} ..." $boldyellow
     if [ -s ${XCACHE_LINKFILE} ]; then
@@ -2856,7 +2859,7 @@ read -ep "Install APC? (By default uses 32MB RAM) [y/n] " askapcinstall
 	fi #unattended
 if [[ "$askapcinstall" = [yY] ]]; then
 APCINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     rm -rf APC*
 
@@ -2902,7 +2905,7 @@ read -ep "Install APC? (By default uses 32MB RAM) [y/n] " askapcinstall
 	fi #unattended
 if [[ "$askapcinstall" = [yY] ]]; then
 APCINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${APCCACHE_LINKFILE} ..." $boldyellow
     if [ -s ${APCCACHE_LINKFILE} ]; then
@@ -2948,7 +2951,7 @@ read -ep "Install Zend OPCache ? (By default uses 32MB RAM) [y/n] " askzopcachei
 	fi #unattended
 if [[ "$askzopcacheinstall" = [yY] ]]; then
 ZOPCACHEINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf zendopcache*
 
         cecho "Download local ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
@@ -2993,7 +2996,7 @@ read -ep "Install Zend OPCache ? (By default uses 32MB RAM) [y/n] " askzopcachei
 	fi #unattended
 if [[ "$askzopcacheinstall" = [yY] ]]; then
 ZOPCACHEINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
     if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
@@ -3034,7 +3037,7 @@ nsdtarball() {
 if [[ "$NSD_INSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NSD_LINKFILE} ..." $boldyellow
     if [ -s ${NSD_LINKFILE} ]; then
@@ -3081,7 +3084,7 @@ then
 
 CSFINSTALLOK='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${CSF_LINKFILE} ..." $boldyellow
     if [ -s ${CSF_LINKFILE} ]; then
@@ -3117,7 +3120,7 @@ fi
 ###############################################
 
 ccachetarball() {
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${CCACHEFILE} ..." $boldyellow
     if [ -s ${CCACHEFILE} ]; then
