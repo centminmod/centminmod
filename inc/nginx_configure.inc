@@ -129,10 +129,10 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			yum -y install mercurial
 		fi
 		if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-			cd $DIR_TMP
+			cd "$DIR_TMP"
 			hg clone http://hg.nginx.org/njs/
 		elif [ -f /usr/bin/hg ]; then
-			cd ${DIR_TMP}/njs
+			cd "${DIR_TMP}/njs"
 			hg pull
 		fi
 	else
@@ -160,7 +160,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_RDNS" = [yY] ]]; then
-		cd $DIR_TMP
+		cd "$DIR_TMP"
 		rm -rf nginx-http-rdns
 		git clone https://github.com/flant/nginx-http-rdns.git nginx-http-rdns
 		RDNSOPT=" --add-module=../nginx-http-rdns"
@@ -263,12 +263,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
-		MEMCDIR=`ls -rt $DIR_TMP | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
-		SRCACHEDIR=`ls -rt $DIR_TMP | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
-		SETMISCDIR=`ls -rt $DIR_TMP | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
-		DEVELKITDIR=`ls -rt $DIR_TMP | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
-		ECHODIR=`ls -rt $DIR_TMP | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
-		REDISDIR=`ls -rt $DIR_TMP | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
+		MEMCDIR=`ls -rt "$DIR_TMP" | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
+		SRCACHEDIR=`ls -rt "$DIR_TMP" | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
+		SETMISCDIR=`ls -rt "$DIR_TMP" | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
+		DEVELKITDIR=`ls -rt "$DIR_TMP" | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
+		ECHODIR=`ls -rt "$DIR_TMP" | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
+		REDISDIR=`ls -rt "$DIR_TMP" | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
 
@@ -330,22 +330,22 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
         	LUALIB_DIR='lib'
     	fi
 	
-    	cd ${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}; make clean; make install
-    	cd ${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}; make clean; make install
-    	cd ${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}; make clean; make install
-    	cd ${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}; make clean; make install; mv /usr/local/lib/lua/resty/dns/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/dns
-    	cd ${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}; make clean; make install
-    	cd ${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}; make clean; make install; mv /usr/local/lib/lua/resty/websocket/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/websocket
-    	cd ${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}; make clean; make install
-    	cd ${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}; make clean; make install
-    	cd ${DIR_TMP}/lua-redis-parser-${ORESTY_LUAREDISPARSERVER}; make clean; make install; mv /usr/local/lib/lua/resty/redis/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/redis
-    	cd ${DIR_TMP}/lua-resty-upstream-healthcheck-${ORESTY_LUAUPSTREAMCHECKVER}; make clean; make install; mv /usr/local/lib/lua/resty/upstream/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/upstream
-    	cd ${DIR_TMP}/lua-resty-lrucache-${ORESTY_LUALRUCACHEVER}; make clean; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
-    	cd ${DIR_TMP}/lua-resty-core-${ORESTY_LUARESTYCOREVER}; make clean; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
-    	cd ${DIR_TMP}/lua-resty-logger-socket-${ORESTY_LUALOGGERSOCKETVER}; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/lib/lua/resty/
-    	cd ${DIR_TMP}/lua-resty-cookie-${ORESTY_LUACOOKIEVER}; chmod +x lib/resty/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
-    	cd ${DIR_TMP}/lua-cjson-${LUACJSONVER}; make clean; make install
-    	cd ${DIR_TMP}
+    	cd "${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}"; make clean; make install
+    	cd "${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}"; make clean; make install
+    	cd "${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}"; make clean; make install
+    	cd "${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}"; make clean; make install; mv /usr/local/lib/lua/resty/dns/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/dns
+    	cd "${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}"; make clean; make install
+    	cd "${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}"; make clean; make install; mv /usr/local/lib/lua/resty/websocket/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/websocket
+    	cd "${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}"; make clean; make install
+    	cd "${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}"; make clean; make install
+    	cd "${DIR_TMP}/lua-redis-parser-${ORESTY_LUAREDISPARSERVER}"; make clean; make install; mv /usr/local/lib/lua/resty/redis/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/redis
+    	cd "${DIR_TMP}/lua-resty-upstream-healthcheck-${ORESTY_LUAUPSTREAMCHECKVER}"; make clean; make install; mv /usr/local/lib/lua/resty/upstream/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/upstream
+    	cd "${DIR_TMP}/lua-resty-lrucache-${ORESTY_LUALRUCACHEVER}"; make clean; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
+    	cd "${DIR_TMP}/lua-resty-core-${ORESTY_LUARESTYCOREVER}"; make clean; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
+    	cd "${DIR_TMP}/lua-resty-logger-socket-${ORESTY_LUALOGGERSOCKETVER}"; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/lib/lua/resty/
+    	cd "${DIR_TMP}/lua-resty-cookie-${ORESTY_LUACOOKIEVER}"; chmod +x lib/resty/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
+    	cd "${DIR_TMP}/lua-cjson-${LUACJSONVER}"; make clean; make install
+    	cd "${DIR_TMP}"
 	else
 		LUAOPT=""
 		LUALD_OPT=" -Wl,-rpath,/usr/local/lib"
@@ -391,37 +391,37 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		if [ -f /usr/bin/git ]; then
 			VTSOPT=" --add-module=../nginx-module-vts"
 			if [[ ! -d "${DIR_TMP}/nginx-module-vts" ]]; then
-				cd $DIR_TMP
-				git clone $NGX_VTSLINK nginx-module-vts
-				# sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
-				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
-				# sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
-				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
+				cd "$DIR_TMP"
+				git clone "$NGX_VTSLINK" nginx-module-vts
+				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
+				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
 				cd nginx-module-vts/util
 				./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				# ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				cd ../
 				# setup /vhost_status.html
-				cp -a ${DIR_TMP}/nginx-module-vts/share/status.compress.html /usr/local/nginx/html/vhost_status.html
+				cp -a "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
 				MAINURIHOST=$HN
 				NEWURI="//${MAINURIHOST}/vhost_status"
 				if [ -f /usr/local/nginx/html/vhost_status.html ]; then
 					sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
 				fi
 			elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
-				rm -rf ${DIR_TMP}/nginx-module-vts
-				cd $DIR_TMP
-				git clone $NGX_VTSLINK nginx-module-vts
-				# sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
-				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.template.html
-				# sed -i 's|color:       black;|color:       white;|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
-				sed -i 's|#DED|#43a6df|g' ${DIR_TMP}/nginx-module-vts/share/status.compress.html
+				rm -rf "${DIR_TMP}/nginx-module-vts"
+				cd "$DIR_TMP"
+				git clone "$NGX_VTSLINK" nginx-module-vts
+				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
+				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
 				cd nginx-module-vts/util
 				./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				# ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
 				cd ../
 				# setup /vhost_status.html
-				cp -a ${DIR_TMP}/nginx-module-vts/share/status.compress.html /usr/local/nginx/html/vhost_status.html
+				cp -a "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
 				MAINURIHOST=$HN
 				NEWURI="//${MAINURIHOST}/vhost_status"
 				if [ -f /usr/local/nginx/html/vhost_status.html ]; then
@@ -519,10 +519,10 @@ else
 			yum -y install mercurial
 		fi
 		if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-			cd $DIR_TMP
+			cd "$DIR_TMP"
 			hg clone http://hg.nginx.org/njs/
 		elif [ -f /usr/bin/hg ]; then
-			cd ${DIR_TMP}/njs
+			cd "${DIR_TMP}/njs"
 			hg pull
 		fi
 	else
@@ -746,7 +746,7 @@ if [[ "$NGINX_PASSENGER" = [yY] && "$RUBY_VERSION" ]]; then
 	PASSENGERS_PATH=$(/bin/find /usr/local/rvm/gems -name 'passenger-config' | grep bin | tail -1)
 	echo
 	echo "RUBY_VERSION"
-	echo $RUBY_VERSION
+	echo "$RUBY_VERSION"
 	echo
 	echo "passenger-config --nginx-addon-dir"
 	passenger-config --nginx-addon-dir
@@ -778,7 +778,7 @@ fi
 
 # ngx_pagespeed => 1.10 switch back to GCC instead of Clang compiler
 # https://community.centminmod.com/posts/22882/
-if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
 	CLANG='n'
 fi
 
@@ -787,11 +787,11 @@ fi
 # fi
 
 if [[ -d "${DIR_TMP}/nginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
-	cd ${DIR_TMP}/nginx-${NGINX_VERSION}
+	cd "${DIR_TMP}/nginx-${NGINX_VERSION}"
 fi
 
 if [[ -d "${DIR_TMP}/nginx-${ngver}" && "$ngver" ]]; then
-	cd ${DIR_TMP}/nginx-${ngver}
+	cd "${DIR_TMP}/nginx-${ngver}"
 fi
 
 if [ -f src/http/ngx_http_header_filter_module.c ]; then
@@ -812,8 +812,8 @@ fi
 
 # NGINX 1.9 stream support & 1.8 threads
 # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
-NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
-NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
+NGXINSTALL_VER=$(echo "$NGINX_VERSION" | cut -d . -f1,2)
+NGXUPGRADE_VER=$(echo "$ngver" | cut -d . -f1,2)
 if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
@@ -900,7 +900,7 @@ else
 fi	
 
 if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
-    if [ "$(grep 'NGX_FOPENOPT' ${CM_INSTALLDIR}/inc/z_custom.inc)" ]; then
+    if [ "$(grep 'NGX_FOPENOPT' "${CM_INSTALLDIR}/inc/z_custom.inc")" ]; then
         fastopenconfig
     fi
 fi
@@ -929,12 +929,12 @@ if [[ "$CLANG" = [yY] ]]; then
 		yum -q -y install clang clang-devel
 	fi
 	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-		if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+		if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
 			scl_install
 		fi
 	fi
 	# ngx_pagespeed => 1.10
-	if [[ "$(echo $NGXPGSPEED_VER | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+	if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
 		CCTOOLSET='--gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
 		#CCTOOLSETOPT=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
 		#export CFLAGS="$CCTOOLSET"
