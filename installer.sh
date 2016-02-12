@@ -17,7 +17,7 @@ DIR_TMP='/svr-setup'
 #####################################################
 # Centmin Mod Git Repo URL - primary repo
 # https://github.com/centminmod/centminmod
-GITINSTALLED='n'
+GITINSTALLED='y'
 CMGIT='https://github.com/centminmod/centminmod.git'
 # Gitlab backup repo 
 # https://gitlab.com/centminmod/centminmod
@@ -175,7 +175,12 @@ cd $INSTALLDIR
 # disable axivo yum repo
 #sed -i "s|AXIVOREPO_DISABLE=n|AXIVOREPO_DISABLE=y|" centmin.sh
 
-./centmin.sh install
+# bypass initial setup email prompt
+echo "1" > /etc/centminmod/email-primary.ini
+echo "2" > /etc/centminmod/email-secondary.ini
+${INSTALLDIR}/centminmod/centmin.sh install
+rm -rf /etc/centminmod/email-primary.ini
+rm -rf /etc/centminmod/email-secondary.ini
 
     # setup command shortcut aliases 
     # given the known download location
