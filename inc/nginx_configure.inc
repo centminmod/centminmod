@@ -11,7 +11,7 @@ dynamicmodule_file() {
 		echo
 		DYNAMIC_SUPPORT=y
 		# create include file to load nginx dynamic modules in main context in nginx.conf
-		if [[ "$INITIALINSTALL" = [yY] ]]; then
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
 			rm -rf /usr/local/nginx/conf/dynamic-modules.conf
 		fi
 		touch /usr/local/nginx/conf/dynamic-modules.conf
