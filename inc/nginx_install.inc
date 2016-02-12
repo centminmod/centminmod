@@ -384,6 +384,9 @@ fi # check if custom open file descriptor limits already exist
     #rm -rf $CUR_DIR/htdocs
     cp -R $CUR_DIR/config/nginx/* /usr/local/nginx/conf
 
+    #################################################################################
+    ngx_dynamicfunction
+    #################################################################################
     checkmapinital
 
     # setup default hostname
