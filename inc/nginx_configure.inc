@@ -1,8 +1,8 @@
 ngx_dynamicfunction() {
-	if [ ! -d /usr/local/nginx/conf ]l then
+	if [ ! -d /usr/local/nginx/conf ]; then
 		mkdir -p /usr/local/nginx/conf
 	fi
-	if [ -d /usr/local/nginx/conf ]l then
+	if [ -d /usr/local/nginx/conf ]; then
 		# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
   	if [ -f "$(which figlet)" ]; then
       	figlet -ckf standard "Check Nginx Dynamic Module Support"
