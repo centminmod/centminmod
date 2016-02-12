@@ -51,6 +51,14 @@ echo ""
 	else
 		echo "can not find nginx binary.. install failed"
 	fi
+
+  if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+      echo
+      echo "dynamic module directory at /usr/local/nginx/modules"
+      ls -lah /usr/local/nginx/modules
+      echo
+  fi
+
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
