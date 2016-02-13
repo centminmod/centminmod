@@ -558,6 +558,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -567,6 +568,7 @@ server {
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
   # Enables directory listings when index file not found
   #autoindex  on;
@@ -663,6 +665,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -672,6 +675,7 @@ server {
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
   # Enables directory listings when index file not found
   #autoindex  on;
@@ -742,8 +746,10 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
   # Enables directory listings when index file not found
   #autoindex  on;

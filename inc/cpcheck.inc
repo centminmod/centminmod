@@ -317,8 +317,8 @@ memcachedupdatechecks() {
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
 		if [ -f /etc/init.d/memcached ]; then
 		if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
-			if [[ -f /usr/local/src/centminmod/config/memcached/memcached1425.patch && -f /etc/init.d/memcached ]]; then
-				\cp -f /usr/local/src/centminmod/config/memcached/memcached1425.patch /etc/init.d/memcached1425.patch
+			if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
+				\cp -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" /etc/init.d/memcached1425.patch
 				cd /etc/init.d/
 				patch -s < memcached1425.patch
 				rm -rf memcached1425.patch
@@ -408,6 +408,19 @@ figletcheck() {
     fi
 }
 
+maintenance_confcheck() {
+	if [ ! -f /usr/local/nginx/conf/503include-main.conf ]; then
+		if -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" ]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" /usr/local/nginx/conf/503include-main.conf
+		fi
+	fi
+	if [ ! -f /usr/local/nginx/conf/503include-only.conf ]; then
+		if [ -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" ]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" /usr/local/nginx/conf/503include-only.conf
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -458,6 +471,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	sshdfixes
 	auto_gitupdate
 	figletcheck
+	maintenance_confcheck
 fi
 
 }

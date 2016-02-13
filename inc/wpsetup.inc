@@ -616,6 +616,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -628,6 +629,7 @@ server {
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
+  include /usr/local/nginx/conf/503include-only.conf;
   $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
@@ -742,6 +744,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -754,6 +757,7 @@ server {
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
+  include /usr/local/nginx/conf/503include-only.conf;
   $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
@@ -838,6 +842,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
   include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
@@ -845,6 +850,7 @@ server {
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
   location /$wpsubdir_value {
+  include /usr/local/nginx/conf/503include-only.conf;
   $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found

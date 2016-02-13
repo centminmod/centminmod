@@ -293,6 +293,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -300,6 +301,7 @@ server {
   }
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
 # block common exploits, sql injections etc
 #include /usr/local/nginx/conf/block.conf;
@@ -391,6 +393,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -398,6 +401,7 @@ server {
   }  
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
 # block common exploits, sql injections etc
 #include /usr/local/nginx/conf/block.conf;
@@ -458,6 +462,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -465,6 +470,7 @@ server {
   }  
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
 # block common exploits, sql injections etc
 #include /usr/local/nginx/conf/block.conf;
