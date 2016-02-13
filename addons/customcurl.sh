@@ -191,7 +191,7 @@ elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
 elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	#############################
 	# el7 64bit
-	yum -y install libmetalink libssh2-devel nss-devel c-ares
+	yum -y install libmetalink libssh2-devel nss-devel c-ares psl
 	cd ${DIR_TMP}
 	# if [[ ! -f "libmetalink-0.1.2-4.el7.x86_64.rpm" ]]; then
 	# 	wget -cnv ftp://ftp.sunet.se/pub/Linux/distributions/fedora/epel/7/x86_64/libmetalink-0.1.2-4.el7.x86_64.rpm
@@ -230,7 +230,7 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	# rpm -ivh libmetalink-0.1.2-4.el7.x86_64.rpm
 	rpm -Uvh libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm
 	rpm -Uvh libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm
-	rpm -Uvh libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
+	rpm -Uvh --nodeps libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
 	rpm -Uvh libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
 	rpm -Uvh curl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
 	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
