@@ -16,9 +16,9 @@ DIR_TMP='/svr-setup'
 # use at own risk as it can break the system
 # info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
 CUSTOM_CURLRPM=y
-CUSTOM_CURLRPMVER='7.47.0-1.0'             # custom curl/libcurl version
-CUSTOM_CURLLIBSSHVER='1.6.0-3.0'     # libssh2 version
-CUSTOM_CURLRPMCARESVER='1.10.0-5.0'  # c-ares version
+CUSTOM_CURLRPMVER='7.47.1-2.0'             # custom curl/libcurl version
+CUSTOM_CURLLIBSSHVER='1.6.0-4.0'     # libssh2 version
+CUSTOM_CURLRPMCARESVER='1.10.0-6.0'  # c-ares version
 CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 ###############################################################
