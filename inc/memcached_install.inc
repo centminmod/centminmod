@@ -65,7 +65,7 @@ fi
 }
 
 checkigbinary() {
-    PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+    PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
     cecho "Checking for igbinary.so ..." $boldgreen
     cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
 
@@ -125,13 +125,13 @@ function funct_memcachedreinstall {
             fi            
         fi       
 
-PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
     echo "*************************************************"
     cecho "* Installing memcached" $boldgreen
     echo "*************************************************"
     echo "Downloading memcached..."
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
 #download memcached, memcache, libevent
 
@@ -151,21 +151,21 @@ fi
 checkmemcachedtar
 
 # Set LIBDIR
-if [ ${ARCH} == 'x86_64' ];
+if [ "${ARCH}" == 'x86_64' ];
 then
     LIBDIR='lib64'
 else
     LIBDIR='lib'
 fi
 
-echo $ARCH
-echo $LIBDIR
+echo "$ARCH"
+echo "$LIBDIR"
 
 #############################################
 
 if [[ "$FPMRPM_LIBEVENT" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
-    mkdir -p $DIR_TMP/fpmrpm
-    cd $DIR_TMP/fpmrpm
+    mkdir -p "$DIR_TMP/fpmrpm"
+    cd "$DIR_TMP/fpmrpm"
     if [ -s libevent-2.0.21-1.x86_64.rpm ]; then
         cecho "libevent-2.0.21-1.x86_64.rpm found, skipping download..." $boldgreen
     else
@@ -173,14 +173,14 @@ if [[ "$FPMRPM_LIBEVENT" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
         rpm -i libevent-2.0.21-1.x86_64.rpm
     fi
 else
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     #tar xfz release-${LIBEVENT_VERSION}-stable.tar.gz
-    cd libevent-release-${LIBEVENT_VERSION}-stable
+    cd "libevent-release-${LIBEVENT_VERSION}-stable"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./autogen.sh
-    ./configure --prefix=/usr/${LIBDIR}
+    ./configure --prefix="/usr/${LIBDIR}"
     make${MAKETHREADS}
     make install
 
@@ -194,29 +194,29 @@ ldconfig
 
 if [[ "$FPMRPM_MEMCACHED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     mkdir -p $DIR_TMP/fpmrpm
-    cd $DIR_TMP/fpmrpm
+    cd "$DIR_TMP/fpmrpm"
     if [ -s memcached-1.4.18-1.x86_64.rpm ]; then
         cecho "memcached-1.4.18-1.x86_64.rpm found, skipping download..." $boldgreen
     else
         wget -cnv http://centminmod.com/centminmodparts/customrpms/fpm/memcached-1.4.18-1.x86_64.rpm --tries=3
         rpm -i memcached-1.4.18-1.x86_64.rpm
-        cd ${DIR_TMP}/memcached-${MEMCACHED_VERSION}
-        cp -f $DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool /usr/local/bin
+        cd "${DIR_TMP}/memcached-${MEMCACHED_VERSION}"
+        cp -f "$DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool" /usr/local/bin
     fi
 else
     pwd
     echo "cd $DIR_TMP"
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     #tar xzf memcached-${MEMCACHED_VERSION}.tar.gz
-    cd ${DIR_TMP}/memcached-${MEMCACHED_VERSION}
+    cd "${DIR_TMP}/memcached-${MEMCACHED_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
-    ./configure --with-libevent=/usr/${LIBDIR} --enable-sasl --enable-sasl-pwdb
+    ./configure --with-libevent="/usr/${LIBDIR} "--enable-sasl --enable-sasl-pwdb
     # ./configure --with-libevent=/usr/${LIBDIR} --enable-memcached --enable-memcached-igbinary --enable-memcached-json --with-php- config=/usr/local/bin/php-config
     make${MAKETHREADS}
     make install
-    cp -f $DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool /usr/local/bin
+    cp -f "$DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool" /usr/local/bin
 fi # FPMRPM_MEMCACHED
 
     cecho "Compiled memcached..." $boldgreen
@@ -256,7 +256,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         cecho "Compiling PHP memcache extension..." $boldgreen
         pwd
         echo "cd $DIR_TMP"
-        cd $DIR_TMP
+        cd "$DIR_TMP"
     
         if [ -f /usr/bin/re2c ]; then
             if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
@@ -265,7 +265,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         fi
     
         #tar -xvf memcache-${MEMCACHE_VERSION}.tgz
-        cd ${DIR_TMP}/memcache-${MEMCACHE_VERSION}
+        cd "${DIR_TMP}/memcache-${MEMCACHE_VERSION}"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
@@ -277,7 +277,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
     fi
 else
     # if PHP_MEMCACHE=n remove memcache PHP extension setting file
-    rm -rf ${CONFIGSCANDIR}/memcache.ini
+    rm -rf "${CONFIGSCANDIR}/memcache.ini"
 fi # PHP_MEMCACHE = y
 
 #############################################
@@ -297,7 +297,7 @@ if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
         cecho "Compiling libmemcached-${LIBMEMCACHED_VER} ..." $boldgreen
         pwd
         echo "cd $DIR_TMP"
-        cd $DIR_TMP
+        cd "$DIR_TMP"
         #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
         cd ${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}
         if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -312,9 +312,9 @@ else
     cecho "Compiling libmemcached-${LIBMEMCACHED_VER} ..." $boldgreen
     pwd
     echo "cd $DIR_TMP"
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
-    cd ${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}
+    cd "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
@@ -330,7 +330,7 @@ wait
 
     pwd
     echo "cd $DIR_TMP"
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
 if [ -f /usr/bin/re2c ]; then
     if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
@@ -340,7 +340,7 @@ fi
 
 php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
 PHPSEVEN_CHECKVER=$?
-echo $PHPSEVEN_CHECKVER
+echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     echo
@@ -364,7 +364,7 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
 else
     echo
     echo "compiling memcached PHP extension ${MEMCACHEDPHP_VER} ..."
-    cd ${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}
+    cd "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
@@ -383,7 +383,7 @@ fi # php 7 or not
 #############################################
 #     cecho "Compiling twemperf-${TWEMPERF_VER}..." $boldgreen
 
-# cd $DIR_TMP
+# cd "$DIR_TMP"
 # echo "cd twemperf-${TWEMPERF_VER}"
 # cd twemperf-${TWEMPERF_VER}
 #if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -396,15 +396,15 @@ fi # php 7 or not
 #######################################################
 # check to see if memcache.so already loaded in php.ini
 
-MEMCACHESOCHECK=`grep 'memcache.so' /usr/local/lib/php.ini`
-MEMCACHESOCHECKB=$(grep 'memcache.so' ${CONFIGSCANDIR}/memcache.ini)
-PHPEXTDIR=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+MEMCACHESOCHECK=$(grep 'memcache.so' /usr/local/lib/php.ini)
+MEMCACHESOCHECKB=$(grep 'memcache.so' "${CONFIGSCANDIR}/memcache.ini")
+PHPEXTDIR=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
 
 #echo "" >> /usr/local/lib/php.ini
 #echo "extension=${PHPEXTDIR}/memcache.so" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIR}/memcache.so" > ${CONFIGSCANDIR}/memcache.ini
+echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
 
 else
 
@@ -418,21 +418,21 @@ fi # memcache.so check
 #######################################################
 # check to see if memcached.so already loaded in php.ini
 
-MEMCACHEDSOCHECK=`grep 'memcached.so' /usr/local/lib/php.ini`
-MEMCACHEDSOCHECKB=$(grep 'memcached.so' ${CONFIGSCANDIR}/memcached.ini)
-PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+MEMCACHEDSOCHECK=$(grep 'memcached.so' /usr/local/lib/php.ini)
+MEMCACHEDSOCHECKB=$(grep 'memcached.so' "${CONFIGSCANDIR}/memcached.ini")
+PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHEDSOCHECK" || -z "$MEMCACHEDSOCHECKB" ]]; then
 
 #echo "" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIRD}/memcached.so" > ${CONFIGSCANDIR}/memcached.ini
-echo "memcached.sess_connect_timeout=3000" >> ${CONFIGSCANDIR}/memcached.ini
-echo "; http://php.net/manual/en/memcached.configuration.php" >> ${CONFIGSCANDIR}/memcached.ini
-echo "memcached.sess_consistent_hash=0" >> ${CONFIGSCANDIR}/memcached.ini
-echo "memcached.sess_number_of_replicas=0" >> ${CONFIGSCANDIR}/memcached.ini
-echo "memcached.sess_randomize_replica_read=0" >> ${CONFIGSCANDIR}/memcached.ini
-echo "memcached.sess_remove_failed=0" >> ${CONFIGSCANDIR}/memcached.ini
-echo "memcached.sess_binary=0" >> ${CONFIGSCANDIR}/memcached.ini
+echo "extension=${PHPEXTDIRD}/memcached.so" > "${CONFIGSCANDIR}/memcached.ini"
+echo "memcached.sess_connect_timeout=3000" >> "${CONFIGSCANDIR}/memcached.ini"
+echo "; http://php.net/manual/en/memcached.configuration.php" >> "${CONFIGSCANDIR}/memcached.ini"
+echo "memcached.sess_consistent_hash=0" >> "${CONFIGSCANDIR}/memcached.ini"
+echo "memcached.sess_number_of_replicas=0" >> "${CONFIGSCANDIR}/memcached.ini"
+echo "memcached.sess_randomize_replica_read=0" >> "${CONFIGSCANDIR}/memcached.ini"
+echo "memcached.sess_remove_failed=0" >> "${CONFIGSCANDIR}/memcached.ini"
+echo "memcached.sess_binary=0" >> "${CONFIGSCANDIR}/memcached.ini"
 
 else
 
@@ -456,11 +456,11 @@ fi # memcached.so check
 
 else
     # if PHP_MEMCACHED=n remove memcached PHP extension setting file
-    rm -rf ${CONFIGSCANDIR}/memcached.ini
+    rm -rf "${CONFIGSCANDIR}/memcached.ini"
 fi # PHP_MEMCACHED = y
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
-    kill -9 $(pidof memcached)
+    kill -9 "$(pidof memcached)"
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     systemctl kill memcached
 fi
@@ -486,7 +486,7 @@ then
 
 funct_memcachedreinstall
 
-cd $SCRIPT_DIR
+cd "$SCRIPT_DIR"
 
 #######################################################
 # check /etc/init.d/memcached
@@ -499,13 +499,13 @@ if [[ ! -f /etc/init.d/memcached ]]; then
     if [[ "$nomemcachedservers" = '1' ]]; then
         echo "setup /etc/init.d/memcached"
         echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
-        cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached
+        cp "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
     fi
     
     if [[ "$nomemcachedservers" = '2' ]]; then
         echo "setup /etc/init.d/memcached"
         echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
-        cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached
+        cp "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
     fi
 fi # check /etc/init.d/memcached
 
@@ -519,14 +519,14 @@ if [[ ! "$(grep PIDA /etc/init.d/memcached)" ]]; then
     if [[ "$nomemcachedservers" = '1' ]]; then
         echo "setup /etc/init.d/memcached"
         echo "\cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
-        \cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached
+        \cp -f "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
         sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
     fi
     
     if [[ "$nomemcachedservers" = '2' ]]; then
         echo "setup /etc/init.d/memcached"
         echo "\cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
-        \cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached
+        \cp -f "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
         sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
     fi
 fi # check /etc/init.d/memcached for PIDA/PIDB
@@ -551,9 +551,9 @@ service memcached start
 
     cecho "Compiling PHP memcache extension..." $boldgreen
 
-cd $DIR_TMP
-tar -xvf memcache-${MEMCACHE_VERSION}.tgz
-cd memcache-${MEMCACHE_VERSION}
+cd "$DIR_TMP"
+tar -xvf "memcache-${MEMCACHE_VERSION}.tgz"
+cd "memcache-${MEMCACHE_VERSION}"
 /usr/local/bin/phpize
 ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
 make${MAKETHREADS} && make install
@@ -561,15 +561,15 @@ make${MAKETHREADS} && make install
 #######################################################
 # check to see if memcache.so already loaded in php.ini
 
-MEMCACHESOCHECK=`grep 'memcache.so' /usr/local/lib/php.ini`
-MEMCACHESOCHECKB=$(grep 'memcache.so' ${CONFIGSCANDIR}/memcache.ini)
-PHPEXTDIR=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+MEMCACHESOCHECK=$(grep 'memcache.so' /usr/local/lib/php.ini)
+MEMCACHESOCHECKB=$(grep 'memcache.so' "${CONFIGSCANDIR}/memcache.ini")
+PHPEXTDIR=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
 if [[ -z "$MEMCACHESOCHECK" || -z "$MEMCACHESOCHECKB" ]]; then
 
 #echo "" >> /usr/local/lib/php.ini
 #echo "extension=${PHPEXTDIR}/memcache.so" >> /usr/local/lib/php.ini
-echo "extension=${PHPEXTDIR}/memcache.so" > ${CONFIGSCANDIR}/memcache.ini
+echo "extension=${PHPEXTDIR}/memcache.so" > "${CONFIGSCANDIR}/memcache.ini"
 
 else
 
