@@ -423,6 +423,10 @@ maintenance_confcheck() {
 		if [ -f "${SCRIPT_DIR}/tools/sitestatus.sh" ]; then
 			\cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
 			chmod +x /usr/bin/sitestatus
+     	MCONF_CHECK=$(grep 'maintenance.conf' /usr/local/nginx/conf/nginx.conf)
+     	if [[ -z "$MCONF_CHECK" ]]; then
+          	sed -i 's/include \/usr\/local\/nginx\/conf\/geoip.conf;/include \/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/maintenance.conf;\n/g' /usr/local/nginx/conf/nginx.conf
+     	fi
 		fi
 	fi
 }
