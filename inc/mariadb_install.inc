@@ -144,6 +144,11 @@ fi # CENTOS_SEVEN = 7
 
 ###############################################################################
 echo ""
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1 Yum Install"
+    fi
+
 echo "MariaDB 10.1 YUM install..."
 
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
@@ -182,6 +187,10 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "/etc/my.cnf compat checks"
+    fi
+
 #cp -a /etc/my.cnf /etc/my.cnf-newold
 #cp -f /etc/my.cnf.rpmorig /etc/my.cnf
 sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
@@ -198,6 +207,10 @@ sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutd
 sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 ###############################################################################
 echo ""
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1 Specific /etc/my.cnf"
+    fi
 
 cat >>/etc/my.cnf<<FFF
 
@@ -252,6 +265,10 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
 fi # CENTOS_SEVEN != 7
 
 cmservice mysql restart
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10 Plugins"
+    fi
 
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
