@@ -419,6 +419,12 @@ maintenance_confcheck() {
 			\cp -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" /usr/local/nginx/conf/503include-only.conf
 		fi
 	fi
+	if [ ! -f /usr/bin/sitestatus ]; then
+		if [ -f "${SCRIPT_DIR}/tools/sitestatus.sh" ]; then
+			\cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
+			chmod +x /usr/bin/sitestatus
+		fi
+	fi
 }
 
 cpcheck() {
