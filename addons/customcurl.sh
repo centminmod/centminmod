@@ -39,6 +39,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
 fi
+
+if [ ! -d "$DIR_TMP" ]; then
+	mkdir -p "$DIR_TMP"
+fi
 ######################################################
 # Setup Colours
 black='\E[30;40m'
