@@ -206,6 +206,7 @@ ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openres
 FFF
 
 # bypass initial setup email prompt
+mkdir -p /etc/centminmod/
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 "${INSTALLDIR}/centminmod/centmin.sh" install

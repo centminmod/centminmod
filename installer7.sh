@@ -176,6 +176,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 #sed -i "s|AXIVOREPO_DISABLE=n|AXIVOREPO_DISABLE=y|" centmin.sh
 
 # bypass initial setup email prompt
+mkdir -p /etc/centminmod/
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 "${INSTALLDIR}/centminmod/centmin.sh" install
