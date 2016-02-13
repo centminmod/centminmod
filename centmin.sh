@@ -55,11 +55,11 @@ if [ ! -d "$DIR_TMP" ]; then
             TMPFSENABLED=1
             RAMDISKTMPFS='y'
             echo "setting up $DIR_TMP on tmpfs ramdisk for initial install"
-            mkdir -p $DIR_TMP
-            mount -t tmpfs -o size=2200M,mode=0755 tmpfs $DIR_TMP
+            mkdir -p "$DIR_TMP"
+            mount -t tmpfs -o size=2200M,mode=0755 tmpfs "$DIR_TMP"
             df -hT
         else
-            mkdir -p $DIR_TMP
+            mkdir -p "$DIR_TMP"
         fi
 fi
 
@@ -188,12 +188,12 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
     CPUS=$(echo "$CPUS+1" | bc)
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
     CPUS=$(echo "$CPUS+1" | bc)
     MAKETHREADS=" -j$CPUS"
 fi
@@ -846,22 +846,22 @@ unsetramdisk() {
     if [[ "$RAMDISKTMPFS" = [yY] && "$TMPFSENABLED" = '1' ]]; then
         echo
         cecho "unmount $DIR_TMP tmpfs ramdisk & copy back to disk" $boldyellow
-        mkdir -p ${DIR_TMP}_disk
-        \cp -R ${DIR_TMP}/* ${DIR_TMP}_disk
-        # ls -lah ${DIR_TMP}_disk
+        mkdir -p "${DIR_TMP}_disk"
+        \cp -R ${DIR_TMP}/* "${DIR_TMP}_disk"
+        # ls -lah "${DIR_TMP}_disk"
         # diff -qr ${DIR_TMP} ${DIR_TMP}_disk
         cmservice nginx stop
         cmservice php-fpm stop
         cmservice memcached stop
         sleep 4
         # lsof | grep /svr-setup
-        umount -l ${DIR_TMP}
+        umount -l "${DIR_TMP}"
         cmservice nginx start
         cmservice php-fpm start
         cmservice memcached start
-        \cp -R ${DIR_TMP}_disk/* ${DIR_TMP}
-        # ls -lahrt ${DIR_TMP}
-        rm -rf ${DIR_TMP}_disk
+        \cp -R ${DIR_TMP}_disk/* "${DIR_TMP}"
+        # ls -lahrt "${DIR_TMP}"
+        rm -rf "${DIR_TMP}_disk"
         df -hT
         cecho "unmounted $DIR_TMP tmpfs ramdisk" $boldyellow
     fi
@@ -1033,7 +1033,7 @@ then
     cecho "* Setting preferred localtime for VPS" $boldgreen
     echo "*************************************************"
     rm -f /etc/localtime
-    ln -s /usr/share/zoneinfo/$ZONEINFO /etc/localtime
+    ln -s "/usr/share/zoneinfo/$ZONEINFO" /etc/localtime
     echo "Current date & time for the zone you selected is:"
     date
 fi
@@ -1138,7 +1138,7 @@ funct_centos6check
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
 if [ "$(rpm -qa | grep '^php*')" ]; then
 
@@ -1152,13 +1152,13 @@ fi
 
     #tar xzvf php-${PHP_VERSION}.tar.gz
 
-    cd php-${PHP_VERSION}
+    cd "php-${PHP_VERSION}"
 
     ./buildconf --force
     mkdir fpm-build && cd fpm-build
 
-    mkdir -p /usr/${LIBDIR}/mysql
-    ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
+    mkdir -p "/usr/${LIBDIR}/mysql"
+    ln -s "/usr/${LIBDIR}/libmysqlclient.so" "/usr/${LIBDIR}/mysql/libmysqlclient.so"
 
 funct_phpconfigure
 
@@ -1169,7 +1169,7 @@ funct_phpconfigure
 
 CUSTOMPHPINICHECK=$(grep 'realpath_cache_size = 1024k' /usr/local/lib/php.ini 2>/dev/null)
 
-if [[ -z $CUSTOMPHPINICHECK ]]; then
+if [[ -z "$CUSTOMPHPINICHECK" ]]; then
 
     cp -f php.ini-production /usr/local/lib/php.ini
     chmod 644 /usr/local/lib/php.ini
@@ -1238,7 +1238,7 @@ fi
     # /etc/init.d/php-fpm force-quit
     /etc/init.d/php-fpm start
 
-if [[ "$(grep exclude /etc/yum.conf)" && $MDB_INSTALL = y ]]; then
+if [[ "$(grep exclude /etc/yum.conf)" && "$MDB_INSTALL" = y ]]; then
     cecho "exclude line exists... adding nginx* mysql* php* exclusions" $boldgreen
     sed -i "s/exclude=\*.i386 \*.i586 \*.i686 mysql\*/exclude=\*.i386 \*.i586 \*.i686 nginx\* mysql\* php\*/" /etc/yum.conf
     sed -i "s/exclude=mysql\*/exclude=mysql\* php\*/" /etc/yum.conf
@@ -1248,7 +1248,7 @@ elif [[ "$(grep exclude /etc/yum.conf)" ]]; then
 fi
 
 
-if [[ ! "$(grep exclude /etc/yum.conf)" && $MDB_INSTALL = y ]]; then
+if [[ ! "$(grep exclude /etc/yum.conf)" && "$MDB_INSTALL" = y ]]; then
 
 cecho "Can't find exclude line in /etc/yum.conf.. adding exclude line for nginx* mysql* php*" $boldgreen
 
@@ -1618,7 +1618,7 @@ funct_selinux() {
 SELINUXCONFIGFILE='/etc/selinux/config'
 SELINUXCHECK=$(grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2)
 
-if [[ $SELINUXCHECK == 'enforcing' ]]; then
+if [[ "$SELINUXCHECK" == 'enforcing' ]]; then
 
 	echo ""
 cecho "---------------------------------------------" $boldyellow
@@ -1643,7 +1643,7 @@ cecho "---------------------------------------------" $boldyellow
 cecho "---------------------------------------------" $boldyellow
 	echo "checking $SELINUXCONFIGFILE"
 
-	cat $SELINUXCONFIGFILE | grep '^SELINUX='
+	cat "$SELINUXCONFIGFILE" | grep '^SELINUX='
 
 cecho "---------------------------------------------" $boldyellow
 	echo ""
@@ -1683,9 +1683,9 @@ funct_showtempfile() {
 funct_mktempfile() {
 
 if [[ ! -d "$DIR_TMP"/msglogs ]]; then
-cd $DIR_TMP
+cd "$DIR_TMP"
 mkdir msglogs
-chmod 1777 $DIR_TMP/msglogs
+chmod 1777 "$DIR_TMP/msglogs"
 fi
 
 TMP_MSGFILE="$DIR_TMP/msglogs/$RANDOM.msg"
@@ -1765,7 +1765,7 @@ if [[ "$1" = 'install' ]]; then
     echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
-pushd $SCRIPT_DIR; bash centmin.sh
+pushd "$SCRIPT_DIR"; bash centmin.sh
 EOF
     chmod 0700 /usr/bin/centmin
 
@@ -1879,7 +1879,7 @@ else
     echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
-pushd $SCRIPT_DIR; bash centmin.sh
+pushd "$SCRIPT_DIR"; bash centmin.sh
 EOF
     chmod 0700 /usr/bin/centmin
 
