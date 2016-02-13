@@ -8,19 +8,8 @@ fi
 
 mariadb55install() {
 
-echo "MariaDB 10.x Repo setup..."
+echo "MariaDB 10.1 Repo setup..."
 echo ""
-
-# CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
-
-# if [ "$CENTOSVER" == 'release' ]; then
-#     CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
-# fi
-
-# if [ "$CENTOSVER" == 'Enterprise' ]; then
-#     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
-#     OLS='y'
-# fi
 
 MARIADB55ARCH=`uname -m`
 
@@ -35,7 +24,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -45,7 +34,7 @@ EOF
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -60,13 +49,9 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos6-amd64
+baseurl = http://yum.mariadb.org/10.1/centos6-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -74,13 +59,9 @@ EOF
     else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos6-x86
+baseurl = http://yum.mariadb.org/10.1/centos6-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -93,29 +74,23 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos5-amd64
+baseurl = http://yum.mariadb.org/10.1/centos5-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
+priority=8
 EOF
 
     else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos5-x86
+baseurl = http://yum.mariadb.org/10.1/centos5-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
+priority=8
 EOF
 
     fi # arch check
@@ -169,7 +144,7 @@ fi # CENTOS_SEVEN = 7
 
 ###############################################################################
 echo ""
-echo "MariaDB 10 YUM install..."
+echo "MariaDB 10.1 YUM install..."
 
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     DISABLEOTHERREPO=' --disablerepo=epel,rpmforge'
@@ -177,15 +152,18 @@ else
     DISABLEOTHERREPO=' --disablerepo=epel'
 fi
 
+# set /etc/my.cnf templates
+setmycnf
+
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
     echo "*************************************************"
-    cecho "MariaDB 10.x YUM install..." $boldgreen
-    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "MariaDB 10.1.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -195,11 +173,11 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 
     echo ""
     echo "*************************************************"
-    cecho "MariaDB 10.x YUM install..." $boldgreen
-    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "MariaDB 10.1.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
@@ -210,7 +188,60 @@ sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
 sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
 sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
 sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
+sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 ###############################################################################
+echo ""
+
+cat >>/etc/my.cnf<<FFF
+
+
+[mariadb-10.1]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
+## wsrep specific
+# wsrep_on=OFF
+# wsrep_provider
+# wsrep_cluster_address
+# binlog_format=ROW
+# default_storage_engine=InnoDB
+# innodb_autoinc_lock_mode=2
+# innodb_doublewrite=1
+# query_cache_size=0
+
+# 2 variables needed to switch from XtraDB to InnoDB plugins
+#plugin-load=ha_innodb
+#ignore_builtin_innodb
+
+## MariaDB 10 only save and restore buffer pool pages
+## warm up InnoDB buffer pool on server restarts
+innodb_buffer_pool_dump_at_shutdown=1
+innodb_buffer_pool_load_at_startup=1
+innodb_buffer_pool_populate=0
+## Disabled settings
+performance_schema=OFF
+innodb_stats_on_metadata=OFF
+innodb_sort_buffer_size=2M
+innodb_online_alter_log_max_size=128M
+query_cache_strip_comments=0
+log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+
+# Defragmenting unused space on InnoDB tablespace
+innodb_defragment=1
+innodb_defragment_n_pages=7
+innodb_defragment_stats_accuracy=0
+innodb_defragment_fill_factor_n_recs=20
+innodb_defragment_fill_factor=0.9
+innodb_defragment_frequency=40
+FFF
+
 echo ""
 
 mysqltmpdir
