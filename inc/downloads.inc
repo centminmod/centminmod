@@ -408,7 +408,7 @@ else
 	fi
     fi
 
-tar "$PHPTAR_FLAGS php-${PHP_VERSION}.tar.${PHPEXTSION}"
+tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
