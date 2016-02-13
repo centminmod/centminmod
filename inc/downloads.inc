@@ -3086,6 +3086,15 @@ CSFINSTALLOK='y'
 
     cd "$DIR_TMP"
 
+    # change to always look for remote csf firewall tarball
+    # and use it first and only fall back on local included 
+    # csf tarball if you can not reach the official csf
+    # site tarball download
+    CSF_SITECHECK=$(curl -sI ${CSF_LINK} | grep 'HTTP\/' | awk '/200/ {print $2}')
+    if [[ "$CSF_SITECHECK" = '200' ]]; then
+      mv ${CSF_LINKFILE} ${CSF_LINKFILE}-local
+    fi
+
         cecho "Download ${CSF_LINKFILE} ..." $boldyellow
     if [ -s ${CSF_LINKFILE} ]; then
         cecho "csf Archive found, skipping download..." $boldgreen
