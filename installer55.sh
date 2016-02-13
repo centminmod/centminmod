@@ -55,7 +55,7 @@ if [[ ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/
     yum -y install GeoIP GeoIP-devel --disablerepo=rpmforge
   else
     yum -y install GeoIP GeoIP-devel
-  fi  
+  fi
   touch ${INSTALLDIR}/curlinstall_yum.txt
   firstyuminstallendtime=$(date +%s.%N)
 fi
@@ -178,7 +178,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 # bypass initial setup email prompt
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
-${INSTALLDIR}/centminmod/centmin.sh install
+"${INSTALLDIR}/centminmod/centmin.sh" install
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini
 
@@ -209,9 +209,9 @@ if [[ "$DEF" = 'novalue' ]]; then
   GETCMTIME=$(echo "$getcmendtime - $getcmstarttime" | bc)
   GETCMTIME=$(printf "%0.4f\n" $GETCMTIME)
   #touch ${CENTMINLOGDIR}/firstyum_installtime_${DT}.log
-  echo "" > /root/centminlogs/firstyum_installtime_${DT}.log
+  echo "" > "/root/centminlogs/firstyum_installtime_${DT}.log"
 echo "---------------------------------------------------------------------------"
-  echo "Total Curl Installer YUM Time: $FIRSTYUMINSTALLTIME seconds" >> /root/centminlogs/firstyum_installtime_${DT}.log
+  echo "Total Curl Installer YUM Time: $FIRSTYUMINSTALLTIME seconds" >> "/root/centminlogs/firstyum_installtime_${DT}.log"
   tail -1 /root/centminlogs/firstyum_installtime_*.log
   tail -1 /root/centminlogs/centminmod_yumtimes_*.log
   DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
