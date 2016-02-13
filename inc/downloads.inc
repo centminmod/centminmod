@@ -1635,7 +1635,7 @@ if [ -s "${LIBEVENTLINKFILE}" ]; then
   cecho "${LIBEVENTLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${LIBEVENTLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar --no-check-certificate "${LIBEVENTLINK}" --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${LIBEVENTLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${LIBEVENTLINKFILE} download failed." $boldgreen
@@ -1671,7 +1671,7 @@ if [ -s "${PHPEXT_MAILPARSELINKFILE}" ]; then
   cecho "${PHPEXT_MAILPARSELINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MAILPARSELINKFILE} local not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_MAILPARSELINKLOCAL}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MAILPARSELINKLOCAL}" --tries=3 
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local download failed." $boldgreen
@@ -1705,7 +1705,7 @@ if [ -s "${PHPEXT_MAILPARSELINKFILE}" ]; then
   cecho "${PHPEXT_MAILPARSELINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MAILPARSELINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_MAILPARSELINK}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MAILPARSELINK}" --tries=3 
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MAILPARSELINKFILE} download failed." $boldgreen
@@ -1742,7 +1742,7 @@ if [ -s "${PHPEXT_IMAGICKLINKFILE}" ]; then
   cecho "${PHPEXT_IMAGICKLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_IMAGICKLINKFILE} local not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_IMAGICKLINKLOCAL}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_IMAGICKLINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local download failed." $boldgreen
@@ -1776,7 +1776,7 @@ if [ -s "${PHPEXT_IMAGICKLINKFILE}" ]; then
   cecho "${PHPEXT_IMAGICKLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_IMAGICKLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_IMAGICKLINK}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_IMAGICKLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} download failed." $boldgreen
@@ -1813,7 +1813,7 @@ if [ -s "${PHPEXT_MEMCACHELINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHELINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_MEMCACHELINKLOCAL}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHELINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local download failed." $boldgreen
@@ -1847,7 +1847,7 @@ if [ -s "${PHPEXT_MEMCACHELINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHELINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_MEMCACHELINK}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHELINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} download failed." $boldgreen
@@ -1884,7 +1884,7 @@ if [ -s "${PHPEXT_MEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_MEMCACHEDLINKLOCAL}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHEDLINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local download failed." $boldgreen
@@ -1918,7 +1918,7 @@ if [ -s "${PHPEXT_MEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_MEMCACHEDLINK}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHEDLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} download failed." $boldgreen
@@ -1955,7 +1955,7 @@ if [ -s "${PHPEXT_REDISLINKFILE}" ]; then
   cecho "${PHPEXT_REDISLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar --no-check-certificate "${PHPEXT_REDISLINKLOCAL}" -O "${PHPEXT_REDISLINKFILE}" --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_REDISLINKLOCAL}" -O "${PHPEXT_REDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} local download failed." $boldgreen
@@ -1989,7 +1989,7 @@ if [ -s "${PHPEXT_REDISLINKFILE}" ]; then
   cecho "${PHPEXT_REDISLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar --no-check-certificate "${PHPEXT_REDISLINK}" -O "${PHPEXT_REDISLINKFILE}" --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_REDISLINK}" -O "${PHPEXT_REDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} download failed." $boldgreen
@@ -2026,7 +2026,7 @@ if [ -s "${PHPEXT_MONGODBLINKFILE}" ]; then
   cecho "${PHPEXT_MONGODBLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar --no-check-certificate "${PHPEXT_MONGODBLINKLOCAL}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_MONGODBLINKLOCAL}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
@@ -2060,7 +2060,7 @@ if [ -s "${PHPEXT_MONGODBLINKFILE}" ]; then
   cecho "${PHPEXT_MONGODBLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar --no-check-certificate "${PHPEXT_MONGODBLINK}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_MONGODBLINK}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
@@ -2098,7 +2098,7 @@ if [ -s "${PHPEXT_LIBMEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_LIBMEMCACHEDLINKLOCAL}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_LIBMEMCACHEDLINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local download failed." $boldgreen
@@ -2135,7 +2135,7 @@ if [ -s "${PHPEXT_LIBMEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget "${WGETOPT}" --progress=bar "${PHPEXT_LIBMEMCACHEDLINK}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_LIBMEMCACHEDLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
@@ -2173,9 +2173,9 @@ if [ -s "${TWEMPERF_LINKFILE}" ]; then
   else
   echo "Error: ${TWEMPERF_LINKFILE} not found !!! Downloading now......"
         
-     wget "${WGETOPT}" --progress=bar --no-check-certificate "${TWEMPERF_LINK}" -O "${TWEMPERF_LINKFILE}" --tries=3 
+     wget ${WGETOPT} --progress=bar --no-check-certificate "${TWEMPERF_LINK}" -O "${TWEMPERF_LINKFILE}" --tries=3 
 
-	# wget "${WGETOPT}" --progress=bar ${TWEMPERF_LINK} --tries=3
+	# wget ${WGETOPT} --progress=bar ${TWEMPERF_LINK} --tries=3
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -2234,8 +2234,8 @@ if [ -s "${MEMCACHEDSERVER_LINKFILE}" ]; then
   cecho "${MEMCACHEDSERVER_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Downloading now......"
-  		wget "${WGETOPT}" --progress=bar "${MEMCACHEDSERVER_LINK}" --tries=3
-        # wget "${WGETOPT}" --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
+  		wget ${WGETOPT} --progress=bar "${MEMCACHEDSERVER_LINK}" --tries=3
+        # wget ${WGETOPT} --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MEMCACHEDSERVER_LINKFILE} download failed." $boldgreen
@@ -2294,7 +2294,7 @@ else
     if [ -s "${MYSQLTUNER_LINKFILE}" ]; then
         cecho "${MYSQLTUNER_LINKFILE} found, skipping download..." $boldgreen
     else
-        wget "${WGETOPT}" --progress=bar "${MYSQLTUNER_LINK}" -O "${MYSQLTUNER_LINKFILE}" --tries=3 
+        wget ${WGETOPT} --progress=bar "${MYSQLTUNER_LINK}" -O "${MYSQLTUNER_LINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MYSQLTUNER_LINKFILE} download failed." $boldgreen
