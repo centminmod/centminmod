@@ -10,6 +10,21 @@ checkmotd() {
 setupmotd() {
 
 	ENABLEMOTD='y'
+	CUR_DIR=$SCRIPT_DIR # Get current directory.
+	CM_INSTALLDIR=$CUR_DIR
+
+	if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    	source "inc/custom_config.inc"
+	fi
+	
+	if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    	# default is at /etc/centminmod/custom_config.inc
+    	source "${CONFIGSCANBASE}/custom_config.inc"
+	fi
+	
+	if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    	source "${CM_INSTALLDIR}/inc/z_custom.inc"
+	fi
 
 	if [[ "$ENABLEMOTD" = [yY] ]]; then
 		if [ -f /usr/local/bin/dmotd ]; then
