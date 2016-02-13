@@ -191,20 +191,6 @@ fi # CENTOS_SEVEN != 7
         figlet -ckf standard "/etc/my.cnf compat checks"
     fi
 
-#cp -a /etc/my.cnf /etc/my.cnf-newold
-#cp -f /etc/my.cnf.rpmorig /etc/my.cnf
-sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
-sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
-sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
-sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
-sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
-sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
-sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
-sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
-sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
-sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
-sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
-sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 ###############################################################################
 echo ""
 
@@ -254,6 +240,21 @@ innodb_defragment_fill_factor_n_recs=20
 innodb_defragment_fill_factor=0.9
 innodb_defragment_frequency=40
 FFF
+
+#cp -a /etc/my.cnf /etc/my.cnf-newold
+#cp -f /etc/my.cnf.rpmorig /etc/my.cnf
+sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
+sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
+sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
+sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
+sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 
 echo ""
 
