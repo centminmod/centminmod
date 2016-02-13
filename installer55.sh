@@ -40,7 +40,7 @@ DEF=${1:-novalue}
 
 yum clean all
 
-if [[ ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/unzip || ! -f /usr/bin/applydeltarpm ]]; then
+if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/unzip || ! -f /usr/bin/applydeltarpm ]]; then
   firstyuminstallstarttime=$(date +%s.%N)
   echo
   echo "installing yum packages..."
