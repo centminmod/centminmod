@@ -279,6 +279,17 @@ PHPMU_ALPHAVER=$(echo "$phpver")
     cecho "* Upgrading PHP" $boldgreen
     echo "*************************************************"
 
+    # if you set /etc/centminmod/custom_config.inc file to
+    # PHP_UPDATEMAINTENANCE=y
+    # then whenever you run php upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$PHP_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus off
+        fi
+    fi
+
 funct_centos6check
 
     export PHP_AUTOCONF=/usr/bin/autoconf
@@ -633,8 +644,19 @@ fi
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
     echo "***************************************************"
 
+    # if you set /etc/centminmod/custom_config.inc file to
+    # PHP_UPDATEMAINTENANCE=y
+    # then whenever you run php upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$PHP_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus on
+        fi
+    fi
+
     if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "Nginx Upgraded"
+        figlet -ckf standard "PHP Upgraded"
     fi
 
 	fi

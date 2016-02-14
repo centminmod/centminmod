@@ -279,6 +279,17 @@ else
     echo ""
     read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION): " ngver
 
+    # if you set /etc/centminmod/custom_config.inc file to
+    # NGINX_UPDATEMAINTENANCE=y
+    # then whenever you run nginx upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus off
+        fi
+    fi
+
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
     # if doesn't match then auto recompile the statically set
@@ -625,6 +636,17 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
         echo "*************************************************"
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
+
+    # if you set /etc/centminmod/custom_config.inc file to
+    # NGINX_UPDATEMAINTENANCE=y
+    # then whenever you run nginx upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus on
+        fi
+    fi
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Updated"

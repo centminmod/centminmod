@@ -47,6 +47,17 @@ cecho "Aborting MariaDB 10.1.x upgrade..." $boldyellow
 exit
 fi
 
+    # if you set /etc/centminmod/custom_config.inc file to
+    # MARIADB_UPDATEMAINTENANCE=y
+    # then whenever you run mariadb upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$MARIADB_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus off
+        fi
+    fi
+
 echo
 echo "checking mysql root password works in /root/.my.cnf"
 sleep 5
@@ -597,6 +608,17 @@ echo ""
 mysqladmin ver
 
 echo
+
+    # if you set /etc/centminmod/custom_config.inc file to
+    # MARIADB_UPDATEMAINTENANCE=y
+    # then whenever you run mariadb upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$MARIADB_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus on
+        fi
+    fi
 
 echo "------------------------------------------------"
 echo "MariaDB 10.1.x Upgrade completed"

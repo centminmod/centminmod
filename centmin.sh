@@ -295,6 +295,12 @@ NGXDYNAMIC_SETMISC=n
 NGXDYNAMIC_ECHO=n
 NGXDYNAMIC_LUA=n
 
+# set = y to put nginx, php and mariadb major version updates into 503 
+# maintenance mode https://community.centminmod.com/posts/26485/
+NGINX_UPDATEMAINTENANCE=n
+PHP_UPDATEMAINTENANCE=n
+MARIADB_UPDATEMAINTENANCE=n
+
 # General Configuration
 NGINXUPGRADESLEEP='3'
 NSD_INSTALL=y                # Install NSD (DNS Server)
