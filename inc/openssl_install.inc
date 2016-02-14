@@ -23,13 +23,13 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
         echo "Patching OpenSSL 1.0.2f"
         echo  "######################################################################"
         echo "Cloudflare ChaCha20 patch"
-        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_cf.patch"
+        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch"
         echo "only Android 5 will support ChaCha20 if using Cloudflare Patch"
         echo  "######################################################################"
         # pushd ssl
-        rm -rf openssl__chacha20_poly1305_cf.patch
-        wget -cnv --no-check-certificate https://github.com/cloudflare/sslconfig/raw/master/patches/openssl__chacha20_poly1305_cf.patch
-        patch -p1 < openssl__chacha20_poly1305_cf.patch
+        rm -rf openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        wget -cnv --no-check-certificate https://github.com/cloudflare/sslconfig/raw/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
         if [ -f crypto/chacha20poly1305/chacha20.c ]; then
             # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
             OPEENSSL_CFPATCHED='y'
