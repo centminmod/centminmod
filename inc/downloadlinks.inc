@@ -173,7 +173,7 @@ NGX_PAGESPEEDLINK="https://github.com/pagespeed/ngx_pagespeed/archive/${NGX_PAGE
 NGX_PAGESPEEDPSOLINKLFILE="${NGINX_PAGESPEEDPSOL_VER}.tar.gz"
 NGX_PAGESPEEDPSOLINKL="https://dl.google.com/dl/page-speed/psol/${NGX_PAGESPEEDPSOLINKLFILE}"
 
-NGX_FANCYINDEXLINKFILE="ngx-fancyindex-0.3.1.tar.gz"
+NGX_FANCYINDEXLINKFILE="ngx-fancyindex-0.3.6.tar.gz"
 NGX_FANCYINDEXLINK="http://centminmod.com/centminmodparts/nginx/modules/${NGX_FANCYINDEXLINKFILE}"
 
 NGX_CACHEPURGEFILE="ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
