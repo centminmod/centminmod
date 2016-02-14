@@ -2,17 +2,17 @@ backupmsg101() {
 
 echo ""
 cat <<EOF
---------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
  This script's MariaDB 10.1.x upgrade process is still in beta testing stages. 
  So please test on a test server and not a live production server. But if you use 
  on live server or if MySQL databases already exist, please back them up before 
  running this upgrade script via mysqldump - instructions at: 
  http://dev.mysql.com/doc/refman/5.6/en/mysqldump.html.
 
- ###############################################################
- ###        IMPORTANT MYSQLDUMP BACKUP BEFORE UPGRADE        ###
- ###      OR RISK DATA LOSS DUE TO MARIADB 10.1 Changes      ###
- ###############################################################
+ ###################################################################
+ ###          IMPORTANT MYSQLDUMP BACKUP BEFORE UPGRADE          ###
+ ###        OR RISK DATA LOSS DUE TO MARIADB 10.1 Changes        ###
+ ###################################################################
 
  For each DATABASENAME backup via mysqldump i.e.
 
@@ -20,7 +20,7 @@ cat <<EOF
 EOF
 sleep 5
 
-echo "--------------------------------------------------------------------------------"
+echo "------------------------------------------------------------------------"
 echo ""
 read -ep "Have you backed up your databases ? [y/n] " askbackup
 
@@ -31,14 +31,12 @@ exit
 fi
 
 echo ""
-echo "MariaDB 10.1.x no longer works with mydumper"
-echo "MySQL backup tool. But still works with MariaDB 5.2.x"
+echo "MariaDB 10.1.x https://mariadb.com/kb/en/mariadb/what-is-mariadb-101/"
 echo 
-echo "!! Note !!"
-echo "upgrade process can take more >5 minutes.. you may"
-echo "want to shutdown nginx server to not show mysql errors"
-echo "to visitors on your site or put site(s) into maintenance"
-echo "mode before proceeding with mysql upgrade."
+echo "!!  Note  !!"
+echo "upgrade process can take more >5 minutes.. you may want to shutdown"
+echo "nginx server to not show mysql errors to visitors on your site or" 
+echo "put site(s) into maintenance mode before proceeding with mysql upgrade"
 sleep 15
 echo
 read -ep "Do you want to continue with upgrade to MariaDB 10.1.x ? [y/n] " contbackup
@@ -66,6 +64,10 @@ if [[ "$CHECK_MYSQLPASS" != '0' ]]; then
     cecho "Aborting MariaDB 10.1.x upgrade..." $boldyellow
     exit
 fi
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Preparing Shutdown For Upgrade"
+    fi
 
 # full purge and change buffer merge before shutting down to ensure data files are in sync 
 # prior to upgrade
@@ -167,6 +169,10 @@ echo "#####################################################"
 }
 
 mariadb101install() {
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1.x Repo Setup"
+    fi
 
     echo "*************************************************"
 	cecho "MariaDB 10.1.x Repo setup..." $boldgreen
@@ -349,6 +355,10 @@ cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel Ma
 echo ""
 time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1.x Install"
+    fi
+
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.1.x YUM install..." $boldgreen
@@ -368,20 +378,10 @@ echo ""
 if [ -f /etc/my.cnf.rpmorig ]; then
 \cp -f /etc/my.cnf.rpmsave /etc/my.cnf
 fi
-# sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
-# sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
-# sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
-# sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
-# sed -i 's/innodb_additional_mem_pool_size/#innodb_additional_mem_pool_size/g' /etc/my.cnf
-# sed -i 's/skip-innodb/innodb=ON/g' /etc/my.cnf
-sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
-sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
-sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
-sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
-sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
-sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
-sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
-sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1.x /etc/my.cnf Adjustments"
+    fi
 
 cat >>/etc/my.cnf<<FFF
 
@@ -425,6 +425,21 @@ innodb_defragment_fill_factor_n_recs=20
 innodb_defragment_fill_factor=0.9
 innodb_defragment_frequency=40
 FFF
+
+# sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
+# sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
+# sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
+# sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
+# sed -i 's/innodb_additional_mem_pool_size/#innodb_additional_mem_pool_size/g' /etc/my.cnf
+# sed -i 's/skip-innodb/innodb=ON/g' /etc/my.cnf
+sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
 
 echo ""
 
@@ -579,8 +594,17 @@ echo ""
 
 echo ""
 
+mysqladmin ver
+
+echo
+
 echo "------------------------------------------------"
 echo "MariaDB 10.1.x Upgrade completed"
 echo "------------------------------------------------"
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1.x Upgraded"
+    fi
+
 fi
 }
