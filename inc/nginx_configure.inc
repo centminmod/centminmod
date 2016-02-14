@@ -266,7 +266,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		fi
 	else
 		HEADERSMOREOPT=""
-	fi				
+	fi			
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
@@ -323,13 +323,27 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/echo-nginx-module#installation
+			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
+				pushd "$DIR_TMP"
+				rm -rf echo-nginx-module-master
+				git clone -b master --depth=1 https://github.com/openresty/echo-nginx-module.git echo-nginx-module-master
+				popd
+			fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ECHO" = [yY] ]]; then
-			ECHOOPT=" --add-dynamic-module=../${ECHODIR}"
+			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
+				ECHOOPT=" --add-dynamic-module=../echo-nginx-module-master"
+			else
+				ECHOOPT=" --add-dynamic-module=../${ECHODIR}"
+			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_echo_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			ECHOOPT=" --add-module=../${ECHODIR}"
+			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
+				ECHOOPT=" --add-module=../echo-nginx-module-master"
+			else
+				ECHOOPT=" --add-module=../${ECHODIR}"
+			fi
 		fi
 
 		REDISOPT=" --add-module=../${REDISDIR}"
@@ -635,19 +649,34 @@ else
 	fi			
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
+		# gitmaster option
+		if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
+			pushd "$DIR_TMP"
+			rm -rf headers-more-nginx-module-master
+			git clone -b master --depth=1 https://github.com/openresty/headers-more-nginx-module.git headers-more-nginx-module-master
+			popd
+		fi
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/headers-more-nginx-module#installation
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_HEADERSMORE" = [yY] ]]; then
-			HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
+				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-master"
+			else
+				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
+				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-master"
+			else
+				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			fi
 		fi
 	else
 		HEADERSMOREOPT=""
-	fi	
+	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
