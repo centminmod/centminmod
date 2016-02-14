@@ -409,6 +409,11 @@ figletcheck() {
 }
 
 maintenance_confcheck() {
+	if [ ! -f /usr/local/nginx/conf/maintenance.conf ]; then
+		if [ -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" ]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" /usr/local/nginx/conf/maintenance.conf
+		fi
+	fi
 	if [ ! -f /usr/local/nginx/conf/503include-main.conf ]; then
 		if [ -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" ]; then
 			\cp -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" /usr/local/nginx/conf/503include-main.conf
