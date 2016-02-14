@@ -13,12 +13,13 @@ DT=`date +"%d%m%y-%H%M%S"`
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/09/2015'
-SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
-SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
+SCRIPT_INCREMENTVER='001'
+SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}.${SCRIPT_INCREMENTVER}"
+SCRIPT_DATE='30/04/2016'
+SCRIPT_AUTHOR='eva2000 (centminmod.com)'
+SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='http://centminmod.com'
-COPYRIGHT="Copyright 2011-2015 CentminMod.com"
+COPYRIGHT="Copyright 2011-2016 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 ###################################################################################
 shopt -s expand_aliases
@@ -61,12 +62,12 @@ cmservice() {
         if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "service ${servicename} $action"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                service ${servicename} $action
+                service "${servicename}" "$action"
         fi
         else
         echo "systemctl $action ${servicename}.service"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl $action ${servicename}.service
+                systemctl "$action" "${servicename}.service"
         fi
         fi
 }
@@ -77,7 +78,7 @@ cmchkconfig() {
         if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
         echo "chkconfig ${servicename} $status"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                chkconfig ${servicename} $status
+                chkconfig "${servicename}" "$status"
         fi
         else
                 if [ "$status" = 'on' ]; then
@@ -88,7 +89,7 @@ cmchkconfig() {
                 fi
         echo "systemctl $status ${servicename}.service"
         if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl $status ${servicename}.service
+                systemctl "$status" "${servicename}.service"
         fi
         fi
 }
@@ -97,13 +98,13 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    CPUS=$(echo "$CPUS+1" | bc)
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    CPUS=$(echo "$CPUS+1" | bc)
     MAKETHREADS=" -j$CPUS"
 fi
 
@@ -113,6 +114,7 @@ CLANG='y'                     # Nginx and LibreSSL
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
+GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -124,8 +126,23 @@ PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default wit
 MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
 PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
+# Nginx Dynamic Module Switches
+NGXDYNAMIC_IMAGEFILTER=y
+NGXDYNAMIC_GEOIP=y
+NGXDYNAMIC_STREAM=y
+NGXDYNAMIC_HEADERSMORE=n
+NGXDYNAMIC_SETMISC=n
+NGXDYNAMIC_ECHO=n
+NGXDYNAMIC_LUA=n
+
+# set = y to put nginx, php and mariadb major version updates into 503 
+# maintenance mode https://community.centminmod.com/posts/26485/
+NGINX_UPDATEMAINTENANCE=n
+PHP_UPDATEMAINTENANCE=n
+MARIADB_UPDATEMAINTENANCE=n
+
 # General Configuration
-NGINXUPGRADESLEEP='6'
+NGINXUPGRADESLEEP='3'
 NSD_INSTALL=y                # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL=y                # Install Network time protocol daemon
@@ -140,6 +157,7 @@ NGINX_MODSECURITY=n          # modsecurity module support https://github.com/Spi
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS=n                  # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
 NGINX_GEOIP=y                # Nginx GEOIP module install
+NGINX_GEOIPMEM=y             # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
 NGINX_SPDY=y                 # Nginx SPDY support
 NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
 NGINX_SUB=y                  # http://nginx.org/en/docs/http/ngx_http_sub_module.html
@@ -158,10 +176,11 @@ NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_lin
 NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
 NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI=n            # https://github.com/google/ngx_brotli
-NGINX_PAGESPEED=y            # Install ngx_pagespeed
+NGINX_LIBBROTLISTATIC=n
+NGINX_PAGESPEED=n            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.9.32.11-beta'
-NGINX_PAGESPEEDPSOL_VER='1.9.32.11'
+NGXPGSPEED_VER='1.10.33.4-beta'
+NGINX_PAGESPEEDPSOL_VER='1.10.33.4'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
@@ -171,6 +190,7 @@ NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
 ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
+ORESTY_HEADERSMOREGIT=n      # use git master instead of version specific
 NGINX_HEADERSMORE='0.29'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
@@ -181,14 +201,16 @@ NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SETMISCGIT=n             # use git master instead of version specific
 ORESTY_SETMISCVER='0.29'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_ECHOGIT=n             # use git master instead of version specific
 ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
-ORESTY_LUANGINX='y'             # enable or disable or ORESTY_LUA* nginx modules below
+ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
 ORESTY_LUANGINXVER='0.9.20'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
@@ -222,7 +244,7 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
 OPENSSL_VERSION='1.0.2f'   # Use this version of OpenSSL http://openssl.org/
-CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
+CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
@@ -272,7 +294,7 @@ if [ "${ARCH_OVERRIDE}" != '' ]
 then
     ARCH=${ARCH_OVERRIDE}
 else
-    if [ ${MACHINE_TYPE} == 'x86_64' ];
+    if [ "${MACHINE_TYPE}" == 'x86_64' ];
     then
         ARCH='x86_64'
         MDB_ARCH='amd64'
