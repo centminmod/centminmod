@@ -45,6 +45,8 @@ setupmotd() {
 				checkmotd
 			fi
 		fi
+	elif [[ "$ENABLEMOTD" != [yY] ]]; then
+		rm -rf /usr/local/bin/dmotd
 	fi #ENABLEMOTD
 
 }
