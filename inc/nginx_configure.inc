@@ -239,15 +239,30 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi				
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
+		# gitmaster option
+		if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
+			pushd "$DIR_TMP"
+			rm -rf headers-more-nginx-module-master
+			git clone -b master --depth=1 https://github.com/openresty/headers-more-nginx-module.git headers-more-nginx-module-master
+			popd
+		fi
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/headers-more-nginx-module#installation
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_HEADERSMORE" = [yY] ]]; then
-			HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
+				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-master"
+			else
+				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
+				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-master"
+			else
+				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+			fi
 		fi
 	else
 		HEADERSMOREOPT=""
