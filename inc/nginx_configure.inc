@@ -310,13 +310,27 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/set-misc-nginx-module#installation
+			if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
+				pushd "$DIR_TMP"
+				rm -rf set-misc-nginx-module-master
+				git clone -b master --depth=1 https://github.com/openresty/set-misc-nginx-module.git set-misc-nginx-module-master
+				popd
+			fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_SETMISC" = [yY] ]]; then
-			SETMISCOPT=" --add-dynamic-module=../${SETMISCDIR}"
+			if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
+				SETMISCOPT=" --add-dynamic-module=../set-misc-nginx-module-master"
+			else
+				SETMISCOPT=" --add-dynamic-module=../${SETMISCDIR}"
+			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_set_misc_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			SETMISCOPT=" --add-module=../${SETMISCDIR}"
+			if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
+				SETMISCOPT=" --add-module=../set-misc-nginx-module-master"
+			else
+				SETMISCOPT=" --add-module=../${SETMISCDIR}"
+			fi
 		fi
 
 		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
