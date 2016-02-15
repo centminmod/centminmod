@@ -520,6 +520,16 @@ fi
 
 mariadb55install
 
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "New Initial /etc/my.cnf"
+    fi
+
+echo "new initial /etc/my.cnf"
+echo "================================================="
+cat /etc/my.cnf
+echo "================================================="
+echo
+
 # if [[ "$lessmem" = [yY] ]]; then
 #     echo $lessmem
 #     echo -e "\nCopying MariaDB my-mdb10-min.cnf file to /etc/my.cnf\n"
