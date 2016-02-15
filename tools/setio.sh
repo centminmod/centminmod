@@ -26,6 +26,10 @@ if [ ! -d "$FIOBASEDIR" ]; then
   if [[ ! "$(grep 'cmsetiofiotest' /etc/my.cnf)" ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-setiobackup
     sed -i 's|\[mysqld\]|\[mysqld\]\nignore-db-dir=cmsetiofiotest|' /etc/my.cnf
+    MARIADBVERCHECK=$(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4)
+    if [[ "$MARIADBVERCHECK" == '10.1' ]]; then
+      sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+    fi
     # /usr/bin/mysqlreload
   fi
 fi
