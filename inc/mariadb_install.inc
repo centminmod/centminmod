@@ -506,8 +506,7 @@ cmservice mysql restart
     /etc/init.d/mysql stop
 fi
 
-if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; 
-then
+if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; then
 
     echo "*************************************************"
     cecho "* Installing MariaDB via CentOS Yum Repo " $boldgreen
@@ -515,40 +514,28 @@ then
 
 #yum -y remove mysql mysql-libs
 if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original
-rm rf /etc/my.cnf
+    cp /etc/my.cnf /etc/my.cnf-original
+    rm -rf /etc/my.cnf
 fi
 
 mariadb55install
 
-if [[ "$lessmem" = [yY] ]]; then
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb10-min.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb10-min.cnf /etc/my.cnf
-
-else
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb10.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb10.cnf /etc/my.cnf
-
-fi
+# if [[ "$lessmem" = [yY] ]]; then
+#     echo $lessmem
+#     echo -e "\nCopying MariaDB my-mdb10-min.cnf file to /etc/my.cnf\n"
+#     cp $CUR_DIR/config/mysql/my-mdb10-min.cnf /etc/my.cnf
+# else
+#     echo $lessmem
+#     echo -e "\nCopying MariaDB my-mdb10.cnf file to /etc/my.cnf\n"
+#     cp $CUR_DIR/config/mysql/my-mdb10.cnf /etc/my.cnf
+# fi
 
 if [[ ! `grep exclude /etc/yum.conf` ]]; then
-
-cecho "Can't find exclude line in /etc/yum.conf... adding exclude line for mysql*" $boldgreen
-
-echo "exclude=mysql*">> /etc/yum.conf
-
+    cecho "Can't find exclude line in /etc/yum.conf... adding exclude line for mysql*" $boldgreen
+    echo "exclude=mysql*">> /etc/yum.conf
 else
-
-cecho "exclude line exists... adding exclude line for mysql*" $boldgreen
-
-sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 mysql\*/" /etc/yum.conf
-
+    cecho "exclude line exists... adding exclude line for mysql*" $boldgreen
+    sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 mysql\*/" /etc/yum.conf
 fi
 
     echo "*************************************************"
