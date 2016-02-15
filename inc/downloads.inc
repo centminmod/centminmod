@@ -600,7 +600,7 @@ ngxmoduletarball() {
 
         cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
     if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
-        cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
+        cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
         wget -c --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
@@ -625,12 +625,12 @@ else
 echo ""
 	fi
 
-if [ ! -d "${DIR_TMP}/ngx-fancyindex-ngx-fancyindex" ]; then
+if [ ! -d "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" ]; then
         cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
 rm -rf "${NGX_FANCYINDEXLINKFILE}"
 
     if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
-        cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
+        cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
         wget -c --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
