@@ -198,7 +198,7 @@ echo ""
         figlet -ckf standard "MariaDB 10.1 Specific /etc/my.cnf"
     fi
 
-cat >>/etc/my.cnf<<FFF
+cat >> "/etc/my.cnf" <<FFF
 
 
 [mariadb-10.1]
