@@ -293,6 +293,9 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
@@ -393,6 +396,9 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
@@ -462,6 +468,9 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
