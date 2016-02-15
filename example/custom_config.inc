@@ -13,81 +13,82 @@ PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tab
 CMGIT='https://github.com/centminmod/centminmod.git'
 AUTO_GITUPDATE='n'
 
+# Clang & GCC Compilers
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 
 # Nginx Dynamic Module Switches
-NGXDYNAMIC_IMAGEFILTER=y
-NGXDYNAMIC_GEOIP=y
-NGXDYNAMIC_STREAM=y
-NGXDYNAMIC_HEADERSMORE=n
-NGXDYNAMIC_SETMISC=n
-NGXDYNAMIC_ECHO=n
-NGXDYNAMIC_LUA=n
+NGXDYNAMIC_IMAGEFILTER='y'
+GXDYNAMIC_GEOIP='y'
+GXDYNAMIC_STREAM='y'
+GXDYNAMIC_HEADERSMORE='n'
+GXDYNAMIC_SETMISC='n'
+GXDYNAMIC_ECHO='n'
+GXDYNAMIC_LUA='n'
 
 # Maintenance Mode (will run maintenance mode during these upgrades)
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/
-NGINX_UPDATEMAINTENANCE=n
-PHP_UPDATEMAINTENANCE=n
-MARIADB_UPDATEMAINTENANCE=n
+NGINX_UPDATEMAINTENANCE='n'
+HP_UPDATEMAINTENANCE='n'
+ARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.9.11'        # Use this version of Nginx
+NGINX_VERSION='1.9.11'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
-NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
+NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
 NGINXUPGRADESLEEP='3'
-NSD_INSTALL=y                # Install NSD (DNS Server)
+NSD_INSTALL='y'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
-NTP_INSTALL=y                # Install Network time protocol daemon
-NGINXPATCH=y                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NTP_INSTALL='y'              # Install Network time protocol daemon
+NGINXPATCH='y'               # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGXMODULE_ALTORDER='y'       # nginx configure module ordering alternative order
-NGINX_INSTALL=y              # Install Nginx (Webserver)
-NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
-NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
-NGINX_MODSECURITY=n          # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+NGINX_INSTALL='y'            # Install Nginx (Webserver)
+NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
+NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
-NGINX_NJS=n                  # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
-NGINX_GEOIP=y                # Nginx GEOIP module install
-NGINX_GEOIPMEM=y             # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
-NGINX_SPDY=y                 # Nginx SPDY support
-NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
-NGINX_SUB=y                  # http://nginx.org/en/docs/http/ngx_http_sub_module.html
-NGINX_ADDITION=y             # http://nginx.org/en/docs/http/ngx_http_addition_module.html
-NGINX_IMAGEFILTER=y          # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
-NGINX_CACHEPURGE=y           # https://github.com/FRiCKLE/ngx_cache_purge/
-NGINX_ACCESSKEY=y            #
-NGINX_HTTPCONCAT=y           # https://github.com/alibaba/nginx-http-concat
-NGINX_THREADS=y              # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
-NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
-NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
-NGINX_FLV=n                  # http://nginx.org/en/docs/http/ngx_http_flv_module.html
-NGINX_MP4=n                  # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
-NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
-NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
-NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
-NGINX_LIBBROTLI=n            # https://github.com/google/ngx_brotli
-NGINX_LIBBROTLISTATIC=n
-NGINX_PAGESPEED=n            # Install ngx_pagespeed
-NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
+NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
+NGINX_GEOIP='y'              # Nginx GEOIP module install
+NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
+NGINX_SPDY='y'               # Nginx SPDY support
+NGINX_STUBSTATUS='y'         # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
+NGINX_SUB='y'                # http://nginx.org/en/docs/http/ngx_http_sub_module.html
+NGINX_ADDITION='y'           # http://nginx.org/en/docs/http/ngx_http_addition_module.html
+NGINX_IMAGEFILTER='y'        # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
+NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
+NGINX_ACCESSKEY='y'          #
+NGINX_HTTPCONCAT='y'         # https://github.com/alibaba/nginx-http-concat
+NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
+NGINX_STREAM='y'             # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
+NGINX_RTMP='n'               # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
+NGINX_FLV='n'                # http://nginx.org/en/docs/http/ngx_http_flv_module.html
+NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
+NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
+NGINX_FANCYINDEX='y'         # http://wiki.nginx.org/NgxFancyIndex
+NGINX_VHOSTSTATS='y'         # https://github.com/vozlt/nginx-module-vts
+NGINX_LIBBROTLI='n'          # https://github.com/google/ngx_brotli
+NGINX_LIBBROTLISTATIC='n'
+NGINX_PAGESPEED='n'          # Install ngx_pagespeed
+NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.10.33.4-beta'
 NGINX_PAGESPEEDPSOL_VER='1.10.33.4'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
-NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
+NGINX_WEBDAV='n'             # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
-NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
-NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
+NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
+NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
-NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
+NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
-ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
-ORESTY_HEADERSMOREGIT=n      # use git master instead of version specific
+ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
+ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
 NGINX_HEADERSMORE='0.29'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
@@ -98,9 +99,9 @@ NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
-ORESTY_SETMISCGIT=n             # use git master instead of version specific
+ORESTY_SETMISCGIT='n'           # use git master instead of version specific
 ORESTY_SETMISCVER='0.29'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
-ORESTY_ECHOGIT=n             # use git master instead of version specific
+ORESTY_ECHOGIT='n'           # use git master instead of version specific
 ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
@@ -129,21 +130,21 @@ ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/clo
 LUACJSONVER='2.1.0.3'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
-PHP_INSTALL=y                # Install PHP /w Fast Process Manager
-PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
+PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
+PHPMAKETEST='n'              # set to y to enable make test after PHP make for diagnostic purposes
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 
-PHPGEOIP_ALWAYS=y            # GeoIP php extension is always reinstalled on php recompiles
-PHPDEBUGMODE=n               # --enable-debug PHP compile flag
-PHPFINFO=n                   # Disable or Enable PHP File Info extension
-PHPPCNTL=y                   # Disable or Enable PHP Process Control extension
-PHPINTL=y                    # Disable or Enable PHP intl extension
-PHPRECODE=n                  # Disable or Enable PHP Recode extension
-PHPSNMP=y                    # Disable or Enable PHP SNMP extension
-PHPIMAGICK=y                 # Disable or Enable PHP ImagicK extension
-PHPMAILPARSE=y               # Disable or Enable PHP mailparse extension
-SHORTCUTS=y                  # shortcuts
-POSTGRESQL=n                 # set to =y to install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
+PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
+PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
+PHPFINFO='n'                 # Disable or Enable PHP File Info extension
+PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
+PHPINTL='y'                  # Disable or Enable PHP intl extension
+PHPRECODE='n'                # Disable or Enable PHP Recode extension
+PHPSNMP='y'                  # Disable or Enable PHP SNMP extension
+PHPIMAGICK='y'               # Disable or Enable PHP ImagicK extension
+PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
+SHORTCUTS='y'                # shortcuts
+POSTGRESQL='n'               # set to ='y'o install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
 
 ##################################
 ## Nginx SSL options
@@ -161,7 +162,7 @@ LIBRESSL_VERSION='2.2.6'   # Use this version of LibreSSL http://www.libressl.or
 IMAGICKPHP_VER='3.4.0RC6'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.0' # For PHP 7
-MEMCACHED_INSTALL=y         # Install Memcached
+MEMCACHED_INSTALL='y'       # Install Memcached
 LIBEVENT_VERSION='2.0.22'   # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'  # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'    # Use this version of Memcache
@@ -191,16 +192,15 @@ IGBINARY_INSTALL='y'        # install or not igbinary support for APC and Memcac
 IGBINARYGIT='y'
 ZOPCACHEDFT='y'
 ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
-ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
+ZOPCACHE_OVERRIDE='n'           # ='y'ill override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
-PYTHON_VERSION='2.7.10'       # Use this version of Python
+PYTHON_VERSION='2.7.10'     # Use this version of Python
 SIEGE_VERSION='3.1.4'
 
 # custom curl/libcurl RPM for 7.44 and higher
-# enable with CUSTOM_CURLRPM=y
-# use at own risk as it can break the system
+# enable with CUSTOM_CURLRPM='y' use at own risk as it can break the system
 # info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
-CUSTOM_CURLRPM=n
+CUSTOM_CURLRPM='n'
 CUSTOM_CURLRPMVER='7.47.1-2.0'       # custom curl/libcurl version
 CUSTOM_CURLLIBSSHVER='1.6.0-4.0'     # libssh2 version
 CUSTOM_CURLRPMCARESVER='1.10.0-6.0'  # c-ares version
@@ -221,13 +221,13 @@ WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 PHP_MYSQLSOCKPATH='/var/lib/mysql'
 ###############################################################
 
-# When set to =y, will disable those listed installed services
+# When set to ='y'will disable those listed installed services
 # by default. The service is still installed but disabled
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
 # From http://centminmod.com/faq.html Question #25
-NSD_DISABLED=n                # when set to =y, NSD disabled by default with chkconfig off
-MEMCACHED_DISABLED=n          # when set to =y,  Memcached server disabled by default via chkconfig off
-PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default with chkconfig off
-MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
-PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off  
+NSD_DISABLED='n'              # when set to ='y'NSD disabled by default with chkconfig off
+MEMCACHED_DISABLED='n'        # when set to ='y' Memcached server disabled by default via chkconfig off
+PHP_DISABLED='n'              # when set to ='y' PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED='n'     # when set to ='y' MariaDB MySQL service disabled by default with chkconfig off
+PUREFTPD_DISABLED='n'         # when set to ='y'Pure-ftpd service disabled by default with chkconfig off  
