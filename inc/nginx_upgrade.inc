@@ -528,7 +528,7 @@ funct_nginxconfigure
 ################
 
 # cmservice nginx stop
-/usr/local/sbin/nginx -s stop
+/usr/local/sbin/nginx -s stop >/dev/null 2>&1
 
     # speed up nginx wait time if not many vhosts are on server
     if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
@@ -545,7 +545,7 @@ echo ""
 echo "nginx seems to be still running, trying to stop it again..."
 echo ""
 # /etc/init.d/nginx stop and suppress any error messages
-/usr/local/sbin/nginx -s stop 2>/dev/null
+/usr/local/sbin/nginx -s stop >/dev/null 2>&1
 sleep "$NGINXUPGRADESLEEP"
 fi
 
