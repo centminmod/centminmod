@@ -446,7 +446,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi		
 
 	if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
-		FANCYINDEXOPT=" --add-module=../ngx-fancyindex-ngx-fancyindex"
+		FANCYINDEXOPT=" --add-module=../ngx-fancyindex-${NGINX_FANCYINDEXVER}"
 	else
 		FANCYINDEXOPT=""
 	fi			
@@ -745,7 +745,7 @@ else
 	fi	
 
 	if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
-		FANCYINDEXOPT=" --add-module=../ngx-fancyindex-ngx-fancyindex"
+		FANCYINDEXOPT=" --add-module=../ngx-fancyindex-${NGINX_FANCYINDEXVER}"
 	else
 		FANCYINDEXOPT=""
 	fi			
