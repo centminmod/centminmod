@@ -320,7 +320,7 @@ memcachedupdatechecks() {
 			if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
 				\cp -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" /etc/init.d/memcached1425.patch
 				cd /etc/init.d/
-				patch -s < memcached1425.patch
+				patch -s < memcached1425.patch >/dev/null 2>&1
 				rm -rf memcached1425.patch
 			fi
 		fi
