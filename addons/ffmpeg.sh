@@ -44,7 +44,12 @@ install() {
 echo
 echo "Installing FFMPEG..."	
 
-yum -y install autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial nasm pkgconfig zlib-devel yasm yasm-devel numactl-devel
+# check if IUS Community git2u packages installed
+if [[ "$(rpm -ql git2u-core | grep '\/usr\/bin\/git$')" = '/usr/bin/git' ]]; then
+	yum -y install autoconf automake cmake freetype-devel gcc gcc-c++ libtool make mercurial nasm pkgconfig zlib-devel yasm yasm-devel numactl-devel
+else
+	yum -y install autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial nasm pkgconfig zlib-devel yasm yasm-devel numactl-devel
+fi
 
 echo
 
