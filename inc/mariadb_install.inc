@@ -172,10 +172,10 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.1.x YUM install..." $boldgreen
-    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
