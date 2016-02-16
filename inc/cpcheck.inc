@@ -52,9 +52,9 @@ yumupdatechecker() {
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			if [ -f /etc/yum.repos.d/remi.repo ]; then
-				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --exclude=\"$YEXCLUDE\""
+				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
 			else
-				echo "  yum list updates $YYUM_PARAMETER --exclude=\"$YEXCLUDE\""
+				echo "  yum list updates $YYUM_PARAMETER"
 			fi
 			# cecho "-------------------------------------------------------------" $boldgreen
 			echo
@@ -62,9 +62,9 @@ yumupdatechecker() {
 			cecho "  To updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			if [ -f /etc/yum.repos.d/remi.repo ]; then
-				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --exclude=\"$YEXCLUDE\""
+				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
 			else
-				echo "  yum update $YYUM_PARAMETER --exclude=\"$YEXCLUDE\""
+				echo "  yum update $YYUM_PARAMETER"
 			fi
 			echo
 		fi
