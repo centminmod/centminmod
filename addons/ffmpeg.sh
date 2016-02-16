@@ -321,6 +321,7 @@ case "$1" in
 		starttime=$(date +%s.%N)
 		{
 		install
+		phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 
 endtime=$(date +%s.%N)
