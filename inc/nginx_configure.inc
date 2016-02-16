@@ -519,14 +519,29 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		if [[ "$ngver" ]]; then
 			ngxpagespeedinstall
 		fi
-        if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-            PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
-        elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
-            PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
-        fi
-     if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+    if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NGXPAGESPEED" = [yY] ]]; then
+      if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-dynamic-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-dynamic-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
+      fi
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_pagespeed.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+   	elif [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
      		ngxpagespeed_patched
-     fi
+      if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
+      fi
+    else
+      if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
+      fi
+    fi
 	else
 		PGSPEEDOPT=""
 	fi
@@ -763,15 +778,36 @@ else
 	fi
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-		ngxpagespeedinstall
-        if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-            PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
-        elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
-            PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
-        fi		
-     if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+		# only need to invoke ngxpagespeedinstall at this stage if it is nginx upgrade
+		# no need for it to be invoked at initial first time centmin mod install as
+		# inc/nginx_install.inc has it's own call to this function when variable
+		# NGINX_PAGESPEED=y
+		if [[ "$ngver" ]]; then
+			ngxpagespeedinstall
+		fi
+    if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NGXPAGESPEED" = [yY] ]]; then
+      if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-dynamic-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-dynamic-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
+      fi
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_pagespeed.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+   	elif [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
      		ngxpagespeed_patched
-     fi
+      if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
+      fi
+    else
+      if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+          PGSPEEDOPT=" --add-module=../ngx_pagespeed-${NGXPGSPEED_VER}"
+      fi
+    fi
 	else
 		PGSPEEDOPT=""
 	fi
