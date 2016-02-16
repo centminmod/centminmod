@@ -32,7 +32,7 @@ done
 checkgeoip() {
     GEOIP_CHECK=$(nginx -V 2>&1 | grep geoip)
 
-    if [[ ! -z "$GEOIP_CHECK" && "$(grep 'NGINX_GEOIP=n' centmin.sh)" ]]; then
+    if [[ ! -z "$GEOIP_CHECK" && "$(grep 'NGINX_GEOIP=n' "${SCRIPT_DIR}/centmin.sh")" ]]; then
         cecho "Detected existing Nginx has NGINX_GEOIP=y enabled" $boldyellow
         cecho "however, you are recompiling Nginx with NGINX_GEOIP=n" $boldyellow
         cecho "Is this incorrect and you want to set NGINX_GEOIP=y enabled ? " $boldyellow
