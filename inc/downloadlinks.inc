@@ -68,7 +68,7 @@ CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 CENTOSSIXREMIFILE="remi-release-6.rpm"
-CENTOSSIXREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSIXREMIFILE}"
+CENTOSSIXREMI="http://rpms.remirepo.net/enterprise/${CENTOSSIXREMIFILE}"
 CENTOSSIXREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSIXREMIFILE}"
 
 CENTOSSIXATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
@@ -147,7 +147,7 @@ CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
 CENTOSSEVENAXIVOLOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
 
 CENTOSSEVENREMIFILE="remi-release-7.rpm"
-CENTOSSEVENREMI="http://rpms.famillecollet.com/enterprise/${CENTOSSEVENREMIFILE}"
+CENTOSSEVENREMI="http://rpms.remirepo.net/enterprise/${CENTOSSEVENREMIFILE}"
 CENTOSSEVENREMILOCAL="http://centminmod.com/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
 
 CENTOSSEVENATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
