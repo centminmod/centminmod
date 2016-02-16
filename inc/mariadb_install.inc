@@ -1,3 +1,10 @@
+perdbiinstall() {
+    PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
+    if [ -z "$PERLDBICHECK" ]; then
+        yum${CACHESKIP} -q -y install perl-DBD-MySQL
+    fi
+}
+
 mysqlinitfix() {
 
 if [[ -z "$(grep 'user_beancounters' /etc/init.d/mysql)" ]]; then
@@ -355,7 +362,7 @@ fi
 	fi #unattended
 echo ""
 
-yum${CACHESKIP} -q -y install perl-DBD-MySQL
+perdbiinstall
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 # make sure MariaDB 5.5 is updated from only one repo
@@ -413,7 +420,7 @@ if [[ "$MDB_DEBUG" = [yY] ]]; then
 exit
 fi
 
-yum${CACHESKIP} -y install perl-DBD-MySQL
+perdbiinstall
 
 cmservice mysqld stop
 

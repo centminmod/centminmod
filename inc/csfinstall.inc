@@ -15,10 +15,15 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 
 #download csf tarball
 
-    if [[ -z "$(rpm -qa perl-Crypt-SSLeay)" || -z "$(rpm -qa perl-Net-SSLeay)" || -z "$(rpm -qa perl-LWP-Protocol-https)" ]]; then
-        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https
+    if [[ -z "$(rpm -qa perl-Crypt-SSLeay)" || -z "$(rpm -qa perl-Net-SSLeay)" ]]; then
+        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay
     elif [[ -z "$(rpm -qa perl-libwww-perl)" ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
+    fi
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ -z "$(rpm -qa perl-LWP-Protocol-https)" ]]; then
+            yum${CACHESKIP} -y install perl-LWP-Protocol-https
+        fi
     fi
 
     #tar xzf csf.tgz
