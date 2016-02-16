@@ -137,7 +137,7 @@ do
 	cecho "1). Setup Centmin Mod Github Environment" $boldgreen
 	cecho "2). Update Centmin Mod Current Branch" $boldgreen
 	cecho "3). Update Centmin Mod Newer Branch" $boldgreen
-	cecho "4). Back to Main menu" $boldgreen
+	cecho "4). Exit" $boldgreen
 	cecho "--------------------------------------------------------" $boldyellow
 
 	read -ep "Enter option [ 1 - 4 ] " upmoption
