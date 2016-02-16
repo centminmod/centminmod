@@ -295,7 +295,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
-exclude=varnish clamd clamav clamav-db
+exclude=varnish clamd clamav clamav-db galera
 .
 :w
 :q
