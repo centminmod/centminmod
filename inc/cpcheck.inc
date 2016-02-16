@@ -541,7 +541,6 @@ kernelchecks
 pathfixes
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-	yumupdatechecker
 	selinxcheck
 	setupemailcheck
 	checkovzkernels
