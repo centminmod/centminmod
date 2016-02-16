@@ -1,12 +1,12 @@
 #!/bin/bash
-VER='0.0.2'
+VER='0.0.3'
 ######################################################
 # node.js installer
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.2.4'
+NODEJSVER='4.3.0'
 NODEJS_SOURCEINSTALL='y'
 REINSTALL='y'
 
