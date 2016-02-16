@@ -1184,7 +1184,7 @@ if [[ -z "$CUSTOMPHPINICHECK" ]]; then
     cp -f php.ini-production /usr/local/lib/php.ini
     chmod 644 /usr/local/lib/php.ini
 
-phpsededit
+# phpsededit
 
 fi # check to see if centmin custom php.ini already in place
 
@@ -1197,19 +1197,13 @@ echo
 #echo
 
 if [[ "$lessphpmem" = [yY] ]]; then
-
-echo "$lessphpmem"
-
-echo -e "\nCopying php-fpm-min.conf /usr/local/etc/php-fpm.conf\n"
+    echo "$lessphpmem"
+    echo -e "\nCopying php-fpm-min.conf /usr/local/etc/php-fpm.conf\n"
     cp "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf
-
 else
-
-echo "$lessphpmem"
-
-echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
+    echo "$lessphpmem"
+    echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
     cp "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
-
 fi
 
 
@@ -1325,6 +1319,8 @@ fi
 if [[ "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
 	zopcache_initialini
 fi
+
+phpsededit
 
 # igbinary still needed for libmemcached PHP extension if ZOPCACHE=yY
 # or for redis php extension

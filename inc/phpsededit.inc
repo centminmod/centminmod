@@ -19,41 +19,49 @@ phpsededit() {
 
     # dynamic PHP memory_limit calculation
     if [[ "$TOTALMEM" -le '262144' ]]; then
+        ZOLIMIT='32'
         PHP_MEMORYLIMIT='48M'
         PHP_UPLOADLIMIT='48M'
         PHP_REALPATHLIMIT='1024k'
         PHP_REALPATHTTL='14400'
     elif [[ "$TOTALMEM" -gt '262144' && "$TOTALMEM" -le '393216' ]]; then
+        ZOLIMIT='80'
         PHP_MEMORYLIMIT='96M'
         PHP_UPLOADLIMIT='96M'
         PHP_REALPATHLIMIT='1280k'
         PHP_REALPATHTTL='21600'
     elif [[ "$TOTALMEM" -gt '393216' && "$TOTALMEM" -le '524288' ]]; then
+        ZOLIMIT='112'
         PHP_MEMORYLIMIT='128M'
         PHP_UPLOADLIMIT='128M'
         PHP_REALPATHLIMIT='1536k'
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM" -gt '524288' && "$TOTALMEM" -le '1049576' ]]; then
+        ZOLIMIT='144'
         PHP_MEMORYLIMIT='160M'
         PHP_UPLOADLIMIT='160M'
         PHP_REALPATHLIMIT='2048k'
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM" -gt '1049576' && "$TOTALMEM" -le '2097152' ]]; then
+        ZOLIMIT='240'
         PHP_MEMORYLIMIT='256M'
         PHP_UPLOADLIMIT='256M'
         PHP_REALPATHLIMIT='2560k'
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM" -gt '2097152' && "$TOTALMEM" -le '3145728' ]]; then
+        ZOLIMIT='304'
         PHP_MEMORYLIMIT='320M'
         PHP_UPLOADLIMIT='320M'
         PHP_REALPATHLIMIT='3072k'
         PHP_REALPATHTTL='43200'
     elif [[ "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
+        ZOLIMIT='496'
         PHP_MEMORYLIMIT='512M'
         PHP_UPLOADLIMIT='512M'
         PHP_REALPATHLIMIT='4096k'
         PHP_REALPATHTTL='43200'
     elif [[ "$TOTALMEM" -gt '4194304' ]]; then
+        ZOLIMIT='784'
         PHP_MEMORYLIMIT='800M'
         PHP_UPLOADLIMIT='800M'
         PHP_REALPATHLIMIT='6144k'
@@ -86,6 +94,12 @@ phpsededit() {
     else
         wget -q -O /etc/ssl/certs/cacert.pem http://curl.haxx.se/ca/cacert.pem
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
+    fi
+
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+        if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
+            sed -i "s|opcache.memory_consumption=.*|opcache.memory_consumption=$ZOLIMIT|" "${CONFIGSCANDIR}/zendopcache.ini"
+        fi
     fi
 
 }

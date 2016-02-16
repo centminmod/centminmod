@@ -510,20 +510,14 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     
     echo 
 
-    if [[ "$lessphpmem" = [yY] ]]; then
-    
+    if [[ "$lessphpmem" = [yY] ]]; then  
         echo "$lessphpmem"
-        
         echo -e "\nCopying php-fpm-min.conf /usr/local/etc/php-fpm.conf\n"
-            cp -f "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf
-    
+        cp -f "$CUR_DIR/config/php-fpm/php-fpm-min.conf" /usr/local/etc/php-fpm.conf
     else
-    
         echo "$lessphpmem"
-        
         echo -e "\nCopying php-fpm.conf /usr/local/etc/php-fpm.conf\n"
-            cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
-    
+        cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
     fi # lessphpmem
 
     # account for phpmyadmin.sh created php-fpm unix socket pool support
