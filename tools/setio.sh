@@ -18,7 +18,7 @@ TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 ########################################################################################
 
 if [ ! -f /usr/bin/fio ]; then
-  yum -q -y install fio
+  yum -q -y install fio --disableplugin=priorities
 fi
 
 if [ ! -d "$FIOBASEDIR" ]; then
