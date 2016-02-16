@@ -1,3 +1,44 @@
+yumupdatechecker() {
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		if [ -f /etc/yum.repos.d/remi.repo ]; then
+			YENABLEREPOS='remi'
+		else
+			YENABLEREPOS=""
+		fi
+		YEXCLUDE='nginx* php* mysql*'
+		YYUM_PARAMETER='--disableplugin=priorities'
+		if [ -f /etc/yum.repos.d/remi.repo ]; then
+			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+		else
+			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+		fi
+		if [[ "$UPDATE_CHECK" = '100' ]]; then
+			echo
+			cecho "-------------------------------------------------------------" $boldgreen
+			cecho "  New YUM Updates available for host $(hostname)" $boldyellow
+			cecho "-------------------------------------------------------------" $boldgreen
+			cecho "  To list available YUM Updates type: " $boldyellow
+			cecho "-------------------------------------------------------------" $boldgreen
+			if [ -f /etc/yum.repos.d/remi.repo ]; then
+				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --exclude=\"$YEXCLUDE\""
+			else
+				echo "  yum list updates $YYUM_PARAMETER --exclude=\"$YEXCLUDE\""
+			fi
+			# cecho "-------------------------------------------------------------" $boldgreen
+			echo
+			cecho "-------------------------------------------------------------" $boldgreen
+			cecho "  To updates type: " $boldyellow
+			cecho "-------------------------------------------------------------" $boldgreen
+			if [ -f /etc/yum.repos.d/remi.repo ]; then
+				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --exclude=\"$YEXCLUDE\""
+			else
+				echo "  yum update $YYUM_PARAMETER --exclude=\"$YEXCLUDE\""
+			fi
+			echo
+		fi
+	fi
+}
+
 setupemailcheck() {
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
 		if [ -f /etc/centminmod/email-primary.ini ]; then
@@ -468,6 +509,7 @@ kernelchecks
 pathfixes
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+	yumupdatechecker
 	selinxcheck
 	setupemailcheck
 	checkovzkernels
