@@ -527,6 +527,10 @@ funct_nginxconfigure
 # error check
 ################
 
+        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+            systemctl daemon-reload
+        fi
+
 # cmservice nginx stop
 /usr/local/sbin/nginx -s stop >/dev/null 2>&1
 
@@ -594,7 +598,9 @@ fi
             sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
         fi        
     fi
-
+        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+            systemctl daemon-reload
+        fi
         /etc/init.d/nginx start
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
