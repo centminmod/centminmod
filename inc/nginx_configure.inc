@@ -529,7 +529,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				echo "load_module \"modules/ngx_pagespeed.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
    	elif [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
-     		ngxpagespeed_patched
+     		# ngxpagespeed_patched
       if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
           PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
       elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
@@ -795,7 +795,7 @@ else
 				echo "load_module \"modules/ngx_pagespeed.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
    	elif [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
-     		ngxpagespeed_patched
+     		# ngxpagespeed_patched
       if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
           PGSPEEDOPT=" --add-module=../ngx_pagespeed-release-${NGXPGSPEED_VER}"
       elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
