@@ -1095,30 +1095,42 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			source scl_source enable devtoolset-3
+			which gcc
+			which g++
 			unset CC
 			unset CXX
-			export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-			export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+			export CC="ccache gcc"
+			export CXX="ccache g++"
 		else
+			source scl_source enable devtoolset-3
+			which gcc
+			which g++
 			unset CC
 			unset CXX
-			export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
-			export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
+			export CC="gcc"
+			export CXX="g++"
 		fi
 	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
 		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			source scl_source enable devtoolset-3
+			which gcc
+			which g++
 			unset CC
 			unset CXX
-			export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-			export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+			export CC="ccache gcc"
+			export CXX="ccache g++"
 		else
+			source scl_source enable devtoolset-3
+			which gcc
+			which g++
 			unset CC
 			unset CXX
-			export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
-			export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
+			export CC="gcc"
+			export CXX="g++"
 		fi
 	fi
 fi
