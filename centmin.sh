@@ -295,6 +295,7 @@ NGXDYNAMIC_SETMISC='n'
 NGXDYNAMIC_ECHO='n'
 NGXDYNAMIC_LUA='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
+NGXDYNAMIC_BROTLI='n'
 
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/

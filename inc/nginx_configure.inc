@@ -132,10 +132,18 @@ fi
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 	libbroti_install
 	ngxbrotli_download
+	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
+		BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
+		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+			echo "load_module \"modules/ngx_http_brotli_static_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+		fi
+	else
+		BROTLIOPT=' --add-module=../ngx_brotli'
+	fi
 	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
 		export NGX_BROTLI_STATIC_MODULE_ONLY=1
 	fi
-	BROTLIOPT=' --add-module=../ngx_brotli'
+	sed -i 's|^#include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
 else
 	BROTLIOPT=""
 	# disable include file if exists
