@@ -135,6 +135,7 @@ if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
 		BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
 		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+			echo "load_module \"modules/ngx_http_brotli_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			echo "load_module \"modules/ngx_http_brotli_static_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 		fi
 	else
