@@ -46,14 +46,16 @@ return
 #############
 setupemails() {
 	echo
-	cecho "--------------------------------------------- $boldgreen"
+	cecho "--------------------------------------------------------------------" $boldgreen
 	cecho "Setup Server Administration Email" $boldyellow
-	cecho "--------------------------------------------- $boldgreen"
+	cecho "Emails will be used for future notification alert features" $boldyellow
+	cecho "--------------------------------------------------------------------" $boldgreen
 	cecho "Hit Enter To Skip..." $boldyellow
-	cecho "--------------------------------------------- $boldgreen"
+	cecho "Will be prompted everytime run centmin.sh if both emails not entered" $boldyellow
+	cecho "--------------------------------------------------------------------" $boldgreen
 	read -ep "enter primary email: " mainemail
 	read -ep "enter secondary email: " secondemail
-	cecho "--------------------------------------------- $boldgreen"
+	cecho "--------------------------------------------------------------------" $boldgreen
 
 	if [ -z "$mainemail" ]; then
 		mainemail=""
