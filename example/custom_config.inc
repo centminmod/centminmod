@@ -27,6 +27,8 @@ GXDYNAMIC_HEADERSMORE='n'
 GXDYNAMIC_SETMISC='n'
 GXDYNAMIC_ECHO='n'
 GXDYNAMIC_LUA='n'
+NGXDYNAMIC_NGXPAGESPEED='n'
+NGXDYNAMIC_BROTLI='n'
 
 # Maintenance Mode (will run maintenance mode during these upgrades)
 # set = y to put nginx, php and mariadb major version updates into 503 
