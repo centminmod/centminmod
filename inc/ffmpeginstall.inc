@@ -144,11 +144,11 @@ phpize
 make${MAKETHREADS}
 make install
 
-FFMPEGCHECK=`grep 'extension=ffmpeg.so' ${CONFIGSCANDIR}/ffmpeg.ini `
-if [ -z "$FFMPEGCHECK" ]; then
-echo "" >> ${CONFIGSCANDIR}/ffmpeg.ini
-echo "[ffmpeg]" >> ${CONFIGSCANDIR}/ffmpeg.ini
-echo "extension=ffmpeg.so" >> ${CONFIGSCANDIR}/ffmpeg.ini
+FFMPEGCHECK=$(grep 'extension=ffmpeg.so' "${CONFIGSCANDIR}/ffmpeg.ini" >/dev/null 2>&1; echo $?)
+if [[ "$FFMPEGCHECK" = '1' ]]; then
+	echo "" >> "${CONFIGSCANDIR}/ffmpeg.ini"
+	echo "[ffmpeg]" >> "${CONFIGSCANDIR}/ffmpeg.ini"
+	echo "extension=ffmpeg.so" >> "${CONFIGSCANDIR}/ffmpeg.ini"
 fi
 
 echo ""

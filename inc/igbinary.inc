@@ -99,11 +99,10 @@ make install
 
 fi
 
-IGBSOCHECK=`grep 'extension=igbinary.so' /usr/local/lib/php.ini`
-IGBSOCHECKB=$(grep 'extension=igbinary.so' ${CONFIGSCANDIR}/igbinary.ini)
+IGBSOCHECK=$(grep 'extension=igbinary.so' /usr/local/lib/php.ini >/dev/null 2>&1; echo $?)
+IGBSOCHECKB=$(grep 'extension=igbinary.so' "${CONFIGSCANDIR}/igbinary.ini" >/dev/null 2>&1; echo $?)
 
-if [[ -z "$IGBSOCHECK" || -z "$IGBSOCHECKB" ]]; then
-
+if [[ "$IGBSOCHECK" = '1' || "$IGBSOCHECKB" = '1' ]]; then
 cat > "${CONFIGSCANDIR}/igbinary.ini" <<END
 
 [igbinary]
@@ -117,23 +116,22 @@ igbinary.compact_strings=On
 ;Use igbinary as serializer in APC cache
 ;apc.serializer=igbinary
 END
-
 fi
 else
     # remove igbinary PHP support if IGBINARY_INSTALL=n
-    rm -rf ${CONFIGSCANDIR}/igbinary.ini
+    rm -rf "${CONFIGSCANDIR}/igbinary.ini"
 fi # IGBINARY_INSTALL = y
 
-APCSOCHECK=`grep 'extension=apc.so' ${CONFIGSCANDIR}/apc.ini`
+APCSOCHECK=$(grep 'extension=apc.so' "${CONFIGSCANDIR}/apc.ini" >/dev/null 2>&1; echo $?)
 
-if [[ "$APCSOCHECK" ]]; then
-    sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
+if [[ "$APCSOCHECK" = '0' ]]; then
+    sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' "${CONFIGSCANDIR}/igbinary.ini"
 fi
 
 if [[ "$DISABLESESSION" = [yY] ]]; then
 # php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
 # disable it for now
-    sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' ${CONFIGSCANDIR}/igbinary.ini
+    sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini"
 fi
 
 cmservice php-fpm reload

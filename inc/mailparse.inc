@@ -52,14 +52,12 @@ mailparseinstall() {
 #######################################################
 # check if mailparse.so exists in php.ini
 
-MAILPARSESOCHECK=`grep 'extension=mailparse.so' /usr/local/lib/php.ini`
-MAILPARSESOCHECKB=$(grep 'extension=mailparse.so' ${CONFIGSCANDIR}/mailparse.ini)
+MAILPARSESOCHECK=$(grep 'extension=mailparse.so' /usr/local/lib/php.ini >/dev/null 2>&1; echo $?)
+MAILPARSESOCHECKB=$(grep 'extension=mailparse.so' "${CONFIGSCANDIR}/mailparse.ini" >/dev/null 2>&1; echo $?)
 
-if [[ -z $MAILPARSESOCHECK || -z $MAILPARSESOCHECKB ]]; then
-
-echo -e "\nCopying mailparse.ini > ${CONFIGSCANDIR}/mailparse.ini\n"
-echo "extension=mailparse.so" > ${CONFIGSCANDIR}/mailparse.ini
-
+if [[ "$MAILPARSESOCHECK" = '1' || "$MAILPARSESOCHECKB" = '1' ]]; then
+    echo -e "\nCopying mailparse.ini > ${CONFIGSCANDIR}/mailparse.ini\n"
+    echo "extension=mailparse.so" > ${CONFIGSCANDIR}/mailparse.ini
 fi #check if mailparse.so exists in php.ini
 
     cmservice php-fpm restart

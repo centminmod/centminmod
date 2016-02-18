@@ -72,14 +72,12 @@ fi # php 7 or not
 #######################################################
 # check if imagick.so exists in php.ini
 
-IMAGICKSOCHECK=`grep 'extension=imagick.so' /usr/local/lib/php.ini`
-IMAGICKSOCHECKB=$(grep 'extension=imagick.so' ${CONFIGSCANDIR}/imagick.ini)
+IMAGICKSOCHECK=$(grep 'extension=imagick.so' /usr/local/lib/php.ini >/dev/null 2>&1; echo $?)
+IMAGICKSOCHECKB=$(grep 'extension=imagick.so' "${CONFIGSCANDIR}/imagick.ini" >/dev/null 2>&1; echo $?)
 
-if [[ -z $IMAGICKSOCHECK || -z $IMAGICKSOCHECKB ]]; then
-
-echo -e "\nCopying imagick.ini > ${CONFIGSCANDIR}/imagick.ini\n"
-echo "extension=imagick.so" > ${CONFIGSCANDIR}/imagick.ini
-
+if [[ "$IMAGICKSOCHECK" = '1' || "$IMAGICKSOCHECKB" = '1' ]]; then
+    echo -e "\nCopying imagick.ini > ${CONFIGSCANDIR}/imagick.ini\n"
+    echo "extension=imagick.so" > "${CONFIGSCANDIR}/imagick.ini"
 fi #check if imagick.so exists in php.ini
 
     cmservice php-fpm restart
