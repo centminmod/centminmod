@@ -609,7 +609,9 @@ chown nginx:nginx "/usr/local/nginx/html/${NPHP}_phpi.php"
 fi
 
 if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
-    cat "${CENTMINLOGDIR}/zendopcache_passfile.txt"
+    if [ -f "${CENTMINLOGDIR}/zendopcache_passfile.txt" ]; then
+        cat "${CENTMINLOGDIR}/zendopcache_passfile.txt"
+    fi
 fi
 
 # notes for users if PHP 7.0 detected
