@@ -1,11 +1,15 @@
 checkmotd() {
 			if [[ -z "$(grep 'PrintMotd no' /etc/ssh/sshd_config)" ]]; then
+				echo "" >> /etc/ssh/sshd_config
 				echo "PrintMotd no" >> /etc/ssh/sshd_config
 				service sshd reload
 			fi
 			if [[ -z "$(grep '\/usr\/local\/bin\/dmotd' /etc/profile)" ]]; then
 				echo "if [ -f /usr/local/bin/dmotd ]; then 	/usr/local/bin/dmotd; fi" >> /etc/profile
 			fi
+			# fix line breaks if incorrect
+			sed -i 's|sha1PrintMotd no|sha1\nPrintMotd no|' /etc/ssh/sshd_config
+			sed -i 's|UseDNS noPrintMotd no|UseDNS no\nPrintMotd no|' /etc/ssh/sshd_config
 }
 
 setupmotd() {
