@@ -129,6 +129,13 @@ cat > "/usr/local/nginx/conf/pagespeed.conf" <<END
 pagespeed off;
 
 #######################################################
+# Purge nginx pagespeed cache
+# https://developers.google.com/speed/pagespeed/module/system#flush_cache
+#######################################################
+pagespeed EnableCachePurge on;
+pagespeed PurgeMethod PURGE;
+
+#######################################################
 # File cache settings 
 ######################################
 # needs to exist and be writable by nginx
