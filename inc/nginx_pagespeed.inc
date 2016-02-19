@@ -426,7 +426,9 @@ fi
 
 	if [ -d /var/ngx_pagespeed_cache ]; then
 	chmod 1777 /var/ngx_pagespeed_cache
-	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+    if [ -d /var/ngx_pagespeed_cache/http ]; then
+	   chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+    fi
 	chown -R nginx:nginx /var/ngx_pagespeed_cache/
 	ls -lah /var | grep ngx_pagespeed_cache
 	fi
