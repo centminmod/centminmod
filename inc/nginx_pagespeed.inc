@@ -313,6 +313,7 @@ cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
 # add a second pagespeed off; variable 
 # loaded in nginx.conf via pagespeedadmin.conf include file
 pagespeed off;
+pagespeed UsePerVhostStatistics on;
 #######################################################
 pagespeed FileCachePath /var/ngx_pagespeed_cache;
 pagespeed StatisticsPath /ngx_pagespeed_statistics;
