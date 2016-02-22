@@ -2,10 +2,14 @@ checkmotd() {
 			if [[ -z "$(grep 'PrintMotd no' /etc/ssh/sshd_config)" ]]; then
 				echo "" >> /etc/ssh/sshd_config
 				echo "PrintMotd no" >> /etc/ssh/sshd_config
+				\cp -f /etc/motd /etc/motd-backup1
+				echo > /etc/motd
 				service sshd reload
 			fi
 			if [[ -z "$(grep '\/usr\/local\/bin\/dmotd' /etc/profile)" ]]; then
 				echo "if [ -f /usr/local/bin/dmotd ]; then 	/usr/local/bin/dmotd; fi" >> /etc/profile
+				\cp -f /etc/motd /etc/motd-backup2
+				echo > /etc/motd
 			fi
 			# fix line breaks if incorrect
 			sed -i 's|sha1PrintMotd no|sha1\nPrintMotd no|' /etc/ssh/sshd_config
