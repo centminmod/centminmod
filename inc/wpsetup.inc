@@ -1507,7 +1507,7 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
 /usr/bin/nprestart
-} 2>&1 | dos2unix | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+} 2>&1 | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
 
 chmod 0700 /root/tools/wp_updater_${vhostname}.sh
@@ -1690,7 +1690,7 @@ fi
 cecho "------------------------------------------------------------" $boldgreen
 fi
 } 2>&1 | tee /tmp/setupwp.log
-cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
 rm -rf /tmp/setupwp.log
 
 echo
