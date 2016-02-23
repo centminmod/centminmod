@@ -1622,62 +1622,62 @@ funct_installiopingcentmin() {
 }
 
 funct_selinux() {
-
-SELINUXCONFIGFILE='/etc/selinux/config'
-SELINUXCHECK=$(grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2)
-
-if [[ "$SELINUXCHECK" == 'enforcing' ]]; then
-
-	echo ""
-cecho "---------------------------------------------" $boldyellow
-	echo "Checking SELinux status...."
-	echo "SELinux enabled"
-	echo ""
-	read -ep "Do you want to disable SELinux ? [y/n]: " disableselinux
-cecho "---------------------------------------------" $boldyellow
-	echo ""
-
-	if [[ "$disableselinux" == [yY] ]]; then
-
-	echo ""
-cecho "---------------------------------------------" $boldyellow
-	echo "Disabling SELinux..."
-
-	sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
-    sed -i 's/SELINUX=permissive/SELINUX=disabled/g' $SELINUXCONFIGFILE
-	setenforce 0
-
-	echo ""
-cecho "---------------------------------------------" $boldyellow
-	echo "checking $SELINUXCONFIGFILE"
-
-	cat "$SELINUXCONFIGFILE" | grep '^SELINUX='
-
-cecho "---------------------------------------------" $boldyellow
-	echo ""
-
-	exit
-
-	else
-
-	exit
-
-	fi
-
-else
-
-	echo ""
-cecho "---------------------------------------------" $boldyellow
-	echo "checking $SELINUXCONFIGFILE"
-	echo "SELinux already disabled"
-	echo "SELINUX=$SELINUXCHECK"
-cecho "---------------------------------------------" $boldyellow
-	echo ""
-
-	exit
-
-fi
-
+    if [ -f /etc/selinux/config ]; then
+        SELINUXCONFIGFILE='/etc/selinux/config'
+        SELINUXCHECK=$(grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2)
+        
+        if [[ "$SELINUXCHECK" == 'enforcing' ]]; then
+	       echo ""
+            cecho "---------------------------------------------" $boldyellow
+	       echo "Checking SELinux status...."
+	       echo "SELinux enabled"
+	       echo ""
+	       read -ep "Do you want to disable SELinux ? [y/n]: " disableselinux
+            cecho "---------------------------------------------" $boldyellow
+	       echo ""
+        
+	       if [[ "$disableselinux" == [yY] ]]; then
+        
+	       echo ""
+            cecho "---------------------------------------------" $boldyellow
+	       echo "Disabling SELinux..."
+        
+	       sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
+            sed -i 's/SELINUX=permissive/SELINUX=disabled/g' $SELINUXCONFIGFILE
+	       setenforce 0
+        
+	       echo ""
+            cecho "---------------------------------------------" $boldyellow
+	       echo "checking $SELINUXCONFIGFILE"
+        
+	       cat "$SELINUXCONFIGFILE" | grep '^SELINUX='
+        
+            cecho "---------------------------------------------" $boldyellow
+	       echo ""
+        
+	       exit
+        
+	       else
+                exit
+	       fi
+        else
+	       echo ""
+            cecho "---------------------------------------------" $boldyellow
+	       echo "checking $SELINUXCONFIGFILE"
+	       echo "SELinux already disabled"
+	       echo "SELINUX=$SELINUXCHECK"
+            cecho "---------------------------------------------" $boldyellow
+	       echo ""
+	       exit      
+        fi
+    else
+        echo ""
+         cecho "---------------------------------------------" $boldyellow
+        echo "SELinux already disabled"
+         cecho "---------------------------------------------" $boldyellow
+        echo ""
+        exit      
+    fi
 }
 
 funct_showtempfile() {
