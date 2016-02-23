@@ -160,11 +160,6 @@ pagespeed PurgeMethod PURGE;
 #  pagespeed MemcachedTimeoutUs 100000;
 
 #######################################################
-## https://developers.google.com/speed/pagespeed/module/admin#virtual-hosts-and-stats
-######################################
-# pagespeed UsePerVhostStatistics on;
-
-#######################################################
 ## 1.7.30.1 beta defaults
 ######################################
 pagespeed PreserveUrlRelativity on;
@@ -313,7 +308,12 @@ cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
 # add a second pagespeed off; variable 
 # loaded in nginx.conf via pagespeedadmin.conf include file
 pagespeed off;
-pagespeed UsePerVhostStatistics on;
+
+#######################################################
+## https://developers.google.com/speed/pagespeed/module/admin#virtual-hosts-and-stats
+######################################
+# pagespeed UsePerVhostStatistics on;
+
 #######################################################
 pagespeed FileCachePath /var/ngx_pagespeed_cache;
 pagespeed StatisticsPath /ngx_pagespeed_statistics;
