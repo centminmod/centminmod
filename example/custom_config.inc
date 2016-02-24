@@ -38,7 +38,7 @@ HP_UPDATEMAINTENANCE='n'
 ARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.9.11'       # Use this version of Nginx
+NGINX_VERSION='1.9.12'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
@@ -157,7 +157,7 @@ OPENSSL_VERSION='1.0.2f'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL
-LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 LIBRESSL_VERSION='2.2.6'   # Use this version of LibreSSL http://www.libressl.org/
 ##################################
 
