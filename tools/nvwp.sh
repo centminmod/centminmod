@@ -12,6 +12,8 @@ DEBUG='n'
 CENTMINLOGDIR='/root/centminlogs'
 DT=`date +"%d%m%y-%H%M%S"`
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
+DIR_TMP=/svr-setup
+OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 ################################################################
