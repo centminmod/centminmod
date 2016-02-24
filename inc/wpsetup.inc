@@ -305,7 +305,12 @@ fi
 
 if [[ "$vhostssl" = [yY] ]]; then
 
-if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]]; then
+  if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
+      # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
+      OPEENSSL_CFPATCHED='y'
+  fi
+  
+if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
   CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
 else
   CHACHACIPHERS=""

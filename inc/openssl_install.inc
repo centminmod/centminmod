@@ -19,20 +19,25 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
 fi
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
-        echo  "###################################"
-        echo "Patching OpenSSL 1.0.1h"
-        echo  "###################################"
-        echo "Cloudflare RC4 kill patch"
-        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__disable_rc4.patch"
-        echo  "####################################"
-        pushd ssl
-        rm -rf openssl__disable_rc4.patch
-        wget -cnv --no-check-certificate https://github.com/cloudflare/sslconfig/raw/master/patches/openssl__disable_rc4.patch
-        patch < openssl__disable_rc4.patch
-        popd
-        echo  "####################################"
-        echo  "OpenSSL 1.0.1h patched"
-        echo  "####################################"
+        echo  "######################################################################"
+        echo "Patching OpenSSL 1.0.2f"
+        echo  "######################################################################"
+        echo "Cloudflare ChaCha20 patch"
+        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch"
+        echo "only Android 5 will support ChaCha20 if using Cloudflare Patch"
+        echo  "######################################################################"
+        # pushd ssl
+        rm -rf openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        wget -cnv --no-check-certificate https://github.com/cloudflare/sslconfig/raw/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        if [ -f crypto/chacha20poly1305/chacha20.c ]; then
+            # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
+            OPEENSSL_CFPATCHED='y'
+        fi
+        # popd
+        echo  "######################################################################"
+        echo  "OpenSSL 1.0.2f patched"
+        echo  "######################################################################"
     # fi
 fi # CLOUDFLARE_PATCHSSL
 }
