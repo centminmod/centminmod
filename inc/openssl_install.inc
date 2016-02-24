@@ -32,7 +32,9 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
         # patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
         rm -rf openssl__chacha20_poly1305_cf.patch
         wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
-        patch -p1 < openssl__chacha20_poly1305_cf.patch
+        if [ ! -f crypto/chacha20poly1305/chacha20.c ]; then
+            patch -p1 < openssl__chacha20_poly1305_cf.patch
+        fi
         if [ -f crypto/chacha20poly1305/chacha20.c ]; then
             # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
             OPEENSSL_CFPATCHED='y'
