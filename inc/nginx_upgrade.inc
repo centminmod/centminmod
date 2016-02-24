@@ -249,7 +249,7 @@ else
     # OPENSSL_VERSION
     AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
     if [[ "$AUTOOPENSSLCHECK" ]]; then
-        recompileopenssl='n'
+        recompileopenssl='y'
     else
         recompileopenssl='y'
     fi
