@@ -19,6 +19,9 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
 fi
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Cloudflare Chacha20 Patch"
+        fi
         echo  "######################################################################"
         echo "Patching OpenSSL 1.0.2f"
         echo  "######################################################################"
@@ -29,7 +32,9 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
         # pushd ssl
         rm -rf openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
         wget -cnv --no-check-certificate https://github.com/cloudflare/sslconfig/raw/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
-        patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        if [ ! -f crypto/chacha20poly1305/chacha20.c ]; then
+            patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102f.patch
+        fi
         # rm -rf openssl__chacha20_poly1305_cf.patch
         # wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
         # patch -p1 < openssl__chacha20_poly1305_cf.patch
@@ -41,6 +46,9 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
         echo  "######################################################################"
         echo  "OpenSSL 1.0.2f patched"
         echo  "######################################################################"
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Cloudflare Chacha20 Patched"
+        fi
     # fi
 fi # CLOUDFLARE_PATCHSSL
 }
@@ -48,6 +56,11 @@ fi # CLOUDFLARE_PATCHSSL
 installopenssl() {
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         libresslinstallstarttime=$(date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling LibreSSL"
+        fi
+
         cd $DIR_TMP
         echo "Compiling LibreSSL..."
         cd libressl-${LIBRESSL_VERSION}
@@ -111,6 +124,11 @@ installopenssl() {
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
     else
         opensslinstallstarttime=$(date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling OpenSSL"
+        fi
+
         # Install OpenSSL
         cd $DIR_TMP
         echo "Compiling OpenSSL..."
