@@ -8,6 +8,8 @@ branchname='123.08stable'
 CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
+DIR_TMP=/svr-setup
+OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
 CENTMINLOGDIR='/root/centminlogs'
