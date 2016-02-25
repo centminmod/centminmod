@@ -577,7 +577,11 @@ if [[ "$vhostssl" = [yY] ]]; then
   fi
 
 if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
-  CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
+  if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
+    CHACHACIPHERS='EECDH+CHACHA20-draft:EECDH+CHACHA20:'
+  else
+    CHACHACIPHERS='EECDH+CHACHA20:'
+  fi
 else
   CHACHACIPHERS=""
 fi
