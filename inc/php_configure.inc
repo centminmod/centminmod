@@ -324,6 +324,17 @@ fi
 
     time make install
 
+if [[ "$PHPIONCUBE" = [yY] ]]; then
+  if [ -f "$(which figlet)" ]; then
+      figlet -ckf standard "Install IonCube Loader"
+  fi
+	if [ -f "${CM_INSTALLDIR}/addons/ioncube.sh" ]; then
+		"${CM_INSTALLDIR}/addons/ioncube.sh"
+	fi
+elif [ -f "${CONFIGSCANDIR}/ioncube.ini" ]; then
+	rm -rf "${CONFIGSCANDIR}/ioncube.ini"
+fi
+
 if [[ "$STRIPPHP" = [yY] ]]; then
     echo
     echo "strip PHP binary..."
