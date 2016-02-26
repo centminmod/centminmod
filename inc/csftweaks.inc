@@ -100,8 +100,15 @@ fi
     fi
 
     sed -i 's/UDPFLOOD = \"0\"/UDPFLOOD = \"1\"/g' /etc/csf/csf.conf
-
     sed -i 's/UDPFLOOD_ALLOWUSER = \"named\"/UDPFLOOD_ALLOWUSER = \"named nsd\"/g' /etc/csf/csf.conf
+
+    # whitelist the SSH client IP from initial installation to prevent some
+    # instances of end user IP being blocked from CSF Firewall
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+        CMUSER_SSHCLIENTIP=$(echo $SSH_CLIENT | awk '{print $1}' | head -n1)
+        csf -a $CMUSER_SSHCLIENTIP # initialinstall_userip
+        echo "$CMUSER_SSHCLIENTIP" >> /etc/csf/csf.ignore
+    fi
 
 fi
 }
