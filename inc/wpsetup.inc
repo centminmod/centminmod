@@ -922,6 +922,46 @@ location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ {
 deny all;
 }
 
+# Whitelist Exception for https://wordpress.org/plugins/sparkpost/
+location ~ ^${WPSUBDIR}/wp-content/plugins/sparkpost/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/sendgrid-email-delivery-simplified/
+location ~ ^${WPSUBDIR}/wp-content/plugins/sendgrid-email-delivery-simplified/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/mailgun/
+location ~ ^${WPSUBDIR}/wp-content/plugins/mailgun/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/mailjet-for-wordpress/
+location ~ ^${WPSUBDIR}/wp-content/plugins/mailjet-for-wordpress/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/easy-wp-smtp/
+location ~ ^${WPSUBDIR}/wp-content/plugins/easy-wp-smtp/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/postman-smtp/
+location ~ ^${WPSUBDIR}/wp-content/plugins/postman-smtp/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/sendpress/
+location ~ ^${WPSUBDIR}/wp-content/plugins/sendpress/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wp-mail-bank/
+location ~ ^${WPSUBDIR}/wp-content/plugins/wp-mail-bank/ {
+  include /usr/local/nginx/conf/php.conf;
+}
+
 # Whitelist Exception for https://wordpress.org/plugins/theme-check/
 location ~ ^${WPSUBDIR}/wp-content/plugins/theme-check/ {
   include /usr/local/nginx/conf/php.conf;
