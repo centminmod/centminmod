@@ -55,7 +55,7 @@ ls -lah ${CONFIGSCANDIR}
 echo ""
 ls -lah ${PHPEXTDIRD}
 
-fpmrestart
+service php-fpm restart >/dev/null 2>&1
 
 echo ""
 echo "Check if PHP module: ionCube Loader loaded"
