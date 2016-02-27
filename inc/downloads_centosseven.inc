@@ -331,6 +331,7 @@ if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
   ERR=$?
   CCVARNISHCHECK="$ERR"
     if [ "$CCVARNISHCHECK" == '0' ]; then
+      sed -i 's|el6|el7|g' /etc/yum.repos.d/varnish.repo
       yumpriorvarnish
       echo ""
     else
