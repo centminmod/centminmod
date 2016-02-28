@@ -1551,7 +1551,7 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
 /usr/bin/nprestart
-} 2>&1 | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+} 2>&1 | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
 
 chmod 0700 /root/tools/wp_updater_${vhostname}.sh
