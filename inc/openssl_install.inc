@@ -17,6 +17,11 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "OpenSSL 1.0.1g patched"
     echo  "####################################"
 fi
+if [[ "$(uname -m)" != 'x86_64' ]]; then
+    # cloudflare patch chacha20 support does not seem to
+    # work on 32bit OSes only 64bit
+    CLOUDFLARE_PATCHSSL='n'
+fi
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         echo  "######################################################################"
