@@ -1,3 +1,13 @@
+libresslcompile_fix() {
+	if [[ "$(grep install_sw auto/lib/openssl/make >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+		if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+			if [ -f auto/lib/openssl/make ]; then
+				sed -i 's|install_sw LIBDIR=lib|install LIBDIR=lib|' auto/lib/openssl/make
+			fi
+		fi
+	fi
+}
+
 dynamicmodule_file() {
 	if [ "$ngver" ]; then
 		NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
@@ -1148,6 +1158,8 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 		fi
 	fi
 fi
+
+libresslcompile_fix
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
