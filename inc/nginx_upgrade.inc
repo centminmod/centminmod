@@ -233,6 +233,12 @@ fi
 
 }
 
+clear_ps() {
+    if [ -d /var/ngx_pagespeed_cache ]; then
+        rm -rf /var/ngx_pagespeed_cache/*
+    fi
+}
+
 function funct_nginxupgrade {
 
 checkmap
@@ -601,6 +607,8 @@ fi
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             systemctl daemon-reload
         fi
+        # empty pagespeed cache
+        clear_ps
         /etc/init.d/nginx start
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
