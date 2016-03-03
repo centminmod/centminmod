@@ -221,9 +221,10 @@ memcachedupdatechecks() {
 		if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
 			if [[ -f /usr/local/src/centminmod/config/memcached/memcached1425.patch && -f /etc/init.d/memcached ]]; then
 				\cp -f /usr/local/src/centminmod/config/memcached/memcached1425.patch /etc/init.d/memcached1425.patch
-				cd /etc/init.d/
+				pushd /etc/init.d/
 				patch -s < memcached1425.patch
 				rm -rf memcached1425.patch
+				popd
 			fi
 		fi
 		fi
