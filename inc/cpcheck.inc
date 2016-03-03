@@ -193,6 +193,16 @@ centaltoff() {
 	fi
 }
 
+axivo_remove() {
+	if [ -f /etc/yum.repos.d/axivo.repo ]; then
+		# remove Axivo outdated yum repo
+		# if detected as being installed
+		# yum list installed --disablerepo=* --enablerepo=axivo --disableplugin=priorities | grep axivo
+		yum -y -q remove axivo-release
+		yum clean all -q
+	fi
+}
+
 csfipsetcheck() {
 	if [[ ! -f /proc/user_beancounters && "$(lsmod | grep ip_set)" ]]; then
 		if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
@@ -569,6 +579,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	auto_gitupdate
 	figletcheck
 	maintenance_confcheck
+	axivo_remove
 fi
 
 }
