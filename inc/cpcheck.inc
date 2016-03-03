@@ -198,7 +198,7 @@ axivo_remove() {
 		# remove Axivo outdated yum repo
 		# if detected as being installed
 		# yum list installed --disablerepo=* --enablerepo=axivo --disableplugin=priorities | grep axivo
-		yum -y -q remove axivo-release
+		yum -y -q remove axivo-release >/dev/null 2>&1
 		yum clean all -q
 	fi
 }
