@@ -13,11 +13,29 @@
 DT=`date +"%d%m%y-%H%M%S"`
 SCRIPTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BASEDIR=$(dirname $SCRIPTDIR)
+
+DELOLD='y'
+DELOLD_VERBOSE='n'
+DEL_THRESHOLD='365'
 ################################################################
 if [ ! -d "$BASEDIR/backup/permissions" ]; then
 	mkdir -p "$BASEDIR/backup/permissions"
 fi
 ################################################################
+cleanup() {
+if [[ "$DELOLD" = [yY] ]]; then
+	find "$BASEDIR/backup/permissions" -maxdepth 1 -mtime +$DEL_THRESHOLD | sort | while read BACKUPFILE; do
+		if [[ "$DELOLD_VERBOSE" = [yY] ]]; then
+			echo "    Deleting older than $DEL_THRESHOLD days backup: $BACKUPFILE"
+			echo "    rm -rf $BACKUPFILE"
+			rm -rf $BACKUPFILE
+		else
+			rm -rf $BACKUPFILE
+		fi
+	done
+fi
+}
+
 backupperm() {
 	echo
 	echo "-------------------------------------------------------"
@@ -54,6 +72,7 @@ restoreperm() {
 case "$1" in
 	backup)
 		backupperm
+		cleanup
 		;;
 	restore)
 		restoreperm
