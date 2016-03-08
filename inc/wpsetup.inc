@@ -1550,6 +1550,7 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core check-update --allow-root
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
+chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 /usr/bin/nprestart
 } 2>&1 | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
