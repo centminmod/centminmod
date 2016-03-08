@@ -1552,7 +1552,7 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core update-db --allow-root
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 /usr/bin/nprestart
-} 2>&1 | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+} 2>&1 | /usr/bin/tr -cd '\11\12\15\40-\176' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
 
 chmod 0700 /root/tools/wp_updater_${vhostname}.sh
@@ -1735,7 +1735,7 @@ fi
 cecho "------------------------------------------------------------" $boldgreen
 fi
 } 2>&1 | tee /tmp/setupwp.log
-cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+cat /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
 rm -rf /tmp/setupwp.log
 
 echo
