@@ -960,6 +960,7 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core check-update --allow-root
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
+chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
 } 2>&1 | dos2unix | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 ENDA
 
