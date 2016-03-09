@@ -77,7 +77,7 @@ install_axel() {
   if [ -s $AXEK_LINKFILE ]; then
     echo "Axel ${AXEL_VER} Archive found, skipping download..." 
   else
-    wget -O $AXEK_LINKFILE $AXEK_LINK
+    wget -O $AXEK_LINKFILE $AXEK_LINKLOCAL
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
      echo "Error: $AXEK_LINKFILE download failed."
