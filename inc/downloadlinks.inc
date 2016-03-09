@@ -188,7 +188,7 @@ NGX_CONCATLINK='https://github.com/alibaba/nginx-http-concat/archive/master.tar.
 
 # wget renamed
 NGX_HEADERSMORELINKFILE="headers-more-v${NGINX_HEADERSMORE}.tar.gz"
-NGX_HEADERSMORELINK="https://github.com/agentzh/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
+NGX_HEADERSMORELINK="https://github.com/openresty/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
 
 # wget renamed
 NGX_STICKYLINKFILE="nginx-sticky-${NGINX_STICKYVER}.tar.gz"
@@ -200,11 +200,11 @@ NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/
 
 # wget renamed
 NGX_MEMCLINKFILE="memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
-NGX_MEMCLINK="https://github.com/agentzh/memc-nginx-module/tarball/v${ORESTY_MEMCVER}"
+NGX_MEMCLINK="https://github.com/openresty/memc-nginx-module/archive/v${ORESTY_MEMCVER}"
 
 # wget renamed
 NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
-NGX_SRCACHELINK="https://github.com/agentzh/srcache-nginx-module/tarball/v${ORESTY_SRCCACHEVER}"
+NGX_SRCACHELINK="https://github.com/openresty/srcache-nginx-module/archive/v${ORESTY_SRCCACHEVER}"
 
 # wget renamed
 NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
