@@ -182,14 +182,15 @@ echo "ORESTY_LUANGINX=y" >> /etc/centminmod/custom_config.inc
 echo "ORESTY_LUANGINXVER='0.10.1rc0'" >> /etc/centminmod/custom_config.inc
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
-"${INSTALLDIR}/centminmod/centmin.sh" install
-rm -rf /etc/centminmod/email-primary.ini
-rm -rf /etc/centminmod/email-secondary.ini
 
 # setup gitlab as default git repo instead of github
 sed -i "s|^CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|#CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|" centmin.sh
 sed -i "s|^#CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|" centmin.sh
 echo "CMGIT='https://gitlab.com/centminmod/centminmod.git'" > /etc/centminmod/custom_config.inc
+
+"${INSTALLDIR}/centminmod/centmin.sh" install
+rm -rf /etc/centminmod/email-primary.ini
+rm -rf /etc/centminmod/email-secondary.ini
 
     # setup command shortcut aliases 
     # given the known download location
