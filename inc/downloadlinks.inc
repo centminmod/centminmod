@@ -207,12 +207,12 @@ NGX_UPSTREAMCHECKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx_u
 
 # wget renamed
 NGX_MEMCLINKFILE="memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
-NGX_MEMCLINK="https://github.com/openresty/memc-nginx-module/archive/v${ORESTY_MEMCVER}"
+NGX_MEMCLINK="https://github.com/openresty/memc-nginx-module/archive/v${ORESTY_MEMCVER}.tar.gz"
 NGX_MEMCLINKGITLAB="https://gitlab.com/centminmod-github-mirror/memc-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_MEMCVER}"
 
 # wget renamed
 NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
-NGX_SRCACHELINK="https://github.com/openresty/srcache-nginx-module/archive/v${ORESTY_SRCCACHEVER}"
+NGX_SRCACHELINK="https://github.com/openresty/srcache-nginx-module/archive/v${ORESTY_SRCCACHEVER}.tar.gz"
 NGX_SRCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/srcache-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_SRCCACHEVER}"
 
 # wget renamed
