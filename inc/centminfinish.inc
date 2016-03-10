@@ -113,12 +113,14 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 /root/mysqlreport --help | head -n1
 letswait
+if [[ "$NSD_INSTALL" = [yY] ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check NSD Bind Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 $(which nsd) -v
 letswait
+fi
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check pure-ftpd Version:" $boldyellow
