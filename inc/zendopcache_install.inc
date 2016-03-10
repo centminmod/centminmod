@@ -194,11 +194,9 @@ fi # check if opcache.so exists in zendopcache.ini
     echo "*************************************************"
 
 else
-
-PHPNATIVEOPCACHE='y'
-
+	PHPNATIVEOPCACHE='y'
 	echo ""
-	echo "Detected PHP branch: 5.5 which has native support for Zend OPcache"
+	echo "Detected PHP branch: 5.5+ which has native support for Zend OPcache"
 	echo "To enable Zend OPcache run menu option #5 and specify PHP 5.5.0 or higher"
 
 fi # check for PHPMVER !=5.5
