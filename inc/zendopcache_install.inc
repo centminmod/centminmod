@@ -136,6 +136,11 @@ if [[ ! -f /usr/local/nginx/html/opcache.php ]]; then
 	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
 	opprotectinstall
+elif [[ "$(ls /usr/local/nginx/html | grep opcache >/dev/null 2>&1; echo $?)" != '0' ]]; then
+	echo "cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php"
+	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
+	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	opprotectinstall
 fi
 
 ######################################################
