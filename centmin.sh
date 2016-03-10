@@ -1444,8 +1444,10 @@ imagickinstall
 echo "geoipphpext"
 geoipphpext
 
-echo "redisinstall"
-redisinstall
+if [[ "$PHPREDIS" = [yY] ]]; then
+    echo "redisinstall"
+    redisinstall
+fi
 
 echo "mongodbinstall"
 mongodbinstall
