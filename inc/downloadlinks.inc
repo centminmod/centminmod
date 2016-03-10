@@ -162,13 +162,16 @@ PCRELINKLOCAL="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 # wget renamed
 NGX_WEBDAVLINKFILE="nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz"
 NGX_WEBDAVLINK="https://github.com/arut/nginx-dav-ext-module/archive/v${NGINX_EXTWEBDAVVER}.tar.gz"
+NGX_WEBDAVLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx-dav-ext-module/repository/archive.tar.gz?ref=v${NGINX_EXTWEBDAVVER}"
 
 # wget renamed
 NGX_PAGESPEEDGITLINKFILE="release-${NGXPGSPEED_VER}.tar.gz"
 NGX_PAGESPEEDGITLINK="https://github.com/pagespeed/ngx_pagespeed/archive/master.tar.gz"
+NGX_PAGESPEEDGITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_pagespeed/repository/archive.tar.gz?ref=master"
 
 NGX_PAGESPEEDLINKFILE="release-${NGXPGSPEED_VER}.tar.gz"
 NGX_PAGESPEEDLINK="https://github.com/pagespeed/ngx_pagespeed/archive/${NGX_PAGESPEEDLINKFILE}"
+NGX_PAGESPEEDLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_pagespeed/repository/archive.tar.gz?ref=v${NGXPGSPEED_VER}"
 
 NGX_PAGESPEEDPSOLINKLFILE="${NGINX_PAGESPEEDPSOL_VER}.tar.gz"
 NGX_PAGESPEEDPSOLINKL="https://dl.google.com/dl/page-speed/psol/${NGX_PAGESPEEDPSOLINKLFILE}"
@@ -185,42 +188,52 @@ NGX_ACCESSKEYLINK="http://centminmod.com/centminmodparts/nginx/modules/${NGX_ACC
 # wget renamed
 NGX_CONCATLINKFILE="nginx-http-concat-master.tar.gz"
 NGX_CONCATLINK='https://github.com/alibaba/nginx-http-concat/archive/master.tar.gz'
+NGX_CONCATLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-http-concat/repository/archive.tar.gz?ref=master'
 
 # wget renamed
 NGX_HEADERSMORELINKFILE="headers-more-v${NGINX_HEADERSMORE}.tar.gz"
 NGX_HEADERSMORELINK="https://github.com/openresty/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
+NGX_HEADERSMORELINKGITLAB="https://gitlab.com/centminmod-github-mirror/headers-more-nginx-module/repository/archive.tar.gz?ref=v${NGINX_HEADERSMORE}"
 
 # wget renamed
 NGX_STICKYLINKFILE="nginx-sticky-${NGINX_STICKYVER}.tar.gz"
 NGX_STICKYLINK="https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng/get/${NGINX_STICKYVER}.tar.gz"
+NGX_STICKYLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx-sticky-module-ng/repository/archive.tar.gz?ref=${NGINX_STICKYVER}"
 
 # wget renamed
 NGX_UPSTREAMCHECKLINKFILE="nginx-upstream-check-${NGINX_UPSTREAMCHECKVER}.tar.gz"
 NGX_UPSTREAMCHECKLINK="https://github.com/yaoweibin/nginx_upstream_check_module/archive/v${NGINX_UPSTREAMCHECKVER}.tar.gz"
+NGX_UPSTREAMCHECKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx_upstream_check_module/repository/archive.tar.gz?ref=${NGINX_UPSTREAMCHECKVER}"
 
 # wget renamed
 NGX_MEMCLINKFILE="memc-nginx-module_v${ORESTY_MEMCVER}.tar.gz"
 NGX_MEMCLINK="https://github.com/openresty/memc-nginx-module/archive/v${ORESTY_MEMCVER}"
+NGX_MEMCLINKGITLAB="https://gitlab.com/centminmod-github-mirror/memc-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_MEMCVER}"
 
 # wget renamed
 NGX_SRCACHELINKFILE="srcache-nginx-module_v${ORESTY_SRCCACHEVER}.tar.gz"
 NGX_SRCACHELINK="https://github.com/openresty/srcache-nginx-module/archive/v${ORESTY_SRCCACHEVER}"
+NGX_SRCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/srcache-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_SRCCACHEVER}"
 
 # wget renamed
 NGX_DEVELKITLINKFILE="nginx-develkit_v${ORESTY_DEVELKITVER}.tar.gz"
 NGX_DEVELKITLINK="https://github.com/simpl/ngx_devel_kit/archive/v${ORESTY_DEVELKITVER}.tar.gz"
+NGX_DEVELKITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_devel_kit/repository/archive.tar.gz?ref=v${ORESTY_DEVELKITVER}"
 
 # wget renamed
 NGX_SETMISCLINKFILE="set-misc-nginx-module_v${ORESTY_SETMISCVER}.tar.gz"
 NGX_SETMISCLINK="https://github.com/openresty/set-misc-nginx-module/archive/v${ORESTY_SETMISCVER}.tar.gz"
+NGX_SETMISCLINKGITLAB="https://gitlab.com/centminmod-github-mirror/set-misc-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_SETMISCVER}"
 
 # wget renamed
 NGX_ECHOLINKFILE="echo-nginx-module_v${ORESTY_ECHOVER}.tar.gz"
 NGX_ECHOLINK="https://github.com/openresty/echo-nginx-module/archive/v${ORESTY_ECHOVER}.tar.gz"
+NGX_ECHOLINKGITLAB="https://gitlab.com/centminmod-github-mirror/echo-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_ECHOVER}"
 
 # wget renamed
 NGX_REDISLINKFILE="redis2-nginx-module_v${ORESTY_REDISVER}.tar.gz"
 NGX_REDISLINK="https://github.com/openresty/redis2-nginx-module/archive/v${ORESTY_REDISVER}.tar.gz"
+NGX_REDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/redis2-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_REDISVER}"
 
 # wget renamed
 NGX_HTTPREDISLINKFILE="ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
@@ -231,66 +244,85 @@ NGX_HTTPREDISLINK="http://people.freebsd.org/~osa/ngx_http_redis-${NGINX_HTTPRED
 
 NGX_LUANGINXLINKFILE="lua-nginx-module_v${ORESTY_LUANGINXVER}.tar.gz"
 NGX_LUANGINXLINK="https://github.com/openresty/lua-nginx-module/archive/v${ORESTY_LUANGINXVER}.tar.gz"
+NGX_LUANGINXLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUANGINXVER}"
 
 NGX_LUAGITLINKFILE="luagit-${ORESTY_LUAGITVER}.tar.gz"
 NGX_LUAGITLINK="http://luajit.org/download/LuaJIT-${ORESTY_LUAGITVER}.tar.gz"
 
 NGX_LUAMEMCACHEDLINKFILE="lua-resty-memcached_v${ORESTY_LUAMEMCACHEDVER}.tar.gz"
 NGX_LUAMEMCACHEDLINK="https://github.com/openresty/lua-resty-memcached/archive/v${ORESTY_LUAMEMCACHEDVER}.tar.gz"
+NGX_LUAMEMCACHEDLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-memcached/repository/archive.tar.gz?ref=v${ORESTY_LUAMEMCACHEDVER}"
 
 NGX_LUAMYSQLLINKFILE="lua-resty-mysql_v${ORESTY_LUAMYSQLVER}.tar.gz"
 NGX_LUAMYSQLLINK="https://github.com/openresty/lua-resty-mysql/archive/v${ORESTY_LUAMYSQLVER}.tar.gz"
+NGX_LUAMYSQLLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-mysql/repository/archive.tar.gz?ref=v${ORESTY_LUAMYSQLVER}"
 
 NGX_LUAREDISLINKFILE="lua-resty-redis_v${ORESTY_LUAREDISVER}.tar.gz"
 NGX_LUAREDISLINK="https://github.com/openresty/lua-resty-redis/archive/v${ORESTY_LUAREDISVER}.tar.gz"
+NGX_LUAREDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-redis/repository/archive.tar.gz?ref=v${ORESTY_LUAREDISVER}"
 
 NGX_LUADNSLINKFILE="lua-resty-dns_v${ORESTY_LUADNSVER}.tar.gz"
 NGX_LUADNSLINK="https://github.com/openresty/lua-resty-dns/archive/v${ORESTY_LUADNSVER}.tar.gz"
+NGX_LUADNSLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-dns/repository/archive.tar.gz?ref=v${ORESTY_LUADNSVER}"
 
 NGX_LUAUPLOADLINKFILE="lua-resty-upload_v${ORESTY_LUAUPLOADVER}.tar.gz"
 NGX_LUAUPLOADLINK="https://github.com/openresty/lua-resty-upload/archive/v${ORESTY_LUAUPLOADVER}.tar.gz"
+NGX_LUAUPLOADLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-upload/repository/archive.tar.gz?ref=v${ORESTY_LUAUPLOADVER}"
 
 NGX_LUAWEBSOCKETLINKFILE="lua-resty-websocket_v${ORESTY_LUAWEBSOCKETVER}.tar.gz"
 NGX_LUAWEBSOCKETLINK="https://github.com/openresty/lua-resty-websocket/archive/v${ORESTY_LUAWEBSOCKETVER}.tar.gz"
+NGX_LUAWEBSOCKETLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-websocket/repository/archive.tar.gz?ref=v${ORESTY_LUAWEBSOCKETVER}"
 
 NGX_LUALOCKLINKFILE="lua-resty-lock_v${ORESTY_LUALOCKVER}.tar.gz"
 NGX_LUALOCKLINK="https://github.com/openresty/lua-resty-lock/archive/v${ORESTY_LUALOCKVER}.tar.gz"
+NGX_LUALOCKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-lock/repository/archive.tar.gz?ref=v${ORESTY_LUALOCKVER}"
 
 NGX_LUASTRINGLINKFILE="lua-resty-string_v${ORESTY_LUASTRINGVER}.tar.gz"
 NGX_LUASTRINGLINK="https://github.com/openresty/lua-resty-string/archive/v${ORESTY_LUASTRINGVER}.tar.gz"
+NGX_LUASTRINGLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-string/repository/archive.tar.gz?ref=v${ORESTY_LUASTRINGVER}"
 
 NGX_LUAREDISPARSERLINKFILE="lua-redis-parser_v${ORESTY_LUAREDISPARSERVER}.tar.gz"
 NGX_LUAREDISPARSERLINK="https://github.com/openresty/lua-redis-parser/archive/v${ORESTY_LUAREDISPARSERVER}.tar.gz"
+NGX_LUAREDISPARSERLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-redis-parser/repository/archive.tar.gz?ref=v${ORESTY_LUAREDISPARSERVER}"
 
 NGX_LUAUPSTREAMCHECKLINKFILE="lua-resty-upstream-healthcheck_v${ORESTY_LUAUPSTREAMCHECKVER}.tar.gz"
 NGX_LUAUPSTREAMCHECKLINK="https://github.com/openresty/lua-resty-upstream-healthcheck/archive/v${ORESTY_LUAUPSTREAMCHECKVER}.tar.gz"
+NGX_LUAUPSTREAMCHECKLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-upstream-healthcheck/repository/archive.tar.gz?ref=v${ORESTY_LUAUPSTREAMCHECKVER}"
 
 NGX_LUALRUCACHELINKFILE="lua-resty-lrucache_v${ORESTY_LUALRUCACHEVER}.tar.gz"
 NGX_LUALRUCACHELINK="https://github.com/openresty/lua-resty-lrucache/archive/v${ORESTY_LUALRUCACHEVER}.tar.gz"
+NGX_LUALRUCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-lrucache/repository/archive.tar.gz?ref=v${ORESTY_LUALRUCACHEVER}"
 
 NGX_LUARESTYCORELINKFILE="lua-resty-core_v${ORESTY_LUARESTYCOREVER}.tar.gz"
 NGX_LUARESTYCORELINK="https://github.com/openresty/lua-resty-core/archive/v${ORESTY_LUARESTYCOREVER}.tar.gz"
+NGX_LUARESTYCORELINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-core/repository/archive.tar.gz?ref=v${ORESTY_LUARESTYCOREVER}"
 
 NGX_LUAUPSTREAMLINKFILE="lua-upstream-nginx-module_v${ORESTY_LUAUPSTREAMVER}.tar.gz"
 NGX_LUAUPSTREAMLINK="https://github.com/openresty/lua-upstream-nginx-module/archive/v${ORESTY_LUAUPSTREAMVER}.tar.gz"
+NGX_LUAUPSTREAMLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-upstream-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUAUPSTREAMVER}"
 
 NGX_LUALOGGERSOCKETLINKFILE="lua-resty-logger-socket_v${ORESTY_LUALOGGERSOCKETVER}.tar.gz"
 NGX_LUALOGGERSOCKETLINK="https://github.com/cloudflare/lua-resty-logger-socket/archive/v${ORESTY_LUALOGGERSOCKETVER}.tar.gz"
+NGX_LUALOGGERSOCKETLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-logger-socket/repository/archive.tar.gz?ref=v${ORESTY_LUALOGGERSOCKETVER}"
 
 NGX_LUACOOKIELINKFILE="lua-resty-cookie_v${ORESTY_LUACOOKIEVER}.tar.gz"
 NGX_LUACOOKIELINK="https://github.com/cloudflare/lua-resty-cookie/archive/master.tar.gz"
+NGX_LUACOOKIELINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-resty-cookie/repository/archive.tar.gz?ref=master"
 
 NGX_LUAUPSTREAMCACHELINKFILE="lua-upstream-cache-nginx-module_v${ORESTY_LUAUPSTREAMCACHEVER}.tar.gz"
 NGX_LUAUPSTREAMCACHELINK="https://github.com/cloudflare/lua-upstream-cache-nginx-module/archive/v${ORESTY_LUAUPSTREAMCACHEVER}.tar.gz"
+NGX_LUAUPSTREAMCACHELINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-upstream-cache-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUAUPSTREAMCACHEVER}"
 
 NGX_LUACJSONLINKFILE="lua-cjson_${LUACJSONVER}.tar.gz"
 NGX_LUACJSONLINK="https://github.com/openresty/lua-cjson/archive/${LUACJSONVER}.tar.gz"
+NGX_LUACJSONLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-cjson/repository/archive.tar.gz?ref=${LUACJSONVER}"
 
 ##
 
 LIBEVENTLINKFILE="release-${LIBEVENT_VERSION}-stable.tar.gz"
 LIBEVENTLINKOLD="https://github.com/downloads/libevent/libevent/${LIBEVENTLINKFILE}"
 LIBEVENTLINK="https://github.com/libevent/libevent/archive/${LIBEVENTLINKFILE}"
+LIBEVENTLINKGITLAB="https://gitlab.com/centminmod-github-mirror/libevent/repository/archive.tar.gz?ref=release-${LIBEVENT_VERSION}-stable"
 
 PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
 PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
@@ -314,6 +346,7 @@ PHPEXT_LIBMEMCACHEDLINKLOCAL="http://centminmod.com/centminmodparts/memcached/${
 
 PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
 PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
+PHPEXT_REDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/phpredis/repository/archive.tar.gz?ref=${REDISPHP_VER}"
 PHPEXT_REDISLINKLOCAL="http://centminmod.com/centminmodparts/redis/${PHPEXT_REDISLINKFILE}"
 
 PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
@@ -322,6 +355,7 @@ PHPEXT_MONGODBLINKLOCAL="http://centminmod.com/centminmodparts/mongodb/${PHPEXT_
 
 TWEMPERF_LINKFILE="twemperf-${TWEMPERF_VER}.tar.gz"
 TWEMPERF_LINK="https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.gz"
+TWEMPERF_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/twemperf/repository/archive.tar.gz?ref=v${TWEMPERF_VER}"
 # TWEMPERF_LINK="https://twemperf.googlecode.com/files/${TWEMPERF_LINKFILE}"
 
 MEMCACHEDSERVER_LINKFILE="memcached-${MEMCACHED_VERSION}.tar.gz"
@@ -339,6 +373,7 @@ NGX_LINKFILE="nginx-${NGINX_VERSION}.tar.gz"
 NGX_LINK="http://nginx.org/download/${NGX_LINKFILE}"
 
 NGX_VTSLINK='https://github.com/vozlt/nginx-module-vts.git'
+NGX_VTSLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-module-vts.git'
 
 OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
 OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
@@ -393,4 +428,5 @@ EZSETUPLINK="https://bitbucket.org/pypa/setuptools/raw/bootstrap/${EZSETUPLINKFI
 # wget renamed github
 AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
+AXEK_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/archive.tar.gz?ref=${AXEL_VER}"
 AXEK_LINKLOCAL="http://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
