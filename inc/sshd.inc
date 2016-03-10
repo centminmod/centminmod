@@ -6,6 +6,7 @@ if [[ ! -z "$CHECKHOSTKEY" ]]; then
 
 sed -i 's/#HostKey \/etc\/ssh\/ssh_host_rsa_key/HostKey \/etc\/ssh\/ssh_host_rsa_key/g' /etc/ssh/sshd_config
 sed -i 's/#HostKey \/etc\/ssh\/ssh_host_dsa_key/HostKey \/etc\/ssh\/ssh_host_dsa_key/g' /etc/ssh/sshd_config
+sed -i 's/#HostKey \/etc\/ssh\/ssh_host_ecdsa_key/HostKey \/etc\/ssh\/ssh_host_ecdsa_key/g' /etc/ssh/sshd_config
 sed -i 's/#PubkeyAuthentication/PubkeyAuthentication/g' /etc/ssh/sshd_config
 sed -i 's/#RSAAuthentication/RSAAuthentication/g' /etc/ssh/sshd_config
 sed -i 's/#AuthorizedKeysFile/AuthorizedKeysFile/g' /etc/ssh/sshd_config
@@ -56,7 +57,7 @@ if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKTCPALIVE" || -z "$CHECKVALUES" ]]; the
 	echo "Configure sshd_config"
 	echo "----------------------------"
 	/usr/sbin/sshd -t
-	cmservice sshd  reload
+	cmservice sshd restart
 fi
 
 }
