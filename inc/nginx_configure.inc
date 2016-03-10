@@ -322,11 +322,16 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
 		MEMCDIR=`ls -rt "$DIR_TMP" | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
-		SRCACHEDIR=`ls -rt "$DIR_TMP" | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
-		SETMISCDIR=`ls -rt "$DIR_TMP" | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
-		DEVELKITDIR=`ls -rt "$DIR_TMP" | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
-		ECHODIR=`ls -rt "$DIR_TMP" | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
-		REDISDIR=`ls -rt "$DIR_TMP" | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
+		# SRCACHEDIR=`ls -rt "$DIR_TMP" | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
+		SRCACHEDIR="srcache-nginx-module-$ORESTY_SRCCACHEVER"
+		# SETMISCDIR=`ls -rt "$DIR_TMP" | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
+		SETMISCDIR="set-misc-nginx-module-$ORESTY_SETMISCVER"
+		# DEVELKITDIR=`ls -rt "$DIR_TMP" | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
+		DEVELKITDIR="ngx_devel_kit-$ORESTY_DEVELKITVER"
+		# ECHODIR=`ls -rt "$DIR_TMP" | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
+		ECHODIR="echo-nginx-module-$ORESTY_ECHOVER"
+		# REDISDIR=`ls -rt "$DIR_TMP" | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
+		REDISDIR="redis2-nginx-module-$ORESTY_REDISVER"
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
 
