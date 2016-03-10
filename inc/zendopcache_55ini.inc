@@ -42,8 +42,8 @@ fi # $ZOPLUSSOCHECK
 	# php 5.5+ versions missing opcache.php file
 	######################################################
 	# Randomize ${N}_opcache.php filename
-	N=$(od -vAn -N4 -tx < /dev/urandom)
-	N=$(echo ${N} | sed -e 's/\s//')
+	N=$(od -vAn -N8 -tx < /dev/urandom)
+	N=$(echo ${N} | sed -e 's/\s//' -e 's/ //')
 	echo
 	echo "setup initial /usr/local/nginx/html/opcache.php"
 	echo
