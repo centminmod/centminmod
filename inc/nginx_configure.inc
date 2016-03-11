@@ -590,7 +590,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_WEBDAV" = [yY] ]]; then
-
+		NGX_WEBDAVLINKDIR=$(tar -tzf "$DIR_TMP/${NGX_WEBDAVLINKFILE}" | head -1 | cut -f1 -d"/")
 		if [ ! -f "/${LIBDIR}/libexpat.so.1" ]; then
 		 echo "/${LIBDIR}/libexpat.so.1 not found"
 		 echo "installing expat"
@@ -607,7 +607,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		 echo "/usr/include/expat.h found"
 		fi
 
-		WEBDAVOPT=" --with-http_dav_module --add-module=../nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}"
+		WEBDAVOPT=" --with-http_dav_module --add-module=../$NGX_WEBDAVLINKDIR"
 	else
 		WEBDAVOPT=""
 	fi
@@ -842,7 +842,7 @@ else
 	fi
 
 	if [[ "$NGINX_WEBDAV" = [yY] ]]; then
-
+		NGX_WEBDAVLINKDIR=$(tar -tzf "$DIR_TMP/${NGX_WEBDAVLINKFILE}" | head -1 | cut -f1 -d"/")
 		if [ ! -f "/${LIBDIR}/libexpat.so.1" ]; then
 		 echo "/${LIBDIR}/libexpat.so.1 not found"
 		  yum${CACHESKIP} -q -y install expat expat-devel
@@ -850,7 +850,7 @@ else
 		 echo "/${LIBDIR}/libexpat.so.1 found"
 		fi
 
-		WEBDAVOPT=" --with-http_dav_module --add-module=../nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}"
+		WEBDAVOPT=" --with-http_dav_module --add-module=../$NGX_WEBDAVLINKDIR"
 	else
 		WEBDAVOPT=""
 	fi
