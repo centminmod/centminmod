@@ -1,29 +1,37 @@
 #!/bin/bash
-###############################################
+############################################################################
 # Official centminmod.com addon: wpcli.sh installer
-# written by George Liu (eva2000) vbtechsupport.com
-###############################################
+# written by George Liu (eva2000) centminmod.com
+############################################################################
 # http://wp-cli.org/
 # WP-CLI is a set of command-line tools for managing WordPress 
 # installations. You can update plugins, set up multisite installs, 
 # create posts etc
-###############################################
+############################################################################
 # install instructions
-# chmod +x /usr/local/src/centmin-v1.2.3mod/addons/wpcli.sh
-# cd /usr/local/src/centmin-v1.2.3mod/addons
+# chmod +x /usr/local/src/centminmod/addons/wpcli.sh
+# cd /usr/local/src/centminmod/addons
 # ./wpcli.sh install
-###############################################
+############################################################################
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
+WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'
+
+# fallback mirror if official wp-cli download http status is not 200, use local
+# centminmod.com mirror download instead
+curl -sI --connect-timeout 5 --max-time 5 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+WPCLI_CURLCHECK=$?
+if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
+	WPCLILINK='https://centminmod.com/centminmodparts/wp-cli/wp-cli.phar'
+fi
 
 # functions
-# 
 updatewpcli() {
 	if [ -f /usr/bin/wp ]; then
 		echo "update wp-cli"
 		rm -rf /usr/bin/wp
-		wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /usr/bin/wp --tries=3
+		wget -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
 		chmod 0700 /usr/bin/wp
 		/usr/bin/wp --info --allow-root	
 		echo ""
@@ -50,7 +58,7 @@ if [ -s /usr/bin/wp ]; then
   echo "/usr/bin/wp [found]"
   else
   echo "Error: /usr/bin/wp not found !!! Downloading now......"
-  wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/phar/wp-cli.phar -O /usr/bin/wp --tries=3 
+  wget -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: /usr/bin/wp download failed."
@@ -111,7 +119,7 @@ fi
 
 }
 
-###############################################
+############################################################################
 
 case "$1" in
 install)
