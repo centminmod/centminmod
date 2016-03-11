@@ -262,6 +262,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
+		NGX_HEADERSMOREDIR=$(tar -tzf "$DIR_TMP/${NGX_HEADERSMORELINKFILE}" | head -1 | cut -f1 -d"/")
 		# gitmaster option
 		if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 			pushd "$DIR_TMP"
@@ -275,7 +276,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-master"
 			else
-				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+				HEADERSMOREOPT=" --add-dynamic-module=../$NGX_HEADERSMOREDIR"
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -284,12 +285,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-master"
 			else
-				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+				HEADERSMOREOPT=" --add-module=../$NGX_HEADERSMOREDIR"
 			fi
 		fi
 	else
 		HEADERSMOREOPT=""
-	fi			
+	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
 		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
@@ -702,6 +703,7 @@ else
 	fi
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
+		NGX_HEADERSMOREDIR=$(tar -tzf "$DIR_TMP/${NGX_HEADERSMORELINKFILE}" | head -1 | cut -f1 -d"/")
 		# gitmaster option
 		if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 			pushd "$DIR_TMP"
@@ -715,7 +717,7 @@ else
 			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-master"
 			else
-				HEADERSMOREOPT=" --add-dynamic-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+				HEADERSMOREOPT=" --add-dynamic-module=../$NGX_HEADERSMOREDIR"
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -724,7 +726,7 @@ else
 			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-master"
 			else
-				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}"
+				HEADERSMOREOPT=" --add-module=../$NGX_HEADERSMOREDIR"
 			fi
 		fi
 	else
