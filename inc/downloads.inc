@@ -548,20 +548,21 @@ else
 echo ""
 	fi
 
+# determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
-  if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-    rm -rf "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
+  if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
+    rm -rf "$DIR_TMP/$NGXPGSPEED_DIR"
   fi
-	\cp -Rf ngx_pagespeed-master "ngx_pagespeed-release-${NGXPGSPEED_VER}"
+	\cp -Rf ngx_pagespeed-master "$NGXPGSPEED_DIR"
 	rm -rf ngx_pagespeed-master
 	rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
 fi
 
         cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} PSOL Library..." $boldyellow
-        if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-            cd "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
-        elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
-            cd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}"
+        if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
+            cd "$DIR_TMP/$NGXPGSPEED_DIR"
         fi
         if [ -s "${NGX_PAGESPEEDPSOLINKLFILE}" ]; then
           cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
