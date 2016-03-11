@@ -307,19 +307,22 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-		LIBRESSLOPT=" --with-openssl=../libressl-${LIBRESSL_VERSION}"
+		LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" | head -1 | cut -f1 -d"/")
+		LIBRESSLOPT=" --with-openssl=../$LIBRESSLDIR"
 		OPENSSLOPT=""
 		LRT='-lrt '
 	else
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
+			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
+			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
 			LRT=""
 		else
+			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			export BPATH=$DIR_TMP
 			export STATICLIBSSL="${BPATH}/staticlibssl"
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
+			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
 			LRT=""
 		fi
 	fi
@@ -750,13 +753,24 @@ else
 	fi
 
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-		LIBRESSLOPT=" --with-openssl=../libressl-${LIBRESSL_VERSION}"
+		LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" | head -1 | cut -f1 -d"/")
+		LIBRESSLOPT=" --with-openssl=../$LIBRESSLDIR"
 		OPENSSLOPT=""
 		LRT='-lrt '
 	else
-		LIBRESSLOPT=""
-		OPENSSLOPT=" --with-openssl=../openssl-${OPENSSL_VERSION}"
-		LRT=""
+		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
+			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
+			LIBRESSLOPT=""
+			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			LRT=""
+		else
+			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
+			export BPATH=$DIR_TMP
+			export STATICLIBSSL="${BPATH}/staticlibssl"
+			LIBRESSLOPT=""
+			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			LRT=""
+		fi
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
