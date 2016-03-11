@@ -255,10 +255,11 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi		
 
 	if [[ "$NGINX_HTTPCONCAT" = [yY] ]]; then
-		HTTPCONCATOPT=" --add-module=../nginx-http-concat-master"
+		NGX_CONCATDIR=$(tar -tzf "$DIR_TMP/${NGX_CONCATLINKFILE}" | head -1 | cut -f1 -d"/")
+		HTTPCONCATOPT=" --add-module=../$NGX_CONCATDIR"
 	else
 		HTTPCONCATOPT=""
-	fi				
+	fi
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
 		# gitmaster option
@@ -694,10 +695,11 @@ else
 	fi		
 
 	if [[ "$NGINX_HTTPCONCAT" = [yY] ]]; then
-		HTTPCONCATOPT=" --add-module=../nginx-http-concat-master"
+		NGX_CONCATDIR=$(tar -tzf "$DIR_TMP/${NGX_CONCATLINKFILE}" | head -1 | cut -f1 -d"/")
+		HTTPCONCATOPT=" --add-module=../$NGX_CONCATDIR"
 	else
 		HTTPCONCATOPT=""
-	fi			
+	fi
 
 	if [[ "$ORESTY_HEADERSMORE" = [yY] ]]; then
 		# gitmaster option
