@@ -400,16 +400,19 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+		NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
+		NGX_LUAUPSTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
+		NGX_LUAUPSTREAMCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMCACHELINKFILE}" | head -1 | cut -f1 -d"/")
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/echo-nginx-module#installation
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_LUA" = [yY] ]]; then
 			luapatch
-			LUAOPT=" --add-dynamic-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER} --add-module=../lua-upstream-cache-nginx-module-${ORESTY_LUAUPSTREAMCACHEVER}"
+			LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_lua_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			LUAOPT=" --add-module=../lua-nginx-module-${ORESTY_LUANGINXVER} --add-module=../lua-upstream-nginx-module-${ORESTY_LUAUPSTREAMVER} --add-module=../lua-upstream-cache-nginx-module-${ORESTY_LUAUPSTREAMCACHEVER}"
+			LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
 		fi
 
 		LUALD_OPT=" -Wl,-rpath,$LUAJIT_LIB"
@@ -422,22 +425,37 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     	else
         	LUALIB_DIR='lib'
     	fi
-	
-    	cd "${DIR_TMP}/lua-resty-memcached-${ORESTY_LUAMEMCACHEDVER}"; make clean; make install
-    	cd "${DIR_TMP}/lua-resty-mysql-${ORESTY_LUAMYSQLVER}"; make clean; make install
-    	cd "${DIR_TMP}/lua-resty-redis-${ORESTY_LUAREDISVER}"; make clean; make install
-    	cd "${DIR_TMP}/lua-resty-dns-${ORESTY_LUADNSVER}"; make clean; make install; mv /usr/local/lib/lua/resty/dns/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/dns
-    	cd "${DIR_TMP}/lua-resty-upload-${ORESTY_LUAUPLOADVER}"; make clean; make install
-    	cd "${DIR_TMP}/lua-resty-websocket-${ORESTY_LUAWEBSOCKETVER}"; make clean; make install; mv /usr/local/lib/lua/resty/websocket/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/websocket
-    	cd "${DIR_TMP}/lua-resty-lock-${ORESTY_LUALOCKVER}"; make clean; make install
-    	cd "${DIR_TMP}/lua-resty-string-${ORESTY_LUASTRINGVER}"; make clean; make install
-    	cd "${DIR_TMP}/lua-redis-parser-${ORESTY_LUAREDISPARSERVER}"; make clean; make install; mv /usr/local/lib/lua/resty/redis/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/redis
-    	cd "${DIR_TMP}/lua-resty-upstream-healthcheck-${ORESTY_LUAUPSTREAMCHECKVER}"; make clean; make install; mv /usr/local/lib/lua/resty/upstream/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/upstream
-    	cd "${DIR_TMP}/lua-resty-lrucache-${ORESTY_LUALRUCACHEVER}"; make clean; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
-    	cd "${DIR_TMP}/lua-resty-core-${ORESTY_LUARESTYCOREVER}"; make clean; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
-    	cd "${DIR_TMP}/lua-resty-logger-socket-${ORESTY_LUALOGGERSOCKETVER}"; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/lib/lua/resty/
-    	cd "${DIR_TMP}/lua-resty-cookie-${ORESTY_LUACOOKIEVER}"; chmod +x lib/resty/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
-    	cd "${DIR_TMP}/lua-cjson-${LUACJSONVER}"; make clean; make install
+
+			NGX_LUAMEMCACHEDDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAMEMCACHEDLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUAMYSQLDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAMYSQLLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUAREDISDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAREDISLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUADNSDIR=$(tar -tzf "$DIR_TMP/${NGX_LUADNSLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUAUPLOADDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPLOADLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUAWEBSOCKETDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAWEBSOCKETLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUALOCKDIR=$(tar -tzf "$DIR_TMP/${NGX_LUALOCKLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUASTRINGDIR=$(tar -tzf "$DIR_TMP/${NGX_LUASTRINGLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUAREDISPARSERDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAREDISPARSERLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUAUPSTREAMCHECKDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMCHECKLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUALRUCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_LUALRUCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUARESTYCOREDIR=$(tar -tzf "$DIR_TMP/${NGX_LUARESTYCORELINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUALOGGERSOCKETDIR=$(tar -tzf "$DIR_TMP/${NGX_LUALOGGERSOCKETLINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUACOOKIEDIR=$(tar -tzf "$DIR_TMP/${NGX_LUACOOKIELINKFILE}" | head -1 | cut -f1 -d"/")
+			NGX_LUACJSONDIR=$(tar -tzf "$DIR_TMP/${NGX_LUACJSONLINKFILE}" | head -1 | cut -f1 -d"/")	
+    	cd "${DIR_TMP}/$NGX_LUAMEMCACHEDDIR"; make clean; make install
+    	cd "${DIR_TMP}/$NGX_LUAMYSQLDIR"; make clean; make install
+    	cd "${DIR_TMP}/$NGX_LUAREDISDIR"; make clean; make install
+    	cd "${DIR_TMP}/$NGX_LUADNSDIR"; make clean; make install; mv /usr/local/lib/lua/resty/dns/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/dns
+    	cd "${DIR_TMP}/$NGX_LUAUPLOADDIR"; make clean; make install
+    	cd "${DIR_TMP}/$NGX_LUAWEBSOCKETDIR"; make clean; make install; mv /usr/local/lib/lua/resty/websocket/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/websocket
+    	cd "${DIR_TMP}/$NGX_LUALOCKDIR"; make clean; make install
+    	cd "${DIR_TMP}/$NGX_LUASTRINGDIR"; make clean; make install
+    	cd "${DIR_TMP}/$NGX_LUAREDISPARSERDIR"; make clean; make install; mv /usr/local/lib/lua/resty/redis/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/redis
+    	cd "${DIR_TMP}/$NGX_LUAUPSTREAMCHECKDIR"; make clean; make install; mv /usr/local/lib/lua/resty/upstream/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/upstream
+    	cd "${DIR_TMP}/$NGX_LUALRUCACHEDIR"; make clean; make install; mv /usr/local/lib/lua/resty/lrucache/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/lrucache
+    	cd "${DIR_TMP}/$NGX_LUARESTYCOREDIR"; make clean; make install; mv /usr/local/lib/lua/resty/core/* /usr/local/lib/lua/resty/; rm -rf /usr/local/lib/lua/resty/core
+    	cd "${DIR_TMP}/$NGX_LUALOGGERSOCKETDIR"; chmod +x lib/resty/logger/*; \cp -rpf lib/resty/logger/* /usr/local/lib/lua/resty/
+    	cd "${DIR_TMP}/$NGX_LUACOOKIEDIR"; chmod +x lib/resty/*; \cp -rpf lib/resty/* /usr/local/lib/lua/resty/
+    	cd "${DIR_TMP}/$NGX_LUACJSONDIR"; make clean; make install
     	cd "${DIR_TMP}"
 	else
 		LUAOPT=""
