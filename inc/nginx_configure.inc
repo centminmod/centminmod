@@ -328,17 +328,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
-		MEMCDIR=`ls -rt "$DIR_TMP" | grep openresty-memc-nginx-module | egrep -v 'gz|zip' | tail -1`
-		# SRCACHEDIR=`ls -rt "$DIR_TMP" | grep openresty-srcache-nginx-module | egrep -v 'gz|zip' | tail -1`
-		SRCACHEDIR="srcache-nginx-module-$ORESTY_SRCCACHEVER"
-		# SETMISCDIR=`ls -rt "$DIR_TMP" | grep set-misc-nginx-module | egrep -v 'gz|zip' | tail -1`
-		SETMISCDIR="set-misc-nginx-module-$ORESTY_SETMISCVER"
-		# DEVELKITDIR=`ls -rt "$DIR_TMP" | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
-		DEVELKITDIR="ngx_devel_kit-$ORESTY_DEVELKITVER"
-		# ECHODIR=`ls -rt "$DIR_TMP" | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
-		ECHODIR="echo-nginx-module-$ORESTY_ECHOVER"
-		# REDISDIR=`ls -rt "$DIR_TMP" | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
-		REDISDIR="redis2-nginx-module-$ORESTY_REDISVER"
+		MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
+		SRCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_SRCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+		SETMISCDIR=$(tar -tzf "$DIR_TMP/${NGX_SETMISCLINKFILE}" | head -1 | cut -f1 -d"/")
+		DEVELKITDIR=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" | head -1 | cut -f1 -d"/")
+		ECHODIR=$(tar -tzf "$DIR_TMP/${NGX_ECHOLINKFILE}" | head -1 | cut -f1 -d"/")
+		REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
 
@@ -480,11 +475,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi		
 
 	if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
-		FANCYINDEXOPT=" --add-module=../ngx-fancyindex-${NGINX_FANCYINDEXVER}"
+		NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
+		FANCYINDEXOPT=" --add-module=../$NGX_FANCYINDEXDIR"
 	else
 		FANCYINDEXOPT=""
 	fi			
-	
+
 	if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
 		if [ -f /usr/bin/git ]; then
 			VTSOPT=" --add-module=../nginx-module-vts"
@@ -534,7 +530,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi	
 
 	if [[ "$NGINX_STICKY" = [yY] ]]; then
-		STICKYOPT=" --add-module=../nginx-sticky-module-${NGINX_STICKYVER}"
+		NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
+		STICKYOPT=" --add-module=../$NGX_STICKYDIR"
 	else
 		STICKYOPT=""
 	fi
@@ -804,13 +801,15 @@ else
 	fi	
 
 	if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
-		FANCYINDEXOPT=" --add-module=../ngx-fancyindex-${NGINX_FANCYINDEXVER}"
+		NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
+		FANCYINDEXOPT=" --add-module=../$NGX_FANCYINDEXDIR"
 	else
 		FANCYINDEXOPT=""
 	fi			
 
 	if [[ "$NGINX_STICKY" = [yY] ]]; then
-		STICKYOPT=" --add-module=../nginx-sticky-module-${NGINX_STICKYVER}"
+		NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
+		STICKYOPT=" --add-module=../$NGX_STICKYDIR"
 	else
 		STICKYOPT=""
 	fi
