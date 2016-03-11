@@ -555,7 +555,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_UPSTREAMCHECK" = [yY] ]]; then
-		UPSTREAMOPT=" --add-module=../nginx_upstream_check_module-${NGINX_UPSTREAMCHECKVER}"
+		NGX_UPSTREAMCHECKDIR=$(tar -tzf "$DIR_TMP/${NGX_UPSTREAMCHECKLINKFILE}" | head -1 | cut -f1 -d"/")
+		UPSTREAMOPT=" --add-module=../$NGX_UPSTREAMCHECKDIR"
 	else
 		UPSTREAMOPT=""
 	fi
@@ -606,7 +607,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_PCREJIT" = [yY] ]]; then
-		PCREJITOPT=" --with-pcre=../pcre-${NGINX_PCREVER} --with-pcre-jit"
+		PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
+		PCREJITOPT=" --with-pcre=../$PCRELINKDIR --with-pcre-jit"
 	else
 		PCREJITOPT=""
 	fi
@@ -833,7 +835,8 @@ else
 	fi
 
 	if [[ "$NGINX_UPSTREAMCHECK" = [yY] ]]; then
-		UPSTREAMOPT=" --add-module=../nginx_upstream_check_module-${NGINX_UPSTREAMCHECKVER}"
+		NGX_UPSTREAMCHECKDIR=$(tar -tzf "$DIR_TMP/${NGX_UPSTREAMCHECKLINKFILE}" | head -1 | cut -f1 -d"/")
+		UPSTREAMOPT=" --add-module=../$NGX_UPSTREAMCHECKDIR"
 	else
 		UPSTREAMOPT=""
 	fi
