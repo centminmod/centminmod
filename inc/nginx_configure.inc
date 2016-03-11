@@ -294,7 +294,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
-		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
+		NGX_HTTPREDISDIR=$(tar -tzf "$DIR_TMP/${NGX_HTTPREDISLINKFILE}" | head -1 | cut -f1 -d"/")
+		HTTPREDISOPT=" --add-module=../$NGX_HTTPREDISDIR"
 	else
 		HTTPREDISOPT=""
 	fi
@@ -736,10 +737,11 @@ else
 	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
-		HTTPREDISOPT=" --add-module=../ngx_http_redis-${NGINX_HTTPREDISVER}"
+		NGX_HTTPREDISDIR=$(tar -tzf "$DIR_TMP/${NGX_HTTPREDISLINKFILE}" | head -1 | cut -f1 -d"/")
+		HTTPREDISOPT=" --add-module=../$NGX_HTTPREDISDIR"
 	else
 		HTTPREDISOPT=""
-	fi	
+	fi
 
 	if [[ "$NGINX_AUTHREQ" = [yY] ]]; then
 		AUTHREQOPT=' --with-http_auth_request_module'
