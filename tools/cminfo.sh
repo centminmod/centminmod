@@ -108,7 +108,15 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh
+CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
+
+# fallback mirror
+curl -sI --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+CMINFO_CURLCHECK=\$?
+if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
+    CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'
+fi
+wget -q --no-check-certificate -O /usr/bin/cminfo "\$CMINFOLINK"
 chmod 0700 /usr/bin/cminfo
 EOF
     chmod 0700 /usr/bin/cminfo_updater
