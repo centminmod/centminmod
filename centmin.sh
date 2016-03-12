@@ -414,6 +414,7 @@ PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.6.9'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 
+PHP_MEMCACHE='y'            # memcache PHP extension 
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.37.1'
 PHP_VERSION='5.4.45'          # Use this version of PHP

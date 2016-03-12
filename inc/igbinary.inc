@@ -8,6 +8,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
     echo $PHPSEVEN_CHECKVER
 
     if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary7'
         if [[ -d "igbinary-php7" && -d "igbinary-php7/.git" ]]; then       
             cd igbinary-php7
             git stash
@@ -15,10 +16,10 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             git log -3
         elif [[ -d "igbinary-php7" && ! -d "igbinary-php7/.git" ]]; then
             rm -rf igbinary-php7
-            git clone -b php7-dev https://github.com/igbinary/igbinary.git igbinary-php7
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
         else
             rm -rf igbinary-php7
-            git clone -b php7-dev https://github.com/igbinary/igbinary.git igbinary-php7
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
         fi
         echo
         echo "compiling igbinary PHP extension for PHP 7.x ..."
