@@ -131,7 +131,16 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 	yum -y install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel --disableplugin=priorities --enablerepo=atrpms
 fi
 
-git clone https://github.com/tony2001/ffmpeg-php.git ffmpeg-php-git
+FFMPEGGITLINK='https://github.com/tony2001/ffmpeg-php'
+
+# fallback mirror if github down, use gitlab mirror
+curl -sI --connect-timeout 5 --max-time 5 $FFMPEGGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+FFMPEGGIT_CURLCHECK=$?
+if [[ "$FFMPEGGIT_CURLCHECK" != '0' ]]; then
+	FFMPEGGITLINK='https://gitlab.com/centminmod-github-mirror/ffmpeg-php'
+fi
+
+git clone "${FFMPEGGITLINK}.git" ffmpeg-php-git
 cd ffmpeg-php-git
 # cd ffmpeg-php-${FFMPEGVER}
 

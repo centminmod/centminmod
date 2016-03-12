@@ -51,7 +51,15 @@ luaopensslpatch() {
 	else
 		pushd "$DIR_TMP/nginx-${NGINX_VERSION}"
 	fi
-	wget https://github.com/openresty/ngx_openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch
+	OPENRESTYLUAPATCHLINK='https://github.com/openresty/openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch'
+	
+	# fallback mirror if github down, use gitlab mirror
+	curl -sI --connect-timeout 5 --max-time 5 $OPENRESTYLUAPATCHLINK | grep 'HTTP\/' | egrep '200|302' >/dev/null 2>&1
+	OPENRESTYLUAPATCH_CURLCHECK=$?
+	if [[ "$OPENRESTYLUAPATCH_CURLCHECK" != '0' ]]; then
+		OPENRESTYLUAPATCHLINK='https://gitlab.com/centminmod-github-mirror/openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch'
+	fi
+	wget "$OPENRESTYLUAPATCHLINK"
 	patch -p1 < nginx-1.9.7-ssl_cert_cb_yield.patch
 	popd
 }

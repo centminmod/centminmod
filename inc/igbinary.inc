@@ -12,7 +12,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
 
     if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]]; then
 
-        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary7.git'
+        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary7'
         # fallback mirror if official github is down, use gitlab mirror
         curl -sI --connect-timeout 5 --max-time 5 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
         IGBINARYSEVEN_CURLCHECK=$?
