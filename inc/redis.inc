@@ -54,7 +54,16 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
     echo "cd $DIR_TMP"
     cd $DIR_TMP
     rm -rf redis-php7
-    git clone -b php7 https://github.com/phpredis/phpredis.git redis-php7
+
+    PHPREDISGITLINK='https://github.com/phpredis/phpredis.git'
+    # fallback mirror if official github is down, use gitlab mirror
+    curl -sI --connect-timeout 5 --max-time 5 $PHPREDISGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    PHPREDISGITCURLCHECK=$?
+    if [[ "$PHPREDISGITCURLCHECK" != '0' ]]; then
+        PHPREDISGITLINK='https://gitlab.com/centminmod-github-mirror/phpredis.git'
+    fi
+
+    git clone -b php7 "$PHPREDISGITLINK" redis-php7
     cd redis-php7
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean

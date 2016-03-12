@@ -36,6 +36,14 @@ PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
 if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
+    IMAGICKGITLINK='https://github.com/mkoppanen/imagick.git'
+    # fallback mirror if official github is down, use gitlab mirror
+    curl -sI --connect-timeout 5 --max-time 5 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    IMAGICKGITCURLCHECK=$?
+    if [[ "$IMAGICKGITCURLCHECK" != '0' ]]; then
+        IMAGICKGITLINK='https://gitlab.com/centminmod-github-mirror/imagick.git'
+    fi
+
     if [[ -d "imagick-php7" && -d "imagick-php7/.git" ]]; then       
         cd imagick-php7
         git stash
@@ -43,10 +51,10 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
         git log -3
     elif [[ -d "imagick-php7" && ! -d "imagick-php7/.git" ]]; then
         rm -rf imagick-php7
-        git clone -b phpseven https://github.com/mkoppanen/imagick.git imagick-php7
+        git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
     else
         rm -rf imagick-php7
-        git clone -b phpseven https://github.com/mkoppanen/imagick.git imagick-php7
+        git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
     fi
     echo
     echo "compiling imagick PHP extension for PHP 7.x ..."
