@@ -15,6 +15,10 @@ FIOBASEDIR="$MDB_DATADIR/cmsetiofiotest"
 CENTMINLOGDIR='/root/centminlogs'
 
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+SCRIPT_SOURCEBASE=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+# account for tools directory placement of tools/setio.sh
+SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
 ########################################################################################
 
 if [ ! -f /usr/bin/fio ]; then
@@ -90,8 +94,8 @@ fiosetup() {
   cd ${FIOBASEDIR}
   if [[ ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/reads-16k.ini" || ! -f "${FIOBASEDIR}/writes-16k.ini" ]]; then
     rm -rf reads.ini writes.ini reads-16k.ini writes-16k.ini
-    wget -q https://gist.github.com/centminmod/5edc872cbd97b213aed5/raw/c6b2e25f860fc4f0e06011c910b2778addeff693/reads.ini
-    wget -q https://gist.github.com/centminmod/5edc872cbd97b213aed5/raw/c6b2e25f860fc4f0e06011c910b2778addeff693/writes.ini
+    \cp -f "${SCRIPT_DIR}/config/setio/reads.ini" reads.ini
+    \cp -f "${SCRIPT_DIR}/config/setio/writes.ini" writes.ini
     cp reads.ini reads-16k.ini
     cp writes.ini writes-16k.ini
     sed -i 's|bs=4k|bs=16k|' reads-16k.ini
