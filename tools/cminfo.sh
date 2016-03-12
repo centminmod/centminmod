@@ -9,6 +9,7 @@ USER='root'
 PASS=''
 MYSQLHOST='localhost'
 #####################################################
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 VIRTUALCORES=$(grep -c ^processor /proc/cpuinfo)
 PHYSICALCPUS=$(grep 'physical id' /proc/cpuinfo | sort -u | wc -l)
@@ -20,10 +21,10 @@ CPUCACHE=$(awk -F: '/cache size/{print $2}' /proc/cpuinfo | sort | uniq -c)
 VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
 VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' | uniq)
 
-CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
-    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
         CENTOS_SEVEN='7'
     fi
@@ -107,7 +108,15 @@ setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
 rm -rf /usr/bin/cminfo
-wget -q --no-check-certificate -O /usr/bin/cminfo https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh
+CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
+
+# fallback mirror
+curl -sI --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+CMINFO_CURLCHECK=\$?
+if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
+    CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'
+fi
+wget -q --no-check-certificate -O /usr/bin/cminfo "\$CMINFOLINK"
 chmod 0700 /usr/bin/cminfo
 EOF
     chmod 0700 /usr/bin/cminfo_updater
@@ -131,7 +140,10 @@ fi
 # insert itself into cronjob for auto updates
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
+    mkdir -p /etc/centminmod/cronjobs
+    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-before-cminfo-setup.txt
     echo "*/4 * * * * /usr/bin/cminfo_updater" >> cronjoblist
+    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-after-cminfo-setup.txt
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
@@ -144,7 +156,7 @@ echo "------------------------------------------------------------------"
 
 echo "Server Location Info"
 # echo
-curl -s ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
+curl -s${CURL_TIMEOUTS} ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
 
 echo
 echo "Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"
