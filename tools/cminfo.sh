@@ -172,7 +172,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 else
     echo -ne " System Uptime: \t"; uptime | awk '{print $2, $3, $4, $5}'
 fi
-if [[ -z "$(service mysql status | grep not)" ]]; then
+if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
     echo -e " MySQL Server Started \t$MYSQLSTART"
     echo -e " MySQL Uptime: \t\t$MYSQLUPTIMEFORMAT"
     echo -e " MySQL Uptime (secs): \t$MYSQLUPTIME"
