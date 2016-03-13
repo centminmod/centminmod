@@ -64,7 +64,7 @@ APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
 OPCACHE_INFOVER=$(php -v 2>&1 | grep OPcache | awk '{print $4}' | sed 's/,//')
 
 # only assign variables if mysql is running
-if [[ -z "$(service mysql status | grep not)" ]]; then
+if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
 DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
 MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
 MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
