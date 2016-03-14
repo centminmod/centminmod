@@ -316,15 +316,16 @@ mjemalloc() {
 
 fixlogrotate() {
 	if [ -f /etc/logrotate.d/nginx ]; then
-	if [ -z "$(grep '\$' /etc/logrotate.d/nginx)" ]; then
+	if [[ -z "$(grep '\$' /etc/logrotate.d/nginx)" || -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" ]]; then
 		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
+if [[ "$TOTALMEM" -le '1153433' || "$(df --output=avail /var | tail -1)" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
         daily
         dateext
         missingok
         rotate 10
-        size=500M
+        maxsize 500M
         compress
         delaycompress
         notifempty
@@ -333,19 +334,36 @@ cat > "/etc/logrotate.d/nginx" <<END
         endscript           
 }
 END
+else
+cat > "/etc/logrotate.d/nginx" <<END
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript           
+}
+END
+fi
 	fi
 	fi
 
 	if [ -f /etc/logrotate.d/php-fpm ]; then
-	if [ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" ]; then
+	if [[ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" || -z "$(grep 'maxsize' /etc/logrotate.d/php-fpm)" ]]; then
 		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/var\/run\/php-fpm\/php-fpm.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/php-fpm
+if [[ "$TOTALMEM" -le '1153433' || "$(df --output=avail /var | tail -1)" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/php-fpm" <<END
 /var/log/php-fpm/*.log {
         daily
         dateext
         missingok
         rotate 10
-        size=500M
+        maxsize 500M
         compress
         delaycompress
         notifempty
@@ -354,6 +372,22 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         endscript            
 }
 END
+else
+cat > "/etc/logrotate.d/php-fpm" <<END
+/var/log/php-fpm/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        endscript            
+}
+END
+fi
 	fi
 	fi
 }
