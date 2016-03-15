@@ -381,6 +381,7 @@ OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
 
 LIBRESSL_LINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
 LIBRESSL_LINK="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LINKLOCAL="http://centminmod.com/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
 
 # wget renamed github
 # LIBRESSL_LINKFILE="libressl-portable-v${LIBRESSL_VERSION}.tar.gz"

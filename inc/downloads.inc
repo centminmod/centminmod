@@ -106,11 +106,17 @@ libresslgeolocation() {
   # closest to that country for faster downloads http://www.openbsd.org/ftp.html
   
   # Get server's 2 digit country code
-  SERVER_COUNTRY=$(curl -s ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
+  SERVER_COUNTRY=$(curl -s --max-time 5 --connect-timeout 5 ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
 
   if [[ -z "$SERVER_COUNTRY" ]]; then
     LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    fi
   elif [[ "$SERVER_COUNTRY" = 'AT' ]]; then
     echo "AT server detected"
     LIBRESSL_MIRRORURL="http://ftp2.eu.openbsd.org/pub/OpenBSD/LibreSSL"
@@ -120,6 +126,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'AU' ]]; then
     echo "AU server detected"
@@ -130,6 +141,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'BG' ]]; then
     echo "BG server detected"
@@ -140,6 +156,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'BR' ]]; then
     echo "BR server detected"
@@ -150,6 +171,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
     echo "CA server detected"
@@ -160,6 +186,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'CN' ]]; then
     echo "CN server detected"
@@ -170,6 +201,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'CR' ]]; then
     echo "CR server detected"
@@ -180,6 +216,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
     echo "DE server detected"
@@ -190,6 +231,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'DK' ]]; then
     echo "DK server detected"
@@ -200,6 +246,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
     echo "FR server detected"
@@ -210,6 +261,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'GB' ]]; then
     echo "GB server detected"
@@ -220,6 +276,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'HK' ]]; then
     echo "HK server detected"
@@ -230,6 +291,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'ID' ]]; then
     echo "ID server detected"
@@ -240,6 +306,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'IE' ]]; then
     echo "IE server detected"
@@ -250,6 +321,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
     echo "IN server detected"
@@ -260,6 +336,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'IT' ]]; then
     echo "IT server detected"
@@ -270,6 +351,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'NL' ]]; then
     echo "NL server detected"
@@ -280,6 +366,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
     echo "JP server detected"
@@ -290,6 +381,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'PH' ]]; then
     echo "PH server detected"
@@ -300,6 +396,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'PL' ]]; then
     echo "PL server detected"
@@ -310,6 +411,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'RU' ]]; then
     echo "RU server detected"
@@ -320,6 +426,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'SE' ]]; then
     echo "SE server detected"
@@ -330,6 +441,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
     echo "SG server detected"
@@ -340,6 +456,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'TH' ]]; then
     echo "TH server detected"
@@ -350,6 +471,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
     echo "US server detected"
@@ -360,6 +486,11 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
     echo "VN server detected"
@@ -370,10 +501,21 @@ libresslgeolocation() {
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
     fi
   else
     LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    fi
   fi
 }
 
