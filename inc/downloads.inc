@@ -2653,6 +2653,13 @@ fi
 ###############################################
 openssldownload() {
 
+curl -sI --connect-timeout 5 --max-time 5 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
+OPENSSL_CURLCHECK=$?
+if [[ "$OPENSSL_CURLCHECK" != '0' ]]; then
+  OPENSSL_MIRRORURL="http://centminmod.com/centminmodparts/openssl"
+  OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
+fi
+
 if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '5.12' || "$CENTOSVER" == '5.13' || "$CENTOSVER" == '5.14' ]]; then
     cd "$DIR_TMP"
 
