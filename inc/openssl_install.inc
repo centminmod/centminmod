@@ -35,10 +35,20 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
         echo "only Android 5 will support ChaCha20 if using Cloudflare Patch"
         echo  "######################################################################"
         # pushd ssl
-        rm -rf openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch
-        wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch
+        OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch'
+        rm -rf "${OPESSLCFPATCH_NAME}"
+        OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${OPESSLCFPATCH_NAME}"
+        
+        # fallback mirror if github down, use gitlab mirror
+        curl -sI --connect-timeout 5 --max-time 5 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+        OPENSSLCFPATCH_CURLCHECK=$?
+        if [[ "$OPENSSLCFPATCH_CURLCHECK" != '0' ]]; then
+            OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${OPESSLCFPATCH_NAME}"
+        fi
+        wget -cnv --no-check-certificate "$OPENSSLCFPATCHLINK"
+
         if [ ! -f crypto/chacha20poly1305/chacha20.c ]; then
-            patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch
+            patch -p1 < "${OPESSLCFPATCH_NAME}"
         fi
         # rm -rf openssl__chacha20_poly1305_cf.patch
         # wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
