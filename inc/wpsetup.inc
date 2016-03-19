@@ -916,6 +916,10 @@ END
 fi
 
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf" <<EEF
+location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
+  include /usr/local/nginx/conf/php.conf;
+}
+
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
 location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ {
