@@ -242,6 +242,19 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		IMAGEFILTEROPT=""
 	fi
 
+	if [[ "$NGINX_XSLT" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_XSLT" = [yY] ]]; then
+			NGXXSLTOPT=" --with-http_xslt_module=dynamic"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_xslt_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			NGXXSLTOPT=" --with-http_xslt_module"
+		fi
+	else
+		NGXXSLTOPT=""
+	fi
+
 	if [[ "$NGINX_PERL" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_PERL" = [yY] ]]; then
 			NGXPERLOPT=" --with-http_perl_module=dynamic"
@@ -716,6 +729,19 @@ else
 		fi
 	else
 		IMAGEFILTEROPT=""
+	fi
+
+	if [[ "$NGINX_XSLT" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_XSLT" = [yY] ]]; then
+			NGXXSLTOPT=" --with-http_xslt_module=dynamic"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_xslt_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+		else
+			NGXXSLTOPT=" --with-http_xslt_module"
+		fi
+	else
+		NGXXSLTOPT=""
 	fi
 
 	if [[ "$NGINX_PERL" = [yY] ]]; then

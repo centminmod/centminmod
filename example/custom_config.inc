@@ -20,6 +20,8 @@ CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 
 # Nginx Dynamic Module Switches
+NGXDYNAMIC_XSLT='n'
+NGXDYNAMIC_PERL='n'
 NGXDYNAMIC_IMAGEFILTER='y'
 GXDYNAMIC_GEOIP='y'
 GXDYNAMIC_STREAM='y'
@@ -63,6 +65,8 @@ NGINX_STUBSTATUS='y'         # http://nginx.org/en/docs/http/ngx_http_stub_statu
 NGINX_SUB='y'                # http://nginx.org/en/docs/http/ngx_http_sub_module.html
 NGINX_ADDITION='y'           # http://nginx.org/en/docs/http/ngx_http_addition_module.html
 NGINX_IMAGEFILTER='y'        # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
+NGINX_PERL='n'               # http://nginx.org/en/docs/http/ngx_http_perl_module.html
+NGINX_XSLT='n'               # http://nginx.org/en/docs/http/ngx_http_xslt_module.html
 NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
 NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat

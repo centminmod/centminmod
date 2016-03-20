@@ -287,6 +287,7 @@ MYSQLSERVICE_DISABLED='n'     # when set to =y,  MariaDB MySQL service disabled 
 PUREFTPD_DISABLED='n'         # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # Nginx Dynamic Module Switches
+NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'
 NGXDYNAMIC_IMAGEFILTER='y'
 NGXDYNAMIC_GEOIP='y'
@@ -327,6 +328,7 @@ NGINX_SUB='y'                # http://nginx.org/en/docs/http/ngx_http_sub_module
 NGINX_ADDITION='y'           # http://nginx.org/en/docs/http/ngx_http_addition_module.html
 NGINX_IMAGEFILTER='y'        # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
 NGINX_PERL='n'               # http://nginx.org/en/docs/http/ngx_http_perl_module.html
+NGINX_XSLT='n'               # http://nginx.org/en/docs/http/ngx_http_xslt_module.html
 NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
 NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
