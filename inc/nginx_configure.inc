@@ -427,7 +427,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 		NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
-		NGX_LUAUPSTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
+		if [[ "$NGX_LUAUPSTREAM" = [yY] ]]; then
+			NGX_LUAUPSTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
+		fi
 		if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
 			NGX_LUAUPSTREAMCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMCACHELINKFILE}" | head -1 | cut -f1 -d"/")
 		fi
@@ -435,19 +437,27 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		# https://github.com/openresty/echo-nginx-module#installation
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_LUA" = [yY] ]]; then
 			luapatch
-			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
 				LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-			else
+			elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
+				LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
+			elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
 				LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
+			elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
+				LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR"
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_lua_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
 				LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
-			else
+			elif [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
+				LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
+			elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
 				LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
+			elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
+				LUAOPT=" --add-module=../$NGX_LUANGINXDIR"
 			fi
 		fi
 
