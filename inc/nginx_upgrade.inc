@@ -466,9 +466,34 @@ fi
         cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
     else
         $DOWNLOADAPP "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        NGINXDOWNLOAD_CHECK=$?
+        if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Nginx Failed Download"
+            fi
+            echo
+            echo "!! Nginx Failed Download !!"
+            echo "try again by running centmin.sh menu option 4"
+            echo "make sure you type the correct nginx version"
+            echo
+            exit
+        fi
     fi
 
     tar xvfz "nginx-${ngver}.tar.gz"
+    NGINXTAREXTRACT_CHECK=$?
+    if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Nginx Tarball Extraction Failed"
+        fi
+        echo
+        echo "!! Nginx Tarball Extraction Failed !!"
+        echo "try again by running centmin.sh menu option 4"
+        echo "make sure you type the correct nginx version"
+        echo
+        rm -rf "$DIR_TMP/nginx-*.tar.gz"
+        exit
+    fi
     cd "nginx-${ngver}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
