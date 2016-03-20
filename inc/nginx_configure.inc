@@ -428,17 +428,27 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 		NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
 		NGX_LUAUPSTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMLINKFILE}" | head -1 | cut -f1 -d"/")
-		NGX_LUAUPSTREAMCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+		if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+			NGX_LUAUPSTREAMCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+		fi
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/echo-nginx-module#installation
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_LUA" = [yY] ]]; then
 			luapatch
-			LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
+			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+				LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
+			else
+				LUAOPT=" --add-dynamic-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
+			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_lua_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
-			LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
+			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] ]]; then
+				LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR --add-module=../$NGX_LUAUPSTREAMCACHEDIR"
+			else
+				LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
+			fi
 		fi
 
 		LUALD_OPT=" -Wl,-rpath,$LUAJIT_LIB"

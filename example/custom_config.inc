@@ -23,12 +23,12 @@ CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'
 NGXDYNAMIC_IMAGEFILTER='y'
-GXDYNAMIC_GEOIP='y'
-GXDYNAMIC_STREAM='y'
-GXDYNAMIC_HEADERSMORE='n'
-GXDYNAMIC_SETMISC='n'
-GXDYNAMIC_ECHO='n'
-GXDYNAMIC_LUA='n'
+NGXDYNAMIC_GEOIP='y'
+NGXDYNAMIC_STREAM='y'
+NGXDYNAMIC_HEADERSMORE='n'
+NGXDYNAMIC_SETMISC='n'
+NGXDYNAMIC_ECHO='n'
+NGXDYNAMIC_LUA='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='n'
 
@@ -134,6 +134,7 @@ ORESTY_LUAUPSTREAMVER='0.04'       # openresty https://github.com/openresty/lua-
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
+NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
 LUACJSONVER='2.1.0.3'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
