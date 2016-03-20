@@ -246,7 +246,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_XSLT" = [yY] ]]; then
 			NGXXSLTOPT=" --with-http_xslt_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-				echo "load_module \"modules/ngx_http_xslt_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+				echo "load_module \"modules/ngx_http_xslt_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
 		else
 			NGXXSLTOPT=" --with-http_xslt_module"
