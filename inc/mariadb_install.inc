@@ -426,7 +426,7 @@ cmservice mysqld stop
 
 #yum -y remove mysql mysql-libs
 
-rpm -e --nodeps $(rpm -qa mysql-libs)
+rpm -e --nodeps $(rpm -qa mysql-libs) >/dev/null 2>&1
 
 echo
 
