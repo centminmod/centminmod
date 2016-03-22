@@ -153,6 +153,18 @@ if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 		fi
 	else
 		BROTLIOPT=' --add-module=../ngx_brotli'
+		# if NGXDYNAMIC_BROTLI='y' was previously set with nginx 1.9.11+, then the nginx
+		# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+		# created
+		# however, it seems if you then later recompile nginx with NGXDYNAMIC_BROTLI='y'
+		# the old dynamic module would still be left in nginx dynamic modules directory
+		# this is a check for that old dynamic module and if it exists, remove it
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
+		fi
 	fi
 	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
 		export NGX_BROTLI_STATIC_MODULE_ONLY=1
@@ -237,6 +249,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			fi
 		else
 			IMAGEFILTEROPT=" --with-http_image_filter_module"
+			# if NGXDYNAMIC_IMAGEFILTER='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_IMAGEFILTER='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
+			fi
 		fi
 	else
 		IMAGEFILTEROPT=""
@@ -250,6 +271,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			fi
 		else
 			NGXXSLTOPT=" --with-http_xslt_module"
+			# if NGXDYNAMIC_XSLT='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_XSLT='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
+			fi
 		fi
 	else
 		NGXXSLTOPT=""
@@ -263,6 +293,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			fi
 		else
 			NGXPERLOPT=" --with-http_perl_module"
+			# if NGXDYNAMIC_PERL='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_PERL='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
+			fi
 		fi
 	else
 		NGXPERLOPT=""
@@ -313,6 +352,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-master"
 			else
 				HEADERSMOREOPT=" --add-module=../$NGX_HEADERSMOREDIR"
+			fi
+			# if NGXDYNAMIC_HEADERSMORE='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HEADERSMORE='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 		fi
 	else
@@ -386,6 +434,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			else
 				SETMISCOPT=" --add-module=../${SETMISCDIR}"
 			fi
+			# if NGXDYNAMIC_SETMISC='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_SETMISC='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
+			fi
 		fi
 
 		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
@@ -412,6 +469,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				ECHOOPT=" --add-module=../echo-nginx-module-master"
 			else
 				ECHOOPT=" --add-module=../${ECHODIR}"
+			fi
+			# if NGXDYNAMIC_ECHO='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_ECHO='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
 			fi
 		fi
 
@@ -458,6 +524,15 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				LUAOPT=" --add-module=../$NGX_LUANGINXDIR --add-module=../$NGX_LUAUPSTREAMDIR"
 			elif [[ "$NGX_LUAUPSTREAMCACHE" = [nN] && "$NGX_LUAUPSTREAM" = [nN] ]]; then
 				LUAOPT=" --add-module=../$NGX_LUANGINXDIR"
+			fi
+			# if NGXDYNAMIC_LUA='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_LUA='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
 			fi
 		fi
 
@@ -628,10 +703,28 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
           PGSPEEDOPT=" --add-module=../$NGXPGSPEED_DIR"
       fi
+			# if NGXDYNAMIC_NGXPAGESPEED='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
     else
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
           PGSPEEDOPT=" --add-module=../$NGXPGSPEED_DIR"
       fi
+			# if NGXDYNAMIC_NGXPAGESPEED='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
     fi
 	else
 		PGSPEEDOPT=""
@@ -746,6 +839,15 @@ else
 			fi
 		else
 			IMAGEFILTEROPT=" --with-http_image_filter_module"
+			# if NGXDYNAMIC_IMAGEFILTER='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_IMAGEFILTER='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
+			fi
 		fi
 	else
 		IMAGEFILTEROPT=""
@@ -759,6 +861,15 @@ else
 			fi
 		else
 			NGXXSLTOPT=" --with-http_xslt_module"
+			# if NGXDYNAMIC_XSLT='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_XSLT='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
+			fi
 		fi
 	else
 		NGXXSLTOPT=""
@@ -772,6 +883,15 @@ else
 			fi
 		else
 			NGXPERLOPT=" --with-http_perl_module"
+			# if NGXDYNAMIC_PERL='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_PERL='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
+			fi
 		fi
 	else
 		NGXPERLOPT=""
@@ -822,6 +942,15 @@ else
 				HEADERSMOREOPT=" --add-module=../headers-more-nginx-module-master"
 			else
 				HEADERSMOREOPT=" --add-module=../$NGX_HEADERSMOREDIR"
+			fi
+			# if NGXDYNAMIC_HEADERSMORE='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HEADERSMORE='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 		fi
 	else
@@ -934,10 +1063,28 @@ else
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
           PGSPEEDOPT=" --add-module=../$NGXPGSPEED_DIR"
       fi
+			# if NGXDYNAMIC_NGXPAGESPEED='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
     else
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
           PGSPEEDOPT=" --add-module=../$NGXPGSPEED_DIR"
       fi
+			# if NGXDYNAMIC_NGXPAGESPEED='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
     fi
 	else
 		PGSPEEDOPT=""
@@ -982,6 +1129,15 @@ if [[ "$NGINX_GEOIP" = [yY] ]]; then
 		fi
 	else
 		GEOIPOPT=' --with-http_geoip_module'
+		# if NGXDYNAMIC_GEOIP='y' was previously set with nginx 1.9.11+, then the nginx
+		# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+		# created
+		# however, it seems if you then later recompile nginx with NGXDYNAMIC_GEOIP='y'
+		# the old dynamic module would still be left in nginx dynamic modules directory
+		# this is a check for that old dynamic module and if it exists, remove it
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
+		fi
 	fi
 else
 	GEOIPOPT=''
@@ -1071,6 +1227,15 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 			fi
 		else
 			STREAM=' --with-stream --with-stream_ssl_module'
+			# if NGXDYNAMIC_STREAM='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_STREAM='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
+			fi
 		fi
 	else
 		STREAM=""
@@ -1094,6 +1259,15 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 			fi
 		else
 			STREAM=' --with-stream --with-stream_ssl_module'
+			# if NGXDYNAMIC_STREAM='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_STREAM='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
+			fi
 		fi
 	else
 		STREAM=""
