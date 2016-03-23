@@ -154,14 +154,14 @@ cat /etc/ld.so.conf.d/libavdevice.conf
 ldconfig
 
 echo
-echo "Installed FFMPEG at ${OPT}/ffmpeg"
+echo "Installed FFMPEG binary at ${OPT}/bin/ffmpeg"
 echo
 
 echo
-/opt/bin/ffmpeg -version
+"${OPT}/bin/ffmpeg" -version
 
 echo
-/opt/bin/ffmpeg -formats
+"${OPT}/bin/ffmpeg" -formats
 
 }
 
