@@ -69,7 +69,7 @@ ngx_dynamicfunction() {
 	fi # check for /usr/local/nginx/conf
 }
 
-funct_nginxconfigure() {
+luaworkaroundfix() {
 	#################################################################################
 	# work around for lua-nginx-module 0.10 branch which adds new futures supported by
 	# openssl but not by libressl which nginx compiles against so this routine checks
@@ -84,6 +84,12 @@ funct_nginxconfigure() {
 		LIBRESSL_SWITCH='n'
 		luaopensslpatch
 	fi
+}
+
+funct_nginxconfigure() {
+	# fix no longer needed with lua-nginx 0.10.2+
+	# https://github.com/openresty/lua-nginx-module/commit/b1a326eedf47b77e98b378fae1160e5340b75006
+	#luaworkaroundfix
 
 	#################################################################################
 	ngx_dynamicfunction
@@ -1442,7 +1448,9 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 	fi
 fi
 
-libresslcompile_fix
+# fix no longer needed with libressl 2.3.3
+# https://community.centminmod.com/threads/libressl-2-3-3-released.6788/
+# libresslcompile_fix
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
