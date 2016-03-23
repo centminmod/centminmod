@@ -450,12 +450,12 @@ if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] ]]; then
     rm -rf nginx-${ngver}*
 fi
 
-if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
-    # if existing Nginx server is detected to have HTTP/2 patch compiled, then
-    # wipe nginx download source and redownload a fresh copy to ensure you're
-    # patching with latest patch http://nginx.org/patches/http2/ available
-    rm -rf nginx-${ngver}*
-fi
+# if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+#     # if existing Nginx server is detected to have HTTP/2 patch compiled, then
+#     # wipe nginx download source and redownload a fresh copy to ensure you're
+#     # patching with latest patch http://nginx.org/patches/http2/ available
+#     rm -rf nginx-${ngver}*
+# fi
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Compile Nginx"
