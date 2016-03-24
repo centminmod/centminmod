@@ -533,27 +533,27 @@ figletcheck() {
 
 maintenance_confcheck() {
 	if [ ! -f /usr/local/nginx/conf/sitestatus.conf ]; then
-		if [ -f "${SCRIPT_DIR}/config/nginx/sitestatus.conf" ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/sitestatus.conf" && -d /usr/local/nginx/conf ]]; then
 			\cp -f "${SCRIPT_DIR}/config/nginx/sitestatus.conf" /usr/local/nginx/conf/sitestatus.conf
 		fi
 	fi
 	if [ ! -f /usr/local/nginx/conf/maintenance.conf ]; then
-		if [ -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" && -d /usr/local/nginx/conf ]]; then
 			\cp -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" /usr/local/nginx/conf/maintenance.conf
 		fi
 	fi
 	if [ ! -f /usr/local/nginx/conf/503include-main.conf ]; then
-		if [ -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" && -d /usr/local/nginx/conf ]]; then
 			\cp -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" /usr/local/nginx/conf/503include-main.conf
 		fi
 	fi
 	if [ ! -f /usr/local/nginx/conf/503include-only.conf ]; then
-		if [ -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" && -d /usr/local/nginx/conf ]]; then
 			\cp -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" /usr/local/nginx/conf/503include-only.conf
 		fi
 	fi
 	if [ ! -f /usr/bin/sitestatus ]; then
-		if [ -f "${SCRIPT_DIR}/tools/sitestatus.sh" ]; then
+		if [[ -f "${SCRIPT_DIR}/tools/sitestatus.sh" && -d /usr/local/nginx/conf ]]; then
 			\cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
 			chmod +x /usr/bin/sitestatus
      	MCONF_CHECK=$(grep 'maintenance.conf' /usr/local/nginx/conf/nginx.conf)
