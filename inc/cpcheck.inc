@@ -451,9 +451,9 @@ cronpathadjust() {
 		# append /usr/local/bin to /etc/crontab PATH variable for /usr/local/bin/php to work
 		if [ -f /etc/crontab ]; then
 			if [[ -z "$(grep '\/usr\/local\/bin' /etc/crontab)" ]]; then
-				echo "adjust /etc/crontab \$PATH for /usr/local/bin support"
+				# echo "adjust /etc/crontab \$PATH for /usr/local/bin support"
 				sed -i 's|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/usr\/local\/bin|' /etc/crontab
-				cmservice crond restart
+				cmservice crond restart >/dev/null 2>&1
 			fi
 		fi
 	# fi
