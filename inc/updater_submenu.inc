@@ -230,28 +230,29 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 			echo
 			# set windowMemory and packSizeLimit to workaround
 			# failed repack runs
-			if [[ "$TOTALMEM" -le '131072' ]]; then
+			TOTALMEMSWAP=$(egrep '^MemTotal|^SwapTotal' /proc/meminfo | awk '{ t+=$2 } END { print t }')
+			if [[ "$TOTALMEMSWAP" -le '131072' ]]; then
 				git config pack.windowMemory "30m"
 				git config pack.packSizeLimit "250m"
-			elif [[ "$TOTALMEM" -le '262144' && "$TOTALMEM" -ge '131073' ]]; then
+			elif [[ "$TOTALMEMSWAP" -le '262144' && "$TOTALMEMSWAP" -ge '131073' ]]; then
 				git config pack.windowMemory "50m"
 				git config pack.packSizeLimit "250m"
-			elif [[ "$TOTALMEM" -le '524288' && "$TOTALMEM" -ge '262145' ]]; then
+			elif [[ "$TOTALMEMSWAP" -le '524288' && "$TOTALMEMSWAP" -ge '262145' ]]; then
 				git config pack.windowMemory "125m"
 				git config pack.packSizeLimit "250m"
-			elif [[ "$TOTALMEM" -le '1048576' && "$TOTALMEM" -ge '524289' ]]; then
+			elif [[ "$TOTALMEMSWAP" -le '1048576' && "$TOTALMEMSWAP" -ge '524289' ]]; then
 				git config pack.windowMemory "250m"
 				git config pack.packSizeLimit "250m"
-			elif [[ "$TOTALMEM" -le '2097152' && "$TOTALMEM" -ge '1048577' ]]; then
+			elif [[ "$TOTALMEMSWAP" -le '2097152' && "$TOTALMEMSWAP" -ge '1048577' ]]; then
 				git config pack.windowMemory "350m"
 				git config pack.packSizeLimit "500m"
-			elif [[ "$TOTALMEM" -le '4194304' && "$TOTALMEM" -ge '2097153' ]]; then
+			elif [[ "$TOTALMEMSWAP" -le '4194304' && "$TOTALMEMSWAP" -ge '2097153' ]]; then
 				git config pack.windowMemory "500m"
 				git config pack.packSizeLimit "1000m"
-			elif [[ "$TOTALMEM" -le '8388607' && "$TOTALMEM" -ge '4194305' ]]; then
+			elif [[ "$TOTALMEMSWAP" -le '8388607' && "$TOTALMEMSWAP" -ge '4194305' ]]; then
 				git config pack.windowMemory "1000m"
 				git config pack.packSizeLimit "1000m"
-			elif [[ "$TOTALMEM" -ge '8388608' ]]; then
+			elif [[ "$TOTALMEMSWAP" -ge '8388608' ]]; then
 				git config pack.windowMemory "1500m"
 				git config pack.packSizeLimit "1000m"
 			fi
@@ -351,28 +352,29 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 				echo
 				# set windowMemory and packSizeLimit to workaround
 				# failed repack runs
-				if [[ "$TOTALMEM" -le '131072' ]]; then
+				TOTALMEMSWAP=$(egrep '^MemTotal|^SwapTotal' /proc/meminfo | awk '{ t+=$2 } END { print t }')
+				if [[ "$TOTALMEMSWAP" -le '131072' ]]; then
 					git config pack.windowMemory "30m"
 					git config pack.packSizeLimit "250m"
-				elif [[ "$TOTALMEM" -le '262144' && "$TOTALMEM" -ge '131073' ]]; then
+				elif [[ "$TOTALMEMSWAP" -le '262144' && "$TOTALMEMSWAP" -ge '131073' ]]; then
 					git config pack.windowMemory "50m"
 					git config pack.packSizeLimit "250m"
-				elif [[ "$TOTALMEM" -le '524288' && "$TOTALMEM" -ge '262145' ]]; then
+				elif [[ "$TOTALMEMSWAP" -le '524288' && "$TOTALMEMSWAP" -ge '262145' ]]; then
 					git config pack.windowMemory "125m"
 					git config pack.packSizeLimit "250m"
-				elif [[ "$TOTALMEM" -le '1048576' && "$TOTALMEM" -ge '524289' ]]; then
+				elif [[ "$TOTALMEMSWAP" -le '1048576' && "$TOTALMEMSWAP" -ge '524289' ]]; then
 					git config pack.windowMemory "250m"
 					git config pack.packSizeLimit "250m"
-				elif [[ "$TOTALMEM" -le '2097152' && "$TOTALMEM" -ge '1048577' ]]; then
+				elif [[ "$TOTALMEMSWAP" -le '2097152' && "$TOTALMEMSWAP" -ge '1048577' ]]; then
 					git config pack.windowMemory "350m"
 					git config pack.packSizeLimit "500m"
-				elif [[ "$TOTALMEM" -le '4194304' && "$TOTALMEM" -ge '2097153' ]]; then
+				elif [[ "$TOTALMEMSWAP" -le '4194304' && "$TOTALMEMSWAP" -ge '2097153' ]]; then
 					git config pack.windowMemory "500m"
 					git config pack.packSizeLimit "1000m"
-				elif [[ "$TOTALMEM" -le '8388607' && "$TOTALMEM" -ge '4194305' ]]; then
+				elif [[ "$TOTALMEMSWAP" -le '8388607' && "$TOTALMEMSWAP" -ge '4194305' ]]; then
 					git config pack.windowMemory "1000m"
 					git config pack.packSizeLimit "1000m"
-				elif [[ "$TOTALMEM" -ge '8388608' ]]; then
+				elif [[ "$TOTALMEMSWAP" -ge '8388608' ]]; then
 					git config pack.windowMemory "1500m"
 					git config pack.packSizeLimit "1000m"
 				fi
