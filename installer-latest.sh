@@ -179,7 +179,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 mkdir -p /etc/centminmod/
 echo "NGINX_PAGESPEED=y" > /etc/centminmod/custom_config.inc
 echo "ORESTY_LUANGINX=y" >> /etc/centminmod/custom_config.inc
-echo "ORESTY_LUANGINXVER='0.10.1rc0'" >> /etc/centminmod/custom_config.inc
+# echo "ORESTY_LUANGINXVER='0.10.2'" >> /etc/centminmod/custom_config.inc
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 "${INSTALLDIR}/centminmod/centmin.sh" install
