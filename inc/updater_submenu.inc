@@ -255,7 +255,6 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 				git config pack.windowMemory "1500m"
 				git config pack.packSizeLimit "1000m"
 			fi
-			git config pack.packSizeLimit "500m"
 			git gc --prune=now --aggressive
 			touch git-agg
 		fi
