@@ -923,7 +923,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf"
 # prevent .zip, .gz, .tar, .bzip2 files from being accessed by default
 # impossible for centmin mod to know which wp backup plugins they installed
 # which may save backups to directories in wp-content/
-# such plugins may deploy .htaccess protection but that isn't supported installed
+# such plugins may deploy .htaccess protection but that isn't supported in
 # nginx, so blocking access to these extensions is a workaround to cover all bases
 location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
 
