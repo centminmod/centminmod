@@ -920,6 +920,8 @@ END
 fi
 
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf" <<EEF
+location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
+
 location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
   include /usr/local/nginx/conf/php.conf;
 }
