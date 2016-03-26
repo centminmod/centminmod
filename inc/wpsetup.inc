@@ -561,6 +561,8 @@ fi
 cat > "/usr/local/nginx/conf/wpsecure_${vhostname}.conf" <<EEF
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
+location ~ ^/wp-content/updraft { deny all; }
+
 location ~* /(?:uploads|files)/.*\.php\$ {
 deny all;
 }
@@ -865,8 +867,8 @@ wp plugin install p3-profiler --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 wp plugin install wordpress-seo --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install updraftplus --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
+# wp plugin install updraftplus --activate --allow-root
+# cecho "------------------------------------------------------------" $boldgreen
 wp plugin install google-analytics-for-wordpress --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
