@@ -177,7 +177,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       echo "----------------------------------------------------------------------------------"
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
       echo "----------------------------------------------------------------------------------"
-      yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-  libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+      yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
   
       yum -y remove ImageMagick
   
