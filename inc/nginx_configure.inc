@@ -171,6 +171,12 @@ if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
 			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
 		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
+		fi
 	fi
 	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
 		export NGX_BROTLI_STATIC_MODULE_ONLY=1
@@ -276,6 +282,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so.old
+			fi
 		fi
 	else
 		IMAGEFILTEROPT=""
@@ -304,6 +313,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old
+			fi
 		fi
 	else
 		NGXXSLTOPT=""
@@ -331,6 +343,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so.old
 			fi
 		fi
 	else
@@ -397,6 +412,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old
 			fi
 		fi
 	else
@@ -485,6 +503,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so.old
+			fi
 		fi
 
 		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
@@ -520,6 +541,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so.old
 			fi
 		fi
 
@@ -587,6 +611,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
 			fi
 		fi
 
@@ -772,6 +799,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
+			fi
     else
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
           PGSPEEDOPT=" --add-module=../$NGXPGSPEED_DIR"
@@ -784,6 +814,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
 			fi
     fi
 	else
@@ -914,6 +947,9 @@ else
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so.old
+			fi
 		fi
 	else
 		IMAGEFILTEROPT=""
@@ -942,6 +978,9 @@ else
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so.old
+			fi
 		fi
 	else
 		NGXXSLTOPT=""
@@ -969,6 +1008,9 @@ else
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so.old
 			fi
 		fi
 	else
@@ -1035,6 +1077,9 @@ else
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old
 			fi
 		fi
 	else
@@ -1162,6 +1207,9 @@ else
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
+			fi
     else
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
           PGSPEEDOPT=" --add-module=../$NGXPGSPEED_DIR"
@@ -1174,6 +1222,9 @@ else
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
 			fi
     fi
 	else
@@ -1233,6 +1284,9 @@ if [[ "$NGINX_GEOIP" = [yY] ]]; then
 		# this is a check for that old dynamic module and if it exists, remove it
 		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
 			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
 		fi
 	fi
 else
@@ -1338,6 +1392,9 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so.old
+			fi
 		fi
 	else
 		STREAM=""
@@ -1375,6 +1432,9 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 			# this is a check for that old dynamic module and if it exists, remove it
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so.old
 			fi
 		fi
 	else
