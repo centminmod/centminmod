@@ -220,8 +220,6 @@ else
 		fi
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
-
 	if [[ "$NGINX_NJS" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
 			NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
@@ -265,6 +263,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
 			fi
 	fi
+
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
 	if [[ "$NGINX_DEBUG" = [yY] ]]; then
 		NGINX_DEBUGOPT=' --with-debug'
@@ -947,50 +947,6 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	fi
 
 else
-
-	if [[ "$NGINX_NJS" = [yY] ]]; then
-		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
-			NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
-			if [ ! -f /usr/bin/hg ]; then
-				yum -y install mercurial
-			fi
-			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-				cd "$DIR_TMP"
-				hg clone http://hg.nginx.org/njs/
-			elif [ -f /usr/bin/hg ]; then
-				cd "${DIR_TMP}/njs"
-				hg pull
-			fi
-			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-				echo "load_module \"modules/ngx_http_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
-			fi
-		else
-			NGINX_NJSOPT=' --add-module=../njs/nginx'
-			# if NGXDYNAMIC_NJS='y' was previously set with nginx 1.9.11+, then the nginx
-			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
-			# created
-			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NJS='y'
-			# the old dynamic module would still be left in nginx dynamic modules directory
-			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
-			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
-			fi
-		fi
-	else
-		NGINX_NJSOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
-			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
-			fi
-	fi
 
 	if [[ "$NGINX_DEBUG" = [yY] ]]; then
 		NGINX_DEBUGOPT=' --with-debug'
