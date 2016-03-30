@@ -292,7 +292,7 @@ NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
 NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.37'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.28'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
@@ -399,7 +399,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.0RC5'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.1'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'    # Use this version of Memcached server
