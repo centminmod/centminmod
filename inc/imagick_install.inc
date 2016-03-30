@@ -1,6 +1,6 @@
 checkphpext() {
     cecho "Check for php extensions" $boldyellow
-    if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" ]]; then
+    if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" || ! -d "${DIR_TMP}/imagick-${IMAGICKPHP_VER}" ]]; then
         echo "Downloading imagick extension"
         imagickphpexttarball
     fi
