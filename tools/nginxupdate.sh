@@ -109,6 +109,10 @@ else
 fi
 
 ###################################################################################
+#####################################################
+# experimental use of subshells to download some
+# tarballs in parallel for faster initial installs
+PARALLEL_MODE=y
 # compiler related
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_PHP='n'                 # PHP
@@ -127,13 +131,18 @@ MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled 
 PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # Nginx Dynamic Module Switches
-NGXDYNAMIC_IMAGEFILTER=y
-NGXDYNAMIC_GEOIP=y
-NGXDYNAMIC_STREAM=y
-NGXDYNAMIC_HEADERSMORE=n
-NGXDYNAMIC_SETMISC=n
-NGXDYNAMIC_ECHO=n
-NGXDYNAMIC_LUA=n
+NGXDYNAMIC_NJS='n'
+NGXDYNAMIC_XSLT='n'
+NGXDYNAMIC_PERL='n'
+NGXDYNAMIC_IMAGEFILTER='y'
+NGXDYNAMIC_GEOIP='y'
+NGXDYNAMIC_STREAM='y'
+NGXDYNAMIC_HEADERSMORE='n'
+NGXDYNAMIC_SETMISC='n'
+NGXDYNAMIC_ECHO='n'
+NGXDYNAMIC_LUA='n'
+NGXDYNAMIC_NGXPAGESPEED='n'
+NGXDYNAMIC_BROTLI='y'
 
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/
@@ -163,6 +172,8 @@ NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_statu
 NGINX_SUB=y                  # http://nginx.org/en/docs/http/ngx_http_sub_module.html
 NGINX_ADDITION=y             # http://nginx.org/en/docs/http/ngx_http_addition_module.html
 NGINX_IMAGEFILTER=y          # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
+NGINX_PERL='n'               # http://nginx.org/en/docs/http/ngx_http_perl_module.html
+NGINX_XSLT='n'               # http://nginx.org/en/docs/http/ngx_http_xslt_module.html
 NGINX_CACHEPURGE=y           # https://github.com/FRiCKLE/ngx_cache_purge/
 NGINX_ACCESSKEY=y            #
 NGINX_HTTPCONCAT=y           # https://github.com/alibaba/nginx-http-concat
@@ -174,13 +185,14 @@ NGINX_MP4=n                  # Nginx MP4 Module http://nginx.org/en/docs/http/ng
 NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
 NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
+NGINX_FANCYINDEXVER='0.3.6'
 NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI=n            # https://github.com/google/ngx_brotli
 NGINX_LIBBROTLISTATIC=n
 NGINX_PAGESPEED=n            # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.10.33.4-beta'
-NGINX_PAGESPEEDPSOL_VER='1.10.33.4'
+NGXPGSPEED_VER='1.10.33.7-beta'
+NGINX_PAGESPEEDPSOL_VER='1.10.33.7'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
@@ -194,15 +206,15 @@ ORESTY_HEADERSMOREGIT=n      # use git master instead of version specific
 NGINX_HEADERSMORE='0.29'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
-NGINX_STICKYVER='1.2.5'
+NGINX_STICKYVER='1.2.6'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SRCCACHEVER='0.30'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.3.0rc1'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCGIT=n             # use git master instead of version specific
-ORESTY_SETMISCVER='0.29'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT=n             # use git master instead of version specific
 ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
@@ -211,7 +223,7 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.9.20'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.2'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
@@ -222,14 +234,16 @@ ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-res
 ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
 ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
-ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.4'     # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUAUPSTREAMVER='0.04'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUARESTYCOREVER='0.1.5'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.05'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+NGX_LUAUPSTREAM='n'                # disable https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.2'              # https://github.com/openresty/lua-cjson
+NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
+LUACJSONVER='2.1.0.3'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 
@@ -243,12 +257,12 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2f'   # Use this version of OpenSSL http://openssl.org/
-CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
+OPENSSL_VERSION='1.0.2g'   # Use this version of OpenSSL http://openssl.org/
+CLOUDFLARE_PATCHSSL='y'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.2.6'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.3.3'   # Use this version of LibreSSL http://www.libressl.org/
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
@@ -288,7 +302,7 @@ SELFSIGNEDSSL_O=''
 SELFSIGNEDSSL_OU=''
 ###############################################################
 
-MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
+MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
 if [ "${ARCH_OVERRIDE}" != '' ]
 then
