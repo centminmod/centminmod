@@ -225,6 +225,15 @@ if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
 fi
 
 if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
+    # nginx upgrade routine needs to know directory names for specific nginx
+    # modules to know if they exist
+    MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
+    SRCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_SRCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+    SETMISCDIR=$(tar -tzf "$DIR_TMP/${NGX_SETMISCLINKFILE}" | head -1 | cut -f1 -d"/")
+    DEVELKITDIR=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" | head -1 | cut -f1 -d"/")
+    ECHODIR=$(tar -tzf "$DIR_TMP/${NGX_ECHOLINKFILE}" | head -1 | cut -f1 -d"/")
+    REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
+    
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${MEMCDIR}" || ! -d "${DIR_TMP}/${SRCACHEDIR}"|| ! -d "${DIR_TMP}/${REDISDIR}" || ! -d "${DIR_TMP}/${ECHODIR}" || ! -d "${DIR_TMP}/${SETMISCDIR}" || ! -d "${DIR_TMP}/${DEVELKITDIR}" ]]; then
 
         openrestytarball
