@@ -382,6 +382,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi
 
 	if [[ "$NGINX_PERL" = [yY] ]]; then
+		if [ ! -f /usr/share/perl5/ExtUtils/Embed.pm ]; then
+			yum -q -y install perl-ExtUtils-Embed
+		fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_PERL" = [yY] ]]; then
 			NGXPERLOPT=" --with-http_perl_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
@@ -1055,6 +1058,9 @@ else
 	fi
 
 	if [[ "$NGINX_PERL" = [yY] ]]; then
+		if [ ! -f /usr/share/perl5/ExtUtils/Embed.pm ]; then
+			yum -q -y install perl-ExtUtils-Embed
+		fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_PERL" = [yY] ]]; then
 			NGXPERLOPT=" --with-http_perl_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
