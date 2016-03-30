@@ -569,6 +569,16 @@ maintenance_confcheck() {
 	fi
 }
 
+ngxmodule_cleanups() {
+	# clean ups
+	if [ -f "$DIR_TMP/nginx-develkit_v0.2.19.tar.gz" ]; then
+		rm -rf "$DIR_TMP/nginx-develkit_v0.2.19.tar.gz"
+	fi
+	if [ -d "$DIR_TMP/ngx_devel_kit-0.2.19" ]; then
+		rm -rf "$DIR_TMP/ngx_devel_kit-0.2.19"
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -621,6 +631,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	figletcheck
 	maintenance_confcheck
 	axivo_remove
+	ngxmodule_cleanups
 fi
 
 }
