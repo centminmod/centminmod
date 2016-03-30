@@ -87,6 +87,20 @@ luaworkaroundfix() {
 }
 
 funct_nginxconfigure() {
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/z_custom.inc"
+fi
+
 	# fix no longer needed with lua-nginx 0.10.2+
 	# https://github.com/openresty/lua-nginx-module/commit/b1a326eedf47b77e98b378fae1160e5340b75006
 	#luaworkaroundfix
