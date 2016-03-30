@@ -157,6 +157,12 @@ if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 			echo "load_module \"modules/ngx_http_brotli_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			echo "load_module \"modules/ngx_http_brotli_static_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
+		fi
 	else
 		BROTLIOPT=' --add-module=../ngx_brotli'
 		# if NGXDYNAMIC_BROTLI='y' was previously set with nginx 1.9.11+, then the nginx
@@ -271,6 +277,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_image_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so.old
+			fi
 		else
 			IMAGEFILTEROPT=" --with-http_image_filter_module"
 			# if NGXDYNAMIC_IMAGEFILTER='y' was previously set with nginx 1.9.11+, then the nginx
@@ -302,6 +311,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_xslt_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old
+			fi
 		else
 			NGXXSLTOPT=" --with-http_xslt_module"
 			# if NGXDYNAMIC_XSLT='y' was previously set with nginx 1.9.11+, then the nginx
@@ -332,6 +344,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			NGXPERLOPT=" --with-http_perl_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_perl_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so.old
 			fi
 		else
 			NGXPERLOPT=" --with-http_perl_module"
@@ -397,6 +412,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old
 			fi
 		else
 			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
@@ -488,6 +506,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_set_misc_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so.old
+			fi
 		else
 			if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
 				SETMISCOPT=" --add-module=../set-misc-nginx-module-master"
@@ -526,6 +547,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_echo_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so.old
 			fi
 		else
 			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
@@ -592,6 +616,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_lua_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
 			fi
 		else
 			if [[ "$NGX_LUAUPSTREAMCACHE" = [yY] && "$NGX_LUAUPSTREAM" = [yY] ]]; then
@@ -785,6 +812,9 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_pagespeed.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
+			fi
    	elif [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
      		# ngxpagespeed_patched
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
@@ -936,6 +966,9 @@ else
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_image_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so.old
+			fi
 		else
 			IMAGEFILTEROPT=" --with-http_image_filter_module"
 			# if NGXDYNAMIC_IMAGEFILTER='y' was previously set with nginx 1.9.11+, then the nginx
@@ -967,6 +1000,9 @@ else
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_xslt_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so.old
+			fi
 		else
 			NGXXSLTOPT=" --with-http_xslt_module"
 			# if NGXDYNAMIC_XSLT='y' was previously set with nginx 1.9.11+, then the nginx
@@ -997,6 +1033,9 @@ else
 			NGXPERLOPT=" --with-http_perl_module=dynamic"
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_perl_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so.old
 			fi
 		else
 			NGXPERLOPT=" --with-http_perl_module"
@@ -1062,6 +1101,9 @@ else
 			fi
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_http_headers_more_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old
 			fi
 		else
 			if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
@@ -1193,6 +1235,9 @@ else
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_pagespeed.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
+			fi
    	elif [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
      		# ngxpagespeed_patched
       if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
@@ -1273,6 +1318,9 @@ if [[ "$NGINX_GEOIP" = [yY] ]]; then
 		GEOIPOPT=' --with-http_geoip_module=dynamic'
 		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 			echo "load_module \"modules/ngx_http_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
 		fi
 	else
 		GEOIPOPT=' --with-http_geoip_module'
@@ -1381,6 +1429,9 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_stream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
 			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so.old
+			fi
 		else
 			STREAM=' --with-stream --with-stream_ssl_module'
 			# if NGXDYNAMIC_STREAM='y' was previously set with nginx 1.9.11+, then the nginx
@@ -1421,6 +1472,9 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
 			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
 				echo "load_module \"modules/ngx_stream_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so.old
 			fi
 		else
 			STREAM=' --with-stream --with-stream_ssl_module'
