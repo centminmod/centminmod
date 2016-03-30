@@ -180,6 +180,18 @@ else
 	BROTLIOPT=""
 	# disable include file if exists
 	sed -i 's|^include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|#include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
+		fi
 fi
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
@@ -267,6 +279,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		fi
 	else
 		IMAGEFILTEROPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_XSLT" = [yY] ]]; then
@@ -289,6 +307,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		fi
 	else
 		NGXXSLTOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_PERL" = [yY] ]]; then
@@ -311,6 +335,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		fi
 	else
 		NGXPERLOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
@@ -371,6 +401,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		fi
 	else
 		HEADERSMOREOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
@@ -494,7 +530,19 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		SETMISCOPT=""
 		DEVELKITOPT=""
 		ECHOOPT=""
-		REDISOPT=""		
+		REDISOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so.old
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so.old
+			fi
 	fi
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
@@ -587,6 +635,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 	else
 		LUAOPT=""
 		LUALD_OPT=" -Wl,-rpath,/usr/local/lib"
+			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -734,6 +788,12 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     fi
 	else
 		PGSPEEDOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_LIBATOMIC" = [yY] ]]; then
@@ -857,6 +917,12 @@ else
 		fi
 	else
 		IMAGEFILTEROPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_XSLT" = [yY] ]]; then
@@ -879,6 +945,12 @@ else
 		fi
 	else
 		NGXXSLTOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_PERL" = [yY] ]]; then
@@ -901,6 +973,12 @@ else
 		fi
 	else
 		NGXPERLOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
@@ -961,6 +1039,12 @@ else
 		fi
 	else
 		HEADERSMOREOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_HTTPREDIS" = [yY] ]]; then
@@ -1094,6 +1178,12 @@ else
     fi
 	else
 		PGSPEEDOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so.old
+			fi
 	fi
 
 	if [[ "$NGINX_LIBATOMIC" = [yY] ]]; then
@@ -1147,6 +1237,12 @@ if [[ "$NGINX_GEOIP" = [yY] ]]; then
 	fi
 else
 	GEOIPOPT=''
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
+		fi
 fi
 
 if [[ "$NGINX_PASSENGER" = [yY] && "$RUBY_VERSION" ]]; then
@@ -1245,6 +1341,12 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]]; then
 		fi
 	else
 		STREAM=""
+		if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_stream_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_stream_module.so.old
+		fi
 	fi
 	THREADS=' --with-threads'
 	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
@@ -1277,6 +1379,12 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]]; then
 		fi
 	else
 		STREAM=""
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_module.so.old
+			fi
 	fi
 	THREADS=' --with-threads'
 	if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
