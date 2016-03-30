@@ -181,7 +181,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   
       yum -y remove ImageMagick
   
-      if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' ]]; then
+      if [[ "$CENTOS_SIX" = '6' ]]; then
         # yum -y install libwebp libwebp-devel --skip-broken
         yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
       else

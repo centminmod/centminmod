@@ -14,6 +14,31 @@ checkimagicksys() {
             if [[ "$(rpm -qa ImageMagick-last)" ]] && [[ -z "$(rpm -qa ImageMagick)" ]]; then
                 yum -y update ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
             fi
+        elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
+            # for very old centmin mod installs which never had remi yum repo setup
+            if [[ "$CENTOS_SIX" = '6' ]]; then
+                remisixyum
+            elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+                remisevenyum
+            fi
+            if [[ "$(rpm -qa ImageMagick)" ]]; then
+            echo
+            echo "----------------------------------------------------------------------------------"
+            cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
+            echo "----------------------------------------------------------------------------------"
+            yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+          
+            yum -y remove ImageMagick
+          
+            if [[ "$CENTOS_SIX" = '6' ]]; then
+                # yum -y install libwebp libwebp-devel --skip-broken
+                yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+            else
+                yum -y install ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+            fi
+              
+            echo
+            fi
         fi
     fi
     echo
