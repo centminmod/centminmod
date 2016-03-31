@@ -579,6 +579,22 @@ ngxmodule_cleanups() {
 	fi
 }
 
+wpcompfix() {
+	# for wordpress auto installs via centmin.sh menu option 22, the wpsecure include
+	# file needs an added deny all location context to prevent compressed files in
+	# wordpress plugins that save to wp-content subdirectory from public access
+	if [ -d /usr/local/nginx/conf ]; then
+		WPSECUREDIRS=$(find /usr/local/nginx/conf/ -type f -name "wpsecure_*.conf")
+		if [[ "$WPSECUREDIRS" ]]; then
+			for wsf in $WPSECUREDIRS; do
+				if [[ -z "$(grep 'zip|gz|tar|bzip2|7z' $wsf)" ]]; then
+					echo "location ~* /(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }" >> "$wsf";
+				fi
+			done
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -632,6 +648,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	maintenance_confcheck
 	axivo_remove
 	ngxmodule_cleanups
+	wpcompfix
 fi
 
 }
