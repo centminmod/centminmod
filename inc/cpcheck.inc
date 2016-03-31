@@ -587,8 +587,8 @@ wpcompfix() {
 		WPSECUREDIRS=$(find /usr/local/nginx/conf/ -type f -name "wpsecure_*.conf")
 		if [[ "$WPSECUREDIRS" ]]; then
 			for wsf in $WPSECUREDIRS; do
-				if [[ -z "$(grep 'zip|gz|tar|bzip2|7z' $wsf)" ]]; then
-					echo "location ~* /(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }" >> "$wsf";
+				if [[ -z "$(grep 'zip|gz|tar|bzip2|7z|txt' $wsf)" ]]; then
+					echo "location ~* /(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z|txt)\$ { deny all; }" >> "$wsf";
 				fi
 			done
 		fi
