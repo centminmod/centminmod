@@ -175,7 +175,7 @@ NEW=$(echo $PHPEXTDIRDNEW | sed 's/\//\\\//g')
 for ini in $(ls ${CONFIGSCANDIR}/ | grep .ini)
  do 
     echo "$ini"
-    sed -i "s/$OLD/$NEW/g" "${CONFIGSCANDIR}/${ini}" /dev/null 2>&1
+    sed -i "s/$OLD/$NEW/g" "${CONFIGSCANDIR}/${ini}" >/dev/null 2>&1
 done
 
 }
