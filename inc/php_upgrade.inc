@@ -172,7 +172,7 @@ PHPEXTDIRDNEW=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1
 OLD=$(echo $PHPEXTDIRDOLD | sed 's/\//\\\//g')
 NEW=$(echo $PHPEXTDIRDNEW | sed 's/\//\\\//g')
 
-for ini in $(ls ${CONFIGSCANDIR}/ | grep .ini)
+for ini in "$(ls ${CONFIGSCANDIR}/ | grep .ini)"
  do 
     echo "$ini"
     sed -i "s/$OLD/$NEW/g" "${CONFIGSCANDIR}/${ini}" >/dev/null 2>&1
