@@ -1,15 +1,18 @@
 check_requestscheme() {
 # check for REQUEST_SCHEME parameter added in nginx 1.9.2 
 # add it if it doesn't exist in fastcgi_param and php include files
-for f in $(grep -Rl 'fastcgi_param  SERVER_PROTOCOL    \$server_protocol;' /usr/local/nginx/conf/*); 
+for f in "$(grep -Rl 'fastcgi_param  SERVER_PROTOCOL    \$server_protocol;' /usr/local/nginx/conf/*)"; 
   do
-    echo "$f"
-    ff=$(grep 'REQUEST_SCHEME' "$f")
-    fff=$(grep 'https if_not_empty' "$f")
-    if [[ -z "$ff" && -z "$fff" ]]; then
-        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;\nfastcgi_param  HTTPS              \$https if_not_empty;|" "$f"
-    elif [[ -z "$ff" && "$fff" ]]; then
-        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;|" "$f"
+    # only proceed with routine if the file referenced in $f variable exists
+    if [ -f "$f" ]; then
+        echo "$f"
+        ff=$(grep 'REQUEST_SCHEME' "$f")
+        fff=$(grep 'https if_not_empty' "$f")
+        if [[ -z "$ff" && -z "$fff" ]]; then
+        sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;\nfastcgi_param  HTTPS              \$https     if_not_empty;|" "$f"
+        elif [[ -z "$ff" && "$fff" ]]; then
+            sed -i "s|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;|fastcgi_param  SERVER_PROTOCOL    \$server_protocol;\nfastcgi_param  REQUEST_SCHEME     \$scheme;|" "$f"
+        fi
     fi
 done
 
