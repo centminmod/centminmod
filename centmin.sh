@@ -499,6 +499,7 @@ PHP_MEMCACHE='y'            # memcache PHP extension
 PHP_MEMCACHED='y'           # memcached PHP extension
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.37.1'
+PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
 PHP_VERSION='5.6.20'        # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"

@@ -244,7 +244,7 @@ else
     else
         PHPCONF_DIFFCHECK=1
     fi
-    if [[ "$PHPCONF_DIFFCHECK" != '0' ]]; then
+    if [[ "$PHPCONF_DIFFCHECK" != '0' && "$PHP_OVERWRITECONF" = [yY] ]]; then
         echo "Want to update to latest php-fpm.conf ? (overwrites will auto backup existing php-fpm.conf)"
         echo "existing php-fpm.conf will be backed up at /usr/local/etc/php-fpm.conf-oldversion_$DT"
         echo "----------------------------------------------------------------"
