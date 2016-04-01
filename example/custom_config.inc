@@ -40,7 +40,7 @@ HP_UPDATEMAINTENANCE='n'
 ARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.9.12'       # Use this version of Nginx
+NGINX_VERSION='1.9.13'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
@@ -84,8 +84,8 @@ NGINX_LIBBROTLI='n'          # https://github.com/google/ngx_brotli
 NGINX_LIBBROTLISTATIC='n'
 NGINX_PAGESPEED='n'          # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.10.33.6-beta'
-NGINX_PAGESPEEDPSOL_VER='1.10.33.6'
+NGXPGSPEED_VER='1.11.33.0-beta'
+NGINX_PAGESPEEDPSOL_VER='1.11.33.0'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV='n'             # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
