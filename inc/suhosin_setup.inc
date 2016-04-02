@@ -4,7 +4,7 @@ suhosinsetup() {
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
-if [ "$PHPVERCHECK" != '5.7' ]; then
+if [[ "$PHPVERCHECK" != '5.7' || "$PHPVERCHECK" != '7.0' ]]; then
 
 cd $DIR_TMP
 
