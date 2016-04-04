@@ -34,16 +34,27 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
         echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch"
         echo "only Android 5 will support ChaCha20 if using Cloudflare Patch"
         echo  "######################################################################"
+        # check if cpu supports avx2 (Intel Xeon E5 v3 and Xeon E3 v5) & implement 
+        # cloudflare openssl 1.0.2+ patch with optimized avx2 seal if cpu supports it
+        AVXTWO_CHECK=$(grep -o --color avx2 /proc/cpuinfo | uniq >/dev/null 2>&1; echo $?)
         # pushd ssl
         OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch'
         rm -rf "${OPESSLCFPATCH_NAME}"
-        OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${OPESSLCFPATCH_NAME}"
+        if [[ "$AVXTWO_CHECK" = '0' ]]; then
+            OPENSSLCFPATCHLINK="https://github.com/cloudflare/sslconfig/raw/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
+        else
+            OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${OPESSLCFPATCH_NAME}"
+        fi
         
         # fallback mirror if github down, use gitlab mirror
         curl -sI --connect-timeout 5 --max-time 5 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
         OPENSSLCFPATCH_CURLCHECK=$?
         if [[ "$OPENSSLCFPATCH_CURLCHECK" != '0' ]]; then
-            OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${OPESSLCFPATCH_NAME}"
+            if [[ "$AVXTWO_CHECK" = '0' ]]; then
+                OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/upstream/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
+            else
+                OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${OPESSLCFPATCH_NAME}"
+            fi
         fi
         wget -cnv --no-check-certificate "$OPENSSLCFPATCHLINK"
 
