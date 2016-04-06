@@ -40,7 +40,7 @@ HP_UPDATEMAINTENANCE='n'
 ARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.9.13'       # Use this version of Nginx
+NGINX_VERSION='1.9.14'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
