@@ -22,7 +22,10 @@ if [[ "$(uname -m)" != 'x86_64' ]]; then
     # work on 32bit OSes only 64bit
     CLOUDFLARE_PATCHSSL='n'
 fi
-if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
+
+DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Cloudflare Chacha20 Patch"
