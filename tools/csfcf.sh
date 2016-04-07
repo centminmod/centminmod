@@ -8,6 +8,7 @@ CFIP6LOG='/root/cfips6.txt'
 CFIPNGINXLOG='/root/cfnginxlog.log'
 CFIPCSFLOG='/root/csf_log.log'
 CFINCLUDEFILE='/usr/local/nginx/conf/cloudflare.conf'
+CURL_TIMEOUTS='--max-time 20 --connect-timeout 20'
 ###############################
 if [[ ! -f /usr/bin/curl ]]; then
 	echo "Installing curl please wait..."
@@ -15,7 +16,7 @@ if [[ ! -f /usr/bin/curl ]]; then
 fi
 ###############################
 ipv4get() {
-	/usr/bin/curl -s https://www.cloudflare.com/ips-v4 > $CFIPLOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4 > $CFIPLOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	
@@ -58,7 +59,7 @@ ipv4get() {
 
 ###############################
 ipv6get() {
-	/usr/bin/curl -s https://www.cloudflare.com/ips-v6 > $CFIP6LOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6 > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIP6LOG)
 	
@@ -101,8 +102,8 @@ ipv6get() {
 
 ###############################
 csfadd() {
-	/usr/bin/curl -s https://www.cloudflare.com/ips-v4 > $CFIPLOG
-	/usr/bin/curl -s https://www.cloudflare.com/ips-v6 > $CFIP6LOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4 > $CFIPLOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6 > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	CFIP6S=$(cat $CFIP6LOG)
@@ -121,13 +122,17 @@ csfadd() {
 
 	for ip in $CFIPS; 
 	do
-		csf -a $ip cloudflare
+		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]]; then
+			csf -a $ip cloudflare
+		fi
 	done
 
+	if [[ "$(awk -F '= ' '/^IPV6 =/ {print $2}' /etc/csf/csf.conf | sed -e 's|\"||g')" = '1' ]]; then
 	for ip in $CFIP6S; 
 	do
 		csf -a $ip cloudflare
 	done
+	fi
 }
 
 ###############################
@@ -135,8 +140,8 @@ nginxsetup() {
 	echo
 	# echo "create $CFINCLUDEFILE include file"
 	echo > $CFINCLUDEFILE
-	cflista=$(/usr/bin/curl -s https://www.cloudflare.com/ips-v4)
-	cflistb=$(/usr/bin/curl -s https://www.cloudflare.com/ips-v6)
+	cflista=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4)
+	cflistb=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6)
 	for i in $cflista; do
         	echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
 	done
