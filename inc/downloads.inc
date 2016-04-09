@@ -2136,15 +2136,18 @@ libressldownload() {
     else
         # $DOWNLOADAPP ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} $WGETRETRY 
         wget -cnv ${LIBRESSL_LINK} --tries=3
-ERROR=$?
-    if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
-checklogdetails
-    exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-    fi
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+          wget -cnv ${LIBRESSL_LOCALLINK} --tries=3
+          ERROR=$?
+          if [[ "$ERROR" != '0' ]]; then
+            cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
+            checklogdetails
+            exit #$ERROR
+          fi
+        else 
+          cecho "Download done." $boldyellow
+        fi
     fi
 if [ -f ${LIBRESSL_LOCALLINKFILE} ]; then
     tar xzf ${LIBRESSL_LOCALLINKFILE}
