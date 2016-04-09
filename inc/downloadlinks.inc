@@ -328,12 +328,12 @@ OPENSSL_LINK="http://www.openssl.org/source/${OPENSSL_LINKFILE}"
 # OPENSSL_LINK="http://centminmod.com/centminmodparts/openssl/${OPENSSL_LINKFILE}"
 
 LIBRESSL_LINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
-LIBRESSL_LINK="http://ftp3.usa.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LINK="http://openbsd.mirrors.pair.com/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
 
 # wget renamed github
 # LIBRESSL_LINKFILE="libressl-portable-v${LIBRESSL_VERSION}.tar.gz"
 # LIBRESSL_LINK="https://github.com/libressl-portable/portable/archive/v${LIBRESSL_VERSION}.tar.gz"
-# LIBRESSL_LINK="http://centminmod.com/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
+LIBRESSL_LOCALLINK="http://centminmod.com/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
 
 # libressl non-renamed
 LIBRESSL_LOCALLINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
