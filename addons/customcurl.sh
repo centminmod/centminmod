@@ -1,31 +1,27 @@
 #!/bin/bash
 ######################################################
-# written by George Liu (eva2000) vbtechsupport.com
-# custom curl RPMs addon installer
+# written by George Liu (eva2000) centminmod.com
+# custom curl yum repo addon installer
 # use at own risk as it can break the system
-# info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
+# info at http://nervion.us.es/city-fan/yum-repo/
 ######################################################
 # variables
 #############
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 
-# custom curl/libcurl RPM for 7.46 and higher
+# custom curl/libcurl RPM for 7.47 and higher
 # enable with CUSTOM_CURLRPM=y
 # use at own risk as it can break the system
-# info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
+# info at http://nervion.us.es/city-fan/yum-repo/
 CUSTOM_CURLRPM=y
-CUSTOM_CURLRPMVER='7.46.0-2.0'             # custom curl/libcurl version
-CUSTOM_CURLLIBSSHVER='1.6.0-3.0'     # libssh2 version
-CUSTOM_CURLRPMCARESVER='1.10.0-5.0'  # c-ares version
-CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
-CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
+
 ###############################################################
-CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
-    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
         CENTOS_SEVEN='7'
     fi
@@ -38,6 +34,10 @@ fi
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
+fi
+
+if [ ! -d "$DIR_TMP" ]; then
+	mkdir -p "$DIR_TMP"
 fi
 ######################################################
 # Setup Colours
@@ -77,172 +77,76 @@ return
 #############
 
 curlrpm() {
-	if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
-if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
+if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
+	###############################################################
+	if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
 	#############################
 	# el6 32bit
-	yum -y install libmetalink libssh2-devel nss-devel c-ares
-	cd ${DIR_TMP}
-	if [[ ! -f "curl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/curl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm
-	fi
-	if [[ ! -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm
-	fi
-	if [[ ! -f "libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm
-	fi
-	if [[ ! -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMLIBURL}/libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm
-	fi
-	if [[ ! -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMLIBURL}/libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm
-	fi	
-	if [[ ! -f "c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.i686.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMLIBURL}/c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.i686.rpm
-	fi
-	if [[ ! -f "libcurl7155-7.15.5-17.cf.rhel6.i686.rpm" ]]; then
-		wget ${CUSTOM_CURLRPMSYSURL}/libcurl7155-7.15.5-17.cf.rhel6.i686.rpm
-	fi
-	if [[ ! -f "libcurl7155-7.15.5-17.cf.rhel6.i686.rpm" ]]; then
-		wget ${CUSTOM_CURLRPMSYSURL}/libcurl7112-7.11.2-25.cf.rhel6.i686.rpm
-	fi
-
-	# only process with custom curl rpm update if the rpm files exist
-	if [[ -f "curl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm" && -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm" && -f "libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm" && -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm" && -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm" && -f "c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.i686.rpm" && -f "libcurl7155-7.15.5-17.cf.rhel6.i686.rpm" && -f "libcurl7155-7.15.5-17.cf.rhel6.i686.rpm" ]]; then
-		
-	rpm --nodeps -e curl
-	rpm --nodeps -e libcurl
-	rpm --nodeps -e libcurl-devel
-	rpm --nodeps -e libssh2
-	rpm --nodeps -e libssh2-devel
-	rpm --nodeps -e c-ares
-	
-	rpm -Uvh c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.i686.rpm
-	rpm -Uvh libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm
-	rpm -Uvh libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.i686.rpm
-	rpm -Uvh libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm
-	rpm -Uvh libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm
-	rpm -Uvh curl-${CUSTOM_CURLRPMVER}.cf.rhel6.i686.rpm
-	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.i686.rpm
-	rpm -Uvh libcurl7112-7.11.2-25.cf.rhel6.i686.rpm
-	
-	rpm -qa curl libcurl libcurl-devel libssh2 libssh2-devel libcurl7155 libcurl7112 c-ares
-	else
-		echo "Error: expected curl related named rpm files are not found"
-		echo "could be their source names have changed etc..."
-	fi
-
-elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
-	#############################
+	rpm -Uvh http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel6/i386/city-fan.org-release-1-13.rhel6.noarch.rpm
+	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+	if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+		cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+		if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+    	#echo priorities already set for city-fan.org.repo
+			PRIOREXISTS=1
+		else
+      echo "setting yum priorities for city-fan.org.repo"
+      sed -i 's|^gpgkey=.*|&\npriority=99|' /etc/yum.repos.d/city-fan.org.repo
+		fi
+	fi # repo file check
+	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+	echo
+	curl -V
+	echo
+	cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+	cecho "complete new curl version setup on your system" $boldyellow
+	###############################################################
+	elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
+	###############################################################
 	# el6 64bit
-	yum -y install libmetalink libssh2-devel nss-devel c-ares
-	cd ${DIR_TMP}
-	if [[ ! -f "c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMLIBURL}/c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMLIBURL}/libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMLIBURL}/libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm
-	fi	
-	if [[ ! -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "curl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/curl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm
-	fi
-
-	# only process with custom curl rpm update if the rpm files exist
-	if [[ -f "c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.x86_64.rpm" && -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm" && -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm" && -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm" && -f "libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm" && -f "curl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm" && -f "libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm" && -f "libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm" ]]; then
-
-	rpm --nodeps -e curl
-	rpm --nodeps -e libcurl
-	rpm --nodeps -e libcurl-devel
-	rpm --nodeps -e libssh2
-	rpm --nodeps -e libssh2-devel
-	rpm --nodeps -e c-ares
-	
-	rpm -Uvh c-ares-${CUSTOM_CURLRPMCARESVER}.cf.rhel6.x86_64.rpm
-	rpm -Uvh libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm
-	rpm -Uvh libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel6.x86_64.rpm
-	rpm -Uvh libcurl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm
-	rpm -Uvh libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm
-	rpm -Uvh curl-${CUSTOM_CURLRPMVER}.cf.rhel6.x86_64.rpm
-	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
-	rpm -Uvh libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm
-	
-	rpm -qa curl libcurl libcurl-devel libssh2 libssh2-devel libcurl7155 libcurl7112 c-ares
-	else
-		echo "Error: expected curl related named rpm files are not found"
-		echo "could be their source names have changed etc..."
-	fi	
-
-elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
-	#############################
+	rpm -Uvh http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel6/x86_64/city-fan.org-release-1-13.rhel6.noarch.rpm
+	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+	if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+		cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+		if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+    	#echo priorities already set for city-fan.org.repo
+			PRIOREXISTS=1
+  	else
+      echo "setting yum priorities for city-fan.org.repo"
+			sed -i 's|^gpgkey=.*|&\npriority=99|' /etc/yum.repos.d/city-fan.org.repo
+		fi
+	fi # repo file check
+	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+	echo
+	curl -V
+	echo
+	cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+	cecho "complete new curl version setup on your system" $boldyellow
+	###############################################################
+	elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
+	###############################################################
 	# el7 64bit
-	yum -y install libmetalink libssh2-devel nss-devel c-ares
-	cd ${DIR_TMP}
-	# if [[ ! -f "libmetalink-0.1.2-4.el7.x86_64.rpm" ]]; then
-	# 	wget -cnv ftp://ftp.sunet.se/pub/Linux/distributions/fedora/epel/7/x86_64/libmetalink-0.1.2-4.el7.x86_64.rpm
-	# fi
-	if [[ ! -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/curl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
+	rpm -Uvh http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel7/x86_64/city-fan.org-release-1-13.rhel7.noarch.rpm
+	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+	if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+		cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+		if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+    	#echo priorities already set for city-fan.org.repo
+			PRIOREXISTS=1
+  	else
+      echo "setting yum priorities for city-fan.org.repo"
+      sed -i 's|^gpgkey=.*|&\npriority=99|' /etc/yum.repos.d/city-fan.org.repo
+		fi
+	fi # repo file check
+	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+	echo
+	curl -V
+	echo
+	cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+	cecho "complete new curl version setup on your system" $boldyellow
 	fi
-	if [[ ! -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
-	fi
-	if [[ ! -f "libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
-	fi
-	if [[ ! -f "libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm" ]]; then
-		wget -cnv ${CUSTOM_CURLRPMSYSURL}/libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm
-	fi
-	if [[ ! -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" ]]; then
-		wget ${CUSTOM_CURLRPMLIBURL}/libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm
-	fi	
-	if [[ ! -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" ]]; then
-		wget ${CUSTOM_CURLRPMLIBURL}/libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm
-	fi
-
-	# only process with custom curl rpm update if the rpm files exist
-	if [[ -f "libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm" && -f "libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm" && -f "curl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm" && -f "libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm" && -f "libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm" && -f "libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" && -f "libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm" ]]; then
-
-	rpm --nodeps -e curl
-	rpm --nodeps -e libcurl
-	rpm --nodeps -e libcurl-devel
-	rpm --nodeps -e libssh2
-	rpm --nodeps -e libssh2-devel
-	
-	# rpm -ivh libmetalink-0.1.2-4.el7.x86_64.rpm
-	rpm -Uvh libssh2-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm
-	rpm -Uvh libssh2-devel-${CUSTOM_CURLLIBSSHVER}.cf.rhel7.x86_64.rpm
-	rpm -Uvh libcurl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
-	rpm -Uvh libcurl-devel-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
-	rpm -Uvh curl-${CUSTOM_CURLRPMVER}.cf.rhel7.x86_64.rpm
-	rpm -Uvh libcurl7155-7.15.5-17.cf.rhel6.x86_64.rpm
-	rpm -Uvh libcurl7112-7.11.2-25.cf.rhel6.x86_64.rpm
-	
-	rpm -qa curl libcurl libcurl-devel libssh2 libssh2-devel libcurl7155 libcurl7112 c-ares
-	else
-		echo "Error: expected curl related named rpm files are not found"
-		echo "could be their source names have changed etc..."
-	fi		
-fi
-	fi # CUSTOM_CURLRPM=y
+	###############################################################
+fi # CUSTOM_CURLRPM=y
 }
 ##############################################################
 starttime=$(date +%s.%N)
@@ -251,11 +155,14 @@ curlrpm
 
 echo
 cecho "custom curl RPMs installed..." $boldyellow
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log
+cecho "you can now use yum update to update curl" $boldyellow
+echo
+echo " yum update --enablerepo=city-fan.org --disableplugin=priorities"
+echo
+} 2>&1 | tee "${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log"
 
 endtime=$(date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log
-echo "Total Custom Curl RPMs Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log
-
+echo "" >> "${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log"
+echo "Total Custom Curl RPMs Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log"
