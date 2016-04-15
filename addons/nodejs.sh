@@ -48,6 +48,9 @@ return
 
 ###########################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
 
 if [ "$CENTOSVER" == 'release' ]; then
     CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)

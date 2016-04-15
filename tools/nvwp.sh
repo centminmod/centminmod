@@ -49,6 +49,9 @@ echo -e "$color$message" ; $Reset
 return
 }
 ###############################################################
+if [ ! -d "$CENTMINLOGDIR" ]; then
+  mkdir -p "$CENTMINLOGDIR"
+fi
 
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools

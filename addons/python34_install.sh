@@ -39,6 +39,10 @@ DIR_TMP='/svr-setup'
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
+if [ ! -d "$CENTMINLOGDIR" ]; then
+    mkdir -p "$CENTMINLOGDIR"
+fi
+
 if [ "$CENTOSVER" == 'release' ]; then
     CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then

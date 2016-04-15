@@ -52,6 +52,10 @@ return
 #########################################################
 CPUS=$(cat "/proc/cpuinfo" | grep "processor"|wc -l)
 
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
+
 if [[ "$CPUS" = '1' ]]; then
     MAXTHREADS=1
 else

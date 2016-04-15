@@ -14,7 +14,7 @@
 DT=`date +"%d%m%y-%H%M%S"`
 DIR_TMP='/svr-setup'
 
-
+CENTMINLOGDIR='/root/centminlogs'
 ########################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -66,6 +66,10 @@ fi
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
+fi
+
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
 fi
 ########################################################################
 install() {

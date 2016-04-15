@@ -56,6 +56,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [ ! -d "$CENTMINLOGDIR" ]; then
+    mkdir -p "$CENTMINLOGDIR"
+fi
+
 cmservice() {
         servicename=$1
         action=$2

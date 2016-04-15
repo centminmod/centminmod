@@ -50,6 +50,9 @@ return
 ###########################################
 # functions
 #############
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
 
 geoipinstall() {
 

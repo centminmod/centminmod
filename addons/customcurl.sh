@@ -39,6 +39,10 @@ fi
 if [ ! -d "$DIR_TMP" ]; then
 	mkdir -p "$DIR_TMP"
 fi
+
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
 ######################################################
 # Setup Colours
 black='\E[30;40m'

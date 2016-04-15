@@ -21,6 +21,10 @@ LIBOGG_VER='1.3.2'
 LIBVORBIS_VER='1.3.5'
 GD_ENABLE='n'
 ###############################################################################
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
+
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"

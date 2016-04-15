@@ -29,6 +29,9 @@ TMP_SSL='/opt'
 PCRELINKFILE="pcre-${MODSEC_PCREVER}.tar.gz"
 PCRELINK="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 ###############################################################################
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
 
 modsec_install() {
 

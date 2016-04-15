@@ -64,6 +64,10 @@ return
 starttime=$(date +%s.%N)
 {
 
+if [ ! -d "$CENTMINLOGDIR" ]; then
+    mkdir -p "$CENTMINLOGDIR"
+fi
+
 if [[ "$CENTOS_SIX" = '6' ]]; then
     if [ ! -f /etc/yum.repos.d/ius.repo ]; then
         rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
