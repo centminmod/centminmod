@@ -25,7 +25,13 @@ echo "......"
 
 touch /etc/logrotate.d/php-fpm
 
-if [[ "$TOTALMEM" -le '1153433' || "$(df --output=avail /var | tail -1)" -le '10485760' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        VARDFSIZE=$(df --output=avail /var | tail -1)
+else
+        VARDFSIZE=$(df /var | tail -1 | awk '{print $4}')
+fi
+
+if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/php-fpm" <<END
 /var/log/php-fpm/*.log {
         daily
