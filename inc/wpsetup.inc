@@ -353,7 +353,7 @@ if [ ! -f "/usr/local/nginx/conf/wpincludes/$vhostname" ]; then
 fi
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-  ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
+  ( echo "${ftppass}" ; echo "${ftppass}" ) | pure-pw useradd "$ftpuser" -u $PUREUSER -g $PUREGROUP -d "/home/nginx/domains/$vhostname"
   pure-pw mkdb
 fi
 

@@ -425,7 +425,7 @@ umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-  ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
+  ( echo "${ftppass}" ; echo "${ftppass}" ) | pure-pw useradd "$ftpuser" -u $PUREUSER -g $PUREGROUP -d "/home/nginx/domains/$vhostname"
   pure-pw mkdb
 fi
 
