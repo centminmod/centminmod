@@ -595,6 +595,22 @@ wpcompfix() {
 	fi
 }
 
+entropy_centosseven() {
+if [[ -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ ! -d /etc/systemd/system/haveged.service.d || ! -f /etc/systemd/system/haveged.service.d/haveged.conf ]]; then
+		mkdir -p /etc/systemd/system/haveged.service.d
+cat > "/etc/systemd/system/haveged.service.d/haveged.conf" <<EFF
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/haveged -w 4067 -v 1 --Foreground
+EFF
+		systemctl daemon-reload >/dev/null 2>&1
+		systemctl restart haveged >/dev/null 2>&1
+		# cat /etc/systemd/system/haveged.service.d/haveged.conf
+	fi
+fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -649,6 +665,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	axivo_remove
 	ngxmodule_cleanups
 	wpcompfix
+	entropy_centosseven
 fi
 
 }
