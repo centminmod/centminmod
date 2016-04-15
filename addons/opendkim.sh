@@ -125,6 +125,7 @@ fi # if /etc/opendkim.conf exists
 starttime=$(date +%s.%N)
 {
 if [[ "$1" = 'clean' ]]; then
+	CLEANONLY=1
 	rm -rf "/etc/opendkim/keys/$(hostname)"
 	if [ -f /etc/opendkim/KeyTable ]; then
 		sed -in "/$(hostname)/d" /etc/opendkim/KeyTable
@@ -133,7 +134,7 @@ if [[ "$1" = 'clean' ]]; then
 		sed -in "/$(hostname)/d" /etc/opendkim/SigningTable
 	fi
 fi
-if [[ "$1" != 'clean' ]]; then
+if [[ "$1" != 'clean' && "$CLEANONLY" != '1' ]]; then
 	vhostname=$1
 fi
 opendkimsetup
