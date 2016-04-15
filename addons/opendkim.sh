@@ -9,6 +9,10 @@ CENTMINLOGDIR='/root/centminlogs'
 ###################################################################
 # functions
 
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
+
 opendkimsetup() {
 if [[ "$(rpm -qa opendkim | grep opendkim >/dev/null 2>&1; echo $?)" != '0' ]]; then
 	yum -y install opendkim
@@ -32,12 +36,12 @@ sed -i "s|Umask.*|Umask 022|" /etc/opendkim.conf
 fi
 
 if [ ! -f "/root/centminlogs/dkim_postfix_after.txt" ]; then
-postconf -d smtpd_milters non_smtpd_milters milter_default_action milter_protocol | tee "/root/centminlogs/dkim_postfix_before_${DT}.txt"
+postconf -d smtpd_milters non_smtpd_milters milter_default_action milter_protocol | tee "${CENTMINLOGDIR}/dkim_postfix_before_${DT}.txt"
 postconf -e "smtpd_milters           = inet:127.0.0.1:8891"
 postconf -e 'non_smtpd_milters       = $smtpd_milters'
 postconf -e "milter_default_action   = accept"
 postconf -e "milter_protocol         = 2"
-postconf -n smtpd_milters non_smtpd_milters milter_default_action milter_protocol | tee "/root/centminlogs/dkim_postfix_after.txt"
+postconf -n smtpd_milters non_smtpd_milters milter_default_action milter_protocol | tee "${CENTMINLOGDIR}/dkim_postfix_after.txt"
 fi
 
 # DKIM for main hostname
