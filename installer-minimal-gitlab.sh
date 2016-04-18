@@ -206,7 +206,7 @@ ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openres
 FFF
 
 # set ~128MB VPS threshold
-sed -i 's|ISLOWMEM='262144'|ISLOWMEM='115000'|' inc/memcheck.inc
+sed -i "s|ISLOWMEM='262144'|ISLOWMEM='115000'|" inc/memcheck.inc
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
