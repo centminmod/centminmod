@@ -617,8 +617,13 @@ else
 #echo ""
 	fi
     fi
+    
+if [ -f /usr/bin/xz ]; then
+  XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+else
+  tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+fi
 
-tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen

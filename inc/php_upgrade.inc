@@ -342,7 +342,11 @@ fi
         $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPUPGRADETARGZ $WGETRETRY
     fi
 
-    tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+    if [ -f /usr/bin/xz ]; then
+        XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+    else
+        tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+    fi
 
     cd "php-${phpver}"
 
