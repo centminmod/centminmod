@@ -603,6 +603,7 @@ fi
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
+source "inc/tcp.inc"
 source "inc/customrpms.inc"
 source "inc/pureftpd.inc"
 source "inc/htpasswdsh.inc"
