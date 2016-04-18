@@ -205,6 +205,9 @@ NGINX_THREADS=y              # https://www.nginx.com/blog/thread-pools-boost-per
 ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
 FFF
 
+# set ~128MB VPS threshold
+sed -i 's|ISLOWMEM='262144'|ISLOWMEM='115000'|' inc/memcheck.inc
+
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
 echo "1" > /etc/centminmod/email-primary.ini
