@@ -953,6 +953,13 @@ echo "Centmin Mod secure /tmp # `date`"
 	cecho "* Secured /tmp and /var/tmp" $boldgreen
 	echo "*************************************************"
 
+# account for /home free disk space as well
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    HOME_DFSIZE=$(df --output=avail /home | tail -1)
+else
+    HOME_DFSIZE=$(df /home | tail -1 | awk '{print $4}')
+fi
+
 # centos 7 + openvz /tmp workaround
 if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
     echo "CentOS 7 Setup /tmp"
@@ -1003,7 +1010,13 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
        rm -rf /tmp
-       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4000000
+       if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+       elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+       else
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4000000
+       fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
@@ -1015,7 +1028,13 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
        rm -rf /tmp
-       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+       if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+       elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+       else
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
+       fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
@@ -1027,7 +1046,13 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        # set on disk non-tmpfs /tmp to 1GB size
        # if total memory is <1.1GB
        rm -rf /tmp
-       dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+       if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+       elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+       else
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
+       fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
