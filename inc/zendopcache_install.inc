@@ -73,7 +73,7 @@ cmservice nginx reload
 ###############
 
 zopcacheinstall() {
-
+	if [[ "$PHP_INSTALL" = [yY] ]]; then
     echo "*************************************************"
     cecho "* Installing Zend Optimizer Plus OPcache" $boldgreen
     echo "*************************************************"
@@ -200,5 +200,5 @@ else
 	echo "To enable Zend OPcache run menu option #5 and specify PHP 5.5.0 or higher"
 
 fi # check for PHPMVER !=5.5
-
+	fi # PHP_INSTALL=y
 }

@@ -87,6 +87,7 @@ checkimagicksys() {
 }
 
 imagickinstall() {
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPIMAGICK" = [yY] ]]; then
         checkphpext
         checkimagicksys
@@ -161,4 +162,5 @@ fi #check if imagick.so exists in php.ini
     echo "*************************************************"
 
     fi
+    fi # PHP_INSTALL=y
 }

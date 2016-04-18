@@ -13,6 +13,7 @@ ngxgeoipmemtweak() {
 }
 
 geoipphpext() {
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [[ -d /usr/share/GeoIP ]]; then
 	if [ ! -f /usr/bin/svn ]; then
 		echo "installing subversion..."
@@ -38,6 +39,7 @@ extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
 fi
+    fi # PHP_INSTALL=y
 }
 
 geoipinstall() {

@@ -231,6 +231,7 @@ cmservice memcached stop
 cmservice memcached start
 
 #############################################
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [ "$PHP_MEMCACHE" == 'y' ]; then
     PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
     if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
@@ -280,6 +281,7 @@ else
     # if PHP_MEMCACHE=n remove memcache PHP extension setting file
     rm -rf "${CONFIGSCANDIR}/memcache.ini"
 fi # PHP_MEMCACHE = y
+    fi # PHP_INSTALL=y
 
 #############################################
 if [ "$PHP_MEMCACHED" == 'y' ]; then
@@ -326,6 +328,7 @@ else
 fi 
 wait
 
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 #############################################
     cecho "Compiling PHP memcached-${MEMCACHEDPHP_VER} extension..." $boldgreen
 
@@ -460,6 +463,8 @@ else
     rm -rf "${CONFIGSCANDIR}/memcached.ini"
 fi # PHP_MEMCACHED = y
 
+    fi # PHP_INSTALL=y
+
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 "$(pidof memcached)"
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -550,6 +555,7 @@ chkconfig --level 345 memcached on
 service memcached start
 # fi # CENTOS_SEVEN != 7
 
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
     cecho "Compiling PHP memcache extension..." $boldgreen
 
 cd "$DIR_TMP"
@@ -582,6 +588,7 @@ echo ""
 fi # memcache.so check
 
 /etc/init.d/php-fpm restart
+    fi # PHP_INSTALL=y
 
     echo "*************************************************"
     cecho "* memcached installed" $boldgreen

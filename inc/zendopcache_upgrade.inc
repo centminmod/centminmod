@@ -74,7 +74,7 @@ cmservice nginx reload
 
 #################
 zopcacheupgrade() {
-
+	if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]]; then
 	echo ""
 	echo "-----------------------------------------------------------------------------------------"
@@ -239,7 +239,7 @@ fi # zendopcacheon
     echo "*************************************************"
 
 fi # $PHPMUVER = 5.5
-
+	fi # PHP_INSTALL=y
 }
 
 

@@ -1,5 +1,5 @@
 function funct_installxcache {
-
+        if [[ "$PHP_INSTALL" = [yY] ]]; then
 funct_xcachesourceinstall
 
 if [ ! -d /usr/local/nginx/html/myxcacheadmin ]; then
@@ -52,7 +52,7 @@ cecho "`cat ${CONFIGSCANDIR}/xcache.ini | grep xcache.admin.pass`" $boldgreen
     echo "*************************************************"
     cecho "* XCache installed" $boldgreen
     echo "*************************************************"
-
+    
 if [[ "$ENABLE_MENU" != [yY] ]]; then
 
 ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
@@ -78,5 +78,5 @@ rm -f $0
 fi
 
 fi
-
+    fi # PHP_INSTALL=y
 }

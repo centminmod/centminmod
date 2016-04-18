@@ -1,5 +1,5 @@
 function funct_igbinaryinstall {
-
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
     axelsetup
 
 if [ "$IGBINARY_INSTALL" == 'y' ]; then
@@ -144,5 +144,5 @@ if [[ "$DISABLESESSION" = [yY] ]]; then
 fi
 
 cmservice php-fpm reload
-
+    fi # PHP_INSTALL=y
 }

@@ -154,7 +154,7 @@ echo
 }
 
 function funct_installapc {
-
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 funct_apcsourceinstall
 
 if [[ "$ENABLE_MENU" != [yY] ]]; then
@@ -182,5 +182,5 @@ rm -f $0
 fi
 
 fi
-
+    fi # PHP_INSTALL=y
 }

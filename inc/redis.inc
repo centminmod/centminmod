@@ -32,7 +32,7 @@ checkigbinary() {
 
 #######################################################
 redisinstall() {
-
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 
     echo "*************************************************"
@@ -117,5 +117,5 @@ else
     echo "$REDISSOCHECK"
     echo ""
 fi # redis.so check
-
+    fi # PHP_INSTALL=y
 }

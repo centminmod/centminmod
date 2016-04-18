@@ -13,6 +13,7 @@ fi
 
 #######################################################
 mongodbinstall() {
+        if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [[ "$PHPMONGODB" = [yY] ]]; then
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
     
@@ -60,4 +61,5 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
         echo ""
     fi # mongodb.so check
 fi # PHPMONGODB=y
+    fi # PHP_INSTALL=y
 }

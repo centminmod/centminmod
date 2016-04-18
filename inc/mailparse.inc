@@ -1,5 +1,4 @@
 checkphpextmailparse() {
-
 if [[ "$INITIALINSTALL" != [yY] ]]; then
     php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
 else
@@ -26,6 +25,7 @@ fi
 }
 
 mailparseinstall() {
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPMAILPARSE" = [yY] ]]; then
 
         checkphpextmailparse
@@ -66,4 +66,5 @@ fi #check if mailparse.so exists in php.ini
     echo "*************************************************"
 
     fi
+    fi # PHP_INSTALL=y
 }
