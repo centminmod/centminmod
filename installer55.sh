@@ -75,6 +75,7 @@ nginx      soft    nproc     32278
 nginx      hard    nproc     32278
 root       soft    nproc     unlimited
 EOF
+      fi
     else
         # centos 6
         if [[ -f /etc/security/limits.d/90-nproc.conf ]]; then
