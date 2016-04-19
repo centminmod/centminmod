@@ -95,7 +95,7 @@ EOF
 
 if [[ ! -f /proc/user_beancounters ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
-        if [ -d /usr/lib/sysctl.d ]; then
+        if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
