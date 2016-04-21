@@ -273,22 +273,18 @@ fi
     #chmod 0755 /home/nginx
 
 #######################################################
+# Set user nginx hard/soft limits
 # check if custom open file descriptor limits already exist
-
-NGXLIMITSCONFCHECK=`grep 'nginx hard nofile 262144' /etc/security/limits.conf`
-
-if [[ -z $NGXLIMITSCONFCHECK ]]; then
-
-    # Set user nginx hard/soft limits
-    echo "nginx soft nofile 262144" >>/etc/security/limits.conf
-    echo "nginx hard nofile 262144" >>/etc/security/limits.conf
-    echo "nobody soft nofile 262144" >>/etc/security/limits.conf
-    echo "nobody hard nofile 262144" >>/etc/security/limits.conf
-    echo "root soft nofile 262144" >>/etc/security/limits.conf
-    echo "root hard nofile 262144" >>/etc/security/limits.conf
+if [[ "$(grep 'nginx hard nofile 262144' /etc/security/limits.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    echo "nginx soft nofile 262144" >> /etc/security/limits.conf
+    echo "nginx hard nofile 262144" >> /etc/security/limits.conf
+    echo "nobody soft nofile 262144" >> /etc/security/limits.conf
+    echo "nobody hard nofile 262144" >> /etc/security/limits.conf
+    echo "root soft nofile 262144" >> /etc/security/limits.conf
+    echo "root hard nofile 262144" >> /etc/security/limits.conf
     ulimit -n 262144
+fi
 
-fi # check if custom open file descriptor limits already exist
     umask 027
     mkdir /home/nginx/domains
     #chmod 0771 /home/nginx/domains/
