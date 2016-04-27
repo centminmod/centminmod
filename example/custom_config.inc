@@ -40,7 +40,7 @@ HP_UPDATEMAINTENANCE='n'
 ARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.9.14'       # Use this version of Nginx
+NGINX_VERSION='1.9.15'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
@@ -168,9 +168,9 @@ LIBRESSL_VERSION='2.3.3'   # Use this version of LibreSSL http://www.libressl.or
 ##################################
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.0RC6'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.2'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.0.0' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
 MEMCACHED_INSTALL='y'       # Install Memcached
 LIBEVENT_VERSION='2.0.22'   # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'  # Use this version of Memcached server
