@@ -9,7 +9,7 @@ RUBYVER='2.3.0'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.2.4'
+NODEJSVER='4.4.3'
 
 DT=`date +"%d%m%y-%H%M%S"`
 CENTMINLOGDIR='/root/centminlogs'
