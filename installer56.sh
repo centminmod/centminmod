@@ -149,7 +149,7 @@ net.nf_conntrack_max = 524288
 net.netfilter.nf_conntrack_tcp_timeout_established = 28800
 net.netfilter.nf_conntrack_generic_timeout = 60
 EOF
-        sysctl --system
+        /sbin/sysctl --system
             fi           
         fi
     else
