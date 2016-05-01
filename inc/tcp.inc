@@ -45,6 +45,9 @@ EOF
 if [[ ! -f /proc/user_beancounters ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         if [ -d /etc/sysctl.d ]; then
+            # raise hashsize for conntrack entries
+            echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
+            echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
@@ -101,6 +104,9 @@ EOF
     else
         # centos 6
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            # raise hashsize for conntrack entries
+            echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
+            echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
 fs.nr_open=12000000
