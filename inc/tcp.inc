@@ -91,7 +91,7 @@ net.ipv4.conf.default.send_redirects = 0
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 net.netfilter.nf_conntrack_helper=0
-net.nf_conntrack_max = 524288
+net.netfilter.nf_conntrack_max = 524288
 net.netfilter.nf_conntrack_tcp_timeout_established = 54000
 net.netfilter.nf_conntrack_generic_timeout = 60
 EOF
@@ -143,7 +143,7 @@ net.ipv4.conf.default.send_redirects = 0
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 net.netfilter.nf_conntrack_helper=0
-net.nf_conntrack_max = 524288
+net.netfilter.nf_conntrack_max = 524288
 net.netfilter.nf_conntrack_tcp_timeout_established = 54000
 net.netfilter.nf_conntrack_generic_timeout = 60
 EOF
