@@ -106,10 +106,10 @@ NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.30'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.3.0rc1'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
-ORESTY_SETMISCGIT='n'           # use git master instead of version specific
+ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.59rc1'     # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
