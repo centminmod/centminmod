@@ -1258,6 +1258,7 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   cecho "------------------------------------------------------------" $boldgreen
   if [[ "$wpscache" != [yY] ]]; then
+    cacheenabler=y
     cecho "Setup Wordpress + Cache Enabler for $vhostname" $boldyellow
   else
     cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
@@ -1339,7 +1340,7 @@ rm -rf readme.html
 
 # installed + activated by default
 # wp super cache
-if [[ "$cacheenabler" != [yY] ]]; then
+if [[ "$cacheenabler" != [yY] && "$wpscache" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install wp-super-cache --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
