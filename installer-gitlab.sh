@@ -101,7 +101,9 @@ if [[ ! -f /proc/user_beancounters ]]; then
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
             # raise hashsize for conntrack entries
             echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
-            echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+              echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            fi
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
 fs.nr_open=12000000
@@ -157,7 +159,9 @@ EOF
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
             # raise hashsize for conntrack entries
             echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
-            echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+              echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            fi
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
 fs.nr_open=12000000

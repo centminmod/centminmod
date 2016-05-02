@@ -648,7 +648,9 @@ if [[ ! -f /proc/user_beancounters ]]; then
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
             echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
-            echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            	echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            fi
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
@@ -702,7 +704,38 @@ EOF
         /sbin/sysctl --system >/dev/null 2>&1
             fi           
         fi
-	fi
+		else
+        # centos 6 check for missing new tcp settings backported to existing installs
+        if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" = '0' ]]; then
+            # raise hashsize for conntrack entries
+            echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
+            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            	echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+          	fi
+            if [[ "$(grep 'net.ipv4.tcp_slow_start_after_idle=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.ipv4.tcp_slow_start_after_idle=0" >> /etc/sysctl.conf
+						fi
+            if [[ "$(grep 'net.ipv4.tcp_limit_output_bytes=65536' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.ipv4.tcp_limit_output_bytes=65536" >> /etc/sysctl.conf
+						fi
+            if [[ "$(grep 'net.ipv4.tcp_rfc1337=1' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.ipv4.tcp_rfc1337=1" >> /etc/sysctl.conf
+						fi
+            if [[ "$(grep 'net.netfilter.nf_conntrack_helper=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
+            fi
+            if [[ "$(grep 'net.netfilter.nf_conntrack_max = 524288' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+							echo "net.netfilter.nf_conntrack_max = 524288" >> /etc/sysctl.conf
+            fi
+            if [[ "$(grep 'net.netfilter.nf_conntrack_tcp_timeout_established = 28800' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+							echo "net.netfilter.nf_conntrack_tcp_timeout_established = 28800" >> /etc/sysctl.conf
+            fi
+            if [[ "$(grep 'net.netfilter.nf_conntrack_generic_timeout = 60' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+							echo "net.netfilter.nf_conntrack_generic_timeout = 60" >> /etc/sysctl.conf
+            fi
+            sysctl -p >/dev/null 2>&1
+        fi
+		fi
 fi
 }
 
