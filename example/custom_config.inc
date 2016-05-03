@@ -159,7 +159,7 @@ POSTGRESQL='n'               # set to ='y'o install PostgreSQL 9.4 server, devel
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2g'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSION='1.0.2h'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='y'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL
