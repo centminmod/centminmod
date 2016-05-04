@@ -459,6 +459,9 @@ fi # AXIVOREPO_DISABLE
 yumpriorremi() {
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 if [ -f /etc/yum.repos.d/remi.repo ]; then
+        if [ -f /etc/yum.repos.d/remi-safe.repo ]; then
+                sed -i 's|enabled=1|enabled=0|' /etc/yum.repos.d/remi-safe.repo
+        fi
         cp -p /etc/yum.repos.d/remi.repo /etc/yum.repos.d/remi.OLD
         if [ -n "$(grep ^priority /etc/yum.repos.d/remi.repo)" ]
                 then

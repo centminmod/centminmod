@@ -739,6 +739,12 @@ EOF
 fi
 }
 
+remi_tweaks() {
+	if [ -f /etc/yum.repos.d/remi-safe.repo ]; then
+		sed -i 's|enabled=1|enabled=0|' /etc/yum.repos.d/remi-safe.repo
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -796,6 +802,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	wpcompfix
 	entropy_centosseven
 	tcpcheck_centos
+	remi_tweaks
 fi
 
 }
