@@ -94,6 +94,7 @@ imagickinstall() {
     if [[ "$PHPIMAGICK" = [yY] ]]; then
         checkphpext
         checkimagicksys
+        imagick_fixes
     echo "*************************************************"
     cecho "* Installing imagick PHP Extension" $boldgreen
     echo "*************************************************"
