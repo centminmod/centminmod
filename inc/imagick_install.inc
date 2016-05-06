@@ -11,6 +11,7 @@ fi
 imagickinstall() {
 
 checkphpext
+imagick_fixes
 
     echo "*************************************************"
     cecho "* Installing imagick PHP Extension" $boldgreen
