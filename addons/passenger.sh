@@ -5,7 +5,7 @@ VER='0.0.5'
 # for Centminmod.com
 # written by George Liu (eva2000) vbtechsupport.com
 ######################################################
-RUBYVER='2.3.0'
+RUBYVER='2.3.1'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
