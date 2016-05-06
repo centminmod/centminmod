@@ -231,6 +231,14 @@ memcachedupdatechecks() {
 	fi
 }
 
+imagick_fixes() {
+	if [[ -f /etc/ImageMagick/policy.xml || -f /etc/ImageMagick-last/ImageMagick-6/policy.xml ]]; then
+		if [ -f "${SCRIPT_DIR}/tools/imagemagick-fix.sh" ]; then
+			"${SCRIPT_DIR}/tools/imagemagick-fix.sh" >/dev/null 2>&1
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -266,6 +274,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	leupdates
 	memcachedupdatechecks
 	axivo_remove
+	imagick_fixes
 fi
 
 }
