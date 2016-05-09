@@ -6,7 +6,7 @@
 # is Python 2.6
 #
 # i.e. python 2.7
-# yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
+# yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
 # rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv
 # 
 # rpm -ql python27 python27-pip python27-virtualenv | grep bin
@@ -157,9 +157,9 @@ cecho "*************************************************" $boldgreen
 
 # install Python 2.7 besides system default Python 2.6
 yum -y remove python-tools
-yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv python27-tools --enablerepo=ius
+yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
 
-rpm -ql python27 python27-devel python27-pip python27-setuptools python27-virtualenv python27-tools tkinter27 | grep bin
+rpm -ql python27 python27-devel python27-pip python27-setuptools python27-virtualenv tkinter27 | grep bin
 }
 
 ###########################################################################
