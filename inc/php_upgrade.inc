@@ -303,6 +303,8 @@ if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
     yum -y erase php*
 fi
 
+    phpgeolocation
+
 if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' || "$PHPMUVER" != '7.0' || "$PHPMUVER" != '7.1' ]]; then
     PHPEXTSION='gz'
     PHPTAR_FLAGS='xzf'
@@ -329,7 +331,6 @@ fi
         figlet -ckf standard "PHP: Download"
     fi
 
-    phpgeolocation
     curl -sI --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
     PHPGEO_CURLCHECK=$?
     if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
