@@ -13,23 +13,32 @@ checklogdetails() {
 # yumcentossevendownload moved
 
 ###############################################
-phpgeolocation() {
-  # if [ -f /usr/bin/xz ]; then
-      # PHPEXTSION='xz'
-      # PHPTAR_FLAGS='xJf'
-  # else
-      # PHPEXTSION='gz'
-      # PHPTAR_FLAGS='xzf'
-  # fi
-  
+phpxz_detect() {
   if [[ "$INITIALINSTALL" = [yY] ]]; then
       PHPXZ_CHECK=$(echo "$PHP_VERSION" | cut -d . -f1,2)
+  fi
+
+  if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
+      PHPEXTSION='gz'
+      PHPTAR_FLAGS='xzf'    
+  elif [ -f /usr/bin/xz ]; then
+      PHPEXTSION='xz'
+      PHPTAR_FLAGS='xJf'
+  else
+      PHPEXTSION='gz'
+      PHPTAR_FLAGS='xzf'
+  fi
+  
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
       if [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
           PHPEXTSION='gz'
           PHPTAR_FLAGS='xzf'
       fi
   fi
+}
 
+phpgeolocation() {
+  phpxz_detect
   # determine server geo location country wise and setup php download mirror 
   # closest to that country for faster downloads to speed up installs
   # upgrades

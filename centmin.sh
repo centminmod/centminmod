@@ -774,21 +774,7 @@ fi
 ###############################################################
 # FUNCTIONS
 
-# if [ -f /usr/bin/xz ]; then
-#     PHPEXTSION='xz'
-#     PHPTAR_FLAGS='xJf'
-# else
-#     PHPEXTSION='gz'
-#     PHPTAR_FLAGS='xzf'
-# fi
-
-if [[ "$INITIALINSTALL" = [yY] ]]; then
-    PHPXZ_CHECK=$(echo "$PHP_VERSION" | cut -d . -f1,2)
-    if [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
-        PHPEXTSION='gz'
-        PHPTAR_FLAGS='xzf'
-    fi
-fi
+phpxz_detect
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     DOWNLOADAPP='axel -a'
