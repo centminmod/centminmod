@@ -622,6 +622,7 @@ then
     if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
     else
+        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY"
         $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -633,8 +634,10 @@ else
 #echo ""
 	fi
     fi
-    
-if [ -f /usr/bin/xz ]; then
+  
+if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
+  tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+elif [ -f /usr/bin/xz ]; then
   XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
 else
   tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"

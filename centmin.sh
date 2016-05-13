@@ -774,13 +774,13 @@ fi
 ###############################################################
 # FUNCTIONS
 
-if [ -f /usr/bin/xz ]; then
-    PHPEXTSION='xz'
-    PHPTAR_FLAGS='xJf'
-else
-    PHPEXTSION='gz'
-    PHPTAR_FLAGS='xzf'
-fi
+# if [ -f /usr/bin/xz ]; then
+#     PHPEXTSION='xz'
+#     PHPTAR_FLAGS='xJf'
+# else
+#     PHPEXTSION='gz'
+#     PHPTAR_FLAGS='xzf'
+# fi
 
 if [[ "$INITIALINSTALL" = [yY] ]]; then
     PHPXZ_CHECK=$(echo "$PHP_VERSION" | cut -d . -f1,2)
