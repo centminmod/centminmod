@@ -4,7 +4,7 @@ LBZIP_VER='2.5'
 LZIP_VER='1.17'
 LZLIB_VER='1.7'
 PLZIP_VER='1.4'
-PZIP_VER='9.38.1'
+PZIP_VER='15.14.1'
 
 function funct_pigzinstall {
   if [[ ! -f /usr/bin/pigz || ! -f "${DIR_TMP}/pigz-${PIGZ_VER}.tar.gz" ]]; then
