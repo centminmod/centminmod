@@ -239,6 +239,13 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   else
     yum -y install GeoIP GeoIP-devel
   fi
+  # centos 6 unlike centos 7 doesn't install CR yum repo by default
+  # https://wiki.centos.org/AdditionalResources/Repositories/CR
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    yum -y install centos-release-cr
+    sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
+    # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
+  fi
   touch ${INSTALLDIR}/curlinstall_yum.txt
   firstyuminstallendtime=$(date +%s.%N)
 fi
