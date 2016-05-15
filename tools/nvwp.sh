@@ -16,6 +16,7 @@ DIR_TMP=/svr-setup
 OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 ################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -568,6 +569,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -680,6 +682,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -764,6 +767,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -1002,7 +1006,12 @@ chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
 
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
+if [ -f "${SCRIPT_DIR}/autoprotect.sh" ]; then
+  "${SCRIPT_DIR}/autoprotect.sh"
+fi
+
 service nginx restart
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi

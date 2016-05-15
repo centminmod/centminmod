@@ -753,6 +753,16 @@ imagick_fixes() {
 	fi
 }
 
+apache_protect() {
+	if [[ -z "$(crontab -l 2>&1 | grep 'apacheprotect.sh')" && -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]]; then
+    	crontab -l > cronjoblist
+    	echo "11 */23 * * * ${SCRIPT_DIR}/tools/autoprotect.sh" >> cronjoblist
+    	crontab cronjoblist
+    	rm -rf cronjoblist
+    	crontab -l
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -779,6 +789,7 @@ rclocalchecks
 checkovzkernels
 kernelchecks
 pathfixes
+apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
 	selinxcheck
@@ -812,6 +823,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	tcpcheck_centos
 	remi_tweaks
 	imagick_fixes
+	apache_protect
 fi
 
 }

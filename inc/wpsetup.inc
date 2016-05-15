@@ -621,6 +621,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -754,6 +755,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -855,6 +857,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -1592,7 +1595,12 @@ fi
 
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
+if [ -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]; then
+  "${SCRIPT_DIR}/tools/autoprotect.sh"
+fi
+
 cmservice nginx reload
+
 cmservice php-fpm restart
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
