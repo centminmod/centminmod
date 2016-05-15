@@ -521,7 +521,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
-  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -617,7 +617,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
-  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
@@ -685,7 +685,7 @@ server {
   access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
-  include /usr/local/nginx/conf/autoprotect/domain.com/autoprotect-$vhostname.conf;
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
