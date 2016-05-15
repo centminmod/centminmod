@@ -29,9 +29,12 @@ for domain in $(ls $TOPLEVEL_DIR); do
 	if [ ! -d "/usr/local/nginx/conf/autoprotect/${domain}" ]; then
   	mkdir -p "/usr/local/nginx/conf/autoprotect/${domain}"
 	fi
-  for d in $(find "${TOPLEVEL_DIR}/${domain}" -name ".htaccess" | grep "${domain}/public"); do
+	HTPATHS=$(find "${TOPLEVEL_DIR}/${domain}" -name ".htaccess" -print0 | xargs -0 echo | grep "${domain}/public")
+	declare -a arrays
+	arrays=(${HTPATHS})
+  for d in "${arrays[@]}"; do
     # get directory path which contains .htaccess file
-    PROTECTDIR=$(dirname $d);
+    PROTECTDIR=$(dirname "$d");
     # get the web url path for the .htaccess file
     URL_WEB=$(echo "$PROTECTDIR" |sed -e 's|\/home\/nginx\/domains\/||' -e 's|\/public||')
     # check if 'Deny from all' exists in .htaccess and only generate nginx deny all location
