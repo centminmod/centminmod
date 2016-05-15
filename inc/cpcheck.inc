@@ -754,7 +754,7 @@ imagick_fixes() {
 }
 
 apache_protect() {
-	if [[ -z "$(crontab -l 2>&1 | grep 'apacheprotect.sh')" && -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]]; then
+	if [[ -z "$(crontab -l 2>&1 | grep 'autoprotect.sh')" && -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]]; then
     	crontab -l > cronjoblist
     	echo "11 */23 * * * ${SCRIPT_DIR}/tools/autoprotect.sh" >> cronjoblist
     	crontab cronjoblist
