@@ -32,8 +32,11 @@ checkimagicksys() {
     if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
         if [ -f /etc/yum.repos.d/remi.repo ]; then
             if [[ "$(rpm -qa ImageMagick-last)" ]] && [[ -z "$(rpm -qa ImageMagick)" ]]; then
-                yum clean all >/dev/null 2>&1
-                yum -y update ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+                # skip for initial installs to speed up install
+                if [[ "$INITIALINSTALL" != [yY] ]]; then
+                    yum clean all >/dev/null 2>&1
+                    yum -y update ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel --enablerepo=remi --disableplugin=priorities
+                fi
             else
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # yum -y install libwebp libwebp-devel --skip-broken
