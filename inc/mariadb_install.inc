@@ -128,8 +128,10 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo "Check for existing mariadb-libs package"
     OLDMYSQL_LIBS=`rpm -qa | grep 'mariadb-libs' | head -n1`
     if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
-        echo "rpm -e --nodeps $OLDMYSQL_LIBS"
-        rpm -e --nodeps $OLDMYSQL_LIBS
+        # echo "rpm -e --nodeps $OLDMYSQL_LIBS"
+        # rpm -e --nodeps $OLDMYSQL_LIBS
+        echo "yum -y remove mariadb-libs"
+        yum -y remove mariadb-libs
     fi
 fi # CENTOS_SEVEN != 7
 
@@ -363,6 +365,8 @@ fi
 echo ""
 
 perdbiinstall
+# reinstall postfix removed from mariadb-libs removale
+yum -y install postfix
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 # make sure MariaDB 5.5 is updated from only one repo
