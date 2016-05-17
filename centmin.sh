@@ -517,7 +517,7 @@ SIEGE_VERSION='4.0.1'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 WGETOPT='-cnv --no-dns-cache -4'
-AXEL_VER='2.5'                # Axel source compile version https://github.com/eribertomota/axel/releases
+AXEL_VER='2.7'                # Axel source compile version https://github.com/eribertomota/axel/releases
 ###############################################################
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
