@@ -25,7 +25,7 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 #####################################################
 # wget renamed github
 AXEL='n'
-AXEL_VER='2.5'
+AXEL_VER='2.7'
 AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
 AXEK_LINKLOCAL="http://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
