@@ -297,6 +297,10 @@ NGXDYNAMIC_HEADERSMORE='n'
 NGXDYNAMIC_SETMISC='n'
 NGXDYNAMIC_ECHO='n'
 NGXDYNAMIC_LUA='n'          # leave disabled due to bug https://github.com/openresty/lua-nginx-module/issues/715
+NGXDYNAMIC_SRCCACHE='n'
+NGXDYNAMIC_DEVELKIT='n'     # leave disabled as it requires lua nginx module as dynamic but it has a bug in lua nginx
+NGXDYNAMIC_MEMC='n'
+NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
 

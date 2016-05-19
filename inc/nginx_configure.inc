@@ -531,8 +531,87 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		DEVELKITDIR=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" | head -1 | cut -f1 -d"/")
 		ECHODIR=$(tar -tzf "$DIR_TMP/${NGX_ECHOLINKFILE}" | head -1 | cut -f1 -d"/")
 		REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
-		MEMCOPT=" --add-module=../${MEMCDIR}"
-		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
+
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/simpl/ngx_devel_kit#building-as-a-dynamic-module
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_DEVELKIT" = [yY] ]]; then
+				# certain oprenresty modules need to be compiled as dynamic modules if ngx_devel_kit
+				# module is compiled as a dynamic module
+				NGXDYNAMIC_SETMISC='y'
+				DEVELKITOPT=" --add-dynamic-module=../${DEVELKITDIR}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ndk_http_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ndk_http_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ndk_http_module.so.old
+			fi
+		else
+				DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
+			# if NGXDYNAMIC_DEVELKIT='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_DEVELKIT='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ndk_http_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ndk_http_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ndk_http_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ndk_http_module.so.old
+			fi
+		fi
+
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/memc-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_MEMC" = [yY] ]]; then
+				MEMCOPT=" --add-dynamic-module=../${MEMCDIR}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_memc_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_memc_module.so.old
+			fi
+		else
+				MEMCOPT=" --add-module=../${MEMCDIR}"
+			# if NGXDYNAMIC_MEMC='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_MEMC='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_memc_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_memc_module.so.old
+			fi
+		fi
+
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/srcache-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_SRCCACHE" = [yY] ]]; then
+				SRCCACHEOPT=" --add-dynamic-module=../${SRCACHEDIR}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_srcache_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_srcache_filter_module.so.old
+			fi
+		else
+				SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
+			# if NGXDYNAMIC_SRCCACHE='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_SRCCACHE='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_srcache_filter_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_srcache_filter_module.so.old
+			fi
+		fi
 
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/set-misc-nginx-module#installation
@@ -574,8 +653,6 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			fi
 		fi
 
-		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
-
 		# nginx 1.9.11+ dynamic module support 
 		# https://github.com/openresty/echo-nginx-module#installation
 			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
@@ -616,7 +693,31 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			fi
 		fi
 
-		REDISOPT=" --add-module=../${REDISDIR}"
+		# nginx 1.9.11+ dynamic module support 
+		# https://github.com/openresty/redis2-nginx-module#installation
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_REDISTWO" = [yY] ]]; then
+				REDISOPT=" --add-dynamic-module=../${REDISDIR}"
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_redis2_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_redis2_module.so.old
+			fi
+		else
+				REDISOPT=" --add-module=../${REDISDIR}"
+			# if NGXDYNAMIC_REDISTWO='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_REDISTWO='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_redis2_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_redis2_module.so.old
+			fi
+		fi
 	else
 		MEMCOPT=""
 		SRCCACHEOPT=""
