@@ -212,15 +212,28 @@ if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACH
 fi
 
 cecho "Check for pagespeed nginx module download file" $boldyellow
+# echo "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}"
+# echo "$DIR_TMP/$NGXPGSPEED_DIR"
+NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" 2>1 | head -1 | cut -f1 -d"/")
 if [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -d "$DIR_TMP/$NGXPGSPEED_DIR" ]]; then
     if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
         nginxpgspeedtarball
+
+    # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+    NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
     fi
+elif [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" ]]; then
+    if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+        nginxpgspeedtarball
+
     # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
     NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+    fi
 else
-    # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
-    NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+    if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+        # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+        NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+    fi
 fi
 
 cecho "Check for pagespeed PSOL library" $boldyellow
@@ -233,6 +246,13 @@ fi
 if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     # nginx upgrade routine needs to know directory names for specific nginx
     # modules to know if they exist
+
+    cecho "Check for openresty modules" $boldyellow    
+    # if the tar.gz files don't exist first the tar test directory variables can not be populated
+    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]]; then
+        openrestytarball
+    fi 
+    
     MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
     SRCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_SRCACHELINKFILE}" | head -1 | cut -f1 -d"/")
     SETMISCDIR=$(tar -tzf "$DIR_TMP/${NGX_SETMISCLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -241,7 +261,6 @@ if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
     REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
 
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${MEMCDIR}" || ! -d "${DIR_TMP}/${SRCACHEDIR}"|| ! -d "${DIR_TMP}/${REDISDIR}" || ! -d "${DIR_TMP}/${ECHODIR}" || ! -d "${DIR_TMP}/${SETMISCDIR}" || ! -d "${DIR_TMP}/${DEVELKITDIR}" ]]; then
-
         openrestytarball
     fi
 
