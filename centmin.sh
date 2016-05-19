@@ -296,7 +296,7 @@ NGXDYNAMIC_STREAM='y'
 NGXDYNAMIC_HEADERSMORE='n'
 NGXDYNAMIC_SETMISC='n'
 NGXDYNAMIC_ECHO='n'
-NGXDYNAMIC_LUA='n'
+NGXDYNAMIC_LUA='n'          # leave disabled due to bug https://github.com/openresty/lua-nginx-module/issues/715
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
 
