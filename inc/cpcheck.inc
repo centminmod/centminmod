@@ -763,6 +763,16 @@ apache_protect() {
 	fi
 }
 
+centossix_crsetup() {
+	# centos <=6.7 openssl fix https://community.centminmod.com/posts/31166/
+	if [[ ! -f /etc/yum.repos.d/CentOS-CR.repo && "$CENTOS_SIX" = '6' && "$(awk '{ print $3 }' /etc/redhat-release | sed -e 's|\.||')" -lt '68' ]]; then
+		yum -y -q install centos-release-cr
+		sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
+		echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
+		yum -y -q update openssl openssl-devel --disableplugin=priorities --enablerepo=cr >/dev/null 2>&1
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -824,6 +834,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	remi_tweaks
 	imagick_fixes
 	apache_protect
+	centossix_crsetup
 fi
 
 }
