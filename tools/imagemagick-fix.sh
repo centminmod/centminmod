@@ -15,7 +15,9 @@
 if [[ "$(which convert >/dev/null 2>&1; echo $?)" = '0' && ! -d /var/cpanel ]]; then
 	POLICYPATH=$(convert -list policy | grep 'Path: ' | awk '/policy.xml/ {print $2}')
 	if [[ ! -f "$POLICYPATH" ]]; then
-		if [[ -f /etc/ImageMagick/policy.xml ]]; then
+		if [[ -f /etc/ImageMagick-last/ImageMagick-6/policy.xml ]]; then
+			POLICYPATH='/etc/ImageMagick-last/ImageMagick-6/policy.xml'
+		elif [[ -f /etc/ImageMagick/policy.xml ]]; then
 			POLICYPATH='/etc/ImageMagick/policy.xml'
 		fi
 	fi
