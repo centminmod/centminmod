@@ -29,28 +29,32 @@ for domain in $(ls $TOPLEVEL_DIR); do
 	if [ ! -d "/usr/local/nginx/conf/autoprotect/${domain}" ]; then
   	mkdir -p "/usr/local/nginx/conf/autoprotect/${domain}"
 	fi
-	HTPATHS=$(find "${TOPLEVEL_DIR}/${domain}" -name ".htaccess" -print0 | xargs -0 echo | grep "${domain}/public")
+	HTPATHS=$(find "${TOPLEVEL_DIR}/${domain}" -name ".htaccess" -print0 | xargs -0 echo)
 	declare -a arrays
 	arrays=(${HTPATHS})
   for d in "${arrays[@]}"; do
-    # get directory path which contains .htaccess file
-    PROTECTDIR=$(dirname "$d");
-    # get the web url path for the .htaccess file
-    URL_WEB=$(echo "$PROTECTDIR" |sed -e 's|\/home\/nginx\/domains\/||' -e 's|\/public||')
-    # check if 'Deny from all' exists in .htaccess and only generate nginx deny all location
-    # matches if .htaccess file has 'Deny from all' but also give end user option to bypass
-    # autoprotect.sh script and NOT create a nginx deny all location match by manually creating
-    # a .autoprotect-bypass file within the directory you want to bypass and exclude from autoprotect.sh
-    if [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -v "\#" | grep -i 'Deny from all' >/dev/null 2>&1; echo $?)" = '0' && ! -f "${PROTECTDIR}/.autoprotect-bypass" ]]; then
-      # check the web url for .htaccess directory path to see if it's already deny all / 403 protected
-      # only generate nginx deny all rules for .htaccess directory paths which are not already returning
-      # 403 permission denied http status codes (also include check for 404)
-      # 
-      # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | egrep -o '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
-        PROTECTDIR_PATH=$(echo "$PROTECTDIR" |sed -e "s|\/home\/nginx\/domains\/${domain}\/public||")
-        echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { deny all; }"
-      # fi
-    fi
+    if [[ "$(echo "$d" | grep "${domain}/public/")" ]]; then
+      # get directory path which contains .htaccess file
+      PROTECTDIR=$(dirname "$d");
+      # get the web url path for the .htaccess file
+      URL_WEB=$(echo "$PROTECTDIR" |sed -e 's|\/home\/nginx\/domains\/||' -e 's|\/public||')
+      # check if 'Deny from all' exists in .htaccess and only generate nginx deny all location
+      # matches if .htaccess file has 'Deny from all' but also give end user option to bypass
+      # autoprotect.sh script and NOT create a nginx deny all location match by manually creating
+      # a .autoprotect-bypass file within the directory you want to bypass and exclude from autoprotect.sh
+      if [ -f "${PROTECTDIR}/.htaccess" ]; then
+        if [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -v "\#" | grep -i 'Deny from all' >/dev/null 2>&1; echo $?)" = '0' && ! -f "${PROTECTDIR}/.autoprotect-bypass" ]]; then
+          # check the web url for .htaccess directory path to see if it's already deny all / 403 protected
+          # only generate nginx deny all rules for .htaccess directory paths which are not already returning
+          # 403 permission denied http status codes (also include check for 404)
+          # 
+          # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | egrep -o '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            PROTECTDIR_PATH=$(echo "$PROTECTDIR" |sed -e "s|\/home\/nginx\/domains\/${domain}\/public||")
+            echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { deny all; }"
+          # fi
+        fi
+      fi
+    fi # grep public only
   done > "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
     echo "generated nginx include file: /usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
 done
