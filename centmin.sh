@@ -293,43 +293,43 @@ NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
-NGINX_HEADERSMORE='0.28'
+NGINX_HEADERSMORE='0.30'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.5'
 NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
-ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.28'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.2.19'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
-ORESTY_SETMISCVER='0.29'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
-ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
-ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
+ORESTY_MEMCVER='0.18'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.30'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_ECHOVER='0.59'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_REDISVER='0.13'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.9.18'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.4'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
-ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.20'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUAREDISVER='0.23'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
 ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
 ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
-ORESTY_LUAUPSTREAMCHECKVER='0.03'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
+ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.0'     # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUAUPSTREAMVER='0.04'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUARESTYCOREVER='0.1.6'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.05'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.2'              # https://github.com/openresty/lua-cjson
+LUACJSONVER='2.1.0.4'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL=y                # Install PHP /w Fast Process Manager
@@ -399,7 +399,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.1'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.2'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'    # Use this version of Memcached server
@@ -429,7 +429,7 @@ ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/Zend
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'       # Use this version of Python
-SIEGE_VERSION='3.1.3'
+SIEGE_VERSION='4.0.1'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
