@@ -36,8 +36,8 @@ NGXDYNAMIC_BROTLI='n'
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/
 NGINX_UPDATEMAINTENANCE='n'
-HP_UPDATEMAINTENANCE='n'
-ARIADB_UPDATEMAINTENANCE='n'
+PHP_UPDATEMAINTENANCE='n'
+MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
 NGINX_VERSION='1.9.15'       # Use this version of Nginx
