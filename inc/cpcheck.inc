@@ -773,6 +773,17 @@ centossix_crsetup() {
 	fi
 }
 
+fileperm_fixes() {
+	if [ -f /usr/lib/udev/rules.d/60-net.rules ]; then
+		if [[ "$(lsattr /usr/lib/udev/rules.d/60-net.rules | cut -c5)" = 'i' ]]; then
+			# fix for some centos 7 vps templates on vps hosts setting chattr +i on
+			# /usr/lib/udev/rules.d/60-net.rules preventing yum updates for initscripts
+			# yum packages
+			chattr -i /usr/lib/udev/rules.d/60-net.rules
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -794,6 +805,7 @@ exit
 fi
 
 ovhkernelcheck
+fileperm_fixes
 cronpathadjust
 rclocalchecks
 checkovzkernels
@@ -802,6 +814,7 @@ pathfixes
 apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+	fileperm_fixes
 	selinxcheck
 	setupemailcheck
 	checkovzkernels

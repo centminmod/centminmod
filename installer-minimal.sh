@@ -49,6 +49,17 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+fileperm_fixes() {
+  if [ -f /usr/lib/udev/rules.d/60-net.rules ]; then
+    if [[ "$(lsattr /usr/lib/udev/rules.d/60-net.rules | cut -c5)" = 'i' ]]; then
+      # fix for some centos 7 vps templates on vps hosts setting chattr +i on
+      # /usr/lib/udev/rules.d/60-net.rules preventing yum updates for initscripts
+      # yum packages
+      chattr -i /usr/lib/udev/rules.d/60-net.rules
+    fi
+  fi
+}
+
 opt_tcp() {
 #######################################################
 # check if custom open file descriptor limits already exist
@@ -424,6 +435,7 @@ rm -rf /etc/centminmod/email-secondary.ini
 
 if [[ "$DEF" = 'novalue' ]]; then
   install_axel
+  fileperm_fixes
   cminstall
   echo
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
@@ -469,6 +481,7 @@ fi
 case "$1" in
   install)
     install_axel
+    fileperm_fixes
     cminstall
     ;;
   yumupdate)
