@@ -947,7 +947,16 @@ echo "Centmin Mod secure /tmp # `date`"
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     HOME_DFSIZE=$(df --output=avail /home | tail -1)
 else
-    HOME_DFSIZE=$(df /home | tail -1 | awk '{print $4}')
+    # df output double check as the partition label name might be long
+    # enough to push the output to a 2nd line of text which would alter
+    # the column number where free disk space is reported from 4th to 3rd
+    # column so need to check for this
+    CHECK_DFSIZEFORMAT=$(df /home | tail -1 | awk '{print $4}' | grep '\%' >/dev/null 2>&1; echo $?)
+    if [[ "$CHECK_DFSIZEFORMAT" = '0' ]]; then
+        HOME_DFSIZE=$(df /home | tail -1 | awk '{print $3}')
+    else
+        HOME_DFSIZE=$(df /home | tail -1 | awk '{print $4}')
+    fi
 fi
 
 # centos 7 + openvz /tmp workaround
