@@ -24,6 +24,8 @@
         source "${CM_INSTALLDIR}/inc/z_custom.inc"
     fi
 
+CURL_CACERTURL='https://curl.haxx.se/ca/cacert.pem'
+
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
 CCCACHELINK="http://samba.org/ftp/ccache/${CCACHEFILE}"
 CCCACHELINKLOCAL="http://centminmod.com/centminmodparts/ccache/${CCACHEFILE}"

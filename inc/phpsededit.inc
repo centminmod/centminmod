@@ -88,11 +88,14 @@ phpsededit() {
     #echo "cgi.fix_pathinfo=0" >> ${CUSTOMPHPINIFILE}
     #echo "disable_functions=exec,passthru,shell_exec,system,proc_open,popen" >> ${CUSTOMPHPINIFILE}
 
+    # https://curl.haxx.se/docs/caextract.html
+    # http://php.net/manual/en/curl.configuration.php#ini.curl.cainfo
     if [ ! -f /etc/ssl/certs/cacert.pem ]; then
-        wget -q -O /etc/ssl/certs/cacert.pem http://curl.haxx.se/ca/cacert.pem
+        wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
-    else
-        wget -q -O /etc/ssl/certs/cacert.pem http://curl.haxx.se/ca/cacert.pem
+    elif [[ "$(find /etc/ssl/certs/cacert.pem -mtime +90 >/dev/null 2>&1; echo $?)" = '0' && -f /etc/ssl/certs/cacert.pem ]]; then
+        # redownload if older than 90 days
+        wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
     fi
 
