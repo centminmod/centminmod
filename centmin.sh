@@ -1396,7 +1396,7 @@ fi
 echo "mongodbinstall"
 mongodbinstall
 
-if [[ "$NSD_INSTALL" = [yY] ]]; 
+if [[ "$NSD_INSTALL" = [yY] ]]; then
     echo "nsdinstall"
     nsdinstall
 fi
