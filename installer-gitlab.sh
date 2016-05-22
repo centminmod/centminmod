@@ -316,7 +316,7 @@ cd $INSTALLDIR
     if [[ ! -f "${INSTALLDIR}/centminmod" ]]; then
       getcmstarttime=$(date +%s.%N)
       echo "git clone Centmin Mod repo..."
-      time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
+      time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
       cd centminmod
       chmod +x centmin.sh
       getcmendtime=$(date +%s.%N)   
