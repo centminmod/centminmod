@@ -388,9 +388,9 @@ if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
 for pkgs in ${arrays[@]}
 do
 echo Processing package: $pkgs
-YUMINSTALLRPMCHECKS=$(rpm -qa $pkgs)
-#echo $YUMINSTALLRPMCHECKS
-        if [ "$YUMINSTALLRPMCHECKS" ]; then
+YUMINSTALLRPMCHECK=$(rpm -ql $pkg >/dev/null 2>&1; echo $?)
+#echo $YUMINSTALLRPMCHECK
+        if [[ "$YUMINSTALLRPMCHECK" = '0' ]]; then
 echo "----------------------------------------------------------------------------------"
         # yum${CACHESKIP} -q -y update $pkgs
         # yum${CACHESKIP} -q list $pkgs

@@ -87,9 +87,9 @@ if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
 for pkg in ${array[@]}
 do
 echo Processing package: $pkg
-YUMINSTALLRPMCHECK=$(rpm -qa $pkg)
+YUMINSTALLRPMCHECK=$(rpm -ql $pkg >/dev/null 2>&1; echo $?)
 #echo $YUMINSTALLRPMCHECK
-        if [ "$YUMINSTALLRPMCHECK" ]; then
+        if [[ "$YUMINSTALLRPMCHECK" = '0' ]]; then
 echo "----------------------------------------------------------------------------------"
         # yum${CACHESKIP}-q -y update $pkg
         # yum${CACHESKIP} -q list $pkg
@@ -139,7 +139,7 @@ for pkgg in ${arrayb[@]}
 do
 echo Processing package: $pkgg
 pkggp=$(echo $pkgg | sed -e 's|{||' -e 's|}||' -e 's|,| |')
-YUMINSTALLRPMCHECK=$(rpm -qa $pkggp | wc -l)
+YUMINSTALLRPMCHECK=$(rpm -qi $pkggp | awk '/Install Date/' | wc -l)
 #echo $YUMINSTALLRPMCHECK
         if [[ "$YUMINSTALLRPMCHECK" = '2' ]]; then
 echo "----------------------------------------------------------------------------------"
