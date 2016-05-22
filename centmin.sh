@@ -312,7 +312,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # General Configuration
 NGINXUPGRADESLEEP='3'
-NSD_INSTALL='y'              # Install NSD (DNS Server)
+NSD_INSTALL='n'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL='y'              # Install Network time protocol daemon
 NGINXPATCH='y'               # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
@@ -633,6 +633,7 @@ source "inc/centoscheck.inc"
 source "inc/axelsetup.inc"
 source "inc/phpfpmdir.inc"
 source "inc/nginx_backup.inc"
+source "inc/nsd_submenu.inc"
 source "inc/nsd_install.inc"
 source "inc/nsdsetup.inc"
 source "inc/nsd_reinstall.inc"
@@ -1395,8 +1396,10 @@ fi
 echo "mongodbinstall"
 mongodbinstall
 
-echo "nsdinstall"
-nsdinstall
+if [[ "$NSD_INSTALL" = [yY] ]]; 
+    echo "nsdinstall"
+    nsdinstall
+fi
 
 echo "pureftpinstall"
 pureftpinstall
@@ -1750,11 +1753,7 @@ else
             # clear
                 # display menu
             cecho "--------------------------------------------------------" $boldyellow
-            cecho "Centmin Mod ${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER} - $SCRIPT_URL" $boldgreen
-            #cecho "Menu/Mods Author: $SCRIPT_MODIFICATION_AUTHOR" $boldgreen
-            #cecho "Centmin Original Author: $SCRIPT_AUTHOR" $boldgreen
-            cecho "--------------------------------------------------------" $boldyellow
-            cecho "                   Centmin Mod Menu                   " $boldgreen
+            cecho "     Centmin Mod Menu $branchname centminmod.com     " $boldgreen
             cecho "--------------------------------------------------------" $boldyellow
             cecho "1).  Centmin Install" $boldgreen
             cecho "2).  Add Nginx vhost domain" $boldgreen
@@ -1775,7 +1774,7 @@ else
             cecho "17). Multi-thread compression: pigz,pbzip2,lbzip2..." $boldgreen
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
-            cecho "20). NSD Re-install" $boldgreen
+            cecho "20). NSD Install/Re-Install" $boldgreen
             cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
             cecho "22). Add Wordpress Nginx vhost + Cache Plugin" $boldgreen
             cecho "23). Update Centmin Mod Code Base" $boldgreen
@@ -2212,23 +2211,7 @@ EOF
         ;;
         20|nsdreinstall)
         CM_MENUOPT=20
-        centminlog
-        {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
-        fi
-        
-        nsdreinstall
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_reinstall.log"
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_reinstall.log"
-            fi
-        fi
+        nsdsubmenu
         
         ;;
         21|update)
