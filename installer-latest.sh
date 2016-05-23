@@ -378,7 +378,22 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 mkdir -p /etc/centminmod/
 echo "NGINX_PAGESPEED=y" > /etc/centminmod/custom_config.inc
 echo "ORESTY_LUANGINX=y" >> /etc/centminmod/custom_config.inc
-# echo "ORESTY_LUANGINXVER='0.10.2'" >> /etc/centminmod/custom_config.inc
+echo "NGINX_XSLT='y'" >> /etc/centminmod/custom_config.inc
+echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc
+# Nginx Dynamic Module Switches
+echo "NGXDYNAMIC_XSLT='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_IMAGEFILTER='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_GEOIP='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_STREAM='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_HEADERSMORE='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_SETMISC='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_ECHO='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_SRCCACHE='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_MEMC='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_REDISTWO='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_NGXPAGESPEED='y'" >> /etc/centminmod/custom_config.inc
+echo "NGXDYNAMIC_BROTLI='y'" >> /etc/centminmod/custom_config.inc
+# echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 "${INSTALLDIR}/centminmod/centmin.sh" install
