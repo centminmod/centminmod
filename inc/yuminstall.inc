@@ -32,8 +32,7 @@ echo "...."
 echo "......"
 echo "........."
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
-
+if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
 
   # do not install yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
@@ -59,20 +58,28 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ $(rpm -ql nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y install nmap-ncat
+  fi
+else
+  if [[ $(rpm -ql nc >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y install nc
+  fi
+fi
+
 yumcentosfivedownload
 
 ### smarter yum install update routine ###
 
-#yum -y -q update kernel-devel
-
-if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
+if [[ $(rpm -ql ImageMagick-last >/dev/null 2>&1; echo $?) != '0' ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
     echo
     PACKAGE='cracklib'
   else
-    PACKAGE='virt-what gawk deltarpm cracklib ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
+    PACKAGE='virt-what gawk deltarpm cracklib ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
   fi
 else
   if [ -f /tmp/curlinstaller-yum ]; then
@@ -81,7 +88,7 @@ else
     echo
     PACKAGE='cracklib'
   else
-    PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
+    PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick-last ImageMagick-last-devel ImageMagick-last-c++ ImageMagick-last-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
   fi
 fi
 
@@ -118,7 +125,7 @@ done
 fi # /usr/local/src/curlinstall_yum.txt
 
 ## grouped devels for faster install
-if [[ -z "$(rpm -qa ImageMagick-last)" ]]; then
+if [[ $(rpm -ql ImageMagick-last >/dev/null 2>&1; echo $?) != '0' ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
@@ -189,7 +196,7 @@ customrpms
 # use Remi's ImageMagicK 6.9.* package
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
-    if [[ "$(rpm -qa ImageMagick)" ]]; then
+    if [[ $(rpm -ql ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
       echo
       echo "----------------------------------------------------------------------------------"
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow

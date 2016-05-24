@@ -5,7 +5,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
     cecho "* Increase system Entropy pool availability" $boldgreen
     echo "*************************************************"
 		# cat /proc/sys/kernel/random/entropy_avail
-		if [[ "$(rpm -qa haveged | grep haveged >/dev/null 2>&1; echo $?)" != '0' ]]; then
+		if [[ $(rpm -ql haveged >/dev/null 2>&1; echo $?) != '0' ]]; then
 			yum${CACHESKIP} -y -q install haveged rng-tools
 		fi
 
@@ -20,7 +20,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
     cecho "* Increase system Entropy pool availability" $boldgreen
     echo "*************************************************"
 		# cat /proc/sys/kernel/random/entropy_avail
-		if [[ "$(rpm -qa haveged | grep haveged >/dev/null 2>&1; echo $?)" != '0' ]]; then
+		if [[ $(rpm -ql haveged >/dev/null 2>&1; echo $?) != '0' ]]; then
 			yum${CACHESKIP} -y -q install haveged rng-tools
 		fi
 

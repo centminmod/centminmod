@@ -46,16 +46,16 @@ geoipinstall() {
 
 cecho "GeoIP database and library install..." $boldyellow
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    GEOIPYUMCHECK=$(rpm -qa GeoIP)
-    GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
-    if [[ -z "$GEOIPYUMCHECK" || -z "$GEOIPYUMCHECKB" ]]; then
+    # GEOIPYUMCHECK=$(rpm -qa GeoIP)
+    # GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
+    if [[ $(rpm -ql GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -ql GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
         rpm -ql GeoIP-devel GeoIP
     fi
 else
-		GEOIPYUMCHECK=$(rpm -qa GeoIP)
-		GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
-    if [[ -z "$GEOIPYUMCHECK" || -z "$GEOIPYUMCHECKB" ]]; then
+		# GEOIPYUMCHECK=$(rpm -qa GeoIP)
+		# GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
+    if [[ $(rpm -ql GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -ql GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum -y -q install GeoIP GeoIP-devel
         rpm -ql GeoIP-devel GeoIP
     fi

@@ -15,7 +15,8 @@ letswait
 
 	if [[ -z "$(ps aufx | grep 'crond' | grep -v grep)" ]]; then
 echo ""
-	if [[ -z "$(rpm -qa sysstat)" || -z "$(rpm -qa cronie)" ]]; then
+
+	if [[ $(rpm -ql sysstat >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -ql cronie >/dev/null 2>&1; echo $?) != '0' ]]; then
 		$(which yum) -y -q install sysstat cronie
 	fi
 	cecho "--------------------------------------------------------" $boldyellow

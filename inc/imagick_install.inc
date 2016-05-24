@@ -31,7 +31,7 @@ checkimagicksys() {
     cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
     if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
         if [ -f /etc/yum.repos.d/remi.repo ]; then
-            if [[ "$(rpm -qa ImageMagick-last)" ]] && [[ -z "$(rpm -qa ImageMagick)" ]]; then
+            if [[ $(rpm -ql ImageMagick-last >/dev/null 2>&1; echo $?) = '0' ]] && [[ $(rpm -ql ImageMagick >/dev/null 2>&1; echo $?) != '0' ]]; then
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     yum clean all >/dev/null 2>&1
@@ -54,7 +54,7 @@ checkimagicksys() {
             elif [[ "$CENTOS_SEVEN" = '7' ]]; then
                 remisevenyum
             fi
-            if [[ "$(rpm -qa ImageMagick)" ]]; then
+            if [[ $(rpm -ql ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
                 echo
                 echo "----------------------------------------------------------------------------------"
                 cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
