@@ -5,8 +5,8 @@ ngxver_checker() {
 		if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
 			echo
 			echo "###############################################################"
-			echo "Current Nginx Version: $CURRENT_NGINXVERS"
-			echo "Latest Nginx Available: $LASTEST_NGINXVERS"
+			echo "* Current Nginx Version: $CURRENT_NGINXVERS"
+			echo "* Latest Nginx Available: $LASTEST_NGINXVERS"
 			echo "###############################################################"
 			echo
 		fi
