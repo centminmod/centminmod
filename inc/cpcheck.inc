@@ -784,6 +784,18 @@ fileperm_fixes() {
 	fi
 }
 
+yumfastmirror_check() {
+	# disable yum fastmirror plugin if not enough detected system memory available
+	# for yum fastmirror operation
+	if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+		if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
+			sed i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
+		elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '263000' ]]; then
+			sed i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -804,6 +816,7 @@ echo "aborting script..."
 exit
 fi
 
+yumfastmirror_check
 ovhkernelcheck
 fileperm_fixes
 cronpathadjust
@@ -814,6 +827,7 @@ pathfixes
 apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+	yumfastmirror_check
 	fileperm_fixes
 	selinxcheck
 	setupemailcheck
