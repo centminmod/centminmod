@@ -1,3 +1,18 @@
+ngxver_checker() {
+	if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
+		LASTEST_NGINXVERS=$(curl -sL https://github.com/nginx/nginx/tags 2>&1 | awk -F '[<|>]' '/tag-name/ { print $3}' | sed 's|release-||' | head -n1 2>&1)
+		CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
+		if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
+			echo
+			echo "###############################################################"
+			echo "Current Nginx Version: $CURRENT_NGINXVERS"
+			echo "Latest Nginx Available: $LASTEST_NGINXVERS"
+			echo "###############################################################"
+			echo
+		fi
+	fi
+}
+
 yumupdatechecker() {
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
 		# Setup Colours

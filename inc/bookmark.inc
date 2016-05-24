@@ -19,5 +19,6 @@ cat <<EOF
 EOF
 
 	yumupdatechecker
+	ngxver_checker
 
 }
