@@ -165,7 +165,7 @@ centminlog
 	
 	echo  
 	cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-	time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
+	time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
 	cd centminmod
 	chmod +x centmin.sh
 	
@@ -336,7 +336,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	
 		echo  
 		cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-		time git clone -b ${branchname} --depth=40 ${CMGIT} centminmod
+		time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
 		cd centminmod 2>/dev/null
 
 		if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then

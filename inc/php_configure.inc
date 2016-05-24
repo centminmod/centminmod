@@ -138,11 +138,11 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-	if [[ $(rpm -ql uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
+	if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
 	fi
 else
-	if [[ $(rpm -ql libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
+	if [[ $(rpm -q libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
 	fi
 fi

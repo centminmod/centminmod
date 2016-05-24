@@ -59,11 +59,11 @@ yumprior
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  if [[ $(rpm -ql nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
+  if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y install nmap-ncat
   fi
 else
-  if [[ $(rpm -ql nc >/dev/null 2>&1; echo $?) != '0' ]]; then
+  if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y install nc
   fi
 fi
@@ -72,7 +72,7 @@ yumcentosfivedownload
 
 ### smarter yum install update routine ###
 
-if [[ $(rpm -ql ImageMagick-last >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ $(rpm -q ImageMagick-last >/dev/null 2>&1; echo $?) != '0' ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
@@ -125,7 +125,7 @@ done
 fi # /usr/local/src/curlinstall_yum.txt
 
 ## grouped devels for faster install
-if [[ $(rpm -ql ImageMagick-last >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ $(rpm -q ImageMagick-last >/dev/null 2>&1; echo $?) != '0' ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
@@ -196,7 +196,7 @@ customrpms
 # use Remi's ImageMagicK 6.9.* package
 if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
-    if [[ $(rpm -ql ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
+    if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
       echo
       echo "----------------------------------------------------------------------------------"
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow

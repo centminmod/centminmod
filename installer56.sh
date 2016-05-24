@@ -249,11 +249,11 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    if [[ $(rpm -ql nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
+    if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install nmap-ncat
     fi
   else
-    if [[ $(rpm -ql nc >/dev/null 2>&1; echo $?) != '0' ]]; then
+    if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install nc
     fi
   fi

@@ -1,6 +1,6 @@
 perdbiinstall() {
     # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
-    if [[ $(rpm -ql perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
+    if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum${CACHESKIP} -q -y install perl-DBD-MySQL
     fi
 }
