@@ -342,7 +342,7 @@ cd $INSTALLDIR
     if [[ ! -f "${DOWNLOAD}" ]]; then
     getcmstarttime=$(date +%s.%N)
     echo "downloading Centmin Mod..."
-    if [[ -f /usr/bin/axel && $AXEL = [yY] ]]; then
+    if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
       wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
