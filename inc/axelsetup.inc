@@ -1,4 +1,9 @@
 install_axel() {
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Axel Install (install_axel)"
+    fi
+
 	cd $DIR_TMP
 
         cecho "Download $AXEK_LINKFILE ..." $boldyellow
@@ -36,6 +41,10 @@ echo ""
 }
 
 axelsetup() {
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Axel Setup (axelsetup)"
+    fi
 
 	if [[ "$INITIALINSTALL" = [yY] ]]; then
 		# remove any yum installed axel packages
