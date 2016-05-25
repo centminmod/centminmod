@@ -42,9 +42,9 @@ echo ""
 
 axelsetup() {
 
-    if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "Axel Setup (axelsetup)"
-    fi
+    # if [ -f "$(which figlet)" ]; then
+    #     figlet -ckf standard "Axel Setup (axelsetup)"
+    # fi
 
 	if [[ "$INITIALINSTALL" = [yY] ]]; then
 		# remove any yum installed axel packages
