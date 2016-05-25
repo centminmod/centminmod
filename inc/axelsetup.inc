@@ -132,12 +132,12 @@ axelsetup() {
 	fi # centos 5.x ver
 
 	###
-	if [[ "$CENTOS_SIX" = '6' ]]; then
+	if [[ "$CENTOS_SIX" = '6' && ! -f /usr/local/bin/axel ]]; then
 		install_axel
 	fi
 	###
 
-	if [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/local/bin/axel ]]; then
 		# axel download accelerator works with CentOS 7.x and epel repo
 		# unlike axel provided by rpmforge on CentOS 6.x repo
 		# yum -y install axel
