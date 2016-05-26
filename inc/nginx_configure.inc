@@ -504,7 +504,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi
 
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-		LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" | head -1 | cut -f1 -d"/")
+		LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
 		LIBRESSLOPT=" --with-openssl=../$LIBRESSLDIR"
 		OPENSSLOPT=""
 		LRT='-lrt '
@@ -1281,7 +1281,7 @@ else
 	fi
 
 	if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-		LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" | head -1 | cut -f1 -d"/")
+		LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
 		LIBRESSLOPT=" --with-openssl=../$LIBRESSLDIR"
 		OPENSSLOPT=""
 		LRT='-lrt '
