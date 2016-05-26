@@ -383,11 +383,11 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.4'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.5'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.23'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUAMYSQLVER='0.16'       # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.24'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
