@@ -1848,7 +1848,7 @@ EOF
         centminlog
         {
         funct_nginxaddvhost
-        } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log
+        } 2>&1 | tee -a ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log
         
         ;;
         3|nsdsetup)
