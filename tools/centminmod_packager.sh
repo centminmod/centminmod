@@ -5,7 +5,7 @@
 # reuse locally for new installs without having
 # to redownload the entire info
 ################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 PKGBASE='/home'
 PKGDIR="${PKGBASE}/centminmod_pkg"
 PKGNAME='centminmod_pkg'

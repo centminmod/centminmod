@@ -8,7 +8,7 @@ ngver=$1
 NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
 UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 ###################################################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 # for github support
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'

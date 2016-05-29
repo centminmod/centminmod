@@ -6,7 +6,7 @@
 # https://www.rfxn.com/projects/linux-malware-detect/
 # http://www.clamav.net/lang/en/
 #########################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 TMP_DIR='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
 

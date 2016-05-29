@@ -13,7 +13,7 @@
 # cd /usr/local/src/centminmod/addons
 # ./wpcli.sh install
 ############################################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'

@@ -3,7 +3,7 @@
 # https://community.centminmod.com/threads/help-test-innodbio-sh-for-mysql-tuning.6012/
 # for centminmod.com /etc/my.cnf
 ########################################################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 VER=0.3
 DEBUG='n'
 CPUS=$(grep "processor" /proc/cpuinfo |wc -l)

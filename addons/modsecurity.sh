@@ -15,7 +15,7 @@
 # any support from George (eva2000). I'll provide the install but configuration 
 # and tuning of modsecurity for nginx will be left to end user.
 ###############################################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 MODSEC_PCREVER='8.38'
 APR_VER='1.5.2'

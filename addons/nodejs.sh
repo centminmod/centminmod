@@ -10,7 +10,7 @@ NODEJSVER='4.4.4'
 NODEJS_SOURCEINSTALL='y'
 REINSTALL='y'
 
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 ######################################################

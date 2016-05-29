@@ -10,7 +10,7 @@
 # root / location match i.e.
 # include /usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf;
 #################################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 SCRIPTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BASEDIR=$(dirname $SCRIPTDIR)
 

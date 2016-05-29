@@ -32,7 +32,7 @@
 # 
 # https://docs.python.org/3/library/venv.html
 ###########################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 

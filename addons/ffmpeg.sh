@@ -10,7 +10,7 @@
 DIR_TMP=/svr-setup
 OPT=/opt
 
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
 ###############################################################################

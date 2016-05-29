@@ -5,7 +5,7 @@
 # for access to git 2.7.x branch
 # https://community.centminmod.com/posts/20898/
 ###########################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 

@@ -9,7 +9,7 @@ CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
 CENTMINLOGDIR='/root/centminlogs'
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 DIR_TMP=/svr-setup
 OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)

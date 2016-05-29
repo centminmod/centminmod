@@ -11,7 +11,7 @@
 ########################################################################
 # variables
 #############
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 DIR_TMP='/svr-setup'
 
 CENTMINLOGDIR='/root/centminlogs'

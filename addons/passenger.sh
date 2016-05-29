@@ -11,7 +11,7 @@ RUBYBUILD=''
 # switch to nodesource yum repo instead of source compile
 NODEJSVER='4.4.4'
 
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 ######################################################
