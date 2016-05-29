@@ -1863,7 +1863,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nginx_addvhost.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=2
         centminlog
         {
@@ -1876,7 +1876,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_setup.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nsd_setup.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=3
         centminlog
         {
@@ -1889,7 +1889,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nginx_upgrade.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=4
         starttime=$(date +%s.%N)
         
@@ -1930,7 +1930,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_php_upgrade.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=5
         starttime=$(date +%s.%N)
         
@@ -1971,7 +1971,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_reinstall.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=6
         starttime=$(date +%s.%N)
         
@@ -2004,7 +2004,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_apc_reinstall.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=7
         starttime=$(date +%s.%N)
         
@@ -2037,7 +2037,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_install.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=8
         starttime=$(date +%s.%N)
         
@@ -2072,7 +2072,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_apc_install.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=9
         starttime=$(date +%s.%N)
         
@@ -2105,7 +2105,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_memcached_reinstall.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=10
         starttime=$(date +%s.%N)
         
@@ -2134,25 +2134,25 @@ EOF
         
         ;;
         11|mariadbsubmenu)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=11
         mariadbsubmenu
         
         ;;
         12|zendoptcachesubmenu)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=12
         zendoptcachesubmenu
         
         ;;
         13|iopinginstall)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=13
         funct_installiopingcentmin
         
         ;;
         14|selinux)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=14
         funct_selinux
         
@@ -2162,7 +2162,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_php-imagick-install.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=15
         starttime=$(date +%s.%N)
         
@@ -2191,7 +2191,7 @@ EOF
         
         ;;
         16|sshdport)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=16
         funct_sshd
         
@@ -2201,7 +2201,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_multithread_compression-install.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=17
         starttime=$(date +%s.%N)
         
@@ -2239,7 +2239,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_suhosin_install.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=18
         centminlog
         {
@@ -2265,7 +2265,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_ffmpeg_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_ffmpeg_install.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=19
         centminlog
         ffmpegsubmenu
@@ -2280,13 +2280,13 @@ EOF
         
         ;;
         20|nsdreinstall)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=20
         nsdsubmenu
         
         ;;
         21|update)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=21
         UALL='y'
         starttime=$(date +%s.%N)
@@ -2348,7 +2348,7 @@ EOF
             NEWDT=$(date +"%d%m%y-%H%M%S")
             mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_wordpress_addvhost.log"
         fi
-        set_logdate
+        # set_logdate
         CM_MENUOPT=22
         centminlog
         {
@@ -2357,13 +2357,13 @@ EOF
         
         ;;        
         23|cmupdatemenu)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=23
         updatersubmenu
 
         ;;
         24|exit)
-        set_logdate
+        # set_logdate
         CM_MENUOPT=24
         bookmark
         break
