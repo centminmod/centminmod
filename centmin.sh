@@ -1859,6 +1859,7 @@ EOF
         
         ;;
         2|addvhost)
+        set_logdate
         CM_MENUOPT=2
         centminlog
         {
@@ -1867,6 +1868,7 @@ EOF
         
         ;;
         3|nsdsetup)
+        set_logdate
         CM_MENUOPT=3
         centminlog
         {
@@ -1875,6 +1877,7 @@ EOF
         
         ;;
         4|nginxupgrade)
+        set_logdate
         CM_MENUOPT=4
         starttime=$(date +%s.%N)
         
@@ -1911,6 +1914,7 @@ EOF
         
         ;;
         5|phpupgrade)
+        set_logdate
         CM_MENUOPT=5
         starttime=$(date +%s.%N)
         
@@ -1947,6 +1951,7 @@ EOF
         
         ;;
         6|xcachereinstall)
+        set_logdate
         CM_MENUOPT=6
         starttime=$(date +%s.%N)
         
@@ -1975,6 +1980,7 @@ EOF
         
         ;;
         7|apcreinstall)
+        set_logdate
         CM_MENUOPT=7
         starttime=$(date +%s.%N)
         
@@ -2003,6 +2009,7 @@ EOF
         
         ;;
         8|installxcache)
+        set_logdate
         CM_MENUOPT=8
         starttime=$(date +%s.%N)
         
@@ -2033,6 +2040,7 @@ EOF
         
         ;;
         9|installapc)
+        set_logdate
         CM_MENUOPT=9
         starttime=$(date +%s.%N)
         
@@ -2061,6 +2069,7 @@ EOF
         
         ;;
         10|memcachedreinstall)
+        set_logdate
         CM_MENUOPT=10
         starttime=$(date +%s.%N)
         
@@ -2089,26 +2098,31 @@ EOF
         
         ;;
         11|mariadbsubmenu)
+        set_logdate
         CM_MENUOPT=11
         mariadbsubmenu
         
         ;;
         12|zendoptcachesubmenu)
+        set_logdate
         CM_MENUOPT=12
         zendoptcachesubmenu
         
         ;;
         13|iopinginstall)
+        set_logdate
         CM_MENUOPT=13
         funct_installiopingcentmin
         
         ;;
         14|selinux)
+        set_logdate
         CM_MENUOPT=14
         funct_selinux
         
         ;;
         15|imagick)
+        set_logdate
         CM_MENUOPT=15
         starttime=$(date +%s.%N)
         
@@ -2137,11 +2151,13 @@ EOF
         
         ;;
         16|sshdport)
+        set_logdate
         CM_MENUOPT=16
         funct_sshd
         
         ;;
         17|multithreadcomp)
+        set_logdate
         CM_MENUOPT=17
         starttime=$(date +%s.%N)
         
@@ -2175,6 +2191,7 @@ EOF
         
         ;;
         18|suhosininstall)
+        set_logdate
         CM_MENUOPT=18
         centminlog
         {
@@ -2196,6 +2213,7 @@ EOF
         
         ;;
         19|ffmpeginstall)
+        set_logdate
         CM_MENUOPT=19
         centminlog
         ffmpegsubmenu
@@ -2210,11 +2228,13 @@ EOF
         
         ;;
         20|nsdreinstall)
+        set_logdate
         CM_MENUOPT=20
         nsdsubmenu
         
         ;;
         21|update)
+        set_logdate
         CM_MENUOPT=21
         UALL='y'
         starttime=$(date +%s.%N)
@@ -2272,6 +2292,7 @@ EOF
 
         ;;
         22|addwpvhost)
+        set_logdate
         CM_MENUOPT=22
         centminlog
         {
@@ -2280,11 +2301,13 @@ EOF
         
         ;;        
         23|cmupdatemenu)
+        set_logdate
         CM_MENUOPT=23
         updatersubmenu
 
         ;;
         24|exit)
+        set_logdate
         CM_MENUOPT=24
         bookmark
         break

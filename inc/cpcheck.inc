@@ -1,3 +1,7 @@
+set_logdate() {
+	DT=`date +"%d%m%y-%H%M%S"`
+}
+
 ngxver_checker() {
 	if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
 		LASTEST_NGINXVERS=$(curl -sL https://github.com/nginx/nginx/tags 2>&1 | awk -F '[<|>]' '/tag-name/ { print $3}' | sed 's|release-||' | head -n1 2>&1)
