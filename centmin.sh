@@ -1859,6 +1859,10 @@ EOF
         
         ;;
         2|addvhost)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nginx_addvhost.log"
+        fi
         set_logdate
         CM_MENUOPT=2
         centminlog
@@ -1868,6 +1872,10 @@ EOF
         
         ;;
         3|nsdsetup)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_setup.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nsd_setup.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nsd_setup.log"
+        fi
         set_logdate
         CM_MENUOPT=3
         centminlog
@@ -1877,6 +1885,10 @@ EOF
         
         ;;
         4|nginxupgrade)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nginx_upgrade.log"
+        fi
         set_logdate
         CM_MENUOPT=4
         starttime=$(date +%s.%N)
@@ -1914,6 +1926,10 @@ EOF
         
         ;;
         5|phpupgrade)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_php_upgrade.log"
+        fi
         set_logdate
         CM_MENUOPT=5
         starttime=$(date +%s.%N)
@@ -1951,6 +1967,10 @@ EOF
         
         ;;
         6|xcachereinstall)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_reinstall.log"
+        fi
         set_logdate
         CM_MENUOPT=6
         starttime=$(date +%s.%N)
@@ -1980,6 +2000,10 @@ EOF
         
         ;;
         7|apcreinstall)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_apc_reinstall.log"
+        fi
         set_logdate
         CM_MENUOPT=7
         starttime=$(date +%s.%N)
@@ -2009,6 +2033,10 @@ EOF
         
         ;;
         8|installxcache)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_xcache_install.log"
+        fi
         set_logdate
         CM_MENUOPT=8
         starttime=$(date +%s.%N)
@@ -2040,6 +2068,10 @@ EOF
         
         ;;
         9|installapc)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_apc_install.log"
+        fi
         set_logdate
         CM_MENUOPT=9
         starttime=$(date +%s.%N)
@@ -2069,6 +2101,10 @@ EOF
         
         ;;
         10|memcachedreinstall)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_memcached_reinstall.log"
+        fi
         set_logdate
         CM_MENUOPT=10
         starttime=$(date +%s.%N)
@@ -2122,6 +2158,10 @@ EOF
         
         ;;
         15|imagick)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_php-imagick-install.log"
+        fi
         set_logdate
         CM_MENUOPT=15
         starttime=$(date +%s.%N)
@@ -2157,6 +2197,10 @@ EOF
         
         ;;
         17|multithreadcomp)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_multithread_compression-install.log"
+        fi
         set_logdate
         CM_MENUOPT=17
         starttime=$(date +%s.%N)
@@ -2191,6 +2235,10 @@ EOF
         
         ;;
         18|suhosininstall)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_suhosin_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_suhosin_install.log"
+        fi
         set_logdate
         CM_MENUOPT=18
         centminlog
@@ -2213,6 +2261,10 @@ EOF
         
         ;;
         19|ffmpeginstall)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_ffmpeg_install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_ffmpeg_install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_ffmpeg_install.log"
+        fi
         set_logdate
         CM_MENUOPT=19
         centminlog
@@ -2292,6 +2344,10 @@ EOF
 
         ;;
         22|addwpvhost)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_wordpress_addvhost.log"
+        fi
         set_logdate
         CM_MENUOPT=22
         centminlog
