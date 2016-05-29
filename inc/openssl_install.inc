@@ -31,7 +31,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
             figlet -ckf standard "Cloudflare Chacha20 Patch"
         fi
         echo  "######################################################################"
-        echo "Patching OpenSSL 1.0.2g"
+        echo "Patching OpenSSL 1.0.2h"
         echo  "######################################################################"
         echo "Cloudflare ChaCha20 patch"
         echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch"
@@ -44,7 +44,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch'
         rm -rf "${OPESSLCFPATCH_NAME}"
         if [[ "$AVXTWO_CHECK" = '0' ]]; then
-            OPENSSLCFPATCHLINK="https://github.com/cloudflare/sslconfig/raw/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
+            OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
         else
             OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${OPESSLCFPATCH_NAME}"
         fi
@@ -73,7 +73,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         fi
         # popd
         echo  "######################################################################"
-        echo  "OpenSSL 1.0.2g patched"
+        echo  "OpenSSL 1.0.2h patched"
         echo  "######################################################################"
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Cloudflare Chacha20 Patched"
