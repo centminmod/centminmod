@@ -230,11 +230,11 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # Setting up Nginx mapping
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
   sslvhost
 fi
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
 
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
@@ -530,6 +530,16 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
 
+if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
+  echo
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname""
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname"
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo
+fi
+
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
@@ -545,7 +555,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]]; then
+if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]] || [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = 'le' ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -568,7 +578,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
@@ -581,7 +591,7 @@ cecho "-------------------------------------------------------------" $boldyello
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
 cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
 fi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite

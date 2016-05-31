@@ -567,11 +567,11 @@ HFF
 ################################################################################
 # Setting up Nginx mapping
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
   sslvhost
 fi
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
 
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
@@ -1610,6 +1610,16 @@ if [ -f /tmp/setupwp.log ]; then
   rm -rf /tmp/setupwp.log
 fi
 
+if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
+  echo
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname""
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname"
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo
+fi
+
 {
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
@@ -1626,7 +1636,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -1687,7 +1697,7 @@ elif [[ "$disablepwdprotect" = [yY] ]]; then
     # disable wp-login.php password protection if user opts to do so
     sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf
     sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.conf
-    if [[ "$vhostssl" = [yY] ]]; then
+    if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
       sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf
       sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf
     fi
@@ -1700,7 +1710,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
