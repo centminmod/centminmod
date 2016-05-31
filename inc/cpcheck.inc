@@ -814,9 +814,9 @@ yumfastmirror_check() {
 	# for yum fastmirror operation
 	if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
 		if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
-			sed i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
+			sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
 		elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '263000' ]]; then
-			sed i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
+			sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
 		fi
 	fi
 }
