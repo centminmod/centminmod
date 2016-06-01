@@ -4,7 +4,7 @@ set_logdate() {
 
 ngxver_checker() {
 	if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-		LASTEST_NGINXVERS=$(curl -sL https://github.com/nginx/nginx/tags 2>&1 | awk -F '[<|>]' '/tag-name/ { print $3}' | sed 's|release-||' | head -n1 2>&1)
+		LASTEST_NGINXVERS=$(curl -sL http://nginx.org/en/download.html 2>&1 | grep -o -E 'href="([^"#]+)"'  | cut -d'"' -f2 | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
 		CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
 		if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
 			echo
