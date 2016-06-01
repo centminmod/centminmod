@@ -83,7 +83,12 @@ fi # CLOUDFLARE_PATCHSSL
 }
 
 installopenssl() {
-    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+    if [ ! -f /usr/local/go/bin/go ]; then
+        # if golang is not detected BoringSSL switch will be disabled
+        # and default to using OpenSSL 1.0.2+
+        BORINGSSL_SWITCH='n'
+    fi
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
@@ -149,9 +154,9 @@ installopenssl() {
         LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
-        echo "OpenSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+        echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
-    else
+    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         opensslinstallstarttime=$(date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
@@ -195,6 +200,41 @@ installopenssl() {
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
-        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log 
+        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+    elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+        boringsslinstallstarttime=$(date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling BoringSSL"
+        fi
+
+        echo "Compiling BoringSSL..."
+        cd $DIR_TMP
+        git clone https://boringssl.googlesource.com/boringssl
+        cd boringssl
+        mkdir -p build
+        cd build
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            rm -rf CMakeCache.txt
+        fi
+        cmake ..
+        unset CC
+        unset CXX
+        unset CFLAGS
+        export CMAKE_C_COMPILER="/usr/bin/gcc"
+        export CMAKE_CXX_COMPILER="/usr/bin/g++"
+        export CC="/usr/bin/gcc"
+        export CXX="/usr/bin/g++"
+        make${MAKETHREADS}
+        mkdir -p .openssl/lib
+        ln -s ../include
+        cp build/crypto/libcrypto.a build/ssl/libssl.a .openssl/lib
+
+        boringsslinstallendtime=$(date +%s.%N)
+        BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
+        echo "BoringSSL Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log 
     fi
 }
