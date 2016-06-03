@@ -54,7 +54,7 @@ if [ -f /proc/user_beancounters ]; then
 else
   if [ ! -f /usr/sbin/ntpd ]; then
     echo "*************************************************"
-    cecho "* Installing NTP (and syncing time)" $boldgreen
+    echo "* Installing NTP (and syncing time)"
     echo "*************************************************"
     echo "The date/time before was:"
     date
