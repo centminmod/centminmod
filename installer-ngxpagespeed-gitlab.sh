@@ -49,6 +49,24 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [ -f /proc/user_beancounters ]; then
+    cecho "OpenVZ system detected, NTP not installed" $boldgreen
+else
+  if [ ! -f /usr/sbin/ntpd ]; then
+    echo "*************************************************"
+    cecho "* Installing NTP (and syncing time)" $boldgreen
+    echo "*************************************************"
+    echo "The date/time before was:"
+    date
+    echo
+    yum -y install ntp
+    chkconfig ntpd on
+    ntpdate pool.ntp.org
+    echo "The date/time is now:"
+    date
+  fi
+fi
+
 fileperm_fixes() {
   if [ -f /usr/lib/udev/rules.d/60-net.rules ]; then
     if [[ "$(lsattr /usr/lib/udev/rules.d/60-net.rules | cut -c5)" = 'i' ]]; then
