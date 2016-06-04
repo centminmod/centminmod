@@ -50,6 +50,15 @@ fi # USEEDITOR
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    # replicate the default aliases for centos 7 on
+    # centos 6 systems
+    echo "alias egrep='egrep --color=auto'" >> /root/.bashrc
+    echo "alias fgrep='fgrep --color=auto'" >> /root/.bashrc
+    echo "alias grep='grep --color=auto'" >> /root/.bashrc
+    alias egrep='egrep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias grep='grep --color=auto'
+
     echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
     echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
