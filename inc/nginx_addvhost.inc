@@ -394,10 +394,6 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
-  #add_header X-Xss-Protection "1; mode=block" always;
-  #add_header X-Xss-Protection "1; mode=block" always;
-  #add_header X-Content-Type-Options "nosniff" always;  
-
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
