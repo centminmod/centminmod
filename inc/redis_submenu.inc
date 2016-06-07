@@ -28,6 +28,7 @@ PHPREDIS='y'
 centminlog
 {
 redisinstall
+/usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-install.log"
 
 ;;
@@ -37,6 +38,7 @@ centminlog
 {
 PHPREDIS='y'
 redisinstall
+/usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-reinstall.log"
 
 ;;
