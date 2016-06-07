@@ -496,7 +496,7 @@ LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
-REDISPHP_VER='3.0.0-rc1'    # redis PHP version
+REDISPHP_VER='2.2.7'        # redis PHP version
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.1.7'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
