@@ -1771,7 +1771,7 @@ else
             cecho "10). Memcached Server Re-install" $boldgreen
             cecho "11). MariaDB 5.2/5.5 & 10.x Upgrade Sub-Menu" $boldgreen
             cecho "12). Zend OpCache Install/Re-install" $boldgreen
-            cecho "13). Install ioping.sh vbtechsupport.com/1239/" $boldgreen
+            cecho "13). Install/Reinstall Redis PHP Extension" $boldgreen
             cecho "14). SELinux disable" $boldgreen
             cecho "15). Install/Reinstall ImagicK PHP Extension" $boldgreen
             cecho "16). Change SSHD Port Number" $boldgreen
@@ -2149,10 +2149,10 @@ EOF
         zendoptcachesubmenu
         
         ;;
-        13|iopinginstall)
+        13|redisphp)
         # set_logdate
         CM_MENUOPT=13
-        funct_installiopingcentmin
+        phpredis_submenu
         
         ;;
         14|selinux)
