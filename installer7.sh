@@ -28,7 +28,7 @@ AXEL='n'
 AXEL_VER='2.6'
 AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
-AXEK_LINKLOCAL="http://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
+AXEK_LINKLOCAL="https://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
 #######################################################
 # 
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)

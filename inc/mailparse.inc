@@ -13,7 +13,7 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
     PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
     PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
-    PHPEXT_MAILPARSELINKLOCAL="http://centminmod.com/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
+    PHPEXT_MAILPARSELINKLOCAL="https://centminmod.com/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
 fi
 
     cecho "Check for php extensions" $boldyellow

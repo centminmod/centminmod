@@ -27,7 +27,7 @@ PCRE_PREFIX='/opt/pcre/lib'
 TMP_DIR='/svr-setup'
 TMP_SSL='/opt'
 PCRELINKFILE="pcre-${MODSEC_PCREVER}.tar.gz"
-PCRELINK="http://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
+PCRELINK="https://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 ###############################################################################
 if [ ! -d "$CENTMINLOGDIR" ]; then
 	mkdir -p "$CENTMINLOGDIR"

@@ -156,7 +156,7 @@ libresslgeolocation() {
     curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-      LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+      LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
     fi
   elif [[ "$SERVER_COUNTRY" = 'AT' ]]; then
@@ -171,7 +171,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -187,7 +187,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -203,7 +203,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -219,7 +219,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -235,7 +235,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -251,7 +251,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -267,7 +267,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -283,7 +283,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -299,7 +299,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -315,7 +315,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -331,7 +331,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -347,7 +347,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -363,7 +363,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -379,7 +379,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -395,7 +395,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -411,7 +411,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -427,7 +427,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -443,7 +443,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -459,7 +459,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -475,7 +475,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -491,7 +491,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -507,7 +507,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -523,7 +523,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -539,7 +539,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -570,7 +570,7 @@ libresslgeolocation() {
             curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
             LIBRESSL_CURLCHECK=$?
             if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-              LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+              LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
               LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
             fi
           fi
@@ -589,7 +589,7 @@ libresslgeolocation() {
       curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-        LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+        LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
       fi
     fi
@@ -619,7 +619,7 @@ libresslgeolocation() {
             curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
             LIBRESSL_CURLCHECK=$?
             if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-              LIBRESSL_MIRRORURL="http://centminmod.com/centminmodparts/libressl"
+              LIBRESSL_MIRRORURL="https://centminmod.com/centminmodparts/libressl"
               LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
             fi
           fi
@@ -2774,7 +2774,7 @@ openssldownload() {
 curl -sI --connect-timeout 5 --max-time 5 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
 OPENSSL_CURLCHECK=$?
 if [[ "$OPENSSL_CURLCHECK" != '0' ]]; then
-  OPENSSL_MIRRORURL="http://centminmod.com/centminmodparts/openssl"
+  OPENSSL_MIRRORURL="https://centminmod.com/centminmodparts/openssl"
   OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
 fi
 
@@ -2971,7 +2971,7 @@ echo ""
         cecho "sproxy-latest found, skipping download..." $boldgreen
     else
         # $DOWNLOADAPP ${SPROXY_LINK} $WGETRETRY
-        $DOWNLOADAPP "http://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
+        $DOWNLOADAPP "https://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen
@@ -3478,7 +3478,7 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
     PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
     PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
-    PHPEXT_MAILPARSELINKLOCAL="http://centminmod.com/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
+    PHPEXT_MAILPARSELINKLOCAL="https://centminmod.com/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
 fi
 
 # yum double check

@@ -1,7 +1,7 @@
 apcdevfix() {
     cd $DIR_TMP
 	rm -rf APC-3.1.13*
-	wget -c http://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
+	wget -c https://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
 	tar xfz APC-3.1.13.tgz
 	cd APC-3.1.13
 }
