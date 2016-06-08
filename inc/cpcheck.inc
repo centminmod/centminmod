@@ -779,9 +779,10 @@ imagick_fixes() {
 }
 
 apache_protect() {
-	if [[ -z "$(crontab -l 2>&1 | grep 'autoprotect.sh')" && -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]]; then
+	if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/autoprotect.sh')" && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
     	crontab -l > cronjoblist
-    	echo "11 */23 * * * ${SCRIPT_DIR}/tools/autoprotect.sh" >> cronjoblist
+      sed -i '/autoprotect.sh/d' cronjoblist
+    	echo "11 */23 * * * /usr/local/src/centminmod/tools/autoprotect.sh 2>/dev/null" >> cronjoblist
     	crontab cronjoblist
     	rm -rf cronjoblist
     	crontab -l
