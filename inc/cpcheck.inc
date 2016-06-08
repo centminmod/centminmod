@@ -935,7 +935,7 @@ fi
 
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
-    echo "0 */4 * * * /usr/bin/cminfo_updater" >> cronjoblist
+    echo "0 */4 * * * /usr/bin/cminfo_updater 2>/dev/null" >> cronjoblist
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
