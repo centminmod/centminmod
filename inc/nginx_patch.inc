@@ -46,7 +46,7 @@ patchnginx() {
        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
      fi
      wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
-     if [ -f "${NGINXTLSPATCH_NAME}" ]; then
+     if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
     	 patch -p1 < "${NGINXTLSPATCH_NAME}"
      fi
   else
