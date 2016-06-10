@@ -661,7 +661,7 @@ server {
   #add_header X-Xss-Protection "1; mode=block" always;
   #add_header X-Content-Type-Options "nosniff" always;
   $COMP_HEADER;
-  ssl_buffer_size 1400;
+  ssl_buffer_size 1369;
   ssl_session_tickets on;
   
   # enable ocsp stapling
