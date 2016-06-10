@@ -26,6 +26,31 @@ patchnginx() {
 			echo
 		fi
 	fi
+	if [[ "$NGINX_DYNAMICTLS" = [yY] ]]; then
+     if [ -f "$(which figlet)" ]; then
+         figlet -ckf standard "Cloudflare Nginx Dynamic TLS Patch"
+     fi
+     echo  "######################################################################"
+     echo "Patching Nginx for Dynamic TLS Size Support"
+     echo  "######################################################################"
+     echo "Cloudflare Nginx Dynamic TLS patch"
+     echo "https://github.com/cloudflare/sslconfig/raw/master/patches/nginx__dynamic_tls_records.patch"
+     echo  "######################################################################"
+     NGINXTLSPATCH_NAME='nginx__dynamic_tls_records.patch'
+     rm -rf "${NGINXTLSPATCH_NAME}"
+     NGINXTLSPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${NGINXTLSPATCH_NAME}"
+		 # fallback mirror if github down, use gitlab mirror
+     curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+     NGINXTLSPATCH_CURLCHECK=$?
+     if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
+       NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
+     fi
+     wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
+  else
+  	if [ -f "${NGINXTLSPATCH_NAME}" ]; then
+  		rm -rf "${NGINXTLSPATCH_NAME}"
+  	fi
+	fi
 }
 
 luapatch() {
