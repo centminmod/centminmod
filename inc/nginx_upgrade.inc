@@ -498,7 +498,7 @@ check_requestscheme
     CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
     CUR_NGINXUPGRADEVER=$(echo "$ngver" |sed -e 's|\.|0|g' | head -n1)    
 
-if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] ]]; then
+if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN] ]]; then
     # if centmin.sh option NGINXPATCH=n then disable patches by 
     # wiping the nginx downloaded source and redownloading a fresh copy
     rm -rf nginx-${ngver}*
