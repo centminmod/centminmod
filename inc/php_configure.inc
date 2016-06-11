@@ -23,9 +23,9 @@ else
 	PHPDEBUGOPT=''
 fi
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
 	OPCACHEOPT=" --enable-opcache"
-elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 	# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 	# Zend Opcache version with one available from pecl site	
 	OPCACHEOPT=" --disable-opcache"	
@@ -289,7 +289,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 fi
 
 # zend opcache hugepages
-if [[ "$PHPMUVER" = '7.0' ]]; then
+if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
 	opcachehugepages
 elif [[ "$PHPMUVER" != '7.0' ]]; then	
 	if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
