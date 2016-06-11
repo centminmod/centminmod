@@ -385,7 +385,7 @@ CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch ht
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.3.5'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.3.6'   # Use this version of LibreSSL http://www.libressl.org/
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
@@ -399,7 +399,7 @@ PCRE_SOURCEINSTALL=n
 PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.25'    # Use this version of Memcached server
