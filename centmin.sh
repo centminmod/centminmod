@@ -485,7 +485,7 @@ PCRE_SOURCEINSTALL='n'
 PCRE_VERSION='8.38'          # NO longer used/ignored
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
 MEMCACHED_INSTALL='y'         # Install Memcached
