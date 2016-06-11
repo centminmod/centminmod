@@ -16,7 +16,7 @@ phpng_download() {
        	 cecho "php-${PHPNGVER}.tar.gz found, skipping download..." $boldgreen
     	else
         	echo "wget -cnv https://downloads.php.net/~krakjoe/php-${PHPNGVER}.tar.gz --tries=3"
-        	wget -cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3
+        	wget -cnv https://downloads.php.net/~krakjoe/php-${PHPNGVER}.tar.gz --tries=3
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
 				cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen
