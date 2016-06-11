@@ -165,14 +165,14 @@ NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.3.5'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.3.6'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 ##################################
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
 MEMCACHED_INSTALL='y'       # Install Memcached
