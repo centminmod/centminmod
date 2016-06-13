@@ -7,6 +7,7 @@
 ngver=$1
 NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
 UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
+CMVERSION_CHECK='n'
 ###################################################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
@@ -128,110 +129,114 @@ GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optim
 # by default. The service is still installed but disabled 
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
-NSD_DISABLED=n                # when set to =y, NSD disabled by default with chkconfig off
-MEMCACHED_DISABLED=n          # when set to =y,  Memcached server disabled by default via chkconfig off
-PHP_DISABLED=n                # when set to =y,  PHP-FPM disabled by default with chkconfig off
-MYSQLSERVICE_DISABLED=n       # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
-PUREFTPD_DISABLED=n           # when set to =y, Pure-ftpd service disabled by default with chkconfig off
+NSD_DISABLED='n'              # when set to =y, NSD disabled by default with chkconfig off
+MEMCACHED_DISABLED='n'        # when set to =y,  Memcached server disabled by default via chkconfig off
+PHP_DISABLED='n'              # when set to =y,  PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED='n'     # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
+PUREFTPD_DISABLED='n'         # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_NJS='n'
 NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'
 NGXDYNAMIC_IMAGEFILTER='y'
-NGXDYNAMIC_GEOIP='y'
+NGXDYNAMIC_GEOIP='n'
 NGXDYNAMIC_STREAM='y'
 NGXDYNAMIC_HEADERSMORE='n'
 NGXDYNAMIC_SETMISC='n'
 NGXDYNAMIC_ECHO='n'
-NGXDYNAMIC_LUA='n'
+NGXDYNAMIC_LUA='n'          # leave disabled due to bug https://github.com/openresty/lua-nginx-module/issues/715
+NGXDYNAMIC_SRCCACHE='n'
+NGXDYNAMIC_DEVELKIT='n'     # leave disabled as it requires lua nginx module as dynamic but it has a bug in lua nginx
+NGXDYNAMIC_MEMC='n'
+NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
 
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/
-NGINX_UPDATEMAINTENANCE=n
-PHP_UPDATEMAINTENANCE=n
-MARIADB_UPDATEMAINTENANCE=n
+NGINX_UPDATEMAINTENANCE='n'
+PHP_UPDATEMAINTENANCE='n'
+MARIADB_UPDATEMAINTENANCE='n'
 
 # General Configuration
 NGINXUPGRADESLEEP='3'
-NSD_INSTALL=y                # Install NSD (DNS Server)
+NSD_INSTALL='n'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
-NTP_INSTALL=y                # Install Network time protocol daemon
-NGINXPATCH=y                 # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NTP_INSTALL='y'              # Install Network time protocol daemon
+NGINXPATCH='y'               # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
 NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGXMODULE_ALTORDER='y'       # nginx configure module ordering alternative order
-NGINX_INSTALL=y              # Install Nginx (Webserver)
-NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
-NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_INSTALL='y'            # Install Nginx (Webserver)
+NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
+NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_MODSECURITY=n          # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
-NGINX_NJS=n                  # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
-NGINX_GEOIP=y                # Nginx GEOIP module install
-NGINX_GEOIPMEM=y             # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
-NGINX_SPDY=y                 # Nginx SPDY support
-NGINX_STUBSTATUS=y           # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
-NGINX_SUB=y                  # http://nginx.org/en/docs/http/ngx_http_sub_module.html
-NGINX_ADDITION=y             # http://nginx.org/en/docs/http/ngx_http_addition_module.html
-NGINX_IMAGEFILTER=y          # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
+NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
+NGINX_GEOIP='y'              # Nginx GEOIP module install
+NGINX_GEOIPMEM='y'           # Nginx caches GEOIP databases in memory (default), setting 'n' caches to disk instead
+NGINX_SPDY='y'               # Nginx SPDY support
+NGINX_STUBSTATUS='y'         # http://nginx.org/en/docs/http/ngx_http_stub_status_module.html required for nginx statistics
+NGINX_SUB='y'                # http://nginx.org/en/docs/http/ngx_http_sub_module.html
+NGINX_ADDITION='y'           # http://nginx.org/en/docs/http/ngx_http_addition_module.html
+NGINX_IMAGEFILTER='y'        # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
 NGINX_PERL='n'               # http://nginx.org/en/docs/http/ngx_http_perl_module.html
 NGINX_XSLT='n'               # http://nginx.org/en/docs/http/ngx_http_xslt_module.html
-NGINX_CACHEPURGE=y           # https://github.com/FRiCKLE/ngx_cache_purge/
-NGINX_ACCESSKEY=y            #
-NGINX_HTTPCONCAT=y           # https://github.com/alibaba/nginx-http-concat
-NGINX_THREADS=y              # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
-NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
-NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
-NGINX_FLV=n                  # http://nginx.org/en/docs/http/ngx_http_flv_module.html
-NGINX_MP4=n                  # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
-NGINX_AUTHREQ=n              # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
-NGINX_SECURELINK=y           # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
-NGINX_FANCYINDEX=y           # http://wiki.nginx.org/NgxFancyIndex
-NGINX_FANCYINDEXVER='0.3.6'
-NGINX_VHOSTSTATS=y           # https://github.com/vozlt/nginx-module-vts
-NGINX_LIBBROTLI=n            # https://github.com/google/ngx_brotli
-NGINX_LIBBROTLISTATIC=n
-NGINX_PAGESPEED=n            # Install ngx_pagespeed
-NGINX_PAGESPEEDGITMASTER=n   # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.11.33.0-beta'
-NGINX_PAGESPEEDPSOL_VER='1.11.33.0'
+NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
+NGINX_ACCESSKEY='n'          #
+NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
+NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
+NGINX_STREAM='y'             # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
+NGINX_RTMP='n'               # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
+NGINX_FLV='n'                # http://nginx.org/en/docs/http/ngx_http_flv_module.html
+NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
+NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_request_module.html
+NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
+NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
+NGINX_FANCYINDEXVER='0.4.0'  # https://github.com/aperezdc/ngx-fancyindex/releases
+NGINX_VHOSTSTATS='y'         # https://github.com/vozlt/nginx-module-vts
+NGINX_LIBBROTLI='n'          # https://github.com/google/ngx_brotli
+NGINX_LIBBROTLISTATIC='n'
+NGINX_PAGESPEED='n'          # Install ngx_pagespeed
+NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
+NGXPGSPEED_VER='1.11.33.2-beta'
+NGINX_PAGESPEEDPSOL_VER='1.11.33.2'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
-NGINX_WEBDAV=n               # Nginx WebDAV and nginx-dav-ext-module
+NGINX_WEBDAV='n'             # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
-NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
-NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
+NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
+NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
-NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
+NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
-ORESTY_HEADERSMORE=y         # openresty headers more https://github.com/openresty/headers-more-nginx-module
-ORESTY_HEADERSMOREGIT=n      # use git master instead of version specific
-NGINX_HEADERSMORE='0.29'
+ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
+ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
+NGINX_HEADERSMORE='0.30'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.6'
-NGINX_UPSTREAMCHECK='y'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
+NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
 NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
-ORESTY_MEMCVER='0.16'        # openresty memc module https://github.com/openresty/memc-nginx-module
-ORESTY_SRCCACHEVER='0.30'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.3.0rc1'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
-ORESTY_SETMISCGIT=n             # use git master instead of version specific
+ORESTY_MEMCVER='0.17'        # openresty memc module https://github.com/openresty/memc-nginx-module
+ORESTY_SRCCACHEVER='0.31'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
+ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
-ORESTY_ECHOGIT=n             # use git master instead of version specific
-ORESTY_ECHOVER='0.58'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
-ORESTY_REDISVER='0.12'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
+ORESTY_ECHOGIT='n'           # use git master instead of version specific
+ORESTY_ECHOVER='0.59'     # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_REDISVER='0.13'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.2'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.5'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
-ORESTY_LUAMEMCACHEDVER='0.13'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.22'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMYSQLVER='0.16'       # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.24'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
@@ -240,14 +245,14 @@ ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.5'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUARESTYCOREVER='0.1.6'     # openresty https://github.com/openresty/lua-resty-core
 ORESTY_LUAUPSTREAMVER='0.05'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 NGX_LUAUPSTREAM='n'                # disable https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
 NGX_LUAUPSTREAMCACHE='n'           # disable https://github.com/cloudflare/lua-upstream-cache-nginx-module
-LUACJSONVER='2.1.0.3'              # https://github.com/openresty/lua-cjson
+LUACJSONVER='2.1.0.4'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 
@@ -261,17 +266,21 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2g'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSION='1.0.2h'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='y'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
+NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.3.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.3.6'   # Use this version of LibreSSL http://www.libressl.org/
+# BoringSSL
+# not working yet just prep work
+BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
-GPERFTOOLS_SOURCEINSTALL=n
+GPERFTOOLS_SOURCEINSTALL='n'
 LIBUNWIND_VERSION='0.99'     # note google perftool specifically requies v0.99 and no other
 GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
