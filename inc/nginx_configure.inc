@@ -874,6 +874,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi		
 
   if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
+  	NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_FANCYINDEX" = [yY] ]]; then
       FANCYINDEXOPT=" --add-dynamic-module=../$NGX_FANCYINDEXDIR"
       if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
@@ -1359,6 +1360,7 @@ else
 	fi	
 
   if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
+  	NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_FANCYINDEX" = [yY] ]]; then
       FANCYINDEXOPT=" --add-dynamic-module=../$NGX_FANCYINDEXDIR"
       if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
