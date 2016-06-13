@@ -25,6 +25,7 @@ if [[ -d /usr/share/GeoIP ]]; then
 	if [[ ! -d ${DIR_TMP}/geoip ]]; then
 		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
 	fi
+	if [ -d geoip ]; then
 	cd geoip
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
 		make clean
@@ -38,6 +39,9 @@ cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
+	else
+		echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
+	fi # geoip directory check
 fi
     fi # PHP_INSTALL=y
 }
