@@ -873,12 +873,39 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		SECURELINKOPT=""
 	fi		
 
-	if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
-		NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
-		FANCYINDEXOPT=" --add-module=../$NGX_FANCYINDEXDIR"
-	else
-		FANCYINDEXOPT=""
-	fi			
+  if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
+    if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_FANCYINDEX" = [yY] ]]; then
+      FANCYINDEXOPT=" --add-dynamic-module=../$NGX_FANCYINDEXDIR"
+      if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+        echo "load_module \"modules/ngx_http_fancyindex_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+      fi
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old
+      fi
+    else
+      FANCYINDEXOPT=" --add-module=../$NGX_FANCYINDEXDIR"
+      # if NGXDYNAMIC_FANCYINDEX='y' was previously set with nginx 1.9.11+, then the nginx
+      # dynamic module /usr/local/nginx/modules/ngx_http_fancyindex_module.so would of been
+      # created
+      # however, it seems if you then later recompile nginx with NGXDYNAMIC_FANCYINDEX='y'
+      # the old dynamic module would still be left in nginx dynamic modules directory
+      # this is a check for that old dynamic module and if it exists, remove it
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so
+      fi
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old
+      fi
+    fi
+  else
+    FANCYINDEXOPT=""
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so
+      fi
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old
+      fi
+  fi
 
 	if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
 		if [ -f /usr/bin/git ]; then
@@ -1331,12 +1358,39 @@ else
 		SECURELINKOPT=""
 	fi	
 
-	if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
-		NGX_FANCYINDEXDIR=$(tar -tzf "$DIR_TMP/${NGX_FANCYINDEXLINKFILE}" | head -1 | cut -f1 -d"/")
-		FANCYINDEXOPT=" --add-module=../$NGX_FANCYINDEXDIR"
-	else
-		FANCYINDEXOPT=""
-	fi			
+  if [[ "$NGINX_FANCYINDEX" = [yY] ]]; then
+    if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_FANCYINDEX" = [yY] ]]; then
+      FANCYINDEXOPT=" --add-dynamic-module=../$NGX_FANCYINDEXDIR"
+      if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+        echo "load_module \"modules/ngx_http_fancyindex_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+      fi
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old
+      fi
+    else
+      FANCYINDEXOPT=" --add-module=../$NGX_FANCYINDEXDIR"
+      # if NGXDYNAMIC_FANCYINDEX='y' was previously set with nginx 1.9.11+, then the nginx
+      # dynamic module /usr/local/nginx/modules/ngx_http_fancyindex_module.so would of been
+      # created
+      # however, it seems if you then later recompile nginx with NGXDYNAMIC_FANCYINDEX='y'
+      # the old dynamic module would still be left in nginx dynamic modules directory
+      # this is a check for that old dynamic module and if it exists, remove it
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so
+      fi
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old
+      fi
+    fi
+  else
+    FANCYINDEXOPT=""
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so
+      fi
+      if [ -f /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old ]; then
+        rm -rf /usr/local/nginx/modules/ngx_http_fancyindex_module.so.old
+      fi
+  fi
 
 	if [[ "$NGINX_STICKY" = [yY] ]]; then
 		NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
