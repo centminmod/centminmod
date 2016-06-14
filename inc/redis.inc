@@ -62,8 +62,9 @@ if [[ "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
     if [[ "$PHPREDISGITCURLCHECK" != '0' ]]; then
         PHPREDISGITLINK='https://gitlab.com/centminmod-github-mirror/phpredis.git'
     fi
-
-    git clone -b php7 "$PHPREDISGITLINK" redis-php7
+    if [ ! -d redis-php7 ]; then
+        git clone -b php7 "$PHPREDISGITLINK" redis-php7
+    fi
     cd redis-php7
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
