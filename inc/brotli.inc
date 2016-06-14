@@ -43,8 +43,9 @@ libbroti_install() {
 		if [[ "$LIBBROTLI_CURLCHECK" != '0' ]]; then
 			LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
 		fi
-
-		git clone "$LIBBROTLI_LINK"
+    if [ ! -d libbrotli ]; then
+      git clone "$LIBBROTLI_LINK"
+    fi
 		cd libbrotli
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
     		make clean
@@ -83,7 +84,9 @@ ngxbrotli_download() {
 			NGXBROTLILINK='https://gitlab.com/centminmod-github-mirror/ngx_brotli.git'
 		fi
 
-		git clone "$NGXBROTLILINK"
+    if [ ! -d ngx_brotli ]; then
+      git clone "$NGXBROTLILINK"
+    fi
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
         cd ngx_brotli
         # git stash
