@@ -85,9 +85,11 @@ ngxbrotli_download() {
 
 		git clone "$NGXBROTLILINK"
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			cd ngx_brotli
-			git stash
-			git pull
+        cd ngx_brotli
+        # git stash
+        git fetch origin
+        git reset --hard origin/master
+        git pull
 		fi
 		echo
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
