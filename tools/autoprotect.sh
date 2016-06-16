@@ -71,10 +71,10 @@ fi
 
 # only trigger nginx restart service when there are new differences detected
 # in current and previous autoprotect include conf files
-if [[ -f /usr/bin/ngxrestart ]]; then
-		# /usr/bin/ngxrestart >/dev/null 2>&1
+if [[ -f /etc/init.d/nginx restart ]]; then
+		# /etc/init.d/nginx restart >/dev/null 2>&1
 		sleep 2
-		/usr/bin/ngxrestart
+		/etc/init.d/nginx restart
 		rm -rf /usr/local/nginx/conf/autoprotect/status-restart
 fi
 
