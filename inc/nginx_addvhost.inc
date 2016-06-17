@@ -600,6 +600,11 @@ cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
 cecho " rm -rf /home/nginx/domains/$vhostname" $boldwhite
 cecho " service nginx restart" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
+cecho "vhost for $vhostname setup successfully" $boldwhite
+cecho "$vhostname setup info log saved at: " $boldwhite
+cecho ""${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_addvhost.log"" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+echo ""
 
 else
 

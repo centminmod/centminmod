@@ -277,6 +277,7 @@ nvcheck() {
   if [ ! -h /usr/bin/nv ]; then
     rm -rf /usr/bin/nv
     ln -s "${SCRIPT_DIR}/tools/nv.sh" /usr/bin/nv
+    chmod +x /usr/bin/nv
   fi
 }
 

@@ -1776,6 +1776,11 @@ rm -rf /tmp/setupwp.log
 
 echo
 cecho "-------------------------------------------------------------" $boldyellow
+cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
+cecho "$vhostname setup info log saved at: " $boldwhite
+cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+echo ""
 
 else
 

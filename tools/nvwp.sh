@@ -17,6 +17,7 @@ OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 ################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -1110,6 +1111,13 @@ echo
 ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 fi
 
+cecho "-------------------------------------------------------------" $boldyellow
+cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
+cecho "$vhostname setup info log saved at: " $boldwhite
+cecho "$LOGPATH" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+echo ""
+
 else
 
 echo ""
@@ -1127,7 +1135,7 @@ fi
 if [[ "$RUN" = [yY] ]]; then
   {
     funct_nginxaddvhost
-  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 else
   usage
 fi
