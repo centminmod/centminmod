@@ -586,6 +586,9 @@ echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+cecho "pure-pw userdel $ftpuser" $boldwhite
+fi
 cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
 if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
