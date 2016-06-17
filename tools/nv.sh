@@ -580,7 +580,6 @@ server {
 }
 
 server {
-  $DEDI_LISTEN
   listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
