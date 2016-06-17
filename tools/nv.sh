@@ -77,27 +77,31 @@ usage() {
 # if pure-ftpd service running = 0
 if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '0' ]]; then
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n] [-u ftpusername]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd] [-u ftpusername]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
-  cecho "  -s  ssl self-signed create = y or n" $boldyellow
+  cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
   cecho "  -u  your FTP username" $boldyellow
   echo
   cecho "  example:" $boldyellow
   echo
   cecho "  $0 -d yourdomain.com -s y -u ftpusername" $boldyellow
+  cecho "  $0 -d yourdomain.com -s n -u ftpusername" $boldyellow
+  cecho "  $0 -d yourdomain.com -s yd -u ftpusername" $boldyellow
   echo
   exit 1;
 else
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
-  cecho "  -s  ssl self-signed create = y or n" $boldyellow
+  cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
   echo
   cecho "  example:" $boldyellow
   echo
   cecho "  $0 -d yourdomain.com -s y" $boldyellow  
+  cecho "  $0 -d yourdomain.com -s n" $boldyellow  
+  cecho "  $0 -d yourdomain.com -s yd" $boldyellow  
   echo  
   exit 1;
 fi
@@ -396,7 +400,7 @@ cecho "---------------------------------------------------------------" $boldyel
 
 # read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 
-if [[ "$sslconfig" = [yY] ]] || [[ "$sslconfig" = 'le' ]]; then
+if [[ "$sslconfig" = [yY] ]] || [[ "$sslconfig" = 'le' ]] || [[ "$sslconfig" = 'yd' ]]; then
   echo
   vhostssl=y
   # read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
@@ -555,11 +559,113 @@ server {
 }
 ENSS
 
+if [[ "$sslconfig" = 'yd' ]]; then
+  # remove non-https vhost so https only single vhost file
+  rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf
+
+# single ssl vhost at yourdomain.com.ssl.conf
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+# For HTTP/2 SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+
+# redirect from www to non-www  forced SSL
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+server {
+  $DEDI_LISTEN
+  server_name ${vhostname} www.${vhostname};
+  return 302 https://\$server_name\$request_uri;
+}
+
+server {
+  $DEDI_LISTEN
+  listen ${DEDI_IP}443 $LISTENOPT;
+  server_name $vhostname www.$vhostname;
+
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl_include.conf;
+
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
+  # mozilla recommended
+  ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
+  ssl_prefer_server_ciphers   on;
+  $SPDY_HEADER
+  # HTTP Public Key Pinning Header uncomment only one that applies include or exclude domains. 
+  # You'd want to include subdomains if you're using SSL wildcard certificates
+  # include subdomain
+  #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=86400; includeSubDomains';
+  # exclude subdomains
+  #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=86400';
+  #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+  $COMP_HEADER;
+  ssl_buffer_size 1369;
+  ssl_session_tickets on;
+  
+  # enable ocsp stapling
+  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver_timeout 10s;
+  #ssl_stapling on;
+  #ssl_stapling_verify on;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
+  root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
+
+  location / {
+  include /usr/local/nginx/conf/503include-only.conf;
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Enable for vBulletin usage WITHOUT vbSEO installed
+  # More example Nginx vhost configurations at
+  # http://centminmod.com/nginx_configure.html
+  #try_files    \$uri \$uri/ /index.php;
+
+  }
+
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}
+ESS
+else
 # separate ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
-# For SPDY SSL Setup
+# For HTTP/2 SSL Setup
 # read http://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
@@ -650,6 +756,7 @@ server {
   include /usr/local/nginx/conf/vts_server.conf;
 }
 ESS
+fi # sslconfig = yd
 
 else
 
@@ -723,8 +830,9 @@ fi
 
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
-if [ -f "${SCRIPT_DIR}/autoprotect.sh" ]; then
-  "${SCRIPT_DIR}/autoprotect.sh"
+echo "${CUR_DIR}/tools/autoprotect.sh"
+if [ -f "${CUR_DIR}/tools/autoprotect.sh" ]; then
+  "${CUR_DIR}/tools/autoprotect.sh"
 fi
 
 service nginx restart
@@ -757,8 +865,10 @@ fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
 echo
-cecho "domain: http://$vhostname" $boldyellow
-cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+if [[ "$sslconfig" != 'yd' ]]; then
+  cecho "domain: http://$vhostname" $boldyellow
+  cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+fi
 if [[ "$vhostssl" = [yY] ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
@@ -794,7 +904,12 @@ echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
-cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+cecho " pure-pw userdel $ftpuser" $boldwhite
+fi
+if [[ "$sslconfig" != 'yd' ]]; then
+  cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+fi
 if [[ "$vhostssl" = [yY] ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
 fi
