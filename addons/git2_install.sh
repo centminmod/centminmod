@@ -2,7 +2,7 @@
 ###########################################################
 # installs IUS Community YUM Repository
 # https://iuscommunity.org/pages/Repos.html
-# for access to git 2.7.x branch
+# for access to git 2.8.x branch
 # https://community.centminmod.com/posts/20898/
 ###########################################################
 DT=$(date +"%d%m%y-%H%M%S")
@@ -120,10 +120,10 @@ fi
 fi # repo file check
 
 cecho "*************************************************" $boldgreen
-cecho "Installing Git 2.7.*" $boldgreen
+cecho "Installing Git 2.8.*" $boldgreen
 cecho "*************************************************" $boldgreen
 
-# install Git 2.7 package to replace Git 1.8 package
+# install Git 2.8 package to replace Git 1.8 package
 yum -y install yum-plugin-replace --enablerepo=ius
 yum -y replace git --replace-with git2u --enablerepo=ius
 
@@ -136,4 +136,4 @@ endtime=$(date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/git2u-install_${DT}.log
-echo "Git 2.7.* Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/git2u-install_${DT}.log
+echo "Git 2.8.* Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/git2u-install_${DT}.log
