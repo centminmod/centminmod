@@ -795,12 +795,12 @@ fi
 phpxz_detect
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    DOWNLOADAPP='axel -a'
+    DOWNLOADAPP='axel'
     WGETRETRY=''
     AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
 elif [[ "$CENTOS_SIX" = '6' ]]; then
-    DOWNLOADAPP='axel -a'
+    DOWNLOADAPP='axel'
     WGETRETRY=''
     AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
