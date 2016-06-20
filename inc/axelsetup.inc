@@ -1,12 +1,55 @@
 install_axel() {
+  AXELVERBOSE=$1
 
-    if [ -f "$(which figlet)" ]; then
+######################################################
+# Setup Colours
+black='\E[30;40m'
+red='\E[31;40m'
+green='\E[32;40m'
+yellow='\E[33;40m'
+blue='\E[34;40m'
+magenta='\E[35;40m'
+cyan='\E[36;40m'
+white='\E[37;40m'
+
+boldblack='\E[1;30;40m'
+boldred='\E[1;31;40m'
+boldgreen='\E[1;32;40m'
+boldyellow='\E[1;33;40m'
+boldblue='\E[1;34;40m'
+boldmagenta='\E[1;35;40m'
+boldcyan='\E[1;36;40m'
+boldwhite='\E[1;37;40m'
+
+Reset="tput sgr0"      #  Reset text attributes to normal
+                       #+ without clearing screen.
+
+cecho ()                     # Coloured-echo.
+                             # Argument $1 = message
+                             # Argument $2 = color
+{
+message=$1
+color=$2
+echo -e "$color$message" ; $Reset
+return
+}
+
+    if [[ "$AXELVERBOSE" = 'silent' ]]; then
+      CONFIG_VERBOSEOPT=' -q'
+      MAKE_VERBOSEOPT=' -s'
+    else
+      CONFIG_VERBOSEOPT=""
+      MAKE_VERBOSEOPT=""
+    fi
+    if [[ -f "$(which figlet)" && "$AXELVERBOSE" != 'silent' ]]; then
         figlet -ckf standard "Axel Install (install_axel)"
     fi
 
 	cd $DIR_TMP
 
-        cecho "Download $AXEK_LINKFILE ..." $boldyellow
+        if [[ "$AXELVERBOSE" != 'silent' ]]; then
+          cecho "Download $AXEK_LINKFILE ..." $boldyellow
+        fi
     if [ -s $AXEK_LINKFILE ]; then
         cecho "Axel ${AXEL_VER} Archive found, skipping download..." $boldgreen 
     else
@@ -34,10 +77,22 @@ echo ""
     fi
 
 	cd axel-${AXEL_VER}
-	./configure
-	make${MAKETHREADS}
-	make install
-	which axel
+  if [[ "$AXELVERBOSE" != 'silent' ]]; then
+    ./autogen.sh
+  else
+    ./autogen.sh >/dev/null 2>&1 
+  fi
+	./configure${CONFIG_VERBOSEOPT}
+	make${MAKE_VERBOSEOPT}${MAKETHREADS}
+	make install${MAKE_VERBOSEOPT}
+  if [[ "$AXELVERBOSE" != 'silent' ]]; then
+	 which axel
+  fi
+  if [[ "$AXELVERBOSE" != 'silent' ]]; then
+    cecho "Updated Axel ${AXEL_VER} ..." $boldyellow
+  else
+    cecho "Install Axel ${AXEL_VER} ..." $boldyellow
+  fi
 }
 
 axelsetup() {

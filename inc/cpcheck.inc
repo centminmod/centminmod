@@ -1,3 +1,12 @@
+axelcheck() {
+  axel -V | awk '/version/ {print $3}'
+  if [[ "$(axel -V | awk '/version/ {print $3}')" != "${AXEL_VER}" ]] || [[ -f /usr/local/bin/axel && ! -d "${DIR_TMP}/axel-${AXEL_VER}" && ! -f "${DIR_TMP}/${AXEK_LINKFILE}" ]]; then
+    echo "update axel version... one time task"
+    sleep 3
+    install_axel silent
+  fi
+}
+
 set_logdate() {
 	DT=$(date +"%d%m%y-%H%M%S")
 }
@@ -848,41 +857,42 @@ pathfixes
 apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-	yumfastmirror_check
-	fileperm_fixes
-	selinxcheck
-	setupemailcheck
-	checkovzkernels
-	rclocalchecks
-	kernelchecks
-	centaltoff
-	csfipsetcheck
-	checkaliases
-	checkcmdircmd
-	nvcheck
-	multiphpcheck
-	mjemalloc
-	blockeditorcheck
-	rpcnfsports
-	fixlogrotate
-	pureftpdupdates
-	leupdates
-	memcachedupdatechecks
-	xpowerby
-	pathfixes
-	sshdfixes
-	auto_gitupdate
-	figletcheck
-	maintenance_confcheck
-	axivo_remove
-	ngxmodule_cleanups
-	wpcompfix
-	entropy_centosseven
-	tcpcheck_centos
-	remi_tweaks
-	imagick_fixes
-	apache_protect
-	centossix_crsetup
+  yumfastmirror_check
+  axelcheck
+  fileperm_fixes
+  selinxcheck
+  setupemailcheck
+  checkovzkernels
+  rclocalchecks
+  kernelchecks
+  centaltoff
+  csfipsetcheck
+  checkaliases
+  checkcmdircmd
+  nvcheck
+  multiphpcheck
+  mjemalloc
+  blockeditorcheck
+  rpcnfsports
+  fixlogrotate
+  pureftpdupdates
+  leupdates
+  memcachedupdatechecks
+  xpowerby
+  pathfixes
+  sshdfixes
+  auto_gitupdate
+  figletcheck
+  maintenance_confcheck
+  axivo_remove
+  ngxmodule_cleanups
+  wpcompfix
+  entropy_centosseven
+  tcpcheck_centos
+  remi_tweaks
+  imagick_fixes
+  apache_protect
+  centossix_crsetup
 fi
 
 }
