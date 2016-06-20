@@ -336,7 +336,9 @@ install_axel() {
   fi
 
   cd axel-${AXEL_VER}
+  if [ -f autogen.sh ]; then
   ./autogen.sh
+  fi  fi
   ./configure
   make
   make install

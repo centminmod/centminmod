@@ -78,9 +78,13 @@ echo ""
 
 	cd axel-${AXEL_VER}
   if [[ "$AXELVERBOSE" != 'silent' ]]; then
-    ./autogen.sh
+    if [ -f autogen.sh ]; then
+      ./autogen.sh
+    fi
   else
-    ./autogen.sh >/dev/null 2>&1 
+    if [ -f autogen.sh ]; then
+      ./autogen.sh >/dev/null 2>&1 
+    fi
   fi
 	./configure${CONFIG_VERBOSEOPT}
 	make${MAKETHREADS}${MAKE_VERBOSEOPT}
