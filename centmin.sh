@@ -605,7 +605,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     NGINX_OPENRESTY='y'
 fi
 
-if [[ "CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.11'
 fi
 
