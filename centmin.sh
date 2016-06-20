@@ -605,10 +605,8 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     NGINX_OPENRESTY='y'
 fi
 
-if [[ "CENTOS_SIX" = '6' ]]; then
-  AXEL_VER='2.6'
-#elif [[ "CENTOS_SEVEN" = '7' ]]; then
-#  AXEL_VER='2.6'
+if [[ "CENTOS_SEVEN" = '7' ]]; then
+  AXEL_VER='2.11'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS
