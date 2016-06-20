@@ -25,7 +25,7 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 #####################################################
 # wget renamed github
 AXEL='n'
-AXEL_VER='2.11'
+AXEL_VER='2.6'
 AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
 AXEK_LINKLOCAL="https://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
@@ -334,9 +334,9 @@ install_axel() {
   fi
 
   cd axel-${AXEL_VER}
-  if [ -f autogen.sh ]; then
+if [ -f autogen.sh ]; then
   ./autogen.sh
-  fi  fi
+  fi
   ./configure
   make
   make install
