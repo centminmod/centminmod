@@ -90,11 +90,11 @@ echo ""
   fi
   if [[ "$AXELVERBOSE" != 'silent' ]]; then
     echo
-    cecho "Updated Axel ${AXEL_VER} ..." $boldyellow
+    cecho "Updated Axel ${AXEL_VER} successfully..." $boldyellow
     echo
   else
     echo
-    cecho "Install Axel ${AXEL_VER} ..." $boldyellow
+    cecho "Installed Axel ${AXEL_VER} successfully..." $boldyellow
     echo
   fi
 }
