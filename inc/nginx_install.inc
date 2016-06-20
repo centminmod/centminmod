@@ -110,13 +110,15 @@ fi # CENTOS_SEVEN != 7
 
 # only run for CentOS 7.x
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    # Disable Apache if installed
+  # Disable Apache if installed
+  if [[ "$(rpm -ql httpd >/dev/null 2>&1; echo $?)" = '0' ]]; then
     if [[ "$(systemctl is-enabled httpd.service)" = 'enabled' ]]; then
       systemctl stop httpd.service
       systemctl disable httpd.service
     else
       systemctl disable httpd.service
     fi
+  fi
 fi # CENTOS_SEVEN = 7
 
     # Then install nginx
