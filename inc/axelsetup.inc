@@ -83,15 +83,19 @@ echo ""
     ./autogen.sh >/dev/null 2>&1 
   fi
 	./configure${CONFIG_VERBOSEOPT}
-	make${MAKE_VERBOSEOPT}${MAKETHREADS}
+	make${MAKETHREADS}${MAKE_VERBOSEOPT}
 	make install${MAKE_VERBOSEOPT}
   if [[ "$AXELVERBOSE" != 'silent' ]]; then
 	 which axel
   fi
   if [[ "$AXELVERBOSE" != 'silent' ]]; then
+    echo
     cecho "Updated Axel ${AXEL_VER} ..." $boldyellow
+    echo
   else
+    echo
     cecho "Install Axel ${AXEL_VER} ..." $boldyellow
+    echo
   fi
 }
 
