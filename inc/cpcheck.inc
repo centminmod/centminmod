@@ -477,7 +477,7 @@ memcachedupdatechecks() {
 		  fi
       if [[ -z "$(grep 'modern' /etc/init.d/memcached)" ]]; then
         if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" && -f /etc/init.d/memcached ]]; then
-          \cp -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" /etc/init.d/memcached1425.patch
+          \cp -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" /etc/init.d/memcached1426.patch
           pushd /etc/init.d/
           patch -s < memcached1426.patch >/dev/null 2>&1
           rm -rf memcached1426.patch
