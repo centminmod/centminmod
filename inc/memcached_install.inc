@@ -208,6 +208,10 @@ else
     echo "cd $DIR_TMP"
     cd "$DIR_TMP"
     #tar xzf memcached-${MEMCACHED_VERSION}.tar.gz
+    if [ ! -d "${DIR_TMP}/memcached-${MEMCACHED_VERSION}" ]; then
+        rm -rf "${DIR_TMP}/memcached-${MEMCACHED_VERSION}*"
+        memcachetarball
+    fi
     cd "${DIR_TMP}/memcached-${MEMCACHED_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
@@ -267,6 +271,10 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         fi
     
         #tar -xvf memcache-${MEMCACHE_VERSION}.tgz
+        if [ ! -d "${DIR_TMP}/memcache-${MEMCACHE_VERSION}" ]; then
+            rm -rf "${DIR_TMP}/memcache-${MEMCACHE_VERSION}*"
+            memcachedphptarball
+        fi
         cd "${DIR_TMP}/memcache-${MEMCACHE_VERSION}"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
@@ -317,6 +325,10 @@ else
     echo "cd $DIR_TMP"
     cd "$DIR_TMP"
     #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
+    if [ ! -d "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}" ]; then
+        rm -rf "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}*"
+        libmemcachedtarball
+    fi
     cd "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
@@ -368,6 +380,10 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
 else
     echo
     echo "compiling memcached PHP extension ${MEMCACHEDPHP_VER} ..."
+    if [ ! -d "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}" ]; then
+        rm -rf "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}*"
+        memcachedphptarball
+    fi
     cd "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
