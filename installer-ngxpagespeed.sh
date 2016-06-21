@@ -329,7 +329,11 @@ install_axel() {
       echo "Download $AXEK_LINKFILE done."
     fi
   fi
-
+  if [[ "$(tar -tzf axel-${AXEL_VER}.tar.gz >/dev/null; echo $?)" != '0' ]]; then
+    rm -rf /svr-setup/axel-${AXEL_VER}.*
+    echo "re-try download form local mirror..."
+    wget -O $AXEK_LINKFILE $AXEK_LINKLOCAL
+  fi
   tar xzf $AXEK_LINKFILE
   ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
