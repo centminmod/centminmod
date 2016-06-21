@@ -1,0 +1,23 @@
+--- memcached   2016-05-20 18:04:30.449518000 +0000
++++ memcached1426       2016-06-21 15:09:57.413901584 +0000
+@@ -30,7 +30,12 @@
+ # https://github.com/memcached/memcached/wiki/ReleaseNotes1425
+ MEM_CURVER=$(/usr/local/bin/memcached -V | awk '{print $2}' | head -n1 | sed -e 's|\.|00|g')
+ if [[ "$MEM_CURVER" -ge '10040025' ]]; then
+-        OPTIONS='-o slab_reassign,slab_automove,lru_crawler,lru_maintainer,maxconns_fast,hash_algorithm=murmur3'
++  if [[ "$MEM_CURVER" -ge '10040026' ]]; then
++    # memcached 1.4.26+ https://github.com/memcached/memcached/wiki/ReleaseNotes1426
++    OPTIONS='-o modern'
++  else
++    OPTIONS='-o slab_reassign,slab_automove,lru_crawler,lru_maintainer,maxconns_fast,hash_algorithm=murmur3'
++  fi
+ fi
+ 
+ if [ -f /proc/user_beancounters ]; then
+@@ -226,4 +231,4 @@
+ mstatus
+ 
+ ;;
+-esac
+\ No newline at end of file
++esac
