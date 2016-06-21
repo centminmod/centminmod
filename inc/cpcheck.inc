@@ -466,15 +466,24 @@ memcachedupdatechecks() {
 	# 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
 		if [ -f /etc/init.d/memcached ]; then
-		if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
-			if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
-				\cp -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" /etc/init.d/memcached1425.patch
-				pushd /etc/init.d/
-				patch -s < memcached1425.patch >/dev/null 2>&1
-				rm -rf memcached1425.patch
-				popd
-			fi
-		fi
+		  if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
+			  if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
+				  \cp -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" /etc/init.d/memcached1425.patch
+				  pushd /etc/init.d/
+				  patch -s < memcached1425.patch >/dev/null 2>&1
+				  rm -rf memcached1425.patch
+				  popd
+			  fi
+		  fi
+      if [[ -z "$(grep 'modern' /etc/init.d/memcached)" ]]; then
+        if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" && -f /etc/init.d/memcached ]]; then
+          \cp -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" /etc/init.d/memcached1425.patch
+          pushd /etc/init.d/
+          patch -s < memcached1426.patch >/dev/null 2>&1
+          rm -rf memcached1426.patch
+          popd
+        fi
+      fi
 		fi
 	fi
 }
