@@ -1,3 +1,12 @@
+validcheck_downloads() {
+  {
+  echo
+  echo "check download source fie integrity"
+  for f in $(find $DIR_TMP -maxdepth 1 -type f -name "*.gz" -o -name "*.tgz"); do echo -n "$f = "; if [[ "$(tar -tzf $f >/dev/null; echo $?)" = '0' ]]; then echo ok; else echo invalid; fi; done | sort
+  echo
+} 2>&1 | tee "${CENTMINLOGDIR}/validcheck_downloads_${DT}.log"
+}
+
 checklogdetails() {
 	echo " "
 	cecho "----------------------------------------------------------------------------------" $boldyellow
@@ -3558,6 +3567,7 @@ else
 fi
 
 #mariadbyumrepo
+validcheck_downloads
 
 echo "*****************************************************"
 cecho "Downloads complete." $boldgreen
