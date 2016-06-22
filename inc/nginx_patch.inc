@@ -38,7 +38,7 @@ patchnginx() {
      echo  "######################################################################"
      NGINXSPDYPATCHED_NAME='nginx_1_9_15_http2_spdy.patch'
      rm -rf "${NGINXSPDYPATCHED_NAME}"
-     NGINXTLSPATCHLINK="https://github.com/felixbuenemann/sslconfig/raw/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
+     NGINXTLSPATCHLINK="https://raw.githubusercontent.com/felixbuenemann/sslconfig/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      # fallback mirror if github down, use gitlab mirror
      curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
      NGINXTLSPATCH_CURLCHECK=$?
