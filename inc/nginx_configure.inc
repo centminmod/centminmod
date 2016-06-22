@@ -849,7 +849,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
-		SPDYOPT=" --with-http_spdy_module"
+		if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
+			SPDYOPT=""
+		else
+			SPDYOPT=" --with-http_spdy_module"
+		fi
 	else
 		SPDYOPT=""
 	fi
@@ -1340,7 +1344,11 @@ else
 	fi
 
 	if [[ "$NGINX_SPDY" = [yY] ]]; then
-		SPDYOPT=" --with-http_spdy_module"
+		if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
+			SPDYOPT=""
+		else
+			SPDYOPT=" --with-http_spdy_module"
+		fi
 	else
 		SPDYOPT=""
 	fi
