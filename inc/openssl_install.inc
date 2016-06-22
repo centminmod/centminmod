@@ -43,6 +43,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         # pushd ssl
         OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch'
         rm -rf "${OPESSLCFPATCH_NAME}"
+        AVXTWO_CHECK=1
         if [[ "$AVXTWO_CHECK" = '0' ]]; then
             OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
         else
