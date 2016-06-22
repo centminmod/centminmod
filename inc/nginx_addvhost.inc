@@ -251,7 +251,14 @@ else
   CHACHACIPHERS=""
 fi
 
-if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
+  HTTPTWO=y
+  LISTENOPT='ssl spdy http2'
+  COMP_HEADER='spdy_headers_comp 5'
+  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'  
+elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
   LISTENOPT='ssl http2'
   COMP_HEADER='#spdy_headers_comp 5'

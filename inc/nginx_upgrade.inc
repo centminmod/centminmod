@@ -504,6 +504,12 @@ if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN
     rm -rf nginx-${ngver}*
 fi
 
+if [[ "$NGINX_SPDYPATCHED" = [nN] && "$(grep 'ngx_http_spdy_filter' $DIR_TMP/nginx-${ngver}/auto/modules)" ]]; then
+    # if centmin.sh option NGINX_SPDYPATCHED=n then disable patches by 
+    # wiping the nginx downloaded source and redownloading a fresh copy
+    rm -rf nginx-${ngver}*
+fi
+
 # if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
 #     # if existing Nginx server is detected to have HTTP/2 patch compiled, then
 #     # wipe nginx download source and redownload a fresh copy to ensure you're
@@ -668,11 +674,36 @@ fi
 	else
     	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
 
-    if [[ "$NGINX_HTTP2" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10903' ]]; then
+    if [[ "$NGINX_HTTP2" = [yY] && "$NGINX_SPDYPATCHED" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10907' ]]; then
+        # only apply auto vhost changes forNginx HTTP/2 
+        # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
+        if [[ "$NGX_VEREVAL" -ge '10907' ]]; then
+            for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do echo "$v"; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl http2|ssl spdy http2|g' $v; sed -i 's|#  spdy_headers_comp|  spdy_headers_comp|g' $v; sed -i 's|#  add_header Alternate-Protocol|  add_header Alternate-Protocol|g' $v; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
+        fi
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+            sed -i 's|ssl http2|ssl spdy http2|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
+    elif [[ "$NGINX_HTTP2" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10903' ]]; then
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
-            for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do echo "$v"; egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; echo "---"; sed -i 's|ssl spdy|ssl http2|g' $v; sed -i 's|  spdy_headers_comp|  #spdy_headers_comp|g' $v; sed -i 's|  add_header Alternate-Protocol|  #add_header Alternate-Protocol|g' $v; egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;done
+            for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do 
+                echo "$v"; 
+                egrep -n 'ssl spdy|spdy_headers_comp|Alternate-Protocol' $v; 
+                echo "---";
+                if [[ "$(grep 'ssl spdy http2' $v)" ]]; then
+                    sed -i 's|ssl spdy http2|ssl http2|g' $v; 
+                    sed -i 's|  spdy_headers_comp|  #spdy_headers_comp|g' $v; 
+                    sed -i 's|  add_header Alternate-Protocol|  #add_header Alternate-Protocol|g' $v; 
+                else
+                    sed -i 's|ssl spdy|ssl http2|g' $v; 
+                    sed -i 's|  spdy_headers_comp|  #spdy_headers_comp|g' $v; 
+                    sed -i 's|  add_header Alternate-Protocol|  #add_header Alternate-Protocol|g' $v; 
+                fi
+                egrep -n 'ssl http2|spdy_headers_comp|Alternate-Protocol' $v;
+            done
         fi
         if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
             sed -i 's|ssl spdy|ssl http2|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf

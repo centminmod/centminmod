@@ -276,8 +276,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
 		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
 		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
-			NGINX_SPDY=n		
-			HTTPTWOOPT=' --with-http_v2_module'
+			if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
+				NGINX_SPDY=y
+				HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
+			else
+				NGINX_SPDY=n
+				HTTPTWOOPT=' --with-http_v2_module'
+			fi
 		fi
 	else
 		HTTPTWOOPT=""
@@ -1090,8 +1095,13 @@ else
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
 		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
 		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
-			NGINX_SPDY=n		
-			HTTPTWOOPT=' --with-http_v2_module'
+			if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
+				NGINX_SPDY=y
+				HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
+			else
+				NGINX_SPDY=n
+				HTTPTWOOPT=' --with-http_v2_module'
+			fi
 		fi
 	else
 		HTTPTWOOPT=""
