@@ -34,16 +34,16 @@ patchnginx() {
      echo "Patching Nginx for HTTP/2 + SPDY Support"
      echo  "######################################################################"
      echo "Cloudflare Nginx HTTP/2 + SPDY patch"
-     echo "https://github.com/cloudflare/sslconfig/raw/master/patches/nginx__http2_spdy.patch"
+     echo "https://github.com/felixbuenemann/sslconfig/raw/master/patches/nginx__http2_spdy.patch"
      echo  "######################################################################"
      NGINXSPDYPATCHED_NAME='nginx__http2_spdy.patch'
      rm -rf "${NGINXSPDYPATCHED_NAME}"
-     NGINXTLSPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${NGINXSPDYPATCHED_NAME}"
+     NGINXTLSPATCHLINK="https://raw.githubusercontent.com/felixbuenemann/sslconfig/master/patches/${NGINXSPDYPATCHED_NAME}"
      # fallback mirror if github down, use gitlab mirror
      curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
      NGINXTLSPATCH_CURLCHECK=$?
      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
-       NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXSPDYPATCHED_NAME}"
+       NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig-felix-group/raw/master/patches/${NGINXSPDYPATCHED_NAME}"
      fi
      wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
      if [[ -f "${NGINXSPDYPATCHED_NAME}" && ! "$(grep 'ngx_http_spdy_filter' auto/modules)" ]]; then
