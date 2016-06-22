@@ -210,7 +210,7 @@ else
     #tar xzf memcached-${MEMCACHED_VERSION}.tar.gz
     if [ ! -d "${DIR_TMP}/memcached-${MEMCACHED_VERSION}" ]; then
         rm -rf "${DIR_TMP}/memcached-${MEMCACHED_VERSION}*"
-        memcachetarball
+        memcachetarball local
     fi
     cd "${DIR_TMP}/memcached-${MEMCACHED_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -273,7 +273,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         #tar -xvf memcache-${MEMCACHE_VERSION}.tgz
         if [ ! -d "${DIR_TMP}/memcache-${MEMCACHE_VERSION}" ]; then
             rm -rf "${DIR_TMP}/memcache-${MEMCACHE_VERSION}*"
-            memcachedphptarball
+            memcacheextlocaltarball
         fi
         cd "${DIR_TMP}/memcache-${MEMCACHE_VERSION}"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -327,7 +327,7 @@ else
     #tar xvzf libmemcached-${LIBMEMCACHED_VER}.tar.gz
     if [ ! -d "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}" ]; then
         rm -rf "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}*"
-        libmemcachedtarball
+        libmemcachedlocaltarball
     fi
     cd "${DIR_TMP}/libmemcached-${LIBMEMCACHED_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -382,7 +382,7 @@ else
     echo "compiling memcached PHP extension ${MEMCACHEDPHP_VER} ..."
     if [ ! -d "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}" ]; then
         rm -rf "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}*"
-        memcachedphptarball
+        memcachedphplocaltarball
     fi
     cd "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then

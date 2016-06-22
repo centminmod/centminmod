@@ -2476,6 +2476,7 @@ echo ""
 
 ###############################################
 memcachetarball() {
+  MEMCACHED_ALT="$1"
 
 echo ""
 	if [ "$UNATTENDED" == 'n' ]; then
@@ -2504,8 +2505,11 @@ if [ -s "${MEMCACHEDSERVER_LINKFILE}" ]; then
   cecho "${MEMCACHEDSERVER_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Downloading now......"
-  		wget ${WGETOPT} --progress=bar "${MEMCACHEDSERVER_LINK}" --tries=3
-        # wget ${WGETOPT} --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
+  if [[ "$MEMCACHED_ALT" != 'local' ]]; then
+    wget ${WGETOPT} --progress=bar "${MEMCACHEDSERVER_LINK}" --tries=3
+  else
+    wget ${WGETOPT} --progress=bar "${MEMCACHEDSERVER_LINKLOCAL}" --tries=3
+  fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MEMCACHEDSERVER_LINKFILE} download failed." $boldgreen

@@ -363,7 +363,7 @@ TWEMPERF_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/twemperf/reposi
 
 MEMCACHEDSERVER_LINKFILE="memcached-${MEMCACHED_VERSION}.tar.gz"
 MEMCACHEDSERVER_LINK="http://www.memcached.org/files/${MEMCACHEDSERVER_LINKFILE}"
-#MEMCACHEDSERVER_LINK="https://centminmod.com/centminmodparts/memcached/${MEMCACHEDSERVER_LINKFILE}"
+MEMCACHEDSERVER_LINKLOCAL="https://centminmod.com/centminmodparts/memcached/${MEMCACHEDSERVER_LINKFILE}"
 
 MYSQLREPORT_LINKFILE="mysqlreport"
 MYSQLREPORT_LINK="https://centminmod.com/centminmodparts/mysqlreport/${MYSQLREPORT_LINKFILE}"
