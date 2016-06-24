@@ -1202,11 +1202,10 @@ funct_centos6check
 
     cd "$DIR_TMP"
 
-if [ "$(rpm -qa | grep '^php*')" ]; then
-
-    # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
-echo "yum -y erase php*"
-    yum${CACHESKIP} -y erase php*
+if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
+  # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
+  echo "yum -y erase php*"
+  yum${CACHESKIP} -y erase php*
 
 fi
 
