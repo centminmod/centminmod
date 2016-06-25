@@ -908,6 +908,7 @@ ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-
 fi
 
 echo
+{
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
@@ -933,6 +934,7 @@ cecho "$vhostname setup info log saved at: " $boldwhite
 cecho "$LOGPATH" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
+} | tee "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
 
 else
 
