@@ -126,7 +126,7 @@ fi
 }
 
 updatersubmenu() {
-	CM_DIRSIZE=$(df /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
+	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
 
 while :
 do

@@ -1009,7 +1009,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
 elif [[ ! -f /proc/user_beancounters ]]; then
 
     # TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-    CURRENT_TMPSIZE=$(df /tmp | awk '/tmp/ {print $2}')
+    CURRENT_TMPSIZE=$(df -P /tmp | awk '/tmp/ {print $3}')
 
     # only mount /tmp on tmpfs if CentOS system
     # total memory size is greater than 8GB
