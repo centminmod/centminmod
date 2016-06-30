@@ -444,6 +444,7 @@ echo "NGXDYNAMIC_MEMC='y'" >> /etc/centminmod/custom_config.inc
 echo "NGXDYNAMIC_REDISTWO='y'" >> /etc/centminmod/custom_config.inc
 echo "NGXDYNAMIC_NGXPAGESPEED='y'" >> /etc/centminmod/custom_config.inc
 echo "NGXDYNAMIC_BROTLI='y'" >> /etc/centminmod/custom_config.inc
+echo "PHPMSSQL='y'" >> /etc/centminmod/custom_config.inc
 # echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
