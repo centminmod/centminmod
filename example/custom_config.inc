@@ -150,12 +150,13 @@ PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
 PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
 PHPINTL='y'                  # Disable or Enable PHP intl extension
-PHPRECODE='n'                # Disable or Enable PHP Recode extension
+PHPRECODE=n                  # Disable or Enable PHP Recode extension
 PHPSNMP='y'                  # Disable or Enable PHP SNMP extension
 PHPIMAGICK='y'               # Disable or Enable PHP ImagicK extension
 PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
+PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
+PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 SHORTCUTS='y'                # shortcuts
-POSTGRESQL='n'               # set to ='y'o install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
 
 ##################################
 ## Nginx SSL options
