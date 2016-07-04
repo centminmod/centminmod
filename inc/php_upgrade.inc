@@ -607,6 +607,31 @@ if [[ "$PHP_MEMCACHED" = [nN] ]]; then
     fi
 fi
 
+if [ ! -f "${CONFIGSCANDIR}/mssql.ini" ]; then
+    # always install mssql module
+    if [[ "$PHPMSSQL_ALWAYS" = [yY] ]]; then
+        php_mssqlinstall
+    fi
+elif [ -f "${CONFIGSCANDIR}/mssql.ini" ]; then
+    if [[ "$PHPMSSQL_ALWAYS" = [nN] ]]; then
+        rm -rf "${CONFIGSCANDIR}/mssql.ini"
+    fi
+fi
+
+if [[ "$PHPMSSQL" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/mssql.ini" ]; then
+        rm -rf "${CONFIGSCANDIR}/mssql.ini"
+    fi
+fi
+
+
+echo
+php --ini
+
+echo
+php -m
+echo
+
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
 find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -print
 find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -exec rm -rf {} \;
