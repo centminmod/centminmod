@@ -347,7 +347,8 @@ else
     # enter, ngxver will be empty so should fall back to
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
-        ngver="$NGINX_VERSION"
+        LASTEST_NGINXVERS=$(curl -sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+        ngver="$LASTEST_NGINXVERS"
     fi
 
     # if you set /etc/centminmod/custom_config.inc file to
