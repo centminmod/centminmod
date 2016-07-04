@@ -190,6 +190,7 @@ if [ ! -d /home/nginx/domains/$vhostname ]; then
 # Checking Permissions, making directories, example index.html
 umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
+ngx_logformats
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   ( echo "${ftppass}" ; echo "${ftppass}" ) | pure-pw useradd "$ftpuser" -u $PUREUSER -g $PUREGROUP -d "/home/nginx/domains/$vhostname"
@@ -302,7 +303,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -404,7 +405,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -477,7 +478,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;

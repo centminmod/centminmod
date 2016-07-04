@@ -54,6 +54,18 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
   mkdir -p "$CENTMINLOGDIR"
 fi
 
+  # extended custom nginx log format = main_ext for nginx amplify metric support
+  # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
+  if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      NGX_LOGFORMAT='main_ext'
+    else
+      NGX_LOGFORMAT='combined'
+    fi
+  else
+    NGX_LOGFORMAT='combined'
+  fi
+
 if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
   HTTPTWO=y
   LISTENOPT='ssl spdy http2'
@@ -530,7 +542,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log main_ext buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -631,7 +643,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log main_ext buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -727,7 +739,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log main_ext buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
@@ -796,7 +808,7 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log main_ext buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
