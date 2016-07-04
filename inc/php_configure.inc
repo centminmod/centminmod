@@ -41,8 +41,12 @@ if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readli
 	fi
 fi
 
-if [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]]; then
+if [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
+  yum -q -y install unixODBC-devel freetds-devel
+elif [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
   yum -q -y install unixODBC-devel
+elif [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]]; then
+  yum -q -y install freetds-devel
 fi
 
 if [[ ! -f /usr/bin/xslt-config ]]; then
