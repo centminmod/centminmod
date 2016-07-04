@@ -41,6 +41,7 @@ if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readli
 	fi
 fi
 
+# Microsoft SQL Server PHP driver support
 if [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
   yum -q -y install unixODBC-devel freetds-devel
 elif [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then

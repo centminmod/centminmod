@@ -1,6 +1,12 @@
 ########################################################################
 autodetectextensions() {
 
+if [[ -f "${CONFIGSCANDIR}/mssql.ini" && "$PHPMSSQL" = [yY] ]]; then
+    DETECTMSSQL=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTMSSQL=y
+fi
+
 if [ -f "${CONFIGSCANDIR}/xcache.ini" ]; then
     DETECTXCACHE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
@@ -107,6 +113,10 @@ cecho "----------------------------------------------------" $boldgreen
 cecho "Auto reinstalling previously detected PHP extensions" $boldyellow
 cecho "----------------------------------------------------" $boldgreen
 
+if [[ "$DETECTMSSQL" = [yY] ]] || [[ "$DETECTMSSQL" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mssql.so" ]]; then
+    cecho "Auto reinstalling previously detected PHP mssql extension" $boldyellow
+    php_mssqlinstall
+fi
 
 if [[ "$DETECTXCACHE" = [yY] ]] || [[ "$DETECTXCACHE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/xcache.so" ]]; then
     cecho "Auto reinstalling previously detected Xcache" $boldyellow

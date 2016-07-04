@@ -670,6 +670,7 @@ source "inc/memcached_install.inc"
 source "inc/redis_submenu.inc"
 source "inc/redis.inc"
 source "inc/mongodb.inc"
+source "inc/php_mssql.inc"
 source "inc/mysql_proclimit.inc"
 source "inc/mysqltmp.inc"
 source "inc/setmycnf.inc"
@@ -1410,6 +1411,12 @@ fi
 
 echo "mongodbinstall"
 mongodbinstall
+
+
+if [[ "$PHPMSSQL" = [yY] ]]; then
+  echo "php_mssqlinstall"
+  php_mssqlinstall
+fi
 
 if [[ "$NSD_INSTALL" = [yY] ]]; then
     echo "nsdinstall"
