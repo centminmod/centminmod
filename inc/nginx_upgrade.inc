@@ -341,7 +341,14 @@ if [[ "$UALL" = 'y' ]]; then
     recompileopenssl='n'
 else
     echo ""
-    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION): " ngver
+    read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
+
+    # if user forgets to type in nginx version and hits
+    # enter, ngxver will be empty so should fall back to
+    # the nginx version defined by NGINX_VERSION variable
+    if [ -z "$ngver" ]; then
+        ngver="$NGINX_VERSION"
+    fi
 
     # if you set /etc/centminmod/custom_config.inc file to
     # NGINX_UPDATEMAINTENANCE=y
