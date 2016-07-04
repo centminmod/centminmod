@@ -26,6 +26,7 @@ if [[ "$PHPMSSQL" = [yY] ]]; then
 
 cat > "${CONFIGSCANDIR}/mssql.ini" <<EMS
 extension=mssql.so
+mssql.charset=UTF-8
 EMS
 
     fi
