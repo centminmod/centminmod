@@ -36,7 +36,6 @@ fi
 # extension when enabled via PHPFINFO='y' need more memory ~1GB
 # on <1GB systems this can be a problem without a swap file as 
 # an additional memory buffer
-if [[ "$INITIALINSTALL" = [yY] ]]; then
   FINDSWAPSIZE=$(free -m | awk '/Swap: / {print $2}' | head -n1)
   # if free -m output swap size = 0, create a 1GB swap file for
   # non-openvz systems
@@ -59,7 +58,6 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     echo
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_${DT}.log"
   fi
-fi
 
 if [ ! -f /etc/ld.so.preload ]; then
 touch /etc/ld.so.preload
