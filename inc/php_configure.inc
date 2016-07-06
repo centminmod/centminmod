@@ -8,7 +8,7 @@ fpmconfdir
 
 #############################################################
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
-ISLOWMEMPHP='530000'
+ISLOWMEMPHP='780000'
 #############################################################
 # Formulas
 TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
