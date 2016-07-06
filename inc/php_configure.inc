@@ -8,6 +8,7 @@ fpmconfdir
 
 #############################################################
 TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+TOTALSWAPMEM=$(awk '/SwapTotal: / {print $2}' /proc/meminfo | head -n1)
 ISLOWMEMPHP='780000'
 #############################################################
 # Formulas
