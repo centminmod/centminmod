@@ -117,18 +117,20 @@ else
 	SNMPOPT=""
 fi
 
-if [[ "$CHECKLOWMEMPHP" = "1" ]]; then
-        FILEINFOOPT=" --disable-fileinfo"
+if [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -lt '1023000' ]]; then
+  FILEINFOOPT=" --disable-fileinfo"
 else
-        FILEINFOOPT=""
+  FILEINFOOPT=""
 fi
 
 # let centmin.sh set PHPFINFO variable override the
 # low memory CHECKLOWMEMPHP variable check
 if [[ "$PHPFINFO" = 'n' ]]; then
-        FILEINFOOPT=" --disable-fileinfo"
+  FILEINFOOPT=" --disable-fileinfo"
+elif [[ "$TOTALSWAPMEM" -lt '1023000' ]]; then
+  FILEINFOOPT=" --disable-fileinfo"
 else
-        FILEINFOOPT=""
+  FILEINFOOPT=""
 fi
 
 if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
