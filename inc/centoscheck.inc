@@ -29,6 +29,38 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     fi
 fi
 
+# swap file detection and setup routine add a 1GB swap file 
+# to servers without swap setup and non-openvz based as a 
+# precaution for low memory vps systems <1GB which require
+# memory intensive initial install and running i.e. php fileinfo
+# extension when enabled via PHPFINFO='y' need more memory ~1GB
+# on <1GB systems this can be a problem without a swap file as 
+# an additional memory buffer
+if [[ "$INITIALINSTALL" = [yY] ]]; then
+  FINDSWAPSIZE=$(free -m | awk '/Swap: / {print $2}' | head -n1)
+  # if free -m output swap size = 0, create a 1GB swap file for
+  # non-openvz systems
+  if [[ "$FINDSWAPSIZE" = '0' && ! -f /proc/user_beancounters && ! -f /swapfile ]]; then
+    {
+    echo
+    free -m
+    echo
+    echo "create 1GB swap file"; 
+    dd if=/dev/zero of=/swapfile bs=1024 count=1024k; 
+    ls -lah /swapfile; 
+    mkswap /swapfile; 
+    swapon /swapfile; 
+    chown root:root /swapfile; 
+    chmod 0600 /swapfile; 
+    swapon -s; 
+    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab; 
+    mount -a;
+    free -m
+    echo
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_${DT}.log"
+  fi
+fi
+
 if [ ! -f /etc/ld.so.preload ]; then
 touch /etc/ld.so.preload
 fi
