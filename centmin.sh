@@ -272,6 +272,7 @@ NGINX_INSTALL=y              # Install Nginx (Webserver)
 NGINX_DEBUG=n                # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2=y                # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_GEOIP=y                # Nginx GEOIP module install
+NGINX_ACCESSKEY='n'          #
 NGINX_SPDY=n                 # Nginx SPDY support
 NGINX_STREAM=y               # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGINX_RTMP=n                 # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
