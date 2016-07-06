@@ -8,6 +8,7 @@ fpmconfdir
 
 #############################################################
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+TOTALSWAPMEM=$(awk '/SwapTotal: / {print $2}' /proc/meminfo | head -n1)
 ISLOWMEMPHP='780000'
 #############################################################
 # Formulas
@@ -138,18 +139,20 @@ else
 	FTPEXTOPT=""
 fi
 
-if [[ "$CHECKLOWMEMPHP" = "1" ]]; then
-        FILEINFOOPT=" --disable-fileinfo"
+if [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -lt '1023000' ]]; then
+  FILEINFOOPT=" --disable-fileinfo"
 else
-        FILEINFOOPT=""
+  FILEINFOOPT=""
 fi
 
 # let centmin.sh set PHPFINFO variable override the
 # low memory CHECKLOWMEMPHP variable check
 if [[ "$PHPFINFO" = 'n' ]]; then
-        FILEINFOOPT=" --disable-fileinfo"
+  FILEINFOOPT=" --disable-fileinfo"
+elif [[ "$TOTALSWAPMEM" -lt '1023000' ]]; then
+  FILEINFOOPT=" --disable-fileinfo"
 else
-        FILEINFOOPT=""
+  FILEINFOOPT=""
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
