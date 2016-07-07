@@ -161,7 +161,7 @@ source_wgetinstall() {
   cecho "wget -V" $boldyellow
   wget -V
   cecho "--------------------------------------------------------" $boldgreen
-  cecho "wget ${WGET_VERSION} installed at /usr/local/bin/gwet" $boldyellow
+  cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
   cecho "--------------------------------------------------------" $boldgreen
   echo
 }
