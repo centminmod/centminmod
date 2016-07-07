@@ -118,6 +118,7 @@ gccdevtools() {
 }
 
 source_pcreinstall() {
+  if [[ "$(/usr/local/bin/pcre-config --version | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
   if [ -s "$ALTPCRELINKFILE" ]; then
@@ -147,9 +148,11 @@ source_pcreinstall() {
   make${MAKETHREADS}
   make install
   /usr/local/bin/pcre-config --version
+  fi
 }
 
 source_wgetinstall() {
+  if [[ "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $WGET_FILENAME ..." $boldyellow
   if [ -s "$WGET_FILENAME" ]; then
@@ -211,6 +214,7 @@ source_wgetinstall() {
   cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
   cecho "--------------------------------------------------------" $boldgreen
   echo
+  fi
 }
 
 ###########################################################################
