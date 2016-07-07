@@ -162,6 +162,10 @@ PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
 PCRELINK="https://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 PCRELINKLOCAL="https://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
 
+PCRE_SOURCELINKFILE="pcre-${PCRE_VERSION}.tar.gz"
+PCRE_SOURCELINK="https://centminmod.com/centminmodparts/pcre/${PCRE_SOURCELINKFILE}"
+PCRE_SOURCELINKLOCAL="https://centminmod.com/centminmodparts/pcre/${PCRE_SOURCELINKFILE}"
+
 # wget renamed
 NGX_WEBDAVLINKFILE="nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz"
 NGX_WEBDAVLINK="https://github.com/arut/nginx-dav-ext-module/archive/v${NGINX_EXTWEBDAVVER}.tar.gz"

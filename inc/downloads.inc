@@ -2908,7 +2908,7 @@ then
     if [ -s "pcre-${PCRE_VERSION}.tar.gz" ]; then
         cecho "pcre ${PCRE_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz" "$WGETRETRY" 
+        $DOWNLOADAPP "${PCRE_SOURCELINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: pcre-${PCRE_VERSION}.tar.gz download failed." $boldgreen

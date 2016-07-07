@@ -476,7 +476,7 @@ then
     if [ -s "pcre-${PCRE_VERSION}.tar.gz" ]; then
         cecho "pcre ${PCRE_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz" $WGETRETRY
+        $DOWNLOADAPP "${PCRE_SOURCELINK}" $WGETRETRY
     fi
 
     tar "xvzf pcre-${PCRE_VERSION}.tar.gz"
