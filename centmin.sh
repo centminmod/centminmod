@@ -485,9 +485,9 @@ GPERFTOOLS_SOURCEINSTALL='n'
 LIBUNWIND_VERSION='0.99'     # note google perftool specifically requies v0.99 and no other
 GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
-# Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
+# Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
 PCRE_SOURCEINSTALL='n'     
-PCRE_VERSION='8.39'          # NO longer used/ignored
+PCRE_VERSION='8.39'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
@@ -724,6 +724,7 @@ source "inc/ffmpeginstall.inc"
 source "inc/shortcuts_install.inc"
 source "inc/memcacheadmin.inc"
 source "inc/mysqlsecure.inc"
+source "inc/pcre.inc"
 source "inc/updater_submenu.inc"
 source "inc/centminfinish.inc"
 
@@ -1432,6 +1433,9 @@ if [ -f "$CUR_DIR/Extras/nginx-update.sh" ];
 then
     chmod +x "$CUR_DIR/Extras/nginx-update.sh"
 fi
+
+echo "source_pcreinstall"
+source_pcreinstall
 
 echo " "
 

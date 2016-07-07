@@ -169,26 +169,6 @@ fi # GPERFTOOLS_SOURCE INSTALL
 
 installopenssl
 
-if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
-then
-    echo "*************************************************"
-    cecho "* Source Install PCRE" $boldgreen
-    echo "*************************************************"
-
-    # Install PCRE
-    cd $DIR_TMP
-
-    echo "Compiling PCRE..."
-#download pcre tarball
-
-#tar xvzf pcre-${PCRE_VERSION}.tar.gz
-    cd pcre-${PCRE_VERSION}
-    ./configure
-    make$MAKETHREADS
-    make install
-
-fi
-
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "luajit install"
     fi
