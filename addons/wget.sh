@@ -89,6 +89,34 @@ return
 
 ###########################################################
 
+scl_install() {
+  # if gcc version is less than 4.7 (407) install scl collection yum repo
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      echo "install scl for newer gcc and g++ versions"
+      wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
+      rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
+      # yum -y install devtoolset-3 -q
+      yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils
+    fi
+  fi # centos 6 only needed
+}
+
+gccdevtools() {
+  if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+    scl_install
+    unset CC
+    unset CXX
+    export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
+    export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++" 
+  elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+    unset CC
+    unset CXX
+    export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
+    export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++" 
+  fi
+}
+
 source_pcreinstall() {
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
@@ -147,16 +175,35 @@ source_wgetinstall() {
     echo ""
   fi
   cd "wget-${WGET_VERSION}"
+  gccdevtools
   make clean
-  export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
-  ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
+    export PCRE_CFLAGS="-I /usr/local/include"
+    export PCRE_LIBS="-L /usr/local/lib -lpcre"
+  else
+    export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m32 -mtune=generic"
+    export PCRE_CFLAGS="-I /usr/local/include"
+    export PCRE_LIBS="-L /usr/local/lib -lpcre"
+  fi
+  # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
+  ./configure --with-ssl=openssl
   make${MAKETHREADS}
   make install
+  echo "/usr/local/lib/" > /etc/ld.so.conf.d/wget.conf
+  ldconfig
   if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]]; then
     echo "alias wget='/usr/local/bin/wget'" >> /root/.bashrc
   fi
   . /root/.bashrc
- 
+
+  echo
+  cecho "--------------------------------------------------------" $boldgreen
+  echo "ldconfig -p | grep libpcre.so.1"
+  ldconfig -p | grep libpcre.so.1
+  echo
+  echo "ldd $(which wget)"
+  ldd $(which wget)
   cecho "--------------------------------------------------------" $boldgreen
   cecho "wget -V" $boldyellow
   wget -V
