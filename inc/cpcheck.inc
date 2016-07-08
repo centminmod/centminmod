@@ -1,8 +1,10 @@
 axelcheck() {
+  if [[ -f /usr/local/bin/axel || -f /usr/bin/axel ]]; then
   if [[ "$(axel -V | awk '/version/ {print $3}')" != "${AXEL_VER}" ]] || [[ -f /usr/local/bin/axel && ! -d "${DIR_TMP}/axel-${AXEL_VER}" && ! -f "${DIR_TMP}/${AXEK_LINKFILE}" ]]; then
     echo "update axel version... one time task"
     sleep 3
     install_axel silent
+  fi
   fi
 }
 
