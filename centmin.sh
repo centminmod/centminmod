@@ -1517,6 +1517,13 @@ time updatedb
 centminfinish
 memcacheadmin
 
+    if [ -f "${CENTMINLOGDIR}/zendopcache_passfile.txt" ]; then
+      echo "*************************************************"
+      cecho "* Zend Opcache Stats Password / URL" $boldgreen
+      echo "*************************************************"
+      cat "${CENTMINLOGDIR}/zendopcache_passfile.txt"
+    fi
+
     echo "*************************************************"
     cecho "* MariaDB Security Setup" $boldgreen
     echo "*************************************************"
