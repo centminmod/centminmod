@@ -167,13 +167,13 @@ GPF
   GPERFINCLUDE_CHECK=$(grep '^include \/usr\/local\/nginx\/conf\/gperftools.conf;' /usr/local/nginx/conf/nginx.conf)
 
   if [[ ! -z "$GPERFINCLUDE_CHECK" ]]; then
-    sed -i 's/^#\/usr\/local\/nginx\/conf\/gperftools.conf;/\/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
+    sed -i 's/^#include \/usr\/local\/nginx\/conf\/gperftools.conf;/include \/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
   elif [[ -z "$GPERFINCLUDE_CHECK" ]]; then
   	sed -i 's/pcre_jit on;/pcre_jit on; \ninclude \/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
   fi
 else
 	GPERFOPT=""
-  sed -i 's/^\/usr\/local\/nginx\/conf\/gperftools.conf;/#\/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
+  sed -e 's|^include \/usr\/local\/nginx\/conf\/gperftools.conf|#include \/usr\/local\/nginx\/conf\/gperftools.conf|g' /usr/local/nginx/conf/nginx.conf
 fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
