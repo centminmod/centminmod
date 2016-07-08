@@ -281,8 +281,8 @@ BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default s
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
 GPERFTOOLS_SOURCEINSTALL='n'
-LIBUNWIND_VERSION='0.99'     # note google perftool specifically requies v0.99 and no other
-GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
+LIBUNWIND_VERSION='1.2-rc1'     # note google perftool specifically requies v0.99 and no other
+GPERFTOOLS_VERSION='2.5'     # Use this version of google-perftools
 
 WGETOPT='-cnv --no-dns-cache -4'
 
@@ -575,17 +575,58 @@ fi
 }
 
 checknginxmodules() {
+    # axelsetup
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/z_custom.inc"
+fi
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Check Nginx Modules"
+    fi
+
+    #################################################################################
+    # detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
+    echo
+    echo "NGX_DYNAMICCHECK nginx_upgrade.inc"
+    pwd
+    echo
+    echo "nginx dynamic module support detected"
+    echo
+    if [ "$ngver" ]; then
+        NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    else
+        NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
+
+    NGX_DYNAMICCHECK=$(grep 'DYNAMIC_MODULES=' "$NGINX_DIRINSTALL/auto/options" >/dev/null 2>&1; echo $?)
+    if [ "$NGX_DYNAMICCHECK" = '0' ]; then
+        DYNAMIC_SUPPORT=y
+    else
+        # remove patches meant for 1.9.11 dynamic module support
+        rm -rf "${DIR_TMP}lua-nginx-module-${ORESTY_LUANGINXVER}"
+        rm -rf "${DIR_TMP}/${NGX_LUANGINXLINKFILE}"
+    fi
 
     if [[ "$NGINX_RTMP" = [yY] ]]; then
         if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
             echo
             echo "download nginx-rtmp-module from github"
-            cd $DIR_TMP
+            cd "$DIR_TMP"
             git clone git://github.com/arut/nginx-rtmp-module.git
         elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then
             echo
             echo "get latest updates nginx-rtmp-module from github"
-            cd $DIR_TMP
+            cd "$DIR_TMP"
             git stash
             git pull
             git log -3
@@ -602,20 +643,97 @@ if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-maste
 fi
 
 cecho "Check for missing nginx modules" $boldyellow
-if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -d "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]]; then
-ngxmoduletarball
-openssldownload
-libressldownload
+
+if [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -d "${DIR_TMP}/${LIBRESSLDIR}" ]]; then
+    libressldownload
+elif [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" ]]; then
+    libressldownload
+fi
+
+LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
+if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_FANCYINDEXDIR}" || ! -d "${DIR_TMP}/${NGX_CACHEPURGEDIR}" || ! -d "${DIR_TMP}/nginx-accesskey-2.0.3" || ! -d "${DIR_TMP}/${NGX_CONCATDIR}" || ! -d "${DIR_TMP}/${OPENSSLDIR}" || ! -d "${DIR_TMP}/${PCRELINKDIR}" || ! -d "${DIR_TMP}/${NGX_WEBDAVLINKDIR}" || ! -d "${DIR_TMP}/${NGX_HEADERSMOREDIR}" || ! -d "${DIR_TMP}/${NGX_STICKYDIR}" || ! -d "${DIR_TMP}/${NGX_UPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_HTTPREDISDIR}" ]]; then
+
+    if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
+        ngxmoduletarball &
+        openssldownload &
+        # libressldownload &
+        wait
+    else
+        ngxmoduletarball
+        openssldownload
+        # libressldownload
+    fi
+fi
+
+cecho "Check for pagespeed nginx module download file" $boldyellow
+# echo "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}"
+# echo "$DIR_TMP/$LIBUNWIND_LINKDIR"
+NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" 2>1 | head -1 | cut -f1 -d"/")
+if [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -d "$DIR_TMP/$NGXPGSPEED_DIR" ]]; then
+    if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+        nginxpgspeedtarball
+
+    # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+    NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+    fi
+elif [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" ]]; then
+    if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+        nginxpgspeedtarball
+
+    # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+    NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+    fi
+else
+    if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+        # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+        NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+    fi
+fi
+
+cecho "Check for pagespeed PSOL library" $boldyellow
+if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
+    if [[ ! -f "$DIR_TMP/$NGXPGSPEED_DIR/${NGX_PAGESPEEDPSOLINKLFILE}" ]]; then
+        nginxpgspeedtarball
+    fi
+fi
+
+cecho "Check for gperf tools + libunwind download files" $boldyellow
+if [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" || ! -d "$DIR_TMP/$LIBUNWIND_LINKDIR" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" || ! -d "$DIR_TMP/$GPERFTOOL_LINKDIR" ]]; then
+    if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
+        gperftools
+    fi
+elif [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" ]]; then
+    if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
+        gperftools
+    fi
 fi
 
 if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
+    # nginx upgrade routine needs to know directory names for specific nginx
+    # modules to know if they exist
+
+    cecho "Check for openresty modules" $boldyellow    
+    # if the tar.gz files don't exist first the tar test directory variables can not be populated
     if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]]; then
-    openrestytarball
+        openrestytarball
+    fi 
+    
+    MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")
+    SRCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_SRCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+    SETMISCDIR=$(tar -tzf "$DIR_TMP/${NGX_SETMISCLINKFILE}" | head -1 | cut -f1 -d"/")
+    DEVELKITDIR=$(tar -tzf "$DIR_TMP/${NGX_DEVELKITLINKFILE}" | head -1 | cut -f1 -d"/")
+    ECHODIR=$(tar -tzf "$DIR_TMP/${NGX_ECHOLINKFILE}" | head -1 | cut -f1 -d"/")
+    REDISDIR=$(tar -tzf "$DIR_TMP/${NGX_REDISLINKFILE}" | head -1 | cut -f1 -d"/")
+
+    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${MEMCDIR}" || ! -d "${DIR_TMP}/${SRCACHEDIR}"|| ! -d "${DIR_TMP}/${REDISDIR}" || ! -d "${DIR_TMP}/${ECHODIR}" || ! -d "${DIR_TMP}/${SETMISCDIR}" || ! -d "${DIR_TMP}/${DEVELKITDIR}" ]]; then
+        openrestytarball
     fi
 
     # ORESTY_LUANGINX=y|n
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
-        if [[ ! -f "${DIR_TMP}/${NGX_LUANGINXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMEMCACHEDLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMYSQLLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUADNSLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPLOADLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAWEBSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOCKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTRINGLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISPARSERLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALRUCACHELINKFILE}"  || ! -f "${DIR_TMP}/${NGX_LUARESTYCORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOGGERSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACOOKIELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCACHELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACJSONLINKFILE}" ]]; then
+        NGX_LUAGITLINKDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAGITLINKFILE}" | head -1 | cut -f1 -d"/")
+        if [[ ! -f "${DIR_TMP}/${NGX_LUANGINXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAGITLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMEMCACHEDLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAMYSQLLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUADNSLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPLOADLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAWEBSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOCKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUASTRINGLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAREDISPARSERLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALRUCACHELINKFILE}"  || ! -f "${DIR_TMP}/${NGX_LUARESTYCORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUALOGGERSOCKETLINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACOOKIELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUAUPSTREAMCACHELINKFILE}" || ! -f "${DIR_TMP}/${NGX_LUACJSONLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_LUANGINXDIR}" || ! -d "${DIR_TMP}/${NGX_LUAGITLINKDIR}" || ! -d "${DIR_TMP}/${NGX_LUAMEMCACHEDDIR}" || ! -d "${DIR_TMP}/${NGX_LUAMYSQLDIR}" || ! -d "${DIR_TMP}/${NGX_LUAREDISDIR}" || ! -d "${DIR_TMP}/${NGX_LUADNSDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPLOADDIR}" || ! -d "${DIR_TMP}/${NGX_LUAWEBSOCKETDIR}" || ! -d "${DIR_TMP}/${NGX_LUALOCKDIR}" || ! -d "${DIR_TMP}/${NGX_LUASTRINGDIR}" || ! -d "${DIR_TMP}/${NGX_LUAREDISPARSERDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_LUALRUCACHEDIR}"  || ! -d "${DIR_TMP}/${NGX_LUARESTYCOREDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMDIR}" || ! -d "${DIR_TMP}/${NGX_LUALOGGERSOCKETDIR}" || ! -d "${DIR_TMP}/${NGX_LUACOOKIEDIR}" || ! -d "${DIR_TMP}/${NGX_LUAUPSTREAMCACHEDIR}" || ! -d "${DIR_TMP}/${NGX_LUACJSONDIR}" ]]; then            
+
             openrestytarball
         fi
     fi
@@ -624,7 +742,7 @@ fi
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
     # if option to download official github based master ngx_pagespeed
     # remove old version downloaded & download master tarball instead
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf release-${NGXPGSPEED_VER}*
     nginxpgspeedtarball
 fi
@@ -737,14 +855,14 @@ then
 
     # Install libunwind
     echo "Compiling libunwind..."
-    if [ -s libunwind-${LIBUNWIND_VERSION}.tar.gz ]; then
+    if [ -s ${LIBUNWIND_LINKFILE} ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz $WGETRETRY
+        $DOWNLOADAPP ${LIBUNWIND_LINK} $WGETRETRY
     fi
 
-    tar xvzf libunwind-${LIBUNWIND_VERSION}.tar.gz
-    cd libunwind-${LIBUNWIND_VERSION}
+    tar xvzf ${LIBUNWIND_LINKFILE}
+    cd ${LIBUNWIND_LINKDIR}
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
@@ -756,22 +874,24 @@ then
     cd $DIR_TMP
 
     echo "Compiling google-perftools..."
-    if [ -s google-perftools-${GPERFTOOLS_VERSION}.tar.gz ]; then
+    if [ -s ${GPERFTOOL_LINKFILE} ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz $WGETRETRY
+        $DOWNLOADAPP ${GPERFTOOL_LINK} $WGETRETRY
     fi
 
-    tar xvzf google-perftools-${GPERFTOOLS_VERSION}.tar.gz
-    cd google-perftools-${GPERFTOOLS_VERSION}
+    tar xvzf ${GPERFTOOL_LINKFILE}
+    cd ${GPERFTOOL_LINKDIR}
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./configure --enable-frame-pointers
     make${MAKETHREADS}
     make install
-    #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
-    #/sbin/ldconfig
+    if [ ! -f /etc/ld.so.conf.d/wget.conf ]; then
+        echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
+        /sbin/ldconfig
+    fi
 
 fi # GPERFTOOL_SOURCEINSTALL
 

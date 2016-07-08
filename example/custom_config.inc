@@ -174,6 +174,16 @@ LIBRESSL_VERSION='2.3.6'   # Use this version of LibreSSL http://www.libressl.or
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 ##################################
 
+# Choose whether to compile Nginx --with-google_perftools_module
+# no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
+GPERFTOOLS_SOURCEINSTALL='n'
+LIBUNWIND_VERSION='1.2-rc1'     # note google perftool specifically requies v0.99 and no other
+GPERFTOOLS_VERSION='2.5'     # Use this version of google-perftools
+
+# Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
+PCRE_SOURCEINSTALL='n'     
+PCRE_VERSION='8.39'          # PCRE version
+
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse

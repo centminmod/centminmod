@@ -144,8 +144,8 @@ then
     echo "Compiling libunwind..."
 #download libunwind tarball
 
-    #tar xvzf libunwind-${LIBUNWIND_VERSION}.tar.gz
-    cd libunwind-${LIBUNWIND_VERSION}
+    #tar xvzf ${LIBUNWIND_LINKFILE}
+    cd ${LIBUNWIND_LINKDIR}
     ./configure
     make$MAKETHREADS
     make install
@@ -157,13 +157,15 @@ then
 
 #download gperftool tarball 
 
-    #tar xvzf google-perftools-${GPERFTOOLS_VERSION}.tar.gz
-    cd google-perftools-${GPERFTOOLS_VERSION}
+    #tar xvzf ${GPERFTOOL_LINKFILE}
+    cd ${GPERFTOOL_LINKDIR}
     ./configure --enable-frame-pointers
     make$MAKETHREADS
     make install
-    echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
-    /sbin/ldconfig
+    if [ ! -f /etc/ld.so.conf.d/wget.conf ]; then
+        echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
+        /sbin/ldconfig
+    fi
 
 fi # GPERFTOOLS_SOURCE INSTALL 
 

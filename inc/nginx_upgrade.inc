@@ -220,7 +220,7 @@ fi
 
 cecho "Check for pagespeed nginx module download file" $boldyellow
 # echo "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}"
-# echo "$DIR_TMP/$NGXPGSPEED_DIR"
+# echo "$DIR_TMP/$LIBUNWIND_LINKDIR"
 NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" 2>1 | head -1 | cut -f1 -d"/")
 if [[ ! -f "${DIR_TMP}/${NGX_PAGESPEEDGITLINKFILE}" || ! -d "$DIR_TMP/$NGXPGSPEED_DIR" ]]; then
     if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
@@ -247,6 +247,17 @@ cecho "Check for pagespeed PSOL library" $boldyellow
 if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
     if [[ ! -f "$DIR_TMP/$NGXPGSPEED_DIR/${NGX_PAGESPEEDPSOLINKLFILE}" ]]; then
         nginxpgspeedtarball
+    fi
+fi
+
+cecho "Check for gperf tools + libunwind download files" $boldyellow
+if [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" || ! -d "$DIR_TMP/$LIBUNWIND_LINKDIR" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" || ! -d "$DIR_TMP/$GPERFTOOL_LINKDIR" ]]; then
+    if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
+        gperftools
+    fi
+elif [[ ! -f "${DIR_TMP}/${LIBUNWIND_LINKFILE}" ]] || [[ ! -f "${DIR_TMP}/${GPERFTOOL_LINKFILE}" ]]; then
+    if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
+        gperftools
     fi
 fi
 
@@ -417,13 +428,13 @@ then
 
     # Install libunwind
     echo "Compiling libunwind..."
-    if [ -s "libunwind-${LIBUNWIND_VERSION}.tar.gz" ]; then
+    if [ -s "${LIBUNWIND_LINKFILE}" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP "http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz" $WGETRETRY
+        $DOWNLOADAPP "${LIBUNWIND_LINK}" $WGETRETRY
     fi
 
-    tar xvzf "libunwind-${LIBUNWIND_VERSION}.tar.gz"
+    tar xvzf "${LIBUNWIND_LINKFILE}"
     cd "libunwind-${LIBUNWIND_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
@@ -436,22 +447,24 @@ then
     cd "$DIR_TMP"
 
     echo "Compiling google-perftools..."
-    if [ -s "google-perftools-${GPERFTOOLS_VERSION}.tar.gz" ]; then
+    if [ -s "${GPERFTOOL_LINKFILE}" ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz" $WGETRETRY
+        $DOWNLOADAPP "${GPERFTOOL_LINK}" $WGETRETRY
     fi
 
-    tar xvzf "google-perftools-${GPERFTOOLS_VERSION}.tar.gz"
-    cd "google-perftools-${GPERFTOOLS_VERSION}"
+    tar xvzf "${GPERFTOOL_LINKFILE}"
+    cd "${GPERFTOOL_LINKDIR}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./configure --enable-frame-pointers
     make${MAKETHREADS}
     make install
-    #echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
-    #/sbin/ldconfig
+    if [ ! -f /etc/ld.so.conf.d/wget.conf ]; then
+        echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
+        /sbin/ldconfig
+    fi
 
 fi # GPERFTOOL_SOURCEINSTALL
 

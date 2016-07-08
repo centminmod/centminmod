@@ -2723,14 +2723,14 @@ then
 
     cd "$DIR_TMP"
 
-        cecho "Download libunwind-${LIBUNWIND_VERSION}.tar.gz ..." $boldyellow
-    if [ -s "libunwind-${LIBUNWIND_VERSION}.tar.gz" ]; then
+        cecho "Download ${LIBUNWIND_LINKFILE} ..." $boldyellow
+    if [ -s "${LIBUNWIND_LINKFILE}" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP "http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz" "$WGETRETRY" 
+        $DOWNLOADAPP "${LIBUNWIND_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libunwind-${LIBUNWIND_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${LIBUNWIND_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -2739,25 +2739,25 @@ else
 	fi
     fi
 
-tar xzf "libunwind-${LIBUNWIND_VERSION}.tar.gz"
+tar xzf "${LIBUNWIND_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libunwind-${LIBUNWIND_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${LIBUNWIND_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "libunwind-${LIBUNWIND_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${LIBUNWIND_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download google-perftools-${GPERFTOOLS_VERSION}.tar.gz ..." $boldyellow
-    if [ -s "google-perftools-${GPERFTOOLS_VERSION}.tar.gz" ]; then
+        cecho "Download ${GPERFTOOL_LINKFILE} ..." $boldyellow
+    if [ -s "${GPERFTOOL_LINKFILE}" ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz" "$WGETRETRY" 
+        $DOWNLOADAPP "${GPERFTOOL_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: google-perftools-${GPERFTOOLS_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${GPERFTOOL_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -2766,14 +2766,14 @@ else
 	fi
     fi
 
-tar xzf "google-perftools-${GPERFTOOLS_VERSION}.tar.gz"
+tar xzf "${GPERFTOOL_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: google-perftools-${GPERFTOOLS_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${GPERFTOOL_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "google-perftools-${GPERFTOOLS_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${GPERFTOOL_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 

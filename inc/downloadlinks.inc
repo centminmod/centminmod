@@ -441,3 +441,13 @@ AXEK_LINKLOCAL="https://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
 
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
+
+LIBUNWIND_LINKFILE="libunwind-${LIBUNWIND_VERSION}.tar.gz"
+LIBUNWIND_LINKDIR="libunwind-${LIBUNWIND_VERSION}"
+LIBUNWIND_LINK="http://download.savannah.gnu.org/releases/libunwind/${LIBUNWIND_LINKFILE}"
+LIBUNWIND_LINKLOCAL="https://centminmod.com/centminmodparts/gperf/${LIBUNWIND_LINKFILE}"
+
+GPERFTOOL_LINKFILE="gperftools-${GPERFTOOLS_VERSION}.tar.gz"
+GPERFTOOL_LINKDIR="gperftools-${GPERFTOOLS_VERSION}"
+GPERFTOOL_LINK="https://github.com/gperftools/gperftools/releases/download/gperftools-${GPERFTOOLS_VERSION}/${GPERFTOOL_LINKFILE}"
+GPERFTOOL_LINKLOCAL="https://centminmod.com/centminmodparts/gperf/${GPERFTOOL_LINKFILE}"
