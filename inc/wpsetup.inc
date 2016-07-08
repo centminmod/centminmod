@@ -1780,7 +1780,7 @@ cecho "------------------------------------------------------------" $boldgreen
 fi
 } 2>&1 | tee /tmp/setupwp.log
 cat /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
-cp -a /tmp/setupwp.log /tmp/setupwp-$(date +"%d%m%y-%H%M%S").log
+cp -a /tmp/setupwp.log "${CENTMINLOGDIR}/setupwp-$(date +"%d%m%y-%H%M%S").log"
 rm -rf /tmp/setupwp.log
 
 echo
