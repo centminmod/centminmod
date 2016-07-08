@@ -685,11 +685,13 @@ if [[ ! -f /proc/user_beancounters ]]; then
 		# create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
     if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
         if [ -d /etc/sysctl.d ]; then
+          if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
             # raise hashsize for conntrack entries
             echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
             if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
             	echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
             fi
+          fi
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
