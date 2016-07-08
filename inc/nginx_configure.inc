@@ -156,6 +156,7 @@ fi
 		fi
 
 if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
+	# lsof -n | grep tcmalloc >/dev/null 2>&1; echo $?
 	GPERFOPT=" --with-google_perftools_module"
 	mkdir -p /var/tmp/tcmalloc
 	chown -R nginx:nginx /var/tmp/tcmalloc
@@ -168,7 +169,7 @@ GPF
   if [[ ! -z "$GPERFINCLUDE_CHECK" ]]; then
     sed -i 's/^#\/usr\/local\/nginx\/conf\/gperftools.conf;/\/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
   elif [[ -z "$GPERFINCLUDE_CHECK" ]]; then
-  	sed -i 's/include \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;/include \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf; \ninclude \/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
+  	sed -i 's/pcre_jit on;/pcre_jit on; \ninclude \/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
   fi
 else
 	GPERFOPT=""
