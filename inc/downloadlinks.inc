@@ -438,3 +438,6 @@ AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
 AXEK_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/archive.tar.gz?ref=${AXEL_VER}"
 AXEK_LINKLOCAL="https://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
+
+WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"

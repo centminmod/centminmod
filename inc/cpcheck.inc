@@ -1,3 +1,13 @@
+wgetver_check() {
+  if [[ "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    if [ -f "${SCRIPT_DIR}/addons/wget.sh" ]; then
+      echo "update wget to ${WGET_VERSION} version... one time task"
+      sleep 6
+      "${SCRIPT_DIR}/addons/wget.sh install"
+    fi
+  fi
+}
+
 axelcheck() {
   if [[ -f /usr/local/bin/axel || -f /usr/bin/axel ]]; then
   if [[ "$(axel -V | awk '/version/ {print $3}')" != "${AXEL_VER}" ]] || [[ -f /usr/local/bin/axel && ! -d "${DIR_TMP}/axel-${AXEL_VER}" && ! -f "${DIR_TMP}/${AXEK_LINKFILE}" ]]; then
@@ -905,6 +915,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   imagick_fixes
   apache_protect
   centossix_crsetup
+  wgetver_check
 fi
 
 }
