@@ -157,9 +157,22 @@ fi
 
 if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
 	GPERFOPT=" --with-google_perftools_module"
+	mkdir -p /var/tmp/tcmalloc
+	chown -R nginx:nginx /var/tmp/tcmalloc
+cat > "/usr/local/nginx/conf/gperftools.conf" <<GPF
+google_perftools_profiles /var/tmp/tcmalloc;
+GPF
+
+  GPERFINCLUDE_CHECK=$(grep '^include \/usr\/local\/nginx\/conf\/gperftools.conf;' /usr/local/nginx/conf/nginx.conf)
+
+  if [[ ! -z "$GPERFINCLUDE_CHECK" ]]; then
+    sed -i 's/^#\/usr\/local\/nginx\/conf\/gperftools.conf;/\/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
+  elif [[ -z "$GPERFINCLUDE_CHECK" ]]; then
+  	sed -i 's/include \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;/include \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf; \ninclude \/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
 else
 	GPERFOPT=""
-#sed -i 's/google_perftools_profiles \/var\/tmp\/tcmalloc;//g' /usr/local/nginx/conf/nginx.conf
+  sed -i 's/^\/usr\/local\/nginx\/conf\/gperftools.conf;/#\/usr\/local\/nginx\/conf\/gperftools.conf;/g' /usr/local/nginx/conf/nginx.conf
 fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
