@@ -1,9 +1,9 @@
 wgetver_check() {
-  if [[ "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
     if [ -f "${SCRIPT_DIR}/addons/wget.sh" ]; then
       echo "update wget to ${WGET_VERSION} version... one time task"
       sleep 6
-      "${SCRIPT_DIR}/addons/wget.sh install"
+      "${SCRIPT_DIR}/addons/wget.sh" install
     fi
   fi
 }
