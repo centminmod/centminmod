@@ -1,3 +1,9 @@
+check_jemstatsfile() {
+  if [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
+    jemalloc_printstats
+  fi
+}
+
 wgetver_check() {
   if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
     if [ -f "${SCRIPT_DIR}/addons/wget.sh" ]; then
@@ -916,6 +922,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   apache_protect
   centossix_crsetup
   wgetver_check
+  check_jemstatsfile
 fi
 
 }

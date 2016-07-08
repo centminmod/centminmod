@@ -728,6 +728,7 @@ source "inc/shortcuts_install.inc"
 source "inc/memcacheadmin.inc"
 source "inc/mysqlsecure.inc"
 source "inc/pcre.inc"
+source "inc/jemalloc.inc"
 source "inc/updater_submenu.inc"
 source "inc/centminfinish.inc"
 
