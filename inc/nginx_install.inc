@@ -140,6 +140,7 @@ then
     cecho "* Source Install Google Perftools" $boldgreen
     echo "*************************************************"
 
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
     # Install libunwind
     echo "Compiling libunwind..."
 #download libunwind tarball
@@ -149,6 +150,7 @@ then
     ./configure
     make$MAKETHREADS
     make install
+    fi
 
     # Install google-perftools
     cd $DIR_TMP
@@ -159,7 +161,11 @@ then
 
     #tar xvzf ${GPERFTOOL_LINKFILE}
     cd ${GPERFTOOL_LINKDIR}
-    ./configure --enable-frame-pointers
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
+        ./configure
+    else
+        ./configure --enable-frame-pointers
+    fi
     make$MAKETHREADS
     make install
     if [ ! -f /etc/ld.so.conf.d/wget.conf ]; then

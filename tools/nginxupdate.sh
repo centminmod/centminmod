@@ -853,39 +853,45 @@ then
     cecho "* Source Upgrade Google Perftools" $boldgreen
     echo "*************************************************"
 
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
     # Install libunwind
     echo "Compiling libunwind..."
-    if [ -s ${LIBUNWIND_LINKFILE} ]; then
+    if [ -s "${LIBUNWIND_LINKFILE}" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP ${LIBUNWIND_LINK} $WGETRETRY
+        $DOWNLOADAPP "${LIBUNWIND_LINK}" $WGETRETRY
     fi
 
-    tar xvzf ${LIBUNWIND_LINKFILE}
-    cd ${LIBUNWIND_LINKDIR}
+    tar xvzf "${LIBUNWIND_LINKFILE}"
+    cd "libunwind-${LIBUNWIND_VERSION}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
     ./configure
     make${MAKETHREADS}
     make install
-
-    # Install google-perftools
-    cd $DIR_TMP
-
-    echo "Compiling google-perftools..."
-    if [ -s ${GPERFTOOL_LINKFILE} ]; then
-        cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
-    else
-        $DOWNLOADAPP ${GPERFTOOL_LINK} $WGETRETRY
     fi
 
-    tar xvzf ${GPERFTOOL_LINKFILE}
-    cd ${GPERFTOOL_LINKDIR}
+    # Install google-perftools
+    cd "$DIR_TMP"
+
+    echo "Compiling google-perftools..."
+    if [ -s "${GPERFTOOL_LINKFILE}" ]; then
+        cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
+    else
+        $DOWNLOADAPP "${GPERFTOOL_LINK}" $WGETRETRY
+    fi
+
+    tar xvzf "${GPERFTOOL_LINKFILE}"
+    cd "${GPERFTOOL_LINKDIR}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
-    ./configure --enable-frame-pointers
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
+        ./configure
+    else
+        ./configure --enable-frame-pointers
+    fi
     make${MAKETHREADS}
     make install
     if [ ! -f /etc/ld.so.conf.d/wget.conf ]; then
