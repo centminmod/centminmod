@@ -15,6 +15,10 @@ cecho "Check if ${PHPEXT_REDISLINKFILE} exists" $boldyellow
 if [ ! -f "${DIR_TMP}/${PHPEXT_REDISLINKFILE}" ]; then
   cecho "Downloading redis PHP extension.." $boldgreen
   redisphptarball
+elif [[ -f "${DIR_TMP}/${PHPEXT_REDISLINKFILE}" && ! -d "${DIR_TMP}/phpredis-${REDISPHP_VER}" ]]; then
+  pushd "$DIR_TMP"
+  tar xzf "${PHPEXT_REDISLINKFILE}"
+  popd
 fi
 
 }
