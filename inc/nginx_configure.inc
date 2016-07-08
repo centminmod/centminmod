@@ -173,7 +173,7 @@ GPF
   fi
 else
 	GPERFOPT=""
-  sed -e 's|^include \/usr\/local\/nginx\/conf\/gperftools.conf|#include \/usr\/local\/nginx\/conf\/gperftools.conf|g' /usr/local/nginx/conf/nginx.conf
+  sed -i 's|^include \/usr\/local\/nginx\/conf\/gperftools.conf|#include \/usr\/local\/nginx\/conf\/gperftools.conf|g' /usr/local/nginx/conf/nginx.conf
 fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
