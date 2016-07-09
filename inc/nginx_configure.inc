@@ -1908,6 +1908,12 @@ fi
 # https://community.centminmod.com/threads/libressl-2-3-3-released.6788/
 # libresslcompile_fix
 
+if [[ "$CLANG" = [yY] ]]; then
+	GCC_OPTLEVEL='-O3'
+else
+	GCC_OPTLEVEL="$GCC_OPTLEVEL"
+fi
+
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
