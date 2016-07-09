@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.4'
+VER='0.0.5'
 ######################################################
 # node.js installer
 # for Centminmod.com
@@ -115,6 +115,29 @@ scl_install() {
 			CCTOOLSET=""
 		fi
 	fi # centos 6 only needed
+}
+
+installnodejs_new() {
+  if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+      cd $DIR_TMP
+      curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+      yum -y install nodejs --disableplugin=priorities
+      npm install npm@latest -g
+  
+    echo
+    cecho "---------------------------" $boldyellow
+    cecho -n "Node.js Version: " $boldgreen
+    node -v
+    cecho "---------------------------" $boldyellow
+    cecho -n "npm Version: " $boldgreen
+    npm --version
+    cecho "---------------------------" $boldyellow
+    echo
+    cecho "node.js source install completed" $boldgreen
+  else
+    echo
+    cecho "node.js install already detected" $boldgreen
+  fi
 }
 
 installnodejs() {
@@ -244,7 +267,7 @@ case $1 in
 starttime=$(date +%s.%N)
 {
 		# preyum
-		installnodejs
+		installnodejs_new
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_nodejs_install_${DT}.log
 
 endtime=$(date +%s.%N)
