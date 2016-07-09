@@ -133,7 +133,7 @@ installnodejs_new() {
     npm --version
     cecho "---------------------------" $boldyellow
     echo
-    cecho "node.js source install completed" $boldgreen
+    cecho "node.js YUM install completed" $boldgreen
   else
     echo
     cecho "node.js install already detected" $boldgreen
