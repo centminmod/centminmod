@@ -750,7 +750,7 @@ fi
         fi
         # empty pagespeed cache
         clear_ps
-        /etc/init.d/nginx start
+        /etc/init.d/nginx restart
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
         # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
