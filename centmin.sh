@@ -538,8 +538,8 @@ AXEL_VER='2.6'               # Axel source compile version https://github.com/er
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
 INTELOPT='n'
-# GCC optimization level choices: -O2 or -O3 or -Ofast
-GCC_OPTLEVEL='-O2'
+# GCC optimization level choices: -O2 or -O3 or -Ofast (only for GCC via CLANG=n)
+GCC_OPTLEVEL='-O3'
 
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
