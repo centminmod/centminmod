@@ -125,7 +125,7 @@ gccdevtools() {
 }
 
 source_pcreinstall() {
-  if [[ "$(/usr/local/bin/pcre-config --version | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
   if [ -s "$ALTPCRELINKFILE" ]; then
