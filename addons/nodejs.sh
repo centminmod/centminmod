@@ -6,7 +6,7 @@ VER='0.0.4'
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.4.5'
+NODEJSVER='4.4.7'
 NODEJS_SOURCEINSTALL='y'
 REINSTALL='y'
 
