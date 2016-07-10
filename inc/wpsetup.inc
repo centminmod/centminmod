@@ -452,7 +452,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     }
 
     # bypass cache if the cookies containing the following strings
-    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") {
+    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|woocommerce_items_in_cart") {
         set \$cache_uri 'nullcache';
     }
 
@@ -1194,7 +1194,7 @@ if (\$query_string != "") { set \$cache_uri 'null cache'; }
 
 if (\$request_uri ~* "/(\?add-to-cart=|cart|my-account|checkout|addons|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
 
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") { set \$cache_uri 'null cache'; }
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|woocommerce_items_in_cart") { set \$cache_uri 'null cache'; }
 EFF
 
 # for nginx level redis cache
@@ -1216,7 +1216,7 @@ if (\$request_uri ~* "/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(
 }
 
 # Don't use the cache for logged in users or recent commenters
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in") {
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|woocommerce_items_in_cart") {
   set \$skip_cache 1;
 }
 
