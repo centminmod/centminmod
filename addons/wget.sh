@@ -17,6 +17,7 @@ ALTPCRELINK="https://centminmod.com/centminmodparts/pcre/${ALTPCRELINKFILE}"
 WGET_VERSION='1.18'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
+WGET_LINKLOCAL="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
@@ -158,7 +159,16 @@ source_wgetinstall() {
   if [ -s "$WGET_FILENAME" ]; then
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$WGET_LINK" --tries=3 
+
+    curl -sI --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
+    WGET_CURLCHECK=$?
+    if [[ "$WGET_CURLCHECK" = '0' ]]; then
+      wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+    else
+      WGET_LINK="$WGET_LINKLOCAL"
+      echo "wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
+      wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+    fi
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $WGET_FILENAME download failed." $boldgreen
@@ -179,7 +189,9 @@ source_wgetinstall() {
   fi
   cd "wget-${WGET_VERSION}"
   gccdevtools
-  make clean
+  if [ -f config.status ]; then
+    make clean
+  fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
