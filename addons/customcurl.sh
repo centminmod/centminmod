@@ -38,6 +38,7 @@ fi
 
 if [ ! -d "$DIR_TMP" ]; then
 	mkdir -p "$DIR_TMP"
+  chmod 0750 "$DIR_TMP"
 fi
 
 if [ ! -d "$CENTMINLOGDIR" ]; then

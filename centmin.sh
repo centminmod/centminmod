@@ -56,10 +56,12 @@ if [ ! -d "$DIR_TMP" ]; then
             RAMDISKTMPFS='y'
             echo "setting up $DIR_TMP on tmpfs ramdisk for initial install"
             mkdir -p "$DIR_TMP"
+            chmod 0750 "$DIR_TMP"
             mount -t tmpfs -o size=2200M,mode=0755 tmpfs "$DIR_TMP"
             df -hT
         else
             mkdir -p "$DIR_TMP"
+            chmod 0750 "$DIR_TMP"
         fi
 fi
 
