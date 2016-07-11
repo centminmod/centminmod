@@ -189,7 +189,9 @@ source_wgetinstall() {
   fi
   cd "wget-${WGET_VERSION}"
   gccdevtools
-  make clean
+  if [ -f config.status ]; then
+    make clean
+  fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
