@@ -26,7 +26,8 @@ dbsetup() {
   DBNB=$RANDOM
   DBNC=$RANDOM
   DBND=$RANDOM
-  DB="wp${DBN}db_${DBND}"
+  DBNE=$RANDOM
+  DB="wp${DBNE}${DBN}db_${DBND}"
   DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
