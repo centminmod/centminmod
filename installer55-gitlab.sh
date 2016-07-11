@@ -165,7 +165,7 @@ source_wgetinstall() {
   if [ -s "$WGET_FILENAME" ]; then
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$WGET_LINK" --tries=3 
+    wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $WGET_FILENAME download failed." $boldgreen
