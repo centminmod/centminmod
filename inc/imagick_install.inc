@@ -161,6 +161,7 @@ IMAGICKSOCHECKB=$(grep 'extension=imagick.so' "${CONFIGSCANDIR}/imagick.ini" >/d
 if [[ "$IMAGICKSOCHECK" = '1' || "$IMAGICKSOCHECKB" = '1' ]]; then
     echo -e "\nCopying imagick.ini > ${CONFIGSCANDIR}/imagick.ini\n"
     echo "extension=imagick.so" > "${CONFIGSCANDIR}/imagick.ini"
+    echo ";imagick.skip_version_check=1" >> "${CONFIGSCANDIR}/imagick.ini"
 fi #check if imagick.so exists in php.ini
 
     cmservice php-fpm restart
