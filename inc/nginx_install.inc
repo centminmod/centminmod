@@ -295,7 +295,7 @@ fi
     mkdir -p /var/log/nginx
     touch /var/log/nginx/localhost.access.log
     touch /var/log/nginx/localhost.error.log
-    chmod -R 0666 /var/log/nginx/*
+    chmod -R 0660 /var/log/nginx/*
     cp -R $CUR_DIR/htdocs/default/* /usr/local/nginx/html
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /usr/local/nginx/html
     #rm -rf $CUR_DIR/htdocs
