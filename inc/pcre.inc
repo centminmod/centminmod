@@ -13,3 +13,15 @@ source_pcreinstall() {
     make install
   fi
 }
+
+pcredir_check() {
+  PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
+  if [[ ! -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    nginxpcretarball
+  elif [[ -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    # in case pcre tarball download is incomplete, redownload again
+    rm -rf "${DIR_TMP}/${PCRELINKFILE}"
+    nginxpcretarball
+  fi
+}
+

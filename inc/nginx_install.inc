@@ -173,7 +173,9 @@ then
         /sbin/ldconfig
     fi
 
-fi # GPERFTOOLS_SOURCE INSTALL 
+fi # GPERFTOOLS_SOURCE INSTALL
+
+pcredir_check
 
 installopenssl
 
