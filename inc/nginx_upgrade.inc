@@ -653,28 +653,40 @@ funct_nginxconfigure
             systemctl daemon-reload
         fi
 
-# cmservice nginx stop
-/usr/local/sbin/nginx -s stop >/dev/null 2>&1
+  GETNGXPID=$(cat /usr/local/nginx/logs/nginx.pid)
 
-    # speed up nginx wait time if not many vhosts are on server
-    if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
-        NGINXUPGRADESLEEP=4
-    fi
-
-# sleep "$NGINXUPGRADESLEEP"
-
-sleep 3
-NGINXPSCHECK=$(ps --no-heading -C nginx)
-
-if [ ! -z "$NGINXPSCHECK" ]; then
-echo ""
-echo "nginx seems to be still running, trying to stop it again..."
-echo ""
-# /etc/init.d/nginx stop and suppress any error messages
-/usr/local/sbin/nginx -s stop >/dev/null 2>&1
-sleep "$NGINXUPGRADESLEEP"
+if [[ "$NGINX_ZERODT" = [nN] ]]; then
+  # cmservice nginx stop
+  /usr/local/sbin/nginx -s stop >/dev/null 2>&1
+  
+      # speed up nginx wait time if not many vhosts are on server
+      if [[ "$(ls /usr/local/nginx/conf/conf.d/ | wc -l)" -le 5 ]]; then
+          NGINXUPGRADESLEEP=4
+      fi
+  
+  # sleep "$NGINXUPGRADESLEEP"
+  
+  sleep 3
+  NGINXPSCHECK=$(ps --no-heading -C nginx)
+  
+  if [ ! -z "$NGINXPSCHECK" ]; then
+  echo ""
+  echo "nginx seems to be still running, trying to stop it again..."
+  echo ""
+  # /etc/init.d/nginx stop and suppress any error messages
+  /usr/local/sbin/nginx -s stop >/dev/null 2>&1
+  sleep "$NGINXUPGRADESLEEP"
+  fi
+elif [[ "$NGINX_ZERODT" = [yY] ]]; then
+  echo "---------------------------------------------------------------------------"
+  echo "nginx master id: $GETNGXPID"
+  echo
+  echo "---------------------------------------------------------------------------"
+  curl -s localhost/nginx_status
+  echo "---------------------------------------------------------------------------"
+  ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+  echo "---------------------------------------------------------------------------"
 fi
-
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make Install"
     fi
@@ -750,7 +762,39 @@ fi
         fi
         # empty pagespeed cache
         clear_ps
-        /etc/init.d/nginx restart
+
+       if [[ "$NGINX_ZERODT" = [nN] ]]; then
+         /etc/init.d/nginx restart
+       elif [[ "$NGINX_ZERODT" = [yY] ]]; then
+         echo "---------------------------------------------------------------------------"
+         echo "nginx master id: $GETNGXPID"
+         echo "---------------------------------------------------------------------------"
+         curl -s localhost/nginx_status
+         echo "---------------------------------------------------------------------------"
+         echo "kill -USR2 $GETNGXPID"
+         kill -USR2 $GETNGXPID
+         sleep 3
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         echo
+         ls -lah /usr/local/sbin/nginx*
+         echo "---------------------------------------------------------------------------"
+         curl -s localhost/nginx_status
+         echo "---------------------------------------------------------------------------"
+         echo "kill -WINCH $GETNGXPID"
+         kill -WINCH $GETNGXPID
+         sleep 3
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         echo "---------------------------------------------------------------------------"
+         curl -s localhost/nginx_status
+         echo "---------------------------------------------------------------------------"
+         echo "kill -QUIT $GETNGXPID"
+         kill -QUIT $GETNGXPID
+         sleep 3
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         echo "---------------------------------------------------------------------------"
+         curl -s localhost/nginx_status
+         echo "---------------------------------------------------------------------------"
+       fi
 
         # cecho "Checking OpenSSL version used by Nginx..." $boldyellow
         # SSLIB=$(ldd `which nginx` | grep ssl | awk '{print $3}')
