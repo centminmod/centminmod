@@ -84,6 +84,8 @@ yumupdatechecker() {
 		fi
 		YEXCLUDE='nginx* php* mysql*'
 		YYUM_PARAMETER='--disableplugin=priorities'
+    echo
+    echo " checking for YUM updates... please wait..."
 		if [ -f /etc/yum.repos.d/remi.repo ]; then
 			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
 		else
@@ -112,6 +114,8 @@ yumupdatechecker() {
 				echo "  yum update $YYUM_PARAMETER"
 			fi
 			echo
+    else
+      echo " no YUM updates available"
 		fi
 	fi
 }
