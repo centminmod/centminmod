@@ -22,11 +22,12 @@ Fastest method of install and allows fully unattended installation. Just type th
 
 ## Centmin Mod installed via Git    
 
-Type as root user in SSH these commands, Centmin Mod will have it's install setup at /usr/local/src/centminmod
+Type as root user in SSH these commands, Centmin Mod will have it's install setup at /usr/local/src/centminmod. Replace `branchname=123.08stable` with `branchname=123.09beta01` if you want to install the beta version.
 
     yum -y install git wget nano bc unzip
     cd /usr/local/src
-    git clone https://github.com/centminmod/centminmod.git centminmod
+    branchname=123.08stable
+    git clone -b ${branchname} --depth=1 https://github.com/centminmod/centminmod.git centminmod
     cd centminmod
 
 Then to install either type
