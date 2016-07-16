@@ -80,7 +80,7 @@ EOF
     NF_CTMAX='1875008'
     NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
   elif [ "$TCPMEMTOTAL" -gt '268544000' ]; then
-    NF_CTMAX='1048576'
+    NF_CTMAX='1875008'
     NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
   fi
 
