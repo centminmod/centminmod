@@ -1,3 +1,10 @@
+nginx_mutexoff() {
+  # http://hg.nginx.org/nginx/rev/d82b3c344e7e
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -q 'accept_mutex on' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
+  fi
+}
+
 check_jemstatsfile() {
   if [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
     jemalloc_printstats
@@ -927,6 +934,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   centossix_crsetup
   wgetver_check
   check_jemstatsfile
+  nginx_mutexoff
 fi
 
 }
