@@ -708,15 +708,57 @@ ovhkernelcheck() {
 }
 
 tcpcheck_centos() {
+  # lnstat -c -1 -f nf_conntrack
+  TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+  # mem usage ~ NF_CTMAX x 288 bytes
+  # mem usage ~ NF_CTHASHSIZE x 8 bytes
+  if [ "$TCPMEMTOTAL" -le '770000' ]; then
+    NF_CTMAX='131072'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '770000' && "$TCPMEMTOTAL" -le '1049000' ]]; then
+    NF_CTMAX='262144'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '1049000' && "$TCPMEMTOTAL" -le '2098000' ]]; then
+    NF_CTMAX='524288'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '2098000' && "$TCPMEMTOTAL" -le '3147000' ]]; then
+    NF_CTMAX='524288'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '3147000' && "$TCPMEMTOTAL" -le '4196000' ]]; then
+    NF_CTMAX='524288'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '4196000' && "$TCPMEMTOTAL" -le '8392000' ]]; then
+    NF_CTMAX='524288'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '8392000' && "$TCPMEMTOTAL" -le '16784000' ]]; then
+    NF_CTMAX='1048576'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '16784000' && "$TCPMEMTOTAL" -le '33568000' ]]; then
+    NF_CTMAX='1048576'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '33568000' && "$TCPMEMTOTAL" -le '67136000' ]]; then
+    NF_CTMAX='1048576'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '67136000' && "$TCPMEMTOTAL" -le '134272000' ]]; then
+    NF_CTMAX='1875008'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '134272000' && "$TCPMEMTOTAL" -le '268544000' ]]; then
+    NF_CTMAX='1875008'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [ "$TCPMEMTOTAL" -gt '268544000' ]; then
+    NF_CTMAX='1048576'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  fi
+
 if [[ ! -f /proc/user_beancounters ]]; then
 		# create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
     if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
         if [ -d /etc/sysctl.d ]; then
           if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
             # raise hashsize for conntrack entries
-            echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
+            echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
             if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            	echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            	echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
             fi
           fi
             # centos 7
@@ -765,7 +807,7 @@ net.ipv4.conf.default.send_redirects = 0
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 net.netfilter.nf_conntrack_helper=0
-net.netfilter.nf_conntrack_max = 524288
+net.netfilter.nf_conntrack_max = $NF_CTMAX
 net.netfilter.nf_conntrack_tcp_timeout_established = 28800
 net.netfilter.nf_conntrack_generic_timeout = 60
 EOF
@@ -776,9 +818,9 @@ EOF
         # centos 6 check for missing new tcp settings backported to existing installs
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" = '0' ]]; then
             # raise hashsize for conntrack entries
-            echo 65536 > /sys/module/nf_conntrack/parameters/hashsize
+            echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
             if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            	echo "echo 65536 > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            	echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
           	fi
             if [[ "$(grep 'net.ipv4.tcp_slow_start_after_idle=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
 							echo "net.ipv4.tcp_slow_start_after_idle=0" >> /etc/sysctl.conf
