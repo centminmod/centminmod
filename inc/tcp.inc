@@ -148,10 +148,12 @@ EOF
     else
         # centos 6
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            # raise hashsize for conntrack entries
-            echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
-            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-                echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
+              # raise hashsize for conntrack entries
+              echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+              if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+                  echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+              fi
             fi
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added

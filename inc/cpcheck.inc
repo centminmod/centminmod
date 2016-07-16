@@ -817,11 +817,13 @@ EOF
 		else
         # centos 6 check for missing new tcp settings backported to existing installs
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" = '0' ]]; then
-            # raise hashsize for conntrack entries
-            echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
-            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            	echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
-          	fi
+            if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
+              # raise hashsize for conntrack entries
+              echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+              if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            	  echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+          	  fi
+            fi
             if [[ "$(grep 'net.ipv4.tcp_slow_start_after_idle=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
 							echo "net.ipv4.tcp_slow_start_after_idle=0" >> /etc/sysctl.conf
 						fi
