@@ -654,6 +654,7 @@ funct_nginxconfigure
         fi
 
   GETNGXPID=$(cat /usr/local/nginx/logs/nginx.pid)
+  GETNGXPPID=$(ps awx -o pid,ppid,command | grep 'nginx: master' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep | awk '{print $1}')
 
 if [[ "$NGINX_ZERODT" = [nN] ]]; then
   # cmservice nginx stop
@@ -684,7 +685,7 @@ elif [[ "$NGINX_ZERODT" = [yY] ]]; then
   echo "---------------------------------------------------------------------------"
   curl -s localhost/nginx_status
   echo "---------------------------------------------------------------------------"
-  ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+  ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
   echo "---------------------------------------------------------------------------"
 fi
     if [ -f "$(which figlet)" ]; then
@@ -774,7 +775,7 @@ fi
          echo "kill -USR2 $GETNGXPID"
          kill -USR2 $GETNGXPID
          sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
          echo
          ls -lah /usr/local/sbin/nginx*
          echo "---------------------------------------------------------------------------"
@@ -783,14 +784,20 @@ fi
          echo "kill -WINCH $GETNGXPID"
          kill -WINCH $GETNGXPID
          sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
          echo "---------------------------------------------------------------------------"
          curl -s localhost/nginx_status
+         echo "---------------------------------------------------------------------------"
+         echo " waiting for old nginx worker processes to exit..."
+         while [[ "$(ps awx -o ppid,command | grep 'nginx: worker' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep | awk '{print $1}' | uniq)" = "$GETNGXPPID" ]]; do
+           echo " checking... worker child PPID=$GETNGXPPID exists"
+           sleep 3
+         done
          echo "---------------------------------------------------------------------------"
          echo "kill -QUIT $GETNGXPID"
          kill -QUIT $GETNGXPID
          sleep 3
-         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx|PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
+         ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
          echo "---------------------------------------------------------------------------"
          curl -s localhost/nginx_status
          echo "---------------------------------------------------------------------------"
