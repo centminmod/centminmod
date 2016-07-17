@@ -11,6 +11,47 @@ check_jemstatsfile() {
   fi
 }
 
+gitenv_askupdate() {
+  DT=$(date +"%d%m%y-%H%M%S")
+  {
+    if [[ -d "${SCRIPT_DIR}/.git" ]]; then
+      # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
+      # centmin mod code locally using giturl.txt defined git repo name
+      if [[ "$(git ls-remote --get-url)" != "$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" ]]; then
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho " Centmin Mod remote branch has changed" $boldyellow
+        cecho " from $(git ls-remote --get-url)" $boldyellow
+        cecho " to $(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+        read -ep " Do you want to update the Centmin Mod Git repo url ? [y/n]: " updategitrepourl
+        if [[ "$updategitrepourl" = [yY] ]]; then
+          gitenv_setup
+          cecho "-------------------------------------------------------------" $boldgreen
+        fi
+    fi
+    if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
+        # if remote branch commits don't match local commit, then there are new updates need
+        # pulling
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho " Centmin Mod code updates available for /usr/local/src/centminmod" $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+        read -ep " Do you want to update your local Centmin Mod Git code ? [y/n]: " updategitcode
+        if [[ "$updategitcode" = [yY] ]]; then
+          gitenv_update
+          cecho "-------------------------------------------------------------" $boldgreen
+        fi
+      else
+        # no new commits/updates available
+        echo
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho " Centmin Mod local code is up to date at /usr/local/src/centminmod" $boldyellow
+        cecho " no available updates at this time..." $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+      fi
+    fi
+  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
+}
+
 wgetver_check() {
   if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
     if [ -f "${SCRIPT_DIR}/addons/wget.sh" ]; then
@@ -41,10 +82,10 @@ ngxver_checker() {
 		CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
 		if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
 			echo
-			echo "###############################################################"
+			cecho "-------------------------------------------------------------" $boldgreen
 			echo "* Current Nginx Version: $CURRENT_NGINXVERS"
 			echo "* Latest Nginx Available: $LASTEST_NGINXVERS"
-			echo "###############################################################"
+			cecho "-------------------------------------------------------------" $boldgreen
 			echo
 		fi
 	fi

@@ -127,33 +127,11 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
 fi
 }
 
-updatersubmenu() {
-	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-
-while :
-do
-	# clear
-        # display menu
-	echo
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "        Centmin Mod Updater Sub-Menu              " $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "1). Setup Centmin Mod Github Environment" $boldgreen
-	cecho "2). Update Centmin Mod Current Branch" $boldgreen
-	cecho "3). Update Centmin Mod Newer Branch" $boldgreen
-	cecho "4). Exit" $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
-
-	read -ep "Enter option [ 1 - 4 ] " upmoption
-	cecho "--------------------------------------------------------" $boldyellow
-
-#########################################################
-
-case "$upmoption" in
-1)
-UPDATE_MENU=1
-centminlog
-{
+gitenv_setup() {
+  # get Centmin Mod Git url remotely so to allow for Git repo renaming in future where
+  # user can just use centmin.sh menu option 23 submenus to switch to a newly renamed
+  # Git repo name if needed
+	REMOTE_CMGIT=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 	echo
 	cecho "setup Centmin Mod git sourced install..." $boldyellow
 	cd /usr/local/src
@@ -168,7 +146,7 @@ centminlog
 	
 	echo  
 	cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-	time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
+	time git clone -b ${branchname} --depth=5 ${REMOTE_CMGIT} centminmod
 	cd centminmod
 	chmod +x centmin.sh
 	
@@ -198,19 +176,17 @@ centminlog
 	cecho " before invoking centmin.sh again" $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	echo
-	# re_sourcefiles
-	# break
-	break 2
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log
+}
 
-;;
-2)
-UPDATE_MENU=2
-centminlog
-{
+gitenv_update() {
+	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
+	REMOTE_CMGIT=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "Updating Current Centmin Mod code branch via git" $boldyellow
+	git fetch
+	# check if there's any new remote commits first
+	if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
 	cecho "	cd /usr/local/src/centminmod" $boldgreen
 	cecho "	git stash" $boldgreen
 	cecho "	git pull" $boldgreen
@@ -280,6 +256,12 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	# re_sourcefiles
 	# break
+	else
+		# no new commits/updates available
+		echo
+		cecho " Centmin Mod local code up to date at /usr/local/src/centminmod" $boldyellow
+		cecho " no available updates at this time..." $boldyellow
+	fi
 	break 2
 else
 	echo
@@ -287,12 +269,11 @@ else
 	echo "       run submenu option 1 to setup github environment first"
 	break
 fi
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
-;;
-3)
-UPDATE_MENU=3
-centminlog
-{
+}
+
+gitenv_change() {
+	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
+	REMOTE_CMGIT=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	echo "fetching latest branch list..."
@@ -339,7 +320,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	
 		echo  
 		cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-		time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
+		time git clone -b ${branchname} --depth=5 ${REMOTE_CMGIT} centminmod
 		cd centminmod 2>/dev/null
 
 		if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then
@@ -427,6 +408,54 @@ else
 	echo "       run submenu option 1 to setup github environment first"
 	exit
 fi
+}
+
+updatersubmenu() {
+	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
+
+while :
+do
+	# clear
+        # display menu
+	echo
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "        Centmin Mod Updater Sub-Menu              " $boldgreen
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "1). Setup Centmin Mod Github Environment" $boldgreen
+	cecho "2). Update Centmin Mod Current Branch" $boldgreen
+	cecho "3). Update Centmin Mod Newer Branch" $boldgreen
+	cecho "4). Exit" $boldgreen
+	cecho "--------------------------------------------------------" $boldyellow
+
+	read -ep "Enter option [ 1 - 4 ] " upmoption
+	cecho "--------------------------------------------------------" $boldyellow
+
+#########################################################
+
+case "$upmoption" in
+1)
+UPDATE_MENU=1
+centminlog
+{
+	gitenv_setup
+	# re_sourcefiles
+	# break
+	break 2
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log
+
+;;
+2)
+UPDATE_MENU=2
+centminlog
+{
+  gitenv_update
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
+;;
+3)
+UPDATE_MENU=3
+centminlog
+{
+  gitenv_change
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatenew_branch.log
 ;;
 4)

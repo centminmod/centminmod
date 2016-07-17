@@ -18,7 +18,8 @@ cat <<EOF
 ###############################################################
 EOF
 
-	yumupdatechecker
-	ngxver_checker
+  yumupdatechecker
+  ngxver_checker
+  gitenv_askupdate
 
 }
