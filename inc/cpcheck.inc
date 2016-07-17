@@ -17,10 +17,10 @@ gitenv_askupdate() {
     if [[ -d "${SCRIPT_DIR}/.git" ]]; then
       # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
       # centmin mod code locally using giturl.txt defined git repo name
-      if [[ "$(git ls-remote --get-url)" != "$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" ]]; then
+      if [[ "$(cd /usr/local/src/centminmod; git ls-remote --get-url)" != "$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" ]]; then
         cecho "-------------------------------------------------------------" $boldgreen
         cecho " Centmin Mod remote branch has changed" $boldyellow
-        cecho " from $(git ls-remote --get-url)" $boldyellow
+        cecho " from $(cd /usr/local/src/centminmod; git ls-remote --get-url)" $boldyellow
         cecho " to $(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" $boldyellow
         cecho "-------------------------------------------------------------" $boldgreen
         read -ep " Do you want to update the Centmin Mod Git repo url ? [y/n]: " updategitrepourl
