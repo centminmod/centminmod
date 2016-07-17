@@ -17,11 +17,19 @@ gitenv_askupdate() {
     if [[ -d "${SCRIPT_DIR}/.git" ]]; then
       # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
       # centmin mod code locally using giturl.txt defined git repo name
-      if [[ "$(cd /usr/local/src/centminmod; git ls-remote --get-url)" != "$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" ]]; then
+      GET_GITVER=$(git --version | awk '{print $3}' | sed -e 's|\.||g' | cut -c1,2)
+      CURL_GITURL=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+      # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
+      if [[ "$GET_GITVER" -ge '18' ]]; then
+        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod; git ls-remote --get-url)
+      else
+        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
+      fi
+      if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
         cecho "-------------------------------------------------------------" $boldgreen
         cecho " Centmin Mod remote branch has changed" $boldyellow
-        cecho " from $(cd /usr/local/src/centminmod; git ls-remote --get-url)" $boldyellow
-        cecho " to $(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)" $boldyellow
+        cecho " from $GET_GITREMOTEURL" $boldyellow
+        cecho " to $CURL_GITURL" $boldyellow
         cecho "-------------------------------------------------------------" $boldgreen
         read -ep " Do you want to update the Centmin Mod Git repo url ? [y/n]: " updategitrepourl
         if [[ "$updategitrepourl" = [yY] ]]; then
