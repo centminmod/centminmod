@@ -712,11 +712,14 @@ tcpcheck_centos() {
   TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
   # mem usage ~ NF_CTMAX x 288 bytes
   # mem usage ~ NF_CTHASHSIZE x 8 bytes
-  if [ "$TCPMEMTOTAL" -le '770000' ]; then
-    NF_CTMAX='131072'
+  if [ "$TCPMEMTOTAL" -le '385000' ]; then
+    NF_CTMAX='16384'
+    NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
+  elif [[ "$TCPMEMTOTAL" -gt '385000' && "$TCPMEMTOTAL" -le '770000' ]]; then
+    NF_CTMAX='65536'
     NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
   elif [[ "$TCPMEMTOTAL" -gt '770000' && "$TCPMEMTOTAL" -le '1049000' ]]; then
-    NF_CTMAX='262144'
+    NF_CTMAX='131072'
     NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
   elif [[ "$TCPMEMTOTAL" -gt '1049000' && "$TCPMEMTOTAL" -le '2098000' ]]; then
     NF_CTMAX='524288'
