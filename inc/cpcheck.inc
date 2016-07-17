@@ -42,7 +42,6 @@ gitenv_askupdate() {
         fi
       else
         # no new commits/updates available
-        echo
         cecho "-------------------------------------------------------------" $boldgreen
         cecho " Centmin Mod local code is up to date at /usr/local/src/centminmod" $boldyellow
         cecho " no available updates at this time..." $boldyellow
