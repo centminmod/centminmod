@@ -50,7 +50,22 @@ for domain in $(ls $TOPLEVEL_DIR); do
           # 
           # if [[ "$(curl -sI ${URL_WEB}/ | grep 'HTTP\/' | egrep -o '403|404' >/dev/null 2>&1; echo $?)" != '0' ]]; then
             PROTECTDIR_PATH=$(echo "$PROTECTDIR" |sed -e "s|\/home\/nginx\/domains\/${domain}\/public||")
-            echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { deny all; }"
+            if [[ "$(echo $PROTECTDIR_PATH | grep 'akismet' )" ]]; then
+              # proper akismet secure lock down
+echo -e "# $PROTECTDIR\n
+location ~ ^$PROTECTDIR_PATH/ {
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(form|akismet)\.(css|js)\$ { allow all; }
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(png|gif)\$ { allow all; }
+  location ~* $PROTECTDIR_PATH/.*\.php\$ {
+    include /usr/local/nginx/conf/php.conf;
+    allow 127.0.0.1;
+    deny all;
+  }
+}
+"
+            else
+              echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { deny all; }"
+            fi
           # fi
         fi
       fi

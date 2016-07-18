@@ -1073,7 +1073,13 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/si-contact-form/ {
 
 # Whitelist Exception for https://wordpress.org/plugins/akismet/
 location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/ {
-  include /usr/local/nginx/conf/php.conf;
+  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(form|akismet)\.(css|js)\$ { allow all; }
+  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(.+)\.(png|gif)\$ { allow all; }
+  location ~* ${WPSUBDIR}/wp-content/plugins/akismet/akismet/.*\.php\$ {
+    include /usr/local/nginx/conf/php.conf;
+    allow 127.0.0.1;
+    deny all;
+  }
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/bbpress/
