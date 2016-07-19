@@ -10,8 +10,13 @@ fixphpfpm_httpproxy() {
       #sed -e 's|fastcgi_param  HTTPS              $https if_not_empty;|fastcgi_param  HTTPS              $https if_not_empty;\nfastcgi_param  HTTP_PROXY         "";|' $pif | grep HTTP_PROXY
       sed -i 's|fastcgi_param  HTTPS              $https if_not_empty;|fastcgi_param  HTTPS              $https if_not_empty;\nfastcgi_param  HTTP_PROXY         "";|' $pif
       grep 'HTTP_PROXY' $pif
+      echo "y" > /tmp/phprestart-check
     fi
   done
+    if [ -f /tmp/phprestart-check ]; then
+      rm -rf /tmp/phprestart-check
+      /etc/init.d/php-fpm restart
+    fi
   fi
 }
 
