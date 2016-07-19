@@ -458,6 +458,9 @@ CUSTOM_CURLLIBSSHVER='1.6.0-3.0'     # libssh2 version
 CUSTOM_CURLRPMCARESVER='1.10.0-5.0'  # c-ares version
 CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
+
+# wget source compile version
+WGET_VERSION='1.18'
 ###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
 # the details of the self-signed SSL certificate that is auto 
