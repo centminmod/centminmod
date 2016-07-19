@@ -1,3 +1,20 @@
+fixphpfpm_httpproxy() {
+  # CVE-2016-5385
+  # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
+  if [ -d /usr/local/nginx/conf ]; then
+  for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" | grep php); do
+    if [[ "$(grep 'fastcgi_param  HTTPS' $pif)" && ! "$(grep 'HTTP_PROXY' $pif)" ]]; then
+      echo "updating php-fpm config files to block Proxy header / HTTP_PROXY"
+      echo $pif
+      #sed -i '/HTTP_PROXY/d' $pif
+      #sed -e 's|fastcgi_param  HTTPS              $https if_not_empty;|fastcgi_param  HTTPS              $https if_not_empty;\nfastcgi_param  HTTP_PROXY         "";|' $pif | grep HTTP_PROXY
+      sed -i 's|fastcgi_param  HTTPS              $https if_not_empty;|fastcgi_param  HTTPS              $https if_not_empty;\nfastcgi_param  HTTP_PROXY         "";|' $pif
+      grep 'HTTP_PROXY' $pif
+    fi
+  done
+  fi
+}
+
 nginx_mutexoff() {
   # http://hg.nginx.org/nginx/rev/d82b3c344e7e
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -q 'accept_mutex on' /usr/local/nginx/conf/nginx.conf)" ]]; then
@@ -1030,6 +1047,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   wgetver_check
   check_jemstatsfile
   nginx_mutexoff
+  fixphpfpm_httpproxy
 fi
 
 }
