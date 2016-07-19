@@ -93,6 +93,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 		if [[ "$ENABLE_MARIADBTENUPGRADE" = [nN] ]]; then
 			echo "Place holder for now until MariaDB 10.x is ready to be added"
 		else
+			c7tmpsetup
 			mariadbtenpgrade
 		fi
 	fi
@@ -135,6 +136,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 			echo "Place holder for now until MariaDB 10.1.x is ready to be added"
 		else
 			# echo "Place holder for now until MariaDB 10.1.x is ready to be added"
+			c7tmpsetup
 			mariadbtentotenoneupgrade
 		fi
 	fi

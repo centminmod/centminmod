@@ -1,3 +1,17 @@
+c7mariadb_tmpdir() {
+  # fix for mariadb 10.1.16 introduced ProtecHome=true setting
+  # https://jira.mariadb.org/browse/MDEV-10399
+  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf ]]; then
+    echo "Update MariaDB 10 setting for ProtectHome=false"
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectHome=false
+TDF
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
 fixphpfpm_includes() {
   # in line with https://www.nginx.com/resources/wiki/start/topics/examples/phpfcgi/
   if [ -d /usr/local/nginx/conf ]; then
@@ -1044,6 +1058,7 @@ pathfixes
 apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+  c7mariadb_tmpdir
   yumfastmirror_check
   axelcheck
   fileperm_fixes
