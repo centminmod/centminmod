@@ -45,7 +45,7 @@ fixphpfpm_httpproxy() {
   if [ -d /usr/local/nginx/conf ]; then
   {
   DT=$(date +"%d%m%y-%H%M%S")
-  for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" | grep php); do
+  for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" -o -name "fastcgi_params" | grep php); do
     if [[ "$(grep 'fastcgi_param  HTTPS' $pif)" && ! "$(grep 'HTTP_PROXY' $pif)" ]]; then
       echo "updating php-fpm config files to block Proxy header / HTTP_PROXY"
       echo $pif
