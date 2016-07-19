@@ -1,3 +1,20 @@
+fixphpfpm_httpproxy() {
+  # CVE-2016-5385
+  # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
+  if [ -d /usr/local/nginx/conf ]; then
+  for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" | grep php); do
+    if [[ "$(grep 'fastcgi_param  HTTPS' $pif)" && ! "$(grep 'HTTP_PROXY' $pif)" ]]; then
+      echo "updating php-fpm config files to block Proxy header / HTTP_PROXY"
+      echo $pif
+      #sed -i '/HTTP_PROXY/d' $pif
+      #sed -e 's|fastcgi_param  HTTPS              $https if_not_empty;|fastcgi_param  HTTPS              $https if_not_empty;\nfastcgi_param  HTTP_PROXY         "";|' $pif | grep HTTP_PROXY
+      sed -i 's|fastcgi_param  HTTPS              $https if_not_empty;|fastcgi_param  HTTPS              $https if_not_empty;\nfastcgi_param  HTTP_PROXY         "";|' $pif
+      grep 'HTTP_PROXY' $pif
+    fi
+  done
+  fi
+}
+
 wgetver_check() {
   if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
     if [ -f "${SCRIPT_DIR}/addons/wget.sh" ]; then
@@ -295,6 +312,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	axivo_remove
 	imagick_fixes
   wgetver_check
+  fixphpfpm_httpproxy
 fi
 
 }
