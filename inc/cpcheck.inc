@@ -1,3 +1,30 @@
+fixphpfpm_includes() {
+  # in line with https://www.nginx.com/resources/wiki/start/topics/examples/phpfcgi/
+  if [ -d /usr/local/nginx/conf ]; then
+  {
+  DT=$(date +"%d%m%y-%H%M%S")
+  for pifinc in $(find /usr/local/nginx/conf -type f -name "*.conf" | grep php); do
+    if [[ "$(grep 'shave 200+ ms' $pifinc)" && "$(grep 'try_files' $pifinc)" ]]; then
+      echo "updating php-fpm config files syntax"
+      echo $pifinc
+      sed -i 's|location ~ \\.php$ {|location ~ [^\/]\\.php(\/\|$) {|' $pifinc
+      sed -i 's|fastcgi_split_path_info ^(.+\\.php)(/.+)$;|fastcgi_split_path_info ^(.+\?\\.php)(/.*)$;|' $pifinc
+      sed -i 's|    *fastcgi_param  SCRIPT_FILENAME    $request_filename;|    #fastcgi_param  SCRIPT_FILENAME    $request_filename;|' $pifinc
+      sed -i 's|    *#fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;|    fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;|' $pifinc
+      sed -i 's|try_files $uri =404;|if (!-f $document_root$fastcgi_script_name) { return 404; }|' $pifinc
+      egrep 'location|fastcgi_split_path_info|fastcgi_param  SCRIPT_FILENAME|404' $pifinc
+      echo "y" > /tmp/phpinc-restart-check
+    fi
+  done
+    if [ -f /tmp/phpinc-restart-check ]; then
+      rm -rf /tmp/phpinc-restart-check
+      /etc/init.d/nginx restart
+      /etc/init.d/php-fpm restart
+    fi
+  } 2>&1 | tee "${CENTMINLOGDIR}/fixphpfpm_includes_${DT}.log"
+  fi
+}
+
 fixphpfpm_httpproxy() {
   # CVE-2016-5385
   # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
@@ -321,6 +348,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
 	axivo_remove
 	imagick_fixes
   wgetver_check
+  fixphpfpm_includes
   fixphpfpm_httpproxy
 fi
 
