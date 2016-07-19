@@ -2,6 +2,8 @@ fixphpfpm_httpproxy() {
   # CVE-2016-5385
   # https://www.nginx.com/blog/mitigating-the-httpoxy-vulnerability-with-nginx/
   if [ -d /usr/local/nginx/conf ]; then
+  {
+  DT=$(date +"%d%m%y-%H%M%S")
   for pif in $(find /usr/local/nginx/conf -type f -name "*.conf" | grep php); do
     if [[ "$(grep 'fastcgi_param  HTTPS' $pif)" && ! "$(grep 'HTTP_PROXY' $pif)" ]]; then
       echo "updating php-fpm config files to block Proxy header / HTTP_PROXY"
@@ -15,8 +17,10 @@ fixphpfpm_httpproxy() {
   done
     if [ -f /tmp/phprestart-check ]; then
       rm -rf /tmp/phprestart-check
+      /etc/init.d/nginx restart
       /etc/init.d/php-fpm restart
     fi
+  } 2>&1 | tee "${CENTMINLOGDIR}/fixphpfpm_httpproxy_${DT}.log"
   fi
 }
 
