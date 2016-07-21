@@ -118,20 +118,20 @@ else
 	SNMPOPT=""
 fi
 
-if [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -lt '1023000' ]]; then
-  FILEINFOOPT=" --disable-fileinfo"
-else
-  FILEINFOOPT=""
-fi
-
 # let centmin.sh set PHPFINFO variable override the
 # low memory CHECKLOWMEMPHP variable check
-if [[ "$PHPFINFO" = 'n' ]]; then
-  FILEINFOOPT=" --disable-fileinfo"
-elif [[ "$TOTALSWAPMEM" -lt '1023000' ]]; then
-  FILEINFOOPT=" --disable-fileinfo"
-else
+if [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -ge '1023000' ]]; then
+  # PHPFINFO yes + low mem install + swap space enough = enable file info php extension
   FILEINFOOPT=""
+elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" != "1" ]]; then
+  # PHPFINFO yes + enough mem install = enable file info php extension
+  FILEINFOOPT=""
+elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -lt '1023000' ]]; then
+  # PHPFINFO yes + low mem install + low swap space = disable file info php extension
+  FILEINFOOPT=" --disable-fileinfo"
+elif [[ "$PHPFINFO" = [nN] ]]; then
+  # PHPFINFO no
+  FILEINFOOPT=" --disable-fileinfo"
 fi
 
 if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
