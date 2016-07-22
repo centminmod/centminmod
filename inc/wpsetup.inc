@@ -1366,12 +1366,12 @@ if [[ "$cacheenabler" != [yY] && "$wpscache" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   # wp plugin install wp-widget-cache --activate --allow-root
   # cecho "------------------------------------------------------------" $boldgreen
-elif [[ "$wpscache" != [yY] ]]; then
-  cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-super-cache --allow-root
-  cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-super-cache-clear-cache-menu --allow-root
-  cecho "------------------------------------------------------------" $boldgreen
+# elif [[ "$wpscache" != [yY] ]]; then
+#   cecho "------------------------------------------------------------" $boldgreen
+#   wp plugin install wp-super-cache --allow-root
+#   cecho "------------------------------------------------------------" $boldgreen
+#   wp plugin install wp-super-cache-clear-cache-menu --allow-root
+#   cecho "------------------------------------------------------------" $boldgreen
   # wp plugin install wp-widget-cache --allow-root
   # cecho "------------------------------------------------------------" $boldgreen
 fi
