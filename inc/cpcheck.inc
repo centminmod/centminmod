@@ -21,7 +21,7 @@ fixphpfpm_includes() {
       /etc/init.d/nginx restart
       /etc/init.d/php-fpm restart
     fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/fixphpfpm_includes_${DT}.log"
+  } 2>&1 | tee "/root/centminlogs/fixphpfpm_includes_${DT}.log"
   fi
 }
 
@@ -47,7 +47,7 @@ fixphpfpm_httpproxy() {
       /etc/init.d/nginx restart
       /etc/init.d/php-fpm restart
     fi
-  } 2>&1 | tee "${CENTMINLOGDIR}/fixphpfpm_httpproxy_${DT}.log"
+  } 2>&1 | tee "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
   fi
 }
 
