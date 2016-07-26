@@ -1531,6 +1531,42 @@ else
 
 fi
 
+if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
+	NGINX_GEOIP='y'
+  NGX_STREAMGEOIPCHECK=$(grep 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
+  if [[ ! -d /usr/share/GeoIP ]]; then
+    geoipinstall
+  fi
+  if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAMGEOIP" = [yY] ]] && [ "$NGX_STREAMGEOIPCHECK" ]; then
+  	NGXDYNAMIC_GEOIP='y'
+    STREAMGEOIPOPT=' --with-stream_geoip_module=dynamic'
+    if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+      echo "load_module \"modules/ngx_stream_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
+    fi
+  elif [ "$NGX_STREAMGEOIPCHECK" ]; then
+    STREAMGEOIPOPT=' --with-stream_geoip_module'
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
+    fi
+  else
+    STREAMGEOIPOPT=''
+  fi
+else
+  STREAMGEOIPOPT=''
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
+    fi
+fi
+
 if [[ "$NGINX_GEOIP" = [yY] ]]; then
 	if [[ ! -d /usr/share/GeoIP ]]; then
 		geoipinstall
@@ -1566,40 +1602,6 @@ else
 		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
 			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
 		fi
-fi
-
-if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
-  NGX_STREAMGEOIPCHECK=$(grep 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
-  if [[ ! -d /usr/share/GeoIP ]]; then
-    geoipinstall
-  fi
-  if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAMGEOIP" = [yY] ]] && [ "$NGX_STREAMGEOIPCHECK" ]; then
-    STREAMGEOIPOPT=' --with-stream_geoip_module=dynamic'
-    if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-      echo "load_module \"modules/ngx_stream_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-    fi
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
-    fi
-  elif [ "$NGX_STREAMGEOIPCHECK" ]; then
-    STREAMGEOIPOPT=' --with-stream_geoip_module'
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
-    fi
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
-    fi
-  else
-    STREAMGEOIPOPT=''
-  fi
-else
-  STREAMGEOIPOPT=''
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
-    fi
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
-    fi
 fi
 
 if [[ "$NGINX_PASSENGER" = [yY] && "$RUBY_VERSION" ]]; then
