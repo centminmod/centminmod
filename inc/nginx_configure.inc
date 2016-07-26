@@ -1569,7 +1569,7 @@ else
 fi
 
 if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
-	NGX_STREAMGEOIPCHECK=$(grep -q 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
+  NGX_STREAMGEOIPCHECK=$(grep 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
   if [[ ! -d /usr/share/GeoIP ]]; then
     geoipinstall
   fi
