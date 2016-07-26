@@ -1531,79 +1531,6 @@ else
 
 fi
 
-if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
-	NGINX_GEOIP='y'
-  NGX_STREAMGEOIPCHECK=$(grep 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
-  if [[ ! -d /usr/share/GeoIP ]]; then
-    geoipinstall
-  fi
-  if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAMGEOIP" = [yY] ]] && [ "$NGX_STREAMGEOIPCHECK" ]; then
-  	NGXDYNAMIC_GEOIP='y'
-    STREAMGEOIPOPT=' --with-stream_geoip_module=dynamic'
-    if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-      echo "load_module \"modules/ngx_stream_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-    fi
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
-    fi
-  elif [ "$NGX_STREAMGEOIPCHECK" ]; then
-    STREAMGEOIPOPT=' --with-stream_geoip_module'
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
-    fi
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
-    fi
-  else
-    STREAMGEOIPOPT=''
-  fi
-else
-  STREAMGEOIPOPT=''
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
-    fi
-    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
-      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
-    fi
-fi
-
-if [[ "$NGINX_GEOIP" = [yY] ]]; then
-	if [[ ! -d /usr/share/GeoIP ]]; then
-		geoipinstall
-	fi
-	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_GEOIP" = [yY] ]]; then
-		GEOIPOPT=' --with-http_geoip_module=dynamic'
-		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-			echo "load_module \"modules/ngx_http_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
-		fi
-	else
-		GEOIPOPT=' --with-http_geoip_module'
-		# if NGXDYNAMIC_GEOIP='y' was previously set with nginx 1.9.11+, then the nginx
-		# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
-		# created
-		# however, it seems if you then later recompile nginx with NGXDYNAMIC_GEOIP='y'
-		# the old dynamic module would still be left in nginx dynamic modules directory
-		# this is a check for that old dynamic module and if it exists, remove it
-		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
-		fi
-	fi
-else
-	GEOIPOPT=''
-		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
-		fi
-fi
-
 if [[ "$NGINX_PASSENGER" = [yY] && "$RUBY_VERSION" ]]; then
 	export PATH=/usr/local/rvm/gems/${RUBY_VERSION}/bin:/usr/local/rvm/rubies/${RUBY_VERSION}/bin:$PATH
 	PASSENGERS_PATH=$(/bin/find /usr/local/rvm/gems -name 'passenger-config' | grep bin | tail -1)
@@ -1807,6 +1734,79 @@ else
 	if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
 		sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
 	fi	
+fi
+
+if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
+	NGINX_GEOIP='y'
+  NGX_STREAMGEOIPCHECK=$(grep 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
+  if [[ ! -d /usr/share/GeoIP ]]; then
+    geoipinstall
+  fi
+  if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAMGEOIP" = [yY] ]] && [ "$NGX_STREAMGEOIPCHECK" ]; then
+  	NGXDYNAMIC_GEOIP='y'
+    STREAMGEOIPOPT=' --with-stream_geoip_module=dynamic'
+    if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+      echo "load_module \"modules/ngx_stream_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
+    fi
+  elif [ "$NGX_STREAMGEOIPCHECK" ]; then
+    STREAMGEOIPOPT=' --with-stream_geoip_module'
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
+    fi
+  else
+    STREAMGEOIPOPT=''
+  fi
+else
+  STREAMGEOIPOPT=''
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
+    fi
+fi
+
+if [[ "$NGINX_GEOIP" = [yY] ]]; then
+	if [[ ! -d /usr/share/GeoIP ]]; then
+		geoipinstall
+	fi
+	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_GEOIP" = [yY] ]]; then
+		GEOIPOPT=' --with-http_geoip_module=dynamic'
+		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+			echo "load_module \"modules/ngx_http_geoip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
+		fi
+	else
+		GEOIPOPT=' --with-http_geoip_module'
+		# if NGXDYNAMIC_GEOIP='y' was previously set with nginx 1.9.11+, then the nginx
+		# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+		# created
+		# however, it seems if you then later recompile nginx with NGXDYNAMIC_GEOIP='y'
+		# the old dynamic module would still be left in nginx dynamic modules directory
+		# this is a check for that old dynamic module and if it exists, remove it
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
+		fi
+	fi
+else
+	GEOIPOPT=''
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_geoip_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_geoip_module.so.old
+		fi
 fi
 
 if [[ "$NGINX_THREADS" = [yY] ]]; then
