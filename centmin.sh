@@ -345,7 +345,7 @@ NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
 NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
 NGINX_STREAM='y'             # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
-NGINX_STREAMGEOIP='n'             # nginx 1.11.3+ option http://hg.nginx.org/nginx/rev/558db057adaa
+NGINX_STREAMGEOIP='y'        # nginx 1.11.3+ option http://hg.nginx.org/nginx/rev/558db057adaa
 NGINX_RTMP='n'               # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
 NGINX_FLV='n'                # http://nginx.org/en/docs/http/ngx_http_flv_module.html
 NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
@@ -383,7 +383,7 @@ ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.59'     # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.59'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.13'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
@@ -460,7 +460,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.11.2'       # Use this version of Nginx
+NGINX_VERSION='1.11.3'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'

@@ -40,7 +40,7 @@ PHP_UPDATEMAINTENANCE='n'
 MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.11.2'       # Use this version of Nginx
+NGINX_VERSION='1.11.3'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
@@ -74,6 +74,7 @@ NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
 NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
 NGINX_STREAM='y'             # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
+NGINX_STREAMGEOIP='y'        # nginx 1.11.3+ option http://hg.nginx.org/nginx/rev/558db057adaa
 NGINX_RTMP='n'               # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
 NGINX_FLV='n'                # http://nginx.org/en/docs/http/ngx_http_flv_module.html
 NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
@@ -107,11 +108,11 @@ NGINX_UPSTREAMCHECKVER='0.3.0'
 NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.17'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.31'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
-ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
+ORESTY_DEVELKITVER='0.3.0'   # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.59'     # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.59'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.13'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
