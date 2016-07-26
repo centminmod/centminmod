@@ -1589,6 +1589,8 @@ if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
     if [ -f /usr/local/nginx/modules/ngx_stream_geoip_module.so.old ]; then
       rm -rf /usr/local/nginx/modules/ngx_stream_geoip_module.so.old
     fi
+  else
+    STREAMGEOIPOPT=''
   fi
 else
   STREAMGEOIPOPT=''
