@@ -176,7 +176,7 @@ else
   sed -i 's|^include \/usr\/local\/nginx\/conf\/gperftools.conf|#include \/usr\/local\/nginx\/conf\/gperftools.conf|g' /usr/local/nginx/conf/nginx.conf
 fi
 
-if [[ "$NGINX_ZLIBNG" = [yY] && "$(uname -r)" = 'x86_64' ]]; then
+if [[ "$NGINX_ZLIBNG" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
 	zlibng_install
 	ZLIBNG_OPT=' --with-zlib=../zlib-ng'
 else
