@@ -8,9 +8,9 @@ zlibng_install() {
       rm -rf zlib-ng
     fi
     git clone https://github.com/Dead2/zlib-ng
-    # cd zlib-ng
-    # ./configure
-    # make${MAKETHREADS}
+    cd zlib-ng
+    ./configure --zlib-compat
+    #make${MAKETHREADS}
     # make install
     popd
     echo
