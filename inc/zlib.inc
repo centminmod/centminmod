@@ -3,7 +3,7 @@ zlibng_install() {
     echo
     echo "install zlib-ng..."
     echo
-    cd "$DIR_TMP"
+    pushd "$DIR_TMP"
     if [ -d zlib-ng ]; then
       rm -rf zlib-ng
     fi
@@ -12,6 +12,7 @@ zlibng_install() {
     ./configure
     make${MAKETHREADS}
     make install
+    popd
     echo
     echo "zlib-ng installed"
     echo
