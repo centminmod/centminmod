@@ -8,10 +8,10 @@ zlibng_install() {
       rm -rf zlib-ng
     fi
     git clone https://github.com/Dead2/zlib-ng
-    cd zlib-ng
-    ./configure
-    make${MAKETHREADS}
-    make install
+    # cd zlib-ng
+    # ./configure
+    # make${MAKETHREADS}
+    # make install
     popd
     echo
     echo "zlib-ng installed"
