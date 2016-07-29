@@ -63,6 +63,13 @@ location ~ ^$PROTECTDIR_PATH/ {
   }
 }
 "
+            elif [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection|Content-Disposition attachment' | grep 'Header set')" ]]; then
+echo -e "# https://community.centminmod.com/posts/33989/\n# $PROTECTDIR\n
+location ~ ^$PROTECTDIR_PATH/ {
+  location ~ ^$PROTECTDIR_PATH/(.*)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { deny all; }
+  location ~ ^$PROTECTDIR_PATH/(.*)\.(ipb)\$ { add_header 'Content-Disposition' "attachment"; }
+}
+"
             else
               echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { deny all; }"
             fi
