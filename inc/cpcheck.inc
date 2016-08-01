@@ -280,6 +280,7 @@ pureftpdupdates() {
       echo "disable pure-ftpd annonymous logins"
       echo
     fi
+  fi
 }
 
 leupdates() {
