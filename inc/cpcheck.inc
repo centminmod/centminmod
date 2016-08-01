@@ -267,6 +267,21 @@ END
 	fi
 }
 
+pureftpdupdates() {
+  if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
+    # disable anonymous logins by default
+    CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
+    if [ "$CHECKPFTPD_ANON" ]; then
+      sed -i 's|NoAnonymous                 no|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
+      if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+        service pure-ftpd restart
+      fi
+      echo
+      echo "disable pure-ftpd annonymous logins"
+      echo
+    fi
+}
+
 leupdates() {
 	# update .well-known content-type
 	if [ -f /usr/local/nginx/conf/staticfiles.conf ]; then
@@ -332,21 +347,22 @@ exit
 fi
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-	selinxcheck
-	centaltoff
-	csfipsetcheck
-	checkaliases
-	checkcmdircmd
-	nvcheck
-	multiphpcheck
-	mjemalloc
-	blockeditorcheck
-	rpcnfsports
-	fixlogrotate
-	leupdates
-	memcachedupdatechecks
-	axivo_remove
-	imagick_fixes
+  selinxcheck
+  centaltoff
+  csfipsetcheck
+  checkaliases
+  checkcmdircmd
+  nvcheck
+  multiphpcheck
+  mjemalloc
+  blockeditorcheck
+  rpcnfsports
+  fixlogrotate
+  pureftpdupdates
+  leupdates
+  memcachedupdatechecks
+  axivo_remove
+  imagick_fixes
   wgetver_check
   fixphpfpm_includes
   fixphpfpm_httpproxy
