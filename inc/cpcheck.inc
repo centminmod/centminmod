@@ -570,9 +570,20 @@ fi
 }
 
 pureftpdupdates() {
-	# auto updates
-	# raise max number of concurrent ftp connections from 50/2 to 20010/2
 	if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
+    # disable anonymous logins by default
+    CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
+    if [ "$CHECKPFTPD_ANON" ]; then
+      sed -i 's|NoAnonymous                 no|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
+      if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+        service pure-ftpd restart
+      fi
+      echo
+      echo "disable pure-ftpd annonymous logins"
+      echo
+    fi
+    # auto updates
+    # raise max number of concurrent ftp connections from 50/2 to 20010/2
 		CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
 		if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
 			sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
