@@ -61,13 +61,13 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
 fi
 
@@ -79,7 +79,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 fi
 
 if [ -f /proc/user_beancounters ]; then
-    cecho "OpenVZ system detected, NTP not installed" $boldgreen
+    echo "OpenVZ system detected, NTP not installed"
 else
   if [ ! -f /usr/sbin/ntpd ]; then
     echo "*************************************************"

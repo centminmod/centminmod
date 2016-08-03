@@ -45,13 +45,13 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
 fi
 
