@@ -437,7 +437,7 @@ dmotdcheck() {
   if [ ! -h /usr/local/bin/dmotd ]; then
     if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
       rm -rf /usr/local/bin/dmotd
-      ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd
+      ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd >/dev/null 2>&1
       if [ -f /usr/local/bin/dmotd ]; then
         chmod +x /usr/local/bin/dmotd
       fi

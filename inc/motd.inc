@@ -37,9 +37,9 @@ setupmotd() {
 
 	if [[ "$ENABLEMOTD" = [yY] ]]; then
 		if [ -f /usr/local/bin/dmotd ]; then
-			# rm -rf /usr/local/bin/dmotd
+			rm -rf /usr/local/bin/dmotd
 			if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
-				ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd
+				ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd >/dev/null 2>&1
 				if [ -f /usr/local/bin/dmotd ]; then
 					chmod +x /usr/local/bin/dmotd
 				fi
@@ -47,7 +47,7 @@ setupmotd() {
 			fi
 		else
 			if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
-				ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd
+				ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd >/dev/null 2>&1
 				if [ -f /usr/local/bin/dmotd ]; then
 					chmod +x /usr/local/bin/dmotd
 				fi
