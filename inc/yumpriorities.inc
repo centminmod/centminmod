@@ -203,8 +203,9 @@ EOF
         fi
 
 else
+        # check if CentOS-Base.repo is actually used
+        if [[ "$(grep -q '^#\[base\]$' /etc/yum.repos.d/CentOS-Base.repo; echo $?)" != '0' ]]; then
         #centos repo priorities
-        
         cp -p /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.OLD
         
         if [ -n "$(grep ^priority /etc/yum.repos.d/CentOS-Base.repo)" ]
@@ -250,7 +251,7 @@ EOF
         cat /etc/yum.repos.d/CentOS-Base.repo
         echo ""
         fi
-        
+        fi # check if CentOS-Base.repo is actually used
         
         if [ -f /etc/yum.repos.d/CentOS-CR.repo ]; then
         cp -p /etc/yum.repos.d/CentOS-CR.repo /etc/yum.repos.d/CentOS-CR.OLD
