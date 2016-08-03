@@ -433,6 +433,18 @@ nvcheck() {
   fi
 }
 
+dmotdcheck() {
+  if [ ! -h /usr/local/bin/dmotd ]; then
+    if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
+      rm -rf /usr/local/bin/dmotd
+      ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd
+      if [ -f /usr/local/bin/dmotd ]; then
+        chmod +x /usr/local/bin/dmotd
+      fi
+    fi
+  fi
+}
+
 multiphpcheck() {
 	if [[ -d /usr/local/nginx/conf ]] && [[ ! -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool2.conf || ! -f /usr/local/nginx/conf/php-pool5.conf ]]; then
 		# check to see if multiple php-fpm pool files exist and copy over if they don't
@@ -1082,6 +1094,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   csfipsetcheck
   checkaliases
   checkcmdircmd
+  dmotdcheck
   nvcheck
   multiphpcheck
   mjemalloc
