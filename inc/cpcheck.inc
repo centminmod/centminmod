@@ -1094,7 +1094,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   csfipsetcheck
   checkaliases
   checkcmdircmd
-  dmotdcheck
+  # dmotdcheck
   nvcheck
   multiphpcheck
   mjemalloc
