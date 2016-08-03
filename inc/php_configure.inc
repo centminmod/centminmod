@@ -89,7 +89,7 @@ else
   MSSQLOPT=""
 fi
 
-if [[ -f /usr/bin/ldapadd ]]; then
+if [[ -f /usr/include/ldap.h ]]; then
 	LDAPOPT=' --with-ldap --with-ldap-sasl'
 else
 	LDAPOPT=""
