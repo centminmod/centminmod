@@ -74,7 +74,7 @@ if [[ ! -f /usr/include/expect.h ]]; then
 	yum -q -y install expect-devel --disablerepo=rpmforge,epel
 fi
 
-if [[ -f /usr/bin/ldapadd ]]; then
+if [[ -f /usr/include/ldap.h ]]; then
 	LDAPOPT=' --with-ldap --with-ldap-sasl'
 else
 	LDAPOPT=""
