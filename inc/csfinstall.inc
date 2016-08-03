@@ -168,8 +168,14 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         systemctl restart firewalld
         firewall-cmd --zone=public --list-services
 
-        # custom ports allowed
-        FIREWALLD_PORTS='1186 1194 11211 11212 11213 11214 2049 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050'
+        # custom ports allowed if detected SSHD default port is not 22, ensure the custom SSHD port
+        # number is whitelisted by firewalld
+        FWDDETECTED_PORT=$(awk '/^Port / {print $2}' /etc/ssh/sshd_config)
+        if [[ "$FWDDETECTED_PORT" = '22' ]]; then
+          FIREWALLD_PORTS='1186 1194 11211 11212 11213 11214 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050'
+        else
+          FIREWALLD_PORTS="$FWDDETECTED_PORT 1186 1194 11211 11212 11213 11214 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050"
+        fi
 
         for fp in $FIREWALLD_PORTS
           do

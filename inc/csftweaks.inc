@@ -44,11 +44,20 @@ rpcnfsports() {
 
 csftweaks() {
 if [ -f /etc/csf/csf.conf ]; then
-    # echo "Custom configure CSF settings...set"
-    rpcnfsports
-if [ ! -z "$EMAIL" ]; then
+  # auto detect which SSHD port is default and auto update it for base
+  # csf firewall template
+  CSFSSHD_PORT='22'
+  DETECTED_PORT=$(awk '/^Port / {print $2}' /etc/ssh/sshd_config)
+  if [[ "$DETECTED_PORT" != '22' ]]; then
+    echo "switching csf.conf SSHD port default from $CSFSSHD_PORT to detected SSHD port $DETECTED_PORT"
+    sed -i "s/,${CSFSSHD_PORT},/,${DETECTED_PORT},/" /etc/csf/csf.conf
+  fi
+
+  # echo "Custom configure CSF settings...set"
+  rpcnfsports
+  if [ ! -z "$EMAIL" ]; then
     sed -i "s/LF_ALERT_TO = \"\"/LF_ALERT_TO = \"$EMAIL\"/g" /etc/csf/csf.conf
-fi
+  fi
     #sed -i 's/LF_TRIGGER = "0"/LF_TRIGGER = "1"/g' /etc/csf/csf.conf
     sed -i 's|USE_CONNTRACK = "1"|USE_CONNTRACK = "0"|g' /etc/csf/csf.conf
     sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf

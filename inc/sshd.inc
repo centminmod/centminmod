@@ -65,7 +65,7 @@ fi
 function funct_sshd {
 
 CURRENTSSHDPORT=$(echo ${SSH_CLIENT##* })
-CHECK_CURRENTPORT=$(awk '/^Port/ {print $2}' /etc/ssh/sshd_config)
+CHECK_CURRENTPORT=$(awk '/^Port / {print $2}' /etc/ssh/sshd_config)
 
 if [ -z "$CHECK_CURRENTPORT" ]; then
 	CHECK_CURRENTPORT=$(awk '/#Port/ {print $2}' /etc/ssh/sshd_config | head -n1)
