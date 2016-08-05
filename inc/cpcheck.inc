@@ -36,6 +36,10 @@ fixphpfpm_includes() {
       /etc/init.d/php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_includes_${DT}.log"
+  # remove log if empty
+  if [ ! -s "/root/centminlogs/fixphpfpm_includes_${DT}.log" ]; then
+    rm -rf "/root/centminlogs/fixphpfpm_includes_${DT}.log"
+  fi
   fi
 }
 
@@ -62,6 +66,10 @@ fixphpfpm_httpproxy() {
       /etc/init.d/php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
+  # remove log if empty
+  if [ ! -s "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log" ]; then
+    rm -rf "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
+  fi
   fi
 }
 
