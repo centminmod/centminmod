@@ -701,9 +701,6 @@ pathfixes() {
 	fi
 	# for sudo
 	if [ -d /etc/sudoers.d ]; then
-    if [ -f /etc/sudoers.d/addpaths ]; then
-      chmod 0440 /etc/sudoers.d/addpaths
-    fi
 		if [ ! -f /etc/sudoers.d/addpaths ]; then
 			touch /etc/sudoers.d/addpaths
 			if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -716,6 +713,10 @@ pathfixes() {
 				fi
 			fi
 		fi
+    if [ -f /etc/sudoers.d/addpaths ]; then
+      chmod 0440 /etc/sudoers.d/addpaths
+      visudo -c -q
+    fi
 	fi
 }
 
