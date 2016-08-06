@@ -715,7 +715,7 @@ pathfixes() {
 		fi
     if [ -f /etc/sudoers.d/addpaths ]; then
       chmod 0440 /etc/sudoers.d/addpaths
-      visudo -c -q
+      # visudo -c -q
     fi
 	fi
 }
