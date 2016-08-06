@@ -22,6 +22,7 @@ if [ -d /etc/sudoers.d ]; then
   # read -ep "Enter the username for sudo user you want to create: " sudo_username
   sudo_username=$1
   useradd $sudo_username
+  usermod -aG wheel $sudo_username
   # read -ep "Enter the password for $sudo_username: " sudo_userpass
   passwd $sudo_username
   echo
@@ -35,6 +36,6 @@ if [ -d /etc/sudoers.d ]; then
   echo
   echo "${sudo_username} sudo user setup at /etc/sudoers.d/sudo.${sudo_username}"
   done
- fi
+fi
 
 exit
