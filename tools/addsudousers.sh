@@ -28,12 +28,12 @@ if [ -d /etc/sudoers.d ]; then
   # echo "${sudo_username}:${sudo_userpass}" | chpasswd
   echo "$sudo_username with password: $sudo_userpass created"
   echo "sudo setup for $sudo_username"
-  echo "$1    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/sudo.$1;
-  chmod 0440 /etc/sudoers.d/sudo.$1
-  visudo -c -q -f /etc/sudoers.d/sudo.$1
+  echo "${sudo_username}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/sudo.${sudo_username};
+  chmod 0440 /etc/sudoers.d/sudo.${sudo_username}
+  visudo -c -q -f /etc/sudoers.d/sudo.${sudo_username}
   shift # shift all parameters;
   echo
-  echo "$1 sudo user setup at /etc/sudoers.d/sudo.$1"
+  echo "${sudo_username} sudo user setup at /etc/sudoers.d/sudo.${sudo_username}"
   done
  fi
 
