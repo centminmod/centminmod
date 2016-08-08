@@ -84,6 +84,7 @@ echo ""
 }
 
 multicreatedb() {
+	_thedbfile="$1"
 	cecho "----------------------------------------------------------------------------" $boldyellow
 	cecho "Create Multiple MySQL Databases, User & Pass From specified filepath/name" $boldgreen
 	cecho "i.e. /home/nginx/domains/domain.com/dbfile.txt" $boldgreen
@@ -91,9 +92,13 @@ multicreatedb() {
 	cecho "databasename databaseuser databasepass" $boldgreen
 	cecho "----------------------------------------------------------------------------" $boldyellow
 
-	echo
-	read -ep " Enter full path to db list file i.e. /home/nginx/domains/domain.com/dbfile.txt (to exit type = x): " dbfile
-	echo
+  if [[ -z "$_thedbfile" || ! -f "$_thedbfile" ]]; then
+		echo
+		read -ep " Enter full path to db list file i.e. /home/nginx/domains/domain.com/dbfile.txt (to exit type = x): " dbfile
+		echo
+	else
+		dbfile="$_thedbfile"
+  fi
 
 if [[ "$dbfile" = [xX] || -z "$dbfile" ]]; then
 	exit
@@ -335,7 +340,11 @@ fi
 case "$1" in
 	multidb)
 		mysqlperm
-		multicreatedb
+		if [[ -f "$2" ]]; then
+			multicreatedb $2
+		else
+			multicreatedb
+		fi
 		;;	
 	setuserdb)
 		mysqlperm
