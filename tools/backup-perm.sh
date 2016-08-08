@@ -42,7 +42,7 @@ backupperm() {
 	echo " backup directory & file permissions for: "
 	echo " $BASEDIR"
 	echo "-------------------------------------------------------"
-	getfacl -R --absolute-names $BASEDIR > "$BASEDIR/backup/permissions/permissions-$DT.acl"
+	getfacl -R -L --absolute-names $BASEDIR > "$BASEDIR/backup/permissions/permissions-$DT.acl"
 	ls -lah "$BASEDIR/backup/permissions/permissions-$DT.acl"
 	echo "-------------------------------------------------------"
 	echo
