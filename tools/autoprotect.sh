@@ -63,6 +63,14 @@ location ~ ^$PROTECTDIR_PATH/ {
   }
 }
 "
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'sucuri-scanner' )" ]]; then
+              # proper sucuri-scanner secure lock down
+echo -e "# $PROTECTDIR\n
+location ~ ^$PROTECTDIR_PATH/ {
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(gif|jpe?g|png|css|js)\$ { allow all; }
+  deny all;
+}
+"
             elif [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep 'ipb-protection|Content-Disposition attachment' | grep 'Header set')" ]]; then
 echo -e "# https://community.centminmod.com/posts/33989/\n# $PROTECTDIR\n
 location ~ ^$PROTECTDIR_PATH/ {
