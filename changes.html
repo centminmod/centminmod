@@ -86,7 +86,7 @@
 	<li>Added ZOPCACHEDFT='n' variable to centmin.sh. This variable if enabled ZOPCACHEDFT='y' can override the defaults and install Zend OpCache by default instead of APC Cache defaults.</li>
 	<li>Added new POSTFIX_INSTALL=y variable to centmin.sh change from sendmail to postfix as default</li>
 	<li>Revised menu options - changing menu options #11 and #12. Number #11 is now a MariaDB 5.2, 5.5 and 10 upgrade sub menu option. #12 is now a dedicated menu option to install and reinstall Zend OpCache PHP opcode caching for PHP versions</li>
-	<li>Updated OPENSSL_VER to 1.0.1h http://www.openssl.org/news/</li>
+	<li>Updated OPENSSL_VER to 1.0.1h https://www.openssl.org/news/</li>
 	<li>Updated PHP default version out of the box from 5.3.28 to 5.4.29 and included additional PHP extensions (--with-snmp --with-gmp --with-pspell --with-tidy --with-enchant)</li>
 	<li>Moved all downloads links themselves out of the download functions at inc/downloads.inc to their own file at inc/downloadlinks.inc for easier management</li>
 	<li>Changed PHP's default config scan directory variable path (CONFIGSCANDIR) from /root/centminmod/php.d to /etc/centmimod/php.d. centmin.sh will auto detect this and create the necessary directory and copy over any existing PHP extension .ini files from the old path. This is preparation for when chrooted user SSH/SFTP/SCP user account support comes <a href="https://blog.centminmod.com/194" target="_blank">https://blog.centminmod.com/194</a> to allow chrooted users PHP binary access to PHP extensions.</li>
