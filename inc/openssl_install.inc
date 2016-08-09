@@ -218,7 +218,7 @@ installopenssl() {
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             rm -rf CMakeCache.txt
         fi
-        cmake ..
+        cmake -DCMAKE_BUILD_TYPE=Release ..
         unset CC
         unset CXX
         unset CFLAGS
@@ -227,9 +227,12 @@ installopenssl() {
         export CC="/usr/bin/gcc"
         export CXX="/usr/bin/g++"
         make${MAKETHREADS}
-        mkdir -p .openssl/lib
+        mkdir -p /svr-setup/boringssl/.openssl/lib
+        cd /svr-setup/boringssl/.openssl
         ln -s ../include
-        cp build/crypto/libcrypto.a build/ssl/libssl.a .openssl/lib
+        cp /svr-setup/boringssl/build/crypto/libcrypto.a /svr-setup/boringssl/build/ssl/libssl.a /svr-setup/boringssl/.openssl/lib
+        ls -lah /svr-setup/boringssl/.openssl/lib
+        ls -lah /svr-setup/boringssl/.openssl
 
         boringsslinstallendtime=$(date +%s.%N)
         BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
