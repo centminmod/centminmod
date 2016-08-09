@@ -15,8 +15,9 @@ patchnginx() {
       echo
       cecho "nginx patched for OpenSSL 1.1.0 pre beta" $boldyellow
       echo
-  else
-    cecho "../patches/nginx/openssl-110pre6.patch not found" $boldyellow
+    else
+       cecho "../patches/nginx/openssl-110pre6.patch not found" $boldyellow
+    fi
   fi
 
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then
