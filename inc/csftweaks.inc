@@ -52,6 +52,11 @@ if [ -f /etc/csf/csf.conf ]; then
     echo "switching csf.conf SSHD port default from $CSFSSHD_PORT to detected SSHD port $DETECTED_PORT"
     sed -i "s/,${CSFSSHD_PORT},/,${DETECTED_PORT},/" /etc/csf/csf.conf
   fi
+  if [[ "$(cat /etc/csf/csf.conf | grep TCP_IN | grep ,,)" ]] && [[ -z "$DETECTED_PORT" && "$(netstat -plant | grep sshd | grep ':22')" ]]; then
+    echo "correct bug that removed $CSFSSHD_PORT in CSF firewall TCP_IN entry"
+    echo "https://community.centminmod.com/posts/34444/"
+    sed -i "s/,${CSFSSHD_PORT},/,${DETECTED_PORT},/" /etc/csf/csf.conf
+  fi
 
   # echo "Custom configure CSF settings...set"
   rpcnfsports
