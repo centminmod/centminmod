@@ -1,5 +1,24 @@
 patchnginx() {
-	sleep "$NGINXPATCH_DELAY"
+  sleep "$NGINXPATCH_DELAY"
+
+  # unofficial OpenSSL 1.1.0 beta Nginx patches
+  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' && "$(echo $OPENSSL_VERSION | grep 'pre')" ]]; then
+    if [ -f "../patches/nginx/openssl-110pre6.patch" ]; then
+      if [ -f "$(which figlet)" ]; then
+          figlet -ckf standard "Nginx OpenSSL 1.1.0 Pre/Beta Patch"
+      fi
+      echo
+      cecho "patching nginx for OpenSSL 1.1.0 pre beta support" $boldyellow
+      cecho "patch -p1 < ../patches/nginx/openssl-110pre6.patch" $boldyellow
+      patch -p1 < ../patches/nginx/openssl-110pre6.patch
+      echo
+      cecho "nginx patched for OpenSSL 1.1.0 pre beta" $boldyellow
+      echo
+  else
+    cecho "../patches/nginx/openssl-110pre6.patch not found" $boldyellow
+  fi
+
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then
 		# assign NGX_VEREVAL nginx version based on if it's an initial
 		# centmin mod fresh install or a nginx upgrade run
