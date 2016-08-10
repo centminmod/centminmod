@@ -3,7 +3,10 @@ patchnginx() {
 
   # unofficial OpenSSL 1.1.0 beta Nginx patches
   DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
-  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' && "$(echo $OPENSSL_VERSION | grep 'pre')" ]]; then
+  # detect nginx <=1.11.3 as 1.11.4+ has fix for openssl 1.1 so no patching needed
+  # http://hg.nginx.org/nginx/rev/1891b2892b68
+  DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' && "$(echo $OPENSSL_VERSION | grep 'pre')" ]] && [[ "$DETECT_NGXVER" -le '1011003' ]]; then
     if [ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" ]; then
       if [ -f "$(which figlet)" ]; then
           figlet -ckf standard "Nginx OpenSSL 1.1.0 Pre/Beta Patch"
