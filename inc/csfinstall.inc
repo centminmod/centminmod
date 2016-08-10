@@ -27,7 +27,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
     fi
 
     #tar xzf csf.tgz
-    cd csf
+    cd "$DIR_TMP/csf"
     sh install.sh
 
     # echo "Test IP Tables Modules..."
