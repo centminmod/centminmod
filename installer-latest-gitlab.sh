@@ -369,6 +369,7 @@ net.netfilter.nf_conntrack_helper=0
 net.nf_conntrack_max = 524288
 net.netfilter.nf_conntrack_tcp_timeout_established = 28800
 net.netfilter.nf_conntrack_generic_timeout = 60
+net.ipv4.tcp_challenge_ack_limit = 999999999
 EOF
         /sbin/sysctl --system
             fi           
@@ -426,6 +427,7 @@ net.netfilter.nf_conntrack_helper=0
 net.nf_conntrack_max = 524288
 net.netfilter.nf_conntrack_tcp_timeout_established = 28800
 net.netfilter.nf_conntrack_generic_timeout = 60
+net.ipv4.tcp_challenge_ack_limit = 999999999
 EOF
 sysctl -p
         fi

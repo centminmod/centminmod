@@ -963,6 +963,7 @@ net.netfilter.nf_conntrack_helper=0
 net.netfilter.nf_conntrack_max = $NF_CTMAX
 net.netfilter.nf_conntrack_tcp_timeout_established = 28800
 net.netfilter.nf_conntrack_generic_timeout = 60
+net.ipv4.tcp_challenge_ack_limit = 999999999
 EOF
         /sbin/sysctl --system >/dev/null 2>&1
             fi           
@@ -1001,6 +1002,22 @@ EOF
             sysctl -p >/dev/null 2>&1
         fi
 		fi
+fi
+if [[ ! -f /proc/user_beancounters ]]; then
+  # fix for https://community.centminmod.com/posts/34527/
+  # CVE-2016-5696
+  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.d/101-sysctl.conf)" ]]; then
+      echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.d/101-sysctl.conf
+      /sbin/sysctl --system >/dev/null 2>&1
+    fi
+  fi
+  if [[ "$CENTOS_SEVEN" = '6' && -f /etc/sysctl.conf ]]; then
+    if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.conf)" ]]; then
+      echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.conf
+      sysctl -p >/dev/null 2>&1
+    fi
+  fi
 fi
 }
 
