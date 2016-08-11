@@ -95,12 +95,19 @@ fi
 
 usage() { 
 # if pure-ftpd service running = 0
+if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+  cmd_arg='|le|led|lelive|lelived'
+fi
 if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '0' ]]; then
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd] [-u ftpusername]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd${cmd_arg}] [-u ftpusername]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
   cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
+  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+    cecho "  -s  le - letsencrypt test cert or led test cert with https default" $boldyellow
+    cecho "  -s  lelive - letsencrypt live cert or lelived live cert with https default" $boldyellow
+  fi
   cecho "  -u  your FTP username" $boldyellow
   echo
   cecho "  example:" $boldyellow
@@ -108,20 +115,36 @@ if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '
   cecho "  $0 -d yourdomain.com -s y -u ftpusername" $boldyellow
   cecho "  $0 -d yourdomain.com -s n -u ftpusername" $boldyellow
   cecho "  $0 -d yourdomain.com -s yd -u ftpusername" $boldyellow
+  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+    cecho "  $0 -d yourdomain.com -s le -u ftpusername" $boldyellow
+    cecho "  $0 -d yourdomain.com -s led -u ftpusername" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelive -u ftpusername" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelived -u ftpusername" $boldyellow
+  fi
   echo
   exit 1;
 else
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd${cmd_arg}]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
   cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
+  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+    cecho "  -s  le - letsencrypt test cert or led test cert with https default" $boldyellow
+    cecho "  -s  lelive - letsencrypt live cert or lelived live cert with https default" $boldyellow
+  fi
   echo
   cecho "  example:" $boldyellow
   echo
   cecho "  $0 -d yourdomain.com -s y" $boldyellow  
   cecho "  $0 -d yourdomain.com -s n" $boldyellow  
-  cecho "  $0 -d yourdomain.com -s yd" $boldyellow  
+  cecho "  $0 -d yourdomain.com -s yd" $boldyellow
+  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+    cecho "  $0 -d yourdomain.com -s le" $boldyellow
+    cecho "  $0 -d yourdomain.com -s led" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelive" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelived" $boldyellow
+  fi
   echo  
   exit 1;
 fi
@@ -867,6 +890,30 @@ if [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
   echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
   echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname""
   "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname"
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo
+elif [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; then
+  echo
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
+  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" d"
+  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" d
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo
+elif [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]]; then
+  echo
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
+  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" live"
+  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" live
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo
+elif [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]; then
+  echo
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
+  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" lived"
+  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" lived
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 fi
