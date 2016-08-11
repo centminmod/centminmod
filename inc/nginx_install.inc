@@ -187,6 +187,7 @@ net.ipv4.conf.default.secure_redirects = 0
 net.ipv4.conf.default.send_redirects = 0
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
+net.ipv4.tcp_challenge_ack_limit = 999999999
 EOF
 sysctl -p
 
