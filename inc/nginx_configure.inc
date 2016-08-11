@@ -108,9 +108,8 @@ fi
   	WITHOPENSSL_OPT=""
   	WITHOPENSSL_OPTECHO=""
   else
-  	WITHOPENSSL_OPT=' --with-openssl-opt="enable-tlsext"'
-  	WITHOPENSSL_OPTECHO=' --with-openssl-opt=\"enable-tlsext\"'
-
+  	WITHOPENSSL_OPT=""
+  	WITHOPENSSL_OPTECHO=""
   fi
 
 	# fix no longer needed with lua-nginx 0.10.2+
