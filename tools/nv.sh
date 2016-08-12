@@ -884,36 +884,36 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 fi
 
 FINDUPPERDIR=$(dirname $SCRIPT_DIR)
-if [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
+if [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
   echo
   cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
-  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname""
-  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname"
+  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname""
+  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname"
   cecho "-------------------------------------------------------------" $boldyellow
   echo
-elif [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; then
+elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; then
   echo
   cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
-  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" d"
-  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" d
+  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d"
+  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d
   cecho "-------------------------------------------------------------" $boldyellow
   echo
-elif [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]]; then
+elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]]; then
   echo
   cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
-  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" live"
-  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" live
+  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live"
+  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live
   cecho "-------------------------------------------------------------" $boldyellow
   echo
-elif [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]; then
+elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]; then
   echo
   cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
-  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" lived"
-  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname" lived
+  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived"
+  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 fi
