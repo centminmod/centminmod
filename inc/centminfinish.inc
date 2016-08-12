@@ -225,10 +225,10 @@ fi
 	/usr/bin/mytimes
 	cecho "--------------------------------------------------------" $boldyellow
 
-	if [ -f "$CUR_DIR/tools/nv.sh" ]; then
-		cp "$CUR_DIR/tools/nv.sh" /usr/bin/nv
-		chmod +x /usr/bin/nv
-	fi
+	# if [ -f "$CUR_DIR/tools/nv.sh" ]; then
+	# 	cp "$CUR_DIR/tools/nv.sh" /usr/bin/nv
+	# 	chmod +x /usr/bin/nv
+	# fi
 }
 
 centminfinish() {
