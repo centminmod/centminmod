@@ -140,6 +140,28 @@ read -ep "Enter vhost domain name to add (without www. prefix): " vhostname
 if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
   read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
+  if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ]; then
+    read -ep "Get Letsencrypt SSL certificate Nginx vhost? [y/n]: " vhostssl_le
+    if [[ "$vhostssl_le" = [yY] ]]; then
+      echo
+      echo "You have 4 options: "
+      echo "1. issue staging test cert with HTTP + HTTPS"
+      echo "2. issue staging test cert with HTTPS default"
+      echo "3. issue live cert with HTTP + HTTPS"
+      echo "4. issue live cert with HTTPS default"
+      read -ep "Enter option number 1-4: " vhostssl_opt
+      if [[ "$vhostssl_opt" = '1' ]]; then
+        vhostssl='le'
+      elif [[ "$vhostssl_opt" = '2' ]]; then
+        vhostssl='led'
+      elif [[ "$vhostssl_opt" = '3' ]]; then
+        vhostssl='lelive'
+      elif [[ "$vhostssl_opt" = '4' ]]; then
+        vhostssl='lelived'
+      fi
+      echo
+    fi
+  fi
 fi
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
@@ -231,11 +253,11 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # Setting up Nginx mapping
 
-if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
   sslvhost
 fi
 
-if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
 
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
@@ -583,7 +605,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]] || [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = 'le' ]]; then
+if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]] || [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = 'le' ]] || [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = 'led' ]] || [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = 'lelive' ]] || [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = 'lelived' ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -606,7 +628,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
@@ -623,7 +645,7 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "pure-pw userdel $ftpuser" $boldwhite
 fi
 cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
 fi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
