@@ -207,7 +207,7 @@ source_wgetinstall() {
   make install
   echo "/usr/local/lib/" > /etc/ld.so.conf.d/wget.conf
   ldconfig
-  if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]]; then
+  if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]] && [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
     echo "alias wget='/usr/local/bin/wget'" >> /root/.bashrc
   fi
   . /root/.bashrc
@@ -223,7 +223,11 @@ source_wgetinstall() {
   cecho "wget -V" $boldyellow
   wget -V
   cecho "--------------------------------------------------------" $boldgreen
-  cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
+  if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
+  else
+    cecho "wget ${WGET_VERSION} failed to update, still using system wget" $boldyellow
+  fi
   cecho "--------------------------------------------------------" $boldgreen
   echo
   fi
