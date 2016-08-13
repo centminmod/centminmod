@@ -48,7 +48,7 @@ if [ -f /etc/csf/csf.conf ]; then
   # csf firewall template
   CSFSSHD_PORT='22'
   DETECTED_PORT=$(awk '/^Port / {print $2}' /etc/ssh/sshd_config)
-  if [[ "$DETECTED_PORT" != '22' && -z "$(netstat -plant | grep sshd | grep ':22')" ]]; then
+  if [[ "$DETECTED_PORT" != '22' && -z "$(netstat -plant | grep sshd | grep ':22')" ]] && [[ -z "$(netstat -plant | grep sshd | grep ":$DETECTED_PORT")" ]]; then
     echo "switching csf.conf SSHD port default from $CSFSSHD_PORT to detected SSHD port $DETECTED_PORT"
     sed -i "s/,${CSFSSHD_PORT},/,${DETECTED_PORT},/" /etc/csf/csf.conf
   fi
