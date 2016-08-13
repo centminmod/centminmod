@@ -888,6 +888,7 @@ if [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'l
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
   echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname""
   "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname"
   cecho "-------------------------------------------------------------" $boldyellow
@@ -896,6 +897,7 @@ elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
   echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d"
   "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d
   cecho "-------------------------------------------------------------" $boldyellow
@@ -904,6 +906,7 @@ elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
   echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live"
   "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live
   cecho "-------------------------------------------------------------" $boldyellow
@@ -912,6 +915,7 @@ elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
   echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived"
   "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived
   cecho "-------------------------------------------------------------" $boldyellow

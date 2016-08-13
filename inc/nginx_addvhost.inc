@@ -560,6 +560,7 @@ if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
   echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname""
   "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname"
   cecho "-------------------------------------------------------------" $boldyellow
@@ -568,6 +569,7 @@ elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; th
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
   echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" d"
   "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" d
   cecho "-------------------------------------------------------------" $boldyellow
@@ -576,6 +578,7 @@ elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]];
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
   echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" live"
   "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" live
   cecho "-------------------------------------------------------------" $boldyellow
@@ -584,6 +587,7 @@ elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]
   echo
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
   echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" lived"
   "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" lived
   cecho "-------------------------------------------------------------" $boldyellow
