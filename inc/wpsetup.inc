@@ -1314,7 +1314,7 @@ NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
 sed -i "/define('DB_COLLATE', '');/ a\
-/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', true);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
+/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
 " wp-config.php
 
 if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
@@ -1324,7 +1324,7 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     crontab -l > cronjoblist
     mkdir -p /home/nginx/domains/${vhostname}/cronjobs
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
-    echo "*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    echo "#*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cron.txt
     crontab cronjoblist
     rm -rf cronjoblist
