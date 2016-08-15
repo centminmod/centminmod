@@ -43,6 +43,28 @@ if [[ "$DISABLE_NETWORKFFMPEG" = [yY] ]]; then
 	DISABLE_FFMPEGNETWORK=' --disable-network'
 fi
 
+do_continue() {
+	echo
+	echo "Installing ffmpeg-php extension relies on the ffmpeg-php developer"
+	echo "to keep ffmpeg-php updated for ffmpeg compatibility and that has"
+	echo "been flaky with various compatibility issues. There have been wprk"
+	echo "arounds like https://community.centminmod.com/posts/24018/ but "
+	echo "there are no guarantees due to issues outlined in this thread post"
+	echo "at https://community.centminmod.com/posts/7078/"
+	echo
+	echo "if ffmpeg-php fails to compile, you can unload it by removing the"
+	echo "settings file at /etc/centminmod/php.d/ffmpeg.ini and restarting"
+	echo "php-fpm service"
+	echo
+	read -ep "Do you want to continue with ffmpeg-php + ffmpeg install ? [y/n] " cont_install
+	echo
+
+if [[ "$cont_install" != [yY] ]]; then
+	echo "aborting install..."
+	exit
+fi
+}
+
 install() {
 
 echo
@@ -251,6 +273,7 @@ echo
 }
 
 phpext() {
+
 	echo
 	echo "Install FFMPEG PHP extension..."
 
@@ -324,6 +347,7 @@ case "$1" in
 	install )
 		starttime=$(date +%s.%N)
 		{
+		do_continue
 		install
 		phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
@@ -337,6 +361,7 @@ echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTM
 	update )
 		starttime=$(date +%s.%N)
 		{
+		do_continue
 		update
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 
@@ -349,6 +374,7 @@ echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTM
 	php )
 		starttime=$(date +%s.%N)
 		{
+		do_continue
 		phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_phpext_install_${DT}.log
 
