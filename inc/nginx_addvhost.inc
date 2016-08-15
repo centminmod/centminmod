@@ -1,3 +1,24 @@
+info_notice() {
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Important Information" $boldgreen
+cecho "---------------------------------------------------------------" $boldyellow
+echo
+echo "You are about to create an Nginx vhost site account with/without"
+echo "HTTPS/SSL support. Details of this process are outlined on site"
+echo "at centminmod.com/nginx_domain_dns_setup.html. Also read the"
+echo "continually updated Getting Started Guide for Centmin Mod usage"
+echo "at centminmod.com/getstarted.html which covers the pure-ftpd"
+echo "ftp username that is auto generated with the Nginx vhost site."
+echo
+read -ep "Do you want to continue with Nginx vhost site creation ? [y/n] " dovhost_continue
+echo
+
+if [[ "$dovhost_continue" != [yY] ]]; then
+  echo "aborting Nginx vhost setup..."
+  exit
+fi
+}
+
 sslvhost() {
 
 cecho "---------------------------------------------------------------" $boldyellow
@@ -134,6 +155,8 @@ fi
 echo ""
 cecho "---------------------------------------------" $boldyellow
 echo
+
+info_notice
 
 read -ep "Enter vhost domain name to add (without www. prefix): " vhostname
 
