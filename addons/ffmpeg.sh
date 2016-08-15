@@ -48,7 +48,7 @@ do_continue() {
 	echo "-------------------------------------------------------------------------"
 	echo "Installing ffmpeg-php extension relies on the ffmpeg-php developer"
 	echo "to keep ffmpeg-php updated for ffmpeg compatibility and that has"
-	echo "been flaky with various compatibility issues. There have been wprk"
+	echo "been flaky with various compatibility issues. There have been work"
 	echo "arounds like https://community.centminmod.com/posts/24018/ but "
 	echo "there are no guarantees due to issues outlined in this thread post"
 	echo "at https://community.centminmod.com/posts/7078/"
