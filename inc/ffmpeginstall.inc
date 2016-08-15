@@ -24,7 +24,7 @@ case "$ffmpegoption" in
 centminlog
 if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
 	${CM_INSTALLDIR}/addons/ffmpeg.sh install
-	${CM_INSTALLDIR}/addons/ffmpeg.sh php
+	${CM_INSTALLDIR}/addons/ffmpeg.sh php silent
 fi
 
 ;;

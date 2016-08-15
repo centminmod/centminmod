@@ -45,6 +45,7 @@ fi
 
 do_continue() {
 	echo
+	cecho "-------------------------------------------------------------------------" $boldyellow
 	echo "Installing ffmpeg-php extension relies on the ffmpeg-php developer"
 	echo "to keep ffmpeg-php updated for ffmpeg compatibility and that has"
 	echo "been flaky with various compatibility issues. There have been wprk"
@@ -55,13 +56,14 @@ do_continue() {
 	echo "if ffmpeg-php fails to compile, you can unload it by removing the"
 	echo "settings file at /etc/centminmod/php.d/ffmpeg.ini and restarting"
 	echo "php-fpm service"
+	cecho "-------------------------------------------------------------------------" $boldyellow
 	echo
 	read -ep "Do you want to continue with ffmpeg-php + ffmpeg install ? [y/n] " cont_install
 	echo
 
 if [[ "$cont_install" != [yY] ]]; then
 	echo "aborting install..."
-	exit
+	exit 1
 fi
 }
 
@@ -374,7 +376,10 @@ echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTM
 	php )
 		starttime=$(date +%s.%N)
 		{
-		do_continue
+		# php_quite=$2
+		# if [[ "$php_quite" != 'silent' ]]; then
+			do_continue
+		# fi
 		phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_phpext_install_${DT}.log
 
