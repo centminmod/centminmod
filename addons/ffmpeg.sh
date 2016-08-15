@@ -45,7 +45,7 @@ fi
 
 do_continue() {
 	echo
-	cecho "-------------------------------------------------------------------------" $boldyellow
+	echo "-------------------------------------------------------------------------"
 	echo "Installing ffmpeg-php extension relies on the ffmpeg-php developer"
 	echo "to keep ffmpeg-php updated for ffmpeg compatibility and that has"
 	echo "been flaky with various compatibility issues. There have been wprk"
@@ -56,7 +56,7 @@ do_continue() {
 	echo "if ffmpeg-php fails to compile, you can unload it by removing the"
 	echo "settings file at /etc/centminmod/php.d/ffmpeg.ini and restarting"
 	echo "php-fpm service"
-	cecho "-------------------------------------------------------------------------" $boldyellow
+	echo "-------------------------------------------------------------------------"
 	echo
 	read -ep "Do you want to continue with ffmpeg-php + ffmpeg install ? [y/n] " cont_install
 	echo
