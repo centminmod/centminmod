@@ -5,7 +5,7 @@ VER='0.0.1'
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
-GO_VERSION='1.6.3'
+GO_VERSION='1.7'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
@@ -49,6 +49,12 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 	mkdir -p "$CENTMINLOGDIR"
 fi
 
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+  GOARCH='amd64'
+else
+  GOARCH='386'
+fi
+
 if [ "$CENTOSVER" == 'release' ]; then
     CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
@@ -68,14 +74,14 @@ fi
 go_install() {
 	cd $DIR_TMP
 		
-  cecho "Download go${GO_VERSION}.linux-amd64.tar.gz ..." $boldyellow
-  if [ -s go${GO_VERSION}.linux-amd64.tar.gz ]; then
-  	cecho "go${GO_VERSION}.linux-amd64.tar.gz Archive found, skipping download..." $boldgreen
+  cecho "Download go${GO_VERSION}.linux-${GOARCH}.tar.gz ..." $boldyellow
+  if [ -s go${GO_VERSION}.linux-${GOARCH}.tar.gz ]; then
+  	cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz Archive found, skipping download..." $boldgreen
   else
-  	wget -c --progress=bar https://storage.googleapis.com/golang/go${GO_VERSION}.linux-amd64.tar.gz --tries=3 
+  	wget -c --progress=bar https://storage.googleapis.com/golang/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
-			cecho "Error: go${GO_VERSION}.linux-amd64.tar.gz download failed." $boldgreen
+			cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz download failed." $boldgreen
 			checklogdetails
 			exit #$ERROR
 		else 
@@ -83,16 +89,16 @@ go_install() {
 		fi
   fi
 		
-	tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz
+	tar -C /usr/local -xzf go${GO_VERSION}.linux-${GOARCH}.tar.gz
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-		cecho "Error: go${GO_VERSION}.linux-amd64.tar.gz extraction failed." $boldgreen
+		cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz extraction failed." $boldgreen
 		checklogdetails
 		exit #$ERROR
 	else
 		echo "ls -lah /usr/local/go/"
 		ls -lah /usr/local/go/
-    cecho "go${GO_VERSION}.linux-amd64.tar.gz valid file." $boldyellow
+    cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz valid file." $boldyellow
 		echo ""
 	fi
 		
