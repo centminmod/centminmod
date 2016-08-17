@@ -142,6 +142,7 @@ NGXDYNAMIC_PERL='n'
 NGXDYNAMIC_IMAGEFILTER='y'
 NGXDYNAMIC_GEOIP='n'
 NGXDYNAMIC_STREAM='y'
+NGXDYNAMIC_STREAMGEOIP='n'  # nginx 1.11.3+ option http://hg.nginx.org/nginx/rev/558db057adaa
 NGXDYNAMIC_HEADERSMORE='n'
 NGXDYNAMIC_SETMISC='n'
 NGXDYNAMIC_ECHO='n'
@@ -152,6 +153,8 @@ NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
+NGXDYNAMIC_FANCYINDEX='y'
+NGXDYNAMIC_HIDELENGTH='y'
 
 # set = y to put nginx, php and mariadb major version updates into 503 
 # maintenance mode https://community.centminmod.com/posts/26485/
@@ -183,6 +186,8 @@ NGINX_ADDITION='y'           # http://nginx.org/en/docs/http/ngx_http_addition_m
 NGINX_IMAGEFILTER='y'        # http://nginx.org/en/docs/http/ngx_http_image_filter_module.html
 NGINX_PERL='n'               # http://nginx.org/en/docs/http/ngx_http_perl_module.html
 NGINX_XSLT='n'               # http://nginx.org/en/docs/http/ngx_http_xslt_module.html
+NGINX_LENGTHHIDE='n'         # https://github.com/nulab/nginx-length-hiding-filter-module
+NGINX_LENGTHHIDEGIT='y'      # triggers only if NGINX_LENGTHHIDE='y'
 NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
 NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
