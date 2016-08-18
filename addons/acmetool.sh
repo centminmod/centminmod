@@ -1056,9 +1056,13 @@ issue_acme() {
     if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+        grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
+    echo "grep 'root' "$SSLVHOST_CONFIG""
+    grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
@@ -1187,9 +1191,13 @@ reissue_acme() {
     if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+        grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
+    echo "grep 'root' "$SSLVHOST_CONFIG""
+    grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
@@ -1316,9 +1324,13 @@ renew_acme() {
     if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+        grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
+    echo "grep 'root' "$SSLVHOST_CONFIG""
+    grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
@@ -1485,9 +1497,13 @@ webroot_issueacme() {
     if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+        grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
+    echo "grep 'root' "$SSLVHOST_CONFIG""
+    grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
@@ -1654,9 +1670,13 @@ webroot_reissueacme() {
     if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+        grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG" >/dev/null 2>&1
+    echo "grep 'root' G" >/dev/null 2>&1"
+    grep 'root' G" >/dev/null 2>&1
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
@@ -1821,9 +1841,13 @@ webroot_renewacme() {
     if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+        grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
+    echo "grep 'root' "$SSLVHOST_CONFIG""
+    grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
