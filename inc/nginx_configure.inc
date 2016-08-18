@@ -2021,9 +2021,9 @@ if [[ "$CLANG" = [yY] ]]; then
 else
 	GCC_OPTLEVEL="$GCC_OPTLEVEL"
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
-		FSTACKPROTECT='-fstack-protector-strong'
-	else
 		FSTACKPROTECT='-fstack-protector'
+	else
+		FSTACKPROTECT='-fstack-protector-strong'
 	fi
 fi
 
