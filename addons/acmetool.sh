@@ -325,7 +325,10 @@ nvcheck() {
 vhostsetup() {
   vhost_domain="$1"
   HTTPSONLY="$2"
-  ftpusername=$(pwgen -s 15 1)
+  if [ ! -f /usr/bin/pwgen ]; then
+    yum -y -q install pwgen
+  fi
+  ftpusername=$(/usr/bin/pwgen -s 15 1)
   if [ -f /usr/bin/nv ]; then
     echo
     if [[ "$vhost_domain" = "$MAIN_HOSTNAME" ]]; then
