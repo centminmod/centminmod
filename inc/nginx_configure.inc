@@ -2022,8 +2022,12 @@ else
 	GCC_OPTLEVEL="$GCC_OPTLEVEL"
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector'
-	else
+	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]]; then
 		FSTACKPROTECT='-fstack-protector-strong'
+	elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -gt '40805' ]]; then
+		FSTACKPROTECT='-fstack-protector-strong'
+	else
+		FSTACKPROTECT='-fstack-protector'
 	fi
 fi
 
