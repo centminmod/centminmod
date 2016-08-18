@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.1'
+ACMEVER='0.2'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -487,8 +487,11 @@ sslopts_check() {
 #####################
 detectcustom_webroot() {
   CUSTOM_WEBROOT=$1
-if [ -f "$SSLVHOST_CONFIG" ]; then
-  CURRENT_WEBROOT=$(awk '/root /{print $2}' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf | sed -e 's|;||')
+  DETECT_VHOSTNAME=$2
+  DETECTSSLVHOST_CONFIGFILENAME="${DETECT_VHOSTNAME}.ssl.conf"
+  DETECTSSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${DETECTSSLVHOST_CONFIGFILENAME}"
+if [ -f "$DETECTSSLVHOST_CONFIG" ]; then
+  CURRENT_WEBROOT=$(awk '/root /{print $2}' /usr/local/nginx/conf/conf.d/${$DETECT_VHOSTNAME}.ssl.conf | sed -e 's|;||')
 fi
 if [[ "$CUSTOM_WEBROOT" ]]; then
   WEBROOTPATH="$CUSTOM_WEBROOT"
@@ -499,7 +502,7 @@ if [[ "$CUSTOM_WEBROOT" ]]; then
   # fi
 
 else
-  WEBROOTPATH="/home/nginx/domains/$vhostname/public"
+  WEBROOTPATH="/home/nginx/domains/${DETECT_VHOSTNAME}/public"
 fi
 }
 
@@ -779,7 +782,7 @@ ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
 EVS
 fi
 
-detectcustom_webroot $CUSTOM_WEBROOT
+detectcustom_webroot $CUSTOM_WEBROOT $vhostname
 
 if [[ "$HTTPSONLY" = 'https' ]]; then
   # remove non-https vhost so https only single vhost file
@@ -1381,7 +1384,7 @@ webroot_issueacme() {
   # split domains for SAN SSL certs
   split_domains "$vhostname"
   CUSTOM_WEBROOT="$customwebroot"
-  detectcustom_webroot $CUSTOM_WEBROOT
+  detectcustom_webroot $CUSTOM_WEBROOT $vhostname
   if [[ "$vhostname" != "$MAIN_HOSTNAME" ]]; then
     SSLVHOST_CONFIGFILENAME="${vhostname}.ssl.conf"
     SSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${SSLVHOST_CONFIGFILENAME}"
@@ -1550,7 +1553,7 @@ webroot_reissueacme() {
   # split domains for SAN SSL certs
   split_domains "$vhostname"
   CUSTOM_WEBROOT="$customwebroot"
-  detectcustom_webroot $CUSTOM_WEBROOT
+  detectcustom_webroot $CUSTOM_WEBROOT $vhostname
   if [[ "$vhostname" != "$MAIN_HOSTNAME" ]]; then
     SSLVHOST_CONFIGFILENAME="${vhostname}.ssl.conf"
     SSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${SSLVHOST_CONFIGFILENAME}"
@@ -1717,7 +1720,7 @@ webroot_renewacme() {
   # split domains for SAN SSL certs
   split_domains "$vhostname"
   CUSTOM_WEBROOT="$customwebroot"
-  detectcustom_webroot $CUSTOM_WEBROOT
+  detectcustom_webroot $CUSTOM_WEBROOT $vhostname
   if [[ "$vhostname" != "$MAIN_HOSTNAME" ]]; then
     SSLVHOST_CONFIGFILENAME="${vhostname}.ssl.conf"
     SSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${SSLVHOST_CONFIGFILENAME}"
