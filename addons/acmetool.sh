@@ -42,7 +42,7 @@ SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 
 #####################
 checkver( ){
-  LATESTVER=$(curl -s $SCRIPTCHECKURL | head -n1 | cut -c1-5)
+  LATESTVER=$(curl -s $SCRIPTCHECKURL | head -n1 | cut -c1-5| tr -d '\r')
   CURRENTVER=$ACMEVER
   if [[ "$CURRENTVER" != "$LATESTVER" ]]; then
     echo
