@@ -491,7 +491,7 @@ detectcustom_webroot() {
   DETECTSSLVHOST_CONFIGFILENAME="${DETECT_VHOSTNAME}.ssl.conf"
   DETECTSSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${DETECTSSLVHOST_CONFIGFILENAME}"
 if [ -f "$DETECTSSLVHOST_CONFIG" ]; then
-  CURRENT_WEBROOT=$(awk '/root /{print $2}' /usr/local/nginx/conf/conf.d/${$DETECT_VHOSTNAME}.ssl.conf | sed -e 's|;||')
+  CURRENT_WEBROOT=$(awk '/root /{print $2}' /usr/local/nginx/conf/conf.d/${DETECT_VHOSTNAME}.ssl.conf | sed -e 's|;||')
 fi
 if [[ "$CUSTOM_WEBROOT" ]]; then
   WEBROOTPATH="$CUSTOM_WEBROOT"
