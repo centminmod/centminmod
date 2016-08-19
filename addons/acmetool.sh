@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.2'
+ACMEVER='0.3'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -1061,7 +1061,7 @@ issue_acme() {
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
-    echo "grep 'root' "$SSLVHOST_CONFIG""
+    echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
@@ -1196,7 +1196,7 @@ reissue_acme() {
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
-    echo "grep 'root' "$SSLVHOST_CONFIG""
+    echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
@@ -1329,7 +1329,7 @@ renew_acme() {
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
-    echo "grep 'root' "$SSLVHOST_CONFIG""
+    echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
@@ -1502,7 +1502,7 @@ webroot_issueacme() {
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
-    echo "grep 'root' "$SSLVHOST_CONFIG""
+    echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
@@ -1675,8 +1675,8 @@ webroot_reissueacme() {
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG" >/dev/null 2>&1
-    echo "grep 'root' G" >/dev/null 2>&1"
-    grep 'root' G" >/dev/null 2>&1
+    echo "grep 'root' $SSLVHOST_CONFIG"
+    grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
     echo "-----------------------------------------------------------"
@@ -1846,7 +1846,7 @@ webroot_renewacme() {
       fi
     fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
-    echo "grep 'root' "$SSLVHOST_CONFIG""
+    echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
     /usr/bin/ngxreload >/dev/null 2>&1
     echo
