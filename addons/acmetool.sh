@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.3'
+ACMEVER='0.4'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -495,12 +495,6 @@ if [ -f "$DETECTSSLVHOST_CONFIG" ]; then
 fi
 if [[ "$CUSTOM_WEBROOT" ]]; then
   WEBROOTPATH="$CUSTOM_WEBROOT"
-
-  # if [ ! -d "$WEBROOTPATH" ]; then
-  # mkdir -p "$WEBROOTPATH"
-  # chown -R nginx:nginx $WEBROOTPATH
-  # fi
-
 else
   WEBROOTPATH="/home/nginx/domains/${DETECT_VHOSTNAME}/public"
 fi
@@ -1447,6 +1441,7 @@ webroot_issueacme() {
   if [ ! -d "$WEBROOTPATH" ]; then
     mkdir -p "$WEBROOTPATH"
     chown -R nginx:nginx $WEBROOTPATH
+    \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
   fi
 
   if [[ "$CUSTOM_WEBROOT" ]]; then
@@ -1620,6 +1615,7 @@ webroot_reissueacme() {
   if [ ! -d "$WEBROOTPATH" ]; then
     mkdir -p "$WEBROOTPATH"
     chown -R nginx:nginx $WEBROOTPATH
+    \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
   fi
 
   if [[ "$CUSTOM_WEBROOT" ]]; then
@@ -1791,6 +1787,7 @@ webroot_renewacme() {
   if [ ! -d "$WEBROOTPATH" ]; then
     mkdir -p "$WEBROOTPATH"
     chown -R nginx:nginx $WEBROOTPATH
+    \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
   fi
 
   if [[ "$CUSTOM_WEBROOT" ]]; then
