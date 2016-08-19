@@ -658,11 +658,6 @@ server {
   #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
 
-  # prevent access to ./directories and files
-  location ~ (?:^|/)\. {
-   deny all;
-  }
-
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
   include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
   # https://community.centminmod.com/posts/18828/
@@ -791,11 +786,6 @@ server {
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
-
-  # prevent access to ./directories and files
-  location ~ (?:^|/)\. {
-   deny all;
-  }
 
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
   include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
