@@ -1,3 +1,17 @@
+reduceports() {
+    PORTS_TOCHECK='3000 3334 8080 8888 9312 6081 6082 30865'
+    # reduce number of whitelisted open ports setup by csf install routine
+    # double check if any services are listening on these ports before removal
+    for p in $PORTS_TOCHECK; do
+        if [[ -z "$(netstat -plnt | awk '{print $4}' | grep "$p")" ]]; then
+            # grep --color ",$p," /etc/csf/csf.conf
+            sed -i "s|,$p,|,|g" /etc/csf/csf.conf
+            # sed -e "s|,$p,|,|g" /etc/csf/csf.conf |egrep --color '^TCP_|^TCP6_|^UDP_|^UDP6_'
+        fi
+    done
+    # csf -r >/dev/null 2>&1
+}
+
 rpcnfsports() {
     # remove RPC/portmapper and NFS ports 111 and 2049 
     # from CSF Firewall whitelist by default so that folks who 
@@ -60,6 +74,7 @@ if [ -f /etc/csf/csf.conf ]; then
 
   # echo "Custom configure CSF settings...set"
   rpcnfsports
+  reduceports
   if [ ! -z "$EMAIL" ]; then
     sed -i "s/LF_ALERT_TO = \"\"/LF_ALERT_TO = \"$EMAIL\"/g" /etc/csf/csf.conf
   fi
