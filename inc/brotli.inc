@@ -45,13 +45,16 @@ libbroti_install() {
 		fi
     if [ ! -d libbrotli ]; then
       git clone "$LIBBROTLI_LINK"
+    elif [ -d libbrotli ]; then
+      rm -rf libbrotli
+      git clone "$LIBBROTLI_LINK"
     fi
 		cd libbrotli
-		if [[ "$INITIALINSTALL" != [yY] ]]; then
-    		make clean
-    		git stash
-    		git pull
-		fi
+		# if [[ "$INITIALINSTALL" != [yY] ]]; then
+  #   		make clean
+  #   		git stash
+  #   		git pull
+		# fi
 		./autogen.sh
 		./configure
 		make${MAKETHREADS}
