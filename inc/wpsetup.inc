@@ -948,6 +948,15 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf"
 # which may save backups to directories in wp-content/
 # such plugins may deploy .htaccess protection but that isn't supported in
 # nginx, so blocking access to these extensions is a workaround to cover all bases
+
+# prepare for letsencrypt 
+# https://community.centminmod.com/posts/17774/
+location ~ /.well-known {
+  location ~ /.well-known/acme-challenge/(.*) {
+    more_set_headers    "Content-Type: text/plain";
+    }
+}
+
 location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
 
 location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
