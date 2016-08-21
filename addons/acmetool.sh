@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.6'
+ACMEVER='0.7'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -1442,15 +1442,15 @@ webroot_issueacme() {
     echo "mkdir -p $WEBROOTPATH"
     mkdir -p "$WEBROOTPATH"
     chown -R nginx:nginx $WEBROOTPATH
-    echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/*" $WEBROOTPATH"
-    \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
+    echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/"* $WEBROOTPATH"
+    \cp -Raf "/home/nginx/domains/${vhostname}/public/"* "$WEBROOTPATH"
   elif [[ -d "WEBROOTPATH" ]]; then
     echo "$WEBROOTPATH already exists"
     echo "ls -lah $WEBROOTPATH"
     ls -lah "$WEBROOTPATH"
     if [ -z "$(ls "$WEBROOTPATH")" ]; then
-      echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/*" $WEBROOTPATH"
-      \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
+      echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/"* $WEBROOTPATH"
+      \cp -Raf "/home/nginx/domains/${vhostname}/public/"* "$WEBROOTPATH"
     fi
   fi
 
@@ -1626,15 +1626,15 @@ webroot_reissueacme() {
     echo "mkdir -p $WEBROOTPATH"
     mkdir -p "$WEBROOTPATH"
     chown -R nginx:nginx $WEBROOTPATH
-    echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/*" $WEBROOTPATH"
-    \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
+    echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/"* $WEBROOTPATH"
+    \cp -Raf "/home/nginx/domains/${vhostname}/public/"* "$WEBROOTPATH"
   elif [[ -d "WEBROOTPATH" ]]; then
     echo "$WEBROOTPATH already exists"
     echo "ls -lah $WEBROOTPATH"
     ls -lah "$WEBROOTPATH"
     if [ -z "$(ls "$WEBROOTPATH")" ]; then
-      echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/*" $WEBROOTPATH"
-      \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
+      echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/"* $WEBROOTPATH"
+      \cp -Raf "/home/nginx/domains/${vhostname}/public/"* "$WEBROOTPATH"
     fi
   fi
 
@@ -1808,15 +1808,15 @@ webroot_renewacme() {
     echo "mkdir -p $WEBROOTPATH"
     mkdir -p "$WEBROOTPATH"
     chown -R nginx:nginx $WEBROOTPATH
-    echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/*" $WEBROOTPATH"
-    \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
+    echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/"* $WEBROOTPATH"
+    \cp -Raf "/home/nginx/domains/${vhostname}/public/"* "$WEBROOTPATH"
   elif [[ -d "WEBROOTPATH" ]]; then
     echo "$WEBROOTPATH already exists"
     echo "ls -lah $WEBROOTPATH"
     ls -lah "$WEBROOTPATH"
     if [ -z "$(ls "$WEBROOTPATH")" ]; then
-      echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/*" $WEBROOTPATH"
-      \cp -Raf "/home/nginx/domains/${vhostname}/public/*" "$WEBROOTPATH"
+      echo "\cp -Raf "/home/nginx/domains/${vhostname}/public/"* $WEBROOTPATH"
+      \cp -Raf "/home/nginx/domains/${vhostname}/public/"* "$WEBROOTPATH"
     fi
   fi
 
