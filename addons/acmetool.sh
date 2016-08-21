@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.4'
+ACMEVER='0.5'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -2001,7 +2001,6 @@ MENU3=4
   echo
   cecho "..." $boldyellow
   enter_domainname
-  enter_webroot
   $0 issue $input_domain lived
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu4.log
@@ -2037,6 +2036,7 @@ MENU3=7
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-issue $input_domain $input_webroot live
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu7.log
@@ -2048,6 +2048,7 @@ MENU3=8
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-issue $input_domain $input_webroot lived
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu8.log
@@ -2187,6 +2188,7 @@ MENU3=5
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-renew $input_domain $input_webroot
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu5.log
@@ -2198,6 +2200,7 @@ MENU3=6
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-renew $input_domain $input_webroot d
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu6.log
@@ -2209,6 +2212,7 @@ MENU3=7
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-renew $input_domain $input_webroot live
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu7.log
@@ -2220,6 +2224,7 @@ MENU3=8
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-renew $input_domain $input_webroot lived
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu8.log
@@ -2359,6 +2364,7 @@ MENU3=5
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-reissue $input_domain $input_webroot
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu5.log
@@ -2370,6 +2376,7 @@ MENU3=6
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-reissue $input_domain $input_webroot d
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu6.log
@@ -2381,6 +2388,7 @@ MENU3=7
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-reissue $input_domain $input_webroot live
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu7.log
@@ -2392,6 +2400,7 @@ MENU3=8
   echo
   cecho "..." $boldyellow
   enter_domainname
+  enter_webroot
   $0 webroot-reissue $input_domain $input_webroot lived
   # break 2
 } 2>&1 | tee ${CENTMINLOGDIR}/acmetool-menu_${SCRIPT_VERSION}_${DT}_menu3-submenu8.log
