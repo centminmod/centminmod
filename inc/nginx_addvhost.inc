@@ -1,3 +1,81 @@
+check_dns() {
+  vhostname_dns="$1"
+    TOPLEVELCHECK=$(dig soa $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//')
+    if [[ "$TOPLEVELCHECK" = "$vhostname_dns" ]]; then
+      # top level domain
+      TOPLEVEL=y
+    elif [[ -z "$TOPLEVELCHECK" ]]; then
+      # vhost dns not setup
+      TOPLEVEL=z
+      # if [[ "$(echo $vhostname_dns | grep -o "\." | wc -l)" -le '1' ]]; then
+      #   TOPLEVEL=y
+      # else
+      #   TOPLEVEL=n
+      # fi
+    else
+      # subdomain or non top level domain
+      TOPLEVEL=n
+    fi
+    echo
+    if [[ "$TOPLEVEL" = [yY] ]]; then
+      VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns)
+      VHOST_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | grep -v $vhostname_dns)
+    else
+      VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns)
+    fi
+    echo
+    if [[ "$TOPLEVEL" = [yY] ]]; then
+      cecho "$vhostname_dns is a top level domain" $boldyellow  
+      if [ "$VHOST_ACHECK" ]; then
+        cecho "your server IP address: $CNIP" $boldyellow
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+      else
+        cecho "your server IP address: $CNIP" $boldyellow
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+        cecho "!! Error: missing DNS A record for $vhostname_dns" $boldyellow
+      fi
+      if [ "$VHOST_AWWWCHECK" ]; then
+        cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
+      else
+        cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
+        cecho "!! Error: missing DNS A record for www.$vhostname_dns" $boldyellow
+      fi
+    elif [[ "$TOPLEVEL" = 'z' ]]; then
+      cecho "!! Error: $vhostname_dns DNS records not found or setup properly yet or $vhostname_dns invalid" $boldyellow
+    else
+      cecho "$vhostname_dns is not a top level domain" $boldyellow
+      if [ "$VHOST_ACHECK" ]; then
+        cecho "your server IP address: $CNIP" $boldyellow
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+      else
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+        cecho "!! Error: missing DNS A record for $vhostname_dns" $boldyellow
+      fi
+    fi
+    echo
+    read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
+    if [[ "$letabort" = [yY] ]]; then
+      exit
+    fi 
+}
+
+lemsgdns() {
+  echo
+  cecho "---------------------------------------------------------------" $boldyellow
+  cecho "To get Letsencrypt SSL certificate, you must already have updated intended" $boldgreen
+  cecho "domain vhost name's DNS A record to this server's IP addresss." $boldgreen
+  cecho "If top level domain, DNS A record is needed also for www. version of domain" $boldgreen
+  cecho "otherwise, Letsencrypt domain name validation will fail." $boldgreen
+  cecho "---------------------------------------------------------------" $boldyellow
+  read -ep "continue [y/n] ? " _lemsgdnsproceed
+  if [[ "$_lemsgdnsproceed" != [yY] ]]; then
+    echo
+    echo "aborting..."
+    echo
+    exit
+  fi
+}
+
 info_notice() {
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Important Information" $boldgreen
@@ -166,8 +244,12 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ]; then
     read -ep "Get Letsencrypt SSL certificate Nginx vhost? [y/n]: " vhostssl_le
     if [[ "$vhostssl_le" = [yY] ]]; then
+      lemsgdns
+      check_dns $vhostname
       echo
+      cecho "------------------------------------------------" $boldyellow
       echo "You have 4 options: "
+      cecho "------------------------------------------------" $boldyellow
       echo "1. issue staging test cert with HTTP + HTTPS"
       echo "2. issue staging test cert with HTTPS default"
       echo "3. issue live cert with HTTP + HTTPS"
