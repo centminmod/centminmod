@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8'
+ACMEVER='0.8.1'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -779,9 +779,8 @@ fi
 detectcustom_webroot $CUSTOM_WEBROOT $vhostname
 
 if [[ "$HTTPSONLY" = 'https' ]]; then
-  # remove non-https vhost so https only single vhost file
   echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-  cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default" >/dev/null 2>&1
+  cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
   rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
 
 # single ssl vhost at yourdomain.com.ssl.conf
@@ -1046,9 +1045,8 @@ issue_acme() {
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
       # and remove the non-https vhostname.conf file
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
       rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
@@ -1191,9 +1189,8 @@ reissue_acme() {
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
       # and remove the non-https vhostname.conf file
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
       rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
@@ -1334,9 +1331,8 @@ renew_acme() {
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
       # and remove the non-https vhostname.conf file
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
       rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
@@ -1528,9 +1524,8 @@ webroot_issueacme() {
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
       # and remove the non-https vhostname.conf file
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
       rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
@@ -1722,9 +1717,8 @@ webroot_reissueacme() {
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
       # and remove the non-https vhostname.conf file
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
       rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
@@ -1914,9 +1908,8 @@ webroot_renewacme() {
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
       # and remove the non-https vhostname.conf file
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
-      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
       rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
