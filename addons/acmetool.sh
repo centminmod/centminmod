@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8.2'
+ACMEVER='0.8.3'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -233,7 +233,9 @@ backup_acme() {
 #####################
 pushover_alert() {
   if [[ "$PUSHALERT" = [yY] ]]; then
-    if [ ! -z "$pushover_email" ]; then
+    dnspush=$2
+    dnslog=$3
+    if [[ ! -z "$pushover_email" && ! -f "$dnslog" ]] && [[ "$dnspush" != 'dns' ]]; then
       push_vhostname="$1"
       acme_domainconf="${ACMECERTHOME}${push_vhostname}${ECC_ACMEHOMESUFFIX}/${push_vhostname}.conf"
       acmecreate_date=$(grep "^Le_CertCreateTimeStr" "$acme_domainconf" | cut -d '=' -f 2)
@@ -242,6 +244,8 @@ pushover_alert() {
       $push_vhostname SSL Cert Created: $acmecreate_date
       $push_vhostname SSL Cert Next Renewal Date: $acmenextrenew_date
       "| mail -s "$push_vhostname SSL Cert Setup `date`" -r "$pushover_email" "$pushover_email"
+    elif [[ -f "$dnslog" ]] && [[ "$dnspush" = 'dns' ]]; then
+      cat "$dnslog" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | mail -s "$push_vhostname DNS Mode Validation Instructions `date`" -r "$pushover_email" "$pushover_email"
     fi
   fi
 }
@@ -2012,6 +2016,214 @@ enter_webroot() {
 }
 
 #####################
+issue_acmedns() {
+  CERTONLY_DNS=$1
+  STAGE_DNS=$2
+  check_acmeinstall
+  # split domains for SAN SSL certs
+  split_domains "$vhostname"
+  if [[ "$vhostname" != "$MAIN_HOSTNAME" ]]; then
+    SSLVHOST_CONFIGFILENAME="${vhostname}.ssl.conf"
+    SSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${SSLVHOST_CONFIGFILENAME}"
+    WEBROOTPATH_OPT="/home/nginx/domains/${vhostname}/public"
+    VHOST_ALREADYSET='n'
+  elif [[ "$vhostname" = "$MAIN_HOSTNAME" ]]; then
+    SSLVHOST_CONFIGFILENAME="${MAIN_HOSTNAMEVHOSTSSLFILE}"
+    SSLVHOST_CONFIG="/usr/local/nginx/conf/conf.d/${MAIN_HOSTNAMEVHOSTSSLFILE}"
+    WEBROOTPATH_OPT="/usr/local/nginx/html"
+    if [ -d "/home/nginx/domains/${vhostname}/public" ]; then
+      echo "$vhostname setup already at /home/nginx/domains/${vhostname}/public"
+      VHOST_ALREADYSET='y'
+    fi
+  fi
+  ############################################
+  # DNS mode cert only don't touch nginx vhosts
+  # 0
+  if [[ "$CERTONLY_DNS" != '1' ]]; then
+    if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
+      echo
+      echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
+      if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
+        vhostsetup "${vhostname}" https
+      else
+        vhostsetup "${vhostname}"
+      fi
+    elif [[ -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
+      sslopts_check
+      if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
+        sslvhostsetup https
+      else
+        sslvhostsetup
+      fi
+    elif [[ -d "$WEBROOTPATH_OPT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
+        sslvhostsetup https
+      else
+        sslvhostsetup
+      fi
+      mv "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/${SSLVHOST_CONFIGFILENAME}-acmebackup-${DT}-disabled"
+      SSLVHOST_CONFIG="${ACMEBACKUPDIR}/${SSLVHOST_CONFIGFILENAME}-acmebackup-${DT}-disabled"
+    fi
+  fi # DNS Mode certonly 0
+  ############################################
+  # DNS mode cert only don't touch nginx vhosts
+  # 1
+  if [[ "$CERTONLY_DNS" != '1' ]]; then
+    if [[ -d "$WEBROOTPATH_OPT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
+      check_dns "$vhostname"
+      if [[ "$TOPLEVEL" = [yY] ]]; then
+        if [[ "$SAN" = '1' ]]; then
+          DOMAINOPT="-d $DOMAIN_LIST -d www.${vhostname}"
+        else
+          DOMAINOPT="-d ${vhostname} -d www.${vhostname}"
+        fi
+      else
+        if [[ "$SAN" = '1' ]]; then
+          DOMAINOPT="-d $DOMAIN_LIST"
+        else
+          DOMAINOPT="-d ${vhostname}"
+        fi
+      fi
+      if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
+        # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+        # and remove the non-https vhostname.conf file
+        echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+        cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+        rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+        # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+        if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+          # sslvhostsetup https $vhostname
+          sslopts_check
+          sslvhostsetup https 
+        fi
+      else
+        cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
+      fi
+      cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
+      if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+        if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
+          sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+          echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
+          grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+        fi
+      fi
+      sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
+      echo "grep 'root' $SSLVHOST_CONFIG"
+      grep 'root' "$SSLVHOST_CONFIG"
+      /usr/bin/ngxreload >/dev/null 2>&1
+    fi
+  elif [[ "$CERTONLY_DNS" = '1' ]]; then
+    check_dns "$vhostname"
+    if [[ "$TOPLEVEL" = [yY] ]]; then
+      if [[ "$SAN" = '1' ]]; then
+        DOMAINOPT="-d $DOMAIN_LIST -d www.${vhostname}"
+      else
+        DOMAINOPT="-d ${vhostname} -d www.${vhostname}"
+      fi
+    else
+      if [[ "$SAN" = '1' ]]; then
+        DOMAINOPT="-d $DOMAIN_LIST"
+      else
+        DOMAINOPT="-d ${vhostname}"
+      fi
+    fi
+  fi # DNS Mode certonly 1
+    echo
+    echo "-----------------------------------------------------------"
+    echo "[DNS mode] issue & install letsencrypt ssl certificate for $vhostname"
+    echo "-----------------------------------------------------------"
+    # if the option flag = live is not passed on command line, the issuance uses the
+    # staging test ssl certificates
+    if [[ -f "$ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}/${vhostname}.key" ]]; then
+      DNS_ISSUEOPT='--issue --force'
+    else
+      DNS_ISSUEOPT='--issue'
+    fi
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      ############################################
+      # DNS mode cert only don't touch nginx vhosts
+      # 2
+      if [[ "$CERTONLY_DNS" != '1' ]]; then
+        # only enable resolver and ssl_stapling for live ssl certificate deployments
+        if [[ -f "$SSLVHOST_CONFIG" ]]; then
+          sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
+          sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
+          sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
+          sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        fi
+      fi # DNS Mode certonly 2
+    elif [[ "$CERTONLY_DNS" = '1' && "$STAGE_DNS" = 'live' ]]; then
+     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+    else
+     echo ""$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+    fi
+    if [ -f "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" ]; then
+      echo " Final Step to complete SSL Certificate Issuance" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      echo " Once DNS updated for $vhostname" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      echo " You need to run manually the command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      # echo " For staging test SSL cert" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      # echo "  $ACMEBINARY --staging --renew${ECCFLAG} $DOMAINOPT" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      # echo " For live SSL cert" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      echo "  $ACMEBINARY --renew${ECCFLAG} $DOMAINOPT" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      echo " ssl certs will be located at located at: $ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+    fi
+      ############################################
+      # DNS mode cert only don't touch nginx vhosts
+      # 3
+      if [[ "$CERTONLY_DNS" != '1' ]]; then
+    LECHECK=$?
+    if [[ "$LECHECK" = '0' ]]; then
+      if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      else
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      fi
+      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+
+    echo
+    echo "-----------------------------------------------------------"
+    echo "install cert"
+    echo "-----------------------------------------------------------"
+    echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}"
+    "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}
+    if [ -f "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log" ]; then
+      echo "rm -rf ${ACMECERTHOME}/${vhostname}" >> "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
+    fi
+    # allow it to be repopulated each time with $vhostname
+    # rm -rf /root/.acme.sh/reload.sh
+    echo
+    echo "letsencrypt ssl certificate setup completed"
+    echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
+    pushover_alert $vhostname
+    backup_acme $vhostname
+    echo
+    echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
+    openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    echo
+    fi  # reloadcmd_setup
+    elif [[ "$CERTONLY_DNS" = '1' ]]; then
+      echo
+      echo "-----------------------------------------------------------------------"
+      echo " DNS mode requires manual steps outlined below to complete issuance"
+      echo "-----------------------------------------------------------------------"
+      cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g'
+      pushover_alert $vhostname dns "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      # backup_acme $vhostname
+      echo
+      echo
+    fi # DNS Mode certonly 3
+}
+
+#####################
 sslmenu_issue() {
   while :
    do
@@ -2802,9 +3014,23 @@ acme-menu )
 checkdates )
   checkdate
 ;;
+  certonly-issue )
+{ 
+nvcheck
+vhostname="$2"
+testcert="$3"
+getuseragent
+update_acme quite
+if [ "$testcert" = 'live' ]; then
+  issue_acmedns 1 live
+else
+  issue_acmedns 1
+fi
+} 2>&1 | tee "${CENTMINLOGDIR}/acmesh-certonly-issue_${DT}.log"
+;;
   * )
   echo
-  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|issue|reissue|renew|s3issue|s3reissue|s3renew|renewall|checkdates}"
+  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|issue|reissue|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates}"
   echo "
  Usage Commands: 
  $0 acme-menu
@@ -2835,6 +3061,10 @@ checkdates )
  $0 webroot-renew domainname /path/to/custom/webroot d
  $0 webroot-renew domainname /path/to/custom/webroot live
  $0 webroot-renew domainname /path/to/custom/webroot lived
+ $0 certonly-issue domainname
+ $0 certonly-issue domainname live
+ # $0 certonly-reissue domainname
+ # $0 certonly-renew domainname
  $0 s3issue domainname
  $0 s3issue domainname d
  $0 s3issue domainname live
