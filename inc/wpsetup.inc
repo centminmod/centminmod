@@ -514,7 +514,7 @@ WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler
   if [[ -z "$WPCACHEENABLERMAP_INCLUDECHECK" ]]; then
     echo
     echo "include file /usr/local/nginx/conf/wpcacheenabler_map.conf add to nginx.conf"
-      sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf;/g' /usr/local/nginx/conf/nginx.conf
+      sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf;|g' /usr/local/nginx/conf/nginx.conf
   fi
 
 ################################################################################
@@ -1330,7 +1330,7 @@ REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf
   if [[ -z "$REDISUPSTREAM_INCLUDECHECK" ]]; then
     echo
     echo "include file /usr/local/nginx/conf/redisupstream.conf add to nginx.conf"
-      sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/redisupstream.conf;/g' /usr/local/nginx/conf/nginx.conf
+      sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/redisupstream.conf;|g' /usr/local/nginx/conf/nginx.conf
   fi
 
 ########### WP Super Cache Start ##############################
