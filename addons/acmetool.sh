@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8.3'
+ACMEVER='0.8.4'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -267,6 +267,7 @@ renew_all() {
 
 #####################
 getuseragent() {
+  _dnsagent=$1
   # build Centmin Mod's identifying letsencrypt user agent
   # --user-agent=
   if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -274,7 +275,11 @@ getuseragent() {
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     LE_OSVER=centos7
   fi
-  LE_USERAGENT="centminmod-$LE_OSVER-acmesh-webroot"
+  if [[ "$_dnsagent" != 'dns' ]]; then
+    LE_USERAGENT="centminmod-$LE_OSVER-acmesh-webroot"
+  else
+    LE_USERAGENT="centminmod-$LE_OSVER-acmesh-dns"
+  fi
 }
 
 #####################
@@ -3019,7 +3024,7 @@ checkdates )
 nvcheck
 vhostname="$2"
 testcert="$3"
-getuseragent
+getuseragent dns
 update_acme quite
 if [ "$testcert" = 'live' ]; then
   issue_acmedns 1 live
