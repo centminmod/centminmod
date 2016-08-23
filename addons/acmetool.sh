@@ -3063,8 +3063,6 @@ fi
  $0 webroot-renew domainname /path/to/custom/webroot lived
  $0 certonly-issue domainname
  $0 certonly-issue domainname live
- # $0 certonly-reissue domainname
- # $0 certonly-renew domainname
  $0 s3issue domainname
  $0 s3issue domainname d
  $0 s3issue domainname live
