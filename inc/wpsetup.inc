@@ -505,8 +505,11 @@ map \$http_user_agent \$cmwpcache_device {
     "~*Firefox.*Mobile"                         'mobile';
     "~*ipod.*mobile"                            'mobile';
     "~*Opera\ Mini"                             'mobile';
+    "~*Opera\ Mobile"                           'mobile';
     "~*Mobile"                                  'mobile';
     "~*Tablet"                                  'mobile';
+    "~*Kindle"                                  'mobile';
+    "~*Windows\ Phone"                          'mobile';
 }
 HFB
 
@@ -1308,8 +1311,11 @@ map \$http_user_agent \$redis_device {
     "~*Firefox.*Mobile"                         'mobile';
     "~*ipod.*mobile"                            'mobile';
     "~*Opera\ Mini"                             'mobile';
+    "~*Opera\ Mobile"                           'mobile';
     "~*Mobile"                                  'mobile';
     "~*Tablet"                                  'mobile';
+    "~*Kindle"                                  'mobile';
+    "~*Windows\ Phone"                          'mobile';
 }
 
 upstream redisbackend {
