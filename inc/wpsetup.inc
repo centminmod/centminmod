@@ -458,7 +458,15 @@ sed -i "s|fastcgi_param  SERVER_NAME        \$server_name;|fastcgi_param  SERVER
 # create wp enable enabler included files https://community.centminmod.com/posts/21220/
 
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf"<<HFA
+    # Block nginx-help log from public viewing
+    location ~* /wp-content/uploads/nginx-helper/ { deny all; }
+
     set \$cache_uri \$request_uri;
+
+    # exclude mobile devices from redis caching
+    if (\$cmwpcache_device = mobile) {
+      set \$cache_uri 'nullcache';
+    }
 
     # bypass cache if POST requests or URLs with a query string
     if (\$request_method = POST) {
@@ -489,6 +497,25 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
         set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index-webp.html';
     }
 HFA
+
+cat > "/usr/local/nginx/conf/wpcacheenabler_map.conf"<<HFB
+map \$http_user_agent \$cmwpcache_device {
+    default                                     'desktop';
+    ~*(iPad|iPhone|Android|IEMobile|Blackberry) 'mobile';
+    "~*Firefox.*Mobile"                         'mobile';
+    "~*ipod.*mobile"                            'mobile';
+    "~*Opera\ Mini"                             'mobile';
+    "~*Mobile"                                  'mobile';
+    "~*Tablet"                                  'mobile';
+}
+HFB
+
+WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$WPCACHEENABLERMAP_INCLUDECHECK" ]]; then
+    echo
+    echo "include file /usr/local/nginx/conf/wpcacheenabler_map.conf add to nginx.conf"
+      sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
 
 ################################################################################
 # create nginx level redis cache included php config file php-rediscache.conf
@@ -1224,6 +1251,9 @@ EFF
 
 # for nginx level redis cache
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" <<XFF
+# Block nginx-help log from public viewing
+location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
+
 set \$skip_cache 0;
 
 # exclude mobile devices from redis caching
@@ -1273,10 +1303,13 @@ XFF
 
 cat > "/usr/local/nginx/conf/redisupstream.conf" <<GGG
 map \$http_user_agent \$redis_device {
-    default                               'desktop';
-    ~*(iPhone|Android|IEMobile|Blackberry) 'mobile';
-    "~*Firefox.*Mobile"                    'mobile';
-    "~*ipod.*mobile"                       'mobile';
+    default                                     'desktop';
+    ~*(iPad|iPhone|Android|IEMobile|Blackberry) 'mobile';
+    "~*Firefox.*Mobile"                         'mobile';
+    "~*ipod.*mobile"                            'mobile';
+    "~*Opera\ Mini"                             'mobile';
+    "~*Mobile"                                  'mobile';
+    "~*Tablet"                                  'mobile';
 }
 
 upstream redisbackend {
