@@ -744,12 +744,7 @@ server {
   ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
-  # HTTP Public Key Pinning Header uncomment only one that applies include or exclude domains. 
-  # You'd want to include subdomains if you're using SSL wildcard certificates
-  # include subdomain
-  #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=86400; includeSubDomains';
-  # exclude subdomains
-  #add_header Public-Key-Pins 'pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)"; pin-sha256="$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)"; max-age=86400';
+
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
