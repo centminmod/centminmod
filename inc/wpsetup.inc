@@ -961,6 +961,9 @@ location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all;
 
 location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
 
+# Block nginx-help log from public viewing
+location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
+
 location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
   include /usr/local/nginx/conf/php.conf;
 }
@@ -1228,6 +1231,11 @@ EFF
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" <<XFF
 set \$skip_cache 0;
 
+# exclude mobile devices from redis caching
+if (\$redis_device = mobile) {
+  set \$skip_cache 1;
+}
+
 # POST requests and urls with a query string should always go to PHP
 if (\$request_method = POST) {
   set \$skip_cache 1;
@@ -1269,6 +1277,13 @@ location /redis-store {
 XFF
 
 cat > "/usr/local/nginx/conf/redisupstream.conf" <<GGG
+map \$http_user_agent \$redis_device {
+    default                               'desktop';
+    ~*(iPhone|Android|IEMobile|Blackberry) 'mobile';
+    "~*Firefox.*Mobile"                    'mobile';
+    "~*ipod.*mobile"                       'mobile';
+}
+
 upstream redisbackend {
   zone upstream_redis 64k;
   server 127.0.0.1:6379 weight=1 max_fails=3 fail_timeout=30s;
