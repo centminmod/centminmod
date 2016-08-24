@@ -2278,7 +2278,7 @@ issue_acmedns() {
         echo "---------------------------------"
         echo " DNS mode via Cloudflare DNS API"
         echo "---------------------------------"
-        echo "setup TXT DNS record via Cloudflare API"
+        echo " setup TXT DNS record via Cloudflare API"
         cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | grep -A60 'Verify each domain' | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/d'
         echo
         pushover_alert $vhostname dnscf "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
