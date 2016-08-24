@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8.5'
+ACMEVER='0.8.6'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -26,11 +26,26 @@ MAIN_HOSTNAME=$(awk '/server_name / {print $2}' "$MAIN_HOSTNAMEVHOSTFILE" | awk 
 OPENSSL_VERSION=$(ls -rt "$DIR_TMP" | awk '/openssl-1/' | grep -v 'tar.gz' | tail -1 | sed -e 's|openssl-||')
 ###############################################################
 # pushover API
+# to ensure these settings persist DO NOT change them in this
+# script but set these variables in persistent config file at
+# /etc/centminmod/acmetoool-config.ini
 PUSHALERT='n'
 papiurl=https://api.pushover.net/1/messages.json
 # registered pushover.net users will find their Pushover email
 # aliases for notifications at https://pushover.net/
 pushover_email=''
+###############################################################
+# Cloudflare DNS API for DNS Mode
+# https://github.com/Neilpang/acme.sh/tree/master/dnsapi
+# login to your Cloudflare account to get your API Key in
+# My Settings section of your account
+# to ensure these settings persist DO NOT change them in this
+# script but set these variables in persistent config file at
+# /etc/centminmod/acmetoool-config.ini
+# set to CF_DNSAPI='y' and fill in CF_KEY and CF_EMAIL settings
+CF_DNSAPI='n'
+CF_KEY=''
+CF_EMAIL=''
 ###############################################################
 UNATTENDED='n'
 NOTICE='y'
@@ -233,10 +248,10 @@ backup_acme() {
 #####################
 pushover_alert() {
   if [[ "$PUSHALERT" = [yY] ]]; then
+    push_vhostname="$1"
     dnspush=$2
     dnslog=$3
-    if [[ ! -z "$pushover_email" && ! -f "$dnslog" ]] && [[ "$dnspush" != 'dns' ]]; then
-      push_vhostname="$1"
+    if [[ ! -z "$pushover_email" && ! -f "$dnslog" ]] && [[ "$dnspush" != 'dns' || "$dnspush" != 'dnscf' ]]; then
       acme_domainconf="${ACMECERTHOME}${push_vhostname}${ECC_ACMEHOMESUFFIX}/${push_vhostname}.conf"
       acmecreate_date=$(grep "^Le_CertCreateTimeStr" "$acme_domainconf" | cut -d '=' -f 2)
       acmenextrenew_date=$(grep "^Le_NextRenewTimeStr" "$acme_domainconf" | cut -d '=' -f 2)
@@ -246,6 +261,8 @@ pushover_alert() {
       "| mail -s "$push_vhostname SSL Cert Setup `date`" -r "$pushover_email" "$pushover_email"
     elif [[ -f "$dnslog" ]] && [[ "$dnspush" = 'dns' ]]; then
       cat "$dnslog" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | egrep -v 'Please be aware that you prepend|resulting subdomain|and retry again' | mail -s "$push_vhostname DNS Mode Validation Instructions `date`" -r "$pushover_email" "$pushover_email"
+    elif [[ "$dnspush" = 'dnscf' ]]; then
+      cat "$dnslog" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | mail -s "$push_vhostname DNS Mode Validation via Cloudflare API `date`" -r "$pushover_email" "$pushover_email"
     fi
   fi
 }
@@ -2137,6 +2154,18 @@ issue_acmedns() {
     echo "-----------------------------------------------------------"
     echo "[DNS mode] issue & install letsencrypt ssl certificate for $vhostname"
     echo "-----------------------------------------------------------"
+    # if CF_DNSAPI enabled for Cloudflare DNS mode, use Cloudflare API for setting
+    # up DNS mode validation via TXT DNS record creation
+    if [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_KEY" ]]; then
+      export CF_KEY="$CF_KEY"
+      export CF_EMAIL="$CF_EMAIL"
+      DNSAPI_OPT=' dns_cf'
+      sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
+      sed -i "s|CF_Key=\".*|CF_Key=\"$CF_KEY\"|" "$ACMECERTHOME"account.conf
+      sed -i "s|CF_Email=\".*|CF_Email=\"$CF_EMAIL\"|" "$ACMECERTHOME"account.conf
+    else
+      DNSAPI_OPT=""
+    fi
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
     if [[ -f "$ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}/${vhostname}.key" ]]; then
@@ -2145,8 +2174,8 @@ issue_acmedns() {
       DNS_ISSUEOPT='--issue'
     fi
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
       ############################################
       # DNS mode cert only don't touch nginx vhosts
       # 2
@@ -2161,28 +2190,30 @@ issue_acmedns() {
         fi
       fi # DNS Mode certonly 2
     elif [[ "$CERTONLY_DNS" = '1' && "$STAGE_DNS" = 'live' ]]; then
-     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
     else
-     echo ""$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     echo ""$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
     fi
-    if [ -f "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" ]; then
-      # echo " Final Step to complete SSL Certificate Issuance" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo " Once DNS updated for $vhostname, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "  $ACMEBINARY --renew${ECCFLAG} $DOMAINOPT" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo " SSL certs will be located : $ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo " If want to install cert into Nginx vhost, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      # echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "  "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo " SSL certs will be installed at : /usr/local/nginx/conf/ssl/${vhostname}/" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-    fi
+    if [[ "$CF_DNSAPI" != [yY] ]] && [[ -z "$CF_KEY" && -z "$CF_KEY" ]]; then
+      if [ -f "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" ]; then
+        # echo " Final Step to complete SSL Certificate Issuance" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo " Once DNS updated for $vhostname, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "  $ACMEBINARY --renew${ECCFLAG} $DOMAINOPT" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo " SSL certs will be located : $ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo " If want to install cert into Nginx vhost, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        # echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      echo "  "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}. key"${ECCFLAG}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo " SSL certs will be installed at : /usr/local/nginx/conf/ssl/${vhostname}/" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      fi
+    fi # if CF_DNSAPI enabled can skip this text
       ############################################
       # DNS mode cert only don't touch nginx vhosts
       # 3
@@ -2222,15 +2253,26 @@ issue_acmedns() {
     echo
     fi  # reloadcmd_setup
     elif [[ "$CERTONLY_DNS" = '1' ]]; then
-      echo
-      echo "---------------------------------"
-      echo " DNS mode requires manual steps below"
-      echo "---------------------------------"
-      cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | egrep -v 'Please be aware that you prepend|resulting subdomain|and retry again'
-      pushover_alert $vhostname dns "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      # backup_acme $vhostname
-      echo
-      echo
+      if [[ "$CF_DNSAPI" != [yY] ]] && [[ -z "$CF_KEY" && -z "$CF_KEY" ]]; then
+        echo
+        echo "---------------------------------"
+        echo " DNS mode requires manual steps below"
+        echo "---------------------------------"
+        cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | egrep -v 'Please be aware that you  prepend|resulting subdomain|and retry again'
+        pushover_alert $vhostname dns "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        # backup_acme $vhostname
+        echo
+        echo
+      elif [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_KEY" ]]; then
+        echo
+        echo "---------------------------------"
+        echo " DNS mode via Cloudflare DNS API"
+        echo "---------------------------------"
+        echo "setup TXT DNS record via Cloudflare API"
+        cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g'
+        echo
+        pushover_alert $vhostname dnscf "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      fi # if CF_DNSAPI enabled can skip this text
     fi # DNS Mode certonly 3
 }
 
