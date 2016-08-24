@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8.6'
+ACMEVER='0.8.7'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -262,7 +262,7 @@ pushover_alert() {
     elif [[ -f "$dnslog" ]] && [[ "$dnspush" = 'dns' ]]; then
       cat "$dnslog" | grep -A30 'Add the following TXT record' | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | egrep -v 'Please be aware that you prepend|resulting subdomain|and retry again' | mail -s "$push_vhostname DNS Mode Validation Instructions `date`" -r "$pushover_email" "$pushover_email"
     elif [[ "$dnspush" = 'dnscf' ]]; then
-      cat "$dnslog" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | mail -s "$push_vhostname DNS Mode Validation via Cloudflare API `date`" -r "$pushover_email" "$pushover_email"
+      cat "$dnslog" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | grep -A60 'Verify each domain' | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/d' | mail -s "$push_vhostname DNS Mode Validation via Cloudflare API `date`" -r "$pushover_email" "$pushover_email"
     fi
   fi
 }
@@ -2213,6 +2213,16 @@ issue_acmedns() {
         echo " SSL certs will be installed at : /usr/local/nginx/conf/ssl/${vhostname}/" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
       fi
+    else
+      if [ -f "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" ]; then
+        echo " If want to install cert into Nginx vhost, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        # echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      echo "  "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}. key"${ECCFLAG}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo " SSL certs will be installed at : /usr/local/nginx/conf/ssl/${vhostname}/" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      fi
     fi # if CF_DNSAPI enabled can skip this text
       ############################################
       # DNS mode cert only don't touch nginx vhosts
@@ -2269,7 +2279,7 @@ issue_acmedns() {
         echo " DNS mode via Cloudflare DNS API"
         echo "---------------------------------"
         echo "setup TXT DNS record via Cloudflare API"
-        cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g'
+        cat "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" | perl -pe 's/\x1b.*?[mGKH]//g' | sed 's/\[[^]]*\]//g' | grep -A60 'Verify each domain' | sed '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/d'
         echo
         pushover_alert $vhostname dnscf "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
       fi # if CF_DNSAPI enabled can skip this text
