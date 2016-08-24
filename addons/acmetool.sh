@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8.7'
+ACMEVER='0.8.8'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -202,15 +202,38 @@ fi
 #####################
 checkdate() {
   if [ -d /root/.acme.sh ]; then
+   echo "----------------------------------------------"
+   echo "nginx installed"
+   echo "----------------------------------------------"
    for c in $(find /usr/local/nginx/conf/ssl/ -name '*-acme.cer' -o -name '*-acme-ecc.cer'); do
     if [ -f $c ]; then
       expiry=$(openssl x509 -enddate -noout -in $c | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
+      fingerprint=$(openssl x509 -fingerprint -noout -in $c)
       epochExpirydate=$(date -d"${expiry}" +%s)
       epochToday=$(date +%s)
       secondsToExpire=$(echo ${epochExpirydate} - ${epochToday} | bc)
       daysToExpire=$(echo "${secondsToExpire} / 60 / 60 / 24" | bc)
       echo
       echo "$c"
+      echo "$fingerprint"
+      echo "certificate expires in $daysToExpire days on $expiry"
+    fi
+   done
+   echo
+   echo "----------------------------------------------"
+   echo "acme.sh obtained"
+   echo "----------------------------------------------"
+   for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain|ca'); do
+    if [ -f $ca ]; then
+      expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
+      fingerprint=$(openssl x509 -fingerprint -noout -in $ca)
+      epochExpirydate=$(date -d"${expiry}" +%s)
+      epochToday=$(date +%s)
+      secondsToExpire=$(echo ${epochExpirydate} - ${epochToday} | bc)
+      daysToExpire=$(echo "${secondsToExpire} / 60 / 60 / 24" | bc)
+      echo
+      echo "$ca"
+      echo "$fingerprint"
       echo "certificate expires in $daysToExpire days on $expiry"
     fi
    done
