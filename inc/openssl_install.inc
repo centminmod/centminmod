@@ -139,6 +139,11 @@ installopenssl() {
         # make${MAKETHREADS} check
         make${MAKETHREADS}
         make install
+        if [[ "$?" = '0' ]]; then
+            ln -s /opt/libressl/lib /opt/libressl/lib64
+        else
+            rm -rf /opt/libressl/lib64
+        fi
         cp -a /etc/pki/tls/openssl.cnf /etc/pki/tls/openssl.cnf-bakb4libressl
         ln -s /etc/pki/tls/openssl.cnf /etc/ssl/openssl.cnf
 
@@ -192,12 +197,12 @@ installopenssl() {
         if [[ "$(uname -m)" = 'x86_64' ]]; then
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config --prefix=$STATICLIBSSL no-shared enable-ec_nistp_64_gcc_128
+                ./config --prefix=$STATICLIBSSL shared enable-ec_nistp_64_gcc_128
             else
-                ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128
+                ./config --prefix=$STATICLIBSSL shared enable-tlsext enable-ec_nistp_64_gcc_128
             fi
         else
-            ./config --prefix=$STATICLIBSSL no-shared enable-tlsext
+            ./config --prefix=$STATICLIBSSL shared enable-tlsext
         fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
             make${MAKETHREADS}
@@ -206,6 +211,11 @@ installopenssl() {
             make
         fi
         make install
+        if [[ "$?" = '0' ]]; then
+            ln -s "${DIR_TMP}/staticlibssl/lib" "${DIR_TMP}/staticlibssl/lib64"
+        else
+            rm -rf "${DIR_TMP}/staticlibssl/lib64"
+        fi
         opensslinstallendtime=$(date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
 
