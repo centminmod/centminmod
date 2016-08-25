@@ -193,8 +193,12 @@ installopenssl() {
         else
             ./config --prefix=$STATICLIBSSL no-shared enable-tlsext
         fi
-        make depend
-        make
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+            make${MAKETHREADS}
+        else
+            make depend
+            make
+        fi
         make install
         opensslinstallendtime=$(date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
