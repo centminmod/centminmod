@@ -325,8 +325,8 @@ if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
     PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
     ln -s /opt/libressl/lib /opt/libressl/lib64
   else
-    PHP_OPENSSLOPT="--with-openssl=${DIR_TMP}/staticlibssl"
-    ln -s "${DIR_TMP}/staticlibssl/lib" "${DIR_TMP}/staticlibssl/lib64"
+    PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
+    ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
   fi
 else
   PHP_OPENSSLOPT='--with-openssl'

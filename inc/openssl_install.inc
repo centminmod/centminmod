@@ -182,8 +182,8 @@ installopenssl() {
         #download openssl centos 6.x
     
         # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
-        export BPATH=$DIR_TMP
-        export STATICLIBSSL="${BPATH}/staticlibssl"
+        # export OPENSSL_BPATH=$OPENSSL_CUSTOMPATH
+        export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
     
         tar xzf ${OPENSSL_LINKFILE}
         #-- Build static openssl
@@ -212,9 +212,9 @@ installopenssl() {
         fi
         make install
         if [[ "$?" = '0' ]]; then
-            ln -s "${DIR_TMP}/staticlibssl/lib" "${DIR_TMP}/staticlibssl/lib64"
+            ln -s "${STATICLIBSSL}/lib" "${STATICLIBSSL}/lib64"
         else
-            rm -rf "${DIR_TMP}/staticlibssl/lib64"
+            rm -rf "${STATICLIBSSL}/lib64"
         fi
         opensslinstallendtime=$(date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )

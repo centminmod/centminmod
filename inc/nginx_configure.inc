@@ -606,8 +606,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
-			export BPATH=$DIR_TMP
-			export STATICLIBSSL="${BPATH}/staticlibssl"
+			# export OPENSSL_BPATH=$DIR_TMP
+			export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 			LIBRESSLOPT=""
 			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
 			LRT=""
@@ -1420,8 +1420,8 @@ else
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
-			export BPATH=$DIR_TMP
-			export STATICLIBSSL="${BPATH}/staticlibssl"
+			# export OPENSSL_BPATH=$DIR_TMP
+			export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 			LIBRESSLOPT=""
 			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
 			LRT=""
