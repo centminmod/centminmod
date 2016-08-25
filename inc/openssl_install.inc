@@ -84,6 +84,7 @@ fi # CLOUDFLARE_PATCHSSL
 }
 
 installopenssl() {
+    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
     if [ ! -f /usr/local/go/bin/go ]; then
         # if golang is not detected BoringSSL switch will be disabled
         # and default to using OpenSSL 1.0.2+
@@ -189,7 +190,12 @@ installopenssl() {
         fi
         opensslpatches
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-            ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+                # openssl 1.1.0 unsupported flag enable-tlsext
+                ./config --prefix=$STATICLIBSSL no-shared enable-ec_nistp_64_gcc_128
+            else
+                ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128
+            fi
         else
             ./config --prefix=$STATICLIBSSL no-shared enable-tlsext
         fi
