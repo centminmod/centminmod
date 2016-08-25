@@ -228,10 +228,16 @@ funct_nginxconfigure
         figlet -ckf standard "Nginx Make"
     fi
 
+    # detect OpenSSL 1.1.0 for make -jXX support
+    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
     else
-        time make
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+            time make${MAKETHREADS}
+        else
+            time make
+        fi
     fi
 
     if [[ "$STRIPNGINX" = [yY] ]]; then
