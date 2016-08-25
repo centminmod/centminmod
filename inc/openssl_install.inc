@@ -202,7 +202,12 @@ installopenssl() {
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext enable-ec_nistp_64_gcc_128
             fi
         else
-            ./config --prefix=$STATICLIBSSL shared enable-tlsext
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+                # openssl 1.1.0 unsupported flag enable-tlsext
+                ./config --prefix=$STATICLIBSSL shared
+            else
+                ./config --prefix=$STATICLIBSSL shared enable-tlsext
+            fi
         fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
             make${MAKETHREADS}
