@@ -1348,6 +1348,22 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
   fi
   cecho "------------------------------------------------------------" $boldgreen
 
+  if [[ "$wpscache" != [yY] ]]; then
+    echo
+    echo "Using full static page caching may cause problems for mobile & tablet device"
+    echo "visitors depending on your WP themes used so you may want to exclude those"
+    echo
+    read -ep "Do you want to exclude mobile/tablet devices from Cache Enabler caching ? [y/n]: " exclude_mobilecache
+    if [[ "$exclude_mobilecache" = [nN] ]]; then
+      if [ -f "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf" ]; then
+        sed -i "s|^if (\$cmwpcache_device = mobile) { set \$cache_uri 'nullcache'; }|#if (\$cmwpcache_device = mobile) { set \$cache_uri 'nullcache'; }|" "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf"
+      fi
+      if [ -f "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" ]; then
+        sed -i "s|^if (\$redis_device = mobile) { set \$skip_cache 1; }|#if (\$redis_device = mobile) { set \$skip_cache 1; }|" "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf"
+      fi
+    fi
+  fi
+
 cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
  
 wp core download --allow-root
