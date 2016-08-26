@@ -17,7 +17,8 @@ fi
 echo
 echo "ioncube loader installation started"
 echo "ioncube loader only supports PHP 5.3, 5.4, 5.5 and 5.6"
-echo "ioncube loader does not support PHP 7.0 currently"
+echo "ioncube loader PHP 7 currently beta supported"
+echo "http://blog.ioncube.com/2016/05/06/beta-php7-ioncube-loaders/"
 echo
 
 cd /svr-setup
@@ -25,11 +26,21 @@ mkdir -p ioncube
 cd ioncube
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-  wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
-  tar xvzf ioncube_loaders_lin_x86-64.tar.gz
+  if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
+    wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    tar xvzf ioncube_loaders_lin_x86-64.tar.gz
+  else
+    wget -cnv https://www.ioncube.com/php7-linux-x86-64-beta8.tgz
+    tar xvzf php7-linux-x86-64-beta8.tgz
+  fi
 else
-  wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
-  tar xvzf ioncube_loaders_lin_x86.tar.gz
+  if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
+    wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
+    tar xvzf ioncube_loaders_lin_x86.tar.gz
+  else
+    wget -cnv https://www.ioncube.com/php7-linux-x86-beta8.tgz
+    tar xvzf php7-linux-x86-beta8.tgz
+  fi
 fi
 
 # check current PHP version
@@ -37,7 +48,17 @@ ICPHPVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 
 # move current ioncube version to existing PHP extension directory
-\cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so ${PHPEXTDIRD}/ioncube.so
+if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
+  \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so ${PHPEXTDIRD}/ioncube.so
+else
+  # for php 7 ioncube beta8
+  ICPHPVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    \cp -f ioncube_loader_lin_x86-64_${ICPHPVER}.0b8.so ${PHPEXTDIRD}/ioncube.so
+  else
+    \cp -f ioncube_loader_lin_x86_${ICPHPVER}.0b8.so ${PHPEXTDIRD}/ioncube.so
+  fi
+fi
 
 CONFIGSCANDIR='/etc/centminmod/php.d'
 
