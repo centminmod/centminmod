@@ -464,9 +464,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     set \$cache_uri \$request_uri;
 
     # exclude mobile devices from redis caching
-    if (\$cmwpcache_device = mobile) {
-      set \$cache_uri 'nullcache';
-    }
+    if (\$cmwpcache_device = mobile) { set \$cache_uri 'nullcache'; }
 
     # bypass cache if POST requests or URLs with a query string
     if (\$request_method = POST) {
@@ -1260,9 +1258,7 @@ location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
 set \$skip_cache 0;
 
 # exclude mobile devices from redis caching
-if (\$redis_device = mobile) {
-  set \$skip_cache 1;
-}
+if (\$redis_device = mobile) { set \$skip_cache 1; }
 
 # POST requests and urls with a query string should always go to PHP
 if (\$request_method = POST) {
