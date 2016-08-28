@@ -1732,7 +1732,7 @@ if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
   chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
   echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname wptest"
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'led' ]]; then
