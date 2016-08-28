@@ -2276,7 +2276,8 @@ enter_webroot() {
       echo
       echo "you entered custom webroot = $input_webroot"
       echo "full path location will be at:"
-      echo "/home/nginx/domains/${input_domain}/${input_webroot}"
+      echo
+      echo " /home/nginx/domains/${input_domain}/${input_webroot}"
       read -ep "is this path correct ? [y/n]: " webrootpath_correct
     done
     if [[ "$webrootpath_correct" = [yY] ]]; then
