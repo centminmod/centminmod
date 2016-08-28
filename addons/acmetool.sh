@@ -858,6 +858,8 @@ echo "sed -i '1,12d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2""
 sed -i '1,12d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
 echo "cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"
+rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
 
 elif [[ "$HTTPSONLY" = 'https' && -z "$CHECKFORWP" ]]; then
   echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
