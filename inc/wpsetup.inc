@@ -1778,8 +1778,10 @@ fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
 echo
-cecho "domain: http://$vhostname" $boldyellow
-cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+if [[ "$wpcli_ssldefault" != '1' ]]; then
+  cecho "domain: http://$vhostname" $boldyellow
+  cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+fi
 if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
@@ -1827,7 +1829,11 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
     cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
     cecho "wp-login.php protection Username: $HTUSER" $boldyellow
     cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-    cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
+    if [[ "$wpcli_ssldefault" = '1' ]]; then
+      cecho "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
+    else
+      cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
+    fi
     echo
     cecho "Resetting wp-login.php protection:" $boldyellow
     cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
