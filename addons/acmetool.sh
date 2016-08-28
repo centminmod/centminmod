@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.8.8'
+ACMEVER='0.8.9'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -208,14 +208,14 @@ checkdate() {
    for c in $(find /usr/local/nginx/conf/ssl/ -name '*-acme.cer' -o -name '*-acme-ecc.cer'); do
     if [ -f $c ]; then
       expiry=$(openssl x509 -enddate -noout -in $c | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
-      fingerprint=$(openssl x509 -fingerprint -noout -in $c)
+      fingerprint=$(openssl x509 -fingerprint -noout -in $c | sed 's|:||g' | awk -F "=" '// {print $2}')
       epochExpirydate=$(date -d"${expiry}" +%s)
       epochToday=$(date +%s)
       secondsToExpire=$(echo ${epochExpirydate} - ${epochToday} | bc)
       daysToExpire=$(echo "${secondsToExpire} / 60 / 60 / 24" | bc)
       echo
       echo "$c"
-      echo "$fingerprint"
+      echo "SHA1 Fingerprint=${fingerprint}"
       echo "certificate expires in $daysToExpire days on $expiry"
     fi
    done
@@ -226,14 +226,14 @@ checkdate() {
    for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain|ca'); do
     if [ -f $ca ]; then
       expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
-      fingerprint=$(openssl x509 -fingerprint -noout -in $ca)
+      fingerprint=$(openssl x509 -fingerprint -noout -in $ca | sed 's|:||g' | awk -F "=" '// {print $2}')
       epochExpirydate=$(date -d"${expiry}" +%s)
       epochToday=$(date +%s)
       secondsToExpire=$(echo ${epochExpirydate} - ${epochToday} | bc)
       daysToExpire=$(echo "${secondsToExpire} / 60 / 60 / 24" | bc)
       echo
       echo "$ca"
-      echo "$fingerprint"
+      echo "SHA1 Fingerprint=${fingerprint}"
       echo "certificate expires in $daysToExpire days on $expiry"
     fi
    done
@@ -793,6 +793,7 @@ fi # "${MAIN_HOSTNAMEVHOSTSSLFILE}" doesn't exist
 #####################
 sslvhostsetup() {
   HTTPSONLY=$1
+  CHECKFORWP=$2
   echo
   echo "[sslvhostsetup] create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
   echo
@@ -827,7 +828,38 @@ fi
 
 detectcustom_webroot $CUSTOM_WEBROOT $vhostname
 
-if [[ "$HTTPSONLY" = 'https' ]]; then
+if [[ "$HTTPSONLY" = 'https' && "$CHECKFORWP" = 'wp' ]]; then
+  echo "[wp] backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+  cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
+  rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+
+# remove 1st 12 lines of wp generated yourdomain.com.ssl.conf
+# and insert http to https redirect
+# single ssl vhost at yourdomain.com.ssl.conf
+echo "[wp] create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+# For HTTP/2 SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+
+# redirect from www to non-www  forced SSL
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+server {
+  $DEDI_LISTEN
+  server_name ${vhostname} www.${vhostname};
+  return 302 https://\$server_name\$request_uri;
+}
+ESU
+echo "cp -a "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2""
+cp -a "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
+echo "sed -i '1,12d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2""
+sed -i '1,12d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
+echo "cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+
+elif [[ "$HTTPSONLY" = 'https' && -z "$CHECKFORWP" ]]; then
   echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
   cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
   rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
@@ -924,7 +956,7 @@ server {
   include /usr/local/nginx/conf/vts_server.conf;
 }
 ESS
-else
+elif [[ "$HTTPSONLY" != 'https' && -z "$CHECKFORWP" ]]; then
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
@@ -1098,11 +1130,23 @@ issue_acme() {
         sslopts_check
         sslvhostsetup https 
       fi
+    elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
+      # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+      # and remove the non-https vhostname.conf file
+      echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+        # sslvhostsetup https $vhostname
+        sslopts_check
+        sslvhostsetup https wp
+      fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
     fi
     cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-    if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+    if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -1119,9 +1163,24 @@ issue_acme() {
     echo "-----------------------------------------------------------"
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    echo "testcert value = $testcert"
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
      echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
+      # only enable resolver and ssl_stapling for live ssl certificate deployments
+      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+        sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
+        sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+      fi
+    elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
+      echo "wp routine"
+     echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
@@ -1133,8 +1192,10 @@ issue_acme() {
     else
      echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
     fi
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
@@ -1242,11 +1303,23 @@ reissue_acme() {
         sslopts_check
         sslvhostsetup https 
       fi
+    elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
+      # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+      # and remove the non-https vhostname.conf file
+      echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+        # sslvhostsetup https $vhostname
+        sslopts_check
+        sslvhostsetup https wp
+      fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
     fi
     cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-    if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+    if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -1265,9 +1338,24 @@ reissue_acme() {
     "$ACMEBINARY" --force --createDomainKey $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT"
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    echo "testcert value = $testcert"
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
      echo ""$ACMEBINARY" --force --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --force --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
+      # only enable resolver and ssl_stapling for live ssl certificate deployments
+      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+        sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
+        sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+      fi
+    elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
+      echo "wp routine"
+     echo ""$ACMEBINARY" --force --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
@@ -1279,8 +1367,10 @@ reissue_acme() {
     else
      echo ""$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
     fi
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
@@ -1384,11 +1474,23 @@ renew_acme() {
         sslopts_check
         sslvhostsetup https 
       fi
+    elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
+      # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+      # and remove the non-https vhostname.conf file
+      echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+        # sslvhostsetup https $vhostname
+        sslopts_check
+        sslvhostsetup https wp
+      fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
     fi
     cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-    if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+    if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -1405,9 +1507,24 @@ renew_acme() {
     echo "-----------------------------------------------------------"
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    echo "testcert value = $testcert"
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
      echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
+      # only enable resolver and ssl_stapling for live ssl certificate deployments
+      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+        sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
+        sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+      fi
+    elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
+      echo "wp routine"
+     echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
@@ -1419,8 +1536,10 @@ renew_acme() {
     else
      echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
     fi
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
@@ -1577,11 +1696,23 @@ webroot_issueacme() {
         sslopts_check
         sslvhostsetup https 
       fi
+    elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
+      # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+      # and remove the non-https vhostname.conf file
+      echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+        # sslvhostsetup https $vhostname
+        sslopts_check
+        sslvhostsetup https wp
+      fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
     fi
     cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-    if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+    if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -1598,9 +1729,24 @@ webroot_issueacme() {
     echo "-----------------------------------------------------------"
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    echo "testcert value = $testcert"
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
       echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
+      # only enable resolver and ssl_stapling for live ssl certificate deployments
+      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+        sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
+        sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+      fi
+    elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
+      echo "wp routine"
+      echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
@@ -1612,8 +1758,10 @@ webroot_issueacme() {
     else
       echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
     fi
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
@@ -1770,11 +1918,23 @@ webroot_reissueacme() {
         sslopts_check
         sslvhostsetup https 
       fi
+    elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
+      # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+      # and remove the non-https vhostname.conf file
+      echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+        # sslvhostsetup https $vhostname
+        sslopts_check
+        sslvhostsetup https wp
+      fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
     fi
     cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-    if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+    if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -1793,9 +1953,11 @@ webroot_reissueacme() {
     "$ACMEBINARY" --force --createDomainKey $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT"
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    echo "testcert value = $testcert"
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
       echo ""$ACMEBINARY" --force --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --force --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
@@ -1807,8 +1969,10 @@ webroot_reissueacme() {
     else
       echo ""$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
     fi
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
@@ -1961,11 +2125,23 @@ webroot_renewacme() {
         sslopts_check
         sslvhostsetup https 
       fi
+    elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
+      # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
+      # and remove the non-https vhostname.conf file
+      echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+      cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
+      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
+        # sslvhostsetup https $vhostname
+        sslopts_check
+        sslvhostsetup https wp
+      fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
     fi
     cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-    if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+    if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
         sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -1982,9 +2158,24 @@ webroot_renewacme() {
     echo "-----------------------------------------------------------"
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    echo "testcert value = $testcert"
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
       echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
+      # only enable resolver and ssl_stapling for live ssl certificate deployments
+      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+        sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
+        sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
+        sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+      fi
+    elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
+      echo "wp routine"
+      echo ""$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
@@ -1996,8 +2187,10 @@ webroot_renewacme() {
     else
       echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      LECHECK=$?
     fi
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
@@ -2145,7 +2338,7 @@ issue_acmedns() {
         cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
       fi
       cp -a "$SSLVHOST_CONFIG" "${ACMEBACKUPDIR}/$SSLVHOST_CONFIGFILENAME-acmebackup-$DT"
-      if [[ "$testcert" != 'lived' || "$testcert" != 'd' ]]; then
+      if [[ "$testcert" != 'lived' || "$testcert" != 'd' || "$testcert" != 'wplived' || "$testcert" != 'wpd' ]]; then
         if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
           sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
           echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
@@ -2191,14 +2384,16 @@ issue_acmedns() {
     fi
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
+    echo "testcert value = $testcert"
     if [[ -f "$ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}/${vhostname}.key" ]]; then
       DNS_ISSUEOPT='--issue --force'
     else
       DNS_ISSUEOPT='--issue'
     fi
-    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
+    if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
      echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      LECHECK=$?
       ############################################
       # DNS mode cert only don't touch nginx vhosts
       # 2
@@ -2215,9 +2410,11 @@ issue_acmedns() {
     elif [[ "$CERTONLY_DNS" = '1' && "$STAGE_DNS" = 'live' ]]; then
      echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+      LECHECK=$?
     else
      echo ""$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     LECHECK=$?
     fi
     if [[ "$CF_DNSAPI" != [yY] ]] && [[ -z "$CF_KEY" && -z "$CF_KEY" ]]; then
       if [ -f "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" ]; then
@@ -2251,7 +2448,8 @@ issue_acmedns() {
       # DNS mode cert only don't touch nginx vhosts
       # 3
       if [[ "$CERTONLY_DNS" != '1' ]]; then
-    LECHECK=$?
+    # LECHECK=$?
+    echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
       sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"

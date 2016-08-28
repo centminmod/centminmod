@@ -236,10 +236,12 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
         vhostssl='le'
       elif [[ "$vhostssl_opt" = '2' ]]; then
         vhostssl='led'
+        wpcli_ssldefault=1
       elif [[ "$vhostssl_opt" = '3' ]]; then
         vhostssl='lelive'
       elif [[ "$vhostssl_opt" = '4' ]]; then
         vhostssl='lelived'
+        wpcli_ssldefault=1
       fi
       echo
     fi
@@ -524,7 +526,13 @@ WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler
 # \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-rediscache.conf
 
 cat > "/usr/local/nginx/conf/php-rediscache.conf"<<HFF
-location ~ \.php\$ {
+location ~ [^/]\.php(/|$) {
+  include /usr/local/nginx/conf/503include-only.conf;
+    fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+    if (!-f $document_root$fastcgi_script_name) {
+        return 404;
+    }
+
     set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
     srcache_fetch_skip \$skip_cache;
     srcache_store_skip \$skip_cache;
@@ -535,8 +543,6 @@ location ~ \.php\$ {
     more_set_headers 'X-Cache \$srcache_fetch_status';
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
-    try_files \$uri =404;
-    fastcgi_split_path_info ^(.+\.php)(/.+)\$;
     fastcgi_pass   127.0.0.1:9000;
     #fastcgi_pass   unix:/tmp/php5-fpm.sock;
     fastcgi_index  index.php;
@@ -591,6 +597,7 @@ fastcgi_param  DOCUMENT_ROOT      \$document_root;
 fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
 fastcgi_param  REQUEST_SCHEME     \$scheme;
 fastcgi_param  HTTPS              \$https if_not_empty;
+fastcgi_param  HTTP_PROXY         "";
 
 fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
 fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
@@ -1384,7 +1391,10 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     crontab -l > cronjoblist
     mkdir -p /home/nginx/domains/${vhostname}/cronjobs
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
-    echo "#*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    # only insert cronjob if one doesn't already exist
+    if [[ -z $(grep "${vhostname}\/wp-cron.php" cronjoblist) ]]; then
+      echo "#*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    fi
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cron.txt
     crontab cronjoblist
     rm -rf cronjoblist
@@ -1542,6 +1552,11 @@ fi # WPPLUGINS_ALL=y
 
 # remove hello plugin
 wp plugin uninstall hello --allow-root
+
+if [[ "$wpcli_ssldefault" = '1' ]]; then
+  wp option update home "https://${vhostname}${WPSUBDIR}"
+  wp option update siteurl "https://${vhostname}${WPSUBDIR}"
+fi
 
 # allows user to add custom wp-cli commands after initiall install to
 # further customise their installation. you create a custom file at
@@ -1716,8 +1731,8 @@ if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
   chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname""
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname"
+  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest"
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname wptest"
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'led' ]]; then
@@ -1725,8 +1740,8 @@ elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'led' ]]; the
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
   chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" d"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" d
+  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd"
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelive' ]]; then
@@ -1734,8 +1749,8 @@ elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelive' ]]; 
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
   chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" live"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" live
+  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive"
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelived' ]]; then
@@ -1743,8 +1758,8 @@ elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelived' ]];
   cecho "-------------------------------------------------------------" $boldyellow
   echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
   chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" lived"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" lived
+  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived"
+  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived
   cecho "-------------------------------------------------------------" $boldyellow
   echo
 fi
@@ -1824,11 +1839,11 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
   fi
 elif [[ "$disablepwdprotect" = [yY] ]]; then
     # disable wp-login.php password protection if user opts to do so
-    sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf
-    sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.conf
+    sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
+    sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
     if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
-      sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf
-      sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf
+      sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
+      sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
     fi
     /usr/bin/nprestart
 fi
