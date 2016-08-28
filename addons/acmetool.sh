@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.9.1'
+ACMEVER='0.9.2'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -2244,14 +2244,47 @@ awsrenew_acme() {
 #####################
 enter_domainname() {
   echo
-  read -ep "Enter SSL certificate domain name you want: " input_domain
+  read -ep "Enter SSL certificate domain name you want without www. prefix host: " input_domain
   echo
 }
 
 #####################
 enter_webroot() {
   echo
+  echo "custom web root should be within /home/nginx/domains/yourdomain.com path"
+  echo "i.e. /home/nginx/domains/yourdomain.com/customwebrootpath"
+  echo
   read -ep "Enter custom webroot path you want: " input_webroot
+  echo
+  echo "you entered custom webroot = $input_webroot"
+  echo "full path location will be at:"
+  echo
+  echo " /home/nginx/domains/${input_domain}/${input_webroot}"
+  echo
+  read -ep "is this path correct ? [y/n]: " webrootpath_correct
+  if [[ "$webrootpath_correct" = [yY] ]]; then
+    input_webroot="/home/nginx/domains/${input_domain}/${input_webroot}"
+    echo "full path location will be at:"
+    echo "$input_webroot"
+  else
+    while [[ "$webrootpath_correct" != [yY] ]]; do
+      echo
+      echo "custom web root should be within /home/nginx/domains/yourdomain.com path"
+      echo "i.e. /home/nginx/domains/yourdomain.com/customwebrootpath"
+      echo
+      read -ep "Enter custom webroot path you want: " input_webroot
+      echo
+      echo "you entered custom webroot = $input_webroot"
+      echo "full path location will be at:"
+      echo "/home/nginx/domains/${input_domain}/${input_webroot}"
+      read -ep "is this path correct ? [y/n]: " webrootpath_correct
+    done
+    if [[ "$webrootpath_correct" = [yY] ]]; then
+      input_webroot="/home/nginx/domains/${input_domain}/${input_webroot}"
+      echo "full path location will be at:"
+      echo "$input_webroot"
+    fi
+  fi
   echo
 }
 
