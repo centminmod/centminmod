@@ -1652,6 +1652,7 @@ cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
 #!/bin/bash
 PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin:/bin
 EMAIL=$WPADMINEMAIL
+EMAILFROM=$WPADMINEMAIL
 DT=\$(date +"%d%m%y-%H%M%S")
 
 {
@@ -1672,7 +1673,7 @@ chmod 0700 /usr/bin/wp
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 /usr/bin/nprestart
 } 2>&1 | tee /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
-cat -v /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log | /usr/bin/tr -cd '\11\12\15\40-\176' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAIL -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+cat -v /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log | /usr/bin/tr -cd '\11\12\15\40-\176' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAILFROM -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 #rm -rf /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
 ENDA
 
