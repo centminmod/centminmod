@@ -222,7 +222,7 @@ done
 if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
   read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
-  if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ]; then
+  if [[ -f "${SCRIPT_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
     read -ep "Get Letsencrypt SSL certificate Nginx vhost? [y/n]: " vhostssl_le
     if [[ "$vhostssl_le" = [yY] ]]; then
       echo
@@ -1726,42 +1726,44 @@ if [ -f /tmp/setupwp.log ]; then
   rm -rf /tmp/setupwp.log
 fi
 
-if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
-  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
-elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'led' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
-  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
-elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelive' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
-  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
-elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelived' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
-  chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
-  echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived"
-  "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
+if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
+  if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'led' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelive' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelived' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  fi
 fi
 
 {

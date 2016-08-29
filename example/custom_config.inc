@@ -262,6 +262,12 @@ WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 # php configured --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock
 PHP_MYSQLSOCKPATH='/var/lib/mysql'
 ###############################################################
+# Letsencrypt integration via addons/acmetool.sh auto detection
+# in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
+# generators. You can control whether or not to enable or disable
+# integration detection in these menu options
+LETSENCRYPT_DETECT='n'
+###############################################################
 
 # When set to ='y'will disable those listed installed services
 # by default. The service is still installed but disabled

@@ -12,12 +12,19 @@ CENTMINLOGDIR='/root/centminlogs'
 DT=$(date +"%d%m%y-%H%M%S")
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 DIR_TMP=/svr-setup
+CONFIGSCANBASE='/etc/centminmod'
 OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log"
-################################################################
+###############################################################
+# Letsencrypt integration via addons/acmetool.sh auto detection
+# in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
+# generators. You can control whether or not to enable or disable
+# integration detection in these menu options
+LETSENCRYPT_DETECT='n'
+###############################################################
 # Setup Colours
 black='\E[30;40m'
 red='\E[31;40m'
@@ -52,6 +59,19 @@ return
 ###############################################################
 if [ ! -d "$CENTMINLOGDIR" ]; then
   mkdir -p "$CENTMINLOGDIR"
+fi
+
+if [ -f "${CUR_DIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [ -f "${CUR_DIR}/inc/z_custom.inc" ]; then
+    source "${CUR_DIR}/inc/z_custom.inc"
 fi
 
   # extended custom nginx log format = main_ext for nginx amplify metric support
@@ -95,7 +115,7 @@ fi
 
 usage() { 
 # if pure-ftpd service running = 0
-if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
   cmd_arg='|le|led|lelive|lelived'
 fi
 if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '0' ]]; then
@@ -104,7 +124,7 @@ if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
   cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
-  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "  -s  le - letsencrypt test cert or led test cert with https default" $boldyellow
     cecho "  -s  lelive - letsencrypt live cert or lelived live cert with https default" $boldyellow
   fi
@@ -115,7 +135,7 @@ if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '
   cecho "  $0 -d yourdomain.com -s y -u ftpusername" $boldyellow
   cecho "  $0 -d yourdomain.com -s n -u ftpusername" $boldyellow
   cecho "  $0 -d yourdomain.com -s yd -u ftpusername" $boldyellow
-  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "  $0 -d yourdomain.com -s le -u ftpusername" $boldyellow
     cecho "  $0 -d yourdomain.com -s led -u ftpusername" $boldyellow
     cecho "  $0 -d yourdomain.com -s lelive -u ftpusername" $boldyellow
@@ -129,7 +149,7 @@ else
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
   cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
-  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "  -s  le - letsencrypt test cert or led test cert with https default" $boldyellow
     cecho "  -s  lelive - letsencrypt live cert or lelived live cert with https default" $boldyellow
   fi
@@ -139,7 +159,7 @@ else
   cecho "  $0 -d yourdomain.com -s y" $boldyellow  
   cecho "  $0 -d yourdomain.com -s n" $boldyellow  
   cecho "  $0 -d yourdomain.com -s yd" $boldyellow
-  if [ -f "${CUR_DIR}/addons/acmetool.sh" ]; then
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "  $0 -d yourdomain.com -s le" $boldyellow
     cecho "  $0 -d yourdomain.com -s led" $boldyellow
     cecho "  $0 -d yourdomain.com -s lelive" $boldyellow
@@ -874,42 +894,44 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 fi
 
 FINDUPPERDIR=$(dirname $SCRIPT_DIR)
-if [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
-  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
-  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname""
-  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname"
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
-elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
-  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
-  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d"
-  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
-elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
-  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
-  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live"
-  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
-elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]; then
-  echo
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
-  chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
-  echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived"
-  "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived
-  cecho "-------------------------------------------------------------" $boldyellow
-  echo
+if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
+  if [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname""
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname"
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d"
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live"
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived"
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  fi
 fi
 
 echo 

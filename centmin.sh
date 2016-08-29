@@ -604,6 +604,12 @@ WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 # php configured --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock
 PHP_MYSQLSOCKPATH='/var/lib/mysql'
 ###############################################################
+# Letsencrypt integration via addons/acmetool.sh auto detection
+# in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
+# generators. You can control whether or not to enable or disable
+# integration detection in these menu options
+LETSENCRYPT_DETECT='n'
+###############################################################
 
 MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
