@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.9.2'
+ACMEVER='0.9.3'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -234,6 +234,10 @@ checkdate() {
       echo
       echo "$ca"
       echo "SHA1 Fingerprint=${fingerprint}"
+      conf=$(echo $ca | sed 's|.cer$|.conf|')
+      if [[ "$(grep -q 'acme-staging.api' $conf; echo $?)" != '0' ]]; then
+        echo "https://crt.sh/?sha1=${fingerprint}"
+      fi
       echo "certificate expires in $daysToExpire days on $expiry"
     fi
    done
@@ -2280,6 +2284,7 @@ enter_webroot() {
       echo " /home/nginx/domains/${input_domain}/${input_webroot}"
       echo
       read -ep "is this path correct ? [y/n]: " webrootpath_correct
+      echo
     done
     if [[ "$webrootpath_correct" = [yY] ]]; then
       input_webroot="/home/nginx/domains/${input_domain}/${input_webroot}"
