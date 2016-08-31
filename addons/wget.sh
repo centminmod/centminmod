@@ -146,7 +146,7 @@ source_pcreinstall() {
   fi
   cd "pcre-${ALTPCRE_VERSION}"
   make clean >/dev/null 2>&1
-  ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline
+  ./configure --enable-utf8 --enable-utf16 --enable-utf32 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline
   make${MAKETHREADS}
   make install
   /usr/local/bin/pcre-config --version
