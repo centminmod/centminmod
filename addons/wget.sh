@@ -45,13 +45,13 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`grep "processor" /proc/cpuinfo |wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
+    CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
 fi
 
@@ -119,7 +119,7 @@ gccdevtools() {
 }
 
 source_pcreinstall() {
-  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
   if [ -s "$ALTPCRELINKFILE" ]; then
@@ -145,7 +145,8 @@ source_pcreinstall() {
     echo ""
   fi
   cd "pcre-${ALTPCRE_VERSION}"
-  ./configure --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline
+  make clean >/dev/null 2>&1
+  ./configure --enable-utf8 --enable-utf16 --enable-utf32 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline
   make${MAKETHREADS}
   make install
   /usr/local/bin/pcre-config --version
@@ -207,7 +208,7 @@ source_wgetinstall() {
   make install
   echo "/usr/local/lib/" > /etc/ld.so.conf.d/wget.conf
   ldconfig
-  if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]]; then
+  if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]] && [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
     echo "alias wget='/usr/local/bin/wget'" >> /root/.bashrc
   fi
   . /root/.bashrc
@@ -223,7 +224,11 @@ source_wgetinstall() {
   cecho "wget -V" $boldyellow
   wget -V
   cecho "--------------------------------------------------------" $boldgreen
-  cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
+  if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
+  else
+    cecho "wget ${WGET_VERSION} failed to update, still using system wget" $boldyellow
+  fi
   cecho "--------------------------------------------------------" $boldgreen
   echo
   fi
@@ -244,6 +249,19 @@ INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
 echo "Total wget Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
 tail -1 "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
+  ;;
+  pcre)
+starttime=$(date +%s.%N)
+{
+  source_pcreinstall
+} 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+
+endtime=$(date +%s.%N)
+
+INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+echo "" >> "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+echo "Total wget pcre Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+tail -1 "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
   ;;
   *)
     echo "$0 install"
