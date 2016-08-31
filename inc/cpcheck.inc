@@ -747,7 +747,7 @@ auto_gitupdate() {
 }
 
 figletcheck() {
-    if [ ! -f "$(rpm -ql figlet | grep 'bin\/figlet')" ]; then
+    if [[ ! -f "$(rpm -ql figlet | grep 'bin\/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
         yum -y -q install figlet
     fi
 }
