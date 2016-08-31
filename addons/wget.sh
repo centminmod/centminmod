@@ -250,6 +250,19 @@ echo "" >> "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
 echo "Total wget Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
 tail -1 "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
   ;;
+  pcre)
+starttime=$(date +%s.%N)
+{
+  source_pcreinstall
+} 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+
+endtime=$(date +%s.%N)
+
+INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+echo "" >> "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+echo "Total wget pcre Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+tail -1 "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
+  ;;
   *)
     echo "$0 install"
   ;;

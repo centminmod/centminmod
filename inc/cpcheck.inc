@@ -144,7 +144,7 @@ wgetver_check() {
   elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support'; echo $?)" = '0' ]]; then
     echo "fix pcre install for missing UTF8 support... one time task"
     sleep 6
-    "${SCRIPT_DIR}/addons/wget.sh" install
+    "${SCRIPT_DIR}/addons/wget.sh" pcre
   fi
 }
 
