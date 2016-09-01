@@ -238,8 +238,8 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.0, NGDEBUG)"
-    echo "PHP 7.0.0 is GA Stable but still may have broken PHP extensions."
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.10, NGDEBUG)"
+    echo "PHP 7.0.10 is GA Stable but still may have broken PHP extensions."
     echo "NGDEBUG is PHP 7.1.0 minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
