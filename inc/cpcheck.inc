@@ -146,6 +146,14 @@ wgetver_check() {
     sleep 6
     "${SCRIPT_DIR}/addons/wget.sh" pcre
   fi
+  if [[ "$(uname -m)" != 'x86_64' ]]; then
+    if [ -f /root/.wgetrc ]; then
+      \cp -fp /root/.wgetrc /root/.wgetrc-bak
+      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+    else
+      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+    fi
+  fi
 }
 
 axelcheck() {

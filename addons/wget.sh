@@ -202,7 +202,8 @@ source_wgetinstall() {
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
     if [ -f /root/.wgetrc ]; then
-      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" >> /root/.wgetrc
+      \cp -fp /root/.wgetrc /root/.wgetrc-bak
+      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
     else
       echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
     fi
