@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.9.3'
+ACMEVER='0.9.4'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -133,6 +133,11 @@ fi
 
 if [ -f "/etc/centminmod/acmetoool-config.ini" ]; then
   . "/etc/centminmod/acmetoool-config.ini"
+fi
+
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+  # default is at /etc/centminmod/custom_config.inc
+  . "/etc/centminmod/custom_config.inc"
 fi
 
 ###############################################################
@@ -624,46 +629,46 @@ fi
 openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
-echo
-cecho "---------------------------------------------------------------" $boldyellow
-cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
-cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
-cecho "creating private key: ${vhostname}-backup.key" $boldgreen
-sleep 5
+# echo
+# cecho "---------------------------------------------------------------" $boldyellow
+# cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
+# cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
+# cecho "creating private key: ${vhostname}-backup.key" $boldgreen
+# sleep 5
 
-openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
+# openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 
-echo
-cecho "---------------------------------------------------------------" $boldyellow
-cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
-cecho "private key's SPKI - Subject Public Key Information" $boldgreen
-cecho "Primary private key - ${vhostname}.key" $boldgreen
-cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
-cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
-sleep 5
+# echo
+# cecho "---------------------------------------------------------------" $boldyellow
+# cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
+# cecho "private key's SPKI - Subject Public Key Information" $boldgreen
+# cecho "Primary private key - ${vhostname}.key" $boldgreen
+# cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
+# cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
+# sleep 5
 
-echo
-cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
+# echo
+# cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
 
-openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
+# openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
 
-echo
-cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
+# echo
+# cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
 
-openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
+# openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
 
-echo
-cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
+# echo
+# cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
 
-echo
-cecho "for 7 days max-age including subdomains" $boldgreen
-echo
-echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
+# echo
+# cecho "for 7 days max-age including subdomains" $boldgreen
+# echo
+# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
 
-echo
-cecho "for 7 days max-age excluding subdomains" $boldgreen
-echo
-echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
+# echo
+# cecho "for 7 days max-age excluding subdomains" $boldgreen
+# echo
+# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
 
 
 echo
