@@ -201,6 +201,11 @@ source_wgetinstall() {
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m32 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
+    if [ -f /root/.wgetrc ]; then
+      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" >> /root/.wgetrc
+    else
+      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+    fi
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
   ./configure --with-ssl=openssl
