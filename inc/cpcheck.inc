@@ -376,6 +376,17 @@ centaltoff() {
 	fi
 }
 
+forgefix() {
+  # remove 404 outdated mirrors
+  if [ -f /etc/yum.repos.d/mirrors-rpmforge ]; then
+    for l in $(find /etc/yum.repos.d/ -type f -name "mirrors-rpmforge*"); do
+      if [[ "$(grep '^http:\/\/apt.sw.be' $l >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        sed -i '/^http:\/\/apt.sw.be/d' $l;
+      fi
+    done
+  fi
+}
+
 axivo_remove() {
 	if [ -f /etc/yum.repos.d/axivo.repo ]; then
 		# remove Axivo outdated yum repo
@@ -1144,6 +1155,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   figletcheck
   maintenance_confcheck
   axivo_remove
+  forgefix
   ngxmodule_cleanups
   wpcompfix
   entropy_centosseven
