@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.9.4'
+ACMEVER='0.9.5'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -755,11 +755,6 @@ server {
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
 
-  # prevent access to ./directories and files
-  #location ~ (?:^|/)\. {
-  # deny all;
-  #}  
-
   location / {
     # block common exploits, sql injections etc
     #include /usr/local/nginx/conf/block.conf;
@@ -1031,11 +1026,6 @@ server {
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
-
-  # prevent access to ./directories and files
-  #location ~ (?:^|/)\. {
-  # deny all;
-  #}  
 
   location / {
   include /usr/local/nginx/conf/503include-only.conf;
