@@ -241,6 +241,7 @@ checkdate() {
       echo "SHA1 Fingerprint=${fingerprint}"
       conf=$(echo $ca | sed 's|.cer$|.conf|')
       if [[ "$(grep -q 'acme-staging.api' $conf; echo $?)" != '0' ]]; then
+        echo "[ link maybe 404 not found, certifcate transparency logged ~1hr after issuance ]"
         echo "https://crt.sh/?sha1=${fingerprint}"
       fi
       echo "certificate expires in $daysToExpire days on $expiry"
