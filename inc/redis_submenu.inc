@@ -27,7 +27,7 @@ case "$phpredisoption" in
 PHPREDIS='y'
 centminlog
 {
-redisinstall
+redisinstall submenu
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-install.log"
 
@@ -37,7 +37,7 @@ redisinstall
 centminlog
 {
 PHPREDIS='y'
-redisinstall
+redisinstall submenu
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-reinstall.log"
 
