@@ -3,23 +3,35 @@ patchnginx() {
 
   # unofficial OpenSSL 1.1.0 beta Nginx patches
   DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
-  # detect nginx <=1.11.3 as 1.11.4+ has fix for openssl 1.1 so no patching needed
+  # detect nginx <=1.11.3 or => 1.11.0 as 1.11.4+ has fix for openssl 1.1 so no patching needed
   # http://hg.nginx.org/nginx/rev/1891b2892b68
   DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
-  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECT_NGXVER" -le '1011003' ]]; then
-    if [ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" ]; then
+  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECT_NGXVER" -le '1011003' && "$DETECT_NGXVER" -ge '1011000' ]]; then
+    if [[ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" && -f "$CUR_DIR/patches/nginx/openssl-110ticket.patch" ]]; then
       if [ -f "$(which figlet)" ]; then
-          figlet -ckf standard "Nginx OpenSSL 1.1.0 Pre/Beta Patch"
+          figlet -ckf standard "Nginx OpenSSL 1.1.0 Patch"
       fi
       echo
-      cecho "patching nginx for OpenSSL 1.1.0 pre beta support" $boldyellow
+      cecho "patching nginx for OpenSSL 1.1.0 support" $boldyellow
       cecho "patch -p1 < $CUR_DIR/patches/nginx/openssl-110pre6.patch" $boldyellow
       patch -p1 < "$CUR_DIR/patches/nginx/openssl-110pre6.patch"
+      echo "patch -p1 < $CUR_DIR/patches/nginx/openssl-110ticket.patch"
+      patch -p1 < "$CUR_DIR/patches/nginx/openssl-110ticket.patch"
       echo
-      cecho "nginx patched for OpenSSL 1.1.0 pre beta" $boldyellow
+      cecho "nginx patched for OpenSSL 1.1.0" $boldyellow
       echo
     else
-       cecho "$CUR_DIR/patches/nginx/openssl-110pre6.patch not found" $boldyellow
+      if [[ "$DETECT_NGXVER" -le '1011003' && "$DETECT_NGXVER" -ge '1011000' ]]; then
+        if [ ! -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" ]; then
+          cecho "$CUR_DIR/patches/nginx/openssl-110pre6.patch not found" $boldyellow
+        fi
+        if [ ! -f "$CUR_DIR/patches/nginx/openssl-110ticket.patch" ]; then
+          cecho "$CUR_DIR/patches/nginx/openssl-110ticket.patch not found" $boldyellow
+        fi
+      elif [[ "$DETECT_NGXVER" -lt '1011000' ]]; then
+        # OPENSSL_VERSION='1.0.2h'
+        cecho "skipping patching due to Nginx version less than 1.11.0" $boldyellow
+      fi
     fi
   fi
 
