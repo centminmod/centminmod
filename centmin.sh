@@ -1054,11 +1054,11 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        # if total memory is between 2GB and <8GB
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
        else
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=4194304
        fi
        echo Y | mkfs.ext4 /home/usertmp_donotdelete
        mkdir -p /tmp
@@ -1072,9 +1072,9 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        # if total memory is between 1.1-2GB
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
        else
         dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
        fi
@@ -1090,9 +1090,9 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        # if total memory is <1.1GB
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
        elif [[ "$HOME_DFSIZE" -gt '15750001' && "$HOME_DFSIZE" -le '20999000' ]]; then
-        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2000000
+        dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=2097152
        else
         dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=3000000
        fi
