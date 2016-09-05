@@ -543,13 +543,18 @@ if [[ "$vhostssl" = [yY] ]]; then
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
       OPEENSSL_CFPATCHED='y'
+  elif [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]; then
+      # for openssl 1.1.0 native chacha20 support
+      OPEENSSL_CFPATCHED='y'
   fi
 
 if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
-  if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
-    CHACHACIPHERS='EECDH+CHACHA20-draft:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
+  if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  elif [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
   else
-    CHACHACIPHERS='EECDH+CHACHA20:'
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
   fi
 else
   CHACHACIPHERS=""
