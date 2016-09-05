@@ -2798,7 +2798,11 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
     if [ -s "${OPENSSL_LINKFILE}" ]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+        if [[ "$CENTOS_SIX" = '6' ]]; then
+          wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
+        else
+          $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+        fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
@@ -2831,7 +2835,11 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
     if [ -s "${OPENSSL_LINKFILE}" ]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+        if [[ "$CENTOS_SIX" = '6' ]]; then
+          wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
+        else
+          $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+        fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
