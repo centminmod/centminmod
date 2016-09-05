@@ -81,6 +81,28 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         fi
     # fi
 fi # CLOUDFLARE_PATCHSSL
+
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patch"
+        fi
+        echo  "######################################################################"
+        echo "Patching OpenSSL 1.1.0 branch"
+        echo  "######################################################################"
+        echo "Cloudflare Smart ChaCha20 patch"
+        echo "https://community.centminmod.com/posts/35727/"
+        echo "only support ChaCha20 if client's preferred cipher"
+        echo  "######################################################################"
+        if [ ! -f "$CUR_DIR/patches/openssl/chacha20-smarter.patch" ]; then
+            patch -p1 < "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
+        fi
+        echo  "######################################################################"
+        echo  "OpenSSL 1.1.0 branch Smart Chacha20 patched"
+        echo  "######################################################################"
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patched"
+        fi
+fi # CLOUDFLARE_PATCHSSL
 }
 
 installopenssl() {
