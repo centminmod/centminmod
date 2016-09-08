@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.9.7'
+ACMEVER='0.9.8'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -1176,7 +1176,7 @@ issue_acme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1189,7 +1189,7 @@ issue_acme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1355,7 +1355,7 @@ reissue_acme() {
       "$ACMEBINARY" --force --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1368,7 +1368,7 @@ reissue_acme() {
       "$ACMEBINARY" --force --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1528,7 +1528,7 @@ renew_acme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1541,7 +1541,7 @@ renew_acme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1754,7 +1754,7 @@ webroot_issueacme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1767,7 +1767,7 @@ webroot_issueacme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -1982,7 +1982,7 @@ webroot_reissueacme() {
       "$ACMEBINARY" --force --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -2191,7 +2191,7 @@ webroot_renewacme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -2204,7 +2204,7 @@ webroot_renewacme() {
       "$ACMEBINARY" --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
-      if [[ -f "$SSLVHOST_CONFIG" ]]; then
+      if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
         sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
         sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
@@ -2466,7 +2466,7 @@ issue_acmedns() {
       # 2
       if [[ "$CERTONLY_DNS" != '1' ]]; then
         # only enable resolver and ssl_stapling for live ssl certificate deployments
-        if [[ -f "$SSLVHOST_CONFIG" ]]; then
+        if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
           sed -i "s|#resolver |resolver |" "$SSLVHOST_CONFIG"
           sed -i "s|#resolver_timeout|resolver_timeout|" "$SSLVHOST_CONFIG"
           sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
