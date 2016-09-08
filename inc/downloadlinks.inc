@@ -11,6 +11,9 @@
         RPMFARCH='i386'
     fi
 
+CURL_CACERTURL='https://curl.haxx.se/ca/cacert.pem'
+# CURL_CACERTURL='https://centminmod.com/centminmodparts/curl/cacert.pem'
+
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
 CCCACHELINK="http://samba.org/ftp/ccache/${CCACHEFILE}"
 # CCCACHELINKLOCAL="http://samba.org/ftp/ccache/${CCACHEFILE}"
