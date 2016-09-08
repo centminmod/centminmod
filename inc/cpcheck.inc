@@ -112,6 +112,9 @@ gitenv_askupdate() {
           cecho "-------------------------------------------------------------" $boldgreen
         fi
     fi
+      pushd "${SCRIPT_DIR}" >/dev/null 2>&1
+      git fetch >/dev/null 2>&1
+      popd >/dev/null 2>&1
     if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
         # if remote branch commits don't match local commit, then there are new updates need
         # pulling

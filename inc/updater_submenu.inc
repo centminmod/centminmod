@@ -187,6 +187,9 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho "Updating Current Centmin Mod code branch via git" $boldyellow
 	git fetch
 	# check if there's any new remote commits first
+      pushd "${SCRIPT_DIR}" >/dev/null 2>&1
+      git fetch >/dev/null 2>&1
+      popd >/dev/null 2>&1
 	if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
 	cecho "	cd /usr/local/src/centminmod" $boldgreen
 	cecho "	git stash" $boldgreen

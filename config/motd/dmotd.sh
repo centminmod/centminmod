@@ -144,6 +144,9 @@ gitenv_askupdate() {
           cecho "===============================================================================" $boldgreen
         fi
       fi
+      pushd "${CMSCRIPT_GITDIR}" >/dev/null 2>&1
+      git fetch >/dev/null 2>&1
+      popd >/dev/null 2>&1
       if [[ "$(cd ${CMSCRIPT_GITDIR}; git rev-parse HEAD)" != "$(cd ${CMSCRIPT_GITDIR}; git rev-parse @{u})" ]]; then
           # if remote branch commits don't match local commit, then there are new updates need
           # pulling
