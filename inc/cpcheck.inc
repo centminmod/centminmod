@@ -417,7 +417,7 @@ net.ipv4.tcp_max_syn_backlog=8192
 net.ipv4.tcp_sack=1
 net.ipv4.tcp_syn_retries=3
 net.ipv4.tcp_synack_retries = 2
-net.ipv4.tcp_tw_recycle = 1
+net.ipv4.tcp_tw_recycle = 0
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_max_tw_buckets = 1440000
 vm.swappiness=10
@@ -496,6 +496,21 @@ if [[ ! -f /proc/user_beancounters ]]; then
   if [[ "$CENTOS_SEVEN" = '6' && -f /etc/sysctl.conf ]]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.conf
+      sysctl -p >/dev/null 2>&1
+    fi
+  fi
+fi
+if [[ ! -f /proc/user_beancounters ]]; then
+  # fix for https://community.centminmod.com/posts/35910/
+  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
+      sed -i 's|net.ipv4.tcp_tw_recycle =.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.d/101-sysctl.conf
+      /sbin/sysctl --system >/dev/null 2>&1
+    fi
+  fi
+  if [[ "$CENTOS_SEVEN" = '6' && -f /etc/sysctl.conf ]]; then
+    if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
+      sed -i 's|net.ipv4.tcp_tw_recycle =.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
     fi
   fi
