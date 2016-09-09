@@ -1038,7 +1038,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
       /sbin/sysctl --system >/dev/null 2>&1
     fi
   fi
-  if [[ "$CENTOS_SEVEN" = '6' && -f /etc/sysctl.conf ]]; then
+  if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
@@ -1056,7 +1056,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
       /sbin/sysctl --system >/dev/null 2>&1
     fi
   fi
-  if [[ "$CENTOS_SEVEN" = '6' && -f /etc/sysctl.conf ]]; then
+  if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
     if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
@@ -1074,7 +1074,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
       /sbin/sysctl --system >/dev/null 2>&1
     fi
   fi
-  if [[ "$CENTOS_SEVEN" = '6' && -f /etc/sysctl.conf ]]; then
+  if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
     if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
