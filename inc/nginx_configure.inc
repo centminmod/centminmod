@@ -1850,7 +1850,7 @@ if [[ "$NGINX_STREAMREALIP" = [yY] ]]; then
     geoipinstall
   fi
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAMREALIP" = [yY] ]] && [ "$NGX_STREAMREALIPCHECK" ]; then
-  	NGXDYNAMIC_STREAMREALIP='y'
+  	NGXDYNAMIC_GEOIP='y'
     STREAMREALIPOPT=' --with-stream_realip_module=dynamic'
     if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
       echo "load_module \"modules/ngx_stream_realip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
