@@ -661,16 +661,28 @@ echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
-    cecho "PHP 7.0 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "PHP 7.0/7.1 detected.. remove unsupported PHP extensions manually" $boldyellow
     cecho "by removing their ini files:" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
-cecho "rm -rf /etc/centminmod/php.d/igbinary.ini
-#rm -rf /etc/centminmod/php.d/imagick.ini
-#rm -rf /etc/centminmod/php.d/memcache.ini
-#rm -rf /etc/centminmod/php.d/mongodb.ini
-#rm -rf /etc/centminmod/php.d/redis.ini
-rm -rf /etc/centminmod/php.d/suhosin.ini" $boldyellow
+    if [ -f /etc/centminmod/php.d/igbinary.ini ]; then
+        cecho "rm -rf /etc/centminmod/php.d/igbinary.ini" $boldyellow
+    fi
+    # if [ -f /etc/centminmod/php.d/imagick.ini ]; then
+    #     cecho "#rm -rf /etc/centminmod/php.d/imagick.ini" $boldyellow
+    # fi
+    # if [ -f /etc/centminmod/php.d/memcache.ini ]; then
+    #     cecho "#rm -rf /etc/centminmod/php.d/memcache.ini" $boldyellow
+    # fi
+    if [ -f /etc/centminmod/php.d/mongodb.ini ]; then
+        cecho "#rm -rf /etc/centminmod/php.d/mongodb.ini" $boldyellow
+    fi
+    # if [ -f /etc/centminmod/php.d/redis.ini ]; then
+    #     cecho "#rm -rf /etc/centminmod/php.d/redis.ini" $boldyellow
+    # fi
+    if [ -f /etc/centminmod/php.d/suhosin.ini ]; then
+        cecho "rm -rf /etc/centminmod/php.d/suhosin.ini" $boldyellow
+    fi
     echo
     cecho "then restart PHP-FPM again..." $boldyellow
     echo
