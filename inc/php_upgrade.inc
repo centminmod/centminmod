@@ -655,7 +655,7 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0|7.1'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
