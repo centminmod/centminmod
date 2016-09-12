@@ -313,6 +313,7 @@ fi # repo file check
 
 
 yumpriorrpmforge() {
+  forgefix
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 cp -p /etc/yum.repos.d/rpmforge.repo /etc/yum.repos.d/rpmforge.OLD
 if [ -n "$(grep ^priority /etc/yum.repos.d/rpmforge.repo)" ]
