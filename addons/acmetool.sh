@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='0.9.8'
+ACMEVER='0.9.9'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -1085,6 +1085,8 @@ issue_acme() {
       VHOST_ALREADYSET='y'
     fi
   fi
+  # if webroot path directory does not exists 
+  # + ssl vhost file does not exist
   if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1093,6 +1095,9 @@ issue_acme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + no ssl_certificate line exists in the non-https vhost file
   elif [[ -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
     sslopts_check
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -1100,6 +1105,9 @@ issue_acme() {
     else
       sslvhostsetup
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificates line exists in non-https vhost file
   elif [[ -d "$WEBROOTPATH_OPT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       sslvhostsetup https
@@ -1110,6 +1118,10 @@ issue_acme() {
     SSLVHOST_CONFIG="${ACMEBACKUPDIR}/${SSLVHOST_CONFIGFILENAME}-acmebackup-${DT}-disabled"
   fi
 
+  # if webroot path directory exists 
+  # + vhostname value exists 
+  # + ssl vhost file exists 
+  # + not main hostname VHOST_ALREADYSET
   if [[ -d "$WEBROOTPATH_OPT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
     check_dns "$vhostname"
     if [[ "$TOPLEVEL" = [yY] ]]; then
@@ -1262,6 +1274,8 @@ reissue_acme() {
       VHOST_ALREADYSET='y'
     fi
   fi
+  # if webroot path directory does not exists 
+  # + ssl vhost file does not exist
   if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1270,6 +1284,9 @@ reissue_acme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + no ssl_certificate line exists in the non-https vhost file
   elif [[ -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
     sslopts_check
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -1277,6 +1294,9 @@ reissue_acme() {
     else
       sslvhostsetup
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificates line exists in non-https vhost file
   elif [[ -d "$WEBROOTPATH_OPT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       sslvhostsetup https
@@ -1287,6 +1307,10 @@ reissue_acme() {
     SSLVHOST_CONFIG="${ACMEBACKUPDIR}/${SSLVHOST_CONFIGFILENAME}-acmebackup-${DT}-disabled"
   fi
 
+  # if webroot path directory exists 
+  # + vhostname value exists 
+  # + ssl vhost file exists 
+  # + not main hostname VHOST_ALREADYSET
   if [[ -d "$WEBROOTPATH_OPT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
     check_dns "$vhostname"
     if [[ "$TOPLEVEL" = [yY] ]]; then
@@ -1437,6 +1461,8 @@ renew_acme() {
       VHOST_ALREADYSET='y'
     fi
   fi
+  # if webroot path directory does not exists 
+  # + ssl vhost file does not exist
   if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1445,6 +1471,9 @@ renew_acme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + no ssl_certificate line exists in the non-https vhost file
   elif [[ -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
     sslopts_check
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -1452,6 +1481,9 @@ renew_acme() {
     else
       sslvhostsetup
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificates line exists in non-https vhost file
   elif [[ -d "$WEBROOTPATH_OPT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       sslvhostsetup https
@@ -1462,6 +1494,10 @@ renew_acme() {
     SSLVHOST_CONFIG="${ACMEBACKUPDIR}/${SSLVHOST_CONFIGFILENAME}-acmebackup-${DT}-disabled"
   fi
 
+  # if webroot path directory exists 
+  # + vhostname value exists 
+  # + ssl vhost file exists 
+  # + not main hostname VHOST_ALREADYSET
   if [[ -d "$WEBROOTPATH_OPT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
     check_dns "$vhostname"
     if [[ "$TOPLEVEL" = [yY] ]]; then
@@ -1616,6 +1652,9 @@ webroot_issueacme() {
       VHOST_ALREADYSET='y'
     fi
   fi
+  
+  # if webroot path directory does not exists 
+  # + ssl vhost file does not exist
   if [[ ! -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1624,6 +1663,8 @@ webroot_issueacme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1632,6 +1673,9 @@ webroot_issueacme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificate line does not exist in non-https vhost
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
     sslopts_check
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -1639,6 +1683,9 @@ webroot_issueacme() {
     else
       sslvhostsetup
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificate line exists in non-https vhost
   elif [[ -d "$CUSTOM_WEBROOT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       sslvhostsetup https
@@ -1688,7 +1735,7 @@ webroot_issueacme() {
     fi
   fi
 
-  if [[ -d "$CUSTOM_WEBROOT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" ]]; then
+  if [[ -d "$CUSTOM_WEBROOT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
     check_dns "$vhostname"
     if [[ "$TOPLEVEL" = [yY] ]]; then
       if [[ "$SAN" = '1' ]]; then
@@ -1842,6 +1889,9 @@ webroot_reissueacme() {
       VHOST_ALREADYSET='y'
     fi
   fi
+  
+  # if webroot path directory does not exists 
+  # + ssl vhost file does not exist
   if [[ ! -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1850,6 +1900,8 @@ webroot_reissueacme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -1858,6 +1910,9 @@ webroot_reissueacme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificate line does not exist in non-https vhost
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
     sslopts_check
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -1865,6 +1920,9 @@ webroot_reissueacme() {
     else
       sslvhostsetup
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificate line exists in non-https vhost
   elif [[ -d "$CUSTOM_WEBROOT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       sslvhostsetup https
@@ -1914,7 +1972,7 @@ webroot_reissueacme() {
     fi
   fi
 
-  if [[ -d "$CUSTOM_WEBROOT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" ]]; then
+  if [[ -d "$CUSTOM_WEBROOT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
     check_dns "$vhostname"
     if [[ "$TOPLEVEL" = [yY] ]]; then
       if [[ "$SAN" = '1' ]]; then
@@ -2053,6 +2111,9 @@ webroot_renewacme() {
       VHOST_ALREADYSET='y'
     fi
   fi
+  
+  # if webroot path directory does not exists 
+  # + ssl vhost file does not exist
   if [[ ! -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -2061,6 +2122,8 @@ webroot_renewacme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]]; then
     echo
     echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -2069,6 +2132,9 @@ webroot_renewacme() {
     else
       vhostsetup "${vhostname}"
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificate line does not exist in non-https vhost
   elif [[ -d "$CUSTOM_WEBROOT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
     sslopts_check
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -2076,6 +2142,9 @@ webroot_renewacme() {
     else
       sslvhostsetup
     fi
+  # if webroot path directory exists
+  # + ssl vhost file does not exist
+  # + ssl_certificate line exists in non-https vhost
   elif [[ -d "$CUSTOM_WEBROOT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
     if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
       sslvhostsetup https
@@ -2125,7 +2194,7 @@ webroot_renewacme() {
     fi
   fi
 
-  if [[ -d "$CUSTOM_WEBROOT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" ]]; then
+  if [[ -d "$CUSTOM_WEBROOT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
     check_dns "$vhostname"
     if [[ "$TOPLEVEL" = [yY] ]]; then
       if [[ "$SAN" = '1' ]]; then
@@ -2345,6 +2414,8 @@ issue_acmedns() {
   # DNS mode cert only don't touch nginx vhosts
   # 0
   if [[ "$CERTONLY_DNS" != '1' ]]; then
+    # if webroot path directory does not exists 
+    # + ssl vhost file does not exist
     if [[ ! -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]]; then
       echo
       echo "${vhostname} nginx vhost + pureftp virtual ftp user setup"
@@ -2353,6 +2424,9 @@ issue_acmedns() {
       else
         vhostsetup "${vhostname}"
       fi
+    # if webroot path directory exists
+    # + ssl vhost file does not exist
+    # + no ssl_certificate line exists in the non-https vhost file
     elif [[ -d "$WEBROOTPATH_OPT" && ! -f "$SSLVHOST_CONFIG" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" != '0' ]]; then
       sslopts_check
       if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
@@ -2360,6 +2434,9 @@ issue_acmedns() {
       else
         sslvhostsetup
       fi
+    # if webroot path directory exists
+    # + ssl vhost file does not exist
+    # + ssl_certificates line exists in non-https vhost file
     elif [[ -d "$WEBROOTPATH_OPT" ]] && [[ "$(grep -sq ssl_certificate /usr/local/nginx/conf/conf.d/${vhostname}.conf; echo $?)" = '0' ]] && [[ ! -f "$SSLVHOST_CONFIG" ]]; then
       if [[ "$testcert" = 'lived' || "$testcert" = 'd' ]]; then
         sslvhostsetup https
@@ -2374,6 +2451,10 @@ issue_acmedns() {
   # DNS mode cert only don't touch nginx vhosts
   # 1
   if [[ "$CERTONLY_DNS" != '1' ]]; then
+    # if webroot path directory exists 
+    # + vhostname value exists 
+    # + ssl vhost file exists 
+    # + public webroot path doesn't exist
     if [[ -d "$WEBROOTPATH_OPT" && ! -z "$vhostname" && -f "$SSLVHOST_CONFIG" && "$VHOST_ALREADYSET" != 'y' ]]; then
       check_dns "$vhostname"
       if [[ "$TOPLEVEL" = [yY] ]]; then
