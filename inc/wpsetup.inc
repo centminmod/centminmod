@@ -528,8 +528,8 @@ WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler
 cat > "/usr/local/nginx/conf/php-rediscache.conf"<<HFF
 location ~ [^/]\.php(/|$) {
   include /usr/local/nginx/conf/503include-only.conf;
-    fastcgi_split_path_info ^(.+?\.php)(/.*)$;
-    if (!-f $document_root$fastcgi_script_name) {
+    fastcgi_split_path_info ^(.+?\.php)(/.*)\$;
+    if (!-f \$document_root$fastcgi_script_name) {
         return 404;
     }
 
