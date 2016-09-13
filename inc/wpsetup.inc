@@ -526,7 +526,7 @@ WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler
 # \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-rediscache.conf
 
 cat > "/usr/local/nginx/conf/php-rediscache.conf"<<HFF
-location ~ [^/]\.php(/|$) {
+location ~ [^/]\.php(/|\$) {
   include /usr/local/nginx/conf/503include-only.conf;
     fastcgi_split_path_info ^(.+?\.php)(/.*)\$;
     if (!-f \$document_root$fastcgi_script_name) {
