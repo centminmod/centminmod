@@ -274,6 +274,16 @@ fi
 			fi
 		else
 			NGINX_NJSOPT=' --add-module=../njs/nginx'
+			if [ ! -f /usr/bin/hg ]; then
+				yum -y install mercurial
+			fi
+			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
+				cd "$DIR_TMP"
+				hg clone http://hg.nginx.org/njs/
+			elif [ -f /usr/bin/hg ]; then
+				cd "${DIR_TMP}/njs"
+				hg pull
+			fi
 			# if NGXDYNAMIC_NJS='y' was previously set with nginx 1.9.11+, then the nginx
 			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
 			# created
