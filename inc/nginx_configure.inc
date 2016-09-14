@@ -253,60 +253,6 @@ else
 		fi
 fi
 
-	if [[ "$NGINX_NJS" = [yY] ]]; then
-		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
-			NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
-			if [ ! -f /usr/bin/hg ]; then
-				yum -y install mercurial
-			fi
-			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-				cd "$DIR_TMP"
-				hg clone http://hg.nginx.org/njs/
-			elif [ -f /usr/bin/hg ]; then
-				cd "${DIR_TMP}/njs"
-				hg pull
-			fi
-			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-				echo "load_module \"modules/ngx_http_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
-			fi
-		else
-			NGINX_NJSOPT=' --add-module=../njs/nginx'
-			if [ ! -f /usr/bin/hg ]; then
-				yum -y install mercurial
-			fi
-			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-				cd "$DIR_TMP"
-				hg clone http://hg.nginx.org/njs/
-			elif [ -f /usr/bin/hg ]; then
-				cd "${DIR_TMP}/njs"
-				hg pull
-			fi
-			# if NGXDYNAMIC_NJS='y' was previously set with nginx 1.9.11+, then the nginx
-			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
-			# created
-			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NJS='y'
-			# the old dynamic module would still be left in nginx dynamic modules directory
-			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
-			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
-			fi
-		fi
-	else
-		NGINX_NJSOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
-			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
-				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
-			fi
-	fi
-
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
 	if [[ "$NGINX_DEBUG" = [yY] ]]; then
@@ -1889,6 +1835,75 @@ else
     fi
 fi
 
+	if [[ "$NGINX_NJS" = [yY] ]]; then
+		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
+			NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
+			if [ ! -f /usr/bin/hg ]; then
+				yum -y install mercurial
+			fi
+			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
+				pushd "$DIR_TMP"
+				hg clone http://hg.nginx.org/njs/
+				popd
+			elif [ -f /usr/bin/hg ]; then
+				pushd "${DIR_TMP}/njs"
+				hg pull
+				popd
+			fi
+			if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+				echo "load_module \"modules/ngx_http_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+				echo "load_module \"modules/ngx_stream_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_js_module.so.old
+			fi
+		else
+			NGINX_NJSOPT=' --add-module=../njs/nginx'
+			if [ ! -f /usr/bin/hg ]; then
+				yum -y install mercurial
+			fi
+			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
+				pushd "$DIR_TMP"
+				hg clone http://hg.nginx.org/njs/
+				popd
+			elif [ -f /usr/bin/hg ]; then
+				pushd "${DIR_TMP}/njs"
+				hg pull
+				popd
+			fi
+			# if NGXDYNAMIC_NJS='y' was previously set with nginx 1.9.11+, then the nginx
+			# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+			# created
+			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NJS='y'
+			# the old dynamic module would still be left in nginx dynamic modules directory
+			# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
+			fi
+				# this is a check for that old dynamic module and if it exists, remove it
+			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_js_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_stream_js_module.so.old
+			fi
+		fi
+	else
+		NGINX_NJSOPT=""
+			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
+			fi
+			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
+				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
+			fi
+	fi
+
 if [[ "$NGINX_GEOIP" = [yY] ]]; then
 	if [[ ! -d /usr/share/GeoIP ]]; then
 		geoipinstall
@@ -2089,25 +2104,25 @@ fi
       			echo
       		fi
       		echo "nginx configure options (alternate ordering):"
-      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE}${THREADS}${STREAM} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE}${THREADS}${STREAM} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
+      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
     	else
     		pwd
     		echo "nginx configure options (alternate ordering):"
-    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE}${THREADS}${STREAM} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE}${THREADS}${STREAM} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
+    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
     	fi
     else
     	if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       		pwd
       		echo "nginx configure options:"
-      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
+      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
     	else
     		pwd
     		echo "nginx configure options:"
-    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${NGINX_NJSOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
+    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD} -Wl,-z,relro${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${PCRE_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
     	fi
 	fi # NGXMODULE_ALTORDER
 
