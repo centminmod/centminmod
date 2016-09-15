@@ -291,7 +291,7 @@ END
 	echo "Uncomment lines in /usr/local/nginx/conf/passenger.conf to enable passenger"
 	echo "Nginx needs to have passenger nginx module compiled for it to work"
 	echo ""
-	echo " 1. edit centmin.sh and set NGINX_PASSENGER=y"
+	echo " 1. set NGINX_PASSENGER=y in persistent config file /etc/centminmod/custom_config.inc (create file if missing)"
 	echo " 2. run centmin.sh menu option 4 to recompile Nginx"
 	echo " 3. uncomment/enable /usr/local/nginx/conf/passenger.conf include file in nginx.conf"
 	echo " 4. then check that passenger module is in list of nginx modules via command: "
