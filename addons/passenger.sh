@@ -14,6 +14,8 @@ NODEJSVER='4.5.0'
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
+CONFIGSCANBASE='/etc/centminmod'
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -82,6 +84,15 @@ else
     CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
     CPUS=$(echo $((CPUS+1)))
     MAKETHREADS=" -j$CPUS"
+fi
+
+if [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 
 preyum() {
