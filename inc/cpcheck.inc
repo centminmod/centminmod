@@ -655,10 +655,9 @@ pureftpdupdates() {
 			if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
 				service pure-ftpd restart >/dev/null 2>&1
 			fi
-			echo
-			echo "increasing pure-ftpd passive port range"
-			echo
-		fi
+			# echo
+			# echo "increasing pure-ftpd passive port range"
+			# echo
 		CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
 		if [ "$CHECKCSF_PASSIVEPORTS" ]; then
 			sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
