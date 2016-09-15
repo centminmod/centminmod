@@ -615,6 +615,19 @@ fi
 	fi
 }
 
+csf_distftp() {
+  if [ -f /etc/csf/csf.conf ]; then
+    # raise LF_DISTFTP = 8 & LF_DISTFTP_UNIQ = 8
+    if [[ ! "$(grep 'LF_DISTFTP = \"8\"' /etc/csf/csf.conf)" ]]; then
+      sed -i 's/LF_DISTFTP = \"1\"/LF_DISTFTP = \"8\"/g' /etc/csf/csf.conf
+    fi
+    if [[ ! "$(grep 'LF_DISTFTP_UNIQ = \"6\"' /etc/csf/csf.conf)" ]]; then
+      sed -i 's/LF_DISTFTP_UNIQ = \"6\"/LF_DISTFTP_UNIQ = \"8\"/g' /etc/csf/csf.conf
+      csf -r >/dev/null 2>&1
+    fi
+  fi
+}
+
 pureftpdupdates() {
 	if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
     # disable anonymous logins by default
@@ -622,7 +635,7 @@ pureftpdupdates() {
     if [ "$CHECKPFTPD_ANON" ]; then
       sed -i 's|NoAnonymous                 no|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
       if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
-        service pure-ftpd restart
+        service pure-ftpd restart >/dev/null 2>&1
       fi
       echo
       echo "disable pure-ftpd annonymous logins"
@@ -630,13 +643,17 @@ pureftpdupdates() {
     fi
     # auto updates
     # raise max number of concurrent ftp connections from 50/2 to 20010/2
-		CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
-		if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
-			sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
-			sed -i 's|MaxClientsNumber            50|MaxClientsNumber            500|' /etc/pure-ftpd/pure-ftpd.conf
-			sed -i 's|MaxClientsPerIP             8|MaxClientsPerIP             200|' /etc/pure-ftpd/pure-ftpd.conf
+    CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
+    CHECKPFTPD_MAXCLIENTS=$(grep '^MaxClientsNumber            1000' /etc/pure-ftpd/pure-ftpd.conf)
+    if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
+  	 sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+    fi
+    if [ ! "$CHECKPFTPD_MAXCLIENTS" ]; then
+      sed -i 's|^MaxClientsNumber .*|MaxClientsNumber            1000|' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|^MaxClientsPerIP .*|MaxClientsPerIP             500|' /etc/pure-ftpd/pure-ftpd.conf
+    fi
 			if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
-				service pure-ftpd restart
+				service pure-ftpd restart >/dev/null 2>&1
 			fi
 			echo
 			echo "increasing pure-ftpd passive port range"
@@ -645,7 +662,7 @@ pureftpdupdates() {
 		CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
 		if [ "$CHECKCSF_PASSIVEPORTS" ]; then
 			sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
-			csf -r
+			csf -r >/dev/null 2>&1
 			echo
 			echo "adjusting pure-ftpd passive port range for CSF Firewall"
 			echo
@@ -1192,6 +1209,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   blockeditorcheck
   rpcnfsports
   fixlogrotate
+  csf_distftp
   pureftpdupdates
   leupdates
   memcachedupdatechecks
