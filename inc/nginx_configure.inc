@@ -2085,7 +2085,12 @@ if [[ "$CLANG" = [yY] ]]; then
 	fi
 	FSTACKPROTECT='-fstack-protector'
 else
-	GCC_OPTLEVEL="$GCC_OPTLEVEL"
+	if [[ "$NGINX_PASSENGER" = [yY] ]]; then
+		# https://community.centminmod.com/posts/36274/
+		GCC_OPTLEVEL='-O2'
+	else
+		GCC_OPTLEVEL='-O3'
+	fi
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector'
 	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]]; then
