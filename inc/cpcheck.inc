@@ -1048,7 +1048,7 @@ fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35910/
   if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
-    if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
+    if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
         sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.conf
@@ -1057,7 +1057,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
     fi
   fi
   if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
-    if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
+    if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
     fi
@@ -1066,7 +1066,7 @@ fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35922/
   if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
-    if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
+    if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
         sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.conf
@@ -1075,7 +1075,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
     fi
   fi
   if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
-    if [[ "$(sysctl -a | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
+    if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
     fi
