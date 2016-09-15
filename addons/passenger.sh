@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.6'
+VER='0.0.7'
 ######################################################
 # ruby, rubygem, rails and passenger installer
 # for Centminmod.com
@@ -9,7 +9,7 @@ RUBYVER='2.3.1'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.4.5'
+NODEJSVER='4.5.0'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
@@ -132,6 +132,29 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	echo "addons/nodejs.sh currently only works on CentOS 7.x systems"
 	# exit
 fi
+}
+
+installnodejs_new() {
+  if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+      cd $DIR_TMP
+      curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+      yum -y install nodejs --disableplugin=priorities
+      npm install npm@latest -g
+  
+    echo
+    cecho "---------------------------" $boldyellow
+    cecho -n "Node.js Version: " $boldgreen
+    node -v
+    cecho "---------------------------" $boldyellow
+    cecho -n "npm Version: " $boldgreen
+    npm --version
+    cecho "---------------------------" $boldyellow
+    echo
+    cecho "node.js YUM install completed" $boldgreen
+  else
+    echo
+    cecho "node.js install already detected" $boldgreen
+  fi
 }
 
 installruby() {
@@ -300,7 +323,7 @@ case $1 in
 starttime=$(date +%s.%N)
 {
 		preyum
-		installnodejs
+		installnodejs_new
 		installruby
 		nginxruby
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log
