@@ -665,9 +665,9 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "by removing their ini files:" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
-    if [ -f /etc/centminmod/php.d/igbinary.ini ]; then
-        cecho "rm -rf /etc/centminmod/php.d/igbinary.ini" $boldyellow
-    fi
+    # if [ -f /etc/centminmod/php.d/igbinary.ini ]; then
+    #     cecho "rm -rf /etc/centminmod/php.d/igbinary.ini" $boldyellow
+    # fi
     # if [ -f /etc/centminmod/php.d/imagick.ini ]; then
     #     cecho "#rm -rf /etc/centminmod/php.d/imagick.ini" $boldyellow
     # fi
