@@ -13,6 +13,9 @@ PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tab
 CMGIT='https://github.com/centminmod/centminmod.git'
 AUTO_GITUPDATE='n'
 
+ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
+ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
+
 # Clang & GCC Compilers
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_PHP='n'                 # PHP

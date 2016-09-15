@@ -14,6 +14,7 @@ RELEASE=$(cat /etc/redhat-release | sed -e 's| (Core)||' -e 's| release||')
 PSA=$(ps -Afl | wc -l)
 CURRENTUSER=$(users | wc -w)
 CMSCRIPT_GITDIR='/usr/local/src/centminmod'
+CONFIGSCANBASE='/etc/centminmod'
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -48,6 +49,11 @@ return
 }
 
 ###########################################################
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
 # time of day
 HOUR=$(date +"%H")
 if [ $HOUR -lt 12  -a $HOUR -ge 0 ]
@@ -87,12 +93,17 @@ echo "
 $MEM
 ===============================================================================
 $DF
-===============================================================================
+"
+if [[ "$ENABLEMOTD_CSFMSG" != [nN] ]]; then
+echo "===============================================================================
 ! This server maybe running CSF Firewall !  
   DO NOT run the below command or you  will lock yourself out of the server: 
 
   iptables -F 
-
+"
+fi
+if [[ "$ENABLEMOTD_LINKSMSG" != [nN] ]]; then
+echo "
 ===============================================================================
 * Getting Started Guide - http://centminmod.com/getstarted.html
 * Centmin Mod FAQ - http://centminmod.com/faq.html
@@ -100,6 +111,7 @@ $DF
 * Community Forums https://community.centminmod.com  [ << Register ]
 ===============================================================================
 "
+fi
 }
 
 
