@@ -2077,7 +2077,12 @@ fi
 # libresslcompile_fix
 
 if [[ "$CLANG" = [yY] ]]; then
-	GCC_OPTLEVEL='-O3'
+	if [[ "$NGINX_PASSENGER" = [yY] ]]; then
+		# https://community.centminmod.com/posts/36274/
+		GCC_OPTLEVEL='-O2'
+	else
+		GCC_OPTLEVEL='-O3'
+	fi
 	FSTACKPROTECT='-fstack-protector'
 else
 	GCC_OPTLEVEL="$GCC_OPTLEVEL"
