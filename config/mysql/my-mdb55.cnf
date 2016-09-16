@@ -1,7 +1,14 @@
+[client]
+socket=/var/lib/mysql/mysql.sock
+default-character-set=utf8
+
+[mysql]
+default-character-set=utf8
+
 [mysqld]
 local-infile=0
 ignore-db-dir=lost+found
-#character-set-server=utf8
+character-set-server=utf8
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
 
