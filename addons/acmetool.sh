@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.0'
+ACMEVER='1.0.1'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -571,6 +571,28 @@ fi
 }
 
 #####################
+switch_httpsdefault() {
+  echo
+  echo "setting HTTPS default in /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+  echo
+  if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+echo "sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i "s|#x#   return 302 https://\$server_name\$request_uri;|   return 302 https://\$server_name\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+
+sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x#   return 302 https:\/\/\$server_name\$request_uri;|   return 302 https:\/\/\$server_name\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+  fi
+}
+
+#####################
 sslvhostsetup_mainhostname() {
   vhostname="$1"
 
@@ -862,11 +884,12 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
-server {
-  $DEDI_LISTEN
-  server_name ${vhostname} www.${vhostname};
-  return 302 https://\$server_name\$request_uri;
-}
+#x# server {
+#x#   $DEDI_LISTEN
+#x#   server_name ${vhostname} www.${vhostname};
+#x#   return 302 https://\$server_name\$request_uri;
+#x#   include /usr/local/nginx/conf/staticfiles.conf;
+#x# }
 ESU
 echo "cp -a "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2""
 cp -a "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
@@ -893,11 +916,12 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
-server {
-  $DEDI_LISTEN
-  server_name ${vhostname} www.${vhostname};
-  return 302 https://\$server_name\$request_uri;
-}
+#x# server {
+#x#   $DEDI_LISTEN
+#x#   server_name ${vhostname} www.${vhostname};
+#x#   return 302 https://\$server_name\$request_uri;
+#x#   include /usr/local/nginx/conf/staticfiles.conf;
+#x# }
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
@@ -1200,6 +1224,12 @@ issue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
@@ -1213,11 +1243,25 @@ issue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     else
      echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
+      if [[ "$LECHECK" = '0' ]]; then
+        if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
+      fi
     fi
     # LECHECK=$?
     echo "LECHECK = $LECHECK"
@@ -1391,6 +1435,12 @@ reissue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
@@ -1404,11 +1454,25 @@ reissue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     else
      echo ""$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
+      if [[ "$LECHECK" = '0' ]]; then
+        if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
+      fi
     fi
     # LECHECK=$?
     echo "LECHECK = $LECHECK"
@@ -1576,6 +1640,12 @@ renew_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
@@ -1589,11 +1659,25 @@ renew_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     else
      echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
+      if [[ "$LECHECK" = '0' ]]; then
+        if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
+      fi
     fi
     # LECHECK=$?
     echo "LECHECK = $LECHECK"
@@ -1813,6 +1897,12 @@ webroot_issueacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
@@ -1826,11 +1916,25 @@ webroot_issueacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     else
       echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
+      if [[ "$LECHECK" = '0' ]]; then
+        if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
+      fi
     fi
     # LECHECK=$?
     echo "LECHECK = $LECHECK"
@@ -2052,11 +2156,25 @@ webroot_reissueacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     else
       echo ""$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --force --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
+      if [[ "$LECHECK" = '0' ]]; then
+        if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
+      fi
     fi
     # LECHECK=$?
     echo "LECHECK = $LECHECK"
@@ -2272,6 +2390,12 @@ webroot_renewacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
@@ -2285,11 +2409,25 @@ webroot_renewacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
       fi
     else
       echo ""$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY" --staging --issue $DOMAINOPT -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
+      if [[ "$LECHECK" = '0' ]]; then
+        if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
+          echo
+          echo "switch to HTTPS default after verification"
+          echo
+          switch_httpsdefault
+        fi
+      fi
     fi
     # LECHECK=$?
     echo "LECHECK = $LECHECK"
