@@ -1763,11 +1763,6 @@ fi # WPPLUGINS_ALL=y
 # remove hello plugin
 wp plugin uninstall hello --allow-root
 
-if [[ "$wpcli_ssldefault" = '1' ]]; then
-  wp option update home "https://${vhostname}${WPSUBDIR}"
-  wp option update siteurl "https://${vhostname}${WPSUBDIR}"
-fi
-
 # allows user to add custom wp-cli commands after initiall install to
 # further customise their installation. you create a custom file at
 # /etc/centminmod/customwp_domain.com.inc where domain.com is the 
@@ -1974,6 +1969,11 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "-------------------------------------------------------------" $boldyellow
     echo
   fi
+fi
+
+if [[ "$wpcli_ssldefault" = '1' ]]; then
+  wp option update home "https://${vhostname}${WPSUBDIR}"
+  wp option update siteurl "https://${vhostname}${WPSUBDIR}"
 fi
 
 {
