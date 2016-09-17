@@ -1972,8 +1972,8 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
 fi
 
 if [[ "$wpcli_ssldefault" = '1' ]]; then
-  wp option update home "https://${vhostname}${WPSUBDIR}"
-  wp option update siteurl "https://${vhostname}${WPSUBDIR}"
+  wp option update home "https://${vhostname}${WPSUBDIR}"  --allow-root
+  wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
 fi
 
 {
