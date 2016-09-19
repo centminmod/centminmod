@@ -2,7 +2,7 @@
 socket=/var/lib/mysql/mysql.sock
 
 [mysql]
-
+max_allowed_packet = 64M
 
 [mysqld]
 local-infile=0
