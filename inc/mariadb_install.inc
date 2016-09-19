@@ -133,6 +133,14 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         echo "yum -y remove mariadb-libs"
         yum -y remove mariadb-libs
     fi
+    echo ""
+    # Should not exist on CentOS 7 systems
+    echo "Check for existing MySQL-shared-compat"
+    OLDMYSQL_SHAREDCOMPAT=`rpm -qa | grep 'MySQL-shared-compat' | head -n1`
+    if [[ ! -z "$OLDMYSQL_SHAREDCOMPAT" ]]; then
+        echo "yum -y remove MySQL-shared-compat"
+        yum -y remove MySQL-shared-compat
+    fi
 fi # CENTOS_SEVEN != 7
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
