@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.3
+VER=0.0.4
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -163,6 +163,27 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 	done
 	rm -rf /tmp/mysqladminshell_userpass.txt
 fi
+}
+
+createuserglobal() {
+	echo
+	cecho "Create a MySQL Username that has access to all Databases" $boldyellow
+	cecho "But without SUPER ADMIN privileges" $boldyellow
+	echo
+	read -ep " Enter new MySQL username you want to create: " globalnewmysqluser
+	read -ep " Enter new MySQL username's password: " globalnewmysqluserpass
+
+	mysql ${MYSQLOPTS} -e "CREATE USER '$globalnewmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$globalnewmysqluserpass';" >/dev/null 2>&1
+	GLOBALUSERCHECK=$?
+	if [[ "$GLOBALUSERCHECK" = '0' ]]; then
+		mysql ${MYSQLOPTS} -e "GRANT select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON *.* TO '$globalnewmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$globalnewmysqluser'@'$MYSQLHOSTNAME';"
+		echo ""
+		cecho "Ok: MySQL global user: $globalnewmysqluser created successfully" $boldyellow
+		echo
+	else
+			cecho "Error: unable to create MySQL USER = $u with PASSWORD = $p" $boldgreen
+			# GLOBALUSERCHECK=1
+	fi
 }
 
 createuserdb() {
@@ -394,6 +415,10 @@ case "$1" in
 			multicreatedb
 		fi
 		;;	
+	setglobaluser)
+		mysqlperm
+		createuserglobal
+		;;
 	setuserdb)
 		mysqlperm
 		createuserdb
@@ -412,8 +437,14 @@ case "$1" in
 		;;
 	*)
 		echo ""
-		cecho "$0 {multidb|setuserdb|setpass|deluser|showgrants}" $boldyellow
+		cecho "$0 {multidb|setglobaluser|setuserdb|setpass|deluser|showgrants}" $boldyellow
 		echo ""
+cecho "multidb - multiple mysql databse/user creation mode passing a file name containing db, user, pass 3 column entries
+setglobaluser - create a mysql username with access to all databases on server without SUPER ADMIN privileges (non-root)
+setuserdb - create individual mysql username and databases or assign a new database to an existing mysql username
+setpass - change mysql username password
+deluser - delete a mysql usernames
+showgrants - show existing mysql username granted privileges" $boldyellow
 		;;
 esac
 exit
