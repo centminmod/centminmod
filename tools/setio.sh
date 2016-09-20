@@ -4,7 +4,7 @@
 # for centminmod.com /etc/my.cnf
 ########################################################################################
 DT=$(date +"%d%m%y-%H%M%S")
-VER=0.3
+VER=0.4
 DEBUG='n'
 CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
 TIME='n'
@@ -479,6 +479,49 @@ setio() {
     echo "$FIOR"
     echo -n "Full Writes: "
     echo "$FIOW"
+
+    # set innodb_flush_neighbors = 0 for SSD configurations
+    # greater that disk I/O write speeds of 500 IOPs as some
+    # non-SSD raid configs could still read 500 IOPs
+    # detect appropriate variable differences between MariaDB 
+    # 5.5 VS 10.x
+    if [[ "$FIOW" -ge '500' ]]; then
+      if [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbors/ { print $2"="$3}') | grep 'innodb_flush_neighbors' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        # MariaDB 10.x
+        echo -e "\nset innodb_flush_neighbors = 0\n"
+        sed -i "s|innodb_flush_neighbors = .*|innodb_flush_neighbors = 0|g" /etc/my.cnf
+        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbors = 0;"
+        # append right after innodb_write_io_threads if innodb_flush_neighbors doesn't exist
+        # in /etc/my.cnf
+        if [[ "$(grep 'innodb_flush_neighbors' /etc/my.cnf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+          sed -i '/innodb_write_io_threads = .*/a innodb_flush_neighbors = 0' /etc/my.cnf
+        fi
+      elif [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbor_pages/ { print $2"="$3}') | grep 'innodb_flush_neighbor_pages' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        # MariaDB 5.5.x
+        echo -e "\nset innodb_flush_neighbor_pages = 0\n"
+        sed -i "s|innodb_flush_neighbor_pages = .*|innodb_flush_neighbor_pages = 0|g" /etc/my.cnf
+        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbor_pages = 0;"
+        # append right after innodb_write_io_threads if innodb_flush_neighbors doesn't exist
+        # in /etc/my.cnf
+        if [[ "$(grep 'innodb_flush_neighbor_pages' /etc/my.cnf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+          sed -i '/innodb_write_io_threads = .*/a innodb_flush_neighbor_pages = 0' /etc/my.cnf
+        fi
+      fi
+      # only need to insert missing variable if disk I/O writes greater than 500 IOPs
+      # as variable defaults to 1 even without variable set specifically in /etc/my.cnf
+    elif [[ "$FIOW" -lt '500' ]]; then
+      if [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbors/ { print $2"="$3}') | grep 'innodb_flush_neighbors' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        # MariaDB 10.x
+        echo -e "\nset innodb_flush_neighbors = 1\n"
+        sed -i "s|innodb_flush_neighbors = .*|innodb_flush_neighbors = 1|g" /etc/my.cnf
+        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbors = 1;"
+      elif [[ "$(echo $(mysqladmin var | awk -F '|' '/innodb_flush_neighbor_pages/ { print $2"="$3}') | grep 'innodb_flush_neighbor_pages' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        # MariaDB 5.5.x
+        echo -e "\nset innodb_flush_neighbor_pages = 1\n"
+        sed -i "s|innodb_flush_neighbor_pages = .*|innodb_flush_neighbor_pages = 1|g" /etc/my.cnf
+        /usr/bin/mysql -e "SET GLOBAL innodb_flush_neighbor_pages = 1;"
+      fi
+    fi
 
     if [[ "$FIOW" -ge '160001' ]]; then
       echo -n "innodb_io_capacity = "

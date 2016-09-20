@@ -93,6 +93,7 @@ innodb_io_capacity = 100
 innodb_io_capacity_max = 2000
 innodb_read_io_threads = 2
 innodb_write_io_threads = 2
+innodb_flush_neighbors = 1
 
 # mariadb settings
 [mariadb]
