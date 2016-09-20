@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.4
+VER=0.0.5
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -119,10 +119,14 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 				# mysql username
 				mysql ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
 				USERCHECK=$?
-			else
+			elif [[ "$PREV_USER" = "$u" && "$PREV_PASS" = "$p" ]]; then
 				# if PREV_USER equal to $u AND PREV_PASS equal to $p
 				# then it's same mysql username and pass so skip
 				# mysql user creation
+				USERCHECK=0
+			elif [[ -z "$u" && -z "$p" ]]; then
+				# if mysql username and password empty
+				# skip mysql user creation
 				USERCHECK=0
 			fi
 		else
@@ -156,8 +160,13 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 			echo
 		else 
 			echo ""
-			cecho "---------------------------------" $boldgreen
-			cecho "Ok: MySQL user: $u MySQL database: $db created successfully" $boldyellow
+			if [[ -z "$u" && -z "$p" ]]; then
+				cecho "---------------------------------" $boldgreen
+				cecho "Ok: MySQL user: skipped MySQL database: $db created successfully" $boldyellow
+			else
+				cecho "---------------------------------" $boldgreen
+				cecho "Ok: MySQL user: $u MySQL database: $db created successfully" $boldyellow
+			fi
 			echo
 		fi
 	done
