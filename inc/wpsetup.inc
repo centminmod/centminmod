@@ -678,6 +678,108 @@ fastcgi_param  REDIRECT_STATUS    200;
                    }
 HFF
 
+cat > "/usr/local/nginx/conf/php-rediscache-shortttl.conf"<<HFI
+location ~ [^/]\.php(/|\$) {
+  include /usr/local/nginx/conf/503include-only.conf;
+    fastcgi_split_path_info ^(.+?\.php)(/.*)\$;
+    if (!-f \$document_root\$fastcgi_script_name) {
+        return 404;
+    }
+
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
+    srcache_fetch_skip \$skip_cache;
+    srcache_store_skip \$skip_cache;
+    srcache_response_cache_control off;
+    set_escape_uri \$escaped_key \$key;
+    srcache_fetch GET /redis-fetch \$key;
+    srcache_store PUT /redis-store-shortttl key=\$escaped_key;
+    more_set_headers 'X-Cache \$srcache_fetch_status';
+    more_set_headers 'X-Cache-2 \$srcache_store_status';
+
+    fastcgi_pass   127.0.0.1:9000;
+    #fastcgi_pass   unix:/tmp/php5-fpm.sock;
+    fastcgi_index  index.php;
+    #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+    fastcgi_param  SCRIPT_FILENAME    \$request_filename;
+    fastcgi_param PHP_ADMIN_VALUE open_basedir=\$document_root/:/usr/local/lib/php/:/tmp/;
+
+# might shave 200+ ms off PHP requests
+# which don't pass on a content length header
+# slightly faster page response time at the
+# expense of throughput / scalability
+#sendfile on;
+#tcp_nopush off;
+#keepalive_requests 0;
+
+fastcgi_connect_timeout 60;
+fastcgi_send_timeout 180;
+fastcgi_read_timeout 180;
+fastcgi_buffer_size 512k;
+fastcgi_buffers 512 16k;
+fastcgi_busy_buffers_size 1m;
+fastcgi_temp_file_write_size 4m;
+fastcgi_max_temp_file_size 4m;
+fastcgi_intercept_errors on;
+
+# next 3 lines when uncommented / enabled
+# allow Nginx to handle uploads which then 
+# passes back the completed upload to PHP
+#fastcgi_pass_request_body off;
+#client_body_in_file_only clean;
+#fastcgi_param  REQUEST_BODY_FILE  \$request_body_file;
+
+#new .04+ map method
+fastcgi_param HTTPS \$server_https;
+
+# comment out PATH_TRANSLATED line if /usr/local/lib/php.ini sets following:
+# cgi.fix_pathinfo=0 
+# as of centminmod v1.2.3-eva2000.01 default is set to cgi.fix_pathinfo=1
+
+fastcgi_param  PATH_INFO          \$fastcgi_path_info;
+fastcgi_param  PATH_TRANSLATED    \$document_root\$fastcgi_path_info;
+
+fastcgi_param  QUERY_STRING       \$query_string;
+fastcgi_param  REQUEST_METHOD     \$request_method;
+fastcgi_param  CONTENT_TYPE       \$content_type;
+fastcgi_param  CONTENT_LENGTH     \$content_length;
+
+fastcgi_param  SCRIPT_NAME        \$fastcgi_script_name;
+fastcgi_param  REQUEST_URI        \$request_uri;
+fastcgi_param  DOCUMENT_URI       \$document_uri;
+fastcgi_param  DOCUMENT_ROOT      \$document_root;
+fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
+fastcgi_param  REQUEST_SCHEME     \$scheme;
+fastcgi_param  HTTPS              \$https if_not_empty;
+fastcgi_param  HTTP_PROXY         "";
+
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
+
+fastcgi_param  REMOTE_ADDR        \$remote_addr;
+fastcgi_param  REMOTE_PORT        \$remote_port;
+fastcgi_param  SERVER_ADDR        \$server_addr;
+fastcgi_param  SERVER_PORT        \$server_port;
+fastcgi_param  SERVER_NAME        \$server_name;
+
+# Set php-fpm geoip variables
+fastcgi_param GEOIP_COUNTRY_CODE \$geoip_country_code;
+fastcgi_param GEOIP_COUNTRY_CODE3 \$geoip_country_code3;
+fastcgi_param GEOIP_COUNTRY_NAME \$geoip_country_name;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE \$geoip_city_country_code;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE3 \$geoip_city_country_code3;
+fastcgi_param GEOIP_CITY_COUNTRY_NAME \$geoip_city_country_name;
+fastcgi_param GEOIP_REGION \$geoip_region;
+fastcgi_param GEOIP_CITY \$geoip_city;
+fastcgi_param GEOIP_POSTAL_CODE \$geoip_postal_code;
+fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;
+fastcgi_param GEOIP_LATITUDE \$geoip_latitude;
+fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;
+
+# PHP only, required if PHP was built with --enable-force-cgi-redirect
+fastcgi_param  REDIRECT_STATUS    200;
+
+                   }
+HFI
 
 ################################################################################
 # Setting up Nginx mapping
@@ -1560,6 +1662,17 @@ location /redis-store {
   set_unescape_uri \$key \$arg_key ;
   redis2_query set \$key \$echo_request_body;
   redis2_query expire \$key 6h;
+  redis2_pass  redisbackend;
+  redis2_connect_timeout 60s;
+  redis2_read_timeout 60s;
+  redis2_send_timeout 60s;
+}
+
+location /redis-store-shortttl {
+  internal  ;
+  set_unescape_uri \$key \$arg_key ;
+  redis2_query set \$key \$echo_request_body;
+  redis2_query expire \$key 3600;
   redis2_pass  redisbackend;
   redis2_connect_timeout 60s;
   redis2_read_timeout 60s;
