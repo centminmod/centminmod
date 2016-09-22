@@ -477,7 +477,7 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2h'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSION='1.0.2i'   # Use this version of OpenSSL http://openssl.org/
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
 CLOUDFLARE_PATCHSSL='y'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
