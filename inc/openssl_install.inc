@@ -23,6 +23,13 @@ if [[ "$(uname -m)" != 'x86_64' ]]; then
     CLOUDFLARE_PATCHSSL='n'
 fi
 
+if [[ "${OPENSSL_VERSION}" = '1.0.2i' ]]; then
+    # cloudflare patch chacha20 support does not seem to
+    # work with openssl 1.0.2i
+    # https://community.centminmod.com/posts/36691/
+    CLOUDFLARE_PATCHSSL='n'
+fi
+
 DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
 
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
