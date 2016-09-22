@@ -308,7 +308,7 @@ if [ ! -f /usr/local/nginx/conf/ssl ]; then
   mkdir -p /usr/local/nginx/conf/ssl
 fi
 
-if [ ! -f /usr/local/nginx/conf/ssl/${vhostname} ]; then
+if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 

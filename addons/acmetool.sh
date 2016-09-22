@@ -621,11 +621,11 @@ elif [[ "$SECOND_IP" ]]; then
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
 fi
 
-if [ ! -f /usr/local/nginx/conf/ssl ]; then
+if [ ! -d /usr/local/nginx/conf/ssl ]; then
   mkdir -p /usr/local/nginx/conf/ssl
 fi
 
-if [ ! -f /usr/local/nginx/conf/ssl/${vhostname} ]; then
+if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 
