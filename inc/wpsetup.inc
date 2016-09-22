@@ -20,6 +20,38 @@ wpinstall() {
     fi
 }
 
+installredisserver() {
+  if [[ "$(ps -C redis-server | grep redis-server >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    echo
+    echo "Install & Setup Redis Server from REMI YUM Repo"
+    echo
+    yum -y install redis --enablerepo=remi --disableplugin=priorities
+    chkconfig redis on
+    if [[ -z "$(grep '^vm.overcommit_memory' /etc/sysctl.conf)" ]]; then
+      echo "vm.overcommit_memory = 1" >> /etc/sysctl.conf
+      sysctl -p
+    fi
+    if [ -f /etc/redis.conf ]; then
+      if [[ -z "$(grep '^maxmemory 111mb' /etc/redis.conf)" ]]; then
+        echo "maxmemory 111mb" >> /etc/redis.conf
+        grep '^maxmemory 111mb' /etc/redis.conf
+        fi
+      if [[ -z "$(grep '^maxmemory-policy allkeys-lru' /etc/redis.conf)" ]]; then
+        echo "maxmemory-policy allkeys-lru" >> /etc/redis.conf
+        grep '^maxmemory-policy allkeys-lru' /etc/redis.conf
+      fi
+      if [[ -z "$(grep '^maxmemory-samples 10' /etc/redis.conf)" ]]; then
+        echo "maxmemory-samples 10" >> /etc/redis.conf
+        grep '^maxmemory-samples 10' /etc/redis.conf
+      fi
+    fi
+    service redis restart
+    echo
+    echo "Redis server installed with config file at /etc/redis.conf"
+    echo
+  fi
+}
+
 dbsetup() {
   SALT=$(openssl rand -base64 12 | cut -c1-12 | sed -e s'|/||')
   DBN=$RANDOM
@@ -308,10 +340,28 @@ read -ep "Enter email address for Admin User for Wordpress Installation: " WPADM
 echo
 cecho "Default is to install KeyCDN WP Cache Enabler Plugin" $boldyellow
 cecho "as it's more stable and reliable than WP Super Cache." $boldyellow
-cecho "To install KeyCDN Cache Enabler, answer = n to next question" $boldyellow
+cecho "You can select which caching method to use below:" $boldyellow
 echo
 
-read -ep "Do you want to install WP Super Cache instead ? [y/n]: " wpscache
+cecho "--------------------------------------------------------" $boldyellow
+cecho "        Wordpress Caching               " $boldgreen
+cecho "--------------------------------------------------------" $boldyellow
+cecho "1). KeyCDN Cache Enabler (default & recommended)" $boldgreen
+cecho "2). Redis Nginx Level Caching" $boldgreen
+cecho "3). Wordpress Super Cache" $boldgreen
+cecho "--------------------------------------------------------" $boldyellow
+read -ep "Enter option [ 1 - 3 ] " wpcache_option
+echo
+
+if [[ "$wpcache_option" = '1' ]]; then
+  wpscache='n'
+elif [[ "$wpcache_option" = '2' ]]; then
+  wpscache='redis'
+elif [[ "$wpcache_option" = '3' ]]; then
+  wpscache='y'
+else
+  wpscache='n'
+fi
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
 # echo "$TESTEMAIL"
@@ -1557,15 +1607,18 @@ REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf
 if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   cecho "------------------------------------------------------------" $boldgreen
-  if [[ "$wpscache" != [yY] ]]; then
+  if [[ "$wpscache" = [nN] ]]; then
     cacheenabler=y
     cecho "Setup Wordpress + Cache Enabler for $vhostname" $boldyellow
-  else
+  elif [[ "$wpscache" = [yY] ]]; then
     cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
+  elif [[ "$wpscache" = 'redis' ]]; then
+    cecho "Setup Wordpress + Redis Nginx Level Cache for $vhostname" $boldyellow
+    installredisserver
   fi
   cecho "------------------------------------------------------------" $boldgreen
 
-  if [[ "$wpscache" != [yY] ]]; then
+  if [[ "$wpscache" = [nN] || "$wpscache" = 'redis' ]]; then
     echo
     echo "Using full static page caching may cause problems for mobile & tablet device"
     echo "visitors depending on your WP themes used so you may want to exclude those"
@@ -1659,37 +1712,31 @@ rm -rf readme.html
 
 # installed + activated by default
 # wp super cache
-if [[ "$cacheenabler" != [yY] && "$wpscache" = [yY] ]]; then
+if [[ "$wpscache" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install wp-super-cache --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  # wp plugin install wp-widget-cache --activate --allow-root
-  # cecho "------------------------------------------------------------" $boldgreen
-# elif [[ "$wpscache" != [yY] ]]; then
-#   cecho "------------------------------------------------------------" $boldgreen
-#   wp plugin install wp-super-cache --allow-root
-#   cecho "------------------------------------------------------------" $boldgreen
-#   wp plugin install wp-super-cache-clear-cache-menu --allow-root
-#   cecho "------------------------------------------------------------" $boldgreen
-  # wp plugin install wp-widget-cache --allow-root
-  # cecho "------------------------------------------------------------" $boldgreen
 fi
 
 # wp cache enabler
-if [[ "$wpscache" != [yY] ]]; then
+if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install cache-enabler --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen 
   wp plugin install optimus --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-else
+fi
+
+# redis nginx cache
+if [[ "$wpscache" = 'redis' ]]; then
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install cache-enabler --allow-root
+  wp plugin install nginx-helper --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install optimus --allow-root
-  cecho "------------------------------------------------------------" $boldgreen
+  touch "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
+  chmod 0660 "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
+  chown nginx:nginx "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
 fi
 
 cecho "------------------------------------------------------------" $boldgreen
@@ -1735,8 +1782,8 @@ if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   
   # installed but disabled by default
-  cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install nginx-helper --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+  # wp plugin install nginx-helper --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   wp plugin install query-monitor --allow-root
   cecho "------------------------------------------------------------" $boldgreen
@@ -1802,7 +1849,7 @@ if [ -f wp-content/plugins/tpc-memory-usage/css/tpcmem.css ]; then
   sed -i 's|(images\/|(..\/images\/|g' wp-content/plugins/tpc-memory-usage/css/tpcmem.css
 fi
 
-if [[ "$wpscache" != [yY] ]]; then
+if [[ "$wpscache" = [nN] ]]; then
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
@@ -1817,7 +1864,26 @@ if [[ "$wpscache" != [yY] ]]; then
     fi
 fi
 
-if [[ "$cacheenabler" != [yY] ]]; then
+if [[ "$wpscache" = 'redis' ]]; then
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|#include /usr/local/nginx/conf/php-wpsc.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#include /usr/local/nginx/conf/php-rediscache.conf;|include /usr/local/nginx/conf/php-rediscache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+    fi
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|#include /usr/local/nginx/conf/php-wpsc.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#include /usr/local/nginx/conf/php-rediscache.conf;|include /usr/local/nginx/conf/php-rediscache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    fi
+fi
+
+if [[ "$wpscache" = [nN] ]]; then
   if [ -f wp-content/plugins/wp-super-cache/wp-cache-config-sample.php ]; then
     \cp -af wp-content/plugins/wp-super-cache/wp-cache-config-sample.php wp-content/wp-cache-config.php
   fi
@@ -2083,54 +2149,77 @@ fi
 echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
-if [[ "$wpscache" != [yY] ]]; then
-cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
-2. Settings Menu > Cache Enabler set options and hit Save Changes
-3. Settings Menu > Optimus set options and hit Save Changes
-4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
-if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
-cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
-6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
-7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
-8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
-9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
-10. WP-Optimize Menu and configure as needed
-11. Memory Usage Menu > Settings and adjust accordingly
-12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
-13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
-14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
-15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
-16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
-17. Seo Menu (Yoast SEO) > configure accordingly
-18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
-19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
-fi
-cecho "------------------------------------------------------------" $boldgreen
-else
-cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
-2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
-3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
-   (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
-4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
-if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
-cecho "
-5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
-6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
-7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
-8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
-9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
-10. WP-Optimize Menu and configure as needed
-11. Memory Usage Menu > Settings and adjust accordingly
-12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
-13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
-14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
-15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
-16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
-17. Seo Menu (Yoast SEO) > configure accordingly
-18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
-19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
-fi
-cecho "------------------------------------------------------------" $boldgreen
+if [[ "$wpscache" = [nN] ]]; then
+  cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  2. Settings Menu > Cache Enabler set options and hit Save Changes
+  3. Settings Menu > Optimus set options and hit Save Changes
+  4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+  if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+  6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+  7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+  8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+  9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+  10. WP-Optimize Menu and configure as needed
+  11. Memory Usage Menu > Settings and adjust accordingly
+  12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+  13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+  14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+  15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+  16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+  17. Seo Menu (Yoast SEO) > configure accordingly
+  18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+  19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+  fi
+  cecho "------------------------------------------------------------" $boldgreen
+elif [[ "$wpscache" = [yY] ]]; then
+  cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
+  3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
+    (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
+  4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+  if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "
+  5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+  6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+  7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+  8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+  9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+  10. WP-Optimize Menu and configure as needed
+  11. Memory Usage Menu > Settings and adjust accordingly
+  12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+  13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+  14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+  15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+  16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+  17. Seo Menu (Yoast SEO) > configure accordingly
+  18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+  19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+  fi
+  cecho "------------------------------------------------------------" $boldgreen
+elif [[ "$wpscache" = 'redis' ]]; then
+  cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  2. Settings Menu > Nginx Helper set Caching Method to Redis Cache, & set Purging Conditions
+  3. Settings Menu > Optimus set options and hit Save Changes
+  4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+  if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+  6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+  7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+  8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+  9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+  10. WP-Optimize Menu and configure as needed
+  11. Memory Usage Menu > Settings and adjust accordingly
+  12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+  13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+  14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+  15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+  16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+  17. Seo Menu (Yoast SEO) > configure accordingly
+  18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+  19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+  fi
+  cecho "------------------------------------------------------------" $boldgreen
 fi
 } 2>&1 | tee /tmp/setupwp.log
 cat -v /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
