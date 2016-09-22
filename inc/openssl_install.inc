@@ -22,6 +22,13 @@ if [[ "$(uname -m)" != 'x86_64' ]]; then
     # work on 32bit OSes only 64bit
     CLOUDFLARE_PATCHSSL='n'
 fi
+
+if [[ "${OPENSSL_VERSION}" = '1.0.2i' ]]; then
+    # cloudflare patch chacha20 support does not seem to
+    # work with openssl 1.0.2i
+    # https://community.centminmod.com/posts/36691/
+    CLOUDFLARE_PATCHSSL='n'
+fi
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         echo  "######################################################################"
