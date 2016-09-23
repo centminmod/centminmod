@@ -326,6 +326,27 @@ pureftpinstall() {
 
 sslvhost() {
 
+# check to make sure you don't add a domain name vhost that matches
+# your server main hostname setup in server_name within main hostname
+# nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
+if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+  CHECK_MAINHOSTNAME=$(awk '/server_name/ {print $2}' /usr/local/nginx/conf/conf.d/virtual.conf | sed -e 's|;||')
+  if [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" ]]; then
+    echo
+    echo " Error: $vhostname is already setup for server main hostname"
+    echo " at /usr/local/nginx/conf/conf.d/virtual.conf"
+    echo " It is important that main server hostname be setup correctly"
+    echo
+    echo " As per Getting Started Guide Step 1 centminmod.com/getstarted.html"
+    echo " The server main hostname needs to be unique. So please setup"
+    echo " the main server name vhost properly first as per Step 1 of guide."
+    echo
+    echo " Aborting nginx vhost creation..."
+    echo
+    exit 1
+  fi
+fi
+
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "SSL Vhost Setup..." $boldgreen
 cecho "---------------------------------------------------------------" $boldyellow
