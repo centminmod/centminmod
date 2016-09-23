@@ -361,6 +361,7 @@ read -ep "Enter email address for Admin User for Wordpress Installation: " WPADM
 echo
 cecho "Default is to install KeyCDN WP Cache Enabler Plugin" $boldyellow
 cecho "as it's more stable and reliable than WP Super Cache." $boldyellow
+cecho "Redis cache may have issues with caching due to long 6hr cache TTL" $boldyellow
 cecho "You can select which caching method to use below:" $boldyellow
 echo
 
@@ -368,7 +369,7 @@ cecho "--------------------------------------------------------" $boldyellow
 cecho "        Wordpress Caching               " $boldgreen
 cecho "--------------------------------------------------------" $boldyellow
 cecho "1). KeyCDN Cache Enabler (default & recommended)" $boldgreen
-cecho "2). Redis Nginx Level Caching" $boldgreen
+cecho "2). Redis Nginx Level Caching (may have issues with some wp plugins)" $boldgreen
 cecho "3). Wordpress Super Cache" $boldgreen
 cecho "--------------------------------------------------------" $boldyellow
 read -ep "Enter option [ 1 - 3 ] " wpcache_option
