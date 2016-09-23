@@ -1975,6 +1975,20 @@ fi
 
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/
 
+# sucuri-scanner change SUCURI_DATA_STORAGE path above web root
+# /home/nginx/domains/${vhostname}/sucuri_data_storage
+if [ -d "/home/nginx/domains/${vhostname}/public/wp-content/uploads/sucuri" ]; then
+  sucuri_datapath=$(echo "/home/nginx/domains/${vhostname}/sucuri_data_storage" | sed -e 's|/|\\\/|g')
+  rm -rf "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  mkdir -p "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  chown nginx:nginx "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  sed -i "s|\"}|\",\"sucuriscan_datastore_path\":\"$sucuri_datapath\"}|" "/home/nginx/domains/${vhostname}/public/wp-content/uploads/sucuri/sucuri-settings.php"
+  sed -i 's|/|\\/|g' "/home/nginx/domains/${vhostname}/public/wp-content/uploads/sucuri/sucuri-settings.php"
+  ls -lah "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  \cp -Rpf /home/nginx/domains/${vhostname}/public/wp-content/uploads/sucuri/* "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  cat "/home/nginx/domains/${vhostname}/sucuri_data_storage/sucuri-settings.php"
+fi
+
 # write permissions for log
 if [ -f wp-content/plugins/tpc-memory-usage/logs/tpcmem.log ]; then
   chmod 0660 wp-content/plugins/tpc-memory-usage/logs/tpcmem.log
