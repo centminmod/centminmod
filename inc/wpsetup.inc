@@ -1167,6 +1167,8 @@ location ~ /.well-known {
 
 location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
 
+location ~ ^${WPSUBDIR}/wp-content/uploads/sucuri { deny all; }
+
 location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
 
 # Block nginx-help log from public viewing
@@ -2333,8 +2335,8 @@ elif [[ "$wpscache" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
 elif [[ "$wpscache" = 'redis' ]]; then
   cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
-  2. Settings Menu > Nginx Helper set Caching Method to Redis Cache, & set Purging Conditions
-  3. Settings Menu > Optimus set options and hit Save Changes
+  2. Settings Menu > Nginx Helper Enable Purging set Caching Method to Redis Cache, & set Purging Conditions
+  3. Settings Menu > CDN Enabler and set CDN up or disable plugin
   4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
   if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
   cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
