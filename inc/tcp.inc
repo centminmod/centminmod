@@ -91,7 +91,9 @@ if [[ ! -f /proc/user_beancounters ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
-            echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+            if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
+              echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+            fi
             if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
                 echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
             fi
@@ -154,7 +156,9 @@ EOF
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
             if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
               # raise hashsize for conntrack entries
-              echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+              if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
+                echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+              fi
               if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
                   echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
               fi
