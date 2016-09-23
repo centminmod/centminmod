@@ -1773,9 +1773,9 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
 cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
  
-wp core download --allow-root
+\wp core download --allow-root
  
-wp core config --dbname=$DB --dbuser=$DBUSER --dbpass=$DBPASS --allow-root
+\wp core config --dbname=$DB --dbuser=$DBUSER --dbpass=$DBPASS --allow-root
  
 NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
@@ -1801,23 +1801,23 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     crontab -l
 fi
 
-wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
+\wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
 WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
-# wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
-wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+# \wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+\wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
 
 if [[ "$setdisplayname" = [yY] ]]; then
-  wp user update ${WUID} --display_name=${WPADMIN_DISPLAYNAME} --allow-root
+  \wp user update ${WUID} --display_name=${WPADMIN_DISPLAYNAME} --allow-root
 fi
 
 # add index on autoload
-wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx (autoload)" --allow-root
+\wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx (autoload)" --allow-root
 
 # change permalinks out of the box
-wp rewrite structure '/%post_id%/%postname%/' --allow-root
+\wp rewrite structure '/%post_id%/%postname%/' --allow-root
 
 if [[ "$WPCLI_SUPERCACHEPLUGIN" = [yY] && ! -f /root/.wp-cli/commands/super-cache/cli.php ]]; then
   # https://github.com/wp-cli/wp-super-cache-cli.git
@@ -1834,7 +1834,7 @@ fi
 
 if [[ "$responsivetheme" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
-  wp theme install responsive --activate --allow-root
+  \wp theme install responsive --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
 fi
  
@@ -1851,25 +1851,25 @@ rm -rf readme.html
 # wp super cache
 if [[ "$wpscache" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-super-cache --activate --allow-root
+  \wp plugin install wp-super-cache --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
+  \wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
 fi
 
 # wp cache enabler
 if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install cache-enabler --activate --allow-root
+  \wp plugin install cache-enabler --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen 
-  wp plugin install optimus --activate --allow-root
+  \wp plugin install optimus --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
 fi
 
 # redis nginx cache
 if [[ "$wpscache" = 'redis' ]]; then
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install nginx-helper --activate --allow-root
+  \wp plugin install nginx-helper --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   touch "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
   chmod 0660 "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
@@ -1877,75 +1877,75 @@ if [[ "$wpscache" = 'redis' ]]; then
 fi
 
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install sucuri-scanner --activate --allow-root
+\wp plugin install sucuri-scanner --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install disable-xml-rpc --activate --allow-root
+\wp plugin install disable-xml-rpc --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install cdn-enabler --activate --allow-root
+\wp plugin install cdn-enabler --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
 if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
-  wp plugin install autoptimize --activate --allow-root
+  \wp plugin install autoptimize --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install rocket-lazy-load --activate --allow-root
+  \wp plugin install rocket-lazy-load --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-security-scan --activate --allow-root
+  \wp plugin install wp-security-scan --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install limit-login-attempts --activate --allow-root
+  \wp plugin install limit-login-attempts --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-updates-notifier --activate --allow-root
+  \wp plugin install wp-updates-notifier --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install no-longer-in-directory --activate --allow-root
+  \wp plugin install no-longer-in-directory --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  # wp plugin install google-sitemap-generator --activate --allow-root
+  # \wp plugin install google-sitemap-generator --activate --allow-root
   # cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-optimize --activate --allow-root
+  \wp plugin install wp-optimize --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  # wp plugin install wp-smushit --activate --allow-root
+  # \wp plugin install wp-smushit --activate --allow-root
   # cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install tpc-memory-usage --activate --allow-root
+  \wp plugin install tpc-memory-usage --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install gtmetrix-for-wordpress --activate --allow-root
+  \wp plugin install gtmetrix-for-wordpress --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install p3-profiler --activate --allow-root
+  \wp plugin install p3-profiler --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wordpress-seo --activate --allow-root
+  \wp plugin install wordpress-seo --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install updraftplus --activate --allow-root
+  \wp plugin install updraftplus --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install google-analytics-for-wordpress --activate --allow-root
+  \wp plugin install google-analytics-for-wordpress --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install heartbeat-control --activate --allow-root
+  \wp plugin install heartbeat-control --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   
   # installed but disabled by default
   # cecho "------------------------------------------------------------" $boldgreen
-  # wp plugin install nginx-helper --allow-root
+  # \wp plugin install nginx-helper --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install query-monitor --allow-root
+  \wp plugin install query-monitor --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install go-newrelic --allow-root
+  \wp plugin install go-newrelic --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install db-cache-reloaded-fix --allow-root
+  \wp plugin install db-cache-reloaded-fix --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install google-authenticator --allow-root
+  \wp plugin install google-authenticator --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install addthis-smart-layers --allow-root
+  \wp plugin install addthis-smart-layers --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install search-regex --allow-root
+  \wp plugin install search-regex --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install disable-emojis --allow-root
+  \wp plugin install disable-emojis --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install wp-user-avatar --allow-root
+  \wp plugin install wp-user-avatar --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  wp plugin install lazy-load-for-videos --allow-root
+  \wp plugin install lazy-load-for-videos --allow-root
   cecho "------------------------------------------------------------" $boldgreen
-  #wp plugin install disable-xml-rpc-pingback --allow-root
+  #\wp plugin install disable-xml-rpc-pingback --allow-root
   #cecho "------------------------------------------------------------" $boldgreen
 fi # WPPLUGINS_ALL=y
 
 # remove hello plugin
-wp plugin uninstall hello --allow-root
+\wp plugin uninstall hello --allow-root
 
 # allows user to add custom wp-cli commands after initiall install to
 # further customise their installation. you create a custom file at
@@ -1965,13 +1965,13 @@ if [ -f "${CONFIGSCANBASE}/customwp_${vhostname}.inc" ]; then
 fi
 
 # update all plugins to make sure they are latest available
-wp plugin update --all --allow-root
+\wp plugin update --all --allow-root
 echo
-wp plugin status --allow-root
+\wp plugin status --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
 if [[ -f /root/.wp-cli/commands/super-cache/cli.php && "$cacheenabler" != [yY] ]]; then
-  wp super-cache enable --allow-root
+  \wp super-cache enable --allow-root
 fi
 
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/
@@ -2189,8 +2189,8 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
 fi
 
 if [[ "$wpcli_ssldefault" = '1' ]]; then
-  wp option update home "https://${vhostname}${WPSUBDIR}"  --allow-root
-  wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
+  \wp option update home "https://${vhostname}${WPSUBDIR}"  --allow-root
+  \wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
 fi
 
 {
