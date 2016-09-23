@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.2'
+ACMEVER='1.0.3'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEBINARY='/root/.acme.sh/acme.sh'
@@ -593,6 +593,67 @@ sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 }
 
 #####################
+gen_selfsigned() {
+  vhostname="$1"
+  if [ ! -f /usr/local/nginx/conf/ssl ]; then
+    mkdir -p /usr/local/nginx/conf/ssl
+  fi
+  
+  if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
+    mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
+  fi
+
+  if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
+cat > "/usr/local/nginx/conf/ssl_include.conf"<<EVS
+ssl_session_cache      shared:SSL:10m;
+ssl_session_timeout    60m;
+ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;  
+EVS
+  fi
+
+  pushd /usr/local/nginx/conf/ssl/${vhostname}
+  
+  cecho "---------------------------------------------------------------" $boldyellow
+  cecho "Generating self signed SSL certificate..." $boldgreen
+  cecho "CSR file can also be used to be submitted for paid SSL certificates" $boldgreen
+  cecho "If using for paid SSL certificates be sure to keep both private key and CSR safe" $boldgreen
+  cecho "creating CSR File: ${vhostname}.csr" $boldgreen
+  cecho "creating private key: ${vhostname}.key" $boldgreen
+  cecho "creating self-signed SSL certificate: ${vhostname}.crt" $boldgreen
+  sleep 9
+  
+  if [[ -z "$SELFSIGNEDSSL_O" ]]; then
+    SELFSIGNEDSSL_O="$vhostname"
+  else
+    SELFSIGNEDSSL_O="$SELFSIGNEDSSL_O"
+  fi
+  
+  if [[ -z "$SELFSIGNEDSSL_OU" ]]; then
+    SELFSIGNEDSSL_OU="$vhostname"
+  else
+    SELFSIGNEDSSL_OU="$SELFSIGNEDSSL_OU"
+  fi
+  
+  echo "openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj \"/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}\""
+  openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
+  echo "openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt"
+  openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
+  
+  echo
+  cecho "---------------------------------------------------------------" $boldyellow
+  cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
+  
+  dhparamstarttime=$(date +%s.%N)
+  
+  openssl dhparam -out dhparam.pem 2048
+  
+  dhparamendtime=$(date +%s.%N)
+  DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
+  cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
+  popd
+}
+
+#####################
 sslvhostsetup_mainhostname() {
   vhostname="$1"
 
@@ -621,7 +682,7 @@ elif [[ "$SECOND_IP" ]]; then
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
 fi
 
-if [ ! -d /usr/local/nginx/conf/ssl ]; then
+if [ ! -f /usr/local/nginx/conf/ssl ]; then
   mkdir -p /usr/local/nginx/conf/ssl
 fi
 
@@ -662,48 +723,6 @@ fi
 
 openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
-
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
-# cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
-# cecho "creating private key: ${vhostname}-backup.key" $boldgreen
-# sleep 5
-
-# openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
-
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
-# cecho "private key's SPKI - Subject Public Key Information" $boldgreen
-# cecho "Primary private key - ${vhostname}.key" $boldgreen
-# cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
-# cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
-# sleep 5
-
-# echo
-# cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
-
-# openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
-
-# echo
-# cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
-
-# openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
-
-# echo
-# cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
-
-# echo
-# cecho "for 7 days max-age including subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
-
-# echo
-# cecho "for 7 days max-age excluding subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
-
 
 echo
 cecho "---------------------------------------------------------------" $boldyellow
@@ -832,6 +851,34 @@ fi # "${MAIN_HOSTNAMEVHOSTSSLFILE}" doesn't exist
 sslvhostsetup() {
   HTTPSONLY=$1
   CHECKFORWP=$2
+
+  echo
+  echo "[self-signed ssl cert check] required by acmetool.sh"
+  echo
+
+  if [ ! -f /usr/local/nginx/conf/ssl ]; then
+    mkdir -p /usr/local/nginx/conf/ssl
+  fi
+  
+  # check if self-signed ssl certificate files exist and if not generate them
+  # otherwise, if user created the nginx vhost prior to running acmetool.sh with
+  # self-signed ssl cert prompt answered as no, these self-signed ssl certificates
+  # that acmetool.sh relies on initially won't exist and result in file not found
+  # errors https://community.centminmod.com/posts/36759/
+  if [[ ! -d "/usr/local/nginx/conf/ssl/${vhostname}" || ! -f "/usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem" || ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" ]]; then
+    gen_selfsigned "$vhostname"
+  else
+    if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem" ]; then
+      echo "[self-signed ssl] /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem exists"
+    fi
+    if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" ]; then
+      echo "[self-signed ssl] /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt exists"
+    fi
+    if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" ]; then
+      echo "[self-signed ssl] /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key exists"
+    fi
+  fi
+
   echo
   echo "[sslvhostsetup] create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
   echo
