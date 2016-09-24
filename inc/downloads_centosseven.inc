@@ -18,7 +18,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
         echo ""
       else
         cecho "Error: problem with ${CENTOSSEVENATRPMSFILE} install." $boldgreen
-        exit $ERR
+        # exit $ERR
       fi    
     else
     echo "Error: ${CENTOSSEVENATRPMSFILE} not found !!! Downloading now......"
@@ -42,7 +42,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
         echo ""
       else
         cecho "Error: problem with ${CENTOSSEVENATRPMSFILE} install." $boldgreen
-        exit $ERR
+        # exit $ERR
       fi
     fi
   
@@ -85,7 +85,7 @@ else
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENAXIVOFILE} install." $boldgreen
-      exit $ERR
+      # exit $ERR
     fi
   fi
 
@@ -117,7 +117,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
         echo ""
       else
         cecho "Error: problem with ${CENTOSSEVENREMIFILE} install." $boldgreen
-        exit $ERR
+        # exit $ERR
       fi    
     else
     echo "Error: ${CENTOSSEVENREMIFILE} not found !!! Downloading now......"
@@ -140,7 +140,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
         echo ""
       else
         cecho "Error: problem with ${CENTOSSEVENREMIFILE} install." $boldgreen
-        exit $ERR
+        # exit $ERR
       fi
     fi
   
@@ -199,7 +199,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
 			 echo ""
 		  else
 			 cecho "Error: problem with ${CENTOSSEVENEPELFILE} install." $boldgreen
-			 exit $ERR
+			 # exit $ERR
 		  fi
 	 fi
   fi
@@ -296,7 +296,7 @@ if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENPERCONALRELEASEFILE} install." $boldgreen
-      exit $ERR
+      # exit $ERR
     fi  
   else
   echo "Error: ${CENTOSSEVENPERCONALRELEASEFILE} not found !!! Downloading now......"
@@ -319,7 +319,7 @@ rpm -i ${CENTOSSEVENPERCONALRELEASEFILE}
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENPERCONALRELEASEFILE} install." $boldgreen
-      exit $ERR
+      # exit $ERR
     fi
   fi
 
@@ -338,7 +338,7 @@ if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENVARNISHFILE} install." $boldgreen
-      exit $ERR
+      # exit $ERR
     fi  
   else
   echo "Error: ${CENTOSSEVENVARNISHFILE} not found !!! Downloading now......"
@@ -362,7 +362,7 @@ rpm --nosignature -i ${CENTOSSEVENVARNISHFILE}
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENVARNISHFILE} install." $boldgreen
-      exit $ERR
+      # exit $ERR
     fi
   fi
 

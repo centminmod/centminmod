@@ -18,7 +18,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
         echo ""
       else
         cecho "Error: problem with ${CENTOSSIXATRPMSFILE} install." $boldgreen
-        exit $ERR
+        # exit $ERR
       fi    
     else
     echo "Error: ${CENTOSSIXATRPMSFILE} not found !!! Downloading now......"
@@ -42,7 +42,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
         echo ""
       else
         cecho "Error: problem with ${CENTOSSIXATRPMSFILE} install." $boldgreen
-        exit $ERR
+        # exit $ERR
       fi
     fi
   
@@ -85,7 +85,7 @@ else
 			echo ""
 		else
 			cecho "Error: problem with ${CENTOSSIXAXIVOFILE} install." $boldgreen
-			exit $ERR
+			# exit $ERR
 		fi
 	fi
 
@@ -117,7 +117,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 				echo ""
 			else
 				cecho "Error: problem with ${CENTOSSIXREMIFILE} install." $boldgreen
-				exit $ERR
+				# exit $ERR
 			fi  	
   	else
   	echo "Error: ${CENTOSSIXREMIFILE} not found !!! Downloading now......"
@@ -140,7 +140,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 				echo ""
 			else
 				cecho "Error: problem with ${CENTOSSIXREMIFILE} install." $boldgreen
-				exit $ERR
+				# exit $ERR
 			fi
 		fi
 	
@@ -199,7 +199,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
 				echo ""
 			else
 				cecho "Error: problem with ${CENTOSSIXEPELFILE} install." $boldgreen
-				exit $ERR
+				# exit $ERR
 			fi
 		fi
 	
@@ -337,7 +337,7 @@ if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
 			echo ""
 		else
 			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
-			exit $ERR
+			# exit $ERR
 		fi  
   else
   echo "Error: ${CENTOSSIXVARNISHFILE} not found !!! Downloading now......"
@@ -361,7 +361,7 @@ rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
 			echo ""
 		else
 			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
-			exit $ERR
+			# exit $ERR
 		fi
 	fi
 
