@@ -43,6 +43,9 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
   fi
 
 yum -y -q install yum-plugin-priorities epel-release
+if [[ -f /etc/yum.repos.d/epel.repo && -z "$(grep 'varnish-libs' /etc/yum.repos.d/epel.repo)" ]]; then
+  sed -i 's|varnish|varnish varnish-libs|' /etc/yum.repos.d/epel.repo
+fi
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
   # centos 6 unlike centos 7 doesn't install CR yum repo by default
   # https://wiki.centos.org/AdditionalResources/Repositories/CR
