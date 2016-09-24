@@ -296,7 +296,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
-exclude=varnish clamd clamav clamav-db galera
+exclude=varnish varnish-libs clamd clamav clamav-db galera
 .
 :w
 :q
@@ -400,16 +400,16 @@ fi # repo file check
 }
 
 yumpriorvarnish() {
-if [ -f /etc/yum.repos.d/varnish.repo ]; then
-cp -p /etc/yum.repos.d/varnish.repo /etc/yum.repos.d/varnish.OLD
-if [ -n "$(grep ^priority /etc/yum.repos.d/varnish.repo)" ]
+if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
+cp -p /etc/yum.repos.d/varnish-4.1.repo /etc/yum.repos.d/varnish-4.1.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/varnish-4.1.repo)" ]
         then
-                #echo priorities already set for varnish.repo
+                #echo priorities already set for varnish-4.1.repo
 PRIOREXISTS=1
         else
-                echo "setting yum priorities for varnish.repo"
-                ex -s /etc/yum.repos.d/varnish.repo << EOF
-:/\[rpmforge\]/ , /gpgcheck/
+                echo "setting yum priorities for varnish-4.1.repo"
+                ex -s /etc/yum.repos.d/varnish-4.1.repo << EOF
+:/\[varnish-4.1\]/ , /gpgcheck/
 :a
 priority=2
 .
@@ -417,12 +417,12 @@ priority=2
 :q
 EOF
 
-sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/varnish.repo
+# sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/varnish-4.1.repo
 
 cecho "*************************************************" $boldgreen
-cecho "Fixing varnish.repo YUM Priorities" $boldgreen
+cecho "Fixing varnish-4.1.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
-cat /etc/yum.repos.d/varnish.repo
+cat /etc/yum.repos.d/varnish-4.1.repo
 echo ""
 fi
 fi # repo file check

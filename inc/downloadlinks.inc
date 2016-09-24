@@ -62,8 +62,8 @@ CENTOSSIXCENTALTLOCAL="https://centminmod.com/centminmodparts/repos/${CENTOSSIXC
 CENTOSSIXPERCONALRELEASEFILE="percona-release-0.1-3.noarch.rpm"
 CENTOSSIXPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSIXPERCONALRELEASEFILE}"
 
-CENTOSSIXVARNISHFILE="varnish-release-3.0-1.el6.noarch.rpm"
-CENTOSSIXVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/varnish-release/${CENTOSSIXVARNISHFILE}"
+CENTOSSIXVARNISHFILE="varnish-4.1.el6.rpm"
+CENTOSSIXVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSIXVARNISHFILE}"
 CENTOSSIXVARNISHLOCAL='https://centminmod.com/centminmodparts/repos/${CENTOSSIXVARNISHFILE}'
 
 CENTOSSIXAXIVOFILE="axivo-release-6-1.noarch.rpm"
@@ -141,8 +141,8 @@ CENTOSSEVENCENTALTLOCAL="https://centminmod.com/centminmodparts/repos/${CENTOSSE
 CENTOSSEVENPERCONALRELEASEFILE="percona-release-0.1-3.noarch.rpm"
 CENTOSSEVENPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSEVENPERCONALRELEASEFILE}"
 
-CENTOSSEVENVARNISHFILE="varnish-release-3.0-1.el6.noarch.rpm"
-CENTOSSEVENVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el6/noarch/varnish-release/${CENTOSSEVENVARNISHFILE}"
+CENTOSSEVENVARNISHFILE="varnish-4.1.el7.rpm"
+CENTOSSEVENVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSEVENVARNISHFILE}"
 CENTOSSEVENVARNISHLOCAL='https://centminmod.com/centminmodparts/repos/${CENTOSSEVENVARNISHFILE}'
 
 CENTOSSEVENAXIVOFILE="axivo-release-7-1.noarch.rpm"
