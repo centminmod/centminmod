@@ -1,5 +1,6 @@
 
 opensslpatches() {
+  {
 # release buffer patch CVE-2010-5298
 if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
@@ -111,6 +112,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
             fi
         fi
 fi # CLOUDFLARE_PATCHSSL
+  } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
 installopenssl() {

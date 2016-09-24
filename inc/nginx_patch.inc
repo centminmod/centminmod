@@ -1,4 +1,5 @@
 patchnginx() {
+  {
   sleep "$NGINXPATCH_DELAY"
 
   # unofficial OpenSSL 1.1.0 beta Nginx patches
@@ -117,10 +118,12 @@ patchnginx() {
   		rm -rf "${NGINXTLSPATCH_NAME}"
   	 fi
 	fi
+} 2>&1 | tee "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 luapatch() {
 	if [ ! -f lua.patch ]; then
+    {
 		# echo
 		echo "patching lua for nginx 1.9.11 workaround"
 		# patch for nginx 1.9.11 and lua nginx 0.9.20
@@ -130,12 +133,15 @@ luapatch() {
 		pushd "$DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/"
 		patch -p1 < lua.patch
 		popd
+  } 2>&1 | tee "${CENTMINLOGDIR}/patch_luapatch_${DT}.log"
+
 	fi
 }
 
 luaopensslpatch() {
 	# for lua-nginx-module 0.10 https://community.centminmod.com/posts/24549/
 	# echo
+  { 
 	echo "patching nginx for lua 0.10+ branch support"
 	if [ "$ngver" ]; then
 		pushd "$DIR_TMP/nginx-${ngver}"
@@ -153,9 +159,12 @@ luaopensslpatch() {
 	wget "$OPENRESTYLUAPATCHLINK"
 	patch -p1 < nginx-1.9.7-ssl_cert_cb_yield.patch
 	popd
+} 2>&1 | tee "${CENTMINLOGDIR}/patch_luaopensslpatch_${DT}.log"
+
 }
 
 ngxpagespeed_patched() {
+  {
 	echo "patching ngx_pagespeed for nginx 1.9.11 support"
 	if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
 		pushd "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
@@ -166,4 +175,6 @@ ngxpagespeed_patched() {
 	fi
 	patch -p1 < nginxpagespeed.patch
 	popd
+} 2>&1 | tee "${CENTMINLOGDIR}/patch_ngxpagespeed_patched_${DT}.log"
+
 }
