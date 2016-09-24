@@ -845,6 +845,10 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
             echo
         fi
 
+        echo "log files saved at ${CENTMINLOGDIR}"
+        ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
+        echo
+
         echo "*************************************************"
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
