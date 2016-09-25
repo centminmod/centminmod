@@ -71,6 +71,11 @@ else
 	cecho "CentOS / RHEL system detected" $boldyellow
 fi
 
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+  # default is at /etc/centminmod/custom_config.inc
+  . "/etc/centminmod/custom_config.inc"
+fi
+
 if [[ ! -f /usr/bin/wget ]] ; then
 	yum -y -q install wget
 fi
