@@ -72,13 +72,21 @@ if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
-    CPUS=$(echo $((CPUS+1)))
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS" -ge '8' ]]; then
+        CPUS=$(echo "$CPUS+3" | bc)
+    else
+        CPUS=$(echo "$CPUS+1" | bc)
+    fi
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
-    CPUS=$(echo $((CPUS+1)))
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS" -ge '8' ]]; then
+        CPUS=$(echo "$CPUS+3" | bc)
+    else
+        CPUS=$(echo "$CPUS+1" | bc)
+    fi
     MAKETHREADS=" -j$CPUS"
 fi
 
