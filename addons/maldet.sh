@@ -83,7 +83,12 @@ fi
 if [[ -z "$ALERTEMAIL" ]]; then
 	echo
 	cecho "ALERTEMAIL variable detected as empty" $boldyellow
-	cecho "edit $0 and set an email address for ALERTEMAIL" $boldyellow
+	cecho "add to persistent config file created at" $boldyellow
+  cecho "/etc/centminmod/custom_config.inc and set an" $boldyellow
+  cecho "email address for variable: " $boldyellow
+  echo
+  cecho " ALERTEMAIL='youremail@domain.com'" $boldyellow
+  echo
 	cecho "Then re-run the script $0" $boldyellow
 	exit
 fi
