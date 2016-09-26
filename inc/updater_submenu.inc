@@ -147,7 +147,12 @@ gitenv_setup() {
 	
 	echo  
 	cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-	time git clone -b ${branchname} --depth=5 ${REMOTE_CMGIT} centminmod
+	echo "time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod"
+	time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod
+	if [ ! -d centminmod ]; then
+		echo "time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod"
+		time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod
+	fi
 	cd centminmod
 	chmod +x centmin.sh
 	
@@ -324,7 +329,12 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	
 		echo  
 		cecho "download github.com centmin mod ${branchname} branch repo" $boldyellow
-		time git clone -b ${branchname} --depth=5 ${REMOTE_CMGIT} centminmod
+		echo "time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod"
+		time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod
+		if [ ! -d centminmod ]; then
+			echo "time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod"
+			time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod
+		fi
 		cd centminmod 2>/dev/null
 
 		if [[ "$CM_DIRSIZE" -lt '4000000' ]]; then
