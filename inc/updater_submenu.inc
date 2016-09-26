@@ -129,6 +129,18 @@ fi
 }
 
 gitenv_setup() {
+	# check local DNS resolve and network connectivity before setting up git clone
+	DNSRESOLVER_CHECKA=$(dig +short A github.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
+	DNSRESOLVER_CHECKB=$(dig +short A raw.githubusercontent.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
+	if [[ "$(echo ${DNSRESOLVER_CHECKA}${DNSRESOLVER_CHECKA})" != '00' ]]; then
+		echo "Error: there seems to be an issues with local DNS resolvers /etc/resolv.conf"
+		echo "       or internet connectivity on server"
+		echo "ping -c4 github.com"
+		ping -c4 github.com
+		echo "ping -c4 raw.githubusercontent.com"
+		ping -c4 raw.githubusercontent.com
+		exit 1
+	fi
   # get Centmin Mod Git url remotely so to allow for Git repo renaming in future where
   # user can just use centmin.sh menu option 23 submenus to switch to a newly renamed
   # Git repo name if needed
@@ -281,6 +293,18 @@ fi
 }
 
 gitenv_change() {
+	# check local DNS resolve and network connectivity before setting up git clone
+	DNSRESOLVER_CHECKA=$(dig +short A github.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
+	DNSRESOLVER_CHECKB=$(dig +short A raw.githubusercontent.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
+	if [[ "$(echo ${DNSRESOLVER_CHECKA}${DNSRESOLVER_CHECKA})" != '00' ]]; then
+		echo "Error: there seems to be an issues with local DNS resolvers /etc/resolv.conf"
+		echo "       or internet connectivity on server"
+		echo "ping -c4 github.com"
+		ping -c4 github.com
+		echo "ping -c4 raw.githubusercontent.com"
+		ping -c4 raw.githubusercontent.com
+		exit 1
+	fi
 	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
 	REMOTE_CMGIT=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
