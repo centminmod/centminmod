@@ -11,7 +11,7 @@ cat <<EOF
 
  ###################################################################
  ###          IMPORTANT MYSQLDUMP BACKUP BEFORE UPGRADE          ###
- ###        OR RISK DATA LOSS DUE TO MARIADB 10.1 Changes        ###
+ ###        OR RISK DATA LOSS DUE TO MARIADB 10.2 Changes        ###
  ###################################################################
 
  For each DATABASENAME backup via mysqldump i.e.
@@ -419,7 +419,6 @@ innodb_file_per_table = 1
 ## warm up InnoDB buffer pool on server restarts
 innodb_buffer_pool_dump_at_shutdown=1
 innodb_buffer_pool_load_at_startup=1
-innodb_buffer_pool_populate=0
 ## Disabled settings
 performance_schema=OFF
 innodb_stats_on_metadata=OFF
