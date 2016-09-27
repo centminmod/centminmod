@@ -4,9 +4,10 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.3'
+ACMEVER='1.0.4'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
+ACMEDEBUG_LOG='y'
 ACMEBINARY='/root/.acme.sh/acme.sh'
 ACMEGITURL='https://github.com/Neilpang/acme.sh.git'
 ACMEBACKUPDIR='/usr/local/nginx/conf/acmevhostbackup'
@@ -176,8 +177,14 @@ return
 ###############################################################
 # functions
 #####################
-if [[ "$ACMEDEBUG" = [yY] ]]; then
+if [[ "$ACMEDEBUG" = [yY] && "$ACMEDEBUG_LOG" = [nN] ]]; then
   ACMEDEBUG_OPT='--debug 2'
+else
+  ACMEDEBUG_OPT=""
+fi
+
+if [[ "$ACMEDEBUG_LOG" = [yY] && "$ACMEDEBUG" = [nN] ]] || [[ "$ACMEDEBUG_LOG" = [yY] && "$ACMEDEBUG" = [yY] ]]; then
+  ACMEDEBUG_OPT="--log ${CENTMINLOGDIR}/acmetool.sh-debug-log-$DT.log --log-level 2"
 else
   ACMEDEBUG_OPT=""
 fi
@@ -203,6 +210,14 @@ fi
   else
     NGX_LOGFORMAT='combined'
   fi
+
+#####################
+listlogs() {
+  echo
+  echo "log files saved at ${CENTMINLOGDIR}"
+  ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
+  echo
+}
 
 #####################
 checkdate() {
@@ -1348,10 +1363,15 @@ issue_acme() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "issue skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
   fi
@@ -1561,10 +1581,15 @@ reissue_acme() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "reissue / renewal skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
   fi
@@ -1771,10 +1796,15 @@ renew_acme() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "renewal skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
   fi
@@ -2036,10 +2066,15 @@ webroot_issueacme() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "issue skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
   fi
@@ -2278,10 +2313,15 @@ webroot_reissueacme() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "reissue / renewal skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
   fi
@@ -2536,10 +2576,15 @@ webroot_renewacme() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "renewal skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
   fi
@@ -2855,10 +2900,15 @@ issue_acmedns() {
     echo
     echo "openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer""
     openssl x509 -noout -text < "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer"
+    listlogs
     echo
+    elif [[ "$LECHECK" = '1' ]]; then
+      listlogs
+      echo
     elif [[ "$LECHECK" = '2' ]]; then
       echo
       echo "issue / renewal skipped as ssl cert still valid"
+      listlogs
       echo
     fi  # reloadcmd_setup
     elif [[ "$CERTONLY_DNS" = '1' ]]; then
