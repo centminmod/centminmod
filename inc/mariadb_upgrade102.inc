@@ -1,4 +1,4 @@
-backupmsg102()
+backupmsg102() {
 
 echo ""
 cat <<EOF
