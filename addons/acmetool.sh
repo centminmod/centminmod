@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.4'
+ACMEVER='1.0.6'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -417,8 +417,8 @@ vhostsetup() {
       sslvhostsetup_mainhostname "$vhost_domain"
     else
       if [[ "$HTTPSONLY" = 'https' ]]; then
-        echo "/usr/bin/nv -d "${vhost_domain}" -s yd -u "${ftpusername}""
-        /usr/bin/nv -d "${vhost_domain}" -s yd -u "${ftpusername}"
+        echo "/usr/bin/nv -d "${vhost_domain}" -s ydle -u "${ftpusername}""
+        /usr/bin/nv -d "${vhost_domain}" -s ydle -u "${ftpusername}"
       else
         echo "/usr/bin/nv -d "${vhost_domain}" -s y -u "${ftpusername}""
         /usr/bin/nv -d "${vhost_domain}" -s y -u "${ftpusername}"
@@ -604,6 +604,11 @@ sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhos
 sed -i "s|#x#   return 302 https:\/\/\$server_name\$request_uri;|   return 302 https:\/\/\$server_name\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+
+  echo
+  echo "remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+  rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+  echo
   fi
 }
 
@@ -931,7 +936,7 @@ detectcustom_webroot $CUSTOM_WEBROOT $vhostname
 if [[ "$HTTPSONLY" = 'https' && "$CHECKFORWP" = 'wp' ]]; then
   echo "[wp] backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
   cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
-  rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+  #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
 
 # remove 1st 12 lines of wp generated yourdomain.com.ssl.conf
 # and insert http to https redirect
@@ -963,9 +968,9 @@ rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"
 rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
 
 elif [[ "$HTTPSONLY" = 'https' && -z "$CHECKFORWP" ]]; then
-  echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
+  echo "[non-wp] backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
   cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
-  rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+  #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
 
 # single ssl vhost at yourdomain.com.ssl.conf
 echo "create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1234,7 +1239,7 @@ issue_acme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1246,7 +1251,7 @@ issue_acme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1453,7 +1458,7 @@ reissue_acme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1465,7 +1470,7 @@ reissue_acme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1670,7 +1675,7 @@ renew_acme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1682,7 +1687,7 @@ renew_acme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1937,7 +1942,7 @@ webroot_issueacme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -1949,7 +1954,7 @@ webroot_issueacme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -2204,7 +2209,7 @@ webroot_reissueacme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -2216,7 +2221,7 @@ webroot_reissueacme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -2450,7 +2455,7 @@ webroot_renewacme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
@@ -2462,7 +2467,7 @@ webroot_renewacme() {
       # and remove the non-https vhostname.conf file
       echo "backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1
-      rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+      #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
       # if existing https vhostname.ssl.conf file exists replace it with one with proper http to https redirect
       if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf" ]; then
         # sslvhostsetup https $vhostname
