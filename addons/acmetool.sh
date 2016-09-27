@@ -215,7 +215,7 @@ fi
 listlogs() {
   echo
   echo "log files saved at ${CENTMINLOGDIR}"
-  ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
+  ls -lAhrt "${CENTMINLOGDIR}" | grep "${DT%??}"
   echo
 }
 
