@@ -82,6 +82,7 @@ fi
 
 # full purge and change buffer merge before shutting down to ensure data files are in sync 
 # prior to upgrade
+if [[ "SKIP_INNODBFASTSHUTDOWNDISABLE" [nN] ]]; then
 echo
 mysql -e "set global innodb_fast_shutdown=0;"
 echo "continuing upgrade in ~300 seconds..."
@@ -115,7 +116,7 @@ echo "............................ continue in 40s"
 sleep 20
 echo ".............................. continue in 20s"
 sleep 20
-
+fi
 }
 
 mysqlinitfix() {

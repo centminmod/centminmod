@@ -3,6 +3,7 @@
 #######################################################################################
 ENABLE_MARIADBTENUPGRADE='y'
 ENABLE_MARIADBTENTWOUPGRADE='n'
+SKIP_INNODBFASTSHUTDOWNDISABLE='n'
 
 mariadbsubmenu() {
 
