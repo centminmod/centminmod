@@ -29,7 +29,7 @@ OPENSSL_VERSION=$(ls -rt "$DIR_TMP" | awk '/openssl-1/' | grep -v 'tar.gz' | tai
 # pushover API
 # to ensure these settings persist DO NOT change them in this
 # script but set these variables in persistent config file at
-# /etc/centminmod/acmetoool-config.ini
+# /etc/centminmod/acmetool-config.ini
 PUSHALERT='n'
 papiurl=https://api.pushover.net/1/messages.json
 # registered pushover.net users will find their Pushover email
@@ -42,7 +42,7 @@ pushover_email=''
 # My Settings section of your account
 # to ensure these settings persist DO NOT change them in this
 # script but set these variables in persistent config file at
-# /etc/centminmod/acmetoool-config.ini
+# /etc/centminmod/acmetool-config.ini
 # set to CF_DNSAPI='y' and fill in CF_KEY and CF_EMAIL settings
 CF_DNSAPI='n'
 CF_KEY=''
@@ -132,8 +132,8 @@ if [ ! -d "$ACMESH_BACKUPDIR" ]; then
   mkdir -p "$ACMESH_BACKUPDIR"
 fi
 
-if [ -f "/etc/centminmod/acmetoool-config.ini" ]; then
-  . "/etc/centminmod/acmetoool-config.ini"
+if [ -f "/etc/centminmod/acmetool-config.ini" ]; then
+  . "/etc/centminmod/acmetool-config.ini"
 fi
 
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
