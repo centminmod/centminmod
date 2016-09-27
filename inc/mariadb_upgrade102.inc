@@ -397,7 +397,7 @@ fi
 cat >>/etc/my.cnf<<FFF
 
 
-[mariadb-10.1]
+[mariadb-10.2]
 innodb_file_format = Barracuda
 innodb_file_per_table = 1
 

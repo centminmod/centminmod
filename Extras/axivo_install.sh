@@ -20,6 +20,10 @@ if [ "$CENTOSVER" == 'release' ]; then
     fi
 fi
 
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
@@ -73,7 +77,7 @@ source "../inc/axelsetup.inc"
 # functions
 #############
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
 {
 
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
@@ -112,7 +116,7 @@ fi
 } 2>&1 | tee ${CENTMINLOGDIR}/axivo_install_${DT}_centos6.log
 fi
 
-if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 {
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 

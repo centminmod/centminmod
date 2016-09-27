@@ -2,6 +2,7 @@
 # MariaDB MySQL Upgrade sub menu
 #######################################################################################
 ENABLE_MARIADBTENUPGRADE='y'
+ENABLE_MARIADBTENTWOUPGRADE='n'
 
 mariadbsubmenu() {
 
@@ -18,10 +19,11 @@ do
 	cecho "3). MariaDB 5.5 to MariaDB 10.x YUM upgrade" $boldgreen
 	cecho "4). MariaDB 5.5 to MariaDB 10.1.x YUM upgrade" $boldgreen
 	cecho "5). MariaDB 10.x to MariaDB 10.1.x YUM upgrade" $boldgreen
-	cecho "6). Back to Main menu" $boldgreen
+	cecho "6). MariaDB 10.1.x to MariaDB 10.2.x YUM upgrade" $boldgreen
+	cecho "7). Back to Main menu" $boldgreen
 	cecho "--------------------------------------------------------" $boldyellow
 
-	read -ep "Enter option [ 1 - 6 ] " mmoption
+	read -ep "Enter option [ 1 - 7 ] " mmoption
 	cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -143,6 +145,31 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-to-10-1_upgrade.log
 ;;
 6)
+
+centminlog
+{
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+	if [ "$MARIADBVERCHECK" == '10.2' ]; then
+
+		echo ""
+		cecho "MariaDB 10.2.x server already detected" $boldyellow
+
+	elif [ "$MARIADBVERCHECK" == '10.1' ]; then
+
+		if [[ "$ENABLE_MARIADBTENTWOUPGRADE" = [nN] ]]; then
+			echo "Place holder for now until MariaDB 10.2.x is ready to be added"
+		else
+			# echo "Place holder for now until MariaDB 10.2.x is ready to be added"
+			c7tmpsetup
+			mariadbtentotentwoupgrade
+		fi
+	elif [ "$MARIADBVERCHECK" != '10.1' ]; then
+		echo "Need to be on MariaDB 10.1 before updating to MariaDB 10.2"
+		exit
+	fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-1-to-10-2_upgrade.log
+;;
+7)
 	break
 ;;
 esac
