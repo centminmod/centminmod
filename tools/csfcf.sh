@@ -16,13 +16,13 @@ if [[ ! -f /usr/bin/curl ]]; then
 fi
 ###############################
 ipv4get() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4 > $CFIPLOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	
 	echo "--------------------------------------------"
 	echo " Downloading Cloudflare IP list"
-	echo " from: https://www.cloudflare.com/ips-v4"
+	echo " from: https://www.cloudflare.com/ips-v4/"
 	echo "--------------------------------------------"
 	echo ""
 	echo "--------------------------------------------"
@@ -59,13 +59,13 @@ ipv4get() {
 
 ###############################
 ipv6get() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6 > $CFIP6LOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIP6LOG)
 	
 	echo "--------------------------------------------"
 	echo " Downloading Cloudflare IP list"
-	echo " from: https://www.cloudflare.com/ips-v6"
+	echo " from: https://www.cloudflare.com/ips-v6/"
 	echo "--------------------------------------------"
 	echo ""
 	echo "--------------------------------------------"
@@ -102,16 +102,16 @@ ipv6get() {
 
 ###############################
 csfadd() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4 > $CFIPLOG
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6 > $CFIP6LOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
+	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	CFIP6S=$(cat $CFIP6LOG)
 	
 	echo "--------------------------------------------"
 	echo " Add Cloudflare IP list to CSF"
-	echo " from: https://www.cloudflare.com/ips-v4"
-	echo " from: https://www.cloudflare.com/ips-v6"
+	echo " from: https://www.cloudflare.com/ips-v4/"
+	echo " from: https://www.cloudflare.com/ips-v6/"
 	echo "--------------------------------------------"
 	echo ""
 
@@ -142,8 +142,8 @@ nginxsetup() {
 	echo
 	# echo "create $CFINCLUDEFILE include file"
 	echo > $CFINCLUDEFILE
-	cflista=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4)
-	cflistb=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6)
+	cflista=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/)
+	cflistb=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/)
 	for i in $cflista; do
         	echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
 	done
