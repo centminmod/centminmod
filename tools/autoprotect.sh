@@ -101,8 +101,29 @@ location ~ ^$PROTECTDIR_PATH/ {
         fi
       fi
     fi # grep public only
-  done > "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
-    echo "generated nginx include file: /usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+  done > "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf.tmp"
+    if [ -f "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf" ]; then
+      diff -u "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf" "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf.tmp" >/dev/null 2>&1
+      DIFFCHECK=$?
+      if [[ "$DIFFCHECK" != '0' ]]; then
+        if [ -f /tmp/diffcheck.txt ]; then
+          touch /tmp/diffcheck.txt
+        fi
+        echo "y" >> /tmp/diffcheck.txt
+        mv -f "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf.tmp" "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+        echo "generated nginx include file [diff]: /usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+      else
+        mv -f "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf.tmp" "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+        echo "generated nginx include file [same]: /usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+      fi
+    else
+      if [ -f /tmp/diffcheck.txt ]; then
+        touch /tmp/diffcheck.txt
+      fi
+      echo "y" >> /tmp/diffcheck.txt
+      mv -f "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf.tmp" "/usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+      echo "generated nginx include file [initial]: /usr/local/nginx/conf/autoprotect/${domain}/autoprotect-${domain}.conf"
+    fi
 done
 
 if [[ "$DEBUG" = [yY] ]]; then
@@ -111,19 +132,26 @@ if [[ "$DEBUG" = [yY] ]]; then
   echo
 else
   echo
-  echo "autoprotect.sh run completed..."
+  if [[ "$DIFFCHECK" != '0' ]]; then
+    echo "autoprotect.sh run completed..."
+  else
+    echo "autoprotect.sh run completed skipped nginx restart..."
+  fi
   echo
 fi
 
 # only trigger nginx restart service when there are new differences detected
 # in current and previous autoprotect include conf files
-if [ -f /etc/init.d/nginx ]; then
-		# /etc/init.d/nginx restart >/dev/null 2>&1
-		sleep 2
-		/etc/init.d/nginx restart
-		rm -rf /usr/local/nginx/conf/autoprotect/status-restart
+NGX_RESTARTCMD=$(grep y /tmp/diffcheck.txt >/dev/null 2>&1; echo $?)
+if [[ -f /etc/init.d/nginx && "$NGX_RESTARTCMD" = '0' ]]; then
+   # /etc/init.d/nginx restart >/dev/null 2>&1
+   sleep 2
+   /etc/init.d/nginx restart
+   rm -rf /usr/local/nginx/conf/autoprotect/status-restart
 fi
-
+  if [ -f /tmp/diffcheck.txt ]; then
+    rm -rf /tmp/diffcheck.txt
+  fi
 }
 
 genprotect
