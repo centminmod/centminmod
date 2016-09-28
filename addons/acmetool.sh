@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.6'
+ACMEVER='1.0.7'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -256,7 +256,7 @@ checkdate() {
       echo "SHA1 Fingerprint=${fingerprint}"
       conf=$(echo $ca | sed 's|.cer$|.conf|')
       if [[ "$(grep -q 'acme-staging.api' $conf; echo $?)" != '0' ]]; then
-        echo "[ link maybe 404 not found, certifcate transparency logged ~1hr after issuance ]"
+        echo "[ below certifcate transparency link is only valid ~1hr after issuance ]"
         echo "https://crt.sh/?sha1=${fingerprint}"
       fi
       echo "certificate expires in $daysToExpire days on $expiry"
@@ -1245,6 +1245,9 @@ issue_acme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https 
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
@@ -1257,6 +1260,9 @@ issue_acme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https wp
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi        
       fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
@@ -1464,6 +1470,9 @@ reissue_acme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https 
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
@@ -1476,6 +1485,9 @@ reissue_acme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https wp
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi        
       fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
@@ -1681,6 +1693,9 @@ renew_acme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https 
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
@@ -1693,6 +1708,9 @@ renew_acme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https wp
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi        
       fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
@@ -1948,6 +1966,9 @@ webroot_issueacme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https 
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
@@ -1960,6 +1981,9 @@ webroot_issueacme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https wp
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi        
       fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
@@ -2215,6 +2239,9 @@ webroot_reissueacme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https 
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
@@ -2227,6 +2254,9 @@ webroot_reissueacme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https wp
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi        
       fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
@@ -2461,6 +2491,9 @@ webroot_renewacme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https 
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi
       fi
     elif [[ "$testcert" = 'wplived' || "$testcert" = 'wptestd' ]]; then
       # if https default via d or lived option, then backup non-https vhostname.conf to backup directory
@@ -2473,6 +2506,9 @@ webroot_renewacme() {
         # sslvhostsetup https $vhostname
         sslopts_check
         sslvhostsetup https wp
+        if [[ "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+          switch_httpsdefault
+        fi        
       fi
     else
       cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-acmebackup-$DT" >/dev/null 2>&1
