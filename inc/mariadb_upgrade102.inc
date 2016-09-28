@@ -435,6 +435,13 @@ innodb_defragment_stats_accuracy=0
 innodb_defragment_fill_factor_n_recs=20
 innodb_defragment_fill_factor=0.9
 innodb_defragment_frequency=40
+
+# page compression
+# 10.1+ https://mariadb.com/kb/en/mariadb/compression/
+#innodb_compression_algorithm=zlib
+#innodb_use_fallocate=0
+#innodb_use_mtflush=0
+#innodb_mtflush_threads=4
 FFF
 
 # sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
