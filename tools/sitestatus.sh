@@ -52,7 +52,7 @@ cat > "/usr/local/nginx/conf/maintenance.conf" <<FFF
      geo \$maint_whitelist {
           include /usr/local/nginx/conf/sitestatus.conf;
           127.0.0.1 0;
-          #YOURIPADDRESS 0;
+          #YOURIPADDRESS 1;
      }
 
      map \$http_host\$uri \$exclude_url {
