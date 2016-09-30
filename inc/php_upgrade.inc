@@ -450,7 +450,8 @@ funct_phpconfigure
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf)
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
-            time ./sapi/fpm/php-fpm -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
+            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
         elif [ -f "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP/php_pgo_training_scripts"
             git stash
@@ -459,7 +460,8 @@ funct_phpconfigure
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf)
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
-            time ./sapi/fpm/php-fpm -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
+            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
         fi
         echo "make prof-clean"
         time make prof-clean
