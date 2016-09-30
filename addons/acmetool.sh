@@ -1361,7 +1361,12 @@ issue_acme() {
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
         grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
-    fi
+      if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        # inline in vhost, need to move them to their own include file for acmetool.sh at
+        # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        convert_crtkeyinc
+      fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -1592,7 +1597,12 @@ reissue_acme() {
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
         grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
-    fi
+      if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        # inline in vhost, need to move them to their own include file for acmetool.sh at
+        # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        convert_crtkeyinc
+      fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -1821,7 +1831,12 @@ renew_acme() {
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
         grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
-    fi
+      if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        # inline in vhost, need to move them to their own include file for acmetool.sh at
+        # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        convert_crtkeyinc
+      fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2100,7 +2115,12 @@ webroot_issueacme() {
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
         grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
-    fi
+      if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        # inline in vhost, need to move them to their own include file for acmetool.sh at
+        # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        convert_crtkeyinc
+      fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2379,7 +2399,12 @@ webroot_reissueacme() {
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
         grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
-    fi
+      if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        # inline in vhost, need to move them to their own include file for acmetool.sh at
+        # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        convert_crtkeyinc
+      fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG" >/dev/null 2>&1
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2634,7 +2659,12 @@ webroot_renewacme() {
         echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
         grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
       fi
-    fi
+      if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        # inline in vhost, need to move them to their own include file for acmetool.sh at
+        # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        convert_crtkeyinc
+      fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2919,6 +2949,12 @@ issue_acmedns() {
           echo "grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf""
           grep 'root' "/usr/local/nginx/conf/conf.d/$vhostname.conf"
         fi
+        # if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+        #   # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+        #   # inline in vhost, need to move them to their own include file for acmetool.sh at
+        #   # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+        #   convert_crtkeyinc
+        # fi
       fi
       sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
       echo "grep 'root' $SSLVHOST_CONFIG"
