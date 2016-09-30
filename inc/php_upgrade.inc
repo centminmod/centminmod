@@ -440,8 +440,35 @@ funct_phpconfigure
         figlet -ckf standard "PHP: Make"
     fi
 
-echo "make${MAKETHREADS}"
-    time make${MAKETHREADS}
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+        echo "make${MAKETHREADS} prof-gen"
+        time make${MAKETHREADS} prof-gen
+        if [ ! -f "$DIR_TMP/php_pgo_training_scripts" ]; then
+            pushd "$DIR_TMP"
+            git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
+            GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf)
+            sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
+            ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
+            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            popd
+        elif [ -f "$DIR_TMP/php_pgo_training_scripts" ]; then
+            pushd "$DIR_TMP/php_pgo_training_scripts"
+            git stash
+            git pull
+            popd
+            GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf)
+            sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
+            ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
+            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+        fi
+        echo "make prof-clean"
+        time make prof-clean
+        echo "make${MAKETHREADS} prof-use"
+        time make${MAKETHREADS} prof-use
+    else
+        echo "make${MAKETHREADS}"
+        time make${MAKETHREADS}
+    fi
 
 ################
 # error check
@@ -690,6 +717,10 @@ fi
 
     echo "***************************************************"
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+        cecho "* PHP_PGO='y' detected. PHP compiled with Profile Guided Optimizations" $boldgreen
+        cecho "* https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php" $boldgreen
+    fi
     echo "***************************************************"
 
     # if you set /etc/centminmod/custom_config.inc file to

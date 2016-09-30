@@ -21,6 +21,7 @@ CLANG='y'                     # Nginx and LibreSSL
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
+PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_NJS='n'
