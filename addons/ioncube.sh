@@ -9,16 +9,16 @@ PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
 if [[ "$(expr $PHPCURRENTVER \= 5.7)" = 1 || "$(expr $PHPCURRENTVER \< 5.3)" = 1 ]]; then
   echo "Your current PHP version $PHPCURRENTVER is incompatible with ioncube loader"
-  echo "ioncube loader only supports PHP versions 5.3-5.6 currently"
+  echo "ioncube loader only supports PHP versions 5.3-5.6 & 7 currently"
   echo "aborting installation"
   exit
 fi
 
 echo
 echo "ioncube loader installation started"
-echo "ioncube loader only supports PHP 5.3, 5.4, 5.5 and 5.6"
-echo "ioncube loader PHP 7 currently beta supported"
-echo "http://blog.ioncube.com/2016/05/06/beta-php7-ioncube-loaders/"
+echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6 & 7.0"
+# echo "ioncube loader PHP 7 currently beta supported"
+echo "http://blog.ioncube.com/2016/09/15/php-7-ioncube-loaders/"
 echo
 
 cd /svr-setup
@@ -30,16 +30,16 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
     wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   else
-    wget -cnv https://www.ioncube.com/php7-linux-x86-64-beta8.tgz
-    tar xvzf php7-linux-x86-64-beta8.tgz
+    wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   fi
 else
   if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
     wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
     tar xvzf ioncube_loaders_lin_x86.tar.gz
   else
-    wget -cnv https://www.ioncube.com/php7-linux-x86-beta8.tgz
-    tar xvzf php7-linux-x86-beta8.tgz
+    wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
+    tar xvzf ioncube_loaders_lin_x86.tar.gz
   fi
 fi
 
@@ -54,9 +54,9 @@ else
   # for php 7 ioncube beta8
   ICPHPVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)
   if [[ "$(uname -m)" = 'x86_64' ]]; then
-    \cp -f ioncube_loader_lin_x86-64_${ICPHPVER}.0b8.so ${PHPEXTDIRD}/ioncube.so
+    \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so ${PHPEXTDIRD}/ioncube.so
   else
-    \cp -f ioncube_loader_lin_x86_${ICPHPVER}.0b8.so ${PHPEXTDIRD}/ioncube.so
+    \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so ${PHPEXTDIRD}/ioncube.so
   fi
 fi
 
