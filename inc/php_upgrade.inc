@@ -443,7 +443,7 @@ funct_phpconfigure
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
         echo "make${MAKETHREADS} prof-gen"
         time make${MAKETHREADS} prof-gen
-        if [ ! -f "$DIR_TMP/php_pgo_training_scripts" ]; then
+        if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP"
             git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
             popd
@@ -452,7 +452,7 @@ funct_phpconfigure
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
             echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
-        elif [ -f "$DIR_TMP/php_pgo_training_scripts" ]; then
+        elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP/php_pgo_training_scripts"
             git stash
             git pull
