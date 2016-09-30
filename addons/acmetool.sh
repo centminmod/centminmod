@@ -1367,6 +1367,7 @@ issue_acme() {
         # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
         convert_crtkeyinc
       fi
+    fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -1603,6 +1604,7 @@ reissue_acme() {
         # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
         convert_crtkeyinc
       fi
+    fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -1837,6 +1839,7 @@ renew_acme() {
         # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
         convert_crtkeyinc
       fi
+    fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2121,6 +2124,7 @@ webroot_issueacme() {
         # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
         convert_crtkeyinc
       fi
+    fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2405,6 +2409,7 @@ webroot_reissueacme() {
         # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
         convert_crtkeyinc
       fi
+    fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG" >/dev/null 2>&1
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
@@ -2665,6 +2670,7 @@ webroot_renewacme() {
         # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
         convert_crtkeyinc
       fi
+    fi
     sed -i "s|server_name .*|server_name $DOMAIN_LISTNGX;|" "$SSLVHOST_CONFIG"
     echo "grep 'root' $SSLVHOST_CONFIG"
     grep 'root' "$SSLVHOST_CONFIG"
