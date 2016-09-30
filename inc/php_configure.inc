@@ -281,15 +281,15 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 	gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee ${CENTMINLOGDIR}/gcc_php_native.log
 	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
-		if [[ "$CPUMODELNO" = '94' && "$CPU_MARCH" = 'broadwell' ]]; then
+    if [[ "$CPU_MARCH" = 'broadwell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=broadwell"
-    elif [[ "$CPUMODELNO" = '60' && "$CPU_MARCH" = 'core-avx2' ]]; then
+    elif [[ "$CPU_MARCH" = 'core-avx2' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx2"
-    elif [[ "$CPUMODELNO" = '58' && "$CPU_MARCH" = 'core-avx-i' ]]; then
+    elif [[ "$CPU_MARCH" = 'core-avx-i' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx-i"
-    elif [[ "$CPUMODELNO" = '42' && "$CPU_MARCH" = 'corei7-avx' ]]; then
+    elif [[ "$CPU_MARCH" = 'corei7-avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7-avx"
-    elif [[ "$CPUMODELNO" = '44' && "$CPU_MARCH" = 'corei7' ]]; then
+    elif [[ "$CPU_MARCH" = 'corei7' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7"
     else
       PHP_MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse"
