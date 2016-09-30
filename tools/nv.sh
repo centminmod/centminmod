@@ -767,6 +767,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESX
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
+#x# HTTPS-DEFAULT
 server {
   $DEDI_LISTEN
   server_name ${vhostname} www.${vhostname};

@@ -981,6 +981,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
+##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
@@ -1030,6 +1031,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
+##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
@@ -1058,6 +1060,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
+##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
