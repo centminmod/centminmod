@@ -591,6 +591,7 @@ switch_httpsdefault() {
   echo "setting HTTPS default in /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
   echo
   if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
@@ -598,6 +599,7 @@ echo "sed -i "s|#x#   return 302 https://\$server_name\$request_uri;|   return 3
 echo "sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 
+sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1022,6 +1024,7 @@ if [[ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" && ! "$(grep '^#x#
 # insert http to https redirect if yourdomain.com.ssl.conf exists
 # single ssl vhost at yourdomain.com.ssl.conf
 if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+  if [[ ! "$(grep '^#x# HTTPS-DEFAULT' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
@@ -1045,6 +1048,7 @@ echo "cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1" "/usr/loca
 cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"
 rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2"
+  fi # check for ^#x# HTTPS-DEFAULT to indicate an exisiting HTTPS default ssl vhost
 fi
 
 elif [ ! -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
