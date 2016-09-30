@@ -748,6 +748,15 @@ if [[ "$sslconfig" = 'ydle' ]]; then
   # remove non-https vhost so https only single vhost file
   # rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf
 
+if [ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"<<EVT
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;
+EVT
+fi
+
 # single ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESX
 # Centmin Mod Getting Started Guide
@@ -768,9 +777,7 @@ server {
   listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
-  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
-  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
-  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
   $HTTPTWO_MAXFIELDSIZE
@@ -793,7 +800,6 @@ server {
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
-  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;

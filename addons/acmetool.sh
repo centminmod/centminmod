@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.7'
+ACMEVER='1.0.8'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -718,6 +718,15 @@ ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
 EVS
 fi
 
+if [ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"<<EVT
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;
+EVT
+fi
+
 cd /usr/local/nginx/conf/ssl/${vhostname}
 
 cecho "---------------------------------------------------------------" $boldyellow
@@ -776,9 +785,7 @@ server {
   listen ${DEDI_IP}443 default_server $LISTENOPT;
   server_name $vhostname;
 
-  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
-  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
-  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
   $HTTPTWO_MAXFIELDSIZE
@@ -801,7 +808,6 @@ server {
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
-  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -868,6 +874,20 @@ fi # "${MAIN_HOSTNAMEVHOSTSSLFILE}" doesn't exist
 }
 
 #####################
+convert_crtkeyinc() {
+  # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+  # inline in vhost, need to move them to their own include file for acmetool.sh at
+  # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+egrep 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf > /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+echo "cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+
+sed -i "s|^[ \t]* ssl_dhparam .*|  include \/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt.key.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+sed -i '/ssl_certificate/d' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+sed -i '/ssl_trusted_certificate/d' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+}
+
+#####################
 sslvhostsetup() {
   HTTPSONLY=$1
   CHECKFORWP=$2
@@ -931,8 +951,18 @@ ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
 EVS
 fi
 
+if [ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"<<EVT
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;
+EVT
+fi
+
 detectcustom_webroot $CUSTOM_WEBROOT $vhostname
 
+###  ##############################################################
 if [[ "$HTTPSONLY" = 'https' && "$CHECKFORWP" = 'wp' ]]; then
   echo "[wp] backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
   cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
@@ -967,10 +997,55 @@ cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1" "/usr/local/nginx/c
 rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"
 rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp2"
 
+if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+  # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+  # inline in vhost, need to move them to their own include file for acmetool.sh at
+  # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+  convert_crtkeyinc
+fi
+
+###  ##############################################################
 elif [[ "$HTTPSONLY" = 'https' && -z "$CHECKFORWP" ]]; then
   echo "[non-wp] backup & remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
   cp -a "/usr/local/nginx/conf/conf.d/$vhostname.conf" "${ACMEBACKUPDIR}/$vhostname.conf-backup-removal-https-default-${DT}" >/dev/null 2>&1 >/dev/null 2>&1
   #rm -rf "/usr/local/nginx/conf/conf.d/$vhostname.conf" >/dev/null 2>&1
+
+if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+  # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+  # inline in vhost, need to move them to their own include file for acmetool.sh at
+  # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+  convert_crtkeyinc
+fi
+
+if [[ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" && ! "$(grep '^#x#   return 302' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
+# insert http to https redirect if yourdomain.com.ssl.conf exists
+# single ssl vhost at yourdomain.com.ssl.conf
+if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+# For HTTP/2 SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+
+# redirect from www to non-www  forced SSL
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+#x# server {
+#x#   $DEDI_LISTEN
+#x#   server_name ${vhostname} www.${vhostname};
+#x#   return 302 https://\$server_name\$request_uri;
+#x#   include /usr/local/nginx/conf/staticfiles.conf;
+#x# }
+ESV
+echo "cp -a "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2""
+cp -a "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2"
+echo "cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+cat "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2" > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"
+rm -rf "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp2"
+fi
+
+elif [ ! -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
 
 # single ssl vhost at yourdomain.com.ssl.conf
 echo "create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -994,9 +1069,7 @@ server {
   listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
-  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
-  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
-  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
   $HTTPTWO_MAXFIELDSIZE
@@ -1019,7 +1092,6 @@ server {
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
-  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -1065,7 +1137,24 @@ server {
   include /usr/local/nginx/conf/vts_server.conf;
 }
 ESS
+fi
+
+###  ##############################################################
 elif [[ "$HTTPSONLY" != 'https' && -z "$CHECKFORWP" ]]; then
+
+if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+  # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
+  # inline in vhost, need to move them to their own include file for acmetool.sh at
+  # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+  convert_crtkeyinc
+fi
+
+if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+  echo
+  echo "skip /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf creation"
+  echo "already exists"
+  echo
+elif [ ! -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
@@ -1085,9 +1174,7 @@ server {
   listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
-  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
-  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
-  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
   $HTTPTWO_MAXFIELDSIZE
@@ -1110,7 +1197,6 @@ server {
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
-  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -1156,6 +1242,7 @@ server {
   include /usr/local/nginx/conf/vts_server.conf;
 }
 ESS
+fi # if ssl vhost exists
 fi
 
   if [ -f /usr/bin/ngxreload ]; then
@@ -1297,6 +1384,9 @@ issue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1316,6 +1406,9 @@ issue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1340,15 +1433,15 @@ issue_acme() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -1524,6 +1617,9 @@ reissue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1543,6 +1639,9 @@ reissue_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1567,15 +1666,15 @@ reissue_acme() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -1745,6 +1844,9 @@ renew_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1764,6 +1866,9 @@ renew_acme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1788,15 +1893,15 @@ renew_acme() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -2018,6 +2123,9 @@ webroot_issueacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2037,6 +2145,9 @@ webroot_issueacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2061,15 +2172,15 @@ webroot_issueacme() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -2293,6 +2404,9 @@ webroot_reissueacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2317,15 +2431,15 @@ webroot_reissueacme() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -2543,6 +2657,9 @@ webroot_renewacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2562,6 +2679,9 @@ webroot_renewacme() {
         sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
         sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+        if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+          sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+        fi
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2586,15 +2706,15 @@ webroot_renewacme() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
@@ -2860,6 +2980,9 @@ issue_acmedns() {
           sed -i "s|#ssl_stapling on|ssl_stapling on|" "$SSLVHOST_CONFIG"
           sed -i "s|#ssl_stapling_verify|ssl_stapling_verify|" "$SSLVHOST_CONFIG"
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "$SSLVHOST_CONFIG"
+          if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+            sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+          fi
         fi
       fi # DNS Mode certonly 2
     elif [[ "$CERTONLY_DNS" = '1' && "$STAGE_DNS" = 'live' ]]; then
@@ -2907,15 +3030,15 @@ issue_acmedns() {
     echo "LECHECK = $LECHECK"
     if [[ "$LECHECK" = '0' ]]; then
       if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme${ECC_SUFFIX}.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       else
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "$SSLVHOST_CONFIG"
-      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "$SSLVHOST_CONFIG"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.key|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.key|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
+      sed -i "s|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-trusted.crt|\/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}-acme.cer|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
       fi
-      egrep 'ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "$SSLVHOST_CONFIG" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
+      egrep 'ssl_dhparam|ssl_certificate|ssl_certificate_key|ssl_trusted_certificate' "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" | tee /usr/local/nginx/conf/ssl/${vhostname}/acme-vhost-config.txt
 
     echo
     echo "-----------------------------------------------------------"
