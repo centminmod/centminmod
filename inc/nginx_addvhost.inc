@@ -273,6 +273,20 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
     if [[ "$vhostssl_le" = [yY] ]]; then
       lemsgdns
       check_dns $vhostname
+      # echo
+      # cecho "------------------------------------------------" $boldyellow
+      # echo "Important Note For HTTPS Default Options"
+      # cecho "------------------------------------------------" $boldyellow
+      # echo "For HTTPS default options note you can not automatically"
+      # echo "switch back to non-HTTPS mode, it will be a manual process"
+      # echo "you have to do yourself. Re-running HTTP + HTTPS mode after"
+      # echo "running HTTPS default will break your non-HTTPS site until"
+      # echo "you manually fix it by recreating the non-HTTPS nginx vhost."
+      # echo "There maybe a previous backup copy of non-HTTPS vhost at"
+      # echo "/usr/local/nginx/conf/acmevhostbackup created when you first"
+      # echo "switched to HTTPS default which you need to copy back to"
+      # echo "/usr/local/nginx/conf/conf.d/yourdomain.com.conf"
+      # cecho "------------------------------------------------" $boldyellow
       echo
       cecho "------------------------------------------------" $boldyellow
       echo "You have 4 options: "
