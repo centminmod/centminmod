@@ -452,6 +452,10 @@ funct_phpconfigure
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
             echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            if [ -f "$PHPPGO_INDEXPATH" ]; then
+                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"
+            fi
         elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP/php_pgo_training_scripts"
             git stash
@@ -462,6 +466,10 @@ funct_phpconfigure
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
             echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            if [ -f "$PHPPGO_INDEXPATH" ]; then
+                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"
+            fi
         fi
         echo "make prof-clean"
         time make prof-clean
