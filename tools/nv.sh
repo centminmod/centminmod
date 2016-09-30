@@ -1181,6 +1181,9 @@ if [[ "$vhostssl" = [yY] ]]; then
   echo
   cecho "domain: https://$vhostname" $boldyellow
   cecho "vhost ssl conf file for $vhostname created: /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
+  if [[ "$sslconfig" = 'ydle' && -f /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf ]]; then
+    cecho "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf created" $boldwhite
+  fi
   cecho "/usr/local/nginx/conf/ssl_include.conf created" $boldwhite
   cecho "Self-signed SSL Certificate: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldyellow
   cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
