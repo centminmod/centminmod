@@ -81,6 +81,7 @@ install() {
       # wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-6-x86_64/download/rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
       # rpm -ivh rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
       # rpm -ivh rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
+      yum clean all
       yum install centos-release-scl-rh --disableplugin=fastmirror
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
       echo
@@ -89,6 +90,7 @@ install() {
 		elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
       yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
       rm -rf /etc/yum.repos.d/slc6-scl.repo
+      yum clean all
       yum install centos-release-scl-rh --disableplugin=fastmirror
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
       echo
@@ -100,6 +102,7 @@ install() {
       # wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-7-x86_64/download/rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
       # rpm -ivh rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
       # rpm -ivh rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
+      yum clean all
       yum install centos-release-scl-rh --disableplugin=fastmirror
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
       echo
