@@ -277,7 +277,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
         scl_install
-        source scl_source enable devtoolset-3
+        source /opt/rh/devtoolset-3/enable
         which gcc
         which g++
         unset CC
@@ -286,7 +286,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
         scl_install
-        source scl_source enable devtoolset-3
+        source /opt/rh/devtoolset-3/enable
         which gcc
         which g++
         unset CC
@@ -304,7 +304,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         if [ -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
           source /opt/rh/devtoolset-3/enable
         elif [ ! -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
-          source scl_source enable devtoolset-3
+          source /opt/rh/devtoolset-3/enable
         fi
         which gcc
         which g++

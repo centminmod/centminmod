@@ -73,40 +73,43 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 fi
 ########################################################################
 install() {
-	if [[ "$(uname -m)" = 'x86_64' ]]; then
-		echo "installing devtoolset-3 from softwarecollections.org"
-		if [[ "$CENTOS_SIX" = '6' && ! -f /etc/yum.repos.d/slc6-scl.repo ]]; then
-			cd $DIR_TMP
-			# wget https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/epel-6-x86_64/download/rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
-			# wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-6-x86_64/download/rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
-			# rpm -ivh rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
-			# rpm -ivh rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
-      yum install centos-release-scl 
-			yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils 
-			echo
-			/opt/rh/devtoolset-3/root/usr/bin/gcc --version
-			/opt/rh/devtoolset-3/root/usr/bin/g++ --version
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    echo "installing devtoolset-3 from softwarecollections.org"
+    if [[ "$CENTOS_SIX" = '6' && ! -f /etc/yum.repos.d/slc6-scl.repo ]]; then
+      cd $DIR_TMP
+      # wget https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/epel-6-x86_64/download/rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
+      # wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-6-x86_64/download/rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
+      # rpm -ivh rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
+      # rpm -ivh rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
+      yum install centos-release-scl
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
+      echo
+      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
 		elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
-			yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils 
-			echo
-			/opt/rh/devtoolset-3/root/usr/bin/gcc --version
-			/opt/rh/devtoolset-3/root/usr/bin/g++ --version			
+      yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
+      rm -rf /etc/yum.repos.d/slc6-scl.repo
+      yum install centos-release-scl
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
+      echo
+      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
 		elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-			cd $DIR_TMP
-			# wget https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/epel-7-x86_64/download/rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
-			# wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-7-x86_64/download/rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
-			# rpm -ivh rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
-			# rpm -ivh rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
-      yum install centos-release-scl 
-			yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils 
-			echo
-			/opt/rh/devtoolset-3/root/usr/bin/gcc --version
-			/opt/rh/devtoolset-3/root/usr/bin/g++ --version			
+      cd $DIR_TMP
+      # wget https://www.softwarecollections.org/en/scls/rhscl/devtoolset-3/epel-7-x86_64/download/rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
+      # wget https://www.softwarecollections.org/en/scls/rhscl/rh-java-common/epel-7-x86_64/download/rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
+      # rpm -ivh rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
+      # rpm -ivh rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
+      yum install centos-release-scl
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
+      echo
+      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
 		fi
-	else
-		echo "64bit install only, detected 32bit OS aborting..."
-		exit
-	fi
+  else
+    echo "64bit install only, detected 32bit OS aborting..."
+    exit
+  fi
 }
 
 ########################################################################

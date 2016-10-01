@@ -2032,7 +2032,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source scl_source enable devtoolset-3
+			source /opt/rh/devtoolset-3/enable
 			which gcc
 			which g++
 			unset CC
@@ -2040,7 +2040,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CC="ccache gcc"
 			export CXX="ccache g++"
 		else
-			source scl_source enable devtoolset-3
+			source /opt/rh/devtoolset-3/enable
 			which gcc
 			which g++
 			unset CC
@@ -2053,7 +2053,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source scl_source enable devtoolset-3
+			source /opt/rh/devtoolset-3/enable
 			which gcc
 			which g++
 			unset CC
@@ -2061,7 +2061,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CC="ccache gcc"
 			export CXX="ccache g++"
 		else
-			source scl_source enable devtoolset-3
+			source /opt/rh/devtoolset-3/enable
 			which gcc
 			which g++
 			unset CC

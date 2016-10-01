@@ -3,15 +3,17 @@
 
 scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
-	if [[ "$CENTOS_SIX" = '6' ]]; then
-		if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-			echo "install scl for newer gcc and g++ versions"
-			wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
-			rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
-			# yum -y install devtoolset-3 -q
-			yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
-		fi
-	fi # centos 6 only needed
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      echo "install centos-release-scl for newer gcc and g++ versions"
+      # wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
+      # rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
+      # # yum -y install devtoolset-3 -q
+      # yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
+      yum install centos-release-scl
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
+    fi
+  fi # centos 6 only needed
 }
 
 libbroti_install() {
