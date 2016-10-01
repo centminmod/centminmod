@@ -228,7 +228,7 @@ setbp() {
     # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
     # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   fi
-  if [[ "$(echo "$INNODB_BPSIZE/$CPUS" | bc)" -le "$INNODB_BPTHRESHOLD" ]]; then
+  if [[ "$(echo "$INNODB_BPSIZE/$CPUS" | bc)" -lt "$INNODB_BPTHRESHOLD" ]]; then
     sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
     sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
     # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
