@@ -318,10 +318,17 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7-avx"
     elif [[ "$CPU_MARCH" = 'corei7' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7"
+    elif [[ "$CENTOS_SIX" = '6' && "$CPU_MARCH" = 'core2' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=core2"
     else
       PHP_MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse"
     fi
-		export CFLAGS="-O3 $PHP_MTUNEOPT -pipe"
+    # if only 1 cpu thread use -O2 to keep compile times sane
+    if [[ "$CPUS" = '1' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+    else
+      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe"
+    fi
 		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
