@@ -10,7 +10,8 @@ scl_install() {
       # rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
       # # yum -y install devtoolset-3 -q
       # yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
-      yum install centos-release-scl-rh --disableplugin=fastmirror
+      #yum install centos-release-scl-rh --disableplugin=fastmirror
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
     fi
   fi # centos 6 only needed

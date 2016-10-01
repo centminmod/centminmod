@@ -82,7 +82,8 @@ install() {
       # rpm -ivh rhscl-devtoolset-3-epel-6-x86_64.noarch.rpm
       # rpm -ivh rhscl-rh-java-common-epel-6-x86_64.noarch.rpm
       yum clean all
-      yum install centos-release-scl-rh --disableplugin=fastmirror
+      #yum install centos-release-scl-rh --disableplugin=fastmirror
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
       echo
       /opt/rh/devtoolset-3/root/usr/bin/gcc --version
@@ -91,7 +92,8 @@ install() {
       yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
       rm -rf /etc/yum.repos.d/slc6-scl.repo
       yum clean all
-      yum install centos-release-scl-rh --disableplugin=fastmirror
+      #yum install centos-release-scl-rh --disableplugin=fastmirror
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
       echo
       /opt/rh/devtoolset-3/root/usr/bin/gcc --version
@@ -103,7 +105,8 @@ install() {
       # rpm -ivh rhscl-devtoolset-3-epel-7-x86_64.noarch.rpm
       # rpm -ivh rhscl-rh-java-common-epel-7-x86_64.noarch.rpm
       yum clean all
-      yum install centos-release-scl-rh --disableplugin=fastmirror
+      #yum install centos-release-scl-rh --disableplugin=fastmirror
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3-el7/repo/epel-7/rhscl-devtoolset-3-el7-epel-7.repo
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
       echo
       /opt/rh/devtoolset-3/root/usr/bin/gcc --version
