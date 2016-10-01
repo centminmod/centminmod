@@ -282,8 +282,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="gcc"
-        export CXX="g++"
+        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
         scl_install
         source scl_source enable devtoolset-3
@@ -291,9 +291,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="gcc"
-        export CXX="g++"
+        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
       fi
+    fi
+  fi
+  # CentOS 7 use devtoolset-3 GCC 4.9 if it's detected
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+    # if devtoolset-3 gcc and g++ exist use then instead of system versions regardless of CentOS version
+    if [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+        # centos 7 vs centos 6 versions
+        if [ -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
+          source /opt/rh/devtoolset-3/enable
+        elif [ ! -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
+          source scl_source enable devtoolset-3
+        fi
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-3"
+        echo $CC
+        echo $CXX
     fi
   fi
 
@@ -304,12 +325,27 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   CPUMODELNO=$(grep -v 'model name' /proc/cpuinfo | awk -F ": " '/model/ {print $2}' | uniq)
   SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
   MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
-  gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee ${CENTMINLOGDIR}/gcc_php_native.log
+  gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
+  gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
 
 	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
-    if [[ "$CPU_MARCH" = 'broadwell' ]]; then
+    if [[ "$CPU_MARCH" = 'silvermont' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=silvermont"
+    elif [[ "$CPU_MARCH" = 'bonnell' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=bonnell"
+    elif [[ "$CPU_MARCH" = 'broadwell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=broadwell"
+    elif [[ "$CPU_MARCH" = 'haswell' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=haswell"
+    elif [[ "$CPU_MARCH" = 'ivybridge' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=ivybridge"
+    elif [[ "$CPU_MARCH" = 'sandybridge' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=sandybridge"
+    elif [[ "$CPU_MARCH" = 'westmere' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=westmere"
+    elif [[ "$CPU_MARCH" = 'nehalem' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=nehalem"
     elif [[ "$CPU_MARCH" = 'core-avx2' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx2"
     elif [[ "$CPU_MARCH" = 'core-avx-i' ]]; then
@@ -319,6 +355,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$CPU_MARCH" = 'corei7' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7"
     elif [[ "$CENTOS_SIX" = '6' && "$CPU_MARCH" = 'core2' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=core2"
+    elif [[ "$CENTOS_SEVEN" = '7' && "$CPU_MARCH" = 'core2' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core2"
     else
       PHP_MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse"
