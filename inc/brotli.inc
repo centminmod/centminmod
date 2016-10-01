@@ -10,7 +10,7 @@ scl_install() {
       # rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
       # # yum -y install devtoolset-3 -q
       # yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
-      yum install centos-release-scl
+      yum install centos-release-scl-rh
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
     fi
   fi # centos 6 only needed
