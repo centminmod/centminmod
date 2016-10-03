@@ -448,7 +448,7 @@ PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 SHORTCUTS='y'                # shortcuts
 
-POSTGRESQL='n'               # set to =y to install PostgreSQL 9.4 server, devel packages and pdo-pgsql PHP extension
+POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
 # If MDB_YUMREPOINSTALL=y and MDB_INSTALL=n then MDB_VERONLY version 
