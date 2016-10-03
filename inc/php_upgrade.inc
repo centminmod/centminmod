@@ -439,7 +439,8 @@ funct_phpconfigure
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Make"
     fi
-
+    echo "PHPMUVER = $PHPMUVER"
+    echo "PHP_PGO = $PHP_PGO"
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
         echo "make${MAKETHREADS} prof-gen"
         time make${MAKETHREADS} prof-gen
