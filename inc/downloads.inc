@@ -3424,8 +3424,8 @@ ccachetarball() {
     if [ -s "${CCACHEFILE}" ]; then
         cecho "ccache ${CCACHE_VER} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP "${CCCACHELINKLOCAL}" $WGETRETRY
-        # $DOWNLOADAPP ${CCCACHELINK} $WGETRETRY
+        # $DOWNLOADAPP "${CCCACHELINKLOCAL}" $WGETRETRY
+        $DOWNLOADAPP ${CCCACHELINK} $WGETRETRY
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CCACHEFILE} download failed." $boldgreen
