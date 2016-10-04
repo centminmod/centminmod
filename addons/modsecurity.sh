@@ -17,6 +17,7 @@
 ###############################################################################
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 MODSEC_PCREVER='8.38'
 APR_VER='1.5.2'
 APRU_VER='1.5.4'
@@ -27,7 +28,7 @@ PCRE_PREFIX='/opt/pcre/lib'
 TMP_DIR='/svr-setup'
 TMP_SSL='/opt'
 PCRELINKFILE="pcre-${MODSEC_PCREVER}.tar.gz"
-PCRELINK="https://centminmod.com/centminmodparts/pcre/${PCRELINKFILE}"
+PCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRELINKFILE}"
 ###############################################################################
 if [ ! -d "$CENTMINLOGDIR" ]; then
 	mkdir -p "$CENTMINLOGDIR"

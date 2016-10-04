@@ -8,6 +8,7 @@ export PATH="/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sb
 DT=$(date +"%d%m%y-%H%M%S")
 branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
 INSTALLDIR='/usr/local/src'
 DIR_TMP='/svr-setup'
@@ -28,11 +29,11 @@ AXEL='n'
 AXEL_VER='2.6'
 AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
-AXEK_LINKLOCAL="https://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
+AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 #######################################################
 ALTPCRE_VERSION='8.39'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
-ALTPCRELINK="https://centminmod.com/centminmodparts/pcre/${ALTPCRELINKFILE}"
+ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.18'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
@@ -116,7 +117,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.11'
   AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
-  AXEK_LINKLOCAL="https://centminmod.com/centminmodparts/axel/${AXEL_VER}.tar.gz"
+  AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 fi
 
 if [ -f /proc/user_beancounters ]; then

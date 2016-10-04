@@ -7,7 +7,7 @@ checkredistar() {
       PHPEXT_REDISLINKFILE="phpredis-${REDISPHP_VER}.tgz"
       PHPEXT_REDISLINK="https://github.com/phpredis/phpredis/archive/${REDISPHP_VER}.tar.gz"
       PHPEXT_REDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/phpredis/repository/archive.tar.gz?ref=${REDISPHP_VER}"
-      PHPEXT_REDISLINKLOCAL="https://centminmod.com/centminmodparts/redis/${PHPEXT_REDISLINKFILE}"
+      PHPEXT_REDISLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/redis/${PHPEXT_REDISLINKFILE}"
     fi
   fi
 

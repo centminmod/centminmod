@@ -9,15 +9,16 @@
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
 ALTPCRE_VERSION='8.39'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
-ALTPCRELINK="https://centminmod.com/centminmodparts/pcre/${ALTPCRELINKFILE}"
+ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.18'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
-WGET_LINKLOCAL="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 

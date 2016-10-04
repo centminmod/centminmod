@@ -253,6 +253,8 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 # http://centminmod.com/upgrade.html#persistent
 AUTO_GITUPDATE='n'
 #####################################################
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+#####################################################
 # Timestamp Install
 TS_INSTALL='y'
 
