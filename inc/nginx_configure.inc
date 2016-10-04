@@ -2072,7 +2072,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 fi
 
 # devtoolset-3 usage of GCC 4.9 even for CentOS7
-if [[ "$CENTOS_SIX" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
 	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
 		scl_install
 		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
