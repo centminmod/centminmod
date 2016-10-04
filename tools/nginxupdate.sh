@@ -1147,7 +1147,7 @@ starttime=$(date +%s.%N)
     else
         echo
         echo " you need to pass nginx version number on command line i.e."
-        echo " $0 1.9.5"
+        echo " $0 1.11.5"
         echo
     fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log

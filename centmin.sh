@@ -4,7 +4,7 @@ export PATH="/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sb
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
 ZONEINFO=Etc/UTC  # Set Timezone
-NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
+NGINX_IPV='n'     # option deprecated from 1.11.5+ IPV6 support
 USEEDITOR='nano' # choice between nano or vim text editors for cmd shortcuts
 
 CUSTOMSERVERNAME='y'
@@ -692,11 +692,11 @@ source "inc/logrotate_phpfpm.inc"
 source "inc/nginx_mimetype.inc"
 source "inc/openssl_install.inc"
 source "inc/brotli.inc"
+source "inc/nginx_patch.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
 source "inc/luajit.inc"
-source "inc/nginx_patch.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/mailparse.inc"
