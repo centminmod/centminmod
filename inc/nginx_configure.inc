@@ -1963,19 +1963,6 @@ fi
 # of geoip country, city databases to on disk caching 
 ngxgeoipmemtweak
 
-# intel specific
-CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
-gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_native.log
-if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
-	CCM=64
-	MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse${NGX_FOPENOPT} "
-elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
-	CCM=32
-	MTUNEOPT="-m${CCM} -mtune=generic${NGX_FOPENOPT} "
-else
-	MTUNEOPT=""
-fi
-
 if [[ "$CLANG" = [yY] ]]; then
 	if [[ ! -f /usr/bin/clang ]]; then
 		yum -q -y install clang clang-devel
@@ -2049,6 +2036,18 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CXX="g++"
 		fi
 	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		# update devtoolset-3 repo
+		if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
+      yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
+      rm -rf /etc/yum.repos.d/slc6-scl.repo
+      yum clean all
+      #yum install centos-release-scl-rh --disableplugin=fastmirror
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
+      echo
+      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
+    fi
 		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
@@ -2070,6 +2069,70 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CXX="g++"
 		fi
 	fi
+fi
+
+# devtoolset-3 usage of GCC 4.9 even for CentOS7
+if [[ "$CENTOS_SIX" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
+	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		scl_install
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+		PS_FLAGS=""
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			source /opt/rh/devtoolset-3/enable
+			which gcc
+			which g++
+			unset CC
+			unset CXX
+			export CC="ccache gcc"
+			export CXX="ccache g++"
+		else
+			source /opt/rh/devtoolset-3/enable
+			which gcc
+			which g++
+			unset CC
+			unset CXX
+			export CC="gcc"
+			export CXX="g++"
+		fi
+	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+		PS_FLAGS=""
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			source /opt/rh/devtoolset-3/enable
+			which gcc
+			which g++
+			unset CC
+			unset CXX
+			export CC="ccache gcc"
+			export CXX="ccache g++"
+		else
+			source /opt/rh/devtoolset-3/enable
+			which gcc
+			which g++
+			unset CC
+			unset CXX
+			export CC="gcc"
+			export CXX="g++"
+		fi
+	fi
+fi
+
+# intel specific
+CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${CENTMINLOGDIR}/gcc_native.log
+if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
+	CCM=64
+	MTUNEOPT="-m${CCM} -march=native${NGX_FOPENOPT} "
+elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
+	CCM=64
+	MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse${NGX_FOPENOPT} "
+elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
+	CCM=32
+	MTUNEOPT="-m${CCM} -mtune=generic${NGX_FOPENOPT} "
+else
+	MTUNEOPT=""
 fi
 
 # fix no longer needed with libressl 2.3.3
