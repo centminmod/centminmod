@@ -2,7 +2,7 @@
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
 ZONEINFO=Etc/UTC  # Set Timezone
-NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
+NGINX_IPV='n'     # option depcrecated from 1.11.5+ IPV6 support
 USEEDITOR='nano' # choice between nano or vim text editors for cmd shortcuts
 
 CUSTOMSERVERNAME='y'

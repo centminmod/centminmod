@@ -612,13 +612,23 @@ else
 	echo "CLANG_CCOPT=\"\""
 fi
 
+# nginx 1.11.5+ has removed --with-ipv6 option and 
+# auto detects ipv6 support instead
+# http://hg.nginx.org/nginx/rev/a6d116645c51
+DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+if [[ "$DETECT_NGXVER" -ge '1011005' ]]; then
+	IPVSIXOPT=""
+else
+	IPVSIXOPT=' --with-ipv6'
+fi
+
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       	pwd
       	echo "nginx configure options:"
-      	echo "./configure --with-ld-opt=\"${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}\" --with-cc-opt=\"${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt=\"enable-tlsext\"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}${ACCESSKEYOPT} --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
-		./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT} --with-ipv6 --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}${ACCESSKEYOPT} --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
+      	echo "./configure --with-ld-opt=\"${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}\" --with-cc-opt=\"${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${IPVSIXOPT} --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt=\"enable-tlsext\"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}${ACCESSKEYOPT} --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}"
+		./configure --with-ld-opt="${LRT}-ljemalloc -Wl,-z,relro${LUALD_OPT}" --with-cc-opt="${MTUNEOPT}-g -O2 -fstack-protector --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${IPVSIXOPT} --with-http_ssl_module${HTTPTWOOPT} --with-http_gzip_static_module --with-http_stub_status_module --with-http_sub_module --with-http_addition_module --with-http_image_filter_module${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT} --with-openssl-opt="enable-tlsext"${FANCYINDEXOPT} --add-module=../ngx_cache_purge-${NGINX_CACHEPURGEVER}${ACCESSKEYOPT} --add-module=../nginx-http-concat-master${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT} --add-module=../headers-more-nginx-module-${NGINX_HEADERSMORE}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${THREADS}${STREAM}${PCREJITOPT}${SPDYOPT}${PGSPEEDOPT}
     else
     	pwd
     	echo "nginx configure options:"
