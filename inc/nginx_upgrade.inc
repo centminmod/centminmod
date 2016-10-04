@@ -432,7 +432,7 @@ then
     if [ -s "${LIBUNWIND_LINKFILE}" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP "${LIBUNWIND_LINK}" $WGETRETRY
+        download_cmd "${LIBUNWIND_LINK}" $WGETRETRY
     fi
 
     tar xvzf "${LIBUNWIND_LINKFILE}"
@@ -452,7 +452,7 @@ then
     if [ -s "${GPERFTOOL_LINKFILE}" ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${GPERFTOOL_LINK}" $WGETRETRY
+        download_cmd "${GPERFTOOL_LINK}" $WGETRETRY
     fi
 
     tar xvzf "${GPERFTOOL_LINKFILE}"
@@ -495,7 +495,7 @@ then
     if [ -s "pcre-${PCRE_VERSION}.tar.gz" ]; then
         cecho "pcre ${PCRE_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${PCRE_SOURCELINK}" $WGETRETRY
+        download_cmd "${PCRE_SOURCELINK}" $WGETRETRY
     fi
 
     tar "xvzf pcre-${PCRE_VERSION}.tar.gz"
@@ -552,7 +552,7 @@ fi
     if [ -s "nginx-${ngver}.tar.gz" ]; then
         cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        download_cmd "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
         NGINXDOWNLOAD_CHECK=$?
         if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
             if [ -f "$(which figlet)" ]; then

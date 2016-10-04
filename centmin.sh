@@ -857,6 +857,16 @@ else
     AXELPHPUPGRADETARGZ=''
 fi
 
+download_cmd() {
+  if [[ "$(curl -Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
+    # axel doesn't natively support ECC 256bit ssl certs
+    # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
+    echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"
+    DOWNLOADAPP="wget ${WGETOPT}"
+  fi
+  $DOWNLOADAPP $1 $2 $3 $4
+}
+
 # if [ "${ARCH_OVERRIDE}" != '' ]
 # then
 #     ARCH=${ARCH_OVERRIDE}

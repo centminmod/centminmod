@@ -27,7 +27,7 @@ fi
     if [ -s ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz ]; then
         cecho "ngx_cache_purge 2.1 Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://labs.frickle.com/files/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz $WGETRETRY
+        download_cmd http://labs.frickle.com/files/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz $WGETRETRY
     fi
 
     tar zvxf ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz
@@ -35,7 +35,7 @@ fi
     if [ -s Nginx-accesskey-2.0.3.tar.gz ]; then
         cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://wiki.nginx.org/images/5/51/Nginx-accesskey-2.0.3.tar.gz $WGETRETRY
+        download_cmd http://wiki.nginx.org/images/5/51/Nginx-accesskey-2.0.3.tar.gz $WGETRETRY
     fi
 
     tar zvxf Nginx-accesskey-2.0.3.tar.gz

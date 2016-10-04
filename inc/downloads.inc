@@ -930,7 +930,7 @@ echo ""
     if [ -s "${NGX_CACHEPURGEFILE}" ]; then
         cecho "ngx_cache_purge ${NGINX_CACHEPURGEVER} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${NGX_CACHEPURGE}" "$WGETRETRY" 
+        download_cmd "${NGX_CACHEPURGE}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CACHEPURGEFILE} download failed." $boldgreen
@@ -1859,7 +1859,7 @@ echo ""
     if [ -s "${NGX_LINKFILE}" ]; then
         cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${NGX_LINK}" "$WGETRETRY" 
+        download_cmd "${NGX_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
@@ -2552,7 +2552,7 @@ mysqltools() {
     if [ -s "${MYSQLREPORT_LINKFILE}" ]; then
         cecho "${MYSQLREPORT_LINKFILE} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${MYSQLREPORT_LINK}" "$WGETRETRY" 
+        download_cmd "${MYSQLREPORT_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MYSQLREPORT_LINKFILE} download failed." $boldgreen
@@ -2606,7 +2606,7 @@ then
     if [ -s "MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -2622,7 +2622,7 @@ else
     if [ -s "MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -2638,7 +2638,7 @@ else
     if [ -s "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -2654,7 +2654,7 @@ else
     if [ -s "MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -2670,7 +2670,7 @@ else
     if [ -s "MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -2698,7 +2698,7 @@ then
     if [ -s ourdelta-release-5-1.noarch.rpm ]; then
         cecho "ourdelta-release-5-1.noarch.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://master.ourdelta.org/yum/CentOS-MariaDB52/ourdelta-release-5-1.noarch.rpm "$WGETRETRY" 
+        download_cmd http://master.ourdelta.org/yum/CentOS-MariaDB52/ourdelta-release-5-1.noarch.rpm "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ourdelta-release-5-1.noarch.rpm download failed." $boldgreen
@@ -2727,7 +2727,7 @@ then
     if [ -s "${LIBUNWIND_LINKFILE}" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP "${LIBUNWIND_LINK}" "$WGETRETRY" 
+        download_cmd "${LIBUNWIND_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${LIBUNWIND_LINKFILE} download failed." $boldgreen
@@ -2754,7 +2754,7 @@ echo ""
     if [ -s "${GPERFTOOL_LINKFILE}" ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${GPERFTOOL_LINK}" "$WGETRETRY" 
+        download_cmd "${GPERFTOOL_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${GPERFTOOL_LINKFILE} download failed." $boldgreen
@@ -2801,7 +2801,7 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
         if [[ "$CENTOS_SIX" = '6' ]]; then
           wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
         else
-          $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+          download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
         fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -2838,7 +2838,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
         if [[ "$CENTOS_SIX" = '6' ]]; then
           wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
         else
-          $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+          download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
         fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -2876,8 +2876,8 @@ libressldownload() {
     if [ -s "${LIBRESSL_LINKFILE}" ]; then
         cecho "LibreSSL ${LIBRESSL_VERSION} found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} "$WGETRETRY" 
-        $DOWNLOADAPP "${LIBRESSL_LINK}" $WGETRETRY
+        # download_cmd ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} "$WGETRETRY" 
+        download_cmd "${LIBRESSL_LINK}" $WGETRETRY
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
@@ -2916,7 +2916,7 @@ then
     if [ -s "pcre-${PCRE_VERSION}.tar.gz" ]; then
         cecho "pcre ${PCRE_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${PCRE_SOURCELINK}" "$WGETRETRY" 
+        download_cmd "${PCRE_SOURCELINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: pcre-${PCRE_VERSION}.tar.gz download failed." $boldgreen
@@ -2963,8 +2963,8 @@ SIEGEINSTALL='y'
     if [ -s "${SIEGE_LINKFILE}" ]; then
         cecho "${SIEGE_LINKFILE} found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP ${SIEGE_LINK} $WGETRETRY
-        $DOWNLOADAPP "${SIEGE_LINKLOCAL}" $WGETRETRY
+        # download_cmd ${SIEGE_LINK} $WGETRETRY
+        download_cmd "${SIEGE_LINKLOCAL}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SIEGE_LINKFILE} download failed." $boldgreen
@@ -2991,8 +2991,8 @@ echo ""
     if [ -s "${SPROXY_LINKFILE}" ]; then
         cecho "sproxy-latest found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP ${SPROXY_LINK} $WGETRETRY
-        $DOWNLOADAPP "https://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
+        # download_cmd ${SPROXY_LINK} $WGETRETRY
+        download_cmd "https://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen
@@ -3040,7 +3040,7 @@ if [ -s "${PYTHON_LINKFILE}" ]; then
   cecho "${PYTHON_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PYTHON_LINKFILE} not found !!! Downloading now......"
-        $DOWNLOADAPP "http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE}" "$WGETRETRY" 
+        download_cmd "http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "${PYTHON_LINKFILE} download failed." $boldgreen
@@ -3110,7 +3110,7 @@ XCACHESRCINSTALL='y'
     if [ -s "${XCACHE_LINKFILE}" ]; then
         cecho "xcache ${XCACHE_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${XCACHE_LINK}" "$WGETRETRY" 
+        download_cmd "${XCACHE_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${XCACHE_LINKFILE} download failed." $boldgreen
@@ -3156,7 +3156,7 @@ APCINSTALL='y'
     if [ -s "${APCCACHE_LINKFILE}" ]; then
         cecho "${APCCACHE_LINKFILE} Archive (local) found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${APCCACHE_LINKLOCAL}" "$WGETRETRY" 
+        download_cmd "${APCCACHE_LINKLOCAL}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} local download failed." $boldgreen
@@ -3200,7 +3200,7 @@ APCINSTALL='y'
     if [ -s "${APCCACHE_LINKFILE}" ]; then
         cecho "${APCCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${APCCACHE_LINK}" "$WGETRETRY" 
+        download_cmd "${APCCACHE_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} download failed." $boldgreen
@@ -3247,7 +3247,7 @@ ZOPCACHEINSTALL='y'
     if [ -s "${ZENDOPCACHE_LINKFILE}" ]; then
         cecho " ${ZENDOPCACHE_LINKFILE} local Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${ZENDOPCACHE_LINKLOCAL}" "$WGETRETRY" 
+        download_cmd "${ZENDOPCACHE_LINKLOCAL}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} local download failed." $boldgreen
@@ -3291,7 +3291,7 @@ ZOPCACHEINSTALL='y'
     if [ -s "${ZENDOPCACHE_LINKFILE}" ]; then
         cecho " ${ZENDOPCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${ZENDOPCACHE_LINK}" "$WGETRETRY" 
+        download_cmd "${ZENDOPCACHE_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
@@ -3332,8 +3332,8 @@ then
     if [ -s "${NSD_LINKFILE}" ]; then
         cecho "NSD ${NSD_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        # $DOWNLOADAPP ${NSD_LINKLOCAL} $WGETRETRY
-        $DOWNLOADAPP "${NSD_LINK}" $WGETRETRY
+        # download_cmd ${NSD_LINKLOCAL} $WGETRETRY
+        download_cmd "${NSD_LINK}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NSD_LINKFILE} download failed." $boldgreen
@@ -3388,7 +3388,7 @@ CSFINSTALLOK='y'
     if [ -s "${CSF_LINKFILE}" ]; then
         cecho "csf Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${CSF_LINK}" "$WGETRETRY" 
+        download_cmd "${CSF_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${CSF_LINKFILE} download failed." $boldgreen
@@ -3424,8 +3424,8 @@ ccachetarball() {
     if [ -s "${CCACHEFILE}" ]; then
         cecho "ccache ${CCACHE_VER} Archive found, skipping download..." $boldgreen 
     else
-        # $DOWNLOADAPP "${CCCACHELINKLOCAL}" $WGETRETRY
-        $DOWNLOADAPP ${CCCACHELINK} $WGETRETRY
+        # download_cmd "${CCCACHELINKLOCAL}" $WGETRETRY
+        download_cmd ${CCCACHELINK} $WGETRETRY
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CCACHEFILE} download failed." $boldgreen

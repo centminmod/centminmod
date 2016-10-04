@@ -61,7 +61,7 @@ elif [[ "$PHPCURRENTVER" = '5.2' || "$PHPCURRENTVER" = '5.3' || "$PHPCURRENTVER"
     if [ -s APC-${apcver}.tgz ]; then
         cecho "APC-${apcver}.tgz Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP https://pecl.php.net/get/APC-${apcver}.tgz $WGETRETRY
+        download_cmd https://pecl.php.net/get/APC-${apcver}.tgz $WGETRETRY
     fi
     tar xvzf APC-${apcver}.tgz
     cd APC-${apcver}
