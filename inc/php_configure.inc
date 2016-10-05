@@ -17,6 +17,7 @@ ISLOWMEMPHPMB=`echo "scale=0;$ISLOWMEMPHP/1024" | bc`
 CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
 PLIBDIR='/usr'
+PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 if [[ "$PHPDEBUGMODE" = [yY] ]]; then
 	PHPDEBUGOPT=' --enable-debug'
