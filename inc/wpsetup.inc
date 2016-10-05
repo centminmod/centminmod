@@ -1166,6 +1166,9 @@ location ~ /.well-known {
     }
 }
 
+# allow AJAX requests in themes and plugins
+location ~ ^${WPSUBDIR}/wp-admin/admin-ajax.php$ { allow all; include /usr/local/nginx/conf/php.conf; }
+
 location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
 
 location ~ ^${WPSUBDIR}/wp-content/uploads/sucuri { deny all; }
@@ -1186,9 +1189,7 @@ location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
 
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
-location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ {
-deny all;
-}
+location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ { deny all; }
 
 # Whitelist Exception for https://wordpress.org/plugins/sparkpost/
 location ~ ^${WPSUBDIR}/wp-content/plugins/sparkpost/ {
