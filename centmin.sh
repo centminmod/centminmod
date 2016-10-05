@@ -1405,7 +1405,7 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 # Zend Opcache version with one available from pecl site
-if [[ "$ZOPCACHE_OVERRIDE" = [yY] && "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.4' || "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
+if [[ "$ZOPCACHE_OVERRIDE" = [yY] && "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.4' || "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
     zopcacheinstall
 fi
 
