@@ -122,7 +122,8 @@ function funct_memcachedreinstall {
                 # export CCACHE_CPP2=yes
                 CLANG_CFLAGOPT=""
                 CFLAGS=""
-            fi            
+            fi
+            enable_devtoolset      
         fi       
 
 PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')

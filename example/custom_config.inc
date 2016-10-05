@@ -24,6 +24,7 @@ CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-3 GCC 4.9
 NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-3 GCC 4.9 even for CentOS 7 nginx compiles
+GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-3 GCC 4.9 whereever possible/coded
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_NJS='n'
