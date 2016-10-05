@@ -116,6 +116,22 @@ if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
 fi
 }
 
+disable_devtoolset() {
+  if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+    if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+        echo "$CFLAGS"
+        echo "$CXXFLAGS"
+        unset CFLAGS
+        unset CXXFLAGS
+    elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+        echo "$CFLAGS"
+        echo "$CXXFLAGS"
+        unset CFLAGS
+        unset CXXFLAGS
+    fi
+  fi
+}
+
 set_intelflags() {
 	if [[ "$INTELOPT" = [yY] ]]; then
     	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
