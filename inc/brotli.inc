@@ -12,6 +12,7 @@ scl_install() {
       # yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
       #yum install centos-release-scl-rh --disableplugin=fastmirror
       wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
+      rpm --import https://copr-be.cloud.fedoraproject.org/results/rhscl/devtoolset-3/pubkey.gpg
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
       echo
       /opt/rh/devtoolset-3/root/usr/bin/gcc --version
@@ -19,6 +20,7 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       wget -O /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3-el7/repo/epel-7/rhscl-devtoolset-3-el7-epel-7.repo
+      rpm --import https://copr-be.cloud.fedoraproject.org/results/rhscl/devtoolset-3-el7/pubkey.gpg
       yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
       echo
       /opt/rh/devtoolset-3/root/usr/bin/gcc --version
