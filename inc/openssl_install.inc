@@ -161,8 +161,8 @@ installopenssl() {
                 CFLAGS="$CLANG_CFLAGOPT"
             fi
         else
-            export CC="ccache /usr/bin/gcc"
-            export CXX="ccache /usr/bin/g++"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             export CCACHE_CPP2=yes
             CLANG_CFLAGOPT=""
             CFLAGS=""
@@ -184,8 +184,8 @@ installopenssl() {
             unset CXX
             unset CFLAGS
             #unset CCACHE_CPP2
-            export CC="ccache /usr/bin/gcc"
-            export CXX="ccache /usr/bin/g++"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             CLANG_CFLAGOPT=""
             CFLAGS=""            
         fi                
@@ -279,10 +279,10 @@ installopenssl() {
         unset CC
         unset CXX
         unset CFLAGS
-        export CMAKE_C_COMPILER="/usr/bin/gcc"
-        export CMAKE_CXX_COMPILER="/usr/bin/g++"
-        export CC="/usr/bin/gcc"
-        export CXX="/usr/bin/g++"
+        export CMAKE_C_COMPILER="gcc"
+        export CMAKE_CXX_COMPILER="g++"
+        export CC="gcc"
+        export CXX="g++"
         make${MAKETHREADS}
         mkdir -p /svr-setup/boringssl/.openssl/lib
         cd /svr-setup/boringssl/.openssl
