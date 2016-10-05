@@ -36,6 +36,8 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 			sed -i '/ccache gcc/d' ~/.bashrc
 			sed -i '/ccache g++/d' ~/.bashrc
 			echo "run_second_cpp = true" > /home/.ccache/ccache.conf
+			echo "compression = true" >> /home/.ccache/ccache.conf
+			echo "compression_level = 2" >> /home/.ccache/ccache.conf
 			echo "export CCACHE_DIR=\"/home/.ccache\"" >> ~/.bashrc
 			echo "export CC=\"ccache gcc\"" >> ~/.bashrc
 			echo "export CXX=\"ccache g++\"" >> ~/.bashrc
