@@ -838,6 +838,12 @@ find "$DIR_TMP" -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl
 find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -print
 find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exec rm -rf {} \;
 
+        if [ -f /usr/local/sbin/nginx ]; then
+            echo
+            echo "nginx -V"
+            nginx -V
+        fi
+
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo
             echo "dynamic module directory at /usr/local/nginx/modules"
