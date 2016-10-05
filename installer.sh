@@ -142,12 +142,22 @@ scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-      echo "install scl for newer gcc and g++ versions"
-      wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
-      rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
-      # yum -y install devtoolset-3 -q
-      yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils
+      echo "install rhscl-devtoolset-3-epel for newer gcc and g++ versions"
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
+      rpm --import https://copr-be.cloud.fedoraproject.org/results/rhscl/devtoolset-3/pubkey.gpg
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
+      echo
+      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
     fi
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+      echo "install rhscl-devtoolset-3-epel for newer gcc and g++ versions"
+      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3-el7/repo/epel-7/rhscl-devtoolset-3-el7-epel-7.repo
+      rpm --import https://copr-be.cloud.fedoraproject.org/results/rhscl/devtoolset-3-el7/pubkey.gpg
+      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
+      echo
+      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
   fi # centos 6 only needed
 }
 
