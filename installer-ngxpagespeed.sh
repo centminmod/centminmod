@@ -278,6 +278,7 @@ source_wgetinstall() {
   cecho "--------------------------------------------------------" $boldgreen
   cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
   cecho "--------------------------------------------------------" $boldgreen
+  unset CFLAGS
   echo
   fi
 }
