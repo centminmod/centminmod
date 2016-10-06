@@ -1,3 +1,27 @@
+fixlibmysqlclient_symlink() {
+  if [ "$(uname -m)" == 'x86_64' ]; then
+    FIXMDB_LIBDIR='lib64'
+  else
+    FIXMDB_LIBDIR='lib'
+  fi
+  if [[ ! -f "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so" ]] && [[ -f "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so.20" ]]; then
+    mkdir -p "/usr/${FIXMDB_LIBDIR}/mysql"
+    rm -rf "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+    ln -s "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so.20" "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+    # ls -lah "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+  elif [[ ! -f "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so" ]] && [[ -f "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so.18" ]]; then
+    mkdir -p "/usr/${FIXMDB_LIBDIR}/mysql"
+    rm -rf "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+    ln -s "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so.18" "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+    # ls -lah "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+  elif [[ ! -f "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so" ]] && [[ -f "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so.16" ]]; then
+    mkdir -p "/usr/${FIXMDB_LIBDIR}/mysql"
+    rm -rf "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+    ln -s "/usr/${FIXMDB_LIBDIR}/libmysqlclient.so.16" "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+    # ls -lah "/usr/${FIXMDB_LIBDIR}/mysql/libmysqlclient.so"
+  fi
+}
+
 fixphpfpm_includes() {
   # in line with https://www.nginx.com/resources/wiki/start/topics/examples/phpfcgi/
   if [ -d /usr/local/nginx/conf ]; then
@@ -579,6 +603,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   wgetver_check
   fixphpfpm_includes
   fixphpfpm_httpproxy
+  fixlibmysqlclient_symlink
 fi
 
 }

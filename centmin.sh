@@ -1058,8 +1058,22 @@ fi
     ./buildconf --force
     mkdir fpm-build && cd fpm-build
 
-    mkdir -p /usr/${LIBDIR}/mysql
-    ln -s /usr/${LIBDIR}/libmysqlclient.so /usr/${LIBDIR}/mysql/libmysqlclient.so
+  if [[ ! -f "/usr/${LIBDIR}/libmysqlclient.so" ]] && [[ -f "/usr/${LIBDIR}/libmysqlclient.so.20" ]]; then
+    mkdir -p "/usr/${LIBDIR}/mysql"
+    rm -rf "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+    ln -s "/usr/${LIBDIR}/libmysqlclient.so.20" "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+    ls -lah "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+  elif [[ ! -f "/usr/${LIBDIR}/libmysqlclient.so" ]] && [[ -f "/usr/${LIBDIR}/libmysqlclient.so.18" ]]; then
+    mkdir -p "/usr/${LIBDIR}/mysql"
+    rm -rf "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+    ln -s "/usr/${LIBDIR}/libmysqlclient.so.18" "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+    ls -lah "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+  elif [[ ! -f "/usr/${LIBDIR}/libmysqlclient.so" ]] && [[ -f "/usr/${LIBDIR}/libmysqlclient.so.16" ]]; then
+    mkdir -p "/usr/${LIBDIR}/mysql"
+    rm -rf "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+    ln -s "/usr/${LIBDIR}/libmysqlclient.so.16" "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+    ls -lah "/usr/${LIBDIR}/mysql/libmysqlclient.so"
+  fi
 
 funct_phpconfigure
 
