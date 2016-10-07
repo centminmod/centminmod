@@ -126,7 +126,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	
     	cd $DIR_TMP
     	curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
-    	yum -y install nodejs --disableplugin=priorities
+    	yum -y install nodejs --disableplugin=priorities --disablerepo=epel
     	npm install npm@latest -g
 	
 	# npm install forever -g
@@ -157,7 +157,7 @@ installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
       curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
-      yum -y install nodejs --disableplugin=priorities
+      yum -y install nodejs --disableplugin=priorities --disablerepo=epel
       npm install npm@latest -g
   
     echo
