@@ -846,6 +846,11 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
 
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
             echo
+            echo "dynamic modules include file /usr/local/nginx/conf/dynamic-modules.conf"
+            ls -lah /usr/local/nginx/conf/dynamic-modules.conf
+            echo
+            cat /usr/local/nginx/conf/dynamic-modules.conf
+            echo
             echo "dynamic module directory at /usr/local/nginx/modules"
             ls -lah /usr/local/nginx/modules
             echo
