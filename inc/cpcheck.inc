@@ -1,3 +1,14 @@
+fixnodejs_epel() {
+  # prevent node.js 6.x install by epel in favour of nodesource
+  # repo via addons/nodejs.sh
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep nodejs > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_NODEJSEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) nodejs")
+    sed -i "s|^exclude=.*|$NEW_NODEJSEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
 c7mariadb_tmpdir() {
   # fix for mariadb 10.1.16 introduced ProtecHome=true setting
   # https://jira.mariadb.org/browse/MDEV-10399
@@ -1258,6 +1269,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixphpfpm_includes
   fixphpfpm_httpproxy
   fixlibmysqlclient_symlink
+  fixnodejs_epel
 fi
 
 }
