@@ -183,6 +183,10 @@ wgetver_check() {
     echo "fix pcre install for missing UTF8 support... one time task"
     sleep 6
     "${SCRIPT_DIR}/addons/wget.sh" pcre
+  elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    echo "add pcre jit support... one time task"
+    sleep 6
+    "${SCRIPT_DIR}/addons/wget.sh" pcre
   fi
   if [[ "$(uname -m)" != 'x86_64' ]]; then
     if [ -f /root/.wgetrc ]; then
