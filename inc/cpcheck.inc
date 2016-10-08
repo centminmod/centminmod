@@ -155,6 +155,7 @@ gitenv_askupdate() {
         # pulling
         cecho "-------------------------------------------------------------" $boldgreen
         cecho " Centmin Mod code updates available for /usr/local/src/centminmod" $boldyellow
+        cecho " List of updates: community.centminmod.com/forums/41/?prefix_id=19" $boldyellow
         cecho "-------------------------------------------------------------" $boldgreen
         read -ep " Do you want to update your local Centmin Mod Git code ? [y/n]: " updategitcode
         if [[ "$updategitcode" = [yY] ]]; then
