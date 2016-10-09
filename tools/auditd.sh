@@ -16,6 +16,10 @@
 # https://mariadb.com/kb/en/mariadb/about-the-mariadb-audit-plugin/
 # https://mariadb.com/kb/en/mariadb/server_audit-system-variables/
 # https://mariadb.com/kb/en/mariadb/server_audit-status-variables/
+# 
+# https://people.redhat.com/sgrubb/audit/
+# https://people.redhat.com/sgrubb/audit/ChangeLog
+# https://fedorahosted.org/audit/browser/tags
 ######################################################
 # variables
 #############
@@ -62,6 +66,10 @@ auditd_customrules() {
         fi
 
 sed -i 's|-b 320|-b 8192|' "$AUDITRULE_PERMFILE"
+echo "" >> "$AUDITRULE_PERMFILE"
+echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
+echo "#-c" >> "$AUDITRULE_PERMFILE"
+echo "#-i" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# Generate at most 100 audit messages per second" >> "$AUDITRULE_PERMFILE"
 echo "-r 100" >> "$AUDITRULE_PERMFILE"
