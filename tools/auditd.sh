@@ -82,7 +82,6 @@ echo "-w /etc/audisp/ -p wa -k audispconfig" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/auditctl -p x -k audittools" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/auditd -p x -k audittools" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/ssh/sshd_config -k sshd" >> "$AUDITRULE_PERMFILE"
-echo "-w /etc/sysctl.conf -p wa -k sysctl.conf" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/passwd -p wa -k passwd_changes" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/passwd -p r -k passwd_read" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/bin/passwd -p x -k passwd_modification" >> "$AUDITRULE_PERMFILE"
@@ -284,10 +283,13 @@ mariadb_audit() {
         mysql -t -e "SHOW PLUGINS;"
         mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
+        mysql -e "SET GLOBAL server_audit_events='connect,query';"
         echo
         echo "Update /etc/my.cnf for server_audit_logging"
         sed -i '/server_audit_logging/d' /etc/my.cnf
+        sed -i '/server_audit_events/d' /etc/my.cnf
         echo "server_audit_logging=1" >> /etc/my.cnf
+        echo "server_audit_events=connect,query" >> /etc/my.cnf
         echo
         echo "MariaDB Audit Plugin Installed & Configured"
         echo
