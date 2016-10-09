@@ -395,7 +395,7 @@ case "$1" in
     resetup )
         mariadb_audit
         wipe_config
-        audit_setup
+        # audit_setup
         ;;
     updaterules )
         add_rules
