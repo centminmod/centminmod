@@ -305,14 +305,36 @@ mariadb_auditoff() {
         # mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
         echo "Update /etc/my.cnf for server_audit_logging off"
         sed -i '/server_audit_logging/d' /etc/my.cnf
-        # sed -i '/server_audit_events/d' /etc/my.cnf
+        sed -i '/server_audit_events/d' /etc/my.cnf
         echo "server_audit_logging=0" >> /etc/my.cnf
-        # echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
         if [ -f /etc/centminmod/custom_config.inc ]; then
             sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='n'|' /etc/centminmod/custom_config.inc
         fi
         echo
         echo "MariaDB Audit Plugin Turned Off"
+}
+
+mariadb_auditon() {
+        echo
+        echo "Turn On MariaDB Audit Plugin"
+        echo
+        mysql -e "INSTALL SONAME 'server_audit';"
+        # mysql -t -e "SHOW PLUGINS;"
+        mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
+        mysql -e "SET GLOBAL server_audit_logging=on;"
+        mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        echo
+        echo "Update /etc/my.cnf for server_audit_logging on"
+        sed -i '/server_audit_logging/d' /etc/my.cnf
+        sed -i '/server_audit_events/d' /etc/my.cnf
+        echo "server_audit_logging=1" >> /etc/my.cnf
+        echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        if [ -f /etc/centminmod/custom_config.inc ]; then
+            sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='y'|' /etc/centminmod/custom_config.inc
+        fi
+        echo
+        echo "MariaDB Audit Plugin Turned On"
 }
 
 add_rules() {
@@ -371,11 +393,14 @@ case "$1" in
     disable_mariadbplugin )
         mariadb_auditoff
         ;;
+    enable_mariadbplugin )
+        mariadb_auditon
+        ;;
     backup )
     echo "TBA"
         ;;
     * )
-    echo "$0 {setup|resetup|updaterules|disable_mariadbplugin|backup}"
+    echo "$0 {setup|resetup|updaterules|disable_mariadbplugin|enable_mariadbplugin|backup}"
     echo
     echo "Command Usage:"
     echo
@@ -383,6 +408,7 @@ case "$1" in
     echo "$0 resetup"
     echo "$0 updaterules"
     echo "$0 disable_mariadbplugin"
+    echo "$0 enable_mariadbplugin"
     echo "$0 backup"
         ;;
 esac
