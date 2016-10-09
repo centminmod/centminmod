@@ -12,6 +12,7 @@
 # http://www.cyberciti.biz/tips/linux-audit-files-to-see-who-made-changes-to-a-file.html
 # http://linuxcommand.org/man_pages/ausearch8.html
 # http://linuxcommand.org/man_pages/auditctl8.html
+# https://www.redhat.com/archives/linux-audit/index.html
 # https://mariadb.com/kb/en/mariadb/about-the-mariadb-audit-plugin/
 # https://mariadb.com/kb/en/mariadb/server_audit-system-variables/
 # https://mariadb.com/kb/en/mariadb/server_audit-status-variables/
@@ -283,6 +284,45 @@ mariadb_audit() {
     fi
 }
 
+add_rules() {
+    if [[ -f /etc/audit/auditd.conf && ! -f /proc/user_beancounters ]]; then
+        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+        elif [[ "$CENTOS_SIX" = '6' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+        fi
+        if [ -d /usr/local/nginx/conf/conf.d ]; then
+            VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
+        fi
+        for vhostname in $VHOSTS; do
+            if [[ -d "/home/nginx/domains/${vhostname}/log" && -z "$(fgrep "/home/nginx/domains/${vhostname}/log" "$AUDITRULE_PERMFILE")" ]]; then
+                echo "-a exit,always -F arch=b32 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+                echo "-a exit,always -F arch=b32 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+                echo "-a exit,always -F arch=b64 -S unlink -S unlinkat -S rmdir -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logdeletion" >> "$AUDITRULE_PERMFILE"
+                echo "-a exit,always -F arch=b64 -S rename -S renameat -F dir=/home/nginx/domains/${vhostname}/log -F success=0 -k ${vhostname}_logrename" >> "$AUDITRULE_PERMFILE"
+            fi
+        done
+        # if auditd rules have changed restart auditd service
+        if [[ "$(augenrules --check | grep 'No change' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            service auditd restart >/dev/null 2>&1
+            chkconfig auditd on >/dev/null 2>&1
+            echo
+            echo "auditd rules list"
+            echo
+            auditctl -l
+            echo
+            echo "auditd rules updated"
+            echo
+        else
+            echo
+            echo "no required auditd rules updates available"
+            echo
+        fi
+    fi
+}
+
 ######################################################
 case "$1" in
     setup )
@@ -294,10 +334,20 @@ case "$1" in
         wipe_config
         audit_setup
         ;;
+    updaterules )
+        add_rules
+        ;;
     backup )
     echo "TBA"
         ;;
     * )
-    echo "$0 {setup|resetup|backup}"
+    echo "$0 {setup|resetup|updaterules|backup}"
+    echo
+    echo "Command Usage:"
+    echo
+    echo "$0 setup"
+    echo "$0 resetup"
+    echo "$0 updaterules"
+    echo "$0 backup"
         ;;
 esac
