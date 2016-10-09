@@ -1,6 +1,7 @@
 #!/bin/bash
 ######################################################
-# auditd install and setup for centminmod
+# auditd and mariadb audit plugin install and 
+# setup for centminmod
 # https://community.centminmod.com/threads/9071/
 # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/6/html/Security_Guide/chap-system_auditing.html
 # https://access.redhat.com/documentation/en-US/Red_Hat_Enterprise_Linux/7/html/Security_Guide/chap-system_auditing.html
@@ -11,6 +12,9 @@
 # http://www.cyberciti.biz/tips/linux-audit-files-to-see-who-made-changes-to-a-file.html
 # http://linuxcommand.org/man_pages/ausearch8.html
 # http://linuxcommand.org/man_pages/auditctl8.html
+# https://mariadb.com/kb/en/mariadb/about-the-mariadb-audit-plugin/
+# https://mariadb.com/kb/en/mariadb/server_audit-system-variables/
+# https://mariadb.com/kb/en/mariadb/server_audit-status-variables/
 ######################################################
 # variables
 #############
@@ -260,13 +264,30 @@ EOF
     fi
 }
 
+mariadb_audit() {
+    echo
+    echo "Setup MariaDB Audit Plugin"
+    echo
+    mysql -e "INSTALL SONAME 'server_audit';"
+    mysql -t -e "SHOW PLUGINS;"
+    mysql -e "SET GLOBAL server_audit_logging=on;"
+    echo
+    echo "Update /etc/my.cnf for server_audit_logging"
+    sed -i '/server_audit_logging/d' /etc/my.cnf
+    echo "server_audit_logging=1" >> /etc/my.cnf
+    echo
+    echo "MariaDB Audit Plugin Installed & Configured"
+    echo
+}
 
 ######################################################
 case "$1" in
     setup )
+        mariadb_audit
         audit_setup
         ;;
     resetup )
+        mariadb_audit
         wipe_config
         audit_setup
         ;;
