@@ -296,6 +296,25 @@ mariadb_audit() {
     fi
 }
 
+
+mariadb_auditoff() {
+        echo
+        echo "Turn Off MariaDB Audit Plugin"
+        echo
+        mysql -e "SET GLOBAL server_audit_logging=off;"
+        # mysql -e "SET GLOBAL server_audit_events='connect,query_dml';"
+        echo "Update /etc/my.cnf for server_audit_logging off"
+        sed -i '/server_audit_logging/d' /etc/my.cnf
+        # sed -i '/server_audit_events/d' /etc/my.cnf
+        echo "server_audit_logging=0" >> /etc/my.cnf
+        # echo "server_audit_events=connect,query_dml" >> /etc/my.cnf
+        if [ -f /etc/centminmod/custom_config.inc ]; then
+            sed -i 's|AUDIT_MARIADB.*|AUDIT_MARIADB='n'|' /etc/centminmod/custom_config.inc
+        fi
+        echo
+        echo "MariaDB Audit Plugin Turned Off"
+}
+
 add_rules() {
     if [[ -f /etc/audit/auditd.conf && ! -f /proc/user_beancounters ]]; then
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -349,17 +368,21 @@ case "$1" in
     updaterules )
         add_rules
         ;;
+    disable_mariadbplugin )
+        mariadb_auditoff
+        ;;
     backup )
     echo "TBA"
         ;;
     * )
-    echo "$0 {setup|resetup|updaterules|backup}"
+    echo "$0 {setup|resetup|updaterules|disable_mariadbplugin|backup}"
     echo
     echo "Command Usage:"
     echo
     echo "$0 setup"
     echo "$0 resetup"
     echo "$0 updaterules"
+    echo "$0 disable_mariadbplugin"
     echo "$0 backup"
         ;;
 esac
