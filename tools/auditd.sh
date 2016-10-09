@@ -282,6 +282,7 @@ mariadb_audit() {
         echo
         mysql -e "INSTALL SONAME 'server_audit';"
         mysql -t -e "SHOW PLUGINS;"
+        mysql -e "SELECT * FROM INFORMATION_SCHEMA.PLUGINS WHERE PLUGIN_NAME='SERVER_AUDIT'\G"
         mysql -e "SET GLOBAL server_audit_logging=on;"
         echo
         echo "Update /etc/my.cnf for server_audit_logging"
