@@ -22,6 +22,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 
 AUDITD_ENABLE='n'
+AUDIT_MARIADB='n'
 ######################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
@@ -265,19 +266,21 @@ EOF
 }
 
 mariadb_audit() {
-    echo
-    echo "Setup MariaDB Audit Plugin"
-    echo
-    mysql -e "INSTALL SONAME 'server_audit';"
-    mysql -t -e "SHOW PLUGINS;"
-    mysql -e "SET GLOBAL server_audit_logging=on;"
-    echo
-    echo "Update /etc/my.cnf for server_audit_logging"
-    sed -i '/server_audit_logging/d' /etc/my.cnf
-    echo "server_audit_logging=1" >> /etc/my.cnf
-    echo
-    echo "MariaDB Audit Plugin Installed & Configured"
-    echo
+    if [[ "$AUDIT_MARIADB" = [yY] ]]; then
+        echo
+        echo "Setup MariaDB Audit Plugin"
+        echo
+        mysql -e "INSTALL SONAME 'server_audit';"
+        mysql -t -e "SHOW PLUGINS;"
+        mysql -e "SET GLOBAL server_audit_logging=on;"
+        echo
+        echo "Update /etc/my.cnf for server_audit_logging"
+        sed -i '/server_audit_logging/d' /etc/my.cnf
+        echo "server_audit_logging=1" >> /etc/my.cnf
+        echo
+        echo "MariaDB Audit Plugin Installed & Configured"
+        echo
+    fi
 }
 
 ######################################################
