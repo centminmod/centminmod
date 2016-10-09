@@ -219,6 +219,8 @@ audit_setup() {
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
             if [ -f "$AUDITRULE_PERMFILE" ]; then
                 auditd_customrules
+                augenrules --check
+                augenrules --load
             fi
         fi
     fi
@@ -267,6 +269,10 @@ EOF
             sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
         fi
         auditd_customrules
+        if [[ "$CENTOS_SIX" = '6' ]]; then
+            augenrules --check
+            augenrules --load
+        fi
         service auditd restart >/dev/null 2>&1
         chkconfig auditd on >/dev/null 2>&1
         echo
@@ -359,6 +365,10 @@ add_rules() {
         done
         # if auditd rules have changed restart auditd service
         if [[ "$(augenrules --check | grep 'No change' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+            if [[ "$CENTOS_SIX" = '6' ]]; then
+                augenrules --check
+                augenrules --load
+            fi
             service auditd restart >/dev/null 2>&1
             chkconfig auditd on >/dev/null 2>&1
             echo
