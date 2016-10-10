@@ -40,7 +40,11 @@ postconf -d smtpd_milters non_smtpd_milters milter_default_action milter_protoco
 postconf -e "smtpd_milters           = inet:127.0.0.1:8891"
 postconf -e 'non_smtpd_milters       = $smtpd_milters'
 postconf -e "milter_default_action   = accept"
-postconf -e "milter_protocol         = 2"
+if [[ "$(postconf -d milter_protocol | awk -F "= " '{print $2}')" = '6' ]]; then
+	postconf -e "milter_protocol         = 6"
+elif [[ "$(postconf -d milter_protocol | awk -F "= " '{print $2}')" = '2' ]]; then
+	postconf -e "milter_protocol         = 2"
+fi
 postconf -n smtpd_milters non_smtpd_milters milter_default_action milter_protocol | tee "${CENTMINLOGDIR}/dkim_postfix_after.txt"
 fi
 
