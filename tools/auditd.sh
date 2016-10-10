@@ -144,6 +144,9 @@ fi
 if [ -f /usr/local/etc/php-fpm.conf ]; then
 echo "-w /usr/local/etc/php-fpm.conf -p wa -k phpfpmconf_changes" >> "$AUDITRULE_PERMFILE"
 fi
+if [ -f /usr/local/lib/php.ini ]; then
+echo "-w /usr/local/lib/php.ini -p wa -k phpini_changes" >> "$AUDITRULE_PERMFILE"
+fi
 if [ -f /etc/my.cnf ]; then
 echo "-w /etc/my.cnf -p wa -k mycnf_changes" >> "$AUDITRULE_PERMFILE"
 fi
@@ -164,7 +167,10 @@ if [ -d /etc/centminmod ]; then
 echo "-w /etc/centminmod/php.d/ -p wa -k phpconfigscandir_changes" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/centminmod/custom_config.inc -p wa -k cmm_persistentconfig_changes" >> "$AUDITRULE_PERMFILE"
 fi
-if [ -d /etc/pure-ftpd ]; then
+if [ -d /usr/local/src/centminmod ]; then
+echo "-w /usr/local/src/centminmod -p wa -k centminmod_installdir" >> "$AUDITRULE_PERMFILE"
+fi
+if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
 echo "-w /etc/pure-ftpd/pure-ftpd.conf -p wa -k pureftpd_changes" >> "$AUDITRULE_PERMFILE"
 fi
 if [ -f /etc/init.d/memcached ]; then
