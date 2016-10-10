@@ -203,16 +203,16 @@ audit_setup() {
         yum -q install audit audit-libs
         if [ -f /etc/audit/auditd.conf ]; then
             cp -a /etc/audit/auditd.conf /etc/audit/auditd.conf.bak-initial
-            sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
-            sed -i 's|^max_log_file .*|max_log_file = 25|' /etc/audit/auditd.conf
-            sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
             service auditd restart >/dev/null 2>&1
             chkconfig auditd on >/dev/null 2>&1
         fi
     elif [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
-        sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
-        sed -i 's|^max_log_file .*|max_log_file = 25|' /etc/audit/auditd.conf
-        sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
+        sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+        sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
+        sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
         service auditd restart >/dev/null 2>&1
         chkconfig auditd on >/dev/null 2>&1
     fi
@@ -275,9 +275,9 @@ cat > "$AUDITRULE_PERMFILE" <<EOF
 -r 100
 EOF
         if [ -f /etc/audit/auditd.conf ]; then
-            sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
-            sed -i 's|^max_log_file .*|max_log_file = 25|' /etc/audit/auditd.conf
-            sed -i 's|^num_logs .*|num_logs = 15|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
         fi
         auditd_customrules
         if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
