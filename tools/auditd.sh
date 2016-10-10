@@ -83,6 +83,7 @@ echo "-w /sbin/auditctl -p x -k audittools" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/auditd -p x -k audittools" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/ssh/sshd_config -k sshd" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/passwd -p wa -k passwd_changes" >> "$AUDITRULE_PERMFILE"
+echo "-w /var/log/lastlog -p wa -k logins_lastlog" >> "$AUDITRULE_PERMFILE"
 echo "# -w /etc/passwd -p r -k passwd_read" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/bin/passwd -p x -k passwd_modification" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/group -p wa -k group_changes" >> "$AUDITRULE_PERMFILE"
@@ -116,6 +117,8 @@ fi
 if [ -f /usr/sbin/stunnel ]; then
 echo "-w /usr/sbin/stunnel -p x -k stunnel" >> "$AUDITRULE_PERMFILE"
 fi
+echo "-a exit,always -F arch=b32 -S link -S symlink -k symlinked" >> "$AUDITRULE_PERMFILE"
+echo "-a exit,always -F arch=b64 -S link -S symlink -k symlinked" >> "$AUDITRULE_PERMFILE"
 echo "-a exit,always -F arch=b32 -S sethostname -k hostname" >> "$AUDITRULE_PERMFILE"
 echo "-a exit,always -F arch=b32 -S open -F dir=/etc -F success=0 -k unauthedfileacess" >> "$AUDITRULE_PERMFILE"
 echo "-a exit,always -F arch=b32 -S open -F dir=/bin -F success=0 -k unauthedfileacess" >> "$AUDITRULE_PERMFILE"
