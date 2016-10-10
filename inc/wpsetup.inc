@@ -2036,6 +2036,22 @@ if [[ "$wpscache" = 'redis' ]]; then
 fi
 
 if [[ "$wpscache" = [nN] ]]; then
+  # cache enabler expiry cronjob setup
+    DELAY=$(echo ${RANDOM:0:3})
+    crontab -l > cronjoblist
+    mkdir -p /home/nginx/domains/${vhostname}/cronjobs
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cacheenabler.txt
+    # only insert cronjob if one doesn't already exist
+    if [[ -z $(grep "$vhostname cacheenabler cron" cronjoblist) ]]; then
+      echo "16 23 * * * echo "$vhostname cacheenabler cron"; sleep ${DELAY}s ; rm -rf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/cache/cache-enabler/* > /dev/null 2>&1" >> cronjoblist
+    fi
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cacheenabler.txt
+    crontab cronjoblist
+    rm -rf cronjoblist
+    crontab -l
+fi
+
+if [[ "$wpscache" = [nN] ]]; then
   if [ -f wp-content/plugins/wp-super-cache/wp-cache-config-sample.php ]; then
     \cp -af wp-content/plugins/wp-super-cache/wp-cache-config-sample.php wp-content/wp-cache-config.php
   fi
