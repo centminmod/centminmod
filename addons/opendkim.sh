@@ -62,7 +62,7 @@ if [[ -z "$(grep "$(hostname)" /etc/opendkim/TrustedHosts)" ]]; then
 fi
 echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
 echo "$(hostname) DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
-cat "/etc/opendkim/keys/$h_vhostname/default.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key default for $(hostname)||" -e "s|default._domainkey|default._domainkey.$(hostname)|" -e "s|     IN      TXT   | IN TXT|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
+cat "/etc/opendkim/keys/$h_vhostname/default.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key default for $(hostname)||" -e "s|default._domainkey|default._domainkey.$(hostname)|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
 echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
 echo "$(hostname) SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
 echo "$(hostname). 14400 IN TXT \"v=spf1 a mx ~all\"" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${h_vhostname}_${DT}.txt"
@@ -81,18 +81,18 @@ mkdir -p "/etc/opendkim/keys/$vhostname"
 opendkim-genkey -D "/etc/opendkim/keys/$vhostname/" -d "$vhostname" -s default
 chown -R opendkim: "/etc/opendkim/keys/$vhostname"
 mv "/etc/opendkim/keys/$vhostname/default.private" "/etc/opendkim/keys/$vhostname/default"
-if [[ -z "$(grep "$vhostname" /etc/opendkim/KeyTable)" ]]; then
+if [[ -z "$(grep "default._domainkey.$vhostname" /etc/opendkim/KeyTable)" ]]; then
 	echo "default._domainkey.$vhostname $vhostname:default:/etc/opendkim/keys/$vhostname/default" >> /etc/opendkim/KeyTable
 fi
-if [[ -z "$(grep "$vhostname" /etc/opendkim/SigningTable)" ]]; then
+if [[ -z "$(grep "default._domainkey.$vhostname" /etc/opendkim/SigningTable)" ]]; then
 	echo "*@$vhostname default._domainkey.$vhostname" >> /etc/opendkim/SigningTable
 fi
-if [[ -z "$(grep "$vhostname" /etc/opendkim/TrustedHosts)" ]]; then
+if [[ -z "$(grep "^$vhostname" /etc/opendkim/TrustedHosts)" ]]; then
 	echo "$vhostname" >> /etc/opendkim/TrustedHosts
 fi
 echo "---------------------------------------------------------------------------" | tee "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
 echo "$vhostname DKIM DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
-cat "/etc/opendkim/keys/$vhostname/default.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key default for $vhostname||" -e "s|default._domainkey|default._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
+cat "/etc/opendkim/keys/$vhostname/default.txt" | tr '\n' ' ' | sed -e "s| \"        \"|\" \"|" -e "s|( \"|\"|" -e "s| )  ; ----- DKIM key default for $vhostname||" -e "s|default._domainkey|default._domainkey.$vhostname|" -e "s|     IN      TXT   | IN TXT|" | sed 's|[[:space:]]| |g' | sed -e "s|\; \"   |\;|" | sed -e "s|\"p=|p=|" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
 echo -e "\n------------------------------------------------------------" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
 echo "$vhostname SPF DNS Entry" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
 echo "$vhostname. 14400 IN TXT \"v=spf1 a mx ~all\"" | tee -a "$CENTMINLOGDIR/dkim_spf_dns_${vhostname}_${DT}.txt"
