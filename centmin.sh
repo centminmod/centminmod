@@ -1216,9 +1216,12 @@ else
         echo "*************************************************"
         if [ ! -f /usr/sbin/ntpd ]; then
             yum${CACHESKIP} -y install ntp
+            chkconfig --levels 235 ntpd on
         fi
-        chkconfig --levels 235 ntpd on
-        if [ -f /etc/ntp.conf ]; then
+        # skip re-running this routine if custom logfile already set i.e.
+        # in curl installer installs it's already configured so doesn't
+        # need to be re-run again
+        if [[ -z "$(grep 'logfile' /etc/ntp.conf)" && -f /etc/ntp.conf ]]; then
         if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
             echo "logfile /var/log/ntpd.log" >> /etc/ntp.conf
             ls -lahrt /var/log | grep 'ntpd.log'
