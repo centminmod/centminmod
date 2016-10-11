@@ -310,7 +310,10 @@ clear_ps() {
 
 function funct_nginxupgrade {
 
-checkmap
+    checkmap
+    # if [ ! -f /usr/local/bin/pcretest ]; then
+    #     wgetver_check
+    # fi
 
 cecho "**********************************************************************" $boldyellow
 cecho "* Nginx Update script - Included in Centmin Extras" $boldgreen
