@@ -1642,7 +1642,7 @@ elif [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
 	fi
 fi
 
-if [[ -f /usr/local/bin/pcretest ]]; then
+if [[ -f /usr/local/bin/pcretest ]] && [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 	PCRE_LD=' -lpcre'
 else
 	PCRE_LD=""
