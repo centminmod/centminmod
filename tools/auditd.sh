@@ -89,6 +89,7 @@ echo "-w /usr/bin/passwd -p x -k passwd_modification" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/group -p wa -k group_changes" >> "$AUDITRULE_PERMFILE"
 echo "-w /bin/su -p x -k priv_esc" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/bin/sudo -p x -k priv_esc" >> "$AUDITRULE_PERMFILE"
+echo "-w /usr/bin/ssh -p x -k ssh-execute" >> "$AUDITRULE_PERMFILE"
 echo "-w /etc/sudoers -p rw -k priv_esc" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/shutdown -p x -k power" >> "$AUDITRULE_PERMFILE"
 echo "-w /sbin/poweroff -p x -k power" >> "$AUDITRULE_PERMFILE"
@@ -117,6 +118,8 @@ fi
 if [ -f /usr/sbin/stunnel ]; then
 echo "-w /usr/sbin/stunnel -p x -k stunnel" >> "$AUDITRULE_PERMFILE"
 fi
+echo "# -a exit,always -F arch=b32 -F euid=0 -S execve -k rootcmd" >> "$AUDITRULE_PERMFILE"
+echo "# -a exit,always -F arch=b64 -F euid=0 -S execve -k rootcmd" >> "$AUDITRULE_PERMFILE"
 echo "-a exit,always -F arch=b32 -S link -S symlink -k symlinked" >> "$AUDITRULE_PERMFILE"
 echo "-a exit,always -F arch=b64 -S link -S symlink -k symlinked" >> "$AUDITRULE_PERMFILE"
 echo "-a exit,always -F arch=b32 -S sethostname -k hostname" >> "$AUDITRULE_PERMFILE"
@@ -140,6 +143,8 @@ echo "# custom auditd rules specific for centmin mod lemp stack setups - DO NOT 
 if [ -d /usr/local/nginx/conf ]; then
 echo "-w /usr/local/nginx/conf -p wa -k nginxconf_changes" >> "$AUDITRULE_PERMFILE"
 echo "-w /usr/local/nginx/conf/phpstatus.conf -p wa -k phpstatusconf_changes" >> "$AUDITRULE_PERMFILE"
+NGXID=$(id -u nginx)
+echo "# -a exit,always -S all -F uid=$NGXID -k nginxuser" >> "$AUDITRULE_PERMFILE"
 fi
 if [ -f /usr/local/etc/php-fpm.conf ]; then
 echo "-w /usr/local/etc/php-fpm.conf -p wa -k phpfpmconf_changes" >> "$AUDITRULE_PERMFILE"
