@@ -202,7 +202,7 @@ gitenv_update() {
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	echo
 	cecho "Updating Current Centmin Mod code branch via git" $boldyellow
-	git fetch
+	# git fetch
 	# check if there's any new remote commits first
       pushd "${SCRIPT_DIR}" >/dev/null 2>&1
       git fetch >/dev/null 2>&1
