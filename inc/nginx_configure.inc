@@ -836,7 +836,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			fi
 		fi
 
-		LUALD_OPT=" -Wl,-rpath,$LUAJIT_LIB"
+		LUALD_OPT="-Wl,-rpath,$LUAJIT_LIB"
 		if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
 			yum -q -y install lua lua-devel
 		fi
@@ -880,7 +880,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     	cd "${DIR_TMP}"
 	else
 		LUAOPT=""
-		LUALD_OPT=" -Wl,-rpath,/usr/local/lib"
+		LUALD_OPT="-Wl,-rpath,/usr/local/lib"
 			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
 			fi
