@@ -130,8 +130,12 @@ fi
 
 gitenv_setup() {
 	# check local DNS resolve and network connectivity before setting up git clone
-	DNSRESOLVER_CHECKA=$(dig +short A github.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
-	DNSRESOLVER_CHECKB=$(dig +short A raw.githubusercontent.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
+	LOCALDNS_RESOLVER=$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}')
+	if [[ "$LOCALDNS_RESOLVER" = '127.0.0.1' || "$LOCALDNS_RESOLVER" = 'localhost' ]]; then
+		LOCALDNS_RESOLVER='8.8.8.8'
+	fi
+	DNSRESOLVER_CHECKA=$(dig +short A github.com @$LOCALDNS_RESOLVER >/dev/null 2>&1; echo $?)
+	DNSRESOLVER_CHECKB=$(dig +short A raw.githubusercontent.com @$LOCALDNS_RESOLVER >/dev/null 2>&1; echo $?)
 	if [[ "$(echo ${DNSRESOLVER_CHECKA}${DNSRESOLVER_CHECKA})" != '00' ]]; then
 		echo "Error: there seems to be an issues with local DNS resolvers /etc/resolv.conf"
 		echo "       or internet connectivity on server"
@@ -190,10 +194,17 @@ gitenv_setup() {
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
 	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho " run:" $boldyellow
+	echo
 	echo "  cd /usr/local/src/centminmod"
+	echo
 	cecho " before invoking centmin.sh again" $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	echo
+  SPID=$$
+  # echo "$SPID process id for centmin.sh ended"
+  kill "$SPID"
 }
 
 gitenv_update() {
@@ -271,10 +282,17 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
 	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho " run:" $boldyellow
+	echo
 	echo "  cd /usr/local/src/centminmod"
+	echo
 	cecho " before invoking centmin.sh again" $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	echo
+  SPID=$$
+  # echo "$SPID process id for centmin.sh ended"
+  kill "$SPID"
 	# re_sourcefiles
 	# break
 	else
@@ -282,6 +300,10 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 		echo
 		cecho " Centmin Mod local code up to date at /usr/local/src/centminmod" $boldyellow
 		cecho " no available updates at this time..." $boldyellow
+		echo
+  	SPID=$$
+  	# echo "$SPID process id for centmin.sh ended"
+  	kill "$SPID"
 	fi
 	break 2
 else
@@ -294,8 +316,12 @@ fi
 
 gitenv_change() {
 	# check local DNS resolve and network connectivity before setting up git clone
-	DNSRESOLVER_CHECKA=$(dig +short A github.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
-	DNSRESOLVER_CHECKB=$(dig +short A raw.githubusercontent.com @$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}') >/dev/null 2>&1; echo $?)
+	LOCALDNS_RESOLVER=$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}')
+	if [[ "$LOCALDNS_RESOLVER" = '127.0.0.1' || "$LOCALDNS_RESOLVER" = 'localhost' ]]; then
+		LOCALDNS_RESOLVER='8.8.8.8'
+	fi
+	DNSRESOLVER_CHECKA=$(dig +short A github.com @$LOCALDNS_RESOLVER >/dev/null 2>&1; echo $?)
+	DNSRESOLVER_CHECKB=$(dig +short A raw.githubusercontent.com @$LOCALDNS_RESOLVER >/dev/null 2>&1; echo $?)
 	if [[ "$(echo ${DNSRESOLVER_CHECKA}${DNSRESOLVER_CHECKA})" != '00' ]]; then
 		echo "Error: there seems to be an issues with local DNS resolvers /etc/resolv.conf"
 		echo "       or internet connectivity on server"
@@ -432,10 +458,17 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
 	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho " run:" $boldyellow
+	echo
 	echo "  cd /usr/local/src/centminmod"
+	echo
 	cecho " before invoking centmin.sh again" $boldyellow
 	cecho "####################### IMPORTANT #######################" $boldgreen
 	echo
+  SPID=$$
+  # echo "$SPID process id for centmin.sh ended"
+  kill "$SPID"
 	# re_sourcefiles
 	# break
 	break 2
