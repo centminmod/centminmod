@@ -191,9 +191,7 @@ gitenv_setup() {
 
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
-	cecho " To complete update exit centmin.sh by continually" $boldyellow
-	cecho " exiting each submenu option until you are back at" $boldyellow
-	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	cecho " To complete update " $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	cecho " run:" $boldyellow
 	echo
@@ -279,9 +277,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 
 	echo
 	cecho "##################### IMPORTANT #####################" $boldgreen
-	cecho " To complete update exit centmin.sh by continually" $boldyellow
-	cecho " exiting each submenu option until you are back at" $boldyellow
-	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	cecho " To complete update " $boldyellow
 	cecho "##################### IMPORTANT #####################" $boldgreen
 	cecho " run:" $boldyellow
 	echo
@@ -455,9 +451,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 
 	echo
 	cecho "####################### IMPORTANT #######################" $boldgreen
-	cecho " To complete update exit centmin.sh by continually" $boldyellow
-	cecho " exiting each submenu option until you are back at" $boldyellow
-	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
+	cecho " To complete update " $boldyellow
 	cecho "####################### IMPORTANT #######################" $boldgreen
 	cecho " run:" $boldyellow
 	echo
