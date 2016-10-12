@@ -94,24 +94,37 @@ patchnginx() {
      if [ -f "$(which figlet)" ]; then
          figlet -ckf standard "Cloudflare Nginx Dynamic TLS Patch"
      fi
-     echo  "######################################################################"
+     echo "######################################################################"
      echo "Patching Nginx for Dynamic TLS Size Support"
-     echo  "######################################################################"
+     echo "######################################################################"
      echo "Cloudflare Nginx Dynamic TLS patch"
      echo "https://github.com/cloudflare/sslconfig/raw/master/patches/nginx__dynamic_tls_records.patch"
-     echo  "######################################################################"
-     NGINXTLSPATCH_NAME='nginx__dynamic_tls_records.patch'
-     rm -rf "${NGINXTLSPATCH_NAME}"
-     NGINXTLSPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${NGINXTLSPATCH_NAME}"
-		 # fallback mirror if github down, use gitlab mirror
-     curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
-     NGINXTLSPATCH_CURLCHECK=$?
-     if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
-       NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
+     echo "######################################################################"
+     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+     if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
+      NGINXTLSPATCH_NAME='nginx__dynamic_tls_records.patch'
+     elif [[ "$DETECT_NGXVER" -ge '1011005' ]]; then
+      NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1011005.patch'
      fi
-     wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
-     if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
-    	 patch -p1 < "${NGINXTLSPATCH_NAME}"
+     rm -rf "${NGINXTLSPATCH_NAME}"
+     if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
+      NGINXTLSPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${NGINXTLSPATCH_NAME}"
+		  # fallback mirror if github down, use gitlab mirror
+      curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+      NGINXTLSPATCH_CURLCHECK=$?
+      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
+        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
+      fi
+      wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
+      if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
+    	   echo "patch -p1 < "${NGINXTLSPATCH_NAME}""
+         patch -p1 < "${NGINXTLSPATCH_NAME}"
+      fi
+     elif [[ "$DETECT_NGXVER" -ge '1011005' ]]; then
+      if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
+        echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
+        patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
+      fi
      fi
   else
   	 if [ -f "${NGINXTLSPATCH_NAME}" ]; then
