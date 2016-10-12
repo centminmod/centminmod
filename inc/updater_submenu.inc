@@ -458,7 +458,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	cecho " To complete update exit centmin.sh by continually" $boldyellow
 	cecho " exiting each submenu option until you are back at" $boldyellow
 	cecho " cmd prompt and re-run command to change into directory:" $boldyellow
-	cecho "##################### IMPORTANT #####################" $boldgreen
+	cecho "####################### IMPORTANT #######################" $boldgreen
 	cecho " run:" $boldyellow
 	echo
 	echo "  cd /usr/local/src/centminmod"
