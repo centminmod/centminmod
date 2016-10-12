@@ -234,11 +234,11 @@ if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
 		export NGX_BROTLI_STATIC_MODULE_ONLY=1
 	fi
-	sed -i 's|^#include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+	sed -i 's|^ #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
 else
 	BROTLIOPT=""
 	# disable include file if exists
-	sed -i 's|^include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|#include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+	sed -i 's|^ include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
 		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
 			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
 		fi

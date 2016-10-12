@@ -702,6 +702,7 @@ fi
     fi
 
     time make install
+    ERR=$?
 
 if [[ "$CLANG" = [yY] ]]; then
     unset CC
@@ -716,11 +717,16 @@ fi
 ################
 # error check
 
-	ERR=$?
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
+        if [ -f objs/autoconf.err ]; then
+            cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
+        fi
     	exit
 	else
+        if [ -f objs/autoconf.err ]; then
+            cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
+        fi
     	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
 
     if [[ "$NGINX_HTTP2" = [yY] && "$NGINX_SPDYPATCHED" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10907' ]]; then
