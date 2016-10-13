@@ -581,7 +581,10 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
     if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]] || [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+        PHP_MAJORUPGRADE='y'
         autodetectinstallextensions
+    else
+        PHP_MAJORUPGRADE='n'
     fi
 
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
@@ -597,7 +600,10 @@ else
     # only auto reinstall PHP extensions when major PHP upgrade version differs
     # from existing installed PHP version
     if [[ "$PHPMUVER" != "$PHPCURRENTVER" ]] || [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+        PHP_MAJORUPGRADE='y'
         autodetectinstallextensions
+    else
+        PHP_MAJORUPGRADE='n'
     fi
 
     if [[ "$PHPMUVER" != 'NGDEBUG' ]]; then
@@ -613,12 +619,25 @@ zendopcacheextfix
 
 if [ ! -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     # always install geoip module
-    if [[ "$PHPGEOIP_ALWAYS" = [yY] ]]; then
+    if [[ "$PHPGEOIP_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
         geoipphpext
     fi
 elif [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     if [[ "$PHPGEOIP_ALWAYS" = [nN] ]]; then
         rm -rf "${CONFIGSCANDIR}/geoip.ini"
+    fi
+fi
+
+if [ ! -f "${CONFIGSCANDIR}/imagick.ini" ]; then
+    # always install imagemagick module
+    if [[ "$PHPIMAGICK_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
+        imagickinstall
+    fi
+elif [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
+    if [[ "$PHPIMAGICK_ALWAYS" = [nN] ]]; then
+        rm -rf "${CONFIGSCANDIR}/imagick.ini"
+    else
+        imagickinstall
     fi
 fi
 

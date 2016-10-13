@@ -439,6 +439,7 @@ PHPMAKETEST=n                # set to y to enable make test after PHP make for d
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
+PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
 PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
