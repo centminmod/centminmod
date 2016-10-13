@@ -94,7 +94,8 @@ phpsededit() {
         wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
         if [[ "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
-            echo "openssl.cafile = '/etc/ssl/certs/cacert.pem'" >> ${CONFIGSCANDIR}/curlcainfo.ini
+            # echo "openssl.cafile = '/etc/ssl/certs/cacert.pem'" >> ${CONFIGSCANDIR}/curlcainfo.ini
+            sed -i '/openssl.cafile/d' ${CONFIGSCANDIR}/curlcainfo.ini
         else
             sed -i '/openssl.cafile/d' ${CONFIGSCANDIR}/curlcainfo.ini
         fi
@@ -103,7 +104,8 @@ phpsededit() {
         wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
         if [[ "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
-            echo "openssl.cafile = '/etc/ssl/certs/cacert.pem'" >> ${CONFIGSCANDIR}/curlcainfo.ini
+            # echo "openssl.cafile = '/etc/ssl/certs/cacert.pem'" >> ${CONFIGSCANDIR}/curlcainfo.ini
+            sed -i '/openssl.cafile/d' ${CONFIGSCANDIR}/curlcainfo.ini
         else
             sed -i '/openssl.cafile/d' ${CONFIGSCANDIR}/curlcainfo.ini
         fi
