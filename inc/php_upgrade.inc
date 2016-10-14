@@ -636,7 +636,7 @@ if [ ! -f "${CONFIGSCANDIR}/imagick.ini" ]; then
 elif [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
     if [[ "$PHPIMAGICK_ALWAYS" = [nN] ]]; then
         rm -rf "${CONFIGSCANDIR}/imagick.ini"
-    else
+    elif [[ "$PHPIMAGICK_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
         imagickinstall
     fi
 fi
