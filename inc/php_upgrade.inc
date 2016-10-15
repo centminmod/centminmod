@@ -625,6 +625,8 @@ if [ ! -f "${CONFIGSCANDIR}/geoip.ini" ]; then
 elif [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
     if [[ "$PHPGEOIP_ALWAYS" = [nN] ]]; then
         rm -rf "${CONFIGSCANDIR}/geoip.ini"
+    elif [[ "$PHPGEOIP_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
+        geoipphpext  
     fi
 fi
 
