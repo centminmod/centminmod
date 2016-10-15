@@ -797,6 +797,7 @@ server {
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
   
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
@@ -1086,6 +1087,7 @@ server {
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
 
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
@@ -1191,6 +1193,7 @@ server {
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
   
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
