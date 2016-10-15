@@ -287,8 +287,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-        scl_install
         source /opt/rh/devtoolset-3/enable
+        scl_install
         which gcc
         which g++
         unset CC
@@ -311,8 +311,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-        scl_install
         source /opt/rh/devtoolset-3/enable
+        scl_install
         which gcc
         which g++
         unset CC

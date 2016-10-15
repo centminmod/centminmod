@@ -4,6 +4,10 @@
 scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
+    # if devtoolset exists, enable it first before checking gcc versions
+    if [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+      source /opt/rh/devtoolset-3/enable
+    fi
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       # wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
