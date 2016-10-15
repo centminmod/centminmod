@@ -22,9 +22,6 @@ In case the connection idles for a given amount of time (1s,
 ssl_dyn_rec_timeout), the process repeats itself (i.e. begin sending small
 records again).
 
-Upstream source:
-https://github.com/cloudflare/sslconfig/blob/master/patches/nginx__dynamic_tls_records.patch
-
 --- a/src/event/ngx_event_openssl.c
 +++ b/src/event/ngx_event_openssl.c
 @@ -1131,6 +1131,7 @@
