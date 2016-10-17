@@ -827,13 +827,16 @@ CM_INSTALLDIR=$CUR_DIR
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
     source "inc/custom_config.inc"
+    if [ -d "${CENTMINLOGDIR}" ]; then
+        cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
+    fi
 fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
     source "${CONFIGSCANBASE}/custom_config.inc"
     if [ -d "${CENTMINLOGDIR}" ]; then
-        cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
+        cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/config-scanbase-custom-config-settings_${DT}.log"
     fi
 fi
 
