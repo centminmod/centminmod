@@ -635,6 +635,8 @@ funct_nginxconfigure
         fi
     fi
 
+    ERR=$?
+
     if [[ "$STRIPNGINX" = [yY] ]]; then
         echo
         echo "strip nginx binary..."
@@ -647,7 +649,6 @@ funct_nginxconfigure
 ################
 # error check
 
-	ERR=$?
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
     	exit
