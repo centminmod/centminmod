@@ -101,7 +101,7 @@ ngxbrotli_download() {
     # only if GCC used to compile nginx with ngx_brotli
     # set BROTLI_CFLAG https://community.centminmod.com/posts/38284/
     if [[ "$CLANG" = [nN] ]]; then
-      BROTLI_CFLAG='-Wno-deprecated-declarations'
+      BROTLI_CFLAG=' -Wno-deprecated-declarations'
     else
       BROTLI_CFLAG=""
     fi
