@@ -34,22 +34,26 @@ scl_install() {
 
 libbroti_install() {
 	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
-
 		# if devtoolset-3 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
-		if [[ "$CENTOS_SIX" = '6' ]]; then
-			if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-				scl_install
-    			unset CC
-    			unset CXX
-    			export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-		    	export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"				
-			elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-    			unset CC
-    			unset CXX
-    			export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-		    	export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"			
-			fi
-		fi # centos 6 only needed
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+      	scl_install
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/rh/devtoolset-3/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+      fi
+    fi # centos 6 only needed
 
 		echo "install libbrotli"
 		cd $DIR_TMP
@@ -94,6 +98,13 @@ libbroti_install() {
 
 ngxbrotli_download() {
 	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+    # only if GCC used to compile nginx with ngx_brotli
+    # set BROTLI_CFLAG https://community.centminmod.com/posts/38284/
+    if [[ "$CLANG" = [nN] ]]; then
+      BROTLI_CFLAG='-Wno-deprecated-declarations'
+    else
+      BROTLI_CFLAG=""
+    fi
 		echo "download ngx_brotli module"
 		cd $DIR_TMP
 
