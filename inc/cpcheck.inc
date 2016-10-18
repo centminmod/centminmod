@@ -9,6 +9,17 @@ fixnodejs_epel() {
   fi
 }
 
+fixclamav_epel() {
+  # prevent clamav-devel install by epel in favour of rpmforge version
+  # https://community.centminmod.com/posts/38359/
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep 'clamav-devel' > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_CLAMAVDEVELEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) clamav-devel")
+    sed -i "s|^exclude=.*|$NEW_CLAMAVDEVELEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
 c7mariadb_tmpdir() {
   # fix for mariadb 10.1.16 introduced ProtecHome=true setting
   # https://jira.mariadb.org/browse/MDEV-10399
@@ -1275,6 +1286,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixphpfpm_httpproxy
   fixlibmysqlclient_symlink
   fixnodejs_epel
+  fixclamav_epel
 fi
 
 }
