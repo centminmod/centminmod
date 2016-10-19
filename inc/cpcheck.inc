@@ -273,16 +273,18 @@ yumupdatechecker() {
 		return
 		}
 
-		if [ -f /etc/yum.repos.d/remi.repo ]; then
-			YENABLEREPOS='remi'
-		else
-			YENABLEREPOS=""
-		fi
+    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+      YENABLEREPOS='remi,city-fan.org'
+    elif [ -f /etc/yum.repos.d/remi.repo ]; then
+      YENABLEREPOS='remi'
+    else
+      YENABLEREPOS=""
+    fi
 		YEXCLUDE='nginx* php* mysql*'
 		YYUM_PARAMETER='--disableplugin=priorities'
     echo
     echo " checking for YUM updates... please wait..."
-		if [ -f /etc/yum.repos.d/remi.repo ]; then
+		if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
 			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
 		else
 			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
@@ -294,7 +296,7 @@ yumupdatechecker() {
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
-			if [ -f /etc/yum.repos.d/remi.repo ]; then
+			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
 				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
 			else
 				echo "  yum list updates $YYUM_PARAMETER"
@@ -304,7 +306,7 @@ yumupdatechecker() {
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
-			if [ -f /etc/yum.repos.d/remi.repo ]; then
+			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
 				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
 			else
 				echo "  yum update $YYUM_PARAMETER"
