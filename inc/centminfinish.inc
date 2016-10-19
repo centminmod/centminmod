@@ -225,10 +225,24 @@ fi
 	/usr/bin/mytimes
 	cecho "--------------------------------------------------------" $boldyellow
 
-	# if [ -f "$CUR_DIR/tools/nv.sh" ]; then
-	# 	cp "$CUR_DIR/tools/nv.sh" /usr/bin/nv
-	# 	chmod +x /usr/bin/nv
-	# fi
+if [ -f /proc/user_beancounters ]; then
+	echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "OpenVZ VPS detected:" $boldyellow
+	cecho "check /proc/user_beancounters counters" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	grep oomguarpages /proc/user_beancounters  | awk '{s=$2;t=$3;u=$4; {print "VPS Memory Usage\nCurrent Held: " s/204.8"MB\nMax Held: " t/204.8 "MB\nBarrier: "u/204.8"MB" }}'
+	beans=`cat /proc/user_beancounters | grep priv`
+	max=$(echo $beans | awk '{ print $4;}')
+	use=$(echo $beans | awk '{ print $2;}')
+	let "per=$use*100/$max"
+	let "mb=$use/256"
+	echo "privvmpages: $mb MB ($per%)"
+	echo
+	cat /proc/user_beancounters
+	cecho "--------------------------------------------------------" $boldyellow
+fi
+
 }
 
 centminfinish() {
