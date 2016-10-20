@@ -95,7 +95,7 @@ location $PROTECTDIR_PATH/ {
 }
 "
             else
-              echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { allow 127.0.0.1; deny all; }"
+              echo -e "# $PROTECTDIR\nlocation $PROTECTDIR_PATH/ { allow 127.0.0.1; deny all; }"
             fi
           # fi
         fi
