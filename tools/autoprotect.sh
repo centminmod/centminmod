@@ -54,8 +54,8 @@ for domain in $(ls $TOPLEVEL_DIR); do
               # proper akismet secure lock down
 echo -e "# $PROTECTDIR\n
 location ~ ^$PROTECTDIR_PATH/ {
-  location ~ ^$PROTECTDIR_PATH/(.+/)?(form|akismet)\.(css|js)\$ { allow all; }
-  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(png|gif)\$ { allow all; }
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(form|akismet)\.(css|js)\$ { allow all; expires 30d;}
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(png|gif)\$ { allow all; expires 30d;}
   location ~* $PROTECTDIR_PATH/.*\.php\$ {
     include /usr/local/nginx/conf/php.conf;
     allow 127.0.0.1;
@@ -67,7 +67,7 @@ location ~ ^$PROTECTDIR_PATH/ {
               # proper sucuri-scanner secure lock down
 echo -e "# $PROTECTDIR\n
 location ~ ^$PROTECTDIR_PATH/ {
-  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(gif|jpe?g|png|css|js)\$ { allow all; }
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(gif|jpe?g|png|css|js)\$ { allow all; expires 30d; }
   allow 127.0.0.1;
   deny all;
 }
@@ -88,9 +88,9 @@ location ~ ^$PROTECTDIR_PATH/ {
             elif [[ "$(cat "${PROTECTDIR}/.htaccess" | grep -iv 'Order allow' | grep 'allow')" ]]; then
 echo -e "# https://community.centminmod.com/posts/35394/\n# $PROTECTDIR\n
 location ~ ^$PROTECTDIR_PATH/ {
-  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(js)\$ { allow all; }
-  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(css)\$ { allow all; }
-  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(gif|jpe?g|png|webp|eot|svg|ttf|woff|woff)\$ { allow all; }
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(js)\$ { allow all; expires 30d; }
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(css)\$ { allow all; expires 30d; }
+  location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(gif|jpe?g|png|webp|eot|svg|ttf|woff|woff)\$ { allow all; expires 30d; }
   location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
 }
 "
