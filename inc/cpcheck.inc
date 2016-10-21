@@ -139,12 +139,23 @@ gitenv_askupdate() {
       # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
       # centmin mod code locally using giturl.txt defined git repo name
       GET_GITVER=$(git --version | awk '{print $3}' | sed -e 's|\.||g' | cut -c1,2)
-      CURL_GITURL=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+      # https://github.com/centminmod/centminmod/raw/${branchname}/giturl.txt
+      # check if you can properly resolve raw.githubusercontent.com first in case of dns outpages
+      # issues at github end https://community.centminmod.com/threads/centmin-mod-github-com-repo-504-timeouts.9232/
+      CURL_GITURLCHECKER=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
+      if [[ "$CURL_GITURLCHECKER" = '0' ]]; then
+        CURL_GITURL=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+      else
+        # just default to https://github.com/centminmod/centminmod.git if can not resolve the
+        # https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt
+        # url link
+        CURL_GITURL='https://github.com/centminmod/centminmod.git'
+      fi
       # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
       if [[ "$GET_GITVER" -ge '18' ]]; then
-        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod; git ls-remote --get-url)
+        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod >/dev/null 2>&1; git ls-remote --get-url)
       else
-        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
+        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod >/dev/null 2>&1; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
       fi
       if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
         cecho "-------------------------------------------------------------" $boldgreen
@@ -161,7 +172,7 @@ gitenv_askupdate() {
       pushd "${SCRIPT_DIR}" >/dev/null 2>&1
       git fetch >/dev/null 2>&1
       popd >/dev/null 2>&1
-    if [[ "$(cd /usr/local/src/centminmod; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod; git rev-parse @{u})" ]]; then
+    if [[ "$(cd /usr/local/src/centminmod >/dev/null 2>&1; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod >/dev/null 2>&1; git rev-parse @{u})" ]]; then
         # if remote branch commits don't match local commit, then there are new updates need
         # pulling
         cecho "-------------------------------------------------------------" $boldgreen
