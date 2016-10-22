@@ -1,3 +1,12 @@
+nano_highlight() {
+  # enable nano editor syntax highlighing
+  if [ -f /etc/nanorc ]; then
+    if [[ -z "$(grep '^include' /etc/nanorc)" && "$(grep '^# include' /etc/nanorc)" ]]; then
+      sed -i 's|^# include|include|g' /etc/nanorc
+    fi
+  fi
+}
+
 fixnodejs_epel() {
   # prevent node.js 6.x install by epel in favour of nodesource
   # repo via addons/nodejs.sh
@@ -1300,6 +1309,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixlibmysqlclient_symlink
   fixnodejs_epel
   fixclamav_epel
+  nano_highlight
 fi
 
 }

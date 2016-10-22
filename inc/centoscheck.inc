@@ -145,4 +145,6 @@ sshdtweaks
 
 countcpus
 
+nano_highlight
+
 }
