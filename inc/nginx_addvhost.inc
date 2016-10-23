@@ -244,6 +244,18 @@ info_notice
 
 read -ep "Enter vhost domain name to add (without www. prefix): " vhostname
 
+if [ -d "/home/nginx/domains/$vhostname" ]; then
+  echo ""
+  cecho "-------------------------------------------------------------" $boldyellow
+  cecho "vhost for $vhostname already exists" $boldwhite
+  cecho "/home/nginx/domains/$vhostname already exists" $boldwhite
+  cecho "if you need to delete the domain read the guide at: " $boldwhite
+  cecho "centminmod.com/nginx_domain_dns_setup.html#deletevhost" $boldwhite
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo ""
+  exit 1
+fi
+
 # check to make sure you don't add a domain name vhost that matches
 # your server main hostname setup in server_name within main hostname
 # nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
@@ -353,7 +365,7 @@ fi
 
 echo ""
 
-if [ ! -d /home/nginx/domains/$vhostname ]; then
+if [ ! -d "/home/nginx/domains/$vhostname" ]; then
 
 # Checking Permissions, making directories, example index.html
 umask 027
