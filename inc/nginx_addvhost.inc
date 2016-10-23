@@ -3,9 +3,9 @@ check_dns() {
     # if CHECKIDN = 0 then internationalized domain name which not supported by letsencrypt
     CHECKIDN=$(echo $vhostname_dns | grep '^xn--' >/dev/null 2>&1; echo $?)
     if [[ "$CHECKIDN" = '0' ]]; then
-      TOPLEVELCHECK=$(dig soa $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//' | idn)
+      TOPLEVELCHECK=$(dig soa @8.8.8.8 $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//' | idn)
     else
-      TOPLEVELCHECK=$(dig soa $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//')
+      TOPLEVELCHECK=$(dig soa @8.8.8.8 $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//')
     fi
     if [[ "$TOPLEVELCHECK" = "$vhostname_dns" ]]; then
       # top level domain
