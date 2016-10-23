@@ -35,7 +35,7 @@ check_dns() {
       if [ "$VHOST_ACHECK" ]; then
         cecho "your server IP address: $CNIP" $boldyellow
         cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
-        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1)" != '0' ]]; then
+        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
@@ -86,7 +86,7 @@ check_dns() {
       if [ "$VHOST_ACHECK" ]; then
         cecho "your server IP address: $CNIP" $boldyellow
         cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
-        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1)" != '0' ]]; then
+        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
