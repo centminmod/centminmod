@@ -35,34 +35,81 @@ check_dns() {
       if [ "$VHOST_ACHECK" ]; then
         cecho "your server IP address: $CNIP" $boldyellow
         cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1)" != '0' ]]; then
+          echo
+          cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
+          echo
+          read -ep "Abort this Nginx vhost domain setup to setup updated DNS A record(s) first? [y/n]: " letabort
+          if [[ "$letabort" = [yY] ]]; then
+            exit
+          fi
+        fi
       else
         cecho "your server IP address: $CNIP" $boldyellow
         cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
         cecho "!! Error: missing DNS A record for $vhostname_dns" $boldyellow
+        echo
+        read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
+        if [[ "$letabort" = [yY] ]]; then
+          exit
+        fi
       fi
       if [ "$VHOST_AWWWCHECK" ]; then
         cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
+        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1)" != '0' ]]; then
+          echo
+          cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
+          echo
+          read -ep "Abort this Nginx vhost domain setup to setup updated DNS A record(s) first? [y/n]: " letabort
+          if [[ "$letabort" = [yY] ]]; then
+            exit
+          fi
+        fi
       else
         cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
         cecho "!! Error: missing DNS A record for www.$vhostname_dns" $boldyellow
+        echo
+        read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
+        if [[ "$letabort" = [yY] ]]; then
+          exit
+        fi
       fi
     elif [[ "$TOPLEVEL" = 'z' ]]; then
       cecho "!! Error: $vhostname_dns DNS records not found or setup properly yet or $vhostname_dns invalid" $boldyellow
+      echo
+      read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
+      if [[ "$letabort" = [yY] ]]; then
+        exit
+      fi
     else
       cecho "$vhostname_dns is not a top level domain" $boldyellow
       if [ "$VHOST_ACHECK" ]; then
         cecho "your server IP address: $CNIP" $boldyellow
         cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1)" != '0' ]]; then
+          echo
+          cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
+          echo
+          read -ep "Abort this Nginx vhost domain setup to setup updated DNS A record(s) first? [y/n]: " letabort
+          if [[ "$letabort" = [yY] ]]; then
+            exit
+          fi
+        fi
       else
         cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
         cecho "!! Error: missing DNS A record for $vhostname_dns" $boldyellow
+        echo
+        read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
+        if [[ "$letabort" = [yY] ]]; then
+          exit
+        fi
       fi
     fi
     echo
-    read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
-    if [[ "$letabort" = [yY] ]]; then
+    read -ep "Do you want to continue [y/n]: " let_continue
+    if [[ "$let_continue" = [yY] ]]; then
       exit
-    fi 
+    fi
 }
 
 lemsgdns() {
