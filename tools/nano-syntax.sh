@@ -40,10 +40,22 @@ enable_syntax() {
     echo
     echo "Setup Extended Syntax Highlighting for nano editor"
     echo
+    echo "To properly configure the right colors for your SSH client,"
+    echo "script needs to know your configured text color in your SSH"
+    echo "client. If your SSH client configured text color is other"
+    echo "than black text, you need to specify what color text you want"
+    echo
+    echo "Choose your desired text color from the following options"
+    echo "black, red, green, yellow, blue, magenta, cyan or white"
+    echo "i.e. if you have white text on black background, choose"
+    echo "white text below"
+    echo
+    read -ep "Which color do you want to set for text in syntax highlighting ? " color_opt
+    echo
     git clone --depth=1 https://github.com/centminmod/nanorc
     if [ -d nanorc ]; then
         cd nanorc
-        make install-global
+        make install-global TEXT=$color_opt
     
         if [[ -d /usr/local/share/nano && -f /etc/nanorc ]]; then
             NANORC_LIST='shell.nanorc nginx.nanorc go.nanorc ini.nanorc javascript.nanorc json.nanorc markdown.nanorc rpmspec.nanorc sql.nanorc systemd.nanorc yaml.nanorc yum.nanorc'
@@ -56,9 +68,13 @@ enable_syntax() {
                     echo -e "\n## $n" >> /etc/nanorc
                     echo "include \"/usr/local/share/nano/$n\"" >> /etc/nanorc
                 fi
+                # if [[ "$(grep "$n" /etc/nanorc | grep 'nginx.nanorc')" ]] ; then
+                #     echo "disable $n syntax highlighting"
+                #     sed -i "s|^include \"\/usr\/local\/share\/nano\/$n|#include \"\/usr\/local\/share\/nano\/$n|"  /etc/nanorc
+                # fi
                 if [[ "$(grep "$n" /etc/nanorc | grep 'nginx.nanorc')" ]] ; then
-                    echo "disable $n syntax highlighting"
-                    sed -i "s|^include \"\/usr\/local\/share\/nano\/$n|#include \"\/usr\/local\/share\/nano\/$n|"  /etc/nanorc
+                    echo "re-enable $n syntax highlighting"
+                    sed -i "s|^#include \"\/usr\/local\/share\/nano\/$n|include \"\/usr\/local\/share\/nano\/$n|"  /etc/nanorc
                 fi
             done
         fi
