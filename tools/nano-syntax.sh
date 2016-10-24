@@ -56,6 +56,10 @@ enable_syntax() {
                     echo -e "\n## $n" >> /etc/nanorc
                     echo "include \"/usr/local/share/nano/$n\"" >> /etc/nanorc
                 fi
+                if [[ "$(grep "$n" /etc/nanorc | grep 'nginx.nanorc')" ]] ; then
+                    echo "disable $n syntax highlighting"
+                    sed -i "s|^include \"\/usr\/local\/share\/nano\/$n|#include \"\/usr\/local\/share\/nano\/$n|"  /etc/nanorc
+                fi
             done
         fi
     fi
