@@ -63,6 +63,27 @@ location $PROTECTDIR_PATH/ {
   }
 }
 "
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'library' )" && -d "${PROTECTDIR}/XenForo" ]]; then
+echo -e "# Xenforo bypass $PROTECTDIR\n
+# location $PROTECTDIR_PATH/ {
+#   internal;
+#   allow 127.0.0.1;
+#   deny all;
+# }
+"
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'internal_data' )" && -d "$(echo "$(dirname $PROTECTDIR)/library/XenForo")" ]]; then
+echo -e "# Xenforo bypass $PROTECTDIR\n
+# location $PROTECTDIR_PATH/ {
+#   internal;
+#   allow 127.0.0.1;
+#   deny all;
+# }
+"
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/templates' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/library/XenForo")" ]]; then
+echo -e "# Xenforo bypass $PROTECTDIR\n"
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/data' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/library/XenForo")" ]]; then
+echo -e "# Xenforo bypass $PROTECTDIR\n"
+
             elif [[ "$(echo $PROTECTDIR_PATH | grep 'sucuri-scanner' )" ]]; then
               # proper sucuri-scanner secure lock down
 echo -e "# $PROTECTDIR\n
