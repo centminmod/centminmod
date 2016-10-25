@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.11'
+ACMEVER='1.0.12'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -58,7 +58,7 @@ SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 
 #####################
 checkver( ){
-  LATESTVER=$(curl -s $SCRIPTCHECKURL | head -n1 | cut -c1-5| tr -d '\r')
+  LATESTVER=$(curl -s $SCRIPTCHECKURL | head -n1 | cut -c1-6| tr -d '\r')
   CURRENTVER=$ACMEVER
   if [[ "$CURRENTVER" != "$LATESTVER" ]]; then
     echo
