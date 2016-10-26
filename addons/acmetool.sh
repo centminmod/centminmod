@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.13'
+ACMEVER='1.0.14'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -3012,6 +3012,11 @@ issue_acmedns() {
     # if the option flag = live is not passed on command line, the issuance uses the
     # staging test ssl certificates
     echo "testcert value = $testcert"
+    if [[ "$CERTONLY_DNS" = '1' && "$STAGE_DNS" = 'live' ]]; then
+      DNS_RENEWSTAGEOPT=""
+    else
+      DNS_RENEWSTAGEOPT=" --staging"
+    fi
     if [[ -f "$ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}/${vhostname}.key" ]]; then
       DNS_ISSUEOPT='--issue --force'
     else
@@ -3051,7 +3056,7 @@ issue_acmedns() {
         # echo " Final Step to complete SSL Certificate Issuance" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo " Once DNS updated for $vhostname, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-        echo "  $ACMEBINARY --force --renew${ECCFLAG} $DOMAINOPT" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "  $ACMEBINARY --force --renew${DNS_RENEWSTAGEOPT}${ECCFLAG} $DOMAINOPT" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo " SSL certs will be located : $ACMECERTHOME${vhostname}${ECC_ACMEHOMESUFFIX}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
