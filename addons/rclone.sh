@@ -11,6 +11,7 @@ DEBUG='y'
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 BASEURL='http://downloads.rclone.org'
+HOSTDOMAIN=$(hostname)
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
@@ -200,13 +201,13 @@ rclone_copy() {
   echo "copy /root/centminlogs to cloud storage remote $remote"
   echo "https://community.centminmod.com/posts/39071/"
   echo
-  echo "rclone copy /root/centminlogs ${remote}:centminlogs --exclude "rclone_copy_${DT}.log""
-  rclone copy /root/centminlogs ${remote}:centminlogs --exclude "rclone_copy_${DT}.log"
+  echo "rclone copy /root/centminlogs ${remote}:${HOSTDOMAIN}/copy-centminlogs --exclude "rclone_copy_${DT}.log""
+  rclone copy /root/centminlogs ${remote}:${HOSTDOMAIN}/copy-centminlogs --exclude "rclone_copy_${DT}.log"
   echo
   echo "copy /usr/local/nginx/conf to cloud storage remote $remote"
   echo
-  echo "rclone copy /usr/local/nginx/conf ${remote}:nginxconf"
-  rclone copy /usr/local/nginx/conf ${remote}:nginxconf
+  echo "rclone copy /usr/local/nginx/conf ${remote}:${HOSTDOMAIN}/copy-nginxconf"
+  rclone copy /usr/local/nginx/conf ${remote}:${HOSTDOMAIN}/copy-nginxconf
   echo
 }
 
@@ -225,13 +226,13 @@ rclone_sync() {
   echo "sync /root/centminlogs to cloud storage remote $remote"
   echo "https://community.centminmod.com/posts/39071/"
   echo
-  echo "rclone sync /root/centminlogs ${remote}:centminlogs --exclude "rclone_sync_${DT}.log""
-  rclone sync /root/centminlogs ${remote}:centminlogs --exclude "rclone_sync_${DT}.log"
+  echo "rclone sync /root/centminlogs ${remote}:${HOSTDOMAIN}/sync-centminlogs --exclude "rclone_sync_${DT}.log""
+  rclone sync /root/centminlogs ${remote}:${HOSTDOMAIN}/sync-centminlogs --exclude "rclone_sync_${DT}.log"
   echo
   echo "sync /usr/local/nginx/conf to cloud storage remote $remote"
   echo
-  echo "rclone sync /usr/local/nginx/conf ${remote}:nginxconf"
-  rclone sync /usr/local/nginx/conf ${remote}:nginxconf
+  echo "rclone sync /usr/local/nginx/conf ${remote}:${HOSTDOMAIN}/sync-nginxconf"
+  rclone sync /usr/local/nginx/conf ${remote}:${HOSTDOMAIN}/sync-nginxconf
   echo
 }
 
