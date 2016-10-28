@@ -111,6 +111,17 @@ return
 }
 
 ###########################################################
+csf_port() {
+  SSH_CLIENTIPADDR=$(echo "${SSH_CLIENT%% *}")
+  echo
+  if [[ -f /etc/csf/csf.allow && -z "$(grep "tcp|in|d=53682|s=$SSH_CLIENTIPADDR" /etc/csf/csf.allow)" ]]; then
+    echo "open port 53682 for rclone web server"
+    echo "tcp|in|d=53682|s=$SSH_CLIENTIPADDR" >> /etc/csf/csf.allow
+    csf -r >/dev/null 2>&1
+    tail -1 /etc/csf/csf.allow
+  fi
+}
+
 rclone_config() {
   echo
   echo "------------------------------------------------"
@@ -120,6 +131,7 @@ rclone_config() {
   echo
   sleep 3
   if [ -f /usr/sbin/rclone ]; then
+    # csf_port
     rclone config
   fi
 }
@@ -305,7 +317,7 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_sync_${DT}.log"
   ;;
   *)
-    echo "$0 {install|update|copy|sync}"
+    echo "$0 {config|install|update|copy|sync}"
   ;;
 esac
 exit
