@@ -62,7 +62,7 @@ if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]];
   \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
 else
   # for php 7 ioncube beta8
-  ICPHPVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)
+  ICPHPVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
   else
