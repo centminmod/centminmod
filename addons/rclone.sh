@@ -6,10 +6,11 @@
 # http://rclone.org/docs/
 ###########################################################
 DT=$(date +"%d%m%y-%H%M%S")
+DEBUG='y'
+
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 BASEURL='http://downloads.rclone.org'
-
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
@@ -173,13 +174,45 @@ rclone_install() {
 }
 
 rclone_copy() {
-  echo "not yet implemented..."
+  remote=$1
+  if [[ -z "$remote" ]]; then
+    echo
+    echo "incorrect syntax"
+    echo "use the following syntax where remote_name"
+    echo "is the remote you configured with rclone"
+    echo
+    echo "$0 copy remote_name"
+    exit
+  fi
+  echo
+  echo "copy /root/centminlogs to cloud storage remote $remote"
   echo "https://community.centminmod.com/posts/39071/"
+  echo
+  echo "rclone copy /root/centminlogs ${remote}:centminlogs"
+  echo "rclone copy /root/centminlogs ${remote}:centminlogs --exclude "rclone_copy_${DT}.log""
+  rclone copy /root/centminlogs ${remote}:centminlogs --exclude "rclone_copy_${DT}.log"
+  echo
 }
 
 rclone_sync() {
-  echo "not yet implemented..."
+  remote=$1
+  if [[ -z "$remote" ]]; then
+    echo
+    echo "incorrect syntax"
+    echo "use the following syntax where remote_name"
+    echo "is the remote you configured with rclone"
+    echo
+    echo "$0 sync remote_name"
+    exit
+  fi
+  echo
+  echo "sync /root/centminlogs to cloud storage remote $remote"
   echo "https://community.centminmod.com/posts/39071/"
+  echo
+  echo "rclone sync /root/centminlogs ${remote}:centminlogs"
+  echo "rclone sync /root/centminlogs ${remote}:centminlogs --exclude "rclone_sync_${DT}.log""
+  rclone sync /root/centminlogs ${remote}:centminlogs --exclude "rclone_sync_${DT}.log"
+  echo
 }
 
 ###########################################################################
@@ -230,7 +263,11 @@ tail -1 "${CENTMINLOGDIR}/rclone_update_${DT}.log"
   copy)
 starttime=$(date +%s.%N)
 {
-  rclone_copy
+  remote=$2
+  if [[ "$DEBUG" = [yY] ]]; then
+    echo "remote = $remote"
+  fi
+  rclone_copy $remote
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_copy_${DT}.log"
 
 endtime=$(date +%s.%N)
@@ -244,7 +281,11 @@ tail -1 "${CENTMINLOGDIR}/rclone_copy_${DT}.log"
   sync)
 starttime=$(date +%s.%N)
 {
-  rclone_sync
+  remote=$2
+  if [[ "$DEBUG" = [yY] ]]; then
+    echo "remote = $remote"
+  fi
+  rclone_sync $remote
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_sync_${DT}.log"
 
 endtime=$(date +%s.%N)
