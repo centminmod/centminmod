@@ -188,9 +188,13 @@ rclone_copy() {
   echo "copy /root/centminlogs to cloud storage remote $remote"
   echo "https://community.centminmod.com/posts/39071/"
   echo
-  echo "rclone copy /root/centminlogs ${remote}:centminlogs"
   echo "rclone copy /root/centminlogs ${remote}:centminlogs --exclude "rclone_copy_${DT}.log""
   rclone copy /root/centminlogs ${remote}:centminlogs --exclude "rclone_copy_${DT}.log"
+  echo
+  echo "copy /usr/local/nginx/conf to cloud storage remote $remote"
+  echo
+  echo "rclone copy /usr/local/nginx/conf ${remote}:nginxconf"
+  rclone copy /usr/local/nginx/conf ${remote}:nginxconf
   echo
 }
 
@@ -209,9 +213,13 @@ rclone_sync() {
   echo "sync /root/centminlogs to cloud storage remote $remote"
   echo "https://community.centminmod.com/posts/39071/"
   echo
-  echo "rclone sync /root/centminlogs ${remote}:centminlogs"
   echo "rclone sync /root/centminlogs ${remote}:centminlogs --exclude "rclone_sync_${DT}.log""
   rclone sync /root/centminlogs ${remote}:centminlogs --exclude "rclone_sync_${DT}.log"
+  echo
+  echo "sync /usr/local/nginx/conf to cloud storage remote $remote"
+  echo
+  echo "rclone sync /usr/local/nginx/conf ${remote}:nginxconf"
+  rclone sync /usr/local/nginx/conf ${remote}:nginxconf
   echo
 }
 
