@@ -18,16 +18,17 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "OpenSSL 1.0.1g patched"
     echo  "######################################################################"
 fi
-if [[ "$(uname -m)" != 'x86_64' ]]; then
-    # cloudflare patch chacha20 support does not seem to
-    # work on 32bit OSes only 64bit
-    CLOUDFLARE_PATCHSSL='n'
-fi
 
-if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2j' || "${OPENSSL_VERSION}" = '1.0.2k' ]]; then
+if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2k' ]]; then
     # cloudflare patch chacha20 support does not seem to
     # work with openssl 1.0.2i
     # https://community.centminmod.com/posts/36691/
+    CLOUDFLARE_PATCHSSL='n'
+fi
+
+if [[ "$(uname -m)" != 'x86_64' ]]; then
+    # cloudflare patch chacha20 support does not seem to
+    # work on 32bit OSes only 64bit
     CLOUDFLARE_PATCHSSL='n'
 fi
 
@@ -39,17 +40,17 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
             figlet -ckf standard "Cloudflare Chacha20 Patch"
         fi
         echo  "######################################################################"
-        echo "Patching OpenSSL 1.0.2h"
+        echo "Patching OpenSSL 1.0.2j"
         echo  "######################################################################"
         echo "Cloudflare ChaCha20 patch"
-        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch"
+        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102j.patch"
         echo "only Android 5 will support ChaCha20 if using Cloudflare Patch"
         echo  "######################################################################"
         # check if cpu supports avx2 (Intel Xeon E5 v3 and Xeon E3 v5) & implement 
         # cloudflare openssl 1.0.2+ patch with optimized avx2 seal if cpu supports it
         AVXTWO_CHECK=$(grep -o --color avx2 /proc/cpuinfo | uniq >/dev/null 2>&1; echo $?)
         # pushd ssl
-        OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch'
+        OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102j.patch'
         rm -rf "${OPESSLCFPATCH_NAME}"
         AVXTWO_CHECK=1
         if [[ "$AVXTWO_CHECK" = '0' ]]; then
@@ -70,23 +71,30 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         fi
         wget -cnv --no-check-certificate "$OPENSSLCFPATCHLINK"
 
-        if [ ! -f crypto/chacha20poly1305/chacha20.c ]; then
+        if [ ! -f crypto/chacha20_poly1305/chacha20.c ]; then
             patch -p1 < "${OPESSLCFPATCH_NAME}"
         fi
         # rm -rf openssl__chacha20_poly1305_cf.patch
         # wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
         # patch -p1 < openssl__chacha20_poly1305_cf.patch
-        if [ -f crypto/chacha20poly1305/chacha20.c ]; then
-            # check /svr-setup/openssl-1.0.2g/crypto/chacha20poly1305/chacha20.c exists
+        if [ -f crypto/chacha20_poly1305/chacha20.c ]; then
+            # check /svr-setup/openssl-1.0.2g/crypto/chacha20_poly1305/chacha20.c exists
             OPEENSSL_CFPATCHED='y'
+            echo  "######################################################################"
+            echo  "OpenSSL 1.0.2j patched"
+            echo  "######################################################################"
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Cloudflare Chacha20 Patched"
+            fi
+        else
+            echo  "######################################################################"
+            echo  "OpenSSL 1.0.2j not patched"
+            echo  "######################################################################"
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Cloudflare Chacha20 Not Patched"
+            fi
         fi
         # popd
-        echo  "######################################################################"
-        echo  "OpenSSL 1.0.2h patched"
-        echo  "######################################################################"
-        if [ -f "$(which figlet)" ]; then
-            figlet -ckf standard "Cloudflare Chacha20 Patched"
-        fi
     # fi
 fi # CLOUDFLARE_PATCHSSL
 
