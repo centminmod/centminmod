@@ -1,5 +1,5 @@
 checkwoff() {
-  if [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep woff2 /usr/local/nginx/conf/mime.types)" ]] || [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep ott /usr/local/nginx/conf/mime.types)" ]]; then
+  if [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep woff2 /usr/local/nginx/conf/mime.types)" ]] || [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep otf /usr/local/nginx/conf/mime.types)" ]]; then
     # check for woff2 and ott mime type support in nginx https://github.com/centminmod/centminmod/issues/60
     mimefix 1
   fi
