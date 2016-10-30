@@ -831,6 +831,7 @@ fi
 
         geoinccheck
         geoipphp
+        mimefix
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Cleanup"
