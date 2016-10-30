@@ -236,6 +236,46 @@ rclone_sync() {
   echo
 }
 
+rclone_copyssl() {
+  remote=$1
+  if [[ -z "$remote" ]]; then
+    echo
+    echo "incorrect syntax"
+    echo "use the following syntax where remote_name"
+    echo "is the remote you configured with rclone"
+    echo
+    echo "$0 copyssl remote_name"
+    exit
+  fi
+  echo
+  echo "copy /usr/local/nginx/conf/ssl to cloud storage remote $remote"
+  echo "https://community.centminmod.com/posts/39071/"
+  echo
+  echo "rclone copy /usr/local/nginx/conf/ssl ${remote}:${HOSTDOMAIN}/copy-nginxconf-ssl"
+  rclone copy /usr/local/nginx/conf/ssl ${remote}:${HOSTDOMAIN}/copy-nginxconf-ssl
+  echo
+}
+
+rclone_syncssl() {
+  remote=$1
+  if [[ -z "$remote" ]]; then
+    echo
+    echo "incorrect syntax"
+    echo "use the following syntax where remote_name"
+    echo "is the remote you configured with rclone"
+    echo
+    echo "$0 syncssl remote_name"
+    exit
+  fi
+  echo
+  echo "sync /usr/local/nginx/conf/ssl to cloud storage remote $remote"
+  echo "https://community.centminmod.com/posts/39071/"
+  echo
+  echo "rclone sync /usr/local/nginx/conf/ssl ${remote}:${HOSTDOMAIN}/sync-nginxconf-ssl"
+  rclone sync /usr/local/nginx/conf/ssl ${remote}:${HOSTDOMAIN}/sync-nginxconf-ssl
+  echo
+}
+
 ###########################################################################
 case $1 in
   config)
@@ -317,8 +357,44 @@ echo "Total Rclone Sync Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/rclone_
 echo
 tail -1 "${CENTMINLOGDIR}/rclone_sync_${DT}.log"
   ;;
+  copyssl)
+starttime=$(date +%s.%N)
+{
+  remote=$2
+  if [[ "$DEBUG" = [yY] ]]; then
+    echo "remote = $remote"
+  fi
+  rclone_copyssl $remote
+} 2>&1 | tee "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
+
+endtime=$(date +%s.%N)
+
+INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+echo "" >> "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
+echo "Total Rclone Copy SSL Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
+echo
+tail -1 "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
+  ;;
+  syncssl)
+starttime=$(date +%s.%N)
+{
+  remote=$2
+  if [[ "$DEBUG" = [yY] ]]; then
+    echo "remote = $remote"
+  fi
+  rclone_syncssl $remote
+} 2>&1 | tee "${CENTMINLOGDIR}/rclone_syncssl_${DT}.log"
+
+endtime=$(date +%s.%N)
+
+INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+echo "" >> "${CENTMINLOGDIR}/rclone_syncssl_${DT}.log"
+echo "Total Rclone Sync SSL Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/rclone_syncssl_${DT}.log"
+echo
+tail -1 "${CENTMINLOGDIR}/rclone_syncssl_${DT}.log"
+  ;;
   *)
-    echo "$0 {config|install|update|copy|sync}"
+    echo "$0 {config|install|update|copy|sync|copyssl|syncssl}"
   ;;
 esac
 exit
