@@ -2,13 +2,13 @@ mimefix() {
 	silence=$1
 
 if [ -z "$silence" ]; then
-	# Current Nginx mime types for eot, ttf, ott, woff
-	egrep '(eot|ttf|ott|woff|woff2)' /usr/local/nginx/conf/mime.types
+	# Current Nginx mime types for eot, ttf, otf, woff
+	egrep '(eot|ttf|otf|woff|woff2)' /usr/local/nginx/conf/mime.types
 fi
 
 EOTCHECK=$(grep eot /usr/local/nginx/conf/mime.types)
 TTFCHECK=$(grep ttf /usr/local/nginx/conf/mime.types)
-OTTCHECK=$(grep ott /usr/local/nginx/conf/mime.types)
+OTTCHECK=$(grep otf /usr/local/nginx/conf/mime.types)
 WOFFCHECK=$(grep woff /usr/local/nginx/conf/mime.types)
 WOFFTWOCHECK=$(grep woff2 /usr/local/nginx/conf/mime.types)
 
@@ -32,7 +32,7 @@ if [ -z "$OTTCHECK" ]; then
 	sed -i 's/}//' /usr/local/nginx/conf/mime.types
 
 cat >> "/usr/local/nginx/conf/mime.types" <<EFF
-    font/opentype                           ott;
+    font/opentype                           otf;
 }
 EFF
 fi
