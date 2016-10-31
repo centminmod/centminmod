@@ -296,7 +296,9 @@ tail -1 "${CENTMINLOGDIR}/rclone_config_${DT}.log"
 starttime=$(date +%s.%N)
 {
   rclone_install
-  rclone_config
+  if [ ! -f /root/.rclone.conf ]; then
+    rclone_config
+  fi
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_installer_${DT}.log"
 
 endtime=$(date +%s.%N)
