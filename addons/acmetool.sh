@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.14'
+ACMEVER='1.0.15'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -88,7 +88,7 @@ if [[ "$NOTICE" = [yY] && "$UNATTENDED" != [yY] ]]; then
   echo "acmetool.sh is in beta testing phase"
   echo "please read & provide bug reports &"
   echo "feedback for this tool via the forums"
-  echo "https://community.centminmod.com/posts/34492/"
+  echo "https://centminmod.com/acmetool"
   echo "-------------------------------------------------"
   echo
   read -ep "continue [y/n] ? " _proceed
