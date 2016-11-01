@@ -140,12 +140,14 @@ else
     echo "current ntp servers"
     NTPSERVERS=$(awk '/server / {print $2}' /etc/ntp.conf | grep ntp.org | sort -r)
     for s in $NTPSERVERS; do
+      if [ -f /usr/bin/nc ]; then
         echo -ne "\n$s test connectivity: "
         if [[ "$(echo | nc -u -w1 $s 53 >/dev/null 2>&1 ;echo $?)" = '0' ]]; then
         echo " ok"
         else
         echo " error"
         fi
+      fi
         ntpdate -q $s | tail -1
         if [[ -f /etc/ntp/step-tickers && -z "$(grep $s /etc/ntp/step-tickers )" ]]; then
         echo "$s" >> /etc/ntp/step-tickers
