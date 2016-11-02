@@ -1007,7 +1007,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi	
 
 	if [[ "$NGINX_STICKY" = [yY] ]]; then
-		NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
+		if [[ "$NGINX_STICKYVER" = 'master' ]]; then
+			NGX_STICKYDIR='nginx-sticky-module-master'
+		else
+			NGX_STICKYDIR=$(tar -tzf "$DIR_TMP/${NGX_STICKYLINKFILE}" | head -1 | cut -f1 -d"/")
+		fi
 		STICKYOPT=" --add-module=../$NGX_STICKYDIR"
 	else
 		STICKYOPT=""
