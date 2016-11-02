@@ -203,6 +203,14 @@ elif [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" ]]; then
     libressldownload
 fi
 
+# as nginx-sticky-module-ng nginx module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
+# now uses master branch, if enabled via NGINX_STICKY=y always remove existing master tarball and 
+# redownload again to get latest
+if [[ "$NGINX_STICKY" = [yY] ]]; then
+    rm -rf "$DIR_TMP/${NGX_STICKYLINKFILE}"
+    rm -rf "${DIR_TMP}/${NGX_STICKYDIR}"
+fi
+
 LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
 if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACHEPURGEFILE}" || ! -f "${DIR_TMP}/${NGX_ACCESSKEYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CONCATLINKFILE}" || ! -f "${DIR_TMP}/${OPENSSL_LINKFILE}" || ! -f "${DIR_TMP}/${PCRELINKFILE}" || ! -f "${DIR_TMP}/${NGX_WEBDAVLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HEADERSMORELINKFILE}" || ! -f "${DIR_TMP}/${NGX_STICKYLINKFILE}" || ! -f "${DIR_TMP}/${NGX_UPSTREAMCHECKLINKFILE}" || ! -f "${DIR_TMP}/${NGX_HTTPREDISLINKFILE}" ]] || [[ ! -d "${DIR_TMP}/${NGX_FANCYINDEXDIR}" || ! -d "${DIR_TMP}/${NGX_CACHEPURGEDIR}" || ! -d "${DIR_TMP}/nginx-accesskey-2.0.3" || ! -d "${DIR_TMP}/${NGX_CONCATDIR}" || ! -d "${DIR_TMP}/${OPENSSLDIR}" || ! -d "${DIR_TMP}/${PCRELINKDIR}" || ! -d "${DIR_TMP}/${NGX_WEBDAVLINKDIR}" || ! -d "${DIR_TMP}/${NGX_HEADERSMOREDIR}" || ! -d "${DIR_TMP}/${NGX_STICKYDIR}" || ! -d "${DIR_TMP}/${NGX_UPSTREAMCHECKDIR}" || ! -d "${DIR_TMP}/${NGX_HTTPREDISDIR}" ]]; then
 
