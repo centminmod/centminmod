@@ -104,16 +104,15 @@ scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
 	if [[ "$CENTOS_SIX" = '6' ]]; then
 		if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-			cecho "install scl for newer gcc and g++ versions" $boldgreen
-			wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
-			rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
-			yum -y install devtoolset-3 -q
+			cecho "install centos-release-scl for newer gcc and g++ versions" $boldgreen
+      yum -y install centos-release-scl -q
+      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
 
-			CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+			CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
 			unset CC
 			unset CXX
-			# export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc ${CCTOOLSET}"
-			# export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++"
+			# export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc ${CCTOOLSET}"
+			# export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
 			CLANG_CCOPT=""
 			export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
 			export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
@@ -180,7 +179,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	cecho "CentOS 6.x detected... " $boldgreen
 	cecho "nodesource YUM install currently only works on CentOS 7.x systems" $boldgreen
 	cecho "alternative is to compile node.js from source instead" $boldgreen
-	cecho "due to devtoolset-3 & source compilation method it may" $boldgreen
+	cecho "due to devtoolset-4 & source compilation method it may" $boldgreen
 	cecho "take between 10-45 minutes to compile depending on system" $boldgreen
 	cecho "--------------------------------------------------------------------" $boldyellow
 	echo
@@ -189,10 +188,10 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
 		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$REINSTALL" = [yY] ]]; then
 	
-			if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+			if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
 				scl_install
-			elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-				CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+			elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+				CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
 				unset CC
 				unset CXX
 				CLANG_CCOPT=""

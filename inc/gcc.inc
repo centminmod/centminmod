@@ -1,11 +1,11 @@
 enable_devtoolset() {
-# devtoolset-3 usage for ngx_pagespeed 1.10 branch which doesn't support
+# devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
 # centos 6 based gcc 4.4.7
 if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
-  if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
     scl_install
     if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -13,7 +13,7 @@ if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       export CC="ccache gcc"
       export CXX="ccache g++"
     else
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -21,21 +21,11 @@ if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       export CC="gcc"
       export CXX="g++"
     fi
-  elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-    # update devtoolset-3 repo
-    if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
-      yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
-      rm -rf /etc/yum.repos.d/slc6-scl.repo
-      yum clean all
-      #yum install centos-release-scl-rh --disableplugin=fastmirror
-      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
-      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
-      echo
-      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
-    fi
+  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+    # update devtoolset-4 repo
+    # place holder if need to update devtoolset-4 in future
     if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -43,7 +33,7 @@ if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       export CC="ccache gcc"
       export CXX="ccache g++"
     else
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -54,12 +44,12 @@ if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
   fi
 fi
 
-# devtoolset-3 usage of GCC 4.9 even for CentOS7
+# devtoolset-4 usage of GCC 4.9 even for CentOS7
 if [[ "$CENTOS_SEVEN" = '7' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
-  if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
     scl_install
     if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -67,7 +57,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       export CC="ccache gcc"
       export CXX="ccache g++"
     else
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -75,9 +65,9 @@ if [[ "$CENTOS_SEVEN" = '7' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       export CC="gcc"
       export CXX="g++"
     fi
-  elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
     if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC
@@ -85,7 +75,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       export CC="ccache gcc"
       export CXX="ccache g++"
     else
-      source /opt/rh/devtoolset-3/enable
+      source /opt/rh/devtoolset-4/enable
       which gcc
       which g++
       unset CC

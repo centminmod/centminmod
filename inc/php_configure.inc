@@ -277,90 +277,80 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # initial php install
   if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         scl_install
-        source /opt/rh/devtoolset-3/enable
+        source /opt/rh/devtoolset-4/enable
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
-      elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-3/enable
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
         scl_install
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
       fi
     fi
   fi
   # php upgrades
   if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         scl_install
-        source /opt/rh/devtoolset-3/enable
+        source /opt/rh/devtoolset-4/enable
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
-      elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-3/enable
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
         scl_install
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
       fi
     fi
   fi
-  # CentOS 7 use devtoolset-3 GCC 4.9 if it's detected
+  # CentOS 7 use devtoolset-4 GCC 5.2 if it's detected
   # initial php install
   if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
-    # if devtoolset-3 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-        # centos 7 vs centos 6 versions
-        if [ -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
-          source /opt/rh/devtoolset-3/enable
-        elif [ ! -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
-          source /opt/rh/devtoolset-3/enable
-        fi
+    # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
+    if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
-        echo "centos 7 set devtoolset-3"
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-4"
         echo $CC
         echo $CXX
     fi
   fi
   # php upgrades
   if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
-    # if devtoolset-3 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-        # centos 7 vs centos 6 versions
-        if [ -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
-          source /opt/rh/devtoolset-3/enable
-        elif [ ! -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-7-x86_64.repo ]; then
-          source /opt/rh/devtoolset-3/enable
-        fi
+    # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
+    if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-3/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-3/root/usr/bin/g++"
-        echo "centos 7 set devtoolset-3"
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-4"
         echo $CC
         echo $CXX
     fi

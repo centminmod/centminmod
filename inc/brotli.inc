@@ -5,38 +5,31 @@ scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
-    if [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-      source /opt/rh/devtoolset-3/enable
+    if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+      source /opt/rh/devtoolset-4/enable
     fi
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
-      # wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
-      # rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
-      # # yum -y install devtoolset-3 -q
-      # yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils -q
-      #yum install centos-release-scl-rh --disableplugin=fastmirror
-      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
-      rpm --import https://copr-be.cloud.fedoraproject.org/results/rhscl/devtoolset-3/pubkey.gpg
-      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
+      yum -y install centos-release-scl -q
+      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils -q
       echo
-      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3-el7/repo/epel-7/rhscl-devtoolset-3-el7-epel-7.repo
-      rpm --import https://copr-be.cloud.fedoraproject.org/results/rhscl/devtoolset-3-el7/pubkey.gpg
-      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils -q
+      yum -y install centos-release-scl -q
+      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils -q
       echo
-      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
   fi # centos 6 only needed
 }
 
 libbroti_install() {
 	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
-		# if devtoolset-3 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
+		# if devtoolset-4 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
       	scl_install
         unset CC
         unset CXX
@@ -44,8 +37,8 @@ libbroti_install() {
         export CXX="ccache g++"
         gcc --version
         g++ --version
-      elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-        source /opt/rh/devtoolset-3/enable
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/rh/devtoolset-4/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
@@ -84,11 +77,11 @@ libbroti_install() {
 		echo
 
 		if [[ "$CENTOS_SIX" = '6' ]]; then
-		if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+		if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
 			scl_install
     		unset CC
     		unset CXX		
-		elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+		elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
     		unset CC
     		unset CXX	
 		fi		

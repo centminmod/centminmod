@@ -1977,15 +1977,15 @@ if [[ "$CLANG" = [yY] ]]; then
 	if [[ ! -f /usr/bin/clang ]]; then
 		yum -q -y install clang clang-devel
 	fi
-	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
 		if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
 			scl_install
 		fi
 	fi
 	# ngx_pagespeed => 1.10
 	if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
-		CCTOOLSET='--gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
-		#CCTOOLSETOPT=' --gcc-toolchain=/opt/rh/devtoolset-3/root/usr/'
+		CCTOOLSET='--gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
+		#CCTOOLSETOPT=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
 		#export CFLAGS="$CCTOOLSET"
 	else
 		CCTOOLSET=""
@@ -2020,16 +2020,16 @@ else
 	echo "CLANG_CCOPT=\"\""
 fi
 
-# devtoolset-3 usage for ngx_pagespeed 1.10 branch which doesn't support
+# devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
 # centos 6 based gcc 4.4.7
 if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
-	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
 		scl_install
-		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2037,7 +2037,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CC="ccache gcc"
 			export CXX="ccache g++"
 		else
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2045,24 +2045,14 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CC="gcc"
 			export CXX="g++"
 		fi
-	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-		# update devtoolset-3 repo
-		if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
-      yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
-      rm -rf /etc/yum.repos.d/slc6-scl.repo
-      yum clean all
-      #yum install centos-release-scl-rh --disableplugin=fastmirror
-      wget -O /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo https://copr.fedorainfracloud.org/coprs/rhscl/devtoolset-3/repo/epel-6/rhscl-devtoolset-3-epel-6.repo
-      yum -y install devtoolset-3-gcc devtoolset-3-gcc-c++ devtoolset-3-binutils
-      echo
-      /opt/rh/devtoolset-3/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-3/root/usr/bin/g++ --version
-    fi
-		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+	elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+		# update devtoolset-4 repo
+		# place holder if need to update devtoolset-4 in future
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2070,7 +2060,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 			export CC="ccache gcc"
 			export CXX="ccache g++"
 		else
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2081,15 +2071,15 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
 	fi
 fi
 
-# devtoolset-3 usage of GCC 4.9 even for CentOS7
+# devtoolset-4 usage of GCC 4.9 even for CentOS7
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
-	if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
+	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
 		scl_install
-		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2097,7 +2087,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
 			export CC="ccache gcc"
 			export CXX="ccache g++"
 		else
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2105,12 +2095,12 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
 			export CC="gcc"
 			export CXX="g++"
 		fi
-	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]]; then
-		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-3/root/usr/bin/gcc"
+	elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2118,7 +2108,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
 			export CC="ccache gcc"
 			export CXX="ccache g++"
 		else
-			source /opt/rh/devtoolset-3/enable
+			source /opt/rh/devtoolset-4/enable
 			which gcc
 			which g++
 			unset CC
@@ -2166,7 +2156,7 @@ else
 	fi
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector'
-	elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]]; then
+	elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]]; then
 		FSTACKPROTECT='-fstack-protector-strong'
 	elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector-strong'
