@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.15'
+ACMEVER='1.0.16'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -578,10 +578,13 @@ detectcustom_webroot() {
 if [ -f "$DETECTSSLVHOST_CONFIG" ]; then
   CURRENT_WEBROOT=$(awk '/root /{print $2}' /usr/local/nginx/conf/conf.d/${DETECT_VHOSTNAME}.ssl.conf | sed -e 's|;||')
 fi
-if [[ "$CUSTOM_WEBROOT" ]]; then
+# ensure WEBROOTPATH only allocates CUSTOM_WEBROOT if detectcustom_webroot passes
+# 2 values for $1 and $2 otherwise if only 1 value passed for $1 assume it's the vhostname
+# when there is not custom web root path required.
+if [[ "$CUSTOM_WEBROOT" && "$DETECT_VHOSTNAME" ]]; then
   WEBROOTPATH="$CUSTOM_WEBROOT"
-else
-  WEBROOTPATH="/home/nginx/domains/${DETECT_VHOSTNAME}/public"
+elif [[ "$CUSTOM_WEBROOT" && -z "$DETECT_VHOSTNAME" ]]; then
+  WEBROOTPATH="/home/nginx/domains/${CUSTOM_WEBROOT}/public"
 fi
 }
 
@@ -606,6 +609,19 @@ sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhos
 sed -i "s|#x#   return 302 https:\/\/\$server_name\$request_uri;|   return 302 https:\/\/\$server_name\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+
+# remove duplicates
+sed -i '/^# Centmin Mod Getting Started Guide/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# must read http:\/\/centminmod.com\/getstarted.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# For HTTP\/2 SSL Setup/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# read http:\/\/centminmod.com\/nginx_configure_https_ssl_spdy.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# redirect from www to non-www  forced SSL/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# uncomment, save file and restart Nginx to enable/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# if unsure use return 302 before using return 301/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# server {/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^#   server_name http2ssl.xyz www.http2ssl.xyz;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^#    return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# }/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
   echo
   echo "remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
