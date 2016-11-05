@@ -56,7 +56,7 @@ check_dns() {
       fi
       if [ "$VHOST_AWWWCHECK" ]; then
         cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
-        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1)" != '0' ]]; then
+        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
