@@ -1223,9 +1223,9 @@ fi
 if [[ "$sslconfig" != 'yd' ]] || [[ "$sslconfig" != 'ydle' ]]; then
   cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
 fi
-if [[ "$vhostssl" = [yY] ]] || [[ "$sslconfig" = 'le' ]] || [[ "$sslconfig" = 'led' ]] || [[ "$sslconfig" = 'lelive' ]] || [[ "$sslconfig" = 'lelived' ]]; then
+# if [[ "$vhostssl" = [yY] ]] || [[ "$sslconfig" = 'le' ]] || [[ "$sslconfig" = 'led' ]] || [[ "$sslconfig" = 'lelive' ]] || [[ "$sslconfig" = 'lelived' ]]; then
 cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
-fi
+# fi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldwhite
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldwhite
