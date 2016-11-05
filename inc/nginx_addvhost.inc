@@ -107,7 +107,7 @@ check_dns() {
     fi
     echo
     read -ep "Do you want to continue [y/n]: " let_continue
-    if [[ "$let_continue" = [yY] ]]; then
+    if [[ "$let_continue" != [yY] ]]; then
       exit
     fi
 }
