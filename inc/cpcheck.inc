@@ -1,3 +1,14 @@
+checkipvsix() {
+  if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
+    sed -i "s|^IPV6 = .*|IPV6 = "1"|" /etc/csf/csf.conf
+    csf -r  > /dev/null 2>&1
+  elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    sed -i "s|^IPV6 = .*|IPV6 = "0"|" /etc/csf/csf.conf
+    csf -r  > /dev/null 2>&1
+  fi
+}
+
 checkwoff() {
   if [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep woff2 /usr/local/nginx/conf/mime.types)" ]] || [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep otf /usr/local/nginx/conf/mime.types)" ]]; then
     # check for woff2 and ott mime type support in nginx https://github.com/centminmod/centminmod/issues/60
@@ -1318,6 +1329,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixclamav_epel
   nano_highlight
   checkwoff
+  checkipvsix
 fi
 
 }
