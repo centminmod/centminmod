@@ -8,6 +8,7 @@
 # chmod +x /usr/local/bin/dmotd
 # 
 ###########################################################
+DT=$(date +"%d%m%y-%H%M%S")
 USER=$(whoami)
 HOSTNAME=$(uname -n)
 RELEASE=$(cat /etc/redhat-release | sed -e 's| (Core)||' -e 's| release||')
@@ -15,6 +16,7 @@ PSA=$(ps -Afl | wc -l)
 CURRENTUSER=$(users | wc -w)
 CMSCRIPT_GITDIR='/usr/local/src/centminmod'
 CONFIGSCANBASE='/etc/centminmod'
+CENTMINLOGDIR='/root/centminlogs'
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -157,7 +159,24 @@ gitenv_askupdate() {
         fi
       fi
       pushd "${CMSCRIPT_GITDIR}" >/dev/null 2>&1
-      git fetch >/dev/null 2>&1
+      if [[ "$DMOTD_DEBUGSSHLOGIN" = [yY] ]]; then
+        echo
+        echo "################ DMOTD DEBUG BEGIN ################"
+        echo "DMOTD DEBUG: Ping test github.com"
+        ping -c4 github.com
+        echo
+        echo "DMOTD DEBUG: git fetch timings"
+        echo "git fetch -v"
+        export GIT_TRACE=1
+        export GIT_TRACE_PACKET=1
+        export GIT_TRACE_PERFORMANCE=1
+        /usr/bin/time --format='real: %es user: %Us sys: %Ss cpu: %P maxmem: %M KB cswaits: %w' git fetch -v
+        echo
+        echo "################  DMOTD DEBUG END  ################"
+        echo
+      else
+        git fetch >/dev/null 2>&1
+      fi
       popd >/dev/null 2>&1
       if [[ "$(cd ${CMSCRIPT_GITDIR}; git rev-parse HEAD)" != "$(cd ${CMSCRIPT_GITDIR}; git rev-parse @{u})" ]]; then
           # if remote branch commits don't match local commit, then there are new updates need
@@ -177,9 +196,24 @@ gitenv_askupdate() {
           cecho " no available updates at this time..." $boldyellow
           cecho "===============================================================================" $boldgreen
       fi
+      if [[ "$DMOTD_DEBUGSSHLOGIN" = [yY] ]]; then
+        echo
+        echo "DMOTD DEBUG: timings saved at:"
+        echo "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+        echo
+      fi
     fi
 }
 
+starttime=$(date +%s.%N)
+{
 motd_output
 ngxver_checker
 gitenv_askupdate
+} 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+
+endtime=$(date +%s.%N)
+
+INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
