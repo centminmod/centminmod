@@ -96,7 +96,7 @@ checklogdetails
 	exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
-	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
+	rpm -Uvh --nosignature ${CENTOSSIXAXIVOFILE}
 	
 	ERR=$?
 	CCAXIVOCHECK="$ERR"
@@ -134,7 +134,7 @@ checklogdetails
   exit #$ERROR
 else 
   cecho "Download done." $boldyellow
-  rpm -ivh --nosignature ${CENTOSSEVENAXIVOFILE}
+  rpm -Uvh --nosignature ${CENTOSSEVENAXIVOFILE}
   
   ERR=$?
   CCAXIVOCHECK="$ERR"

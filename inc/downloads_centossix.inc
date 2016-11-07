@@ -9,7 +9,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
   if [ -s "${CENTOSSIXATRPMSFILE}" ]; then
     echo "${CENTOSSIXATRPMSFILE} [found]"
     rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
-    rpm -ivh ${CENTOSSIXATRPMSFILE}
+    rpm -Uvh ${CENTOSSIXATRPMSFILE}
     sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/atrpms.repo
     ERR=$?
     CCATRPMSCHECK="$ERR"
@@ -33,7 +33,7 @@ if [[ "$ATRPMSREPO_DISABLE" = [nN] ]]; then
   else 
     cecho "Download done." $boldyellow
     rpm --import http://packages.atrpms.net/RPM-GPG-KEY.atrpms
-    rpm -ivh ${CENTOSSIXATRPMSFILE}
+    rpm -Uvh ${CENTOSSIXATRPMSFILE}
     sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/atrpms.repo
     ERR=$?
     CCATRPMSCHECK="$ERR"
@@ -77,7 +77,7 @@ checklogdetails
 	# exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
-	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
+	rpm -Uvh --nosignature ${CENTOSSIXAXIVOFILE}
 	ERR=$?
 	CCAXIVOCHECK="$ERR"
 		if [ "$CCAXIVOCHECK" == '0' ]; then
@@ -109,7 +109,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 	if [ -s "${CENTOSSIXREMIFILE}" ]; then
   	echo "${CENTOSSIXREMIFILE} [found]"
   	rpm --import http://rpms.remirepo.net/RPM-GPG-KEY-remi
-  	rpm -ivh --nosignature ${CENTOSSIXREMIFILE}
+  	rpm -Uvh --nosignature ${CENTOSSIXREMIFILE}
 		ERR=$?
 		CCREMICHECK="$ERR"
 			if [ "$CCREMICHECK" == '0' ]; then
@@ -132,7 +132,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 	else 
 		cecho "Download done." $boldyellow
 		rpm --import http://rpms.remirepo.net/RPM-GPG-KEY-remi
-		rpm -ivh --nosignature ${CENTOSSIXREMIFILE}
+		rpm -Uvh --nosignature ${CENTOSSIXREMIFILE}
 		ERR=$?
 		CCREMICHECK="$ERR"
 			if [ "$CCREMICHECK" == '0' ]; then
@@ -190,7 +190,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
 	else 
 		cecho "Download done." $boldyellow
 		rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-6
-		rpm -i ${CENTOSSIXEPELFILE}
+		rpm -Uvh ${CENTOSSIXEPELFILE}
 		#yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
 		ERR=$?
 		CCEPELCHECK="$ERR"
@@ -221,7 +221,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	if [ -s "${CENTOSSIXRPMFORGEFILE}" ]; then
   	echo "${CENTOSSIXRPMFORGEFILE} [found]"
 	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-	rpm -i ${CENTOSSIXRPMFORGEFILE}
+	rpm -Uvh ${CENTOSSIXRPMFORGEFILE}
 		ERR=$?
 		CCRPMFORGECHECK="$ERR"
 			if [ "$CCRPMFORGECHECK" == '0' ]; then
@@ -243,7 +243,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
 	else 
          	cecho "Download done." $boldyellow
 	rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-	rpm -i ${CENTOSSIXRPMFORGEFILE}
+	rpm -Uvh ${CENTOSSIXRPMFORGEFILE}
 		# yum${CACHESKIP} -q list axel 2>&1 >/dev/null
 		ERR=$?
 		CCRPMFORGECHECK="$ERR"
@@ -275,7 +275,7 @@ checklogdetails
 else 
          cecho "Download done." $boldyellow
 rpm --import http://centos.alt.ru/pub/repository/centos/RPM-GPG-KEY-CentALT
-rpm -i ${CENTOSSIXCENTALTFILE}
+rpm -Uvh ${CENTOSSIXCENTALTFILE}
 yumpriorcentalt
 echo ""
 	fi
@@ -288,7 +288,7 @@ fi # CENTALTREPO_DISABLE
 if [ -s "${CENTOSSIXPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSIXPERCONALRELEASEFILE} [found]"
 	rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
-	rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
+	rpm -Uvh ${CENTOSSIXPERCONALRELEASEFILE}
 	ERR=$?
 	CCPERCONACHECK="$ERR"
 		if [ "$CCPERCONACHECK" == '0' ]; then
@@ -310,7 +310,7 @@ checklogdetails
 else 
          cecho "Download done." $boldyellow
 rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
-rpm -i ${CENTOSSIXPERCONALRELEASEFILE}
+rpm -Uvh ${CENTOSSIXPERCONALRELEASEFILE}
 	#yum -q list axel 2>&1 >/dev/null
 	ERR=$?
 	CCPERCONACHECK="$ERR"

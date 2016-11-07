@@ -13,13 +13,13 @@ postgresqlinstall() {
         # cd $DIR_TMP
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             wget https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
-            rpm -ivh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
+            rpm -Uvh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
             wget https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
-            rpm -ivh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
+            rpm -Uvh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
             wget https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-i386/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
-            rpm -ivh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
+            rpm -Uvh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
         fi
     
         ls -lah /etc/yum.repos.d/pgdg-96-centos.repo

@@ -157,7 +157,7 @@ axelsetup() {
 			else 
          			cecho "Download done." $boldyellow
 			rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
-			rpm -i rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm
+			rpm -Uvh rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm
 				#yum -q list axel 2>&1 >/dev/null
 				ERR=$?
 				CCRPMFORGECHECK="$ERR"
@@ -186,7 +186,7 @@ axelsetup() {
 			exit $ERROR
 		else 
          		cecho "Download done." $boldyellow
-		rpm -i axel-2.4-1.el5.rf.${ARCH}.rpm
+		rpm -Uvh axel-2.4-1.el5.rf.${ARCH}.rpm
 			ERR=$?
 			AXELFORGECHECK="$ERR"
 				if [ "$AXELFORGECHECK" == '0' ]; then

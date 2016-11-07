@@ -451,19 +451,19 @@ setmycnf
 
 #download mariadb rpms
 
-echo "rpm -i MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm
-echo "rpm -i MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm
-echo "rpm -i MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm
 
 #killall mysqld_safe
 #killall mysqld
 gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
 
-echo "rpm -i MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
 
 # check MariaDB server installed properly
 cmservice mysql status
@@ -480,8 +480,8 @@ cecho "Ensure mysql system directory has correct permissions" $boldgreen
 cecho " chown -R mysql:mysql /var/lib/mysql/mysql/" $boldgreen
 chown -R mysql:mysql /var/lib/mysql/mysql/
 
-#echo "rpm -i MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
-    #rpm -i MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
+#echo "rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
+    #rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
 
     yum${CACHESKIP} -y install perl-DBD-MySQL
     yum${CACHESKIP} -q clean all

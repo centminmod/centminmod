@@ -171,7 +171,7 @@ if [[ "$FPMRPM_LIBEVENT" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
         cecho "libevent-2.0.21-1.x86_64.rpm found, skipping download..." $boldgreen
     else
         wget -cnv https://centminmod.com/centminmodparts/customrpms/fpm/libevent-2.0.21-1.x86_64.rpm --tries=3
-        rpm -i libevent-2.0.21-1.x86_64.rpm
+        rpm -Uvh libevent-2.0.21-1.x86_64.rpm
     fi
 else
     cd "$DIR_TMP"
@@ -200,7 +200,7 @@ if [[ "$FPMRPM_MEMCACHED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
         cecho "memcached-1.4.18-1.x86_64.rpm found, skipping download..." $boldgreen
     else
         wget -cnv https://centminmod.com/centminmodparts/customrpms/fpm/memcached-1.4.18-1.x86_64.rpm --tries=3
-        rpm -i memcached-1.4.18-1.x86_64.rpm
+        rpm -Uvh memcached-1.4.18-1.x86_64.rpm
         cd "${DIR_TMP}/memcached-${MEMCACHED_VERSION}"
         cp -f "$DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool" /usr/local/bin
     fi
