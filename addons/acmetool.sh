@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.16'
+ACMEVER='1.0.17'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -3173,6 +3173,86 @@ issue_acmedns() {
 }
 
 #####################
+manual_mode() {
+  echo
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  cecho "acmetool.sh manual mode" $boldyellow
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "interactive mode to obtain & install letsencrypt ssl certs"
+  echo "you will need to manually install the ssl certs to your nginx"
+  echo "site ssl vhost yourself as this manual mode only obtains ssl cert"
+  echo "and places them in /usr/local/nginx/conf/ssl/yourdomain.com"
+  echo "directory which you reference in your nginx vhost as outlined"
+  echo "at centminmod.com/nginx_configure_https_ssl_spdy.html"
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "the nginx vhost site needs to exist with valid DNS A records"
+  echo "pointing to this server's IP address before continuing..."
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo
+  read -ep "continue ? [y/n]: " manual_continue
+  if [[ "$manual_continue" != [yY] ]]; then
+    exit
+  fi
+  echo
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  cecho "step 1: domain verification" $boldyellow
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "type the following manually to get a letsencrypt ssl certificate"
+  echo "replacing -d domain.com -d www.domain.com with yourdomain.com name"
+  echo "at end of output you will be notified if you successfully verified"
+  echo "your domain name and obtained a letsencrypt ssl certificate to"
+  echo "proceed to step 2 which is copying over the ssl certs to nginx"
+  echo "custom directory at /usr/local/nginx/conf/ssl/yourdomain.com"
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "2 commands over 2 lines: "
+  echo
+  getuseragent
+  echo "$0 acmeupdate"
+  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+
+  echo
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  cecho "step 2: copying ssl cert to /usr/local/nginx/conf/ssl/yourdomain.com" $boldyellow
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "replacing -d domain.com -d www.domain.com with yourdomain.com name"
+  echo "& replacing all instances of domain.com with yourdomain.com name"
+  echo "a log is created for troubleshooting at:"
+  echo "${CENTMINLOGDIR}/acmetool.sh-debug-log-$DT.log"
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "1 command over 1 long line: "
+  echo
+  echo "$ACMEBINARY --installcert -d domain.com -d www.domain.com --certpath "/usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/domain.com/domain.com-fullchain-acme${ECC_SUFFIX}.key${ECCFLAG}""
+  cecho "---------------------------------------------------------------------------" $boldgreen
+
+  echo
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  cecho "step 3: manually install the ssl certs to your nginx vhost" $boldyellow
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "treat ssl cert like any other and install the ssl cert files"
+  echo "as outlined at centminmod.com/nginx_configure_https_ssl_spdy.html"
+  echo "with path to ssl cert files at /usr/local/nginx/conf/ssl/yourdomain.com"
+  echo "note for ssl_trusted_certificate path is same as ssl_certificate for"
+  echo "letsencrypt ssl so no concatenation of files is needed"
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "replacing all instances of domain.com with yourdomain.com name"
+  echo "your nginx ssl vhost would have the following lines as well as"
+  echo "other ssl settings outlined at centminmod.com/nginx_configure_https_ssl_spdy.html"
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo "if you do not currently have your domain.com.ssl.conf file, you can use"
+  echo "vhost generator at centminmod.com/vhost.php enter domain name and select"
+  echo "self-signed ssl yes and you should see initial openssl command instructions"
+  echo "for recreating the self-signed ssl cert and the domain.com.ssl.conf vhost file"
+  echo "/usr/local/nginx/conf/conf.d/domain.com.ssl.conf then replace paths for"
+  echo "ssl_certificate, ssl_certificate_key and ssl_trusted_certificate with below"
+  cecho "---------------------------------------------------------------------------" $boldgreen
+  echo
+  echo "ssl_certificate      /usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.cer;"
+  echo "ssl_certificate_key  /usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.key;"
+  echo "ssl_trusted_certificate /usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.cer;"
+  echo
+}
+
+#####################
 sslmenu_issue() {
   while :
    do
@@ -3834,6 +3914,11 @@ done
 
 ######################################################
 case "$1" in
+  manual )
+{ 
+  manual_mode
+} 2>&1 | tee "${CENTMINLOGDIR}/acmesh-manual-mode_${DT}.log"
+    ;;
   acmeinstall )
 { 
 nvcheck
@@ -3979,13 +4064,14 @@ fi
 ;;
   * )
   echo
-  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|issue|reissue|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates}"
+  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|manual|issue|reissue|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates}"
   echo "
  Usage Commands: 
  $0 acme-menu
  $0 acmeinstall
- $0 acmeupdate 
- $0 acmesetup 
+ $0 acmeupdate
+ $0 acmesetup
+ $0 manual
  $0 issue domainname
  $0 issue domainname d
  $0 issue domainname live
