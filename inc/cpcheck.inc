@@ -3,6 +3,7 @@ checkipvsix() {
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1
+    NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
   elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1

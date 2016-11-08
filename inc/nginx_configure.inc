@@ -2171,7 +2171,11 @@ fi
 if [[ "$DETECT_NGXVER" -ge '1011005' ]]; then
 	IPVSIXOPT=""
 else
-	IPVSIXOPT=' --with-ipv6'
+	if [[ "$NGINX_IPV" = [yY] ]]; then
+		IPVSIXOPT=' --with-ipv6'
+	else
+		IPVSIXOPT=""
+	fi
 fi
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
