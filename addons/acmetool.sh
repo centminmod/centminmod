@@ -3218,6 +3218,12 @@ manual_mode() {
   echo "& replacing all instances of domain.com with yourdomain.com name"
   echo "a log is created for troubleshooting at:"
   echo "${CENTMINLOGDIR}/acmetool.sh-debug-log-$DT.log"
+  echo "if you do not currently have your domain.com.ssl.conf file, you can use"
+  echo "vhost generator at centminmod.com/vhost.php enter domain name and select"
+  echo "self-signed ssl yes and you should see initial openssl command instructions"
+  echo "for recreating the self-signed ssl cert and the domain.com.ssl.conf vhost file"
+  echo "/usr/local/nginx/conf/conf.d/domain.com.ssl.conf which also creates the required"
+  echo "directory for /usr/local/nginx/conf/ssl/yourdomain.com"
   cecho "---------------------------------------------------------------------------" $boldgreen
   echo "1 command over 1 long line: "
   echo
