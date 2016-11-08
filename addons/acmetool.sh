@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.17'
+ACMEVER='1.0.18'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -3244,12 +3244,9 @@ manual_mode() {
   echo "your nginx ssl vhost would have the following lines as well as"
   echo "other ssl settings outlined at centminmod.com/nginx_configure_https_ssl_spdy.html"
   cecho "---------------------------------------------------------------------------" $boldgreen
-  echo "if you do not currently have your domain.com.ssl.conf file, you can use"
-  echo "vhost generator at centminmod.com/vhost.php enter domain name and select"
-  echo "self-signed ssl yes and you should see initial openssl command instructions"
-  echo "for recreating the self-signed ssl cert and the domain.com.ssl.conf vhost file"
-  echo "/usr/local/nginx/conf/conf.d/domain.com.ssl.conf then replace paths for"
-  echo "ssl_certificate, ssl_certificate_key and ssl_trusted_certificate with below"
+  echo "step 2 above would of created your /usr/local/nginx/conf/conf.d/domain.com.ssl.conf"
+  echo "you then replace paths for ssl_certificate, ssl_certificate_key and "
+  echo "ssl_trusted_certificate with below ones"
   cecho "---------------------------------------------------------------------------" $boldgreen
   echo
   echo "ssl_certificate      /usr/local/nginx/conf/ssl/domain.com/domain.com-acme${ECC_SUFFIX}.cer;"
