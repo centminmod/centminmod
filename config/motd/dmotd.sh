@@ -205,6 +205,8 @@ gitenv_askupdate() {
     fi
 }
 
+if [[ "$(echo $UID)" = '0' ]]; then
+
 starttime=$(date +%s.%N)
 {
 motd_output
@@ -217,3 +219,5 @@ endtime=$(date +%s.%N)
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
+
+fi

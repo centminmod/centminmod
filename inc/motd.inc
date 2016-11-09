@@ -6,8 +6,13 @@ checkmotd() {
 				echo > /etc/motd
 				service sshd reload
 			fi
-			if [[ -z "$(grep '\/usr\/local\/bin\/dmotd' /etc/profile)" ]]; then
-				echo "if [ -f /usr/local/bin/dmotd ]; then 	/usr/local/bin/dmotd; fi" >> /etc/profile
+			# remove dmotd from /etc/profile to /etc/profile.d/dmotd.sh
+			if [[ "$(grep '\/usr\/local\/bin\/dmotd' /etc/profile)" ]]; then
+				sed -i '/\/usr\/local\/bin\/dmotd/d' /etc/profile
+			fi
+			if [ ! -f /etc/profile.d/dmotd.sh ]; then
+				echo '#!/bin/bash' > /etc/profile.d/dmotd.sh
+				echo "if [[ \"$(echo $UID)\" = '0' && -f /usr/local/bin/dmotd ]]; then 	/usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
 				\cp -f /etc/motd /etc/motd-backup2
 				echo > /etc/motd
 			fi
