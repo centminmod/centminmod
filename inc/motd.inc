@@ -12,7 +12,7 @@ checkmotd() {
 			fi
 			if [ ! -f /etc/profile.d/dmotd.sh ]; then
 				echo '#!/bin/bash' > /etc/profile.d/dmotd.sh
-				echo "if [[ \"$(echo $UID)\" = '0' && -f /usr/local/bin/dmotd ]]; then 	/usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
+				echo "if [[ \"$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then 	/usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
 				\cp -f /etc/motd /etc/motd-backup2
 				echo > /etc/motd
 			fi

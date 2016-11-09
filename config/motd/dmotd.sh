@@ -205,7 +205,7 @@ gitenv_askupdate() {
     fi
 }
 
-if [[ "$(echo $UID)" = '0' ]]; then
+if [[ "$(id -u)" = '0' ]]; then
 
 starttime=$(date +%s.%N)
 {
