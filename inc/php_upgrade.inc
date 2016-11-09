@@ -683,6 +683,17 @@ if [[ "$PHPMSSQL" = [nN] ]]; then
     fi
 fi
 
+if [[ "$PHPIONCUBE" = [yY] ]]; then
+  if [ -f "$(which figlet)" ]; then
+      figlet -ckf standard "Install IonCube Loader"
+  fi
+    if [ -f "${CM_INSTALLDIR}/addons/ioncube.sh" ]; then
+        "${CM_INSTALLDIR}/addons/ioncube.sh"
+    fi
+elif [ -f "${CONFIGSCANDIR}/ioncube.ini" ]; then
+    rm -rf "${CONFIGSCANDIR}/ioncube.ini"
+fi
+
 
 echo
 php --ini
