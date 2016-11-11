@@ -29,7 +29,7 @@ cat > "/usr/local/nginx/conf/503include-main.conf" <<DED
      location @maintenance {
           #if (\$maintenance = 1) {
           rewrite ^ /maintenance.html break;
-          #ry_files /maintenance.html =503;
+          #try_files /maintenance.html =503;
           #}
      }
 DED
