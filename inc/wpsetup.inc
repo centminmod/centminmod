@@ -2319,7 +2319,7 @@ echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
 if [[ "$wpscache" = [nN] ]]; then
-  cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
   2. Settings Menu > Cache Enabler set options and hit Save Changes
   3. Settings Menu > Optimus set options and hit Save Changes
   4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
@@ -2342,7 +2342,7 @@ if [[ "$wpscache" = [nN] ]]; then
   fi
   cecho "------------------------------------------------------------" $boldgreen
 elif [[ "$wpscache" = [yY] ]]; then
-  cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
   2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
   3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
     (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
@@ -2367,7 +2367,7 @@ elif [[ "$wpscache" = [yY] ]]; then
   fi
   cecho "------------------------------------------------------------" $boldgreen
 elif [[ "$wpscache" = 'redis' ]]; then
-  cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
   2. Settings Menu > Nginx Helper Enable Purging set Caching Method to Redis Cache, & set Purging Conditions
   3. Settings Menu > CDN Enabler and set CDN up or disable plugin
   4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
