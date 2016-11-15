@@ -427,6 +427,7 @@ funct_phpconfigure
 	ERR=$?
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP configure ok\n"
@@ -487,6 +488,7 @@ funct_phpconfigure
 	ERR=$?
 	if [ $ERR != 0 ]; then
 		echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP make ok\n"
@@ -521,6 +523,7 @@ fi
 	ERR=$?
 	if [ $ERR != 0 ]; then
 		echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP was installed properly\n"

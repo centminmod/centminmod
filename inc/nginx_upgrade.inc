@@ -565,6 +565,7 @@ fi
             echo "!! Nginx Failed Download !!"
             echo "try again by running centmin.sh menu option 4"
             echo "make sure you type the correct nginx version"
+            echo "report errors on the forums at community.centminmod.com/forums/8/"
             echo
             exit
         fi
@@ -580,6 +581,7 @@ fi
         echo "!! Nginx Tarball Extraction Failed !!"
         echo "try again by running centmin.sh menu option 4"
         echo "make sure you type the correct nginx version"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         rm -rf "$DIR_TMP/nginx-*.tar.gz"
         exit
@@ -611,6 +613,7 @@ funct_nginxconfigure
 	ERR=$?
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
         exit
 	else
     	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
@@ -651,6 +654,7 @@ funct_nginxconfigure
 
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
     	exit
 	else
 	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
@@ -720,6 +724,7 @@ fi
 
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
+        echo "report errors on the forums at community.centminmod.com/forums/8/"
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
