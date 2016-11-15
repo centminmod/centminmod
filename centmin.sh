@@ -195,21 +195,21 @@ CONFIGSCANBASE='/etc/centminmod'
 CONFIGSCANDIR="${CONFIGSCANBASE}/php.d"
 
 if [ ! -d "$CONFIGSCANBASE" ]; then
-	mkdir -p $CONFIGSCANBASE
+  mkdir -p $CONFIGSCANBASE
 fi
 
 if [ ! -d "$CONFIGSCANDIR" ]; then
-	mkdir -p $CONFIGSCANDIR
-	if [ -d /root/centminmod/php.d/ ]; then
-    	cp -a /root/centminmod/php.d/* ${CONFIGSCANDIR}/
+  mkdir -p $CONFIGSCANDIR
+  if [ -d /root/centminmod/php.d/ ]; then
+      cp -a /root/centminmod/php.d/* ${CONFIGSCANDIR}/
     fi
 fi
 
 # MySQL non-tmpfs based tmpdir for MySQL temp files
 if [ ! -d "/home/mysqltmp" ]; then
-	mkdir -p /home/mysqltmp
-	chmod 1777 /home/mysqltmp
-	CHOWNMYSQL=y
+  mkdir -p /home/mysqltmp
+  chmod 1777 /home/mysqltmp
+  CHOWNMYSQL=y
 fi
 
 #####################################################
@@ -294,7 +294,7 @@ NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
 NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
-NGINX_HEADERSMORE='0.30'
+NGINX_HEADERSMORE='0.32'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='1.2.5'
@@ -304,29 +304,29 @@ NGINX_OPENRESTY='y'          # Agentzh's openresty Nginx modules
 ORESTY_MEMCVER='0.17'        # openresty memc module https://github.com/openresty/memc-nginx-module
 ORESTY_SRCCACHEVER='0.31'    # openresty subrequest cache module https://github.com/openresty/srcache-nginx-module
 ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/simpl/ngx_devel_kit
-ORESTY_SETMISCVER='0.30'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
-ORESTY_ECHOVER='0.59'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_SETMISCVER='0.31'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
+ORESTY_ECHOVER='0.60'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.13'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.4'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.7'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.15'       # openresty https://github.com/openresty/lua-resty-mysql
-ORESTY_LUAREDISVER='0.23'       # openresty https://github.com/openresty/lua-resty-redis
-ORESTY_LUADNSVER='0.14'         # openresty https://github.com/openresty/lua-resty-dns
-ORESTY_LUAUPLOADVER='0.09'      # openresty https://github.com/openresty/lua-resty-upload
+ORESTY_LUAMYSQLVER='0.17'       # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAREDISVER='0.26'       # openresty https://github.com/openresty/lua-resty-redis
+ORESTY_LUADNSVER='0.18'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUAUPLOADVER='0.10'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
 ORESTY_LUALOCKVER='0.04'        # openresty https://github.com/openresty/lua-resty-lock
 ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.10'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.6'     # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUAUPSTREAMVER='0.05'       # openresty https://github.com/openresty/lua-upstream-nginx-module
+ORESTY_LUARESTYCOREVER='0.1.9'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUAUPSTREAMVER='0.06'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
 ORESTY_LUACOOKIEVER='master'       # cloudflare openresty https://github.com/cloudflare/lua-resty-cookie
 ORESTY_LUAUPSTREAMCACHEVER='0.1.1' # cloudflare openresty https://github.com/cloudflare/lua-upstream-cache-nginx-module
@@ -342,7 +342,7 @@ PHPPCNTL=y                    # Disable or Enable PHP Process Control extension
 PHPINTL=y                    # Disable or Enable PHP intl extension
 PHPRECODE=n                   # Disable or Enable PHP Recode extension
 PHPSNMP=y                     # Disable or Enable PHP SNMP extension
-SHORTCUTS=y	      # shortcuts
+SHORTCUTS=y       # shortcuts
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
 # If MDB_YUMREPOINSTALL=y and MDB_INSTALL=n then MDB_VERONLY version 
@@ -350,7 +350,7 @@ SHORTCUTS=y	      # shortcuts
 # YUM Repo will install whatever is latest MariaDB 5.2.x version available via the YUM REPO
 
 MDB_INSTALL=n                # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
-MDB_YUMREPOINSTALL=y		  # Install MariaDB 5.5 via CentOS YUM Repo
+MDB_YUMREPOINSTALL=y      # Install MariaDB 5.5 via CentOS YUM Repo
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -397,7 +397,7 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.38'          # NO longer used/ignored
+PCRE_VERSION='8.39'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
@@ -430,7 +430,7 @@ ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/Zend
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'       # Use this version of Python
-SIEGE_VERSION='4.0.1'
+SIEGE_VERSION='4.0.2'
 
 WGETOPT='-cnv --no-dns-cache -4'
 ###############################################################
@@ -452,10 +452,10 @@ ATRPMSREPO_DISABLE=y
 # enable with CUSTOM_CURLRPM=y
 # use at own risk as it can break the system
 # info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
-CUSTOM_CURLRPM=n
-CUSTOM_CURLRPMVER='7.46.0-2.0'       # custom curl/libcurl version
-CUSTOM_CURLLIBSSHVER='1.6.0-3.0'     # libssh2 version
-CUSTOM_CURLRPMCARESVER='1.10.0-5.0'  # c-ares version
+CUSTOM_CURLRPM='n'
+CUSTOM_CURLRPMVER='7.47.1-2.0'       # custom curl/libcurl version
+CUSTOM_CURLLIBSSHVER='1.6.0-4.0'     # libssh2 version
+CUSTOM_CURLRPMCARESVER='1.10.0-6.0'  # c-ares version
 CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
@@ -615,17 +615,17 @@ cpcheck
 if [ ! -f /etc/centminmod-release ];then
 echo "$SCRIPT_VERSION" > /etc/centminmod-release
 else
-	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release)" ]]; then
-	echo "$SCRIPT_VERSION" > /etc/centminmod-release
-	fi
+  if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release)" ]]; then
+  echo "$SCRIPT_VERSION" > /etc/centminmod-release
+  fi
 fi
 
 if [ -f /etc/centminmod-versionlog ];then
-	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-versionlog)" ]]; then
-	echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
-	fi
+  if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-versionlog)" ]]; then
+  echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
+  fi
 else
-	echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
+  echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
 fi
 
 if [ ! -f /usr/bin/cminfo_updater ]; then
@@ -651,9 +651,9 @@ fi
 #
 ###############################################################
 KEYPRESS_PARAM='-s -n1 -p'   # Read a keypress without hitting ENTER.
-		# -s means do not echo input.
-		# -n means accept only N characters of input.
-		# -p means echo the following prompt before reading input
+    # -s means do not echo input.
+    # -n means accept only N characters of input.
+    # -p means echo the following prompt before reading input
 ASKCMD="read $KEYPRESS_PARAM "
 # MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
@@ -794,11 +794,11 @@ fi
 
 if [ ${ARCH} == 'x86_64' ];
 then
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
         ASK "Would you like to exclude installation of 32bit Yum packages? (Recommended for 64bit CentOS) [y/n] "
-	else
-	   key='y'
-	fi #unattended
+  else
+     key='y'
+  fi #unattended
     if [[ "$key" = [yY] ]];
     then
         \cp -f /etc/yum.conf /etc/yum.bak
@@ -820,17 +820,17 @@ EOF
     fi
 fi
 
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
 ASK "Would you like to secure /tmp and /var/tmp? (Highly recommended) [y/n] "   
-	else
-	key='y'
-	fi #unattended
+  else
+  key='y'
+  fi #unattended
 {
 if [[ "$key" = [yY] ]]; then
 echo "Centmin Mod secure /tmp # `date`"
-	echo "*************************************************"
-	cecho "* Secured /tmp and /var/tmp" $boldgreen
-	echo "*************************************************"
+  echo "*************************************************"
+  cecho "* Secured /tmp and /var/tmp" $boldgreen
+  echo "*************************************************"
 
 # centos 7 + openvz /tmp workaround
 if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
@@ -871,13 +871,13 @@ elif [[ ! -f /proc/user_beancounters ]]; then
     # total memory size is greater than 8GB
     # will give /tmp a size equal to 1/2 total memory
     if [[ "$TOTALMEM" -ge '8100001' ]]; then
-	   rm -rf /tmp
-	   mkdir -p /tmp
-	   mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
-	   chmod 1777 /tmp
-	   echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
-	   rm -rf /var/tmp
-	   ln -s /tmp /var/tmp
+     rm -rf /tmp
+     mkdir -p /tmp
+     mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+     chmod 1777 /tmp
+     echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+     rm -rf /var/tmp
+     ln -s /tmp /var/tmp
     elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
@@ -923,11 +923,11 @@ fi
 
 #yuminstall
 
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
 ASK "Would you like to set the server localtime? [y/n] "  
-	else
-	key='y'
-	fi #unattended 
+  else
+  key='y'
+  fi #unattended 
 if [[ "$key" = [yY] ]];
 then
     echo "*************************************************"
@@ -956,13 +956,13 @@ cecho "it for both personal and commercial use as licensed under the GPL." $bold
 echo " "
 cecho "Please read the included readme.txt before using this script." $boldmagenta
 echo " "
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
 ASK "Would you like to continue? [y/n] "   
 if [[ "$key" = [nN] ]];
 then
     exit 0
 fi
-	fi #unattended 
+  fi #unattended 
 
 # Set LIBDIR
 if [ ${ARCH} == 'x86_64' ];
@@ -975,14 +975,14 @@ fi
 #DIR_TMP="/svr-setup"
 #if [ -a "$DIR_TMP" ];
 #then
-#	ASK "It seems that you have run this script before, would you like to start from after setting the timezone? [y/n] "
-#	if [[ "$key" = [nN] ]];
-#	then
-#		run_once
-#	fi
+# ASK "It seems that you have run this script before, would you like to start from after setting the timezone? [y/n] "
+# if [[ "$key" = [nN] ]];
+# then
+#   run_once
+# fi
 #else
-#	mkdir $DIR_TMP
-#	run_once
+# mkdir $DIR_TMP
+# run_once
 #fi
 
 if [ ! -f "${DIR_TMP}/securedtmp.log" ]; then
@@ -1206,7 +1206,7 @@ xcacheinstall_ask
 #ASK "Install APC? (By default uses 32MB RAM) [y/n] "
 # if ZOPCACHEDFT override enabled = yY then skip APC Cache install
 if [[ "$APCINSTALL" = [yY] && "$ZOPCACHEDFT" = [nN] ]]; then
-	funct_apcsourceinstall
+  funct_apcsourceinstall
 fi
 
 # if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5, 5.6 or 5.7
@@ -1235,26 +1235,26 @@ fi
 
 # if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
 if [[ "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
-	zopcache_initialini
+  zopcache_initialini
 fi
 
 # igbinary still needed for libmemcached PHP extension if ZOPCACHE=yY
 if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]]; then
-	funct_igbinaryinstall
+  funct_igbinaryinstall
 fi
 
 if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
-	if [[ ! -f /etc/init.d/postfix && ! -f /etc/init.d/sendmail ]]; then
-		echo "*************************************************"
-		cecho "* Installing sendmail" $boldgreen
-		echo "*************************************************"
-		yum${CACHESKIP} -y -q install sendmail mailx sendmail-cf
-		chkconfig --levels 235 sendmail on
-		funct_sendmailmc
-		echo "*************************************************"
-		cecho "* sendmail installed" $boldgreen
-		echo "*************************************************"
-	elif [[ -f /etc/init.d/postfix ]]; then
+  if [[ ! -f /etc/init.d/postfix && ! -f /etc/init.d/sendmail ]]; then
+    echo "*************************************************"
+    cecho "* Installing sendmail" $boldgreen
+    echo "*************************************************"
+    yum${CACHESKIP} -y -q install sendmail mailx sendmail-cf
+    chkconfig --levels 235 sendmail on
+    funct_sendmailmc
+    echo "*************************************************"
+    cecho "* sendmail installed" $boldgreen
+    echo "*************************************************"
+  elif [[ -f /etc/init.d/postfix ]]; then
         if [ ! -f /bin/mail ]; then
             yum${CACHESKIP} -y -q install mailx
         fi
@@ -1271,7 +1271,7 @@ if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
         echo "*************************************************"
         cecho "sendmail already detected, sendmail install aborted" $boldgreen
         echo "*************************************************"
-	fi
+  fi
 fi
 
 if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [yY] ]]; then
@@ -1455,9 +1455,9 @@ memcacheadmin
     echo "*************************************************"
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] || "$UNATTENDED" == [yY] ]]; then
-	securemysql
+  securemysql
 else
-	securemysql
+  securemysql
 fi
 
     echo "*************************************************"
@@ -1514,7 +1514,7 @@ echo "********************************"
 function funct_installiopingcentmin {
 
 echo ""
-	cecho "--------------------------------------------------------" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
 echo "Where do you want the iopingcentmin.sh stored ? Enter path to download directory (i.e. /root or /usr/local/src): "
 read iopingdownloadpath
 
@@ -1522,33 +1522,33 @@ read iopingdownloadpath
 
 if [ -s iopingcentmin.sh ]; then
 
-	echo ""
-	echo "iopingcentmin.sh [found]"
+  echo ""
+  echo "iopingcentmin.sh [found]"
 
-	echo ""
-	echo "Do you want to download latest iopincentmin.sh version ? [y/n]: "
-	read iopingdownloadupdate
+  echo ""
+  echo "Do you want to download latest iopincentmin.sh version ? [y/n]: "
+  read iopingdownloadupdate
 
-	if [[ $iopingdownloadupdate = [yY] ]]; then
+  if [[ $iopingdownloadupdate = [yY] ]]; then
 
-	rm -rf iopingcentmin.sh
-	$DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
+  rm -rf iopingcentmin.sh
+  $DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
 
-	echo ""
-	cecho "--------------------------------------------------------" $boldyellow
-	echo "script installed at $iopingdownloadpath/iopingcentmin.sh"
-	echo "to manually run iopingcentmin.sh type:"
-	echo "bash $iopingdownloadpath/iopingcentmin.sh"
-	cecho "--------------------------------------------------------" $boldyellow
-	echo ""
+  echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  echo "script installed at $iopingdownloadpath/iopingcentmin.sh"
+  echo "to manually run iopingcentmin.sh type:"
+  echo "bash $iopingdownloadpath/iopingcentmin.sh"
+  cecho "--------------------------------------------------------" $boldyellow
+  echo ""
 
-	exit
+  exit
 
-	else
+  else
 
-	exit
+  exit
 
-	fi
+  fi
 
   else
   echo "Error: iopingcentmin.sh not found!!! Downloading now......"
@@ -1558,13 +1558,13 @@ fi
 
 chmod +x iopingcentmin.sh
 
-	echo ""
-	cecho "--------------------------------------------------------" $boldyellow
-	echo "script installed at $iopingdownloadpath/iopingcentmin.sh"
-	echo "to manually run iopingcentmin.sh type:"
-	echo "bash $iopingdownloadpath/iopingcentmin.sh"
-	cecho "--------------------------------------------------------" $boldyellow
-	echo ""
+  echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  echo "script installed at $iopingdownloadpath/iopingcentmin.sh"
+  echo "to manually run iopingcentmin.sh type:"
+  echo "bash $iopingdownloadpath/iopingcentmin.sh"
+  cecho "--------------------------------------------------------" $boldyellow
+  echo ""
 
 
 }
@@ -1576,53 +1576,53 @@ SELINUXCHECK=`grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2`
 
 if [[ $SELINUXCHECK == 'enforcing' ]]; then
 
-	echo ""
+  echo ""
 cecho "---------------------------------------------" $boldyellow
-	echo "Checking SELinux status...."
-	echo "SELinux enabled"
-	echo ""
-	read -ep "Do you want to disable SELinux ? [y/n]: " disableselinux
+  echo "Checking SELinux status...."
+  echo "SELinux enabled"
+  echo ""
+  read -ep "Do you want to disable SELinux ? [y/n]: " disableselinux
 cecho "---------------------------------------------" $boldyellow
-	echo ""
+  echo ""
 
-	if [[ $disableselinux == [yY] ]]; then
+  if [[ $disableselinux == [yY] ]]; then
 
-	echo ""
+  echo ""
 cecho "---------------------------------------------" $boldyellow
-	echo "Disabling SELinux..."
+  echo "Disabling SELinux..."
 
-	sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
+  sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
     sed -i 's/SELINUX=permissive/SELINUX=disabled/g' $SELINUXCONFIGFILE
-	setenforce 0
+  setenforce 0
 
-	echo ""
+  echo ""
 cecho "---------------------------------------------" $boldyellow
-	echo "checking $SELINUXCONFIGFILE"
+  echo "checking $SELINUXCONFIGFILE"
 
-	cat $SELINUXCONFIGFILE | grep '^SELINUX='
+  cat $SELINUXCONFIGFILE | grep '^SELINUX='
 
 cecho "---------------------------------------------" $boldyellow
-	echo ""
+  echo ""
 
-	exit
+  exit
 
-	else
+  else
 
-	exit
+  exit
 
-	fi
+  fi
 
 else
 
-	echo ""
+  echo ""
 cecho "---------------------------------------------" $boldyellow
-	echo "checking $SELINUXCONFIGFILE"
-	echo "SELinux already disabled"
-	echo "SELINUX=$SELINUXCHECK"
+  echo "checking $SELINUXCONFIGFILE"
+  echo "SELinux already disabled"
+  echo "SELINUX=$SELINUXCHECK"
 cecho "---------------------------------------------" $boldyellow
-	echo ""
+  echo ""
 
-	exit
+  exit
 
 fi
 
@@ -1631,7 +1631,7 @@ fi
 function funct_showtempfile {
 
     echo "*************************************************"
-	cat "$TMP_MSGFILE"
+  cat "$TMP_MSGFILE"
     echo "*************************************************"
 
 }
@@ -1649,8 +1649,8 @@ TMP_MSGFILE="$DIR_TMP/msglogs/$RANDOM.msg"
 }
 
 function cleanup_msg {
-	rm -f "$TMP_MSGFILE"
-	exit 1
+  rm -f "$TMP_MSGFILE"
+  exit 1
 }
 
 # http://linuxcommand.org/wss0160.php
