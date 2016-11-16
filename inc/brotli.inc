@@ -98,7 +98,8 @@ ngxbrotli_download() {
     else
       BROTLI_CFLAG=""
     fi
-		echo "download ngx_brotli module"
+    echo "BROTLI_CFLAG=$BROTLI_CFLAG"
+    echo "download ngx_brotli module"
 		cd $DIR_TMP
 
 		NGXBROTLILINK='https://github.com/google/ngx_brotli'

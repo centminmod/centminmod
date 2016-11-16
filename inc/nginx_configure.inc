@@ -195,64 +195,6 @@ else
 fi
 
 
-if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
-	libbroti_install
-	ngxbrotli_download
-	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
-		BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
-		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-			echo "load_module \"modules/ngx_http_brotli_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-			echo "load_module \"modules/ngx_http_brotli_static_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
-		fi
-	else
-		BROTLIOPT=' --add-module=../ngx_brotli'
-		# if NGXDYNAMIC_BROTLI='y' was previously set with nginx 1.9.11+, then the nginx
-		# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
-		# created
-		# however, it seems if you then later recompile nginx with NGXDYNAMIC_BROTLI='y'
-		# the old dynamic module would still be left in nginx dynamic modules directory
-		# this is a check for that old dynamic module and if it exists, remove it
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
-		fi
-	fi
-	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
-		export NGX_BROTLI_STATIC_MODULE_ONLY=1
-	fi
-	sed -i 's|^ #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
-else
-	BROTLIOPT=""
-	# disable include file if exists
-	sed -i 's|^ include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
-		fi
-		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
-			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
-		fi
-fi
-
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
 	if [[ "$NGINX_DEBUG" = [yY] ]]; then
@@ -1606,9 +1548,63 @@ elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGX
 	CLANG='n'
 fi
 
-# if [[ "$(uname -m)" != 'x86_64' ]]; then
-# 	CLANG='n'
-# fi
+if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+	libbroti_install
+	ngxbrotli_download
+	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
+		BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
+		if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+			echo "load_module \"modules/ngx_http_brotli_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+			echo "load_module \"modules/ngx_http_brotli_static_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
+		fi
+	else
+		BROTLIOPT=' --add-module=../ngx_brotli'
+		# if NGXDYNAMIC_BROTLI='y' was previously set with nginx 1.9.11+, then the nginx
+		# dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
+		# created
+		# however, it seems if you then later recompile nginx with NGXDYNAMIC_BROTLI='y'
+		# the old dynamic module would still be left in nginx dynamic modules directory
+		# this is a check for that old dynamic module and if it exists, remove it
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
+		fi
+	fi
+	if [[ "$NGINX_LIBBROTLISTATIC" = [yY] ]]; then
+		export NGX_BROTLI_STATIC_MODULE_ONLY=1
+	fi
+	sed -i 's|^ #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+else
+	BROTLIOPT=""
+	# disable include file if exists
+	sed -i 's|^ include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_filter_module.so.old
+		fi
+		if [ -f /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old ]; then
+			rm -rf /usr/local/nginx/modules/ngx_http_brotli_static_module.so.old
+		fi
+fi
 
 if [[ -d "${DIR_TMP}/nginx-${NGINX_VERSION}" && ! "$ngver" ]]; then
 	cd "${DIR_TMP}/nginx-${NGINX_VERSION}"
