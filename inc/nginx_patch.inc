@@ -17,13 +17,13 @@ ngxopenresty_patch() {
     echo "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src"
     if [[ "$ORESTY_REDISVERPARSED" -le '13' && -f "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch" && -z $(grep -ro 1011006 "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src") ]]; then
       pushd "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src"
-      echo "patch -p1 < $CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
+      echo "patch < $CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
       patch < "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
       popd
     fi
     if [[ "$ORESTY_MEMCVERPARSED" -le '17' && -f "$CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch" && -z $(grep -ro 1011006 "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src") ]]; then
       pushd "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src"
-      echo "patch -p1 < $CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
+      echo "patch < $CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
       patch < "$CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
       popd
     fi
