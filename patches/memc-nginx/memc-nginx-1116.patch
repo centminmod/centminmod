@@ -1,0 +1,17 @@
+--- ngx_http_memc_util.c        2016-05-15 23:10:17.000000000 +0000
++++ ngx_http_memc_util.c.new    2016-11-16 14:54:10.669288463 +0000
+@@ -141,12 +141,14 @@
+             continue;
+         }
+ 
++#if (nginx_version < 1011006)
+         if (uscfp[i]->default_port && url->default_port
+             && uscfp[i]->default_port != url->default_port)
+         {
+             dd("upstream_add: default_port not match");
+             continue;
+         }
++#endif
+ 
+         return uscfp[i];
+     }

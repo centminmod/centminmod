@@ -1,3 +1,28 @@
+ngxopenresty_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+  fi
+  # apply patches for nginx => 1.11.6
+  if [[ "$NGINX_OPENRESTY" = [yY] && "$DETECT_NGXVER" -ge '1011006' ]]; then
+    ORESTY_REDISVERPARSED=$(echo $ORESTY_REDISVER | sed -e 's|\0.||' -e 's|rc1||' -e 's|rc2||' -e 's|rc3||' -e 's|rc4||')
+    ORESTY_MEMCVERPARSED=$(echo $ORESTY_MEMCVER | sed -e 's|\0.||' -e 's|rc1||' -e 's|rc2||' -e 's|rc3||' -e 's|rc4||')
+    if [[ "$ORESTY_REDISVERPARSED" -le '13' && -f "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch" && -z $(grep -ro 1011006 "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src") ]]; then
+      pushd "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src"
+      echo "patch -p1 < $CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
+      patch -p1 < "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
+      popd
+    fi
+    if [[ "$ORESTY_MEMCVERPARSED" -le '17' && -f "$CUR_DIR/patches/redis2-nginx/memc-nginx-1116.patch" && -z $(grep -ro 1011006 "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src") ]]; then
+      pushd "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src"
+      echo "patch -p1 < $CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
+      patch -p1 < "$CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
+      popd
+    fi
+  fi
+}
+
 patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
@@ -6,7 +31,11 @@ patchnginx() {
   DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
   # detect nginx <=1.11.3 or => 1.11.0 as 1.11.4+ has fix for openssl 1.1 so no patching needed
   # http://hg.nginx.org/nginx/rev/1891b2892b68
-  DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+  fi
   if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECT_NGXVER" -le '1011003' && "$DETECT_NGXVER" -ge '1011000' ]]; then
     if [[ -f "$CUR_DIR/patches/nginx/openssl-110pre6.patch" && -f "$CUR_DIR/patches/nginx/openssl-110ticket.patch" ]]; then
       if [ -f "$(which figlet)" ]; then
@@ -100,7 +129,11 @@ patchnginx() {
      echo "Cloudflare Nginx Dynamic TLS patch"
      echo "https://github.com/cloudflare/sslconfig/raw/master/patches/nginx__dynamic_tls_records.patch"
      echo "######################################################################"
-     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+     if [ "$ngver" ]; then
+       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+     else
+       DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+     fi
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records.patch'
      elif [[ "$DETECT_NGXVER" -ge '1011005' ]]; then
