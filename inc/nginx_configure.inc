@@ -84,6 +84,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		DEVELKITDIR=`ls -rt $DIR_TMP | grep ngx_devel_kit | egrep -v 'gz|zip' | tail -1`
 		ECHODIR=`ls -rt $DIR_TMP | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1`
 		REDISDIR=`ls -rt $DIR_TMP | grep redis2-nginx-module | egrep -v 'gz|zip' | tail -1`
+		ngxopenresty_patch
 		MEMCOPT=" --add-module=../${MEMCDIR}"
 		SRCCACHEOPT=" --add-module=../${SRCACHEDIR}"
 		SETMISCOPT=" --add-module=../${SETMISCDIR}"
