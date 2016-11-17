@@ -165,12 +165,12 @@ rpm -ql python27 python27-devel python27-pip python27-setuptools python27-virtua
 ###########################################################################
 case $1 in
   install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   installpythonfuct
 } 2>&1 | tee ${CENTMINLOGDIR}/python27_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/python27_install_${DT}.log

@@ -129,7 +129,7 @@ install() {
 }
 
 ########################################################################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 install
 
@@ -137,7 +137,7 @@ echo
 cecho "devtoolset-4 installed..." $boldyellow
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_devtoolset-4_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_devtoolset-4_install_${DT}.log

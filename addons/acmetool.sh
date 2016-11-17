@@ -681,11 +681,11 @@ EVS
   cecho "---------------------------------------------------------------" $boldyellow
   cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
   
-  dhparamstarttime=$(date +%s.%N)
+  dhparamstarttime=$(TZ=UTC date +%s.%N)
   
   openssl dhparam -out dhparam.pem 2048
   
-  dhparamendtime=$(date +%s.%N)
+  dhparamendtime=$(TZ=UTC date +%s.%N)
   DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
   cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
   popd
@@ -775,11 +775,11 @@ echo
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
 
-dhparamstarttime=$(date +%s.%N)
+dhparamstarttime=$(TZ=UTC date +%s.%N)
 
 openssl dhparam -out dhparam.pem 2048
 
-dhparamendtime=$(date +%s.%N)
+dhparamendtime=$(TZ=UTC date +%s.%N)
 DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
 cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 

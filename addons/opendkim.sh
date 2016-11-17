@@ -126,7 +126,7 @@ fi # if /etc/opendkim.conf exists
 }
 ###########################################################################
 
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 if [[ "$1" = 'clean' ]]; then
 	CLEANONLY=1
@@ -146,7 +146,7 @@ fi
 opendkimsetup
 } 2>&1 | tee "${CENTMINLOGDIR}/opendkim_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/opendkim_${DT}.log"

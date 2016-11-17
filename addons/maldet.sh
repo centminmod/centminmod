@@ -206,7 +206,7 @@ fi
 	time freshclam
 }
 #########################################################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 maldetinstall
 clamavinstall
@@ -215,7 +215,7 @@ echo
 cecho "maldet + clamav installed..." $boldyellow
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_maldet_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_maldet_install_${DT}.log

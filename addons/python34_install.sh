@@ -92,7 +92,7 @@ return
 }
 
 ###########################################################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -152,7 +152,7 @@ rpm -ql python34u python34u-devel python34u-pip python34u-setuptools python34u-t
 
 } 2>&1 | tee ${CENTMINLOGDIR}/python34-install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/python34-install_${DT}.log

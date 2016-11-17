@@ -183,7 +183,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 fi # CUSTOM_CURLRPM=y
 }
 ##############################################################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 curlrpm
 
@@ -195,7 +195,7 @@ echo " yum update --enablerepo=city-fan.org --disableplugin=priorities"
 echo
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/centminmod_customcurl_rpms_${DT}.log"

@@ -497,7 +497,7 @@ yum clean all
 opt_tcp
 
 if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/unzip || ! -f /usr/bin/applydeltarpm ]]; then
-  firstyuminstallstarttime=$(date +%s.%N)
+  firstyuminstallstarttime=$(TZ=UTC date +%s.%N)
   echo
   echo "installing yum packages..."
   echo
@@ -537,7 +537,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
   fi
   touch ${INSTALLDIR}/curlinstall_yum.txt
-  firstyuminstallendtime=$(date +%s.%N)
+  firstyuminstallendtime=$(TZ=UTC date +%s.%N)
 fi
 
 if [ -f /etc/selinux/config ]; then
@@ -600,23 +600,23 @@ cminstall() {
 cd $INSTALLDIR
   if [[ "$GITINSTALLED" = [yY] ]]; then
     if [[ ! -f "${INSTALLDIR}/centminmod" ]]; then
-      getcmstarttime=$(date +%s.%N)
+      getcmstarttime=$(TZ=UTC date +%s.%N)
       echo "git clone Centmin Mod repo..."
       time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
       cd centminmod
       chmod +x centmin.sh
-      getcmendtime=$(date +%s.%N)   
+      getcmendtime=$(TZ=UTC date +%s.%N)   
     fi
   else
     if [[ ! -f "${DOWNLOAD}" ]]; then
-    getcmstarttime=$(date +%s.%N)
+    getcmstarttime=$(TZ=UTC date +%s.%N)
     echo "downloading Centmin Mod..."
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
       wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
-    getcmendtime=$(date +%s.%N)
+    getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*
     unzip ${DOWNLOAD}
     fi

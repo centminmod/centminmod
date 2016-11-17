@@ -207,14 +207,14 @@ gitenv_askupdate() {
 
 if [[ "$(id -u)" = '0' ]]; then
 
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 motd_output
 ngxver_checker
 gitenv_askupdate
 } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"

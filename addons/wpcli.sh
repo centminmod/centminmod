@@ -127,26 +127,26 @@ fi
 
 case "$1" in
 install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 echo "installing..."
 installwpcli
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
 echo "Total WPCLI Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_wpcli_install_${DT}.log
 ;;
 update)
-ustarttime=$(date +%s.%N)
+ustarttime=$(TZ=UTC date +%s.%N)
 {
 echo "updating..."
 updatewpcli
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_wpcli_update_${DT}.log
 
-uendtime=$(date +%s.%N)
+uendtime=$(TZ=UTC date +%s.%N)
 
 UINSTALLTIME=$(echo "scale=2;$uendtime - $ustarttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_wpcli_update_${DT}.log

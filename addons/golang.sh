@@ -132,12 +132,12 @@ go_install() {
 ###########################################################################
 case $1 in
 	install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 		go_install
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_goinstall_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_goinstall_${DT}.log

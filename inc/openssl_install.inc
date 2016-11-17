@@ -131,7 +131,7 @@ installopenssl() {
         BORINGSSL_SWITCH='n'
     fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
-        libresslinstallstarttime=$(date +%s.%N)
+        libresslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling LibreSSL"
@@ -197,14 +197,14 @@ installopenssl() {
             CLANG_CFLAGOPT=""
             CFLAGS=""            
         fi                
-        libresslinstallendtime=$(date +%s.%N)
+        libresslinstallendtime=$(TZ=UTC date +%s.%N)
         LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
     elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
-        opensslinstallstarttime=$(date +%s.%N)
+        opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling OpenSSL"
@@ -261,14 +261,14 @@ installopenssl() {
         else
             rm -rf "${STATICLIBSSL}/lib64"
         fi
-        opensslinstallendtime=$(date +%s.%N)
+        opensslinstallendtime=$(TZ=UTC date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
     elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
-        boringsslinstallstarttime=$(date +%s.%N)
+        boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling BoringSSL"
@@ -299,7 +299,7 @@ installopenssl() {
         ls -lah /svr-setup/boringssl/.openssl/lib
         ls -lah /svr-setup/boringssl/.openssl
 
-        boringsslinstallendtime=$(date +%s.%N)
+        boringsslinstallendtime=$(TZ=UTC date +%s.%N)
         BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log

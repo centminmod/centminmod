@@ -187,27 +187,27 @@ updatemsg() {
 ############################################################################
 case "$1" in
 	install )
-		starttime=$(date +%s.%N)
+		starttime=$(TZ=UTC date +%s.%N)
 		{
 		modsec_install
 		setupmsg
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_modsecuriy_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_modsecuriy_install_${DT}.log
 echo "Total Modsecurity Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_modsecuriy_install_${DT}.log
 		;;
 	update )
-		starttime=$(date +%s.%N)
+		starttime=$(TZ=UTC date +%s.%N)
 		{
 		IS_UPDATE=y
 		modsec_install
 		updatemsg
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_modsecuriy_update_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_modsecuriy_update_${DT}.log

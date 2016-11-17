@@ -339,7 +339,7 @@ fi
 ###########################################################################
 case $1 in
 	install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 		preyum
 		installnodejs_new
@@ -347,7 +347,7 @@ starttime=$(date +%s.%N)
 		nginxruby
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log

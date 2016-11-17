@@ -1267,13 +1267,13 @@ else
     fi
 fi
 
-ngxinstallstarttime=$(date +%s.%N)
+ngxinstallstarttime=$(TZ=UTC date +%s.%N)
 {    
 ngxinstallmain
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 wait
 
-ngxinstallendtime=$(date +%s.%N)
+ngxinstallendtime=$(TZ=UTC date +%s.%N)
 NGXINSTALLTIME=$(echo "scale=2;$ngxinstallendtime - $ngxinstallstarttime"|bc )
 
 echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
@@ -1284,7 +1284,7 @@ mariadbinstallfunct
 mysqlinstallfunct
 
 if [[ "$PHP_INSTALL" = [yY] ]]; then
-    phpinstallstarttime=$(date +%s.%N)
+    phpinstallstarttime=$(TZ=UTC date +%s.%N)
     echo "*************************************************"
     cecho "* Installing PHP" $boldgreen
     echo "*************************************************"
@@ -1430,7 +1430,7 @@ funct_logphprotate
     echo "*************************************************"
     cecho "* PHP installed" $boldgreen
     echo "*************************************************"
-    phpinstallendtime=$(date +%s.%N)
+    phpinstallendtime=$(TZ=UTC date +%s.%N)
     PHPINSTALLTIME=$(echo "scale=2;$phpinstallendtime - $phpinstallstarttime"|bc )
 
     echo "" >> "${CENTMINLOGDIR}/centminmod_phpinstalltime_${DT}.log"
@@ -1805,7 +1805,7 @@ trap cleanup_msg SIGHUP SIGINT SIGTERM
 #########################################################
 
 if [[ "$1" = 'install' ]]; then
-    starttime=$(date +%s.%N)
+    starttime=$(TZ=UTC date +%s.%N)
     INITIALINSTALL='y'
 
     # skip cache update check for first time install YUM runs
@@ -1835,13 +1835,13 @@ if [[ "$1" = 'install' ]]; then
     exit
     fi
     
-    dlstarttime=$(date +%s.%N)
+    dlstarttime=$(TZ=UTC date +%s.%N)
     {    
     alldownloads
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
     wait
 
-    dlendtime=$(date +%s.%N)
+    dlendtime=$(TZ=UTC date +%s.%N)
     DOWNLOADTIME=$(echo "scale=2;$dlendtime - $dlstarttime"|bc )
 
     echo "" >> "${CENTMINLOGDIR}/centminmod_downloadtimes_${DT}.log"
@@ -1878,7 +1878,7 @@ EOF
         fi
     fi
     
-    endtime=$(date +%s.%N)
+    endtime=$(TZ=UTC date +%s.%N)
     INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
     echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
     echo "Total Centmin Mod Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
@@ -1927,7 +1927,7 @@ else
         case "$option" in
         1|install)
             CM_MENUOPT=1
-            starttime=$(date +%s.%N)
+            starttime=$(TZ=UTC date +%s.%N)
             INITIALINSTALL='y'
 
             # skip cache update check for first time install YUM runs
@@ -1988,7 +1988,7 @@ EOF
                 fi
             fi
             
-            endtime=$(date +%s.%N)
+            endtime=$(TZ=UTC date +%s.%N)
             INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
             echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
             echo "Total Centmin Mod Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install.log"
@@ -2029,7 +2029,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=4
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         diskalert
@@ -2056,7 +2056,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
         echo "Total Nginx Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
@@ -2070,7 +2070,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=5
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         diskalert
@@ -2097,7 +2097,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
         echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
@@ -2111,7 +2111,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=6
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2131,7 +2131,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
         echo "Total Xcache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_reinstall.log"
@@ -2144,7 +2144,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=7
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2164,7 +2164,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
         echo "Total APC Cache Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_reinstall.log"
@@ -2177,7 +2177,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=8
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2199,7 +2199,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
         echo "Total Xcache Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_xcache_install.log"
@@ -2212,7 +2212,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=9
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2232,7 +2232,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log"
         echo "Total APC Cache Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_apc_install.log"
@@ -2245,7 +2245,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=10
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2265,7 +2265,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
         echo "Total Memcached Re-Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
@@ -2302,7 +2302,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=15
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2322,7 +2322,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
         echo "Total ImagicK PHP Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
@@ -2341,7 +2341,7 @@ EOF
         fi
         # set_logdate
         CM_MENUOPT=17
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         
         centminlog
         {
@@ -2366,7 +2366,7 @@ EOF
             fi
         fi
         
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
         echo "Total Multi-Threaded Compression Tools Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
@@ -2427,7 +2427,7 @@ EOF
         # set_logdate
         CM_MENUOPT=21
         UALL='y'
-        starttime=$(date +%s.%N)
+        starttime=$(TZ=UTC date +%s.%N)
         centminlog
         {
         
@@ -2474,7 +2474,7 @@ EOF
             fi
         fi
 
-        endtime=$(date +%s.%N)
+        endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
         echo "Total Update Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"

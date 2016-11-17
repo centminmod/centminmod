@@ -1150,7 +1150,7 @@ fi
 }
 
 #################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
     if [ "$1" ]; then
         tools_nginxupgrade
@@ -1161,7 +1161,7 @@ starttime=$(date +%s.%N)
         echo
     fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
         echo "" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log
         echo "Total Nginx Update Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginxupdate.sh.log

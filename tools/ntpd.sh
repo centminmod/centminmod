@@ -47,12 +47,12 @@ fi
 
 ######################################################
 if [ ! -f /proc/user_beancounters ]; then
-  starttime=$(date +%s.%N)
+  starttime=$(TZ=UTC date +%s.%N)
   {
   setup_ntpd
   } 2>&1 | tee "${CENTMINLOGDIR}/tools_ntpdsh-${DT}.log"
 
-  endtime=$(date +%s.%N)
+  endtime=$(TZ=UTC date +%s.%N)
   INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
   echo "" >> "${CENTMINLOGDIR}/tools_ntpdsh-${DT}.log"
   echo "tools/ntpd.sh Run Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/tools_ntpdsh-${DT}.log"

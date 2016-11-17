@@ -355,34 +355,34 @@ phpext() {
 
 case "$1" in
 	install )
-		starttime=$(date +%s.%N)
+		starttime=$(TZ=UTC date +%s.%N)
 		{
 		do_continue
 		install
 		phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 		;;
 	update )
-		starttime=$(date +%s.%N)
+		starttime=$(TZ=UTC date +%s.%N)
 		{
 		do_continue
 		update
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 		;;		
 	php )
-		starttime=$(date +%s.%N)
+		starttime=$(TZ=UTC date +%s.%N)
 		{
 		# php_quite=$2
 		# if [[ "$php_quite" != 'silent' ]]; then
@@ -391,7 +391,7 @@ echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTM
 		phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_phpext_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_ffmpeg_phpext_install_${DT}.log

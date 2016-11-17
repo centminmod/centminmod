@@ -98,7 +98,7 @@ fi
 declare -a array
 array=(${PACKAGE})
 
-ystarttime=$(date +%s.%N)
+ystarttime=$(TZ=UTC date +%s.%N)
 {
 # if curl one liner is used and detected should skip this yum install routine
 # since it's already done by curl installer script
@@ -231,7 +231,7 @@ yum -y update
 
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 
-yendtime=$(date +%s.%N)
+yendtime=$(TZ=UTC date +%s.%N)
 YINSTALLTIME=$(echo "scale=2;$yendtime - $ystarttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 echo "Total YUM Time: $YINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log

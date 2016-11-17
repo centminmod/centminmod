@@ -279,12 +279,12 @@ rclone_syncssl() {
 ###########################################################################
 case $1 in
   config)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   rclone_config
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_config_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_config_${DT}.log"
@@ -293,7 +293,7 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_config_${DT}.log"
   ;;
   install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   rclone_install
   if [ ! -f /root/.rclone.conf ]; then
@@ -301,7 +301,7 @@ starttime=$(date +%s.%N)
   fi
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_installer_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_installer_${DT}.log"
@@ -310,12 +310,12 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_installer_${DT}.log"
   ;;
   update)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   rclone_install
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_update_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_update_${DT}.log"
@@ -324,7 +324,7 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_update_${DT}.log"
   ;;
   copy)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   remote=$2
   if [[ "$DEBUG" = [yY] ]]; then
@@ -333,7 +333,7 @@ starttime=$(date +%s.%N)
   rclone_copy $remote
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_copy_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_copy_${DT}.log"
@@ -342,7 +342,7 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_copy_${DT}.log"
   ;;
   sync)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   remote=$2
   if [[ "$DEBUG" = [yY] ]]; then
@@ -351,7 +351,7 @@ starttime=$(date +%s.%N)
   rclone_sync $remote
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_sync_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_sync_${DT}.log"
@@ -360,7 +360,7 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_sync_${DT}.log"
   ;;
   copyssl)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   remote=$2
   if [[ "$DEBUG" = [yY] ]]; then
@@ -369,7 +369,7 @@ starttime=$(date +%s.%N)
   rclone_copyssl $remote
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
@@ -378,7 +378,7 @@ echo
 tail -1 "${CENTMINLOGDIR}/rclone_copyssl_${DT}.log"
   ;;
   syncssl)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   remote=$2
   if [[ "$DEBUG" = [yY] ]]; then
@@ -387,7 +387,7 @@ starttime=$(date +%s.%N)
   rclone_syncssl $remote
 } 2>&1 | tee "${CENTMINLOGDIR}/rclone_syncssl_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/rclone_syncssl_${DT}.log"
