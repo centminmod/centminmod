@@ -226,69 +226,21 @@ infocheck() {
 setbp() {
   INNODB_BPSIZE=$(mysqladmin var | grep 'innodb_buffer_pool_size' | tr -s ' ' | awk '{print $4}')
   INNODB_BPTHRESHOLD='1073741824'
-  if [[ "$INNODB_BPSIZE" -le "$INNODB_BPTHRESHOLD" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
+  for i in $(seq 1 ${CPUS});
+    do
+      if [[ "$(echo $(($INNODB_BPSIZE/$INNODB_BPTHRESHOLD)))" -eq "$i" ]]; then
+        sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=$i|g" /etc/my.cnf
+        sed -i "s|innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=$i|g" /etc/my.cnf
+        # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = $i;"
+        # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
+      fi
+  done
+  if [[ "$(echo $(($INNODB_BPSIZE/$INNODB_BPTHRESHOLD)))" -le '1' ]]; then
+    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=1|g" /etc/my.cnf
+    sed -i "s|innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances=1|g" /etc/my.cnf
     # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
     # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
   fi
-  if [[ "$(echo "$INNODB_BPSIZE/$CPUS" | bc)" -lt "$INNODB_BPTHRESHOLD" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 1|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 1;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*48" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*48" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 48|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 48|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 48;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*40" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*40" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 40|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 40|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 40;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*32" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*32" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 32|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 32|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 32;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*24" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*24" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 24|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 24|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 24;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*16" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*16" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 16|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 16|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 16;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*12" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*12" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 12|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 12|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 12;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*8" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*8" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 8|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 8|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 8;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*6" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*6" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 6|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 6|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 6;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*4" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*4" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 4|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 4|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 4;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  elif [[ "$(echo "$INNODB_BPSIZE/$CPUS*2" | bc)" -ge "$(echo "$INNODB_BPTHRESHOLD/$CPUS*2" | bc)" ]]; then
-    sed -i "s|#innodb_buffer_pool_instances=.*|innodb_buffer_pool_instances = 2|g" /etc/my.cnf
-    sed -i "s|innodb_buffer_pool_instances = .*|innodb_buffer_pool_instances = 2|g" /etc/my.cnf
-    # /usr/bin/mysql -e "SET GLOBAL innodb_buffer_pool_instances = 2;"
-    # /usr/bin/mysql -e "SHOW VARIABLES like '%innodb_buffer_pool_instances%'"
-  fi
-  # grep 'innodb_buffer_pool_instances =' /etc/my.cnf
 }
 
 setthreads() {
