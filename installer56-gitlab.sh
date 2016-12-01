@@ -175,16 +175,16 @@ scl_install() {
   if [[ "$CENTOS_SIX" = '6' ]]; then
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+      yum -y -q install centos-release-scl
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+      yum -y -q install centos-release-scl
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
