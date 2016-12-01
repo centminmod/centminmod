@@ -59,6 +59,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo
     echo "detected CentOS 7.x OS, python 2.7 is already"

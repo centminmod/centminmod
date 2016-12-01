@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.18'
+ACMEVER='1.0.19'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -114,6 +114,10 @@ fi
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
     OLS='y'
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
 fi
 
 if [ ! -d "$DIR_TMP" ]; then

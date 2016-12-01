@@ -36,6 +36,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 if [ ! -d "$DIR_TMP" ]; then
 	mkdir -p "$DIR_TMP"
   chmod 0750 "$DIR_TMP"
