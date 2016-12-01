@@ -109,8 +109,8 @@ scl_install() {
 	if [[ "$CENTOS_SIX" = '6' ]]; then
 		if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
 			cecho "install centos-release-scl for newer gcc and g++ versions" $boldgreen
-      yum -y install centos-release-scl -q
-      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
 
 			CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
 			unset CC

@@ -81,8 +81,8 @@ install() {
     if [[ "$CENTOS_SIX" = '6' && ! -f /etc/yum.repos.d/CentOS-SCLo-scl.repo ]]; then
       cd $DIR_TMP
       yum clean all
-      yum -y install centos-release-scl -q
-      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
@@ -92,8 +92,8 @@ install() {
         rm -rf /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo
       fi
       yum clean all
-      yum -y install centos-release-scl -q
-      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
@@ -101,8 +101,8 @@ install() {
       yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
       rm -rf /etc/yum.repos.d/slc6-scl.repo
       yum clean all
-      yum -y install centos-release-scl -q
-      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
@@ -112,16 +112,16 @@ install() {
         rm -rf /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo
       fi
       yum clean all
-      yum -y install centos-release-scl -q
-      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
 		elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       cd $DIR_TMP
       yum clean all
-      yum -y install centos-release-scl -q
-      yum -y install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
       echo
       /opt/rh/devtoolset-4/root/usr/bin/gcc --version
       /opt/rh/devtoolset-4/root/usr/bin/g++ --version
