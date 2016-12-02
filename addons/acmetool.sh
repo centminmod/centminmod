@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.19'
+ACMEVER='1.0.20'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -901,7 +901,9 @@ convert_crtkeyinc() {
   # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
   # inline in vhost, need to move them to their own include file for acmetool.sh at
   # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
-egrep 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf > /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+if [[ ! -z "$(egrep 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf)" ]]; then
+  egrep 'ssl_dhparam|ssl_certificate|ssl_trusted_certificate' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf > /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+fi
 echo "cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
 cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
 
@@ -1026,6 +1028,8 @@ if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" &&
   # inline in vhost, need to move them to their own include file for acmetool.sh at
   # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
   convert_crtkeyinc
+elif [[ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
+  convert_crtkeyinc
 fi
 
 ###  ##############################################################
@@ -1038,6 +1042,8 @@ if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" &&
   # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
   # inline in vhost, need to move them to their own include file for acmetool.sh at
   # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+  convert_crtkeyinc
+elif [[ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
   convert_crtkeyinc
 fi
 
@@ -1175,6 +1181,8 @@ if [[ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" &&
   # if existing or previous /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf has the ssl cert key and trust files
   # inline in vhost, need to move them to their own include file for acmetool.sh at
   # /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
+  convert_crtkeyinc
+elif [[ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" && -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]]; then
   convert_crtkeyinc
 fi
 
