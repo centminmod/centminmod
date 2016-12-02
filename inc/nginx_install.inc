@@ -390,6 +390,8 @@ geoipphp
         echo
     fi
 
+    countcpus
+
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen
     echo "*************************************************"
