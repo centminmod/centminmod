@@ -373,8 +373,8 @@ echo "if you have modified your old php.ini i.e. installed and loaded"
 echo "APC, Xcache, Memcache or Suhosin - please re-install them after php upgrade"
 echo "..."
 
-    cp -f /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT
-    cp -f php.ini-production /usr/local/lib/php.ini
+    \cp -f /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT
+    \cp -f php.ini-production /usr/local/lib/php.ini
     chmod 644 /usr/local/lib/php.ini
 
 phpsededit
