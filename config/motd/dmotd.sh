@@ -205,11 +205,18 @@ gitenv_askupdate() {
     fi
 }
 
+kernel_checks() {
+  if [[ -f "$CMSCRIPT_GITDIR/tools/kernelcheck.sh" ]]; then
+    "$CMSCRIPT_GITDIR/tools/kernelcheck.sh"
+  fi
+}
+
 if [[ "$(id -u)" = '0' ]]; then
 
 starttime=$(TZ=UTC date +%s.%N)
 {
 motd_output
+kernel_checks
 ngxver_checker
 gitenv_askupdate
 } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
