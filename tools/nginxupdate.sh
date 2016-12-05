@@ -208,6 +208,7 @@ NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-per
 NGINX_STREAM='y'             # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGINX_STREAMGEOIP='y'        # nginx 1.11.3+ option http://hg.nginx.org/nginx/rev/558db057adaa
 NGINX_STREAMREALIP='y'       # nginx 1.11.4+ option http://hg.nginx.org/nginx/rev/9cac11efb205
+NGINX_STREAMSSLPREREAD='y'   # nginx 1.11.5+ option https://nginx.org/en/docs/stream/ngx_stream_ssl_preread_module.html
 NGINX_RTMP='n'               # Nginx RTMP Module support https://github.com/arut/nginx-rtmp-module
 NGINX_FLV='n'                # http://nginx.org/en/docs/http/ngx_http_flv_module.html
 NGINX_MP4='n'                # Nginx MP4 Module http://nginx.org/en/docs/http/ngx_http_mp4_module.html
