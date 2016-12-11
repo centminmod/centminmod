@@ -131,7 +131,7 @@ centminlog
 MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
 
 # for MariaDB 5.2 upgrade option
-if [[ "$MARIADBVERCHECK" == '5.3' || "$MARIADBVERCHECK" == '5.5' ]]; then
+if [[ "$MARIADBVERCHECK" == '5.3' || "$MARIADBVERCHECK" == '5.5' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.0' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
 echo ""
 cecho "MariaDB 5.3.x or 5.5.x server detected" $boldyellow
@@ -155,7 +155,7 @@ centminlog
 MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-3`
 
 # for MariaDB 5.5 upgrade option
-if [ "$MARIADBVERCHECK" == '5.5' ]; then
+if [[ "$MARIADBVERCHECK" = '5.5' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.0' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
 echo ""
 cecho "MariaDB 5.5.x server already detected" $boldyellow
@@ -180,7 +180,7 @@ fi
 centminlog
 {
 MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
-	if [ "$MARIADBVERCHECK" == '10.0' ]; then
+	if [[ "$MARIADBVERCHECK" = '10.0' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
 		echo ""
 		cecho "MariaDB 10.x server already detected" $boldyellow
@@ -201,7 +201,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 centminlog
 {
 MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
-	if [ "$MARIADBVERCHECK" == '10.1' ]; then
+	if [[ "$MARIADBVERCHECK" = '10.1' || $(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4) = '10.2' ]]; then
 
 		echo ""
 		cecho "MariaDB 10.1.x server already detected" $boldyellow
@@ -222,7 +222,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 centminlog
 {
 MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
-	if [ "$MARIADBVERCHECK" == '10.1' ]; then
+	if [[ "$MARIADBVERCHECK" = '10.1' ]]; then
 
 		echo ""
 		cecho "MariaDB 10.1.x server already detected" $boldyellow
@@ -244,7 +244,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 centminlog
 {
 MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
-	if [ "$MARIADBVERCHECK" == '10.2' ]; then
+	if [[ "$MARIADBVERCHECK" = '10.2' ]]; then
 
 		echo ""
 		cecho "MariaDB 10.2.x server already detected" $boldyellow
