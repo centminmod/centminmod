@@ -119,6 +119,7 @@ ngxbrotli_download() {
         git fetch origin
         git reset --hard origin/master
         git pull
+        git submodule update --init
 		fi
 		echo
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
