@@ -775,7 +775,8 @@ nginxpgspeedtarball() {
     		if [ -s "${NGX_PAGESPEEDGITLINKFILE}" ]; then
         	cecho "${NGX_PAGESPEEDGITLINKFILE} Archive found, skipping download..." $boldgreen
     else
-    	    wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3 
+    	    echo "wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3"
+          wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3 
 			ERROR=$?
 				if [[ "$ERROR" != '0' ]]; then
 					cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} download failed." $boldgreen
@@ -793,6 +794,7 @@ nginxpgspeedtarball() {
     if [ -s "${NGX_PAGESPEEDLINKFILE}" ]; then
         cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
     else
+        echo "wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3"
         wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

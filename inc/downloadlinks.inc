@@ -177,7 +177,8 @@ NGX_PAGESPEEDGITLINK="https://github.com/pagespeed/ngx_pagespeed/archive/master.
 NGX_PAGESPEEDGITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_pagespeed/repository/archive.tar.gz?ref=master"
 
 NGX_PAGESPEEDLINKFILE="release-${NGXPGSPEED_VER}.tar.gz"
-NGX_PAGESPEEDLINK="https://github.com/pagespeed/ngx_pagespeed/archive/${NGX_PAGESPEEDLINKFILE}"
+NGX_PAGESPEEDLINKREALFILE="v${NGXPGSPEED_VER}.tar.gz"
+NGX_PAGESPEEDLINK="https://github.com/pagespeed/ngx_pagespeed/archive/${NGX_PAGESPEEDLINKREALFILE}"
 NGX_PAGESPEEDLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_pagespeed/repository/archive.tar.gz?ref=v${NGXPGSPEED_VER}"
 
 NGX_PAGESPEEDPSOLINKLFILE="${NGINX_PAGESPEEDPSOL_VER}.tar.gz"
