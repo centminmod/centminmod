@@ -116,9 +116,12 @@ if [[ "$kc_inside_container" = 'False' ]]; then
     if [[ "$VERBOSE" = [yY] ]]; then
       echo
       cecho "===============================================================================" $boldgreen
-      echo " newer kernel is available, system reboot needed"
-      echo " please run command below then reboot server:"
+      echo " newer kernel is available or recently updated"
+      echo " a system reboot is needed"
+      echo " please run commands below to check kernel yum package history (Begin time),"
+      echo " yum update and then reboot server (if Begin time is recent):"
       echo
+      echo "  yum history package-info kernel"
       echo "  yum update"
       cecho "===============================================================================" $boldgreen 
     fi
