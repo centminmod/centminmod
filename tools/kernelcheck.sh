@@ -155,16 +155,16 @@ if [[ "$kc_inside_container" = 'False' ]]; then
         cecho "===============================================================================" $boldgreen 
         echo " system kernel is latest installed, but requires a system reboot"
       fi
-    else
-      if [[ "$VERBOSE" = [yY] ]]; then
-      echo
-      cecho "===============================================================================" $boldgreen
-      echo " newer kernel is available, system reboot needed"
-      echo " please run command below then reboot server:"
-      echo
-      echo "  yum update"
-      cecho "===============================================================================" $boldgreen 
-      fi
+    # else
+    #   if [[ "$VERBOSE" = [yY] ]]; then
+    #   echo
+    #   cecho "===============================================================================" $boldgreen
+    #   echo " newer kernel is available, system reboot needed"
+    #   echo " please run command below then reboot server:"
+    #   echo
+    #   echo "  yum update"
+    #   cecho "===============================================================================" $boldgreen 
+    #  fi
     fi
   fi
 fi
