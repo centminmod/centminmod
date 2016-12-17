@@ -358,6 +358,20 @@ fi
 if [ -f /etc/my.cnf ]; then
 cp /etc/my.cnf /etc/my.cnf-original_before_mariadb101upgrade
 fi
+
+# fix for mariadb 10.1.16 introduced ProtecHome=true setting
+# https://jira.mariadb.org/browse/MDEV-10399
+if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+echo
+echo "Update MariaDB 10 setting for ProtectHome=false"
+echo
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectHome=false
+TDF
+systemctl daemon-reload
+fi
+
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.1.x check available packages" $boldgreen
