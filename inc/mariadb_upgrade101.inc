@@ -361,7 +361,7 @@ fi
 
 # fix for mariadb 10.1.16 introduced ProtecHome=true setting
 # https://jira.mariadb.org/browse/MDEV-10399
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 echo
 echo "Update MariaDB 10 setting for ProtectHome=false"
 echo
