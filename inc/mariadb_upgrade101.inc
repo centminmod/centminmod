@@ -365,6 +365,9 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 echo
 echo "Update MariaDB 10 setting for ProtectHome=false"
 echo
+if [ ! -d /etc/systemd/system/mariadb.service.d/ ]; then
+  mkdir -p /etc/systemd/system/mariadb.service.d/
+fi
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
 ProtectHome=false
