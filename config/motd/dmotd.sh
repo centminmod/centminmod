@@ -17,6 +17,7 @@ CURRENTUSER=$(users | wc -w)
 CMSCRIPT_GITDIR='/usr/local/src/centminmod'
 CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
+SSHLOGIN_KERNELCHECK='y'
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -206,7 +207,7 @@ gitenv_askupdate() {
 }
 
 kernel_checks() {
-  if [[ -f "$CMSCRIPT_GITDIR/tools/kernelcheck.sh" ]]; then
+  if [[ "$SSHLOGIN_KERNELCHECK" = [yY] && -f "$CMSCRIPT_GITDIR/tools/kernelcheck.sh" ]]; then
     "$CMSCRIPT_GITDIR/tools/kernelcheck.sh"
   fi
 }
