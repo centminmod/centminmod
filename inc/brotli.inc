@@ -111,7 +111,7 @@ ngxbrotli_download() {
 		fi
 
     if [ ! -d ngx_brotli ]; then
-      git clone "$NGXBROTLILINK"
+      git clone --recursive "$NGXBROTLILINK"
     fi
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
         cd ngx_brotli
