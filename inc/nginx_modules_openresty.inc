@@ -24,13 +24,13 @@ rm -rf ngx-fancyindex-0.3.1.tar.gz
 
 fi
 
-    if [ -s ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz ]; then
+    if [ -s "$NGX_CACHEPURGEFILE" ]; then
         cecho "ngx_cache_purge ${NGINX_CACHEPURGEVER} Archive found, skipping download..." $boldgreen
     else
-        download_cmd http://labs.frickle.com/files/ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz $WGETRETRY
+        download_cmd "$NGX_CACHEPURGE" $WGETRETRY
     fi
 
-    tar zvxf ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz
+    tar zvxf "$NGX_CACHEPURGEFILE"
 
     if [ -s Nginx-accesskey-2.0.3.tar.gz ]; then
         cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
