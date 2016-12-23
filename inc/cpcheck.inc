@@ -709,12 +709,12 @@ fi
 
 csf_distftp() {
   if [ -f /etc/csf/csf.conf ]; then
-    # raise LF_DISTFTP = 8 & LF_DISTFTP_UNIQ = 8
-    if [[ ! "$(grep 'LF_DISTFTP = \"8\"' /etc/csf/csf.conf)" ]]; then
-      sed -i 's/LF_DISTFTP = \"1\"/LF_DISTFTP = \"8\"/g' /etc/csf/csf.conf
+    # raise LF_DISTFTP = 40 & LF_DISTFTP_UNIQ = 40
+    if [[ ! "$(grep 'LF_DISTFTP = \"40\"' /etc/csf/csf.conf)" ]]; then
+      sed -i 's/LF_DISTFTP = .*/LF_DISTFTP = \"40\"/g' /etc/csf/csf.conf
     fi
-    if [[ ! "$(grep 'LF_DISTFTP_UNIQ = \"8\"' /etc/csf/csf.conf)" ]]; then
-      sed -i 's/LF_DISTFTP_UNIQ = \"6\"/LF_DISTFTP_UNIQ = \"8\"/g' /etc/csf/csf.conf
+    if [[ ! "$(grep 'LF_DISTFTP_UNIQ = \"40\"' /etc/csf/csf.conf)" ]]; then
+      sed -i 's/LF_DISTFTP_UNIQ = .*/LF_DISTFTP_UNIQ = \"40\"/g' /etc/csf/csf.conf
       csf -r >/dev/null 2>&1
     fi
   fi

@@ -99,8 +99,8 @@ if [ -f /etc/csf/csf.conf ]; then
     sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
 
     sed -i 's/LF_DISTATTACK = "0"/LF_DISTATTACK = "1"/g' /etc/csf/csf.conf
-    sed -i 's/LF_DISTFTP = "0"/LF_DISTFTP = "8"/g' /etc/csf/csf.conf
-    sed -i 's/LF_DISTFTP_UNIQ = "3"/LF_DISTFTP_UNIQ = "8"/g' /etc/csf/csf.conf
+    sed -i 's/LF_DISTFTP = "0"/LF_DISTFTP = "40"/g' /etc/csf/csf.conf
+    sed -i 's/LF_DISTFTP_UNIQ = "3"/LF_DISTFTP_UNIQ = "40"/g' /etc/csf/csf.conf
     sed -i 's/LF_DISTFTP_PERM = "3600"/LF_DISTFTP_PERM = "6000"/g' /etc/csf/csf.conf
 
     # enable CSF support of dynamic DNS
