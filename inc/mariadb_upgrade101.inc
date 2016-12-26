@@ -372,6 +372,10 @@ cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
 ProtectHome=false
 TDF
+cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=262144
+TDG
 systemctl daemon-reload
 fi
 

@@ -62,6 +62,18 @@ TDF
   fi
 }
 
+mariadb_openfilesfix() {
+  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Update MariaDB 10 setting for LimitNOFILE=262144"
+cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=262144
+TDG
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
 fixlibmysqlclient_symlink() {
   if [ "$(uname -m)" == 'x86_64' ]; then
     FIXMDB_LIBDIR='lib64'
@@ -1281,6 +1293,7 @@ apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   c7mariadb_tmpdir
+  mariadb_openfilesfix
   yumfastmirror_check
   axelcheck
   fileperm_fixes
