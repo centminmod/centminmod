@@ -17,7 +17,7 @@ CURRENTUSER=$(users | wc -w)
 CMSCRIPT_GITDIR='/usr/local/src/centminmod'
 CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
-SSHLOGIN_KERNELCHECK='y'
+SSHLOGIN_KERNELCHECK='n'
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
