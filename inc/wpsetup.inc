@@ -1193,7 +1193,7 @@ location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
 location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ { deny all; }
 
 # Whitelist Exception for https://wordpress.org/plugins/onesignal-free-web-push-notifications//
-location ~ ^/wp-content/plugins/onesignal-free-web-push-notifications/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/onesignal-free-web-push-notifications/ {
   include /usr/local/nginx/conf/php.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
