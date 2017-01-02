@@ -32,7 +32,7 @@ opcachehugepages() {
 				echo $OPCACHEHUGEPAGES_OPT
 				if [ -f "${CM_INSTALLDIR}/tools/hptweaks.sh" ]; then
 					$CM_INSTALLDIR/tools/hptweaks.sh
-				fi				
+				fi
 				if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
 					sed -i 's|^;opcache.huge_code_pages=1|opcache.huge_code_pages=1|' ${CONFIGSCANDIR}/zendopcache.ini
 				else

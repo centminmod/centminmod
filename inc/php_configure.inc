@@ -7,7 +7,7 @@ LANG=en_US.UTF-8
 fpmconfdir
 
 #############################################################
-TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALSWAPMEM=$(awk '/SwapTotal: / {print $2}' /proc/meminfo | head -n1)
 ISLOWMEMPHP='780000'
 #############################################################
@@ -17,6 +17,7 @@ ISLOWMEMPHPMB=`echo "scale=0;$ISLOWMEMPHP/1024" | bc`
 CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
 PLIBDIR='/usr'
+PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 if [[ "$PHPDEBUGMODE" = [yY] ]]; then
 	PHPDEBUGOPT=' --enable-debug'
@@ -24,9 +25,9 @@ else
 	PHPDEBUGOPT=''
 fi
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
 	OPCACHEOPT=" --enable-opcache"
-elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 	# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 	# Zend Opcache version with one available from pecl site	
 	OPCACHEOPT=" --disable-opcache"	
@@ -40,6 +41,15 @@ if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readli
 	else
 		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
 	fi
+fi
+
+# Microsoft SQL Server PHP driver support
+if [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
+  yum -q -y install unixODBC-devel freetds-devel
+elif [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
+  yum -q -y install unixODBC-devel
+elif [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]]; then
+  yum -q -y install freetds-devel
 fi
 
 if [[ ! -f /usr/bin/xslt-config ]]; then
@@ -72,6 +82,12 @@ fi
 
 if [[ ! -f /usr/include/expect.h ]]; then
 	yum -q -y install expect-devel --disablerepo=rpmforge,epel
+fi
+
+if [ "$PHPMSSQL" == 'y' ]; then
+  MSSQLOPT=" --with-pdo-odbc=unixODBC,/usr"
+else
+  MSSQLOPT=""
 fi
 
 if [[ -f /usr/include/ldap.h ]]; then
@@ -118,6 +134,12 @@ else
 	SNMPOPT=""
 fi
 
+if [ "$PHP_FTPEXT" == 'y' ]; then
+	FTPEXTOPT="  --enable-ftp"
+else
+	FTPEXTOPT=""
+fi
+
 # let centmin.sh set PHPFINFO variable override the
 # low memory CHECKLOWMEMPHP variable check
 if [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -ge '1023000' ]]; then
@@ -134,18 +156,29 @@ elif [[ "$PHPFINFO" = [nN] ]]; then
   FILEINFOOPT=" --disable-fileinfo"
 fi
 
-if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
-	if [[ ! $(rpm -qa uw-imap-devel) ]]; then 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
 	fi
 else
-	if [[ ! $(rpm -qa libc-client-devel) ]]; then 
+	if [[ $(rpm -q libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
 	fi
 fi
 
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
+
+	if [[ "$POSTGRESQL" = [yY] ]]; then
+		# to allow to persist on centmin mod code updates
+		# create persistent config file at /etc/centminmod/custom_config.inc
+		# and add to it the line:
+		# POSTGRESQL=y
+ 		postgresqlinstall
+		PDOPGSQL_OPT=" --with-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER} --with-pdo-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER}"
+	else
+		PDOPGSQL_OPT=""
+	fi
 
 	if [[ ! -f /usr/bin/libmcrypt-config ]]; then
 
@@ -238,8 +271,168 @@ else
     fi
 fi
 
+if [[ "$GCCINTEL_PHP" = [yY] ]]; then
+
+  # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
+  # initial php install
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-4/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
+        scl_install
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      fi
+    fi
+  fi
+  # php upgrades
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-4/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
+        scl_install
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      fi
+    fi
+  fi
+  # CentOS 7 use devtoolset-4 GCC 5.2 if it's detected
+  # initial php install
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
+    # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
+    if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-4"
+        echo $CC
+        echo $CXX
+    fi
+  fi
+  # php upgrades
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+    # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
+    if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-4"
+        echo $CC
+        echo $CXX
+    fi
+  fi
+
+	# intel specific
+  CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+  SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
+  CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+  CPUMODELNO=$(grep -v 'model name' /proc/cpuinfo | awk -F ": " '/model/ {print $2}' | uniq)
+  SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
+  MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
+  gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
+  gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
+
+	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=64
+    if [[ "$CPU_MARCH" = 'silvermont' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=silvermont"
+    elif [[ "$CPU_MARCH" = 'bonnell' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=bonnell"
+    elif [[ "$CPU_MARCH" = 'broadwell' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=broadwell"
+    elif [[ "$CPU_MARCH" = 'haswell' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=haswell"
+    elif [[ "$CPU_MARCH" = 'ivybridge' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=ivybridge"
+    elif [[ "$CPU_MARCH" = 'sandybridge' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=sandybridge"
+    elif [[ "$CPU_MARCH" = 'westmere' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=westmere"
+    elif [[ "$CPU_MARCH" = 'nehalem' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=nehalem"
+    elif [[ "$CPU_MARCH" = 'core-avx2' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=core-avx2"
+    elif [[ "$CPU_MARCH" = 'core-avx-i' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=core-avx-i"
+    elif [[ "$CPU_MARCH" = 'corei7-avx' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=corei7-avx"
+    elif [[ "$CPU_MARCH" = 'corei7' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=corei7"
+    elif [[ "$CENTOS_SIX" = '6' && "$CPU_MARCH" = 'core2' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=core2"
+    elif [[ "$CENTOS_SEVEN" = '7' && "$CPU_MARCH" = 'core2' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=core2"
+    else
+      PHP_MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse"
+    fi
+    # if only 1 cpu thread use -O2 to keep compile times sane
+    if [[ "$CPUS" = '1' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+    else
+      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe"
+    fi
+		export CXXFLAGS="$CFLAGS"
+	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=64
+		PHP_MTUNEOPT="-m${CCM} -mtune=native"
+		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+		export CXXFLAGS="$CFLAGS"
+	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[disabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=64
+		PHP_MTUNEOPT="-m${CCM} -mtune=native"
+		export CFLAGS="-O3 $PHP_MTUNEOPT -pipe"
+		export CXXFLAGS="$CFLAGS"
+	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && -z "$SSECHECK" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=64
+		PHP_MTUNEOPT="-m${CCM} -mtune=generic"
+		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+		export CXXFLAGS="$CFLAGS"
+	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		CCM=32
+		PHP_MTUNEOPT="-m${CCM} -mtune=generic"
+		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+		export CXXFLAGS="$CFLAGS"
+	else
+		PHP_MTUNEOPT=""
+	fi
+fi
+
 # zend opcache hugepages
-if [[ "$PHPMUVER" = '7.0' ]]; then
+if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
 	opcachehugepages
 elif [[ "$PHPMUVER" != '7.0' ]]; then	
 	if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
@@ -252,17 +445,29 @@ elif [[ "$PHPMUVER" != '7.0' ]]; then
 	fi	
 fi
 
+if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
+  if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+    PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
+    ln -s /opt/libressl/lib /opt/libressl/lib64
+  else
+    PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
+    ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
+  fi
+else
+  PHP_OPENSSLOPT='--with-openssl'
+fi
+
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
-	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
+	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
 
-../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
+../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
 else
 
-	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
+	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
 
-../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring --with-openssl --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=/var/lib/mysql/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar --enable-ftp --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
+../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
 fi
 
@@ -295,7 +500,17 @@ if [[ "$CLANG_PHP" = [yY] ]]; then
     export CXX="ccache /usr/bin/g++"
     # PLACEHOLDER FOR CLAGS FOR PHP
     # CFLAGS=
-fi   
+fi
+
+if [[ "$GCCINTEL_PHP" = [yY] ]]; then
+	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		unset CFLAGS
+		unset CXXFLAGS
+	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+		unset CFLAGS
+		unset CXXFLAGS
+	fi
+fi
 
 # unset_intelflags
 

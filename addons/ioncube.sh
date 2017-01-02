@@ -31,10 +31,14 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
       wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64_5.1.2.tar.gz
     elif [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)" = '5.6' ]]; then
+      rm -rf ioncube_loaders_lin_x86-64.tar.gz
+      rm -rf ioncube
       wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64.tar.gz
     fi
   else
+    rm -rf ioncube_loaders_lin_x86-64.tar.gz
+    rm -rf ioncube
     wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   fi
@@ -44,10 +48,14 @@ else
       wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86_5.1.2.tar.gz
     elif [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)" = '5.6' ]]; then
+      rm -rf ioncube_loaders_lin_x86.tar.gz
+      rm -rf ioncube
       wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
       tar xvzf ioncube_loaders_lin_x86.tar.gz
     fi
   else
+    rm -rf ioncube_loaders_lin_x86.tar.gz
+    rm -rf ioncube
     wget -cnv http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
     tar xvzf ioncube_loaders_lin_x86.tar.gz
   fi
@@ -59,14 +67,20 @@ PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} EN
 
 # move current ioncube version to existing PHP extension directory
 if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
-  \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+  \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+  chown root:root "${PHPEXTDIRD}/ioncube.so"
+  chmod 755 "${PHPEXTDIRD}/ioncube.so"
 else
   # for php 7 ioncube beta8
   ICPHPVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
   if [[ "$(uname -m)" = 'x86_64' ]]; then
-    \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+    \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+    chown root:root "${PHPEXTDIRD}/ioncube.so"
+    chmod 755 "${PHPEXTDIRD}/ioncube.so"
   else
-    \cp -f ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+    \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
+    chown root:root "${PHPEXTDIRD}/ioncube.so"
+    chmod 755 "${PHPEXTDIRD}/ioncube.so"
   fi
 fi
 

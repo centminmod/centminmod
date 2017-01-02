@@ -1,12 +1,94 @@
+ffmpegsubmenu() {
+
+while :
+do
+	# clear
+        # display menu
+	echo
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "             FFMPEG Sub-Menu              " $boldgreen
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "1). Install FFMPEG Binary + FFMPEG PHP extension" $boldgreen
+	cecho "2). Update FFMPEG Binary + FFMPEG PHP extension" $boldgreen
+	cecho "3). Reinstall FFMPEG PHP extension" $boldgreen
+	cecho "4). Back to Main menu" $boldgreen
+	cecho "--------------------------------------------------------" $boldyellow
+
+	read -ep "Enter option [ 1 - 4 ] " ffmpegoption
+	cecho "--------------------------------------------------------" $boldyellow
+
+#########################################################
+
+case "$ffmpegoption" in
+1)
+centminlog
+if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
+	${CM_INSTALLDIR}/addons/ffmpeg.sh install
+	${CM_INSTALLDIR}/addons/ffmpeg.sh php silent
+fi
+
+;;
+2)
+centminlog
+if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
+	${CM_INSTALLDIR}/addons/ffmpeg.sh update
+fi
+
+;;
+3)
+centminlog
+if [ -f "${CM_INSTALLDIR}/addons/ffmpeg.sh" ]; then
+	${CM_INSTALLDIR}/addons/ffmpeg.sh php
+fi
+
+;;
+4)
+	break
+;;
+esac
+done
+
+}
+
 ################################
 # http://ffmpeg.org/download.html
 ffmpegsetup() {
+
+	if [ "$(uname -m)" == 'x86_64' ]; then
+		ATRPMARCH='x86_64'
+	else
+		ATRPMARCH='i386'
+	fi
+
+	if [[ "$CENTOS_SEVEN" != '7' ]]; then
+cat > "/etc/yum.repos.d/atrpms.repo" <<EOF
+[atrpms]
+name=Red Hat Enterprise Linux $releasever - $basearch - ATrpms
+failovermethod=priority
+baseurl=http://www.mirrorservice.org/sites/dl.atrpms.net/el6-${ATRPMARCH}/atrpms/stable
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-atrpms
+priority=90
+EOF
+	elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+cat > "/etc/yum.repos.d/atrpms.repo" <<EOF
+[atrpms]
+name=Red Hat Enterprise Linux $releasever - $basearch - ATrpms
+failovermethod=priority
+baseurl=http://www.mirrorservice.org/sites/dl.atrpms.net/el7-${ATRPMARCH}/atrpms/stable
+enabled=1
+gpgcheck=0
+gpgkey=file:///etc/pki/rpm-gpg/RPM-GPG-KEY-atrpms
+priority=90
+EOF
+	fi	
 
 	if [ -f /etc/yum.repos.d/atrpms.repo ]; then
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
-if [[ "$PHPVERCHECK" != '5.8' ]]; then
+if [[ "$PHPVERCHECK" != '5.8' || "$PHPVERCHECK" != '7.0' || "$PHPVERCHECK" != '7.1' ]]; then
 
 cd ${DIR_TMP}
 
@@ -49,7 +131,16 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 	yum -y install ffmpeg ffmpeg-devel mplayer mencoder flvtool2 re2c yasm nasm libvpx libvpx-devel amrnb-devel amrwb-devel libid3tag libvorbis-devel lame libogg libwmf xvidcore xvidcore-devel facc faad2 a52decoder *vorbis* ruby ruby-libs ruby-devel --disableplugin=priorities --enablerepo=atrpms
 fi
 
-git clone https://github.com/tony2001/ffmpeg-php.git ffmpeg-php-git
+FFMPEGGITLINK='https://github.com/tony2001/ffmpeg-php'
+
+# fallback mirror if github down, use gitlab mirror
+curl -sI --connect-timeout 5 --max-time 5 $FFMPEGGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+FFMPEGGIT_CURLCHECK=$?
+if [[ "$FFMPEGGIT_CURLCHECK" != '0' ]]; then
+	FFMPEGGITLINK='https://gitlab.com/centminmod-github-mirror/ffmpeg-php'
+fi
+
+git clone "${FFMPEGGITLINK}.git" ffmpeg-php-git
 cd ffmpeg-php-git
 # cd ffmpeg-php-${FFMPEGVER}
 
@@ -62,11 +153,11 @@ phpize
 make${MAKETHREADS}
 make install
 
-FFMPEGCHECK=`grep 'extension=ffmpeg.so' ${CONFIGSCANDIR}/ffmpeg.ini `
-if [ -z "$FFMPEGCHECK" ]; then
-echo "" >> ${CONFIGSCANDIR}/ffmpeg.ini
-echo "[ffmpeg]" >> ${CONFIGSCANDIR}/ffmpeg.ini
-echo "extension=ffmpeg.so" >> ${CONFIGSCANDIR}/ffmpeg.ini
+FFMPEGCHECK=$(grep 'extension=ffmpeg.so' "${CONFIGSCANDIR}/ffmpeg.ini" >/dev/null 2>&1; echo $?)
+if [[ "$FFMPEGCHECK" = '1' ]]; then
+	echo "" >> "${CONFIGSCANDIR}/ffmpeg.ini"
+	echo "[ffmpeg]" >> "${CONFIGSCANDIR}/ffmpeg.ini"
+	echo "extension=ffmpeg.so" >> "${CONFIGSCANDIR}/ffmpeg.ini"
 fi
 
 echo ""

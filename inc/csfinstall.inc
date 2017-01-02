@@ -15,14 +15,19 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 
 #download csf tarball
 
-    if [[ -z "$(rpm -qa perl-Crypt-SSLeay)" || -z "$(rpm -qa perl-Net-SSLeay)" || -z "$(rpm -qa perl-LWP-Protocol-https)" ]]; then
-        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay perl-LWP-Protocol-https
+    if [[ $(rpm -q perl-Crypt-SSLeay >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q perl-Net-SSLeay >/dev/null 2>&1; echo $?) != '0' ]]; then
+        yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay
     elif [[ -z "$(rpm -qa perl-libwww-perl)" ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
     fi
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ $(rpm -q perl-LWP-Protocol-https >/dev/null 2>&1; echo $?) != '0' ]]; then
+            yum${CACHESKIP} -y install perl-LWP-Protocol-https
+        fi
+    fi
 
     #tar xzf csf.tgz
-    cd csf
+    cd "$DIR_TMP/csf"
     sh install.sh
 
     # echo "Test IP Tables Modules..."
@@ -31,7 +36,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
     cp -a /etc/csf/csf.conf /etc/csf/csf.conf-bak
 
     echo "CSF adding memcached, varnish ports to csf.allow list..."
-    sed -i 's/20,21,22,25,53,80,110,143,443,465,587,993,995/20,21,22,25,53,80,110,111,143,161,443,465,587,993,995,1110,1186,1194,2049,2112,22000,22001,2222,3000,3334,8080,8888,81,9312,9418,6081,6082,30865,3000:3050/g' /etc/csf/csf.conf
+    sed -i 's/20,21,22,25,53,80,110,143,443,465,587,993,995/20,21,22,25,53,80,110,111,143,161,443,465,587,993,995,1110,1186,1194,2049,81,9418,30001:50011/g' /etc/csf/csf.conf
 
 sed -i "s/TCP_OUT = \"/TCP_OUT = \"993,995,465,587,111,2049,1110,1194,9418,/g" /etc/csf/csf.conf
 sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"993,995,465,587,/g" /etc/csf/csf.conf
@@ -163,8 +168,14 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         systemctl restart firewalld
         firewall-cmd --zone=public --list-services
 
-        # custom ports allowed
-        FIREWALLD_PORTS='1186 1194 11211 11212 11213 11214 2049 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050'
+        # custom ports allowed if detected SSHD default port is not 22, ensure the custom SSHD port
+        # number is whitelisted by firewalld
+        FWDDETECTED_PORT=$(awk '/^Port / {print $2}' /etc/ssh/sshd_config)
+        if [[ "$FWDDETECTED_PORT" = '22' ]]; then
+          FIREWALLD_PORTS='1186 1194 11211 11212 11213 11214 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050'
+        else
+          FIREWALLD_PORTS="$FWDDETECTED_PORT 1186 1194 11211 11212 11213 11214 2112 3000 3334 8080 8888 81 9000 9001 9312 9418 10000 10500 10501 6081 6082 30865 3000-3050"
+        fi
 
         for fp in $FIREWALLD_PORTS
           do

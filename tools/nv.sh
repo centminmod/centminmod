@@ -3,18 +3,28 @@
 # standalone nginx vhost creation script for centminmod.com
 # .08 beta03 and higher written by George Liu
 ################################################################
-branchname='123.08stable'
+branchname='123.09beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
+CENTMINLOGDIR='/root/centminlogs'
+DT=$(date +"%d%m%y-%H%M%S")
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 DIR_TMP=/svr-setup
+CONFIGSCANBASE='/etc/centminmod'
 OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
-# CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
-CENTMINLOGDIR='/root/centminlogs'
-DT=`date +"%d%m%y-%H%M%S"`
-################################################################
+# CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log"
+###############################################################
+# Letsencrypt integration via addons/acmetool.sh auto detection
+# in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
+# generators. You can control whether or not to enable or disable
+# integration detection in these menu options
+LETSENCRYPT_DETECT='n'
+###############################################################
 # Setup Colours
 black='\E[30;40m'
 red='\E[31;40m'
@@ -47,12 +57,49 @@ echo -e "$color$message" ; $Reset
 return
 }
 ###############################################################
+if [ ! -d "$CENTMINLOGDIR" ]; then
+  mkdir -p "$CENTMINLOGDIR"
+fi
 
-if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+if [ -f "${CUR_DIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [ -f "${CUR_DIR}/inc/z_custom.inc" ]; then
+    source "${CUR_DIR}/inc/z_custom.inc"
+fi
+
+  # extended custom nginx log format = main_ext for nginx amplify metric support
+  # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
+  if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      NGX_LOGFORMAT='main_ext'
+    else
+      NGX_LOGFORMAT='combined'
+    fi
+  else
+    NGX_LOGFORMAT='combined'
+  fi
+
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
+  HTTPTWO=y
+  LISTENOPT='ssl spdy http2'
+  COMP_HEADER='spdy_headers_comp 5'
+  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'  
+elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
   LISTENOPT='ssl http2'
   COMP_HEADER='#spdy_headers_comp 5'
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
 else
   HTTPTWO=n
   LISTENOPT='ssl spdy'
@@ -68,29 +115,56 @@ fi
 
 usage() { 
 # if pure-ftpd service running = 0
+if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
+  cmd_arg='|le|led|lelive|lelived'
+fi
 if [[ "$(ps aufx | grep -v grep | grep 'pure-ftpd' 2>&1>/dev/null; echo $?)" = '0' ]]; then
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n] [-u ftpusername]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd${cmd_arg}] [-u ftpusername]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
-  cecho "  -s  ssl self-signed create = y or n" $boldyellow
+  cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    cecho "  -s  le - letsencrypt test cert or led test cert with https default" $boldyellow
+    cecho "  -s  lelive - letsencrypt live cert or lelived live cert with https default" $boldyellow
+  fi
   cecho "  -u  your FTP username" $boldyellow
   echo
   cecho "  example:" $boldyellow
   echo
   cecho "  $0 -d yourdomain.com -s y -u ftpusername" $boldyellow
+  cecho "  $0 -d yourdomain.com -s n -u ftpusername" $boldyellow
+  cecho "  $0 -d yourdomain.com -s yd -u ftpusername" $boldyellow
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    cecho "  $0 -d yourdomain.com -s le -u ftpusername" $boldyellow
+    cecho "  $0 -d yourdomain.com -s led -u ftpusername" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelive -u ftpusername" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelived -u ftpusername" $boldyellow
+  fi
   echo
   exit 1;
 else
   echo
-  cecho "Usage: $0 [-d yourdomain.com] [-s y|n]" $boldyellow 1>&2; 
+  cecho "Usage: $0 [-d yourdomain.com] [-s y|n|yd${cmd_arg}]" $boldyellow 1>&2; 
   echo; 
   cecho "  -d  yourdomain.com or subdomain.yourdomain.com" $boldyellow
-  cecho "  -s  ssl self-signed create = y or n" $boldyellow
+  cecho "  -s  ssl self-signed create = y or n or https only vhost = yd" $boldyellow
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    cecho "  -s  le - letsencrypt test cert or led test cert with https default" $boldyellow
+    cecho "  -s  lelive - letsencrypt live cert or lelived live cert with https default" $boldyellow
+  fi
   echo
   cecho "  example:" $boldyellow
   echo
   cecho "  $0 -d yourdomain.com -s y" $boldyellow  
+  cecho "  $0 -d yourdomain.com -s n" $boldyellow  
+  cecho "  $0 -d yourdomain.com -s yd" $boldyellow
+  if [[ -f "${CUR_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    cecho "  $0 -d yourdomain.com -s le" $boldyellow
+    cecho "  $0 -d yourdomain.com -s led" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelive" $boldyellow
+    cecho "  $0 -d yourdomain.com -s lelived" $boldyellow
+  fi
   echo  
   exit 1;
 fi
@@ -98,30 +172,30 @@ fi
 
 while getopts ":d:s:u:" opt; do
     case "$opt" in
-  d)
-   vhostname=${OPTARG}
+	d)
+	 vhostname=${OPTARG}
    RUN=y
-  ;;
-  s)
-   sslconfig=${OPTARG}
+	;;
+	s)
+	 sslconfig=${OPTARG}
    RUN=y
-  ;;
-  u)
-   ftpuser=${OPTARG}
+	;;
+	u)
+	 ftpuser=${OPTARG}
    RUN=y
-   if [ "$ftpuser" ]; then
-    PUREFTPD_DISABLED=n
-    if [ ! -f /usr/bin/pure-pw ]; then
+	 if [ "$ftpuser" ]; then
+	 	PUREFTPD_DISABLED=n
+	 	if [ ! -f /usr/bin/pure-pw ]; then
       PUREFTPD_INSTALLED=n
       # echo "Error: pure-ftpd not installed"
     else
       autogenpass=y
     fi
-   fi
-  ;;
-  *)
-   usage
-  ;;
+	 fi
+	;;
+	*)
+	 usage
+	;;
      esac
 done
 
@@ -154,6 +228,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 cmservice() {
         servicename=$1
         action=$2
@@ -171,83 +249,83 @@ cmservice() {
 }
 
 pureftpinstall() {
-  if [ ! -f /usr/bin/pure-pw ]; then
-    echo "pure-ftpd not installed"
-    echo "installing pure-ftpd"
-    CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+	if [ ! -f /usr/bin/pure-pw ]; then
+		echo "pure-ftpd not installed"
+		echo "installing pure-ftpd"
+		CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 
-    yum -q -y install pure-ftpd
-    cmchkconfig pure-ftpd on
-    sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
-    sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;5;300\"/g' /etc/csf/csf.conf
+		yum -q -y install pure-ftpd
+		cmchkconfig pure-ftpd on
+		sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
+		sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;5;300\"/g' /etc/csf/csf.conf
 
-    echo "configuring pure-ftpd for virtual user support"
-    # tweak /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/# UnixAuthentication  /UnixAuthentication  /' /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/VerboseLog                  no/VerboseLog                  yes/' /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/# PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/#CreateHomeDir               yes/CreateHomeDir               yes/' /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/# TLS                      1/TLS                      2/' /etc/pure-ftpd/pure-ftpd.conf
-    sed -i 's/# PassivePortRange          30000 50000/PassivePortRange    3000 3050/' /etc/pure-ftpd/pure-ftpd.conf
+		echo "configuring pure-ftpd for virtual user support"
+		# tweak /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/# UnixAuthentication  /UnixAuthentication  /' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/VerboseLog                  no/VerboseLog                  yes/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/# PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/#CreateHomeDir               yes/CreateHomeDir               yes/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/# TLS                      1/TLS                      2/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/# PassivePortRange          30000 50000/PassivePortRange    3000 3050/' /etc/pure-ftpd/pure-ftpd.conf
 
-    # fix default file/directory permissions
-    sed -i 's/Umask                       133:022/Umask                       137:027/' /etc/pure-ftpd/pure-ftpd.conf
+		# fix default file/directory permissions
+		sed -i 's/Umask                       133:022/Umask                       137:027/' /etc/pure-ftpd/pure-ftpd.conf
 
-    # ensure TLS Cipher preference protects against poodle attacks
+		# ensure TLS Cipher preference protects against poodle attacks
 
-    sed -i 's/# TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3/TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:!SSLv3/' /etc/pure-ftpd/pure-ftpd.conf
+		sed -i 's/# TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:+SSLv3/TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:!SSLv3/' /etc/pure-ftpd/pure-ftpd.conf
 
-    if [[ ! "$(grep 'TLSCipherSuite' /etc/pure-ftpd/pure-ftpd.conf)" ]]; then
-      echo 'TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:!SSLv3' >> /etc/pure-ftpd/pure-ftpd.conf
-    fi
+		if [[ ! "$(grep 'TLSCipherSuite' /etc/pure-ftpd/pure-ftpd.conf)" ]]; then
+			echo 'TLSCipherSuite           HIGH:MEDIUM:+TLSv1:!SSLv2:!SSLv3' >> /etc/pure-ftpd/pure-ftpd.conf
+		fi
 
-    # check if /etc/pure-ftpd/pureftpd.passwd exists
-    if [ ! -f /etc/pure-ftpd/pureftpd.passwd ]; then
-      touch /etc/pure-ftpd/pureftpd.passwd
-      chmod 0600 /etc/pure-ftpd/pureftpd.passwd
-      pure-pw mkdb
-    fi
+		# check if /etc/pure-ftpd/pureftpd.passwd exists
+		if [ ! -f /etc/pure-ftpd/pureftpd.passwd ]; then
+			touch /etc/pure-ftpd/pureftpd.passwd
+			chmod 0600 /etc/pure-ftpd/pureftpd.passwd
+			pure-pw mkdb
+		fi
 
-    # generate /etc/pure-ftpd/pureftpd.pdb
-    if [ ! -f /etc/pure-ftpd/pureftpd.pdb ]; then
-      pure-pw mkdb
-    fi
+		# generate /etc/pure-ftpd/pureftpd.pdb
+		if [ ! -f /etc/pure-ftpd/pureftpd.pdb ]; then
+			pure-pw mkdb
+		fi
 
-    # check tweaks were made
-    echo
-    cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite'
+		# check tweaks were made
+		echo
+		cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite'
 
-    echo
-    echo "generating self-signed ssl certificate..."
-    echo "FTP client needs to use FTP (explicit SSL) mode"
-    echo "to connect to server's main ip address on port 21"
-    sleep 4
-    # echo "just hit enter at each prompt until complete"
-    # setup self-signed ssl certs
-    mkdir -p /etc/ssl/private
-    openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN==$CNIP" -newkey rsa:1024 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem
-    chmod 600 /etc/pki/pure-ftpd/*.pem
-    openssl x509 -in /etc/pki/pure-ftpd/pure-ftpd.pem -text -noout
-    echo 
-    # ls -lah /etc/ssl/private/
-    ls -lah /etc/pki/pure-ftpd
-    echo
-    echo "self-signed ssl cert generated"
-      
-    echo "pure-ftpd installed"
-    cmservice pure-ftpd restart
-    csf -r
+		echo
+		echo "generating self-signed ssl certificate..."
+		echo "FTP client needs to use FTP (explicit SSL) mode"
+		echo "to connect to server's main ip address on port 21"
+		sleep 4
+		# echo "just hit enter at each prompt until complete"
+		# setup self-signed ssl certs
+		mkdir -p /etc/ssl/private
+		openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN==$CNIP" -newkey rsa:1024 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem
+		chmod 600 /etc/pki/pure-ftpd/*.pem
+		openssl x509 -in /etc/pki/pure-ftpd/pure-ftpd.pem -text -noout
+		echo 
+		# ls -lah /etc/ssl/private/
+		ls -lah /etc/pki/pure-ftpd
+		echo
+		echo "self-signed ssl cert generated"
+			
+		echo "pure-ftpd installed"
+		cmservice pure-ftpd restart
+		csf -r
 
-    echo
-    echo "check /etc/pure-ftpd/pureftpd.passwd"
-    ls -lah /etc/pure-ftpd/pureftpd.passwd
+		echo
+		echo "check /etc/pure-ftpd/pureftpd.passwd"
+		ls -lah /etc/pure-ftpd/pureftpd.passwd
 
-    echo
-    echo "check /etc/pure-ftpd/pureftpd.pdb"
-    ls -lah /etc/pure-ftpd/pureftpd.pdb
+		echo
+		echo "check /etc/pure-ftpd/pureftpd.pdb"
+		ls -lah /etc/pure-ftpd/pureftpd.pdb
 
-    echo
-  fi
+		echo
+	fi
 }
 
 sslvhost() {
@@ -261,7 +339,7 @@ if [ ! -f /usr/local/nginx/conf/ssl ]; then
   mkdir -p /usr/local/nginx/conf/ssl
 fi
 
-if [ ! -f /usr/local/nginx/conf/ssl/${vhostname} ]; then
+if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 
@@ -299,57 +377,57 @@ fi
 openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
-# cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
-# cecho "creating private key: ${vhostname}-backup.key" $boldgreen
-# sleep 5
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
+cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
+cecho "creating private key: ${vhostname}-backup.key" $boldgreen
+sleep 5
 
-# openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
-# cecho "private key's SPKI - Subject Public Key Information" $boldgreen
-# cecho "Primary private key - ${vhostname}.key" $boldgreen
-# cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
-# cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
-# sleep 5
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
+cecho "private key's SPKI - Subject Public Key Information" $boldgreen
+cecho "Primary private key - ${vhostname}.key" $boldgreen
+cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
+cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
+sleep 5
 
-# echo
-# cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
+echo
+cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
 
-# openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
+openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
 
-# echo
-# cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
+echo
+cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
 
-# openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
+openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
 
-# echo
-# cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
+echo
+cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
 
-# echo
-# cecho "for 7 days max-age including subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
+echo
+cecho "for 7 days max-age including subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
 
-# echo
-# cecho "for 7 days max-age excluding subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
+echo
+cecho "for 7 days max-age excluding subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
 
 
 echo
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
 
-dhparamstarttime=$(date +%s.%N)
+dhparamstarttime=$(TZ=UTC date +%s.%N)
 
 openssl dhparam -out dhparam.pem 2048
 
-dhparamendtime=$(date +%s.%N)
+dhparamendtime=$(TZ=UTC date +%s.%N)
 DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
 cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 
@@ -363,13 +441,54 @@ if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
   pureftpinstall
 fi
 
+# Support secondary dedicated IP configuration for centmin mod
+# nginx vhost generator, so out of the box, new nginx vhosts 
+# generated will use the defined SECOND_IP=111.222.333.444 where
+# the IP is a secondary IP addressed added to the server.
+# You define SECOND_IP variable is centmin mod persistent config
+# file outlined at http://centminmod.com/upgrade.html#persistent
+# you manually creat the file at /etc/centminmod/custom_config.inc
+# and add SECOND_IP=yoursecondary_IPaddress variable to it which
+# will be registered with nginx vhost generator routine so that 
+# any new nginx vhosts created via centmin.sh menu option 2 or
+# /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
+# SECOND_IP ip address set in the nginx vhost's listen directive
+if [[ -z "$SECOND_IP" ]]; then
+  DEDI_IP=""
+  DEDI_LISTEN=""
+elif [[ "$SECOND_IP" ]]; then
+  DEDI_IP=$(echo $(echo ${SECOND_IP}:))
+  DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Nginx Vhost Setup..." $boldgreen
 cecho "---------------------------------------------------------------" $boldyellow
 
 # read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 
-if [[ "$sslconfig" = [yY] ]]; then
+# check to make sure you don't add a domain name vhost that matches
+# your server main hostname setup in server_name within main hostname
+# nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
+if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+  CHECK_MAINHOSTNAME=$(awk '/server_name/ {print $2}' /usr/local/nginx/conf/conf.d/virtual.conf | sed -e 's|;||')
+  if [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" ]]; then
+    echo
+    echo " Error: $vhostname is already setup for server main hostname"
+    echo " at /usr/local/nginx/conf/conf.d/virtual.conf"
+    echo " It is important that main server hostname be setup correctly"
+    echo
+    echo " As per Getting Started Guide Step 1 centminmod.com/getstarted.html"
+    echo " The server main hostname needs to be unique. So please setup"
+    echo " the main server name vhost properly first as per Step 1 of guide."
+    echo
+    echo " Aborting nginx vhost creation..."
+    echo
+    exit 1
+  fi
+fi
+
+if [[ "$sslconfig" = [yY] ]] || [[ "$sslconfig" = 'le' ]] || [[ "$sslconfig" = 'led' ]] || [[ "$sslconfig" = 'lelive' ]] || [[ "$sslconfig" = 'lelived' ]] || [[ "$sslconfig" = 'yd' ]] || [[ "$sslconfig" = 'ydle' ]]; then
   echo
   vhostssl=y
   # read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
@@ -402,33 +521,129 @@ umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-  ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
+  ( echo "${ftppass}" ; echo "${ftppass}" ) | pure-pw useradd "$ftpuser" -u $PUREUSER -g $PUREGROUP -d "/home/nginx/domains/$vhostname"
   pure-pw mkdb
 fi
 
 cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
-<html>
-<head>
-<title>$vhostname</title>
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
+  <meta content="${vhostname} nginx site generated by centminmod.com" name="description">
+  <title>${vhostname}</title>
+  <link href="//centminmod.com/purecss/pure-min.css" rel="stylesheet"><!--[if lte IE 8]>
+  <link rel="stylesheet" href="//centminmod.com/purecss/grids-responsive-old-ie-min.css">
+  <![endif]-->
+  <!--[if gt IE 8]><!-->
+  <link href="//centminmod.com/purecss/grids-responsive-min.css" rel="stylesheet"><!--<![endif]-->
+  <!--[if gt IE 8]><!-->
+  <style type="text/css">
+  *{-webkit-box-sizing:border-box;-moz-box-sizing:border-box;box-sizing:border-box}
+  a{text-decoration:none;color:#3d92c9}
+  a:hover,a:focus{text-decoration:underline}
+  h3{font-weight:100}
+  .pure-img-responsive{max-width:100%;height:auto}
+  #layout{padding:0}
+  .header{text-align:center;top:auto;margin:3em auto}
+  .sidebar{background:#2e739a;color:#fff}
+  .brand-title,.brand-tagline{margin:0}
+  .brand-title{text-transform:uppercase}
+  .brand-tagline{font-weight:300;color:#b0cadb}
+  .nav-list{margin:0;padding:0;list-style:none}
+  .nav-item{display:inline-block;*display:inline;zoom:1}
+  .nav-item a{background:transparent;border:2px solid #b0cadb;color:#fff;margin-top:1em;letter-spacing:.05em;text-transform:uppercase;font-size:85%}
+  .nav-item a:hover,.nav-item a:focus{border:2px solid #3d92c9;text-decoration:none}
+  .content-subhead{text-transform:uppercase;color:#aaa;border-bottom:1px solid #eee;padding:.4em 0;font-size:80%;font-weight:500;letter-spacing:.1em}
+  .content{padding:2em 1em 0}
+  .post{padding-bottom:2em}
+  .post-title{font-size:2em;color:#222;margin-bottom:.2em}
+  .post-avatar{border-radius:50px;float:right;margin-left:1em}
+  .post-description{font-family:Georgia,"Cambria",serif;color:#444;line-height:1.8em}
+  .post-meta{color:#999;font-size:90%;margin:0}
+  .post-category{margin:0 .1em;padding:.3em 1em;color:#fff;background:#999;font-size:80%}
+  .post-category-design{background:#5aba59}
+  .post-category-pure{background:#4d85d1}
+  .post-category-yui{background:#8156a7}
+  .post-category-js{background:#df2d4f}
+  .post-images{margin:1em 0}
+  .post-image-meta{margin-top:-3.5em;margin-left:1em;color:#fff;text-shadow:0 1px 1px #333}
+  .footer{text-align:center;padding:1em 0}
+  .footer a{color:#ccc;font-size:80%}
+  .footer .pure-menu a:hover,.footer .pure-menu a:focus{background:none}
+  @media (min-width: 48em) {
+  .content{padding:2em 3em 0;margin-left:25%}
+  .header{margin:80% 2em 0;text-align:right}
+  .sidebar{position:fixed;top:0;bottom:0}
+  }
+  </style><!--<![endif]-->
 </head>
 <body>
-<p>Welcome to $vhostname. This index.html page can be removed.</p>
-
-<p>Useful Centmin Mod info and links to bookmark.</p>
-
-<ul>
-  <li>Getting Started Guide - <a href="http://centminmod.com/getstarted.html" target="_blank">http://centminmod.com/getstarted.html</a></li>
-  <li>Latest Centmin Mod version - <a href="http://centminmod.com" target="_blank">http://centminmod.com</a></li>
-  <li>Centmin Mod FAQ - <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a></li>
-  <li>Change Log - <a href="http://centminmod.com/changelog.html" target="_blank">http://centminmod.com/changelog.html</a></li>
-  <li>Google+ Page latest news <a href="http://centminmod.com/gpage" target="_blank">http://centminmod.com/gpage</a></li>
-  <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
-  <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
-  <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
-</ul>
-
-<p><a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Cheap VPS Hosting at Digitalocean</a></p>
-
+  <div class="pure-g" id="layout">
+    <div class="sidebar pure-u-1 pure-u-md-1-4">
+      <div class="header">
+        <h1 class="brand-title">Welcome to ${vhostname}</h1>
+        <h2 class="brand-tagline">Powered by CentminMod</h2>
+        <h2 class="brand-tagline">Nginx Server</h2>
+        <nav class="nav">
+          <ul class="nav-list">
+            <li class="nav-item">
+              <a class="pure-button" href="https://centminmod.com">CentminMod.com</a>
+            </li>
+            <li class="nav-item">
+              <a class="pure-button" href="https://community.centminmod.com">CentminMod Forums</a>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </div>
+    <div class="content pure-u-1 pure-u-md-3-4">
+      <div>
+        <!-- A wrapper for all the blog posts -->
+        <div class="posts">
+          <h1 class="content-subhead">index.html place holder</h1><!-- A single blog post -->
+          <section class="post">
+            <header class="post-header">
+              <h2 class="post-title">${vhostname}</h2>
+            </header>
+            <div class="post-description">
+              <p>Welcome to ${vhostname}. This index.html page can be removed.</p>
+              <p>Useful Centmin Mod info and links to bookmark.</p>
+              <ul>
+                <li>Getting Started Guide - <a href="https://centminmod.com/getstarted.html" target="_blank">https://centminmod.com/getstarted.html</a>
+                </li>
+                <li>Latest Centmin Mod version - <a href="https://centminmod.com" target="_blank">https://centminmod.com</a>
+                </li>
+                <li>Centmin Mod FAQ - <a href="https://centminmod.com/faq.html" target="_blank">https://centminmod.com/faq.html</a>
+                </li>
+                <li>Change Log - <a href="https://centminmod.com/changelog.html" target="_blank">https://centminmod.com/changelog.html</a>
+                </li>
+                <li>Google+ Page latest news <a href="https://plus.google.com/u/0/b/104831941868856035845/104831941868856035845" target="_blank">Centmin Mod Google+</a>
+                </li>
+                <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a>
+                </li>
+                <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a>
+                </li>
+                <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a>
+                </li>
+                <li>Centmin Mod Medium <a href="https://medium.com/@centminmod" target="_blank">https://medium.com/@centminmod</a>
+                </li>
+              </ul>
+              <p>For Centmin Mod LEMP stack hosting check out <a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Digitalocean</a></p>
+            </div>
+          </section>
+        </div>
+        <div class="footer">
+          <div class="pure-menu pure-menu-horizontal">
+            <ul>
+              <li class="pure-menu-item">
+                <a class="pure-menu-link" href="#">PureCSS Template BSD Licensed Copyright 2016 Yahoo! Inc. All rights reserved</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 END
@@ -449,10 +664,19 @@ if [[ "$vhostssl" = [yY] ]]; then
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
       OPEENSSL_CFPATCHED='y'
+  elif [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]; then
+      # for openssl 1.1.0 native chacha20 support
+      OPEENSSL_CFPATCHED='y'
   fi
-  
+
 if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
-  CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
+  if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  elif [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  else
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  fi
 else
   CHACHACIPHERS=""
 fi
@@ -466,12 +690,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -479,15 +704,25 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
 # block common exploits, sql injections etc
 #include /usr/local/nginx/conf/block.conf;
@@ -513,23 +748,131 @@ server {
 }
 ENSS
 
-# separate ssl vhost at yourdomain.com.ssl.conf
-cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
+if [[ "$sslconfig" = 'ydle' ]]; then
+  # remove non-https vhost so https only single vhost file
+  # rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf
+
+if [ ! -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
+cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"<<EVT
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;
+EVT
+fi
+
+# single ssl vhost at yourdomain.com.ssl.conf
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESX
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
-# For SPDY SSL Setup
+# For HTTP/2 SSL Setup
 # read http://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
-# server {
-#   server_name ${vhostname} www.${vhostname};
-#    return 302 https://\$server_name\$request_uri;
-# }
+#x# HTTPS-DEFAULT
+server {
+  $DEDI_LISTEN
+  server_name ${vhostname} www.${vhostname};
+  return 302 https://\$server_name\$request_uri;
+}
 
 server {
-  listen 443 $LISTENOPT;
+  listen ${DEDI_IP}443 $LISTENOPT;
+  server_name $vhostname www.$vhostname;
+
+  include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
+  include /usr/local/nginx/conf/ssl_include.conf;
+
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
+  # mozilla recommended
+  ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
+  ssl_prefer_server_ciphers   on;
+  $SPDY_HEADER
+
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
+  #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+  $COMP_HEADER;
+  ssl_buffer_size 1369;
+  ssl_session_tickets on;
+  
+  # enable ocsp stapling
+  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver_timeout 10s;
+  #ssl_stapling on;
+  #ssl_stapling_verify on;
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
+  root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
+
+  location / {
+  include /usr/local/nginx/conf/503include-only.conf;
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Enable for vBulletin usage WITHOUT vbSEO installed
+  # More example Nginx vhost configurations at
+  # http://centminmod.com/nginx_configure.html
+  #try_files    \$uri \$uri/ /index.php;
+
+  }
+
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}
+ESX
+elif [[ "$sslconfig" = 'yd' ]]; then
+  # remove non-https vhost so https only single vhost file
+  rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf
+
+# single ssl vhost at yourdomain.com.ssl.conf
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+# For HTTP/2 SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+
+# redirect from www to non-www  forced SSL
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+server {
+  $DEDI_LISTEN
+  server_name ${vhostname} www.${vhostname};
+  return 302 https://\$server_name\$request_uri;
+}
+
+server {
+  listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -537,15 +880,20 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
-  ssl_ciphers ${CHACHACIPHERS}ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA:!DES-CBC3-SHA;
+  ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
+
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-  #add_header  X-Content-Type-Options "nosniff";
-  #add_header X-Frame-Options DENY;
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
   $COMP_HEADER;
-  ssl_buffer_size 1400;
+  ssl_buffer_size 1369;
   ssl_session_tickets on;
   
   # enable ocsp stapling
@@ -563,12 +911,18 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
 # block common exploits, sql injections etc
 #include /usr/local/nginx/conf/block.conf;
@@ -593,24 +947,53 @@ server {
   include /usr/local/nginx/conf/vts_server.conf;
 }
 ESS
-
 else
-
-cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
+# separate ssl vhost at yourdomain.com.ssl.conf
+cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
+# For HTTP/2 SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
 
-# redirect from non-www to www 
+# redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
-#server {
-#            listen   80;
-#            server_name $vhostname;
-#            return 301 \$scheme://www.${vhostname}\$request_uri;
-#       }
+# server {
+#   server_name ${vhostname} www.${vhostname};
+#    return 302 https://\$server_name\$request_uri;
+# }
 
 server {
+  listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
+
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl_include.conf;
+
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
+  # mozilla recommended
+  ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
+  ssl_prefer_server_ciphers   on;
+  $SPDY_HEADER
+
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
+  #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+  $COMP_HEADER;
+  ssl_buffer_size 1369;
+  ssl_session_tickets on;
+  
+  # enable ocsp stapling
+  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver_timeout 10s;
+  #ssl_stapling on;
+  #ssl_stapling_verify on;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -620,12 +1003,18 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
 # block common exploits, sql injections etc
 #include /usr/local/nginx/conf/block.conf;
@@ -649,15 +1038,131 @@ server {
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
 }
+ESS
+fi # sslconfig = yd
+
+else
+
+cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+
+# redirect from non-www to www 
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+#server {
+#            listen   ${DEDI_IP}80;
+#            server_name $vhostname;
+#            return 301 \$scheme://www.${vhostname}\$request_uri;
+#       }
+
+server {
+  $DEDI_LISTEN
+  server_name $vhostname www.$vhostname;
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
+  root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
+
+  location / {
+  include /usr/local/nginx/conf/503include-only.conf;
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Enable for vBulletin usage WITHOUT vbSEO installed
+  # More example Nginx vhost configurations at
+  # http://centminmod.com/nginx_configure.html
+  #try_files		\$uri \$uri/ /index.php;
+
+  }
+
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}
 END
 
 fi
 
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
+echo "${CUR_DIR}/tools/autoprotect.sh"
+if [ -f "${CUR_DIR}/tools/autoprotect.sh" ]; then
+  "${CUR_DIR}/tools/autoprotect.sh"
+fi
+
 service nginx restart
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
+fi
+
+FINDUPPERDIR=$(dirname $SCRIPT_DIR)
+if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
+  if [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname""
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname"
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'led' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d"
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" d
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelive' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live"
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" live
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "/usr/local/src/centminmod/addons/acmetool.sh" ] && [[ "$sslconfig" = 'lelived' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: /usr/local/src/centminmod/addons/acmetool.sh"
+    chmod +x "/usr/local/src/centminmod/addons/acmetool.sh"
+    echo ""/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived"
+    "/usr/local/src/centminmod/addons/acmetool.sh" issue "$vhostname" lived
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  fi
 fi
 
 echo 
@@ -673,20 +1178,25 @@ fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
 echo
-cecho "domain: http://$vhostname" $boldyellow
-cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$sslconfig" != 'yd' ]] || [[ "$sslconfig" != 'ydle' ]]; then
+  cecho "domain: http://$vhostname" $boldyellow
+  cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+fi
+if [[ "$vhostssl" = [yY] ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
   cecho "domain: https://$vhostname" $boldyellow
   cecho "vhost ssl conf file for $vhostname created: /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
+  if [[ -f /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf ]]; then
+    cecho "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf created" $boldwhite
+  fi
   cecho "/usr/local/nginx/conf/ssl_include.conf created" $boldwhite
   cecho "Self-signed SSL Certificate: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldyellow
   cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
-  # cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
-  # cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
+  cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
+  cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
@@ -698,7 +1208,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
@@ -707,20 +1217,33 @@ ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-
 fi
 
 echo
+{
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Commands to remove ${vhostname}" $boldwhite
 echo
-cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
-cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+cecho " pure-pw userdel $ftpuser" $boldwhite
 fi
+if [[ "$sslconfig" != 'yd' ]] || [[ "$sslconfig" != 'ydle' ]]; then
+  cecho " rm -rf /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+fi
+# if [[ "$vhostssl" = [yY] ]] || [[ "$sslconfig" = 'le' ]] || [[ "$sslconfig" = 'led' ]] || [[ "$sslconfig" = 'lelive' ]] || [[ "$sslconfig" = 'lelived' ]]; then
+cecho " rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" $boldwhite
+# fi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldwhite
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldwhite
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldwhite
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
 cecho " rm -rf /home/nginx/domains/$vhostname" $boldwhite
 cecho " service nginx restart" $boldwhite
+echo ""
 cecho "-------------------------------------------------------------" $boldyellow
+cecho "vhost for $vhostname setup successfully" $boldwhite
+cecho "$vhostname setup info log saved at: " $boldwhite
+cecho "$LOGPATH" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+echo ""
+} | tee "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
 
 else
 

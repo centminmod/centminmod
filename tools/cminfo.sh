@@ -35,6 +35,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 if [ ! -f /usr/sbin/virt-what ]; then
     yum -y -q install virt-what
 fi
@@ -142,7 +146,7 @@ if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
     mkdir -p /etc/centminmod/cronjobs
     cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-before-cminfo-setup.txt
-    echo "*/4 * * * * /usr/bin/cminfo_updater" >> cronjoblist
+    echo "*/4 * * * * /usr/bin/cminfo_updater 2>/dev/null" >> cronjoblist
     cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-after-cminfo-setup.txt
     crontab cronjoblist
     rm -rf cronjoblist

@@ -1,7 +1,7 @@
 apcdevfix() {
     cd $DIR_TMP
 	rm -rf APC-3.1.13*
-	wget -c http://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
+	wget -c https://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
 	tar xfz APC-3.1.13.tgz
 	cd APC-3.1.13
 }
@@ -19,7 +19,7 @@ function funct_apcsourceinstall {
             export CC="ccache /usr/bin/clang -ferror-limit=0"
             export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
             export CCACHE_CPP2=yes
-            CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
+            CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
             export CFLAGS="$CLANG_CFLAGOPT"
         else
             export CC="ccache /usr/bin/gcc"
@@ -41,11 +41,16 @@ fi
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
 
-if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' ]]; then
+if [[ "$PHPCURRENTVER" = '5.5' ]]; then
     apcdevfix
-else
-#tar xvzf APC-${APCCACHE_VERSION}.tgz
-cd APC-${APCCACHE_VERSION}
+elif [[ "$PHPCURRENTVER" = '5.2' || "$PHPCURRENTVER" = '5.3' || "$PHPCURRENTVER" = '5.4' ]]; then
+    #tar xvzf APC-${APCCACHE_VERSION}.tgz
+    cd APC-${APCCACHE_VERSION}
+elif [[ "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' || "$PHPCURRENTVER" = '7.0' ]]; then
+    echo "Your current PHP $PHPCURRENTVER version is not supported. Use Zend Opcache instead"
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        exit
+    fi
 fi
 
 /usr/local/bin/phpize
@@ -136,7 +141,7 @@ echo
 echo ""
 cecho "Important instructions next to protect your apc.php page" $boldgreen
 	if [ "$UNATTENDED" == 'n' ]; then
-	sleep 30
+	sleep 20
 	else
 	sleep 2
 	fi #unattended
@@ -149,7 +154,7 @@ echo
 }
 
 function funct_installapc {
-
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 funct_apcsourceinstall
 
 if [[ "$ENABLE_MENU" != [yY] ]]; then
@@ -177,5 +182,5 @@ rm -f $0
 fi
 
 fi
-
+    fi # PHP_INSTALL=y
 }

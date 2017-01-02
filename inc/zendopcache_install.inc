@@ -73,7 +73,7 @@ cmservice nginx reload
 ###############
 
 zopcacheinstall() {
-
+	if [[ "$PHP_INSTALL" = [yY] ]]; then
     echo "*************************************************"
     cecho "* Installing Zend Optimizer Plus OPcache" $boldgreen
     echo "*************************************************"
@@ -136,6 +136,11 @@ if [[ ! -f /usr/local/nginx/html/opcache.php ]]; then
 	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
 	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
 	opprotectinstall
+elif [[ "$(ls /usr/local/nginx/html | grep opcache >/dev/null 2>&1; echo $?)" != '0' ]]; then
+	echo "cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php"
+	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
+	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	opprotectinstall
 fi
 
 ######################################################
@@ -189,13 +194,11 @@ fi # check if opcache.so exists in zendopcache.ini
     echo "*************************************************"
 
 else
-
-PHPNATIVEOPCACHE='y'
-
+	PHPNATIVEOPCACHE='y'
 	echo ""
-	echo "Detected PHP branch: 5.5 which has native support for Zend OPcache"
+	echo "Detected PHP branch: 5.5+ which has native support for Zend OPcache"
 	echo "To enable Zend OPcache run menu option #5 and specify PHP 5.5.0 or higher"
 
 fi # check for PHPMVER !=5.5
-
+	fi # PHP_INSTALL=y
 }

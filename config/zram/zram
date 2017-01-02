@@ -64,9 +64,11 @@ for i in $(grep '^/dev/zram' /proc/swaps | awk '{ print $1 }'); do
 swapoff "$i"
 done
 
-if grep -q "^zram " /proc/modules; then
-sleep 1
-rmmod zram
+if [ -d /proc/modules ]; then
+    if grep -q "^zram " /proc/modules; then
+        sleep 1
+        rmmod zram
+    fi
 fi
 }
 

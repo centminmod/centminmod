@@ -1,4 +1,19 @@
+ngxgeoipmemtweak() {
+	# on low memory systems <=768MB or when NGINX_GEOIPMEM=n
+	# optimise nginx memory usage when nginx geoip module is 
+	# enabled (by default) by changing from in memory caching
+	# of geoip country, city databases to on disk caching 
+	if [[ "$TOTALMEM" -le '759000' || "$NGINX_GEOIPMEM" = [nN] ]]; then
+		sed -i "s|_MEMORY_CACHE|_STANDARD|g" src/http/modules/ngx_http_geoip_module.c
+		grep -n _STANDARD src/http/modules/ngx_http_geoip_module.c
+	elif [[ "$NGINX_GEOIPMEM" = [yY] ]]; then
+		sed -i "s|_STANDARD|_MEMORY_CACHE|g" src/http/modules/ngx_http_geoip_module.c
+		grep -n _MEMORY_CACHE src/http/modules/ngx_http_geoip_module.c
+	fi
+}
+
 geoipphpext() {
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [[ -d /usr/share/GeoIP ]]; then
 	if [ ! -f /usr/bin/svn ]; then
 		echo "installing subversion..."
@@ -10,32 +25,47 @@ if [[ -d /usr/share/GeoIP ]]; then
 	if [[ ! -d ${DIR_TMP}/geoip ]]; then
 		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
 	fi
-	cd geoip
-	if [[ "$INITIALINSTALL" != [yY] ]]; then
-		make clean
-	fi
-	/usr/local/bin/phpize
-	./configure --with-php-config=/usr/local/bin/php-config
-	make$MAKETHREADS
-	make install
+	if [ -d geoip ]; then
+		rm -rf geoip
+		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+		cd geoip
+		if [[ "$INITIALINSTALL" != [yY] ]]; then
+			make clean
+		fi
+		/usr/local/bin/phpize
+		./configure --with-php-config=/usr/local/bin/php-config
+		make$MAKETHREADS
+		make install
 
 cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
+	else
+		echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
+	fi # geoip directory check
 fi
+    fi # PHP_INSTALL=y
 }
 
 geoipinstall() {
 
 cecho "GeoIP database and library install..." $boldyellow
-
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
+    # GEOIPYUMCHECK=$(rpm -qa GeoIP)
+    # GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
+    if [[ $(rpm -q GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
+        yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
+        rpm -ql GeoIP-devel GeoIP
+    fi
 else
-	yum -y -q install GeoIP GeoIP-devel
+		# GEOIPYUMCHECK=$(rpm -qa GeoIP)
+		# GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
+    if [[ $(rpm -q GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
+        yum -y -q install GeoIP GeoIP-devel
+        rpm -ql GeoIP-devel GeoIP
+    fi
 fi
-rpm -ql GeoIP-devel GeoIP
 
 	cd $DIR_TMP
 

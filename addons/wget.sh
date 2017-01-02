@@ -9,15 +9,16 @@
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
 ALTPCRE_VERSION='8.39'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
-ALTPCRELINK="https://centminmod.com/centminmodparts/pcre/${ALTPCRELINKFILE}"
+ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.18'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
-WGET_LINKLOCAL="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
@@ -41,17 +42,29 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
-    CPUS=$(echo $((CPUS+1)))
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS" -gt '8' ]]; then
+        CPUS=$(echo "$CPUS+2" | bc)
+    else
+        CPUS=$(echo "$CPUS+1" | bc)
+    fi
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=$(grep "processor" /proc/cpuinfo |wc -l)
-    CPUS=$(echo $((CPUS+1)))
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS" -gt '8' ]]; then
+        CPUS=$(echo "$CPUS+2" | bc)
+    else
+        CPUS=$(echo "$CPUS+1" | bc)
+    fi
     MAKETHREADS=" -j$CPUS"
 fi
 
@@ -94,32 +107,40 @@ scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-      echo "install scl for newer gcc and g++ versions"
-      wget http://linuxsoft.cern.ch/cern/scl/slc6-scl.repo -O /etc/yum.repos.d/slc6-scl.repo
-      rpm --import http://linuxsoft.cern.ch/cern/scl/RPM-GPG-KEY-cern
-      # yum -y install devtoolset-3 -q
-      yum -y install devtoolset-3-gcc-c++ devtoolset-3-binutils
+      echo "install centos-release-scl for newer gcc and g++ versions"
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+      echo
+      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
     fi
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+      echo "install centos-release-scl for newer gcc and g++ versions"
+      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+      echo
+      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
   fi # centos 6 only needed
 }
 
 gccdevtools() {
-  if [[ ! -f /opt/rh/devtoolset-3/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$CENTOS_SIX" = '6' ]]; then
     scl_install
     unset CC
     unset CXX
-    export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
-    export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++" 
-  elif [[ -f /opt/rh/devtoolset-3/root/usr/bin/gcc && -f /opt/rh/devtoolset-3/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+    export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
+    export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++" 
+  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
     unset CC
     unset CXX
-    export CC="/opt/rh/devtoolset-3/root/usr/bin/gcc"
-    export CXX="/opt/rh/devtoolset-3/root/usr/bin/g++" 
+    export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
+    export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++" 
   fi
 }
 
 source_pcreinstall() {
-  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
   if [ -s "$ALTPCRELINKFILE" ]; then
@@ -146,7 +167,7 @@ source_pcreinstall() {
   fi
   cd "pcre-${ALTPCRE_VERSION}"
   make clean >/dev/null 2>&1
-  ./configure --enable-utf8 --enable-utf16 --enable-utf32 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline
+  ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
   make${MAKETHREADS}
   make install
   /usr/local/bin/pcre-config --version
@@ -243,13 +264,13 @@ source_wgetinstall() {
 ###########################################################################
 case $1 in
   install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   source_pcreinstall
   source_wgetinstall
 } 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
@@ -257,12 +278,12 @@ echo "Total wget Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/wget_s
 tail -1 "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
   ;;
   pcre)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   source_pcreinstall
 } 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"

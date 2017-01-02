@@ -6,7 +6,7 @@
 # is Python 2.6
 #
 # i.e. python 2.7
-# yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
+# yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
 # rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv
 # 
 # rpm -ql python27 python27-pip python27-virtualenv | grep bin
@@ -32,12 +32,16 @@
 # 
 # https://docs.python.org/3/library/venv.html
 ###########################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ ! -d "$CENTMINLOGDIR" ]; then
+  mkdir -p "$CENTMINLOGDIR"
+fi
 
 if [ "$CENTOSVER" == 'release' ]; then
     CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
@@ -53,6 +57,10 @@ fi
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -152,20 +160,21 @@ cecho "Installing Python 2.7" $boldgreen
 cecho "*************************************************" $boldgreen
 
 # install Python 2.7 besides system default Python 2.6
-yum -y install python27 python27-devel python27-pip python27-setuptools python27-tools python27-virtualenv --enablerepo=ius
+yum -y remove python-tools
+yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
 
-rpm -ql python27 python27-devel python27-pip python27-setuptools python27-tools tkinter27 python27-virtualenv | grep bin
+rpm -ql python27 python27-devel python27-pip python27-setuptools python27-virtualenv tkinter27 | grep bin
 }
 
 ###########################################################################
 case $1 in
   install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
   installpythonfuct
 } 2>&1 | tee ${CENTMINLOGDIR}/python27_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/python27_install_${DT}.log

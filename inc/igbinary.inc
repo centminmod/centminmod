@@ -1,19 +1,31 @@
 function funct_igbinaryinstall {
+    if [[ "$PHP_INSTALL" = [yY] ]]; then
+    axelsetup
 
+if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP
 
-    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
+    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0|7.1'
     PHPSEVEN_CHECKVER=$?
     echo $PHPSEVEN_CHECKVER
 
-    if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+    if [[ "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]]; then
+
         IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary7'
+        # fallback mirror if official github is down, use gitlab mirror
+        curl -sI --connect-timeout 5 --max-time 5 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+        IGBINARYSEVEN_CURLCHECK=$?
+        if [[ "$IGBINARYSEVEN_CURLCHECK" != '0' ]]; then
+            IGBINARYSEVEN_LINK='https://gitlab.com/centminmod-github-mirror/igbinary7.git'
+        fi
+
+        # php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
+        # disable it for now
+        DISABLESESSION=y
         if [[ -d "igbinary-php7" && -d "igbinary-php7/.git" ]]; then       
-            cd igbinary-php7
-            git stash
-            git pull
-            git log -3
+            rm -rf igbinary-php7
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
         elif [[ -d "igbinary-php7" && ! -d "igbinary-php7/.git" ]]; then
             rm -rf igbinary-php7
             git clone "$IGBINARYSEVEN_LINK" igbinary-php7
@@ -77,7 +89,7 @@ else
     if [ -s igbinary-${IGBINARY_VERSION}.tgz ]; then
         cecho "igbinary-${IGBINARY_VERSION}.tgz Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://pecl.php.net/get/igbinary-${IGBINARY_VERSION}.tgz $WGETRETRY
+        download_cmd http://pecl.php.net/get/igbinary-${IGBINARY_VERSION}.tgz $WGETRETRY
     fi
 
 tar -xzvf igbinary-${IGBINARY_VERSION}.tgz
@@ -96,17 +108,16 @@ make install
 
 fi
 
-IGBSOCHECK=`grep 'extension=igbinary.so' /usr/local/lib/php.ini`
-IGBSOCHECKB=$(grep 'extension=igbinary.so' ${CONFIGSCANDIR}/igbinary.ini)
+IGBSOCHECK=$(grep 'extension=igbinary.so' /usr/local/lib/php.ini >/dev/null 2>&1; echo $?)
+IGBSOCHECKB=$(grep 'extension=igbinary.so' "${CONFIGSCANDIR}/igbinary.ini" >/dev/null 2>&1; echo $?)
 
-if [[ -z "$IGBSOCHECK" || -z "$IGBSOCHECKB" ]]; then
-
+if [[ "$IGBSOCHECK" = '1' || "$IGBSOCHECKB" = '1' ]]; then
 cat > "${CONFIGSCANDIR}/igbinary.ini" <<END
 
 [igbinary]
 extension=igbinary.so
 ;Use igbinary as session serializer
-session.serialize_handler=igbinary
+;session.serialize_handler=igbinary
 
 ;Enable or disable compacting of duplicate strings
 igbinary.compact_strings=On
@@ -114,15 +125,24 @@ igbinary.compact_strings=On
 ;Use igbinary as serializer in APC cache
 ;apc.serializer=igbinary
 END
+fi
+else
+    # remove igbinary PHP support if IGBINARY_INSTALL=n
+    rm -rf "${CONFIGSCANDIR}/igbinary.ini"
+fi # IGBINARY_INSTALL = y
 
+APCSOCHECK=$(grep 'extension=apc.so' "${CONFIGSCANDIR}/apc.ini" >/dev/null 2>&1; echo $?)
+
+if [[ "$APCSOCHECK" = '0' ]]; then
+    sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' "${CONFIGSCANDIR}/igbinary.ini"
 fi
 
-APCSOCHECK=`grep 'extension=apc.so' ${CONFIGSCANDIR}/apc.ini`
-
-if [[ $APCSOCHECK ]]; then
-sed -i 's/;apc.serializer=igbinary/apc.serializer=igbinary/g' ${CONFIGSCANDIR}/igbinary.ini
+if [[ "$DISABLESESSION" = [yY] ]]; then
+# php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
+# disable it for now
+    sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini"
 fi
 
 cmservice php-fpm reload
-
+    fi # PHP_INSTALL=y
 }

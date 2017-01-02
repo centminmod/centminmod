@@ -1,0 +1,11 @@
+--- a/src/event/ngx_event_openssl.c Thu Aug 18 14:49:48 2016 -0700
++++ b/src/event/ngx_event_openssl.c Mon Aug 22 18:53:21 2016 +0300
+@@ -2986,7 +2986,7 @@
+                      ngx_ssl_session_ticket_md(), NULL);
+         ngx_memcpy(name, key[0].name, 16);
+ 
+-        return 0;
++        return 1;
+ 
+     } else {
+         /* decrypt session ticket */

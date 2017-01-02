@@ -30,7 +30,12 @@ PIDB='/var/run/memcached/memcached2.pid'
 # https://github.com/memcached/memcached/wiki/ReleaseNotes1425
 MEM_CURVER=$(/usr/local/bin/memcached -V | awk '{print $2}' | head -n1 | sed -e 's|\.|00|g')
 if [[ "$MEM_CURVER" -ge '10040025' ]]; then
-        OPTIONS='-o slab_reassign,slab_automove,lru_crawler,lru_maintainer,maxconns_fast,hash_algorithm=murmur3'
+  if [[ "$MEM_CURVER" -ge '10040026' ]]; then
+    # memcached 1.4.26+ https://github.com/memcached/memcached/wiki/ReleaseNotes1426
+    OPTIONS='-o modern'
+  else
+    OPTIONS='-o slab_reassign,slab_automove,lru_crawler,lru_maintainer,maxconns_fast,hash_algorithm=murmur3'
+  fi
 fi
 
 if [ -f /proc/user_beancounters ]; then

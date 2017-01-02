@@ -1,7 +1,13 @@
+[client]
+socket=/var/lib/mysql/mysql.sock
+
+[mysql]
+max_allowed_packet = 32M
+
 [mysqld]
 local-infile=0
 ignore-db-dir=lost+found
-#character-set-server=utf8
+character-set-server=utf8
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
 
@@ -43,6 +49,8 @@ max_connect_errors = 100000
 concurrent_insert = 2
 read_rnd_buffer_size = 256K
 bulk_insert_buffer_size = 8M
+# query_cache boost for MariaDB >10.1.2+
+# https://community.centminmod.com/posts/30811/
 query_cache_limit = 512K
 query_cache_size = 16M
 query_cache_type = 1
@@ -82,8 +90,10 @@ innodb_support_xa=1
 
 # 200 * # DISKS
 innodb_io_capacity = 100
+innodb_io_capacity_max = 2000
 innodb_read_io_threads = 2
 innodb_write_io_threads = 2
+innodb_flush_neighbors = 1
 
 # mariadb settings
 [mariadb]
@@ -103,6 +113,9 @@ aria_pagecache_buffer_size = 8M
 aria_sort_buffer_size = 8M
 
 [mariadb-5.5]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
 #ignore_db_dirs=
 query_cache_strip_comments=0
 
@@ -135,6 +148,9 @@ write_buffer = 16M
 interactive-timeout
 
 [mariadb-10.0]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
 # 2 variables needed to switch from XtraDB to InnoDB plugins
 #plugin-load=ha_innodb
 #ignore_builtin_innodb

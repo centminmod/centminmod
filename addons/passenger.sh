@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.3'
+VER='0.0.8'
 ######################################################
 # ruby, rubygem, rails and passenger installer
 # for Centminmod.com
@@ -8,11 +8,14 @@ VER='0.0.3'
 RUBYVER='2.3.1'
 RUBYBUILD=''
 
-NODEJSVER='4.4.4'
+# switch to nodesource yum repo instead of source compile
+NODEJSVER='4.6.2'
 
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
+CONFIGSCANBASE='/etc/centminmod'
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -47,19 +50,61 @@ return
 }
 
 ###########################################
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
     # speed up make
-    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS" -gt '8' ]]; then
+        CPUS=$(echo "$CPUS+2" | bc)
+    else
+        CPUS=$(echo "$CPUS+1" | bc)
+    fi
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
-    CPUS=`cat "/proc/cpuinfo" | grep "processor"|wc -l`
-    CPUS=$(echo $CPUS+1 | bc)
+    CPUS=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS" -gt '8' ]]; then
+        CPUS=$(echo "$CPUS+2" | bc)
+    else
+        CPUS=$(echo "$CPUS+1" | bc)
+    fi
     MAKETHREADS=" -j$CPUS"
+fi
+
+if [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 
 preyum() {
@@ -78,58 +123,61 @@ preyum() {
 
 installnodejs() {
 
-if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
-
-    cd $DIR_TMP
-
-        cecho "Download node-v${NODEJSVER}.tar.gz ..." $boldyellow
-    if [ -s node-v${NODEJSVER}.tar.gz ]; then
-        cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
-    else
-        wget -c --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
+# nodesource yum only works on CentOS 7 right now
+# https://github.com/nodesource/distributions/issues/128
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+	
+    	cd $DIR_TMP
+    	curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+    	yum -y install nodejs --disableplugin=priorities --disablerepo=epel
+    	npm install npm@latest -g
+	
+	# npm install forever -g
+	# https://github.com/Unitech/pm2/issues/232
+	# https://github.com/arunoda/node-usage/issues/19
+	# npm install pm2@latest -g --unsafe-perm
+	
+	echo -n "Node.js Version: "
+	node -v
+	echo -n "npm Version: "
+	npm --version
+	# echo -n "forver Version: "
+	# forever -v
+	# echo -n "pm2 Version: "
+	# pm2 -V
+	else
+		echo "node.js install already detected"
 	fi
-    fi
-
-tar xzf node-v${NODEJSVER}.tar.gz 
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: node-v${NODEJSVER}.tar.gz extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
-else 
-         cecho "node-v${NODEJSVER}.tar.gz valid file." $boldyellow
-echo ""
-	fi
-
-cd node-v${NODEJSVER}
-./configure
-make${MAKETHREADS}
-make install
-make doc
-
-npm install forever -g
-# https://github.com/Unitech/pm2/issues/232
-# https://github.com/arunoda/node-usage/issues/19
-# npm install pm2@latest -g --unsafe-perm
-
-echo -n "Node.js Version: "
-node -v
-echo -n "forver Version: "
-forever -v
-# echo -n "pm2 Version: "
-# pm2 -V
-else
-	echo "node.js install already detected"
+elif [[ "$CENTOS_SIX" = '6' ]]; then
+	echo
+	echo "CentOS 6.x detected... "
+	echo "addons/nodejs.sh currently only works on CentOS 7.x systems"
+	# exit
 fi
+}
 
+installnodejs_new() {
+  if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+      cd $DIR_TMP
+      curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+      yum -y install nodejs --disableplugin=priorities --disablerepo=epel
+      npm install npm@latest -g
+  
+    echo
+    cecho "---------------------------" $boldyellow
+    cecho -n "Node.js Version: " $boldgreen
+    node -v
+    cecho "---------------------------" $boldyellow
+    cecho -n "npm Version: " $boldgreen
+    npm --version
+    cecho "---------------------------" $boldyellow
+    echo
+    cecho "node.js YUM install completed" $boldgreen
+  else
+    echo
+    cecho "node.js install already detected" $boldgreen
+  fi
 }
 
 installruby() {
@@ -266,7 +314,7 @@ END
 	echo "Uncomment lines in /usr/local/nginx/conf/passenger.conf to enable passenger"
 	echo "Nginx needs to have passenger nginx module compiled for it to work"
 	echo ""
-	echo " 1. edit centmin.sh and set NGINX_PASSENGER=y"
+	echo " 1. set NGINX_PASSENGER=y in persistent config file /etc/centminmod/custom_config.inc (create file if missing)"
 	echo " 2. run centmin.sh menu option 4 to recompile Nginx"
 	echo " 3. uncomment/enable /usr/local/nginx/conf/passenger.conf include file in nginx.conf"
 	echo " 4. then check that passenger module is in list of nginx modules via command: "
@@ -295,15 +343,15 @@ fi
 ###########################################################################
 case $1 in
 	install)
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 		preyum
-		installnodejs
+		installnodejs_new
 		installruby
 		nginxruby
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log

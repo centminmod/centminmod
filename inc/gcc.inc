@@ -1,3 +1,127 @@
+enable_devtoolset() {
+# devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
+# centos 6 based gcc 4.4.7
+if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+    scl_install
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
+  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+    # update devtoolset-4 repo
+    # place holder if need to update devtoolset-4 in future
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
+  fi
+fi
+
+# devtoolset-4 usage of GCC 4.9 even for CentOS7
+if [[ "$CENTOS_SEVEN" = '7' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+    scl_install
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
+  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-4/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
+  fi
+fi
+
+if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+  # intel specific
+  CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+  SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
+  gcc --version | tee ${CENTMINLOGDIR}/gcc_general_native.log
+  gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
+  if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
+      CCM=64
+      GEN_MTUNEOPT="-m${CCM} -march=native"
+      # if only 1 cpu thread use -O2 to keep compile times sane
+      if [[ "$CPUS" = '1' ]]; then
+        export CFLAGS="-O2 $GEN_MTUNEOPT -pipe"
+      else
+        export CFLAGS="-O3 $GEN_MTUNEOPT -pipe"
+      fi
+      export CXXFLAGS="$CFLAGS"
+  fi
+fi
+}
+
+disable_devtoolset() {
+  if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+    if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+        echo "$CFLAGS"
+        echo "$CXXFLAGS"
+        unset CFLAGS
+        unset CXXFLAGS
+    elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+        echo "$CFLAGS"
+        echo "$CXXFLAGS"
+        unset CFLAGS
+        unset CXXFLAGS
+    fi
+  fi
+}
+
 set_intelflags() {
 	if [[ "$INTELOPT" = [yY] ]]; then
     	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then

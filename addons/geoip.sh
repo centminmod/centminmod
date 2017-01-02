@@ -7,7 +7,7 @@
 ######################################################
 # variables
 #############
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR='/svr-setup'
 
@@ -50,6 +50,9 @@ return
 ###########################################
 # functions
 #############
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
 
 geoipinstall() {
 
@@ -238,7 +241,7 @@ END
 
 }
 ##############################################################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 geoipinstall
 geoinccheck
@@ -248,7 +251,7 @@ echo
 cecho "GeoIP database and library installed..." $boldyellow
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_geoipdb_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_geoipdb_install_${DT}.log

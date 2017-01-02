@@ -29,6 +29,7 @@ unsetramdisk() {
 		umount ${DIR_TMP}
 		\cp -R ${DIR_TMP}_disk/* ${DIR_TMP} &>/dev/null
 		# ls -lahrt ${DIR_TMP}
+		rm -rf ${DIR_TMP}_disk
 		df -hT
 	fi
 }

@@ -1,3 +1,12 @@
+validcheck_downloads() {
+  {
+  echo
+  echo "check download source fie integrity"
+  for f in $(find $DIR_TMP -maxdepth 1 -type f -name "*.gz" -o -name "*.tgz"); do echo -n "$f = "; if [[ "$(tar -tzf $f >/dev/null; echo $?)" = '0' ]]; then echo ok; else echo invalid; fi; done | sort
+  echo
+} 2>&1 | tee "${CENTMINLOGDIR}/validcheck_downloads_${DT}.log"
+}
+
 checklogdetails() {
 	echo " "
 	cecho "----------------------------------------------------------------------------------" $boldyellow
@@ -13,21 +22,646 @@ checklogdetails() {
 # yumcentossevendownload moved
 
 ###############################################
+phpxz_detect() {
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
+      PHPXZ_CHECK=$(echo "$PHP_VERSION" | cut -d . -f1,2)
+  fi
+
+  if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
+      PHPEXTSION='gz'
+      PHPTAR_FLAGS='xzf'    
+  elif [ -f /usr/bin/xz ]; then
+      PHPEXTSION='xz'
+      PHPTAR_FLAGS='xJf'
+  else
+      PHPEXTSION='gz'
+      PHPTAR_FLAGS='xzf'
+  fi
+  
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
+      if [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
+          PHPEXTSION='gz'
+          PHPTAR_FLAGS='xzf'
+      fi
+  fi
+
+  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+      DOWNLOADAPP='axel'
+      WGETRETRY=''
+      AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+      AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
+  elif [[ "$CENTOS_SIX" = '6' ]]; then
+      DOWNLOADAPP='axel'
+      WGETRETRY=''
+      AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+      AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
+  else
+      DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
+      WGETRETRY='--tries=3'
+      AXELPHPTARGZ=''
+      AXELPHPUPGRADETARGZ=''
+  fi   
+}
+
+phpgeolocation() {
+  phpxz_detect
+  # determine server geo location country wise and setup php download mirror 
+  # closest to that country for faster downloads to speed up installs
+  # upgrades
+  # PHP_MIRRORURL='http://php.net'
+  # PHPUPGRADE_MIRRORURL='http://php.net'
+  
+  # Get server's 2 digit country code
+  SERVER_COUNTRY=$(curl -s ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
+
+  if [[ -z "$SERVER_COUNTRY" ]]; then
+    PHP_MIRRORURL="http://php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'AU' ]]; then
+    echo "AU server detected"
+    PHP_MIRRORURL="http://au1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'BR' ]]; then
+    echo "BR server detected"
+    PHP_MIRRORURL="http://br2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
+    echo "CA server detected"
+    PHP_MIRRORURL="http://ca2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'CN' ]]; then
+    echo "CN server detected"
+    PHP_MIRRORURL="http://cn2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
+    echo "DE server detected"
+    PHP_MIRRORURL="http://de1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
+    echo "FR server detected"
+    PHP_MIRRORURL="http://fr2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'GB' ]]; then
+    echo "GB server detected"
+    PHP_MIRRORURL="http://uk1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'HK' ]]; then
+    echo "HK server detected"
+    PHP_MIRRORURL="http://hk1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'ID' ]]; then
+    echo "ID server detected"
+    PHP_MIRRORURL="http://id1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
+    echo "IN server detected"
+    PHP_MIRRORURL="http://in1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
+    echo "JP server detected"
+    PHP_MIRRORURL="http://jp2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'PH' ]]; then
+    echo "PH server detected"
+    PHP_MIRRORURL="http://sg2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'RU' ]]; then
+    echo "RU server detected"
+    PHP_MIRRORURL="http://ua2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
+    echo "SG server detected"
+    PHP_MIRRORURL="http://sg2.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'TH' ]]; then
+    echo "TH server detected"
+    PHP_MIRRORURL="http://th1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
+    echo "US server detected"
+    PHP_MIRRORURL="http://php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
+    echo "VN server detected"
+    PHP_MIRRORURL="http://my1.php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  else
+    PHP_MIRRORURL="http://php.net"
+    PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+  fi
+}
+
+###############################################
+libresslgeolocation() {
+  # determine server geo location country wise and setup libressl download mirror 
+  # closest to that country for faster downloads http://www.openbsd.org/ftp.html
+  
+  # Get server's 2 digit country code
+  SERVER_COUNTRY=$(curl -s --max-time 5 --connect-timeout 5 ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
+
+  if [[ -z "$SERVER_COUNTRY" ]]; then
+    LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'AT' ]]; then
+    echo "AT server detected"
+    LIBRESSL_MIRRORURL="http://ftp2.eu.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'AU' ]]; then
+    echo "AU server detected"
+    LIBRESSL_MIRRORURL="http://mirror.aarnet.edu.au/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'BG' ]]; then
+    echo "BG server detected"
+    LIBRESSL_MIRRORURL="http://mirror.telepoint.bg/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'BR' ]]; then
+    echo "BR server detected"
+    LIBRESSL_MIRRORURL="http://mirrors.unb.br/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
+    echo "CA server detected"
+    LIBRESSL_MIRRORURL="http://openbsd.cs.toronto.edu/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'CN' ]]; then
+    echo "CN server detected"
+    LIBRESSL_MIRRORURL="http://mirror.yandex.ru/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'CR' ]]; then
+    echo "CR server detected"
+    LIBRESSL_MIRRORURL="http://mirrors.ucr.ac.cr/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
+    echo "DE server detected"
+    LIBRESSL_MIRRORURL="http://ftp.hostserver.de/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'DK' ]]; then
+    echo "DK server detected"
+    LIBRESSL_MIRRORURL="http://mirror.one.com/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
+    echo "FR server detected"
+    LIBRESSL_MIRRORURL="http://ftp.fr.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'GB' ]]; then
+    echo "GB server detected"
+    LIBRESSL_MIRRORURL="http://mirror.bytemark.co.uk/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'HK' ]]; then
+    echo "HK server detected"
+    LIBRESSL_MIRRORURL="http://www.ftp.ne.jp/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'ID' ]]; then
+    echo "ID server detected"
+    LIBRESSL_MIRRORURL="http://kartolo.sby.datautama.net.id/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'IE' ]]; then
+    echo "IE server detected"
+    LIBRESSL_MIRRORURL="http://ftp.heanet.ie/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
+    echo "IN server detected"
+    LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'IT' ]]; then
+    echo "IT server detected"
+    LIBRESSL_MIRRORURL="http://openbsd.mirror.garr.it/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'NL' ]]; then
+    echo "NL server detected"
+    LIBRESSL_MIRRORURL="http://ftp.bit.nl/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
+    echo "JP server detected"
+    LIBRESSL_MIRRORURL="http://www.ftp.ne.jp/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'PH' ]]; then
+    echo "PH server detected"
+    LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'PL' ]]; then
+    echo "PL server detected"
+    LIBRESSL_MIRRORURL="http://ftp.icm.edu.pl/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'RU' ]]; then
+    echo "RU server detected"
+    LIBRESSL_MIRRORURL="http://mirror.yandex.ru/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'SE' ]]; then
+    echo "SE server detected"
+    LIBRESSL_MIRRORURL="http://ftp.eu.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
+    echo "SG server detected"
+    LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'TH' ]]; then
+    echo "TH server detected"
+    LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
+    echo "US server detected"
+    LIBRESSL_MIRRORURL="http://ftp3.usa.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://openbsd.mirrors.pair.com/LibreSSL"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+        curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+        LIBRESSL_CURLCHECK=$?
+        if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+          LIBRESSL_MIRRORURL="http://mirrors.sonic.net/pub/OpenBSD/LibreSSL"
+          LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+          curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+          LIBRESSL_CURLCHECK=$?
+          if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+            LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
+            LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+            curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+            LIBRESSL_CURLCHECK=$?
+            if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+              LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+              LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+            fi
+          fi
+        fi
+      fi
+    fi
+  elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
+    echo "VN server detected"
+    LIBRESSL_MIRRORURL="http://www.ftp.ne.jp/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      fi
+    fi
+  else
+    LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+    LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    LIBRESSL_CURLCHECK=$?
+    if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+      LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
+      LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      LIBRESSL_CURLCHECK=$?
+      if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+        LIBRESSL_MIRRORURL="http://openbsd.mirrors.pair.com/LibreSSL"
+        LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+        curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+        LIBRESSL_CURLCHECK=$?
+        if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+          LIBRESSL_MIRRORURL="http://mirrors.sonic.net/pub/OpenBSD/LibreSSL"
+          LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+          curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+          LIBRESSL_CURLCHECK=$?
+          if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+            LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
+            LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+            curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+            LIBRESSL_CURLCHECK=$?
+            if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
+              LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
+              LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
+            fi
+          fi
+        fi
+      fi
+    fi
+  fi
+}
+
+###############################################
 phptarball() {
 
 if [[ "$PHP_INSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    phpgeolocation
+    curl -sI --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
+    PHPGEO_CURLCHECK=$?
+    if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
+        PHP_MIRRORURL="http://php.net"
+        PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+    fi
+    cd "$DIR_TMP"
 
-        cecho "Download php-${PHP_VERSION}.tar.gz ..." $boldyellow
-    if [ -s php-${PHP_VERSION}.tar.gz ]; then
-        cecho "php-${PHP_VERSION}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow
+    if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
+        cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.gz/from/this/mirror $AXELPHPTARGZ $WGETRETRY
+        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY"
+        $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: php-${PHP_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -35,15 +669,22 @@ else
 #echo ""
 	fi
     fi
+  
+if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
+  tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+elif [ -f /usr/bin/xz ]; then
+  XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+else
+  tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+fi
 
-tar xzf php-${PHP_VERSION}.tar.gz 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: php-${PHP_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "php-${PHP_VERSION}.tar.gz valid file." $boldyellow
+         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} valid file." $boldyellow
 echo ""
 	fi
 
@@ -58,13 +699,13 @@ fi
 
 nginxpcretarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PCRELINKFILE} ..." $boldyellow
-    if [ -s ${PCRELINKFILE} ]; then
+    if [ -s "${PCRELINKFILE}" ]; then
         cecho "${PCRELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar ${PCRELINK} --tries=3 
+        wget -c --progress=bar "${PCRELINK}" --tries=3 
         # wget -c --progress=bar ${PCRELINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -77,7 +718,7 @@ else
 	fi
     fi
 
-tar xzf ${PCRELINKFILE} 
+tar xzf "${PCRELINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PCRELINKFILE} extraction failed." $boldgreen
@@ -91,13 +732,13 @@ echo ""
 
 nginxwebdavtarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NGX_WEBDAVLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_WEBDAVLINKFILE} ]; then
+    if [ -s "${NGX_WEBDAVLINKFILE}" ]; then
         cecho "${NGX_WEBDAVLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate ${NGX_WEBDAVLINK} -O ${NGX_WEBDAVLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_WEBDAVLINKFILE} download failed." $boldgreen
@@ -109,7 +750,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_WEBDAVLINKFILE} 
+tar xzf "${NGX_WEBDAVLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_WEBDAVLINKFILE} extraction failed." $boldgreen
@@ -125,16 +766,17 @@ nginxpgspeedtarball() {
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     # official github master zip renamed
     if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
 
             cecho "Download ${NGX_PAGESPEEDGITLINKFILE} ..." $boldyellow
-    		if [ -s ${NGX_PAGESPEEDGITLINKFILE} ]; then
+    		if [ -s "${NGX_PAGESPEEDGITLINKFILE}" ]; then
         	cecho "${NGX_PAGESPEEDGITLINKFILE} Archive found, skipping download..." $boldgreen
     else
-    	    wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDGITLINK} -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3 
+    	    echo "wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3"
+          wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3 
 			ERROR=$?
 				if [[ "$ERROR" != '0' ]]; then
 					cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} download failed." $boldgreen
@@ -149,10 +791,11 @@ nginxpgspeedtarball() {
 	fi # NGINX_PAGESPEEDGITMASTER
 
         cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_PAGESPEEDLINKFILE} ]; then
+    if [ -s "${NGX_PAGESPEEDLINKFILE}" ]; then
         cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3 
+        echo "wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3"
+        wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
@@ -164,7 +807,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_PAGESPEEDLINKFILE}
+tar xzf "${NGX_PAGESPEEDLINKFILE}"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -176,22 +819,41 @@ else
 echo ""
 	fi
 
+# determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
+NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
-	\cp -Rf ngx_pagespeed-master ngx_pagespeed-release-${NGXPGSPEED_VER}
+  if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
+    rm -rf "$DIR_TMP/$NGXPGSPEED_DIR"
+  fi
+	\cp -Rf ngx_pagespeed-master "$NGXPGSPEED_DIR"
 	rm -rf ngx_pagespeed-master
-	rm -rf ${NGX_PAGESPEEDGITLINKFILE}
+	rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
 fi
 
         cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} PSOL Library..." $boldyellow
-        if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-            cd $DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}
-        elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
-            cd $DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}
+        if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
+            cd "$DIR_TMP/$NGXPGSPEED_DIR"
         fi
-        if [ -s ${NGX_PAGESPEEDPSOLINKLFILE} ]; then
+
+      # 1.12+ new method https://github.com/pagespeed/ngx_pagespeed/issues/1337
+      PS_BRANCHVER=$(echo $NGXPGSPEED_VER | cut -c1-4| sed -e 's|\.|00|')
+      if [[ "$PS_BRANCHVER" -ge '10012' ]]; then
+        psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
+        wget -c $psol_url
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+          cecho "Error: $psol_url download failed." $boldgreen
+          checklogdetails
+        else 
+          cecho "Download done." $boldyellow
+        fi
+        tar xzf "$(basename ${psol_url})"
+      elif [[ "$PS_BRANCHVER" -le '10011' ]]; then
+        if [ -s "${NGX_PAGESPEEDPSOLINKLFILE}" ]; then
           cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
         else
-          wget -c --progress=bar --no-check-certificate ${NGX_PAGESPEEDPSOLINKL} --tries=3 
+          wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDPSOLINKL}" --tries=3 
           ERROR=$?
 	        if [[ "$ERROR" != '0' ]]; then
 	          cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} download failed." $boldgreen
@@ -201,8 +863,8 @@ fi
             cecho "Download done." $boldyellow
         	fi
         fi
-
-tar xzf ${NGX_PAGESPEEDPSOLINKLFILE}
+        tar xzf "${NGX_PAGESPEEDPSOLINKLFILE}"
+      fi        
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} extraction failed." $boldgreen
@@ -210,7 +872,7 @@ checklogdetails
 	exit #$ERROR
 else 
          cecho "${NGX_PAGESPEEDPSOLINKLFILE} valid file." $boldyellow
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 echo ""
 	fi
 
@@ -221,13 +883,13 @@ echo ""
 ngxmoduletarball() {
 ### nginx modules ###
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_FANCYINDEXLINKFILE} ]; then
-        cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
+    if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
+        cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar ${NGX_FANCYINDEXLINK} --tries=3 
+        wget -c --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
@@ -239,7 +901,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_FANCYINDEXLINKFILE} 
+tar xzf "${NGX_FANCYINDEXLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} extraction failed." $boldgreen
@@ -250,14 +912,14 @@ else
 echo ""
 	fi
 
-if [ ! -d ${DIR_TMP}/ngx-fancyindex-ngx-fancyindex ]; then
+if [ ! -d "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" ]; then
         cecho "Download ${NGX_FANCYINDEXLINKFILE} ..." $boldyellow
-rm -rf ${NGX_FANCYINDEXLINKFILE}
+rm -rf "${NGX_FANCYINDEXLINKFILE}"
 
-    if [ -s ${NGX_FANCYINDEXLINKFILE} ]; then
-        cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
+    if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
+        cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar ${NGX_FANCYINDEXLINK} --tries=3 
+        wget -c --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
@@ -270,7 +932,7 @@ else
     fi
 fi #fancyindex recheck
 
-tar xzf ${NGX_FANCYINDEXLINKFILE} 
+tar xzf "${NGX_FANCYINDEXLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} extraction failed." $boldgreen
@@ -282,10 +944,10 @@ echo ""
 	fi
 
         cecho "Download ${NGX_CACHEPURGEFILE} ..." $boldyellow
-    if [ -s ${NGX_CACHEPURGEFILE} ]; then
+    if [ -s "${NGX_CACHEPURGEFILE}" ]; then
         cecho "ngx_cache_purge ${NGINX_CACHEPURGEVER} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${NGX_CACHEPURGE} $WGETRETRY 
+        download_cmd "${NGX_CACHEPURGE}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CACHEPURGEFILE} download failed." $boldgreen
@@ -297,7 +959,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_CACHEPURGEFILE} 
+tar xzf "${NGX_CACHEPURGEFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CACHEPURGEFILE} extraction failed." $boldgreen
@@ -309,10 +971,10 @@ echo ""
 	fi
 
         cecho "Download ${NGX_ACCESSKEYLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_ACCESSKEYLINKFILE} ]; then
+    if [ -s "${NGX_ACCESSKEYLINKFILE}" ]; then
         cecho "Nginx-accesskey 2.0.3 Archive found, skipping download..." $boldgreen
     else
-        wget -c ${NGX_ACCESSKEYLINK} --tries=3
+        wget -c "${NGX_ACCESSKEYLINK}" --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_ACCESSKEYLINKFILE} download failed." $boldgreen
@@ -324,7 +986,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_ACCESSKEYLINKFILE} 
+tar xzf "${NGX_ACCESSKEYLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_ACCESSKEYLINKFILE} extraction failed." $boldgreen
@@ -336,10 +998,10 @@ echo ""
 	fi
 
         cecho "Download ${NGX_CONCATLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_CONCATLINKFILE} ]; then
+    if [ -s "${NGX_CONCATLINKFILE}" ]; then
         cecho "${NGX_CONCATLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate ${NGX_CONCATLINK} -O ${NGX_CONCATLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_CONCATLINK}" -O "${NGX_CONCATLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CONCATLINKFILE} download failed." $boldgreen
@@ -352,7 +1014,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_CONCATLINKFILE} 
+tar xzf "${NGX_CONCATLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CONCATLINKFILE} extraction failed." $boldgreen
@@ -364,10 +1026,10 @@ echo ""
 	fi
 
         cecho "Download ${NGX_HEADERSMORELINKFILE} ..." $boldyellow
-    if [ -s ${NGX_HEADERSMORELINKFILE} ]; then
+    if [ -s "${NGX_HEADERSMORELINKFILE}" ]; then
         cecho "${NGX_HEADERSMORELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate ${NGX_HEADERSMORELINK} -O ${NGX_HEADERSMORELINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_HEADERSMORELINK}" -O "${NGX_HEADERSMORELINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_HEADERSMORELINKFILE} download failed." $boldgreen
@@ -380,7 +1042,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_HEADERSMORELINKFILE} 
+tar xzf "${NGX_HEADERSMORELINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_HEADERSMORELINKFILE} extraction failed." $boldgreen
@@ -392,10 +1054,10 @@ echo ""
 	fi
 
         cecho "Download ${NGX_STICKYLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_STICKYLINKFILE} ]; then
+    if [ -s "${NGX_STICKYLINKFILE}" ]; then
         cecho "${NGX_STICKYLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar ${NGX_STICKYLINK} -O ${NGX_STICKYLINKFILE} --tries=3
+        wget -c --progress=bar "${NGX_STICKYLINK}" -O "${NGX_STICKYLINKFILE}" --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_STICKYLINKFILE} download failed." $boldgreen
@@ -408,7 +1070,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_STICKYLINKFILE}
+tar xzf "${NGX_STICKYLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_STICKYLINKFILE} extraction failed." $boldgreen
@@ -416,15 +1078,15 @@ checklogdetails
 	exit #$ERROR
 else 
          cecho "${NGX_STICKYLINKFILE} valid file." $boldyellow
-         mv nginx-goodies-nginx-sticky-module-ng-* nginx-sticky-module-${NGINX_STICKYVER}
+         mv nginx-goodies-nginx-sticky-module-ng-* "nginx-sticky-module-${NGINX_STICKYVER}"
 echo ""
 	fi
 
         cecho "Download ${NGX_UPSTREAMCHECKLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_UPSTREAMCHECKLINKFILE} ]; then
+    if [ -s "${NGX_UPSTREAMCHECKLINKFILE}" ]; then
         cecho "${NGX_UPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate ${NGX_UPSTREAMCHECKLINK} -O ${NGX_UPSTREAMCHECKLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_UPSTREAMCHECKLINK}" -O "${NGX_UPSTREAMCHECKLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} download failed." $boldgreen
@@ -437,7 +1099,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_UPSTREAMCHECKLINKFILE} 
+tar xzf "${NGX_UPSTREAMCHECKLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} extraction failed." $boldgreen
@@ -449,10 +1111,10 @@ echo ""
 	fi
 
         cecho "Download ${NGX_HTTPREDISLINKFILE} ..." $boldyellow
-    if [ -s ${NGX_HTTPREDISLINKFILE} ]; then
+    if [ -s "${NGX_HTTPREDISLINKFILE}" ]; then
         cecho "ngx_http_redis Archive found, skipping download..." $boldgreen
     else
-        wget -c ${NGX_HTTPREDISLINK} --tries=3
+        wget -c "${NGX_HTTPREDISLINK}" --tries=3
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_HTTPREDISLINKFILE} download failed." $boldgreen
@@ -464,7 +1126,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_HTTPREDISLINKFILE} 
+tar xzf "${NGX_HTTPREDISLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_HTTPREDISLINKFILE} extraction failed." $boldgreen
@@ -488,11 +1150,11 @@ openrestytarball() {
 if [ "$NGINX_OPENRESTY" == 'y' ]; then
 
         cecho "Download ${NGX_MEMCLINKFILE} ..." $boldyellow
-if [ -s ${NGX_MEMCLINKFILE} ]; then
+if [ -s "${NGX_MEMCLINKFILE}" ]; then
   cecho "${NGX_MEMCLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_MEMCLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_MEMCLINK} -O ${NGX_MEMCLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_MEMCLINK}" -O "${NGX_MEMCLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_MEMCLINKFILE} download failed." $boldgreen
@@ -504,7 +1166,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_MEMCLINKFILE} 
+tar xzf "${NGX_MEMCLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_MEMCLINKFILE} extraction failed." $boldgreen
@@ -516,11 +1178,11 @@ echo ""
 	fi
 
         cecho "Download ${NGX_SRCACHELINKFILE} ..." $boldyellow
-if [ -s ${NGX_SRCACHELINKFILE} ]; then
+if [ -s "${NGX_SRCACHELINKFILE}" ]; then
   cecho "${NGX_SRCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_SRCACHELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_SRCACHELINK} -O ${NGX_SRCACHELINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_SRCACHELINK}" -O "${NGX_SRCACHELINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_SRCACHELINKFILE} download failed." $boldgreen
@@ -532,7 +1194,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_SRCACHELINKFILE} 
+tar xzf "${NGX_SRCACHELINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_SRCACHELINKFILE} extraction failed." $boldgreen
@@ -544,11 +1206,11 @@ echo ""
 	fi
 
         cecho "Download ${NGX_DEVELKITLINKFILE} ..." $boldyellow
-if [ -s ${NGX_DEVELKITLINKFILE} ]; then
+if [ -s "${NGX_DEVELKITLINKFILE}" ]; then
   cecho "${NGX_DEVELKITLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_DEVELKITLINK} -O ${NGX_DEVELKITLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_DEVELKITLINK}" -O "${NGX_DEVELKITLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_DEVELKITLINKFILE} download failed." $boldgreen
@@ -560,7 +1222,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_DEVELKITLINKFILE} 
+tar xzf "${NGX_DEVELKITLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_DEVELKITLINKFILE} extraction failed." $boldgreen
@@ -572,11 +1234,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_SETMISCLINKFILE} ..." $boldyellow
-if [ -s ${NGX_SETMISCLINKFILE} ]; then
+if [ -s "${NGX_SETMISCLINKFILE}" ]; then
   cecho "${NGX_SETMISCLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_SETMISCLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_SETMISCLINK} -O ${NGX_SETMISCLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_SETMISCLINK}" -O "${NGX_SETMISCLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_SETMISCLINKFILE} download failed." $boldgreen
@@ -588,7 +1250,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_SETMISCLINKFILE} 
+tar xzf "${NGX_SETMISCLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_SETMISCLINKFILE} extraction failed." $boldgreen
@@ -600,11 +1262,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_ECHOLINKFILE} ..." $boldyellow
-if [ -s ${NGX_ECHOLINKFILE} ]; then
+if [ -s "${NGX_ECHOLINKFILE}" ]; then
   cecho "${NGX_ECHOLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_ECHOLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_ECHOLINK} -O ${NGX_ECHOLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_ECHOLINK}" -O "${NGX_ECHOLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_ECHOLINKFILE} download failed." $boldgreen
@@ -616,7 +1278,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_ECHOLINKFILE} 
+tar xzf "${NGX_ECHOLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_ECHOLINKFILE} extraction failed." $boldgreen
@@ -628,11 +1290,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_REDISLINKFILE} ..." $boldyellow
-if [ -s ${NGX_REDISLINKFILE} ]; then
+if [ -s "${NGX_REDISLINKFILE}" ]; then
   cecho "${NGX_REDISLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_REDISLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_REDISLINK} -O ${NGX_REDISLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_REDISLINK}" -O "${NGX_REDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_REDISLINKFILE} download failed." $boldgreen
@@ -644,7 +1306,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_REDISLINKFILE} 
+tar xzf "${NGX_REDISLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_REDISLINKFILE} extraction failed." $boldgreen
@@ -659,11 +1321,11 @@ echo ""
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 
         cecho "Download ${NGX_LUANGINXLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUANGINXLINKFILE} ]; then
+if [ -s "${NGX_LUANGINXLINKFILE}" ]; then
   cecho "${NGX_LUANGINXLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUANGINXLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUANGINXLINK} -O ${NGX_LUANGINXLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUANGINXLINK}" -O "${NGX_LUANGINXLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUANGINXLINKFILE} download failed." $boldgreen
@@ -675,7 +1337,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUANGINXLINKFILE} 
+tar xzf "${NGX_LUANGINXLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUANGINXLINKFILE} extraction failed." $boldgreen
@@ -687,11 +1349,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUAGITLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAGITLINKFILE} ]; then
+if [ -s "${NGX_LUAGITLINKFILE}" ]; then
   cecho "${NGX_LUAGITLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAGITLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAGITLINK} -O ${NGX_LUAGITLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAGITLINK}" -O "${NGX_LUAGITLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAGITLINKFILE} download failed." $boldgreen
@@ -703,7 +1365,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAGITLINKFILE} 
+tar xzf "${NGX_LUAGITLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAGITLINKFILE} extraction failed." $boldgreen
@@ -715,11 +1377,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUAMEMCACHEDLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAMEMCACHEDLINKFILE} ]; then
+if [ -s "${NGX_LUAMEMCACHEDLINKFILE}" ]; then
   cecho "${NGX_LUAMEMCACHEDLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAMEMCACHEDLINK} -O ${NGX_LUAMEMCACHEDLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAMEMCACHEDLINK}" -O "${NGX_LUAMEMCACHEDLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} download failed." $boldgreen
@@ -731,7 +1393,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAMEMCACHEDLINKFILE} 
+tar xzf "${NGX_LUAMEMCACHEDLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} extraction failed." $boldgreen
@@ -743,11 +1405,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUAMYSQLLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAMYSQLLINKFILE} ]; then
+if [ -s "${NGX_LUAMYSQLLINKFILE}" ]; then
   cecho "${NGX_LUAMYSQLLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAMYSQLLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAMYSQLLINK} -O ${NGX_LUAMYSQLLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAMYSQLLINK}" -O "${NGX_LUAMYSQLLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMYSQLLINKFILE} download failed." $boldgreen
@@ -759,7 +1421,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAMYSQLLINKFILE} 
+tar xzf "${NGX_LUAMYSQLLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMYSQLLINKFILE} extraction failed." $boldgreen
@@ -771,11 +1433,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_LUAREDISLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAREDISLINKFILE} ]; then
+if [ -s "${NGX_LUAREDISLINKFILE}" ]; then
   cecho "${NGX_LUAREDISLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAREDISLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAREDISLINK} -O ${NGX_LUAREDISLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAREDISLINK}" -O "${NGX_LUAREDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISLINKFILE} download failed." $boldgreen
@@ -787,7 +1449,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAREDISLINKFILE} 
+tar xzf "${NGX_LUAREDISLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISLINKFILE} extraction failed." $boldgreen
@@ -799,11 +1461,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUADNSLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUADNSLINKFILE} ]; then
+if [ -s "${NGX_LUADNSLINKFILE}" ]; then
   cecho "${NGX_LUADNSLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUADNSLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUADNSLINK} -O ${NGX_LUADNSLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUADNSLINK}" -O "${NGX_LUADNSLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUADNSLINKFILE} download failed." $boldgreen
@@ -815,7 +1477,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUADNSLINKFILE} 
+tar xzf "${NGX_LUADNSLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUADNSLINKFILE} extraction failed." $boldgreen
@@ -827,11 +1489,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_LUAUPLOADLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAUPLOADLINKFILE} ]; then
+if [ -s "${NGX_LUAUPLOADLINKFILE}" ]; then
   cecho "${NGX_LUAUPLOADLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPLOADLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPLOADLINK} -O ${NGX_LUAUPLOADLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPLOADLINK}" -O "${NGX_LUAUPLOADLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPLOADLINKFILE} download failed." $boldgreen
@@ -843,7 +1505,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAUPLOADLINKFILE} 
+tar xzf "${NGX_LUAUPLOADLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPLOADLINKFILE} extraction failed." $boldgreen
@@ -855,11 +1517,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUAWEBSOCKETLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAWEBSOCKETLINKFILE} ]; then
+if [ -s "${NGX_LUAWEBSOCKETLINKFILE}" ]; then
   cecho "${NGX_LUAWEBSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAWEBSOCKETLINK} -O ${NGX_LUAWEBSOCKETLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAWEBSOCKETLINK}" -O "${NGX_LUAWEBSOCKETLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} download failed." $boldgreen
@@ -871,7 +1533,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAWEBSOCKETLINKFILE} 
+tar xzf "${NGX_LUAWEBSOCKETLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} extraction failed." $boldgreen
@@ -883,11 +1545,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_LUALOCKLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUALOCKLINKFILE} ]; then
+if [ -s "${NGX_LUALOCKLINKFILE}" ]; then
   cecho "${NGX_LUALOCKLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUALOCKLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUALOCKLINK} -O ${NGX_LUALOCKLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUALOCKLINK}" -O "${NGX_LUALOCKLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOCKLINKFILE} download failed." $boldgreen
@@ -899,7 +1561,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUALOCKLINKFILE} 
+tar xzf "${NGX_LUALOCKLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOCKLINKFILE} extraction failed." $boldgreen
@@ -911,11 +1573,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUASTRINGLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUASTRINGLINKFILE} ]; then
+if [ -s "${NGX_LUASTRINGLINKFILE}" ]; then
   cecho "${NGX_LUASTRINGLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUASTRINGLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUASTRINGLINK} -O ${NGX_LUASTRINGLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUASTRINGLINK}" -O "${NGX_LUASTRINGLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUASTRINGLINKFILE} download failed." $boldgreen
@@ -927,7 +1589,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUASTRINGLINKFILE} 
+tar xzf "${NGX_LUASTRINGLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUASTRINGLINKFILE} extraction failed." $boldgreen
@@ -939,11 +1601,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_LUAREDISPARSERLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAREDISPARSERLINKFILE} ]; then
+if [ -s "${NGX_LUAREDISPARSERLINKFILE}" ]; then
   cecho "${NGX_LUAREDISPARSERLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAREDISPARSERLINK} -O ${NGX_LUAREDISPARSERLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAREDISPARSERLINK}" -O "${NGX_LUAREDISPARSERLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} download failed." $boldgreen
@@ -955,7 +1617,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAREDISPARSERLINKFILE} 
+tar xzf "${NGX_LUAREDISPARSERLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} extraction failed." $boldgreen
@@ -967,11 +1629,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUAUPSTREAMCHECKLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAUPSTREAMCHECKLINKFILE} ]; then
+if [ -s "${NGX_LUAUPSTREAMCHECKLINKFILE}" ]; then
   cecho "${NGX_LUAUPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCHECKLINK} -O ${NGX_LUAUPSTREAMCHECKLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMCHECKLINK}" -O "${NGX_LUAUPSTREAMCHECKLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} download failed." $boldgreen
@@ -983,7 +1645,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAUPSTREAMCHECKLINKFILE} 
+tar xzf "${NGX_LUAUPSTREAMCHECKLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} extraction failed." $boldgreen
@@ -995,11 +1657,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUALRUCACHELINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUALRUCACHELINKFILE} ]; then
+if [ -s "${NGX_LUALRUCACHELINKFILE}" ]; then
   cecho "${NGX_LUALRUCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUALRUCACHELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUALRUCACHELINK} -O ${NGX_LUALRUCACHELINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUALRUCACHELINK}" -O "${NGX_LUALRUCACHELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALRUCACHELINKFILE} download failed." $boldgreen
@@ -1011,7 +1673,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUALRUCACHELINKFILE} 
+tar xzf "${NGX_LUALRUCACHELINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALRUCACHELINKFILE} extraction failed." $boldgreen
@@ -1023,11 +1685,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUARESTYCORELINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUARESTYCORELINKFILE} ]; then
+if [ -s "${NGX_LUARESTYCORELINKFILE}" ]; then
   cecho "${NGX_LUARESTYCORELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUARESTYCORELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUARESTYCORELINK} -O ${NGX_LUARESTYCORELINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUARESTYCORELINK}" -O "${NGX_LUARESTYCORELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUARESTYCORELINKFILE} download failed." $boldgreen
@@ -1039,7 +1701,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUARESTYCORELINKFILE} 
+tar xzf "${NGX_LUARESTYCORELINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUARESTYCORELINKFILE} extraction failed." $boldgreen
@@ -1051,11 +1713,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_LUAUPSTREAMLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAUPSTREAMLINKFILE} ]; then
+if [ -s "${NGX_LUAUPSTREAMLINKFILE}" ]; then
   cecho "${NGX_LUAUPSTREAMLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMLINK} -O ${NGX_LUAUPSTREAMLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMLINK}" -O "${NGX_LUAUPSTREAMLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} download failed." $boldgreen
@@ -1067,7 +1729,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAUPSTREAMLINKFILE} 
+tar xzf "${NGX_LUAUPSTREAMLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} extraction failed." $boldgreen
@@ -1079,11 +1741,11 @@ echo ""
     fi      
 
         cecho "Download ${NGX_LUALOGGERSOCKETLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUALOGGERSOCKETLINKFILE} ]; then
+if [ -s "${NGX_LUALOGGERSOCKETLINKFILE}" ]; then
   cecho "${NGX_LUALOGGERSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUALOGGERSOCKETLINK} -O ${NGX_LUALOGGERSOCKETLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUALOGGERSOCKETLINK}" -O "${NGX_LUALOGGERSOCKETLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} download failed." $boldgreen
@@ -1095,7 +1757,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUALOGGERSOCKETLINKFILE} 
+tar xzf "${NGX_LUALOGGERSOCKETLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} extraction failed." $boldgreen
@@ -1107,11 +1769,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUACOOKIELINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUACOOKIELINKFILE} ]; then
+if [ -s "${NGX_LUACOOKIELINKFILE}" ]; then
   cecho "${NGX_LUACOOKIELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUACOOKIELINK} -O ${NGX_LUACOOKIELINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUACOOKIELINK}" -O "${NGX_LUACOOKIELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACOOKIELINKFILE} download failed." $boldgreen
@@ -1123,7 +1785,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUACOOKIELINKFILE} 
+tar xzf "${NGX_LUACOOKIELINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACOOKIELINKFILE} extraction failed." $boldgreen
@@ -1135,11 +1797,11 @@ echo ""
     fi    
 
         cecho "Download ${NGX_LUAUPSTREAMCACHELINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUAUPSTREAMCACHELINKFILE} ]; then
+if [ -s "${NGX_LUAUPSTREAMCACHELINKFILE}" ]; then
   cecho "${NGX_LUAUPSTREAMCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUAUPSTREAMCACHELINK} -O ${NGX_LUAUPSTREAMCACHELINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMCACHELINK}" -O "${NGX_LUAUPSTREAMCACHELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} download failed." $boldgreen
@@ -1151,7 +1813,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUAUPSTREAMCACHELINKFILE} 
+tar xzf "${NGX_LUAUPSTREAMCACHELINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} extraction failed." $boldgreen
@@ -1163,11 +1825,11 @@ echo ""
     fi
 
         cecho "Download ${NGX_LUACJSONLINKFILE} ..." $boldyellow
-if [ -s ${NGX_LUACJSONLINKFILE} ]; then
+if [ -s "${NGX_LUACJSONLINKFILE}" ]; then
   cecho "${NGX_LUACJSONLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate ${NGX_LUACJSONLINK} -O ${NGX_LUACJSONLINKFILE} --tries=3 
+        wget -c --progress=bar --no-check-certificate "${NGX_LUACJSONLINK}" -O "${NGX_LUACJSONLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACJSONLINKFILE} download failed." $boldgreen
@@ -1179,7 +1841,7 @@ else
     fi
     fi
 
-tar xzf ${NGX_LUACJSONLINKFILE} 
+tar xzf "${NGX_LUACJSONLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACJSONLINKFILE} extraction failed." $boldgreen
@@ -1208,13 +1870,13 @@ echo ""
 	asknginxipv="$NGINX_IPV"
 	fi #unattended
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NGX_LINKFILE} ..." $boldyellow
-    if [ -s ${NGX_LINKFILE} ]; then
+    if [ -s "${NGX_LINKFILE}" ]; then
         cecho "${NGX_LINKFILE} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP "${NGX_LINK}" $WGETRETRY 
+        download_cmd "${NGX_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_LINKFILE} download failed." $boldgreen
@@ -1226,7 +1888,7 @@ else
 	fi
     fi
 
-tar xzf ${NGX_LINKFILE} 
+tar xzf "${NGX_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_LINKFILE} extraction failed." $boldgreen
@@ -1237,8 +1899,14 @@ else
 echo ""
 	fi
 
-ngxmoduletarball
-openrestytarball
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  ngxmoduletarball &
+  openrestytarball &
+  wait
+else
+  ngxmoduletarball
+  openrestytarball
+fi
 
 fi # NGINX INSTALL
 
@@ -1247,14 +1915,14 @@ fi # NGINX INSTALL
 ###############################################
 libeventtarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${LIBEVENTLINKFILE} ..." $boldyellow
-if [ -s ${LIBEVENTLINKFILE} ]; then
+if [ -s "${LIBEVENTLINKFILE}" ]; then
   cecho "${LIBEVENTLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${LIBEVENTLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar --no-check-certificate ${LIBEVENTLINK} --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${LIBEVENTLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${LIBEVENTLINKFILE} download failed." $boldgreen
@@ -1266,7 +1934,7 @@ else
 	fi
 fi
 
-tar xzf ${LIBEVENTLINKFILE} 
+tar xzf "${LIBEVENTLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${LIBEVENTLINKFILE} extraction failed." $boldgreen
@@ -1280,17 +1948,88 @@ echo ""
 }
 
 ###############################################
+mailparsephpextlocaltarball() {
+
+    cd "$DIR_TMP"
+    rm -rf mailparse*
+
+        cecho "Download local ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
+if [ -s "${PHPEXT_MAILPARSELINKFILE}" ]; then
+  cecho "${PHPEXT_MAILPARSELINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MAILPARSELINKFILE} local not found !!! Downloading now......"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MAILPARSELINKLOCAL}" --tries=3 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+  fi
+fi
+
+tar xzf "${PHPEXT_MAILPARSELINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} local extraction failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "${PHPEXT_MAILPARSELINKFILE} local valid file." $boldyellow
+echo ""
+  fi
+}
+
+###############################################
+mailparsephpexttarball() {
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${PHPEXT_MAILPARSELINKFILE} ..." $boldyellow
+if [ -s "${PHPEXT_MAILPARSELINKFILE}" ]; then
+  cecho "${PHPEXT_MAILPARSELINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_MAILPARSELINKFILE} not found !!! Downloading now......"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MAILPARSELINK}" --tries=3 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+fi
+
+tar xzf "${PHPEXT_MAILPARSELINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PHPEXT_MAILPARSELINKFILE} extraction failed." $boldgreen
+  cecho "trying local mirror download..." $boldgreen
+  mailparsephpextlocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_MAILPARSELINKFILE} valid file." $boldyellow
+echo ""
+  fi
+}
+
+###############################################
 imagickphpextlocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf imagick*
 
         cecho "Download local ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
+if [ -s "${PHPEXT_IMAGICKLINKFILE}" ]; then
   cecho "${PHPEXT_IMAGICKLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_IMAGICKLINKFILE} local not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINKLOCAL} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_IMAGICKLINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local download failed." $boldgreen
@@ -1302,7 +2041,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_IMAGICKLINKFILE} 
+tar xzf "${PHPEXT_IMAGICKLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} local extraction failed." $boldgreen
@@ -1317,14 +2056,14 @@ echo ""
 ###############################################
 imagickphpexttarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_IMAGICKLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_IMAGICKLINKFILE} ]; then
+if [ -s "${PHPEXT_IMAGICKLINKFILE}" ]; then
   cecho "${PHPEXT_IMAGICKLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_IMAGICKLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINK} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_IMAGICKLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} download failed." $boldgreen
@@ -1336,7 +2075,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_IMAGICKLINKFILE} 
+tar xzf "${PHPEXT_IMAGICKLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_IMAGICKLINKFILE} extraction failed." $boldgreen
@@ -1353,15 +2092,15 @@ echo ""
 ###############################################
 memcacheextlocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf memcache*
 
         cecho "Download local ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
+if [ -s "${PHPEXT_MEMCACHELINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHELINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINKLOCAL} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHELINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local download failed." $boldgreen
@@ -1373,7 +2112,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_MEMCACHELINKFILE} 
+tar xzf "${PHPEXT_MEMCACHELINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} local extraction failed." $boldgreen
@@ -1388,14 +2127,14 @@ echo ""
 ###############################################
 memcacheexttarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MEMCACHELINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_MEMCACHELINKFILE} ]; then
+if [ -s "${PHPEXT_MEMCACHELINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHELINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINK} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHELINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} download failed." $boldgreen
@@ -1407,7 +2146,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_MEMCACHELINKFILE} 
+tar xzf "${PHPEXT_MEMCACHELINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHELINKFILE} extraction failed." $boldgreen
@@ -1424,15 +2163,15 @@ echo ""
 ###############################################
 memcachedphplocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf memcached*
 
         cecho "Download local ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
+if [ -s "${PHPEXT_MEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINKLOCAL} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHEDLINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local download failed." $boldgreen
@@ -1444,7 +2183,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_MEMCACHEDLINKFILE} 
+tar xzf "${PHPEXT_MEMCACHEDLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} local extraction failed." $boldgreen
@@ -1459,14 +2198,14 @@ echo ""
 ###############################################
 memcachedphptarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MEMCACHEDLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_MEMCACHEDLINKFILE} ]; then
+if [ -s "${PHPEXT_MEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_MEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINK} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHEDLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} download failed." $boldgreen
@@ -1478,7 +2217,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_MEMCACHEDLINKFILE} 
+tar xzf "${PHPEXT_MEMCACHEDLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} extraction failed." $boldgreen
@@ -1495,15 +2234,15 @@ echo ""
 ###############################################
 redisphplocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf redis*
 
         cecho "Download local ${PHPEXT_REDISLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_REDISLINKFILE} ]; then
+if [ -s "${PHPEXT_REDISLINKFILE}" ]; then
   cecho "${PHPEXT_REDISLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINKLOCAL} -O ${PHPEXT_REDISLINKFILE} --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_REDISLINKLOCAL}" -O "${PHPEXT_REDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} local download failed." $boldgreen
@@ -1515,7 +2254,7 @@ else
     fi
 fi
 
-tar xzf ${PHPEXT_REDISLINKFILE} 
+tar xzf "${PHPEXT_REDISLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} local extraction failed." $boldgreen
@@ -1530,14 +2269,14 @@ echo ""
 ###############################################
 redisphptarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_REDISLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_REDISLINKFILE} ]; then
+if [ -s "${PHPEXT_REDISLINKFILE}" ]; then
   cecho "${PHPEXT_REDISLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_REDISLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_REDISLINK} -O ${PHPEXT_REDISLINKFILE} --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_REDISLINK}" -O "${PHPEXT_REDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} download failed." $boldgreen
@@ -1549,7 +2288,7 @@ else
     fi
 fi
 
-tar xzf ${PHPEXT_REDISLINKFILE} 
+tar xzf "${PHPEXT_REDISLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_REDISLINKFILE} extraction failed." $boldgreen
@@ -1566,15 +2305,15 @@ echo ""
 ###############################################
 mongodbphplocaltarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf mongo*
 
         cecho "Download local ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
+if [ -s "${PHPEXT_MONGODBLINKFILE}" ]; then
   cecho "${PHPEXT_MONGODBLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINKLOCAL} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_MONGODBLINKLOCAL}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local download failed." $boldgreen
@@ -1586,7 +2325,7 @@ else
     fi
 fi
 
-tar xzf ${PHPEXT_MONGODBLINKFILE} 
+tar xzf "${PHPEXT_MONGODBLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} local extraction failed." $boldgreen
@@ -1601,14 +2340,14 @@ echo ""
 ###############################################
 mongodbphptarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_MONGODBLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_MONGODBLINKFILE} ]; then
+if [ -s "${PHPEXT_MONGODBLINKFILE}" ]; then
   cecho "${PHPEXT_MONGODBLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar --no-check-certificate ${PHPEXT_MONGODBLINK} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 
+        wget ${WGETOPT} --progress=bar --no-check-certificate "${PHPEXT_MONGODBLINK}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
@@ -1620,7 +2359,7 @@ else
     fi
 fi
 
-tar xzf ${PHPEXT_MONGODBLINKFILE} 
+tar xzf "${PHPEXT_MONGODBLINKFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} extraction failed." $boldgreen
@@ -1639,14 +2378,14 @@ libmemcachedlocaltarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download local ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
+if [ -s "${PHPEXT_LIBMEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} local found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINKLOCAL} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_LIBMEMCACHEDLINKLOCAL}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local download failed." $boldgreen
@@ -1658,7 +2397,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_LIBMEMCACHEDLINKFILE} 
+tar xzf "${PHPEXT_LIBMEMCACHEDLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} local extraction failed." $boldgreen
@@ -1676,14 +2415,14 @@ libmemcachedtarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] || "$LIBMEMCACHED_YUM" = [yY] ]]; then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PHPEXT_LIBMEMCACHEDLINKFILE} ..." $boldyellow
-if [ -s ${PHPEXT_LIBMEMCACHEDLINKFILE} ]; then
+if [ -s "${PHPEXT_LIBMEMCACHEDLINKFILE}" ]; then
   cecho "${PHPEXT_LIBMEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} not found !!! Downloading now......"
-        wget ${WGETOPT} --progress=bar ${PHPEXT_LIBMEMCACHEDLINK} --tries=3 
+        wget ${WGETOPT} --progress=bar "${PHPEXT_LIBMEMCACHEDLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} download failed." $boldgreen
@@ -1695,7 +2434,7 @@ else
 	fi
 fi
 
-tar xzf ${PHPEXT_LIBMEMCACHEDLINKFILE} 
+tar xzf "${PHPEXT_LIBMEMCACHEDLINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PHPEXT_LIBMEMCACHEDLINKFILE} extraction failed." $boldgreen
@@ -1713,15 +2452,15 @@ fi #LIBMEMCACHED_YUM
 ###############################################
 twemperftarball() {
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${TWEMPERF_LINKFILE} ..." $boldyellow
-if [ -s ${TWEMPERF_LINKFILE} ]; then
+if [ -s "${TWEMPERF_LINKFILE}" ]; then
   cecho "${TWEMPERF_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${TWEMPERF_LINKFILE} not found !!! Downloading now......"
         
-     wget ${WGETOPT} --progress=bar --no-check-certificate ${TWEMPERF_LINK} -O ${TWEMPERF_LINKFILE} --tries=3 
+     wget ${WGETOPT} --progress=bar --no-check-certificate "${TWEMPERF_LINK}" -O "${TWEMPERF_LINKFILE}" --tries=3 
 
 	# wget ${WGETOPT} --progress=bar ${TWEMPERF_LINK} --tries=3
 
@@ -1737,7 +2476,7 @@ else
 fi
 
 if [ ! -d "twemperf-${TWEMPERF_VER}" ]; then
-tar xzf ${TWEMPERF_LINKFILE}
+tar xzf "${TWEMPERF_LINKFILE}"
 fi
 
 ERROR=$?
@@ -1754,6 +2493,7 @@ echo ""
 
 ###############################################
 memcachetarball() {
+  MEMCACHED_ALT="$1"
 
 echo ""
 	if [ "$UNATTENDED" == 'n' ]; then
@@ -1778,12 +2518,15 @@ libeventtarball
 
 #########################################################
         cecho "Download ${MEMCACHEDSERVER_LINKFILE} ..." $boldyellow
-if [ -s ${MEMCACHEDSERVER_LINKFILE} ]; then
+if [ -s "${MEMCACHEDSERVER_LINKFILE}" ]; then
   cecho "${MEMCACHEDSERVER_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Downloading now......"
-  		wget ${WGETOPT} --progress=bar ${MEMCACHEDSERVER_LINK} --tries=3
-        # wget ${WGETOPT} --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
+  if [[ "$MEMCACHED_ALT" != 'local' ]]; then
+    wget ${WGETOPT} --progress=bar "${MEMCACHEDSERVER_LINK}" --tries=3
+  else
+    wget ${WGETOPT} --progress=bar "${MEMCACHEDSERVER_LINKLOCAL}" --tries=3
+  fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MEMCACHEDSERVER_LINKFILE} download failed." $boldgreen
@@ -1795,7 +2538,7 @@ else
 	fi
 fi
 
-tar xzf ${MEMCACHEDSERVER_LINKFILE} 
+tar xzf "${MEMCACHEDSERVER_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MEMCACHEDSERVER_LINKFILE} extraction failed." $boldgreen
@@ -1823,10 +2566,10 @@ mysqltools() {
     cd /root
 
         cecho "Download ${MYSQLREPORT_LINKFILE} ..." $boldyellow
-    if [ -s ${MYSQLREPORT_LINKFILE} ]; then
+    if [ -s "${MYSQLREPORT_LINKFILE}" ]; then
         cecho "${MYSQLREPORT_LINKFILE} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${MYSQLREPORT_LINK} $WGETRETRY 
+        download_cmd "${MYSQLREPORT_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MYSQLREPORT_LINKFILE} download failed." $boldgreen
@@ -1839,10 +2582,10 @@ else
     fi
 
         cecho "Download ${MYSQLTUNER_LINKFILE} ..." $boldyellow
-    if [ -s ${MYSQLTUNER_LINKFILE} ]; then
+    if [ -s "${MYSQLTUNER_LINKFILE}" ]; then
         cecho "${MYSQLTUNER_LINKFILE} found, skipping download..." $boldgreen
     else
-        wget ${WGETOPT} --progress=bar ${MYSQLTUNER_LINK} -O ${MYSQLTUNER_LINKFILE} --tries=3 
+        wget ${WGETOPT} --progress=bar "${MYSQLTUNER_LINK}" -O "${MYSQLTUNER_LINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${MYSQLTUNER_LINKFILE} download failed." $boldgreen
@@ -1854,7 +2597,7 @@ else
 	fi
     fi
 
-    chmod +x mysqlreport ${MYSQLTUNER_LINKFILE}
+    chmod +x mysqlreport "${MYSQLTUNER_LINKFILE}"
 
 }
 
@@ -1874,13 +2617,13 @@ then
         ARCH='i386'
     fi
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm ..." $boldyellow
-    if [ -s MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
+    if [ -s "MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -1893,10 +2636,10 @@ else
     fi
 
         cecho "Download MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm ..." $boldyellow
-    if [ -s MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
+    if [ -s "MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -1909,10 +2652,10 @@ else
     fi
 
         cecho "Download  MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm ..." $boldyellow
-    if [ -s MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
+    if [ -s "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -1925,10 +2668,10 @@ else
     fi
 
         cecho "Download MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm ..." $boldyellow
-    if [ -s MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
+    if [ -s "MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -1941,10 +2684,10 @@ else
     fi
 
         cecho "Download MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm ..." $boldyellow
-    if [ -s MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
+    if [ -s "MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm" ]; then
         cecho "MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY 
+        download_cmd "http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
@@ -1966,13 +2709,13 @@ mariadbyumrepo() {
 if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ourdelta-release-5-1.noarch.rpm ..." $boldyellow
     if [ -s ourdelta-release-5-1.noarch.rpm ]; then
         cecho "ourdelta-release-5-1.noarch.rpm found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://master.ourdelta.org/yum/CentOS-MariaDB52/ourdelta-release-5-1.noarch.rpm $WGETRETRY 
+        download_cmd http://master.ourdelta.org/yum/CentOS-MariaDB52/ourdelta-release-5-1.noarch.rpm "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ourdelta-release-5-1.noarch.rpm download failed." $boldgreen
@@ -1995,16 +2738,16 @@ gperftools() {
 if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
-        cecho "Download libunwind-${LIBUNWIND_VERSION}.tar.gz ..." $boldyellow
-    if [ -s libunwind-${LIBUNWIND_VERSION}.tar.gz ]; then
+        cecho "Download ${LIBUNWIND_LINKFILE} ..." $boldyellow
+    if [ -s "${LIBUNWIND_LINKFILE}" ]; then
         cecho "libunwind ${LIBUNWIND_VERSION} found, skipping download..." $boldgreen 
     else
-        $DOWNLOADAPP http://download.savannah.gnu.org/releases/libunwind/libunwind-${LIBUNWIND_VERSION}.tar.gz $WGETRETRY 
+        download_cmd "${LIBUNWIND_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libunwind-${LIBUNWIND_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${LIBUNWIND_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -2013,25 +2756,25 @@ else
 	fi
     fi
 
-tar xzf libunwind-${LIBUNWIND_VERSION}.tar.gz 
+tar xzf "${LIBUNWIND_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: libunwind-${LIBUNWIND_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${LIBUNWIND_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "libunwind-${LIBUNWIND_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${LIBUNWIND_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
-        cecho "Download google-perftools-${GPERFTOOLS_VERSION}.tar.gz ..." $boldyellow
-    if [ -s google-perftools-${GPERFTOOLS_VERSION}.tar.gz ]; then
+        cecho "Download ${GPERFTOOL_LINKFILE} ..." $boldyellow
+    if [ -s "${GPERFTOOL_LINKFILE}" ]; then
         cecho "google-perftools ${GPERFTOOLS_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP http://google-perftools.googlecode.com/files/google-perftools-${GPERFTOOLS_VERSION}.tar.gz $WGETRETRY 
+        download_cmd "${GPERFTOOL_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: google-perftools-${GPERFTOOLS_VERSION}.tar.gz download failed." $boldgreen
+	cecho "Error: ${GPERFTOOL_LINKFILE} download failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
@@ -2040,14 +2783,14 @@ else
 	fi
     fi
 
-tar xzf google-perftools-${GPERFTOOLS_VERSION}.tar.gz 
+tar xzf "${GPERFTOOL_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: google-perftools-${GPERFTOOLS_VERSION}.tar.gz extraction failed." $boldgreen
+	cecho "Error: ${GPERFTOOL_LINKFILE} extraction failed." $boldgreen
 checklogdetails
 	exit #$ERROR
 else 
-         cecho "google-perftools-${GPERFTOOLS_VERSION}.tar.gz valid file." $boldyellow
+         cecho "${GPERFTOOL_LINKFILE} valid file." $boldyellow
 echo ""
 	fi
 
@@ -2058,17 +2801,24 @@ fi
 ###############################################
 openssldownload() {
 
+curl -sI --connect-timeout 5 --max-time 5 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
+OPENSSL_CURLCHECK=$?
+if [[ "$OPENSSL_CURLCHECK" != '0' ]]; then
+  OPENSSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl"
+  OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
+fi
+
 if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '5.12' || "$CENTOSVER" == '5.13' || "$CENTOSVER" == '5.14' ]]; then
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
-    if [ -s ${OPENSSL_LINKFILE} ]; then
+    if [ -s "${OPENSSL_LINKFILE}" ]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
           wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
         else
-          $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+          download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
         fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -2081,7 +2831,7 @@ else
 	fi
     fi
 
-tar xzf ${OPENSSL_LINKFILE} 
+tar xzf "${OPENSSL_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} extraction failed." $boldgreen
@@ -2096,16 +2846,16 @@ fi # for nginx openssl
 
 if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
     # Install OpenSSL
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
-    if [ -s ${OPENSSL_LINKFILE} ]; then
+    if [ -s "${OPENSSL_LINKFILE}" ]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
           wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
         else
-          $DOWNLOADAPP "${OPENSSL_LINK}" "$WGETRETRY" 
+          download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
         fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -2118,7 +2868,7 @@ else
 	fi
     fi
 
-tar xzf ${OPENSSL_LINKFILE} 
+tar xzf "${OPENSSL_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} extraction failed." $boldgreen
@@ -2136,31 +2886,29 @@ fi # openssl centos 6
 ###############################################
 libressldownload() {
     # Install LibreSSL
-    cd $DIR_TMP
+    libresslgeolocation
+    cd "$DIR_TMP"
 
         cecho "Download ${LIBRESSL_LINKFILE} ..." $boldyellow
-    if [ -s ${LIBRESSL_LINKFILE} ]; then
+    if [ -s "${LIBRESSL_LINKFILE}" ]; then
         cecho "LibreSSL ${LIBRESSL_VERSION} found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} $WGETRETRY 
-        wget -cnv ${LIBRESSL_LINK} --tries=3
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-          wget -cnv ${LIBRESSL_LOCALLINK} --tries=3
-          ERROR=$?
-          if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
-            checklogdetails
-            exit #$ERROR
-          fi
-        else 
-          cecho "Download done." $boldyellow
-        fi
+        # download_cmd ${LIBRESSL_LINK} -O ${LIBRESSL_LINKFILE} "$WGETRETRY" 
+        download_cmd "${LIBRESSL_LINK}" $WGETRETRY
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${LIBRESSL_LINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
     fi
-if [ -f ${LIBRESSL_LOCALLINKFILE} ]; then
-    tar xzf ${LIBRESSL_LOCALLINKFILE}
+    fi
+if [ -f "${LIBRESSL_LOCALLINKFILE}" ]; then
+    tar xzf "${LIBRESSL_LOCALLINKFILE}"
 else
-    tar xzf ${LIBRESSL_LINKFILE} 
+    tar xzf "${LIBRESSL_LINKFILE}"
 fi
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -2179,13 +2927,13 @@ pcretarball() {
 if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download pcre-${PCRE_VERSION}.tar.gz ..." $boldyellow
-    if [ -s pcre-${PCRE_VERSION}.tar.gz ]; then
+    if [ -s "pcre-${PCRE_VERSION}.tar.gz" ]; then
         cecho "pcre ${PCRE_VERSION} found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ftp://ftp.csx.cam.ac.uk/pub/software/programming/pcre/pcre-${PCRE_VERSION}.tar.gz $WGETRETRY 
+        download_cmd "${PCRE_SOURCELINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: pcre-${PCRE_VERSION}.tar.gz download failed." $boldgreen
@@ -2197,7 +2945,7 @@ else
 	fi
     fi
 
-tar xzf pcre-${PCRE_VERSION}.tar.gz 
+tar xzf "pcre-${PCRE_VERSION}.tar.gz"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: pcre-${PCRE_VERSION}.tar.gz extraction failed." $boldgreen
@@ -2226,14 +2974,14 @@ if [[ "$asksiegeinstall" = [yY] ]];
 then
 SIEGEINSTALL='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${SIEGE_LINKFILE} ..." $boldyellow
-    if [ -s ${SIEGE_LINKFILE} ]; then
+    if [ -s "${SIEGE_LINKFILE}" ]; then
         cecho "${SIEGE_LINKFILE} found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP ${SIEGE_LINK} $WGETRETRY
-        $DOWNLOADAPP ${SIEGE_LINKLOCAL} $WGETRETRY
+        # download_cmd ${SIEGE_LINK} $WGETRETRY
+        download_cmd "${SIEGE_LINKLOCAL}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SIEGE_LINKFILE} download failed." $boldgreen
@@ -2245,7 +2993,7 @@ else
 	fi
     fi
 
-tar xzf ${SIEGE_LINKFILE} 
+tar xzf "${SIEGE_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SIEGE_LINKFILE} extraction failed." $boldgreen
@@ -2257,11 +3005,11 @@ echo ""
 	fi
 
         cecho "Download ${SPROXY_LINKFILE} ..." $boldyellow
-    if [ -s ${SPROXY_LINKFILE} ]; then
+    if [ -s "${SPROXY_LINKFILE}" ]; then
         cecho "sproxy-latest found, skipping download..." $boldgreen
     else
-        # $DOWNLOADAPP ${SPROXY_LINK} $WGETRETRY
-        $DOWNLOADAPP http://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE} $WGETRETRY
+        # download_cmd ${SPROXY_LINK} $WGETRETRY
+        download_cmd "https://centminmod.com/centminmodparts/siege/${SPROXY_LINKFILE}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SPROXY_LINKFILE} download failed." $boldgreen
@@ -2274,7 +3022,7 @@ else
 	fi
     fi
 
-tar xzf ${SPROXY_LINKFILE} 
+tar xzf "${SPROXY_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${SPROXY_LINKFILE} extraction failed." $boldgreen
@@ -2302,14 +3050,14 @@ if [[ "$askpythonupdate" = [yY] ]];
 then
 PYTHONUPDATE='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${PYTHON_LINKFILE} ..." $boldyellow
-if [ -s ${PYTHON_LINKFILE} ]; then
+if [ -s "${PYTHON_LINKFILE}" ]; then
   cecho "${PYTHON_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PYTHON_LINKFILE} not found !!! Downloading now......"
-        $DOWNLOADAPP http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE} $WGETRETRY 
+        download_cmd "http://www.python.org/ftp/python/${PYTHON_VERSION}/${PYTHON_LINKFILE}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "${PYTHON_LINKFILE} download failed." $boldgreen
@@ -2321,7 +3069,7 @@ else
 	fi
 fi
 
-tar xzf ${PYTHON_LINKFILE} 
+tar xzf "${PYTHON_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PYTHON_LINKFILE} extraction failed." $boldgreen
@@ -2333,11 +3081,11 @@ echo ""
 	fi
 
         cecho "Download ${PYTHON_SETUPTOOLSLINKFILE} ..." $boldyellow
-if [ -s ${PYTHON_SETUPTOOLSLINKFILE} ]; then
+if [ -s "${PYTHON_SETUPTOOLSLINKFILE}" ]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Downloading now......"
-        wget -c --no-check-certificate ${PYTHON_SETUPTOOLSLINK} --tries=3 
+        wget -c --no-check-certificate "${PYTHON_SETUPTOOLSLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "${PYTHON_SETUPTOOLSLINKFILE} download failed." $boldgreen
@@ -2373,13 +3121,13 @@ fi
 if [[ "$askxcacheinstall" = [yY] ]];then
 XCACHESRCINSTALL='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${XCACHE_LINKFILE} ..." $boldyellow
-    if [ -s ${XCACHE_LINKFILE} ]; then
+    if [ -s "${XCACHE_LINKFILE}" ]; then
         cecho "xcache ${XCACHE_VERSION} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${XCACHE_LINK} $WGETRETRY 
+        download_cmd "${XCACHE_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${XCACHE_LINKFILE} download failed." $boldgreen
@@ -2391,7 +3139,7 @@ else
 	fi
     fi
 
-tar xzf ${XCACHE_LINKFILE} 
+tar xzf "${XCACHE_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${XCACHE_LINKFILE} extraction failed." $boldgreen
@@ -2417,15 +3165,15 @@ read -ep "Install APC? (By default uses 32MB RAM) [y/n] " askapcinstall
 	fi #unattended
 if [[ "$askapcinstall" = [yY] ]]; then
 APCINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
     rm -rf APC*
 
         cecho "Download local ${APCCACHE_LINKFILE} ..." $boldyellow
-    if [ -s ${APCCACHE_LINKFILE} ]; then
+    if [ -s "${APCCACHE_LINKFILE}" ]; then
         cecho "${APCCACHE_LINKFILE} Archive (local) found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${APCCACHE_LINKLOCAL} $WGETRETRY 
+        download_cmd "${APCCACHE_LINKLOCAL}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} local download failed." $boldgreen
@@ -2437,7 +3185,7 @@ else
 	fi
     fi
 
-tar xzf ${APCCACHE_LINKFILE} 
+tar xzf "${APCCACHE_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} (local) extraction failed." $boldgreen
@@ -2463,13 +3211,13 @@ read -ep "Install APC? (By default uses 32MB RAM) [y/n] " askapcinstall
 	fi #unattended
 if [[ "$askapcinstall" = [yY] ]]; then
 APCINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${APCCACHE_LINKFILE} ..." $boldyellow
-    if [ -s ${APCCACHE_LINKFILE} ]; then
+    if [ -s "${APCCACHE_LINKFILE}" ]; then
         cecho "${APCCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${APCCACHE_LINK} $WGETRETRY 
+        download_cmd "${APCCACHE_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} download failed." $boldgreen
@@ -2481,7 +3229,7 @@ else
 	fi
     fi
 
-tar xzf ${APCCACHE_LINKFILE} 
+tar xzf "${APCCACHE_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${APCCACHE_LINKFILE} extraction failed." $boldgreen
@@ -2509,14 +3257,14 @@ read -ep "Install Zend OPCache ? (By default uses 32MB RAM) [y/n] " askzopcachei
 	fi #unattended
 if [[ "$askzopcacheinstall" = [yY] ]]; then
 ZOPCACHEINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
     rm -rf zendopcache*
 
         cecho "Download local ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
-    if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
+    if [ -s "${ZENDOPCACHE_LINKFILE}" ]; then
         cecho " ${ZENDOPCACHE_LINKFILE} local Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${ZENDOPCACHE_LINKLOCAL} $WGETRETRY 
+        download_cmd "${ZENDOPCACHE_LINKLOCAL}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} local download failed." $boldgreen
@@ -2528,7 +3276,7 @@ else
 	fi
     fi
 
-tar xzf ${ZENDOPCACHE_LINKFILE} 
+tar xzf "${ZENDOPCACHE_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} local extraction failed." $boldgreen
@@ -2554,13 +3302,13 @@ read -ep "Install Zend OPCache ? (By default uses 32MB RAM) [y/n] " askzopcachei
 	fi #unattended
 if [[ "$askzopcacheinstall" = [yY] ]]; then
 ZOPCACHEINSTALL='y'
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${ZENDOPCACHE_LINKFILE} ..." $boldyellow
-    if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
+    if [ -s "${ZENDOPCACHE_LINKFILE}" ]; then
         cecho " ${ZENDOPCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${ZENDOPCACHE_LINK} $WGETRETRY 
+        download_cmd "${ZENDOPCACHE_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
@@ -2572,7 +3320,7 @@ else
 	fi
     fi
 
-tar xzf ${ZENDOPCACHE_LINKFILE} 
+tar xzf "${ZENDOPCACHE_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} extraction failed." $boldgreen
@@ -2595,14 +3343,14 @@ nsdtarball() {
 if [[ "$NSD_INSTALL" = [yY] ]]; 
 then
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${NSD_LINKFILE} ..." $boldyellow
-    if [ -s ${NSD_LINKFILE} ]; then
+    if [ -s "${NSD_LINKFILE}" ]; then
         cecho "NSD ${NSD_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        # $DOWNLOADAPP ${NSD_LINKLOCAL} $WGETRETRY
-        $DOWNLOADAPP ${NSD_LINK} $WGETRETRY
+        # download_cmd ${NSD_LINKLOCAL} $WGETRETRY
+        download_cmd "${NSD_LINK}" $WGETRETRY
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NSD_LINKFILE} download failed." $boldgreen
@@ -2614,7 +3362,7 @@ else
 	fi
     fi
 
-tar xzf ${NSD_LINKFILE} 
+tar xzf "${NSD_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NSD_LINKFILE} extraction failed." $boldgreen
@@ -2642,13 +3390,22 @@ then
 
 CSFINSTALLOK='y'
 
-    cd $DIR_TMP
+    cd "$DIR_TMP"
+
+    # change to always look for remote csf firewall tarball
+    # and use it first and only fall back on local included 
+    # csf tarball if you can not reach the official csf
+    # site tarball download
+    CSF_SITECHECK=$(curl -sI ${CSF_LINK} | grep 'HTTP\/' | awk '/200/ {print $2}')
+    if [[ "$CSF_SITECHECK" = '200' ]]; then
+      mv "${CSF_LINKFILE}" "${CSF_LINKFILE}-local"
+    fi
 
         cecho "Download ${CSF_LINKFILE} ..." $boldyellow
-    if [ -s ${CSF_LINKFILE} ]; then
+    if [ -s "${CSF_LINKFILE}" ]; then
         cecho "csf Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${CSF_LINK} $WGETRETRY 
+        download_cmd "${CSF_LINK}" "$WGETRETRY" 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${CSF_LINKFILE} download failed." $boldgreen
@@ -2660,7 +3417,7 @@ else
 	fi
     fi
 
-tar xzf ${CSF_LINKFILE} 
+tar xzf "${CSF_LINKFILE}"
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${CSF_LINKFILE} extraction failed." $boldgreen
@@ -2678,14 +3435,14 @@ fi
 ###############################################
 
 ccachetarball() {
-    cd $DIR_TMP
+    cd "$DIR_TMP"
 
         cecho "Download ${CCACHEFILE} ..." $boldyellow
-    if [ -s ${CCACHEFILE} ]; then
+    if [ -s "${CCACHEFILE}" ]; then
         cecho "ccache ${CCACHE_VER} Archive found, skipping download..." $boldgreen 
     else
-        # $DOWNLOADAPP ${CCCACHELINKLOCAL} $WGETRETRY
-        $DOWNLOADAPP ${CCCACHELINK} $WGETRETRY
+        # download_cmd "${CCCACHELINKLOCAL}" $WGETRETRY
+        download_cmd ${CCCACHELINK} $WGETRETRY
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CCACHEFILE} download failed." $boldgreen
@@ -2697,7 +3454,7 @@ else
     fi
     fi
 
-tar xzf ${CCACHEFILE} 
+tar xzf "${CCACHEFILE}"
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${CCACHEFILE} extraction failed." $boldgreen
@@ -2721,19 +3478,19 @@ echo "*****************************************************"
 # urls and speed up initial install
 # unzip svr-setup.zip
 if [ -f "${CM_INSTALLDIR}/downloads/svr-setup.zip" ]; then
-    /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/svr-setup.zip -d /
+    /usr/bin/unzip -qo "${CM_INSTALLDIR}/downloads/svr-setup.zip" -d /
 fi
 if [ -f "${CM_INSTALLDIR}/downloads/rpms.zip" ]; then
-    /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/rpms.zip -d $DIR_TMP/
+    /usr/bin/unzip -qo "${CM_INSTALLDIR}/downloads/rpms.zip" -d "$DIR_TMP"/
 fi
 if [ -f "${CM_INSTALLDIR}/downloads/curlrpms.zip" ]; then
-    /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/curlrpms.zip -d $DIR_TMP/
+    /usr/bin/unzip -qo "${CM_INSTALLDIR}/downloads/curlrpms.zip" -d "$DIR_TMP"/
 fi
 if [ -f "${CM_INSTALLDIR}/downloads/ffmpeg-depends.zip" ]; then
-    /usr/bin/unzip -qo ${CM_INSTALLDIR}/downloads/ffmpeg-depends.zip -d $DIR_TMP/
+    /usr/bin/unzip -qo "${CM_INSTALLDIR}/downloads/ffmpeg-depends.zip" -d "$DIR_TMP"/
 fi
 if [ -f "${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE}" ]; then
-    cp ${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE} $DIR_TMP
+    cp "${CM_INSTALLDIR}/downloads/${LIBRESSL_LOCALLINKFILE}" "$DIR_TMP"
 fi
 
 CCACHE_ERROR=$?
@@ -2745,6 +3502,23 @@ yuminstall
 
 questions
 
+if [[ "$INITIALINSTALL" != [yY] ]]; then
+    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0|7.1'
+else
+    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep '7.0|7.1'
+fi
+PHPSEVEN_CHECKVER=$?
+echo "$PHPSEVEN_CHECKVER"
+
+# mailparse 3.0.0 only works with PHP 7.0 branch
+# so use 2.1.6 if not PHP 7.0 branch
+if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
+    MAILPARSEPHP_VER="$MAILPARSEPHP_COMPATVER"
+    PHPEXT_MAILPARSELINKFILE="mailparse-${MAILPARSEPHP_VER}.tgz"
+    PHPEXT_MAILPARSELINK="https://pecl.php.net/get/${PHPEXT_MAILPARSELINKFILE}"
+    PHPEXT_MAILPARSELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mailparse/${PHPEXT_MAILPARSELINKFILE}"
+fi
+
 # yum double check
 if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; then
 
@@ -2753,48 +3527,76 @@ if [[ "$FAILEPEL" != 'y' || "$FAILRPMFORGE" != 'y' || "$FAILCENTALT" != 'y' ]]; 
     # echo ${CM_INSTALLDIR}    
 
 ccachetarball
-
 ccacheinstall
 
-csftarball
-
-siegetarball
-
-pythontarball
-
+axelsetup
 nginxtarball
 
-phptarball
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  csftarball &
+  pythontarball &
+  mailparsephpexttarball &
+  wait
+else
+  csftarball
+  pythontarball
+  mailparsephpexttarball
+fi
 
-xcachetarball
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  phptarball &
+  xcachetarball &
+  apctarball &
+  zopcachetarball &
+  wait
+else
+  phptarball
+  xcachetarball
+  apctarball
+  zopcachetarball
+fi
 
-apctarball
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  memcachetarball &
+  imagickphpexttarball &
+  redisphptarball &
+  mongodbphptarball &
+  wait
+else
+  memcachetarball
+  imagickphpexttarball
+  redisphptarball
+  mongodbphptarball
+fi
 
-zopcachetarball
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  gperftools &
+  openssldownload &
+  libressldownload &
+  pcretarball &
+  wait
+else
+  gperftools
+  openssldownload
+  libressldownload
+  pcretarball
+fi
 
-memcachetarball
-
-imagickphpexttarball
-
-redisphptarball
-
-mongodbphptarball
-
-gperftools
-
-openssldownload
-
-libressldownload
-
-pcretarball
-
-mysqltools
-
-nsdtarball
-
-mariadbrpms
+if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
+  siegetarball &
+  mysqltools &
+  nsdtarball &
+  mariadbrpms &
+  wait
+else
+  siegetarball
+  mysqltools
+  nsdtarball
+  mariadbrpms
+fi
 
 #mariadbyumrepo
+validcheck_downloads
 
 echo "*****************************************************"
 cecho "Downloads complete." $boldgreen

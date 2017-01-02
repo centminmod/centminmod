@@ -129,6 +129,10 @@ if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
     ccacheinstall
 fi
 
+if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}" && "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')" ]]; then
+    ccacheinstall
+fi
+
 if [ -f /etc/centminmod-release ];then
 	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release >/dev/null)" ]]; then
 	setupmotd
@@ -140,5 +144,7 @@ fi
 sshdtweaks
 
 countcpus
+
+nano_highlight
 
 }

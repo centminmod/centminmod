@@ -5,7 +5,7 @@
 # install swapped to disk by ~68MB, so you need at least 192MB and adequate swap disk size
 ABORTINSTALL='y'
 #############################################################
-TOTALMEM=$(cat /proc/meminfo | grep MemTotal | awk '{print $2}')
+TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 ISLOWMEM='262144'
 #############################################################
 # Formulas

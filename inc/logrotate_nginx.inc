@@ -35,13 +35,20 @@ echo "......"
 
 touch /etc/logrotate.d/nginx
 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        VARDFSIZE=$(df --output=avail /var | tail -1)
+else
+        VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
+fi
+
+if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
         daily
         dateext
         missingok
         rotate 10
-        size=500M
+        maxsize 500M
         compress
         delaycompress
         notifempty
@@ -50,6 +57,22 @@ cat > "/etc/logrotate.d/nginx" <<END
         endscript           
 }
 END
+else
+cat > "/etc/logrotate.d/nginx" <<END
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript           
+}
+END
+fi
 
 echo "----------------------------------------------------------------------------"
 cat /etc/logrotate.d/nginx

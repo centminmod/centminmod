@@ -1,5 +1,14 @@
 function funct_nsdsetup {
 
+  if [[ ! -f /etc/nsd/nsd.conf && ! -f /etc/init.d/nsd ]]; then
+    echo
+    echo "NSD is not installed yet"
+    echo "run centmin.sh menu option 20"
+    echo "option to install NSD first"
+    echo
+    exit
+  fi
+
 # check if NSD is v3 or v4
 NSD_VERCHECK=$(echo $NSD_VERSION | cut -d . -f1)
 NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)

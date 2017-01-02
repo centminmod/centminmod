@@ -4,7 +4,7 @@ suhosinsetup() {
 
 PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
 
-if [ "$PHPVERCHECK" != '5.7' ]; then
+if [[ "$PHPVERCHECK" != '5.7' || "$PHPVERCHECK" != '7.0' ]]; then
 
 cd $DIR_TMP
 
@@ -27,10 +27,10 @@ if [ ! -f ${CONFIGSCANDIR}/suhosin.ini ]; then
 	touch ${CONFIGSCANDIR}/suhosin.ini
 fi
 
-SUHOSINCHECK=$(grep 'extension=suhosin.so' ${CONFIGSCANDIR}/suhosin.ini)
-if [ -z "$SUHOSINCHECK" ]; then
-# echo "" >> ${CONFIGSCANDIR}/suhosin.ini
-# echo "extension=suhosin.so" >> ${CONFIGSCANDIR}/suhosin.ini
+SUHOSINCHECK=$(grep 'extension=suhosin.so' "${CONFIGSCANDIR}/suhosin.ini" >/dev/null 2>&1; echo $?)
+if [[ "$SUHOSINCHECK" = '1' ]]; then
+# echo "" >> "${CONFIGSCANDIR}/suhosin.ini"
+# echo "extension=suhosin.so" >> "${CONFIGSCANDIR}/suhosin.ini"
 
 cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
 extension=suhosin.so
@@ -59,7 +59,7 @@ EOF
 
 fi
 
-if [ ! -z "$SUHOSINCHECK" ]; then
+if [[ "$SUHOSINCHECK" = '0' ]]; then
     echo "sed -i 's/;extension=suhosin.so/extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinon ; chmod 700 /usr/bin/suhosinon
     echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
 fi

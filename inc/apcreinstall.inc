@@ -53,18 +53,23 @@ fi
 
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
-if [[ "$PHPCURRENTVER" = '5.5' || "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' ]]; then
+axelsetup
+
+if [[ "$PHPCURRENTVER" = '5.5' ]]; then
     apcdevfix
-else
+elif [[ "$PHPCURRENTVER" = '5.2' || "$PHPCURRENTVER" = '5.3' || "$PHPCURRENTVER" = '5.4' ]]; then
     if [ -s APC-${apcver}.tgz ]; then
         cecho "APC-${apcver}.tgz Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP https://pecl.php.net/get/APC-${apcver}.tgz $WGETRETRY
+        download_cmd https://pecl.php.net/get/APC-${apcver}.tgz $WGETRETRY
     fi
-
-tar xvzf APC-${apcver}.tgz
-cd APC-${apcver}
-
+    tar xvzf APC-${apcver}.tgz
+    cd APC-${apcver}
+elif [[ "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' || "$PHPCURRENTVER" = '7.0' ]]; then
+    echo "Your current PHP $PHPCURRENTVER version is not supported. Use Zend Opcache instead"
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        exit
+    fi
 fi # 5.5 & 5.6 fix 
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then

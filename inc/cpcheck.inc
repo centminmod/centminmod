@@ -1,3 +1,79 @@
+checkipvsix() {
+  if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
+    sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
+    csf -r  > /dev/null 2>&1
+    NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+  elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
+    csf -r  > /dev/null 2>&1
+  fi
+}
+
+checkwoff() {
+  if [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep woff2 /usr/local/nginx/conf/mime.types)" ]] || [[ -f /usr/local/nginx/conf/mime.types && -z "$(grep otf /usr/local/nginx/conf/mime.types)" ]]; then
+    # check for woff2 and ott mime type support in nginx https://github.com/centminmod/centminmod/issues/60
+    mimefix 1
+  fi
+}
+
+nano_highlight() {
+  # enable nano editor syntax highlighing
+  if [ -f /etc/nanorc ]; then
+    if [[ -z "$(grep '^include' /etc/nanorc)" && "$(grep '^# include' /etc/nanorc)" ]]; then
+      sed -i 's|^# include|include|g' /etc/nanorc
+    fi
+  fi
+}
+
+fixnodejs_epel() {
+  # prevent node.js 6.x install by epel in favour of nodesource
+  # repo via addons/nodejs.sh
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep nodejs > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_NODEJSEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) nodejs")
+    sed -i "s|^exclude=.*|$NEW_NODEJSEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
+fixclamav_epel() {
+  # prevent clamav-devel install by epel in favour of rpmforge version
+  # https://community.centminmod.com/posts/38359/
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep 'clamav-devel' > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_CLAMAVDEVELEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) clamav-devel")
+    sed -i "s|^exclude=.*|$NEW_CLAMAVDEVELEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
+c7mariadb_tmpdir() {
+  # fix for mariadb 10.1.16 introduced ProtecHome=true setting
+  # https://jira.mariadb.org/browse/MDEV-10399
+  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Update MariaDB 10 setting for ProtectHome=false"
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectHome=false
+TDF
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
+mariadb_openfilesfix() {
+  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Update MariaDB 10 setting for LimitNOFILE=262144"
+cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=262144
+TDG
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
 fixlibmysqlclient_symlink() {
   if [ "$(uname -m)" == 'x86_64' ]; then
     FIXMDB_LIBDIR='lib64'
@@ -46,6 +122,10 @@ fixphpfpm_includes() {
       /etc/init.d/php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_includes_${DT}.log"
+  # remove log if empty
+  if [ ! -s "/root/centminlogs/fixphpfpm_includes_${DT}.log" ]; then
+    rm -rf "/root/centminlogs/fixphpfpm_includes_${DT}.log"
+  fi
   fi
 }
 
@@ -72,7 +152,87 @@ fixphpfpm_httpproxy() {
       /etc/init.d/php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
+  # remove log if empty
+  if [ ! -s "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log" ]; then
+    rm -rf "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
   fi
+  fi
+}
+
+nginx_mutexoff() {
+  # http://hg.nginx.org/nginx/rev/d82b3c344e7e
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -q 'accept_mutex on' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
+  fi
+}
+
+check_jemstatsfile() {
+  if [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
+    jemalloc_printstats
+  fi
+}
+
+gitenv_askupdate() {
+  DT=$(date +"%d%m%y-%H%M%S")
+  {
+    if [[ -d "${SCRIPT_DIR}/.git" ]]; then
+      # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
+      # centmin mod code locally using giturl.txt defined git repo name
+      GET_GITVER=$(git --version | awk '{print $3}' | sed -e 's|\.||g' | cut -c1,2)
+      # https://github.com/centminmod/centminmod/raw/${branchname}/giturl.txt
+      # check if you can properly resolve raw.githubusercontent.com first in case of dns outpages
+      # issues at github end https://community.centminmod.com/threads/centmin-mod-github-com-repo-504-timeouts.9232/
+      CURL_GITURLCHECKER=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
+      if [[ "$CURL_GITURLCHECKER" = '0' ]]; then
+        CURL_GITURL=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+      else
+        # just default to https://github.com/centminmod/centminmod.git if can not resolve the
+        # https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt
+        # url link
+        CURL_GITURL='https://github.com/centminmod/centminmod.git'
+      fi
+      # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
+      if [[ "$GET_GITVER" -ge '18' ]]; then
+        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod >/dev/null 2>&1; git ls-remote --get-url)
+      else
+        GET_GITREMOTEURL=$(cd /usr/local/src/centminmod >/dev/null 2>&1; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
+      fi
+      if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho " Centmin Mod remote branch has changed" $boldyellow
+        cecho " from $GET_GITREMOTEURL" $boldyellow
+        cecho " to $CURL_GITURL" $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+        read -ep " Do you want to update the Centmin Mod Git repo url ? [y/n]: " updategitrepourl
+        if [[ "$updategitrepourl" = [yY] ]]; then
+          gitenv_setup
+          cecho "-------------------------------------------------------------" $boldgreen
+        fi
+    fi
+      pushd "${SCRIPT_DIR}" >/dev/null 2>&1
+      git fetch >/dev/null 2>&1
+      popd >/dev/null 2>&1
+    if [[ "$(cd /usr/local/src/centminmod >/dev/null 2>&1; git rev-parse HEAD)" != "$(cd /usr/local/src/centminmod >/dev/null 2>&1; git rev-parse @{u})" ]]; then
+        # if remote branch commits don't match local commit, then there are new updates need
+        # pulling
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho " Centmin Mod code updates available for /usr/local/src/centminmod" $boldyellow
+        cecho " List of updates: community.centminmod.com/forums/41/?prefix_id=19" $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+        read -ep " Do you want to update your local Centmin Mod Git code ? [y/n]: " updategitcode
+        if [[ "$updategitcode" = [yY] ]]; then
+          gitenv_update
+          cecho "-------------------------------------------------------------" $boldgreen
+        fi
+      else
+        # no new commits/updates available
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho " Centmin Mod local code is up to date at /usr/local/src/centminmod" $boldyellow
+        cecho " no available updates at this time..." $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+      fi
+    fi
+  } 2>&1 | tee /root/centminlogs/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
 }
 
 wgetver_check() {
@@ -86,6 +246,10 @@ wgetver_check() {
     echo "fix pcre install for missing UTF8 support... one time task"
     sleep 6
     "${SCRIPT_DIR}/addons/wget.sh" pcre
+  elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    echo "add pcre jit support... one time task"
+    sleep 6
+    "${SCRIPT_DIR}/addons/wget.sh" pcre
   fi
   if [[ "$(uname -m)" != 'x86_64' ]]; then
     if [ -f /root/.wgetrc ]; then
@@ -95,6 +259,138 @@ wgetver_check() {
       echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
     fi
   fi
+}
+
+axelcheck() {
+  if [[ -f /usr/local/bin/axel || -f /usr/bin/axel ]]; then
+  if [[ "$(axel -V | awk '/version/ {print $3}')" != "${AXEL_VER}" ]] || [[ -f /usr/local/bin/axel && ! -d "${DIR_TMP}/axel-${AXEL_VER}" && ! -f "${DIR_TMP}/${AXEK_LINKFILE}" ]]; then
+    echo "update axel version... one time task"
+    sleep 3
+    install_axel silent
+  fi
+  fi
+}
+
+set_logdate() {
+	DT=$(date +"%d%m%y-%H%M%S")
+}
+
+ngxver_checker() {
+	if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
+		LASTEST_NGINXVERS=$(curl -sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+		CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
+		if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
+			echo
+			cecho "-------------------------------------------------------------" $boldgreen
+			echo "* Current Nginx Version: $CURRENT_NGINXVERS"
+			echo "* Latest Nginx Available: $LASTEST_NGINXVERS"
+			cecho "-------------------------------------------------------------" $boldgreen
+			echo
+		fi
+	fi
+}
+
+yumupdatechecker() {
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		# Setup Colours
+		black='\E[30;40m'
+		red='\E[31;40m'
+		green='\E[32;40m'
+		yellow='\E[33;40m'
+		blue='\E[34;40m'
+		magenta='\E[35;40m'
+		cyan='\E[36;40m'
+		white='\E[37;40m'
+		
+		boldblack='\E[1;30;40m'
+		boldred='\E[1;31;40m'
+		boldgreen='\E[1;32;40m'
+		boldyellow='\E[1;33;40m'
+		boldblue='\E[1;34;40m'
+		boldmagenta='\E[1;35;40m'
+		boldcyan='\E[1;36;40m'
+		boldwhite='\E[1;37;40m'
+		
+		Reset="tput sgr0"      #  Reset text attributes to normal
+                       		#+ without clearing screen.
+		
+		cecho ()                     # Coloured-echo.
+                             		# Argument $1 = message
+                             		# Argument $2 = color
+		{
+		message=$1
+		color=$2
+		echo -e "$color$message" ; $Reset
+		return
+		}
+
+    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+      YENABLEREPOS='remi,city-fan.org'
+    elif [ -f /etc/yum.repos.d/remi.repo ]; then
+      YENABLEREPOS='remi'
+    else
+      YENABLEREPOS=""
+    fi
+		YEXCLUDE='nginx* php* mysql*'
+		YYUM_PARAMETER='--disableplugin=priorities'
+    echo
+    echo " checking for YUM updates... please wait..."
+		if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+		else
+			UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+		fi
+		if [[ "$UPDATE_CHECK" = '100' ]]; then
+			echo
+			cecho "-------------------------------------------------------------" $boldgreen
+			cecho "  New YUM Updates available for host $(hostname)" $boldyellow
+			cecho "-------------------------------------------------------------" $boldgreen
+			cecho "  To list available YUM Updates type: " $boldyellow
+			cecho "-------------------------------------------------------------" $boldgreen
+			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+			else
+				echo "  yum list updates $YYUM_PARAMETER"
+			fi
+			# cecho "-------------------------------------------------------------" $boldgreen
+			echo
+			cecho "-------------------------------------------------------------" $boldgreen
+			cecho "  To updates type: " $boldyellow
+			cecho "-------------------------------------------------------------" $boldgreen
+			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+			else
+				echo "  yum update $YYUM_PARAMETER"
+			fi
+			echo
+    else
+      echo " no YUM updates available"
+		fi
+	fi
+}
+
+setupemailcheck() {
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		if [ -f /etc/centminmod/email-primary.ini ]; then
+			if [ ! -s /etc/centminmod/email-primary.ini ]; then
+				PEMAIL_NOSET='y'
+			fi
+		else
+			PEMAIL_NOSET='y'
+		fi
+		if [ -f /etc/centminmod/email-secondary.ini ]; then
+			if [ ! -s /etc/centminmod/email-secondary.ini ]; then
+				SEMAIL_NOSET='y'
+			fi
+		else
+			SEMAIL_NOSET='y'
+		fi
+		if [[ "$PEMAIL_NOSET" = 'y' || "$SEMAIL_NOSET" = 'y' ]] && [[ "$INITIALINSTALL" != [yY] ]]; then
+			if [ -f "${SCRIPT_DIR}/tools/email.sh" ]; then
+				"${SCRIPT_DIR}/tools/email.sh"
+			fi
+		fi
+	fi
 }
 
 selinxcheck() {
@@ -126,12 +422,63 @@ selinxcheck() {
 	fi
 }
 
+reuseportchecks() {
+	if [[ "$INITIALINSTALL" = [yY] ]]; then
+		CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
+		if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+			SUPPORT_REUSEPORT=y
+			if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+				sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
+			fi
+		else
+			SUPPORT_REUSEPORT=n
+			if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+				sed -i 's| reuseport||' /usr/local/nginx/conf/conf.d/virtual.conf
+			fi
+		fi
+	fi
+}
+
+rclocalchecks() {
+	if [ ! -x /etc/rc.d/rc.local ]; then
+		# centos 7 doesn't give rc.local executable permissions
+		# so /etc/rc.local isn't run on reboots like on centos 6
+		if [[ "$INITIALINSTALL" = [yY] ]]; then
+			ls -lah /etc/rc.d/rc.local
+		fi
+		chmod +x /etc/rc.d/rc.local
+		if [[ "$INITIALINSTALL" = [yY] ]]; then
+			ls -lah /etc/rc.d/rc.local
+		fi
+	fi
+}
+
+kernelchecks() {
+	if [[ "$(uname -r | cut -d . -f1)" = '4' ]]; then
+		if [[ "$(cat /proc/sys/net/netfilter/nf_conntrack_helper)" != '0' ]]; then
+			echo "linux 4.x kernel related adjustments"
+			echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
+			cat /proc/sys/net/netfilter/nf_conntrack_helper
+			echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper
+			if [[ -z "$(grep 'nf_conntrack_helper' /etc/sysctl.conf)" ]]; then
+				echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
+				sysctl -p
+			fi
+			if [[ -z "$(grep 'nf_conntrack_helper' /etc/rc.local)" ]]; then
+				echo "echo 0 > /proc/sys/net/netfilter/nf_conntrack_helper" >> /etc/rc.local
+			fi		
+			echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
+			cat /proc/sys/net/netfilter/nf_conntrack_helper
+		fi	
+	fi
+}
+
 blockeditorcheck() {
 	if [ -f /usr/local/nginx/conf/drop.conf ]; then
 	if [[ -z "$(grep 17234 /usr/local/nginx/conf/drop.conf)" ]]; then
 		if [ -f "${SCRIPT_DIR}/config/nginx/drop.conf" ]; then
 		rm -rf /usr/local/nginx/conf/drop.conf
-		\cp -f ${SCRIPT_DIR}/config/nginx/drop.conf /usr/local/nginx/conf/drop.conf
+		\cp -f "${SCRIPT_DIR}/config/nginx/drop.conf" /usr/local/nginx/conf/drop.conf
 		fi
 	fi
 	fi
@@ -144,12 +491,23 @@ centaltoff() {
 	fi
 }
 
+forgefix() {
+  # remove 404 outdated mirrors
+  if [ -f /etc/yum.repos.d/mirrors-rpmforge ]; then
+    for l in $(find /etc/yum.repos.d/ -type f -name "mirrors-rpmforge*"); do
+      if [[ "$(grep '^http:\/\/apt.sw.be' $l >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        sed -i '/^http:\/\/apt.sw.be/d' $l;
+      fi
+    done
+  fi
+}
+
 axivo_remove() {
 	if [ -f /etc/yum.repos.d/axivo.repo ]; then
 		# remove Axivo outdated yum repo
 		# if detected as being installed
 		# yum list installed --disablerepo=* --enablerepo=axivo --disableplugin=priorities | grep axivo
-		yum -y -q remove axivo-release
+		yum -y -q remove axivo-release >/dev/null 2>&1
 		yum clean all -q
 	fi
 }
@@ -166,6 +524,12 @@ csfipsetcheck() {
 		if [ -f /etc/csf/csf.conf ]; then
 		sed -i 's/LF_IPSET = \"1\"/LF_IPSET = \"0\"/' /etc/csf/csf.conf
 		fi
+	fi
+}
+
+checkovzkernels() {
+	if [[ -f /proc/user_beancounters ]]; then
+		sed -i 's|installonly_limit=.*|installonly_limit=3|' /etc/yum.conf
 	fi
 }
 
@@ -193,23 +557,30 @@ checkcmdircmd() {
 		echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
-pushd $SCRIPT_DIR; bash centmin.sh
+pushd "$SCRIPT_DIR"; bash centmin.sh
 EOF
 		chmod 0700 /usr/bin/centmin
 	fi
 }
 
 nvcheck() {
-	if [[ -f "${SCRIPT_DIR}/tools/nv.sh" && -f /usr/bin/nv ]]; then
-		# auto update /usr/bin/nv if different from centmin mod tools/nv.sh copy
-		# if [[ "$(diff -qr ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv; echo $?)" != '0' ]]; then
-		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
-		chmod +x /usr/bin/nv
-		# fi
-	else
-		\cp -f ${SCRIPT_DIR}/tools/nv.sh /usr/bin/nv
-		chmod +x /usr/bin/nv
-	fi		
+  if [ ! -h /usr/bin/nv ]; then
+    rm -rf /usr/bin/nv
+    ln -s "${SCRIPT_DIR}/tools/nv.sh" /usr/bin/nv
+    chmod +x /usr/bin/nv
+  fi
+}
+
+dmotdcheck() {
+  if [ ! -h /usr/local/bin/dmotd ]; then
+    if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
+      rm -rf /usr/local/bin/dmotd
+      ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd >/dev/null 2>&1
+      if [ -f /usr/local/bin/dmotd ]; then
+        chmod +x /usr/local/bin/dmotd
+      fi
+    fi
+  fi
 }
 
 multiphpcheck() {
@@ -261,15 +632,21 @@ mjemalloc() {
 
 fixlogrotate() {
 	if [ -f /etc/logrotate.d/nginx ]; then
-	if [ -z "$(grep '\$' /etc/logrotate.d/nginx)" ]; then
+	if [[ -z "$(grep '\$' /etc/logrotate.d/nginx)" || -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" ]]; then
 		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
+	if [[ "$CENTOS_SEVEN" = '7' ]]; then
+		VARDFSIZE=$(df --output=avail /var | tail -1)
+	else
+		VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
+	fi
+if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
         daily
         dateext
         missingok
         rotate 10
-        size=500M
+        maxsize 500M
         compress
         delaycompress
         notifempty
@@ -278,19 +655,42 @@ cat > "/etc/logrotate.d/nginx" <<END
         endscript           
 }
 END
+else
+cat > "/etc/logrotate.d/nginx" <<END
+/var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /usr/local/nginx/logs/nginx.pid 2>/dev/null) 2>/dev/null || true
+        endscript           
+}
+END
+fi
 	fi
 	fi
 
 	if [ -f /etc/logrotate.d/php-fpm ]; then
-	if [ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" ]; then
-		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/var\/run\/php-fpm\/php-fpm.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/php-fpm
+	if [[ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" || -z "$(grep 'maxsize' /etc/logrotate.d/php-fpm)" ]]; then
+
+	if [[ "$CENTOS_SEVEN" = '7' ]]; then
+		VARDFSIZE=$(df --output=avail /var | tail -1)
+	else
+		VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
+	fi
+
+if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/php-fpm" <<END
 /var/log/php-fpm/*.log {
         daily
         dateext
         missingok
         rotate 10
-        size=500M
+        maxsize 500M
         compress
         delaycompress
         notifempty
@@ -299,24 +699,78 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         endscript            
 }
 END
+else
+cat > "/etc/logrotate.d/php-fpm" <<END
+/var/log/php-fpm/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        endscript            
+}
+END
+fi
 	fi
 	fi
 }
 
+csf_distftp() {
+  if [ -f /etc/csf/csf.conf ]; then
+    # raise LF_DISTFTP = 40 & LF_DISTFTP_UNIQ = 40
+    if [[ ! "$(grep 'LF_DISTFTP = \"40\"' /etc/csf/csf.conf)" ]]; then
+      sed -i 's/LF_DISTFTP = .*/LF_DISTFTP = \"40\"/g' /etc/csf/csf.conf
+    fi
+    if [[ ! "$(grep 'LF_DISTFTP_UNIQ = \"40\"' /etc/csf/csf.conf)" ]]; then
+      sed -i 's/LF_DISTFTP_UNIQ = .*/LF_DISTFTP_UNIQ = \"40\"/g' /etc/csf/csf.conf
+      csf -r >/dev/null 2>&1
+    fi
+  fi
+}
+
 pureftpdupdates() {
-  if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
+	if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
     # disable anonymous logins by default
     CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
     if [ "$CHECKPFTPD_ANON" ]; then
       sed -i 's|NoAnonymous                 no|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
       if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
-        service pure-ftpd restart
+        service pure-ftpd restart >/dev/null 2>&1
       fi
       echo
       echo "disable pure-ftpd annonymous logins"
       echo
     fi
-  fi
+    # auto updates
+    # raise max number of concurrent ftp connections from 50/2 to 20010/2
+    CHECKPFTPD_PASSIVEPORTS=$(grep '^PassivePortRange    3000 3050' /etc/pure-ftpd/pure-ftpd.conf)
+    CHECKPFTPD_MAXCLIENTS=$(grep '^MaxClientsNumber            1000' /etc/pure-ftpd/pure-ftpd.conf)
+    if [ "$CHECKPFTPD_PASSIVEPORTS" ]; then
+  	 sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+    fi
+    if [ ! "$CHECKPFTPD_MAXCLIENTS" ]; then
+      sed -i 's|^MaxClientsNumber .*|MaxClientsNumber            1000|' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|^MaxClientsPerIP .*|MaxClientsPerIP             500|' /etc/pure-ftpd/pure-ftpd.conf
+    fi
+			if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+				service pure-ftpd restart >/dev/null 2>&1
+			fi
+			# echo
+			# echo "increasing pure-ftpd passive port range"
+			# echo
+		CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
+		if [ "$CHECKCSF_PASSIVEPORTS" ]; then
+			sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
+			csf -r >/dev/null 2>&1
+			echo
+			echo "adjusting pure-ftpd passive port range for CSF Firewall"
+			echo
+		fi	
+	fi
 }
 
 leupdates() {
@@ -330,18 +784,18 @@ leupdates() {
 }
 
 memcachedupdatechecks() {
-  # 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
-  if [[ "$INITIALINSTALL" != [yY] ]]; then
-    if [ -f /etc/init.d/memcached ]; then
-      if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
-        if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
-          \cp -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" /etc/init.d/memcached1425.patch
-          pushd /etc/init.d/
-          patch -s < memcached1425.patch >/dev/null 2>&1
-          rm -rf memcached1425.patch
-          popd
-        fi
-      fi
+	# 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
+	if [[ "$INITIALINSTALL" != [yY] ]]; then
+		if [ -f /etc/init.d/memcached ]; then
+		  if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
+			  if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
+				  \cp -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" /etc/init.d/memcached1425.patch
+				  pushd /etc/init.d/
+				  patch -s < memcached1425.patch >/dev/null 2>&1
+				  rm -rf memcached1425.patch
+				  popd
+			  fi
+		  fi
       if [[ -z "$(grep 'modern' /etc/init.d/memcached)" ]]; then
         if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" && -f /etc/init.d/memcached ]]; then
           \cp -f "${SCRIPT_DIR}/config/memcached/memcached1426.patch" /etc/init.d/memcached1426.patch
@@ -351,14 +805,200 @@ memcachedupdatechecks() {
           popd
         fi
       fi
-    fi
-  fi
+		fi
+	fi
 }
 
-imagick_fixes() {
-	if [[ -f /etc/ImageMagick/policy.xml || -f /etc/ImageMagick-last/ImageMagick-6/policy.xml ]]; then
-		if [ -f "${SCRIPT_DIR}/tools/imagemagick-fix.sh" ]; then
-			"${SCRIPT_DIR}/tools/imagemagick-fix.sh" >/dev/null 2>&1
+cronpathadjust() {
+	# if [[ "$INITIALINSTALL" = [yY] ]]; then
+		# append /usr/local/bin to /etc/crontab PATH variable for /usr/local/bin/php to work
+		if [ -f /etc/crontab ]; then
+			if [[ -z "$(grep '\/usr\/local\/bin' /etc/crontab)" ]]; then
+				# echo "adjust /etc/crontab \$PATH for /usr/local/bin support"
+				sed -i 's|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin|PATH=\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/usr\/local\/bin|' /etc/crontab
+				cmservice crond restart >/dev/null 2>&1
+			fi
+		fi
+	# fi
+}
+
+xpowerby() {
+	# add x-powered-by header check
+	if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+	XPB_CHECKA=$(grep 'more_set_headers \"Server: nginx\";' /usr/local/nginx/conf/nginx.conf)
+	XPB_CHECKB=$(grep 'more_set_headers \"X-Powered-By: centminmod\";' /usr/local/nginx/conf/nginx.conf)
+	XPB_CHECKC=$(grep 'more_set_headers \"Server: nginx centminmod\";' /usr/local/nginx/conf/nginx.conf)
+	if [[ "$XPB_CHECKA" ]]; then
+		sed -i "s|^more_set_headers \"Server: nginx\";|more_set_headers \"Server: nginx\";\nmore_set_headers \"X-Powered-By: centminmod\";|" /usr/local/nginx/conf/nginx.conf
+	elif [[ -z "$XPB_CHECKB" ]]; then
+		if [[ "$XPB_CHECKC" ]]; then
+			sed -i "s|^more_set_headers \"Server: nginx centminmod\";|more_set_headers \"Server: nginx centminmod\";\nmore_set_headers \"X-Powered-By: centminmod\";|" /usr/local/nginx/conf/nginx.conf
+		else
+			sed -i "s|include \/usr\/local\/nginx\/conf\/vts_http.conf;|more_set_headers \"X-Powered-By: centminmod\";\n\ninclude \/usr\/local\/nginx\/conf\/vts_http.conf;|" /usr/local/nginx/conf/nginx.conf
+		fi
+	fi
+	fi
+}
+
+pathfixes() {
+	if [[ -z "$(grep '\$PATH:' /root/.bashrc)" ]]; then
+		# sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
+		sed -i 's|export PATH=.*|export PATH="\$PATH:\/usr\/lib64\/ccache:\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin"|' /root/.bashrc
+	fi
+	# for sudo
+	if [ -d /etc/sudoers.d ]; then
+		if [ ! -f /etc/sudoers.d/addpaths ]; then
+			touch /etc/sudoers.d/addpaths
+			if [[ "$(uname -m)" = 'x86_64' ]]; then
+				if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
+					echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+				fi
+			else
+				if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
+					echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+				fi
+			fi
+		fi
+    if [ -f /etc/sudoers.d/addpaths ]; then
+      chmod 0440 /etc/sudoers.d/addpaths
+      # visudo -c -q
+    fi
+	fi
+}
+
+sshdfixes() {
+	# forgot line break in sshd_config for centos 6.x systems
+	# centos 6.x openssh 5.3p1 backported ecdsa keys support but
+	# not configured out of the box https://community.centminmod.com/posts/19702/
+	# this sets up ecdh-sha2-* key exchange support but setup without a line break
+	# this fixes it
+	if [[ "$(grep 'UseDNS noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
+		sed -i 's|UseDNS noKexAlgorithms|UseDNS no\nKexAlgorithms|' /etc/ssh/sshd_config
+	fi
+}
+
+auto_gitupdate() {
+	# if centmin mod code install directory has been setup
+	# with git environment via centmin.sh menu option 23
+	# submenu option 1, then allow centmin.sh to auto update
+	# the centmin mod code at /usr/local/src/centminmod
+	# silently in background
+	if [[ -d "${SCRIPT_DIR}/.git" && "$AUTO_GITUPDATE" = [yY] ]]; then
+		cd ${SCRIPT_DIR}
+		# totally silence the output
+		git stash -q &> /dev/null
+		git fetch -q &> /dev/null
+		git pull -q &> /dev/null
+	fi
+}
+
+figletcheck() {
+    if [[ ! -f "$(rpm -ql figlet | grep 'bin\/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
+        yum -y -q install figlet
+    fi
+}
+
+maintenance_confcheck() {
+	if [ ! -f /usr/local/nginx/conf/sitestatus.conf ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/sitestatus.conf" && -d /usr/local/nginx/conf ]]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/sitestatus.conf" /usr/local/nginx/conf/sitestatus.conf
+		fi
+	fi
+	if [ ! -f /usr/local/nginx/conf/maintenance.conf ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" && -d /usr/local/nginx/conf ]]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/maintenance.conf" /usr/local/nginx/conf/maintenance.conf
+		fi
+	fi
+	if [ ! -f /usr/local/nginx/conf/503include-main.conf ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" && -d /usr/local/nginx/conf ]]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/503include-main.conf" /usr/local/nginx/conf/503include-main.conf
+		fi
+	fi
+	if [ ! -f /usr/local/nginx/conf/503include-only.conf ]; then
+		if [[ -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" && -d /usr/local/nginx/conf ]]; then
+			\cp -f "${SCRIPT_DIR}/config/nginx/503include-only.conf" /usr/local/nginx/conf/503include-only.conf
+		fi
+	fi
+	if [ ! -f /usr/bin/sitestatus ]; then
+		if [[ -f "${SCRIPT_DIR}/tools/sitestatus.sh" && -d /usr/local/nginx/conf ]]; then
+			\cp -f "${SCRIPT_DIR}/tools/sitestatus.sh" /usr/bin/sitestatus
+			chmod +x /usr/bin/sitestatus
+     	MCONF_CHECK=$(grep 'maintenance.conf' /usr/local/nginx/conf/nginx.conf)
+     	if [[ -z "$MCONF_CHECK" ]]; then
+          	sed -i 's/include \/usr\/local\/nginx\/conf\/geoip.conf;/include \/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/maintenance.conf;\n/g' /usr/local/nginx/conf/nginx.conf
+     	fi
+		fi
+	fi
+}
+
+ngxmodule_cleanups() {
+	# clean ups
+	if [ -f "$DIR_TMP/nginx-develkit_v0.2.19.tar.gz" ]; then
+		rm -rf "$DIR_TMP/nginx-develkit_v0.2.19.tar.gz"
+	fi
+	if [ -d "$DIR_TMP/ngx_devel_kit-0.2.19" ]; then
+		rm -rf "$DIR_TMP/ngx_devel_kit-0.2.19"
+	fi
+}
+
+wpcompfix() {
+	# for wordpress auto installs via centmin.sh menu option 22, the wpsecure include
+	# file needs an added deny all location context to prevent compressed files in
+	# wordpress plugins that save to wp-content subdirectory from public access
+	if [ -d /usr/local/nginx/conf ]; then
+		WPSECUREDIRS=$(find /usr/local/nginx/conf/ -type f -name "wpsecure_*.conf")
+		if [[ "$WPSECUREDIRS" ]]; then
+			for wsf in ${WPSECUREDIRS[@]}; do
+				if [[ -z "$(grep 'zip|gz|tar|bzip2|7z|txt' $wsf)" ]]; then
+					echo "location ~* /(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z|txt)\$ { deny all; }" >> "$wsf";
+				fi
+			done
+		fi
+	fi
+}
+
+entropy_centosseven() {
+if [[ -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ ! -d /etc/systemd/system/haveged.service.d || ! -f /etc/systemd/system/haveged.service.d/haveged.conf ]]; then
+		mkdir -p /etc/systemd/system/haveged.service.d
+cat > "/etc/systemd/system/haveged.service.d/haveged.conf" <<EFF
+[Service]
+ExecStart=
+ExecStart=/usr/sbin/haveged -w 4067 -v 1 --Foreground
+EFF
+		systemctl daemon-reload >/dev/null 2>&1
+		systemctl restart haveged >/dev/null 2>&1
+		# cat /etc/systemd/system/haveged.service.d/haveged.conf
+	fi
+fi
+}
+
+ovhkernelcheck() {
+	if [[ "$INITIALINSTALL" = [yY] ]]; then
+		# check for new installs only whether server is OVH based 
+		# and whether a custom kernel is used with exception for
+		# Intel Xeon D-15xx Broadwell-DE processors which need
+		# OVH custom kernel for the newer Intel network NIC support
+		# Intel Corporation Ethernet Connection X552/X557-AT 10GBASE-T
+		OVHASNCHECK=$(curl -s${CURL_TIMEOUTS} ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+		OVHKERNEL_CHECK=$(uname -r | grep '\-grs' >/dev/null 2>&1; echo $?)
+		BROADWELLDE_CHECK=$(grep 'Xeon(R) CPU D-15' /proc/cpuinfo >/dev/null 2>&1; echo $?)
+		# more sure way to check for OVH custom kernel if /root/.ovhrc file exists
+		# can check value of variable DISTRIBKERNEL=1 for distro kernel or 
+		# DISTRIBKERNEL=0 for custom OVH kernel and let it override ASN check too
+		if [ -f /root/.ovhrc ]; then
+			OVHRC_CHECK=$(awk -F "\"" '/DISTRIBKERNEL/ {print $2}' /root/.ovhrc)
+			if [[ "$OVHRC_CHECK" != '1' ]]; then
+				OVHASNCHECK='0'
+				OVHKERNEL_CHECK='0'
+			fi		
+		fi
+		if [[ "$OVHASNCHECK" = '0' && "$OVHKERNEL_CHECK" = '0' && "$BROADWELLDE_CHECK" != '0' ]]; then
+			echo
+			echo "Detected OVH based server with custom OVH Linux kernel"
+			echo "It's best to use CentOS distro default Linux Kernels"
+			echo "aborting script..."
+			exit
 		fi
 	fi
 }
@@ -408,15 +1048,16 @@ tcpcheck_centos() {
     NF_CTMAX='1875008'
     NF_CTHASHSIZE=$(($(awk -F ": " '/cache size/ {print $2}' /proc/cpuinfo | sed -e 's| KB||' | uniq) *1024*6/10/8))
   fi
+
 if [[ ! -f /proc/user_beancounters ]]; then
-    # create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
+		# create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
     if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
         if [ -d /etc/sysctl.d ]; then
           if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
             # raise hashsize for conntrack entries
             echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
             if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-              echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            	echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
             fi
           fi
             # centos 7
@@ -473,40 +1114,40 @@ EOF
         /sbin/sysctl --system >/dev/null 2>&1
             fi           
         fi
-    else
+		else
         # centos 6 check for missing new tcp settings backported to existing installs
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" = '0' ]]; then
             if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
               # raise hashsize for conntrack entries
               echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
               if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-                echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
-              fi
+            	  echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+          	  fi
             fi
-            if [[ "$(grep 'net.ipv4.tcp_slow_start_after_idle=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then  
-              echo "net.ipv4.tcp_slow_start_after_idle=0" >> /etc/sysctl.conf
-            fi
-            if [[ "$(grep 'net.ipv4.tcp_limit_output_bytes=65536' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then 
-              echo "net.ipv4.tcp_limit_output_bytes=65536" >> /etc/sysctl.conf
-            fi
-            if [[ "$(grep 'net.ipv4.tcp_rfc1337=1' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then  
-              echo "net.ipv4.tcp_rfc1337=1" >> /etc/sysctl.conf
-            fi
-            if [[ "$(grep 'net.netfilter.nf_conntrack_helper=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then 
-              echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
+            if [[ "$(grep 'net.ipv4.tcp_slow_start_after_idle=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.ipv4.tcp_slow_start_after_idle=0" >> /etc/sysctl.conf
+						fi
+            if [[ "$(grep 'net.ipv4.tcp_limit_output_bytes=65536' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.ipv4.tcp_limit_output_bytes=65536" >> /etc/sysctl.conf
+						fi
+            if [[ "$(grep 'net.ipv4.tcp_rfc1337=1' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.ipv4.tcp_rfc1337=1" >> /etc/sysctl.conf
+						fi
+            if [[ "$(grep 'net.netfilter.nf_conntrack_helper=0' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then	
+							echo "net.netfilter.nf_conntrack_helper=0" >> /etc/sysctl.conf
             fi
             if [[ "$(grep 'net.netfilter.nf_conntrack_max = 524288' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
-              echo "net.netfilter.nf_conntrack_max = 524288" >> /etc/sysctl.conf
+							echo "net.netfilter.nf_conntrack_max = 524288" >> /etc/sysctl.conf
             fi
             if [[ "$(grep 'net.netfilter.nf_conntrack_tcp_timeout_established = 28800' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
-              echo "net.netfilter.nf_conntrack_tcp_timeout_established = 28800" >> /etc/sysctl.conf
+							echo "net.netfilter.nf_conntrack_tcp_timeout_established = 28800" >> /etc/sysctl.conf
             fi
             if [[ "$(grep 'net.netfilter.nf_conntrack_generic_timeout = 60' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
-              echo "net.netfilter.nf_conntrack_generic_timeout = 60" >> /etc/sysctl.conf
+							echo "net.netfilter.nf_conntrack_generic_timeout = 60" >> /etc/sysctl.conf
             fi
             sysctl -p >/dev/null 2>&1
         fi
-    fi
+		fi
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/34527/
@@ -562,6 +1203,64 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 }
 
+remi_tweaks() {
+	if [ -f /etc/yum.repos.d/remi-safe.repo ]; then
+		sed -i 's|enabled=1|enabled=0|' /etc/yum.repos.d/remi-safe.repo
+	fi
+}
+
+imagick_fixes() {
+	if [[ -f /etc/ImageMagick/policy.xml || -f /etc/ImageMagick6/ImageMagick-6/policy.xml ]]; then
+		if [ -f "${SCRIPT_DIR}/tools/imagemagick-fix.sh" ]; then
+			"${SCRIPT_DIR}/tools/imagemagick-fix.sh" >/dev/null 2>&1
+		fi
+	fi
+}
+
+apache_protect() {
+	if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/autoprotect.sh')" && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
+    	crontab -l > cronjoblist
+      sed -i '/autoprotect.sh/d' cronjoblist
+    	echo "11 */23 * * * /usr/local/src/centminmod/tools/autoprotect.sh 2>/dev/null" >> cronjoblist
+    	crontab cronjoblist
+    	rm -rf cronjoblist
+    	crontab -l
+	fi
+}
+
+centossix_crsetup() {
+	# centos <=6.7 openssl fix https://community.centminmod.com/posts/31166/
+	if [[ ! -f /etc/yum.repos.d/CentOS-CR.repo && "$CENTOS_SIX" = '6' && "$(awk '{ print $3 }' /etc/redhat-release | sed -e 's|\.||')" -lt '68' ]]; then
+		yum -y -q install centos-release-cr
+		sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
+		echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
+		yum -y -q update openssl openssl-devel --disableplugin=priorities --enablerepo=cr >/dev/null 2>&1
+	fi
+}
+
+fileperm_fixes() {
+	if [ -f /usr/lib/udev/rules.d/60-net.rules ]; then
+		if [[ "$(lsattr /usr/lib/udev/rules.d/60-net.rules | cut -c5)" = 'i' ]]; then
+			# fix for some centos 7 vps templates on vps hosts setting chattr +i on
+			# /usr/lib/udev/rules.d/60-net.rules preventing yum updates for initscripts
+			# yum packages
+			chattr -i /usr/lib/udev/rules.d/60-net.rules
+		fi
+	fi
+}
+
+yumfastmirror_check() {
+	# disable yum fastmirror plugin if not enough detected system memory available
+	# for yum fastmirror operation
+	if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+		if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
+			sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
+		elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '263000' ]]; then
+			sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
+		fi
+	fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -582,28 +1281,69 @@ echo "aborting script..."
 exit
 fi
 
+yumfastmirror_check
+ovhkernelcheck
+fileperm_fixes
+cronpathadjust
+rclocalchecks
+checkovzkernels
+kernelchecks
+pathfixes
+apache_protect
+
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+  c7mariadb_tmpdir
+  mariadb_openfilesfix
+  yumfastmirror_check
+  axelcheck
+  fileperm_fixes
   selinxcheck
-  tcpcheck_centos
+  setupemailcheck
+  checkovzkernels
+  rclocalchecks
+  kernelchecks
   centaltoff
   csfipsetcheck
   checkaliases
   checkcmdircmd
+  # dmotdcheck
   nvcheck
   multiphpcheck
   mjemalloc
   blockeditorcheck
   rpcnfsports
   fixlogrotate
+  csf_distftp
   pureftpdupdates
   leupdates
   memcachedupdatechecks
+  xpowerby
+  pathfixes
+  sshdfixes
+  auto_gitupdate
+  figletcheck
+  maintenance_confcheck
   axivo_remove
+  forgefix
+  ngxmodule_cleanups
+  wpcompfix
+  entropy_centosseven
+  tcpcheck_centos
+  remi_tweaks
   imagick_fixes
+  apache_protect
+  centossix_crsetup
   wgetver_check
+  check_jemstatsfile
+  nginx_mutexoff
   fixphpfpm_includes
   fixphpfpm_httpproxy
   fixlibmysqlclient_symlink
+  fixnodejs_epel
+  fixclamav_epel
+  nano_highlight
+  checkwoff
+  checkipvsix
 fi
 
 }
@@ -651,7 +1391,7 @@ fi
 
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
-    echo "0 */4 * * * /usr/bin/cminfo_updater" >> cronjoblist
+    echo "0 */4 * * * /usr/bin/cminfo_updater 2>/dev/null" >> cronjoblist
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l

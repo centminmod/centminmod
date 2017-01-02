@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.2
+VER=0.0.5
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -84,6 +84,7 @@ echo ""
 }
 
 multicreatedb() {
+	_thedbfile="$1"
 	cecho "----------------------------------------------------------------------------" $boldyellow
 	cecho "Create Multiple MySQL Databases, User & Pass From specified filepath/name" $boldgreen
 	cecho "i.e. /home/nginx/domains/domain.com/dbfile.txt" $boldgreen
@@ -91,30 +92,107 @@ multicreatedb() {
 	cecho "databasename databaseuser databasepass" $boldgreen
 	cecho "----------------------------------------------------------------------------" $boldyellow
 
-	echo
-	read -ep " Enter full path to db list file i.e. /home/nginx/domains/domain.com/dbfile.txt (to exit type = x): " dbfile
-	echo
+  if [[ -z "$_thedbfile" || ! -f "$_thedbfile" ]]; then
+		echo
+		read -ep " Enter full path to db list file i.e. /home/nginx/domains/domain.com/dbfile.txt (to exit type = x): " dbfile
+		echo
+	else
+		dbfile="$_thedbfile"
+  fi
 
 if [[ "$dbfile" = [xX] || -z "$dbfile" ]]; then
 	exit
 fi
 
 if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
-	while read -r db u p; do
-		mysql ${MYSQLOPTS} -e "CREATE DATABASE $db; CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $db.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';"
+	sort -k2 $dbfile | while read -r db u p; do
+		mysql ${MYSQLOPTS} -e "CREATE DATABASE $db;" >/dev/null 2>&1
+		DBCHECK=$?
+		if [[ "$DBCHECK" = '0' ]]; then
+			if [ -f /tmp/mysqladminshell_userpass.txt ]; then
+				PREV_USER=$(awk '{print $1}' /tmp/mysqladminshell_userpass.txt)
+				PREV_PASS=$(awk '{print $2}' /tmp/mysqladminshell_userpass.txt)
+			fi
+			if [[ "$PREV_USER" != "$u" && "$PREV_PASS" != "$p" ]]; then
+				# if PREV_USER not equal to $u AND PREV_PASS not equal to $p
+				# then it's not the same mysql username and pass so create the
+				# mysql username
+				mysql ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
+				USERCHECK=$?
+			elif [[ "$PREV_USER" = "$u" && "$PREV_PASS" = "$p" ]]; then
+				# if PREV_USER equal to $u AND PREV_PASS equal to $p
+				# then it's same mysql username and pass so skip
+				# mysql user creation
+				USERCHECK=0
+			elif [[ -z "$u" && -z "$p" ]]; then
+				# if mysql username and password empty
+				# skip mysql user creation
+				USERCHECK=0
+			fi
+		else
+			cecho "Error: unable to create DATABASE = $db" $boldgreen
+			USERCHECK=1
+		fi
+		if [[ "$USERCHECK" = '0' ]]; then
+			if [ -f /tmp/mysqladminshell_userpass.txt ]; then
+				PREV_USER=$(awk '{print $1}' /tmp/mysqladminshell_userpass.txt)
+				PREV_PASS=$(awk '{print $2}' /tmp/mysqladminshell_userpass.txt)
+			fi
+			if [[ "$PREV_USER" = "$u" && "$PREV_PASS" = "$p" ]]; then
+				# if PREV_USER equal to $u AND PREV_PASS equal to $p
+				# then it's same mysql username and pass so add database
+				# to existing mysql user and pass
+				mysql ${MYSQLOPTS} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $db.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';"  >/dev/null 2>&1
+			else
+				# if PREV_USER not equal to $u AND PREV_PASS not equal to $p
+				mysql ${MYSQLOPTS} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $db.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';"  >/dev/null 2>&1
+				echo "$u $p" > /tmp/mysqladminshell_userpass.txt
+			fi
+		elif [[ "$DBCHECK" = '0' && "$USERCHECK" != '0' ]]; then
+			cecho "Error: unable to create MySQL USER = $u with PASSWORD = $p" $boldgreen
+			USERCHECK=1
+		fi
 
-		ERROR=$?
+		ERROR=$(echo "$DBCHECK+$USERCHECK"|bc)
 		if [[ "$ERROR" != '0' ]]; then
-			echo ""
-			cecho "Error: command was unsuccessful" $boldgreen
+			# echo ""
+			cecho "Error: $0 multidb run was unsuccessful" $boldgreen
 			echo
 		else 
 			echo ""
-			cecho "Ok: MySQL user: $u MySQL database: $db created successfully" $boldyellow
+			if [[ -z "$u" && -z "$p" ]]; then
+				cecho "---------------------------------" $boldgreen
+				cecho "Ok: MySQL user: skipped MySQL database: $db created successfully" $boldyellow
+			else
+				cecho "---------------------------------" $boldgreen
+				cecho "Ok: MySQL user: $u MySQL database: $db created successfully" $boldyellow
+			fi
 			echo
 		fi
-	done < $dbfile
+	done
+	rm -rf /tmp/mysqladminshell_userpass.txt
 fi
+}
+
+createuserglobal() {
+	echo
+	cecho "Create a MySQL Username that has access to all Databases" $boldyellow
+	cecho "But without SUPER ADMIN privileges" $boldyellow
+	echo
+	read -ep " Enter new MySQL username you want to create: " globalnewmysqluser
+	read -ep " Enter new MySQL username's password: " globalnewmysqluserpass
+
+	mysql ${MYSQLOPTS} -e "CREATE USER '$globalnewmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$globalnewmysqluserpass';" >/dev/null 2>&1
+	GLOBALUSERCHECK=$?
+	if [[ "$GLOBALUSERCHECK" = '0' ]]; then
+		mysql ${MYSQLOPTS} -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON *.* TO '$globalnewmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$globalnewmysqluser'@'$MYSQLHOSTNAME';"
+		echo ""
+		cecho "Ok: MySQL global user: $globalnewmysqluser created successfully" $boldyellow
+		echo
+	else
+			cecho "Error: unable to create MySQL USER = $u with PASSWORD = $p" $boldgreen
+			# GLOBALUSERCHECK=1
+	fi
 }
 
 createuserdb() {
@@ -159,7 +237,7 @@ if [[ "$rootset" = [yY] && "$createnewuser" = [yY] ]]; then
 	fi
 
 elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
-	mysql -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
 
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -173,7 +251,7 @@ elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
 	fi
 
 elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
-	mysql -e "CREATE DATABASE $newdbname; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
 
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -331,12 +409,25 @@ fi
 
 }
 
+cleanup() {
+	rm -rf /tmp/mysqladminshell_userpass.txt
+}
+
+trap cleanup SIGHUP SIGINT SIGTERM
 ###############################################################
 case "$1" in
 	multidb)
 		mysqlperm
-		multicreatedb
+		if [[ -f "$2" ]]; then
+			multicreatedb $2
+		else
+			multicreatedb
+		fi
 		;;	
+	setglobaluser)
+		mysqlperm
+		createuserglobal
+		;;
 	setuserdb)
 		mysqlperm
 		createuserdb
@@ -355,8 +446,14 @@ case "$1" in
 		;;
 	*)
 		echo ""
-		cecho "$0 {multidb|setuserdb|setpass|deluser|showgrants}" $boldyellow
+		cecho "$0 {multidb|setglobaluser|setuserdb|setpass|deluser|showgrants}" $boldyellow
 		echo ""
+cecho "multidb - multiple mysql databse/user creation mode passing a file name containing db, user, pass 3 column entries
+setglobaluser - create a mysql username with access to all databases on server without SUPER ADMIN privileges (non-root)
+setuserdb - create individual mysql username and databases or assign a new database to an existing mysql username
+setpass - change mysql username password
+deluser - delete a mysql usernames
+showgrants - show existing mysql username granted privileges" $boldyellow
 		;;
 esac
 exit

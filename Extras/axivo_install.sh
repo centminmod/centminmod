@@ -5,24 +5,32 @@
 ######################################################
 # variables
 #############
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 
 WGETOPT='-cnv --no-dns-cache -4'
 ######################################################
 
 TESTEDCENTOSVER='7.0'
-CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
-    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
         CENTOS_SEVEN='7'
     fi
 fi
 
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
 if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
     OLS='y'
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
 fi
 
 # Setup Colours
@@ -73,7 +81,7 @@ source "../inc/axelsetup.inc"
 # functions
 #############
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
 {
 
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
@@ -92,7 +100,7 @@ checklogdetails
 	exit #$ERROR
 else 
 	cecho "Download done." $boldyellow
-	rpm -ivh --nosignature ${CENTOSSIXAXIVOFILE}
+	rpm -Uvh --nosignature ${CENTOSSIXAXIVOFILE}
 	
 	ERR=$?
 	CCAXIVOCHECK="$ERR"
@@ -112,7 +120,7 @@ fi
 } 2>&1 | tee ${CENTMINLOGDIR}/axivo_install_${DT}_centos6.log
 fi
 
-if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 {
 if [ ${MACHINE_TYPE} == 'x86_64' ]; then
 
@@ -130,7 +138,7 @@ checklogdetails
   exit #$ERROR
 else 
   cecho "Download done." $boldyellow
-  rpm -ivh --nosignature ${CENTOSSEVENAXIVOFILE}
+  rpm -Uvh --nosignature ${CENTOSSEVENAXIVOFILE}
   
   ERR=$?
   CCAXIVOCHECK="$ERR"

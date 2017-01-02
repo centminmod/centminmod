@@ -1,67 +1,142 @@
 
 opensslpatches() {
+  {
 # release buffer patch CVE-2010-5298
 if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
-    echo  "###################################"
+    echo  "######################################################################"
     echo "Patching OpenSSL 1.0.1g"
-    echo  "###################################"
+    echo  "######################################################################"
     echo "CVE-2010-5298"
     echo "http://www.cvedetails.com/cve/CVE-2010-5298/"
-    echo  "####################################"
+    echo  "######################################################################"
     pushd ssl
     rm -rf releasebuffer.patch
-    wget -cnv http://centminmod.com/centminmodparts/openssl/patches/releasebuffer.patch
+    wget -cnv https://centminmod.com/centminmodparts/openssl/patches/releasebuffer.patch
     patch < releasebuffer.patch
     popd
-    echo  "####################################"
+    echo  "######################################################################"
     echo  "OpenSSL 1.0.1g patched"
-    echo  "####################################"
+    echo  "######################################################################"
 fi
+
+if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2k' ]]; then
+    # cloudflare patch chacha20 support does not seem to
+    # work with openssl 1.0.2i
+    # https://community.centminmod.com/posts/36691/
+    CLOUDFLARE_PATCHSSL='n'
+fi
+
 if [[ "$(uname -m)" != 'x86_64' ]]; then
     # cloudflare patch chacha20 support does not seem to
     # work on 32bit OSes only 64bit
     CLOUDFLARE_PATCHSSL='n'
 fi
 
-if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2j' || "${OPENSSL_VERSION}" = '1.0.2k' ]]; then
-    # cloudflare patch chacha20 support does not seem to
-    # work with openssl 1.0.2i
-    # https://community.centminmod.com/posts/36691/
-    CLOUDFLARE_PATCHSSL='n'
-fi
-if [[ "$CLOUDFLARE_PATCHSSL" = [yY] ]]; then
+DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Cloudflare Chacha20 Patch"
+        fi
         echo  "######################################################################"
-        echo "Patching OpenSSL 1.0.2g"
+        echo "Patching OpenSSL 1.0.2j"
         echo  "######################################################################"
         echo "Cloudflare ChaCha20 patch"
-        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch"
+        echo "https://github.com/cloudflare/sslconfig/blob/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102j.patch"
         echo "only Android 5 will support ChaCha20 if using Cloudflare Patch"
         echo  "######################################################################"
+        # check if cpu supports avx2 (Intel Xeon E5 v3 and Xeon E3 v5) & implement 
+        # cloudflare openssl 1.0.2+ patch with optimized avx2 seal if cpu supports it
+        AVXTWO_CHECK=$(grep -o --color avx2 /proc/cpuinfo | uniq >/dev/null 2>&1; echo $?)
         # pushd ssl
-        rm -rf openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch
-        wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch
-        if [ ! -f crypto/chacha20poly1305/chacha20.c ]; then
-            patch -p1 < openssl__chacha20_poly1305_draft_and_rfc_ossl102g.patch
+        OPESSLCFPATCH_NAME='openssl__chacha20_poly1305_draft_and_rfc_ossl102j.patch'
+        rm -rf "${OPESSLCFPATCH_NAME}"
+        AVXTWO_CHECK=1
+        if [[ "$AVXTWO_CHECK" = '0' ]]; then
+            OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
+        else
+            OPENSSLCFPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${OPESSLCFPATCH_NAME}"
+        fi
+        
+        # fallback mirror if github down, use gitlab mirror
+        curl -sI --connect-timeout 5 --max-time 5 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+        OPENSSLCFPATCH_CURLCHECK=$?
+        if [[ "$OPENSSLCFPATCH_CURLCHECK" != '0' ]]; then
+            if [[ "$AVXTWO_CHECK" = '0' ]]; then
+                OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/upstream/optimize_chacha_poly/patches/${OPESSLCFPATCH_NAME}"
+            else
+                OPENSSLCFPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${OPESSLCFPATCH_NAME}"
+            fi
+        fi
+        wget -cnv --no-check-certificate "$OPENSSLCFPATCHLINK"
+
+        if [ ! -f crypto/chacha20_poly1305/chacha20.c ]; then
+            patch -p1 < "${OPESSLCFPATCH_NAME}"
         fi
         # rm -rf openssl__chacha20_poly1305_cf.patch
         # wget -cnv --no-check-certificate https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/openssl__chacha20_poly1305_cf.patch
         # patch -p1 < openssl__chacha20_poly1305_cf.patch
-        if [ -f crypto/chacha20poly1305/chacha20.c ]; then
-            # check /svr-setup/openssl-1.0.2g/crypto/chacha20poly1305/chacha20.c exists
+        if [ -f crypto/chacha20_poly1305/chacha20.c ]; then
+            # check /svr-setup/openssl-1.0.2g/crypto/chacha20_poly1305/chacha20.c exists
             OPEENSSL_CFPATCHED='y'
+            echo  "######################################################################"
+            echo  "OpenSSL 1.0.2j patched"
+            echo  "######################################################################"
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Cloudflare Chacha20 Patched"
+            fi
+        else
+            echo  "######################################################################"
+            echo  "OpenSSL 1.0.2j not patched"
+            echo  "######################################################################"
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Cloudflare Chacha20 Not Patched"
+            fi
         fi
         # popd
-        echo  "######################################################################"
-        echo  "OpenSSL 1.0.2g patched"
-        echo  "######################################################################"
     # fi
 fi # CLOUDFLARE_PATCHSSL
+
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patch"
+        fi
+        echo  "######################################################################"
+        echo "Patching OpenSSL 1.1.0 branch"
+        echo  "######################################################################"
+        echo "Cloudflare Smart ChaCha20 patch"
+        echo "https://community.centminmod.com/posts/35727/"
+        echo "only support ChaCha20 if client's preferred cipher"
+        echo  "######################################################################"
+        echo "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
+        if [ -f "$CUR_DIR/patches/openssl/chacha20-smarter.patch" ]; then
+            patch -p1 < "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
+            echo  "######################################################################"
+            echo  "OpenSSL 1.1.0 branch Smart Chacha20 patched"
+            echo  "######################################################################"
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patched"
+            fi
+        fi
+fi # CLOUDFLARE_PATCHSSL
+  } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
 installopenssl() {
-    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-        libresslinstallstarttime=$(date +%s.%N)
+    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+    if [ ! -f /usr/local/go/bin/go ]; then
+        # if golang is not detected BoringSSL switch will be disabled
+        # and default to using OpenSSL 1.0.2+
+        BORINGSSL_SWITCH='n'
+    fi
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+        libresslinstallstarttime=$(TZ=UTC date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling LibreSSL"
+        fi
+
         cd $DIR_TMP
         echo "Compiling LibreSSL..."
         cd libressl-${LIBRESSL_VERSION}
@@ -84,18 +159,18 @@ installopenssl() {
                 export CC="ccache /usr/bin/clang -ferror-limit=0"
                 export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
                 export CCACHE_CPP2=yes
-                CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
+                CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
                 CFLAGS="$CLANG_CFLAGOPT"
             else
                 export CC="/usr/bin/clang -ferror-limit=0"
                 export CXX="/usr/bin/clang++ -ferror-limit=0"
                 # export CCACHE_CPP2=yes
-                CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-c++11-extensions -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
+                CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
                 CFLAGS="$CLANG_CFLAGOPT"
             fi
         else
-            export CC="ccache /usr/bin/gcc"
-            export CXX="ccache /usr/bin/g++"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             export CCACHE_CPP2=yes
             CLANG_CFLAGOPT=""
             CFLAGS=""
@@ -104,6 +179,11 @@ installopenssl() {
         # make${MAKETHREADS} check
         make${MAKETHREADS}
         make install
+        if [[ "$?" = '0' ]]; then
+            ln -s /opt/libressl/lib /opt/libressl/lib64
+        else
+            rm -rf /opt/libressl/lib64
+        fi
         cp -a /etc/pki/tls/openssl.cnf /etc/pki/tls/openssl.cnf-bakb4libressl
         ln -s /etc/pki/tls/openssl.cnf /etc/ssl/openssl.cnf
 
@@ -112,19 +192,24 @@ installopenssl() {
             unset CXX
             unset CFLAGS
             #unset CCACHE_CPP2
-            export CC="ccache /usr/bin/gcc"
-            export CXX="ccache /usr/bin/g++"
+            export CC="ccache gcc"
+            export CXX="ccache g++"
             CLANG_CFLAGOPT=""
             CFLAGS=""            
         fi                
-        libresslinstallendtime=$(date +%s.%N)
+        libresslinstallendtime=$(TZ=UTC date +%s.%N)
         LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
-        echo "OpenSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+        echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
-    else
-        opensslinstallstarttime=$(date +%s.%N)
+    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+        opensslinstallstarttime=$(TZ=UTC date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling OpenSSL"
+        fi
+
         # Install OpenSSL
         cd $DIR_TMP
         echo "Compiling OpenSSL..."
@@ -137,8 +222,8 @@ installopenssl() {
         #download openssl centos 6.x
     
         # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
-        export BPATH=$DIR_TMP
-        export STATICLIBSSL="${BPATH}/staticlibssl"
+        # export OPENSSL_BPATH=$OPENSSL_CUSTOMPATH
+        export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
     
         tar xzf ${OPENSSL_LINKFILE}
         #-- Build static openssl
@@ -150,18 +235,75 @@ installopenssl() {
         fi
         opensslpatches
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-            ./config --prefix=$STATICLIBSSL no-shared enable-tlsext enable-ec_nistp_64_gcc_128
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+                # openssl 1.1.0 unsupported flag enable-tlsext
+                ./config --prefix=$STATICLIBSSL shared enable-ec_nistp_64_gcc_128
+            else
+                ./config --prefix=$STATICLIBSSL shared enable-tlsext enable-ec_nistp_64_gcc_128
+            fi
         else
-            ./config --prefix=$STATICLIBSSL no-shared enable-tlsext
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+                # openssl 1.1.0 unsupported flag enable-tlsext
+                ./config --prefix=$STATICLIBSSL shared
+            else
+                ./config --prefix=$STATICLIBSSL shared enable-tlsext
+            fi
         fi
-        make depend
-        make
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+            make${MAKETHREADS}
+        else
+            make depend
+            make
+        fi
         make install
-        opensslinstallendtime=$(date +%s.%N)
+        if [[ "$?" = '0' ]]; then
+            ln -s "${STATICLIBSSL}/lib" "${STATICLIBSSL}/lib64"
+        else
+            rm -rf "${STATICLIBSSL}/lib64"
+        fi
+        opensslinstallendtime=$(TZ=UTC date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
-        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log 
+        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+    elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+        boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling BoringSSL"
+        fi
+
+        echo "Compiling BoringSSL..."
+        cd $DIR_TMP
+        git clone https://boringssl.googlesource.com/boringssl
+        cd boringssl
+        mkdir -p build
+        cd build
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            rm -rf CMakeCache.txt
+        fi
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        unset CC
+        unset CXX
+        unset CFLAGS
+        export CMAKE_C_COMPILER="gcc"
+        export CMAKE_CXX_COMPILER="g++"
+        export CC="gcc"
+        export CXX="g++"
+        make${MAKETHREADS}
+        mkdir -p /svr-setup/boringssl/.openssl/lib
+        cd /svr-setup/boringssl/.openssl
+        ln -s ../include
+        cp /svr-setup/boringssl/build/crypto/libcrypto.a /svr-setup/boringssl/build/ssl/libssl.a /svr-setup/boringssl/.openssl/lib
+        ls -lah /svr-setup/boringssl/.openssl/lib
+        ls -lah /svr-setup/boringssl/.openssl
+
+        boringsslinstallendtime=$(TZ=UTC date +%s.%N)
+        BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
+        echo "BoringSSL Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log 
     fi
 }

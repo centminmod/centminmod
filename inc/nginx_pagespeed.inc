@@ -129,6 +129,13 @@ cat > "/usr/local/nginx/conf/pagespeed.conf" <<END
 pagespeed off;
 
 #######################################################
+# Purge nginx pagespeed cache
+# https://developers.google.com/speed/pagespeed/module/system#flush_cache
+#######################################################
+pagespeed EnableCachePurge on;
+pagespeed PurgeMethod PURGE;
+
+#######################################################
 # File cache settings 
 ######################################
 # needs to exist and be writable by nginx
@@ -153,9 +160,15 @@ pagespeed off;
 #  pagespeed MemcachedTimeoutUs 100000;
 
 #######################################################
-## https://developers.google.com/speed/pagespeed/module/admin#virtual-hosts-and-stats
+## 1.11.33.0 beta save-data
 ######################################
-# pagespeed UsePerVhostStatistics on;
+# https://developers.google.com/speed/pagespeed/module/filter-image-optimize#image-quality
+
+# https://developers.google.com/speed/pagespeed/module/reference-image-optimize#JpegQualityForSaveData
+pagespeed JpegQualityForSaveData 50;
+
+# https://developers.google.com/speed/pagespeed/module/reference-image-optimize#WebpQualityForSaveData
+pagespeed WebpQualityForSaveData 50;
 
 #######################################################
 ## 1.7.30.1 beta defaults
@@ -195,6 +208,25 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
   # make_google_analytics_async
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-make-google-analytics-async
 #  pagespeed EnableFilters make_google_analytics_async;
+
+  # make_show_ads_async
+  # https://developers.google.com/speed/pagespeed/module/filter-make-show-ads-async
+#  pagespeed EnableFilters make_show_ads_async;
+
+  # responsive_images, responsive_images_zoom
+  # https://developers.google.com/speed/pagespeed/module/filter-image-responsive
+#  pagespeed EnableFilters responsive_images;
+#  pagespeed EnableFilters responsive_images_zoom;
+
+  # convert_to_webp_animated
+  # https://developers.google.com/speed/pagespeed/module/filter-image-optimize#convert_to_webp_animated
+#  pagespeed EnableFilters convert_to_webp_animated;
+
+  # inline_google_font_css
+  # https://developers.google.com/speed/pagespeed/module/filter-css-inline-google-fonts
+  pagespeed EnableFilters inline_google_font_css;
+  # require FetchHttps if using https site
+#   pagespeed FetchHttps enable;
 
   # inline_css
   # https://developers.google.com/speed/pagespeed/module/filter-css-inline
@@ -287,6 +319,12 @@ cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
 # add a second pagespeed off; variable 
 # loaded in nginx.conf via pagespeedadmin.conf include file
 pagespeed off;
+
+#######################################################
+## https://developers.google.com/speed/pagespeed/module/admin#virtual-hosts-and-stats
+######################################
+# pagespeed UsePerVhostStatistics on;
+
 #######################################################
 pagespeed FileCachePath /var/ngx_pagespeed_cache;
 pagespeed StatisticsPath /ngx_pagespeed_statistics;
@@ -355,12 +393,12 @@ pagespeedbackup() {
 echo ""
 echo "backup ngx_pagespeed pagespeed.conf"
 echo "cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}"
-cp -a /usr/local/nginx/conf/pagespeed.conf /usr/local/nginx/conf/pagespeed.conf_${DT}
+cp -a /usr/local/nginx/conf/pagespeed.conf "/usr/local/nginx/conf/pagespeed.conf_${DT}"
 
 echo ""
 echo "backup ngx_pagespeed pagespeedhandler.conf"
 echo "cp -a /usr/local/nginx/conf/pagespeedhandler.conf /usr/local/nginx/conf/pagespeedhandler.conf_${DT}"
-cp -a /usr/local/nginx/conf/pagespeedhandler.conf /usr/local/nginx/conf/pagespeedhandler.conf_${DT}
+cp -a /usr/local/nginx/conf/pagespeedhandler.conf "/usr/local/nginx/conf/pagespeedhandler.conf_${DT}"
 }
 
 pagespeeduptasks() {
@@ -388,17 +426,28 @@ if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
     do
       echo
       echo "commenting out pagespeed includes in $v"
-      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeed.conf;/#include \/usr\/local\/nginx\/conf\/pagespeed.conf;/g' $v
-      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/g' $v
-      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/g' $v
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeed.conf;/#include \/usr\/local\/nginx\/conf\/pagespeed.conf;/g' "$v"
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedhandler.conf;/g' "$v"
+      sed -i 's/include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedstatslog.conf;/g' "$v"
     done
   fi
 fi # NGINX_PAGESPEED=n
+
+if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+  PSADMINCHECK=$(grep '^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
+
+  # re-enable pagespeedadmin.conf if commented out
+  if [[ "$PSADMINCHECK" ]]; then
+    sed -i 's/^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
+fi
 #####################################################
 
 	if [ -d /var/ngx_pagespeed_cache ]; then
 	chmod 1777 /var/ngx_pagespeed_cache
-	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+    if [ -d /var/ngx_pagespeed_cache/http ]; then
+	   chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+    fi
 	chown -R nginx:nginx /var/ngx_pagespeed_cache/
 	ls -lah /var | grep ngx_pagespeed_cache
 	fi

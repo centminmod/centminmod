@@ -4,7 +4,6 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     echo "*************************************************"
     cecho "* LuaJIT-${ORESTY_LUAGITVER} install" $boldgreen
     echo "*************************************************"
-
     if [[ "$LUAJIT_GITINSTALL" = [nN] ]]; then
         cd $DIR_TMP
         cd LuaJIT-${ORESTY_LUAGITVER}

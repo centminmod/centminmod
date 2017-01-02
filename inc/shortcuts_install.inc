@@ -4,6 +4,7 @@ shortcutsinstall() {
 if [[ "$SHORTCUTS" = [yY] ]]; then
     cecho "**********************************************************************" $boldgreen
     cecho "* Add cmd shortcuts for php.ini, my.cnf, php-fpm.conf, nginx.conf and virtual.conf " $boldgreen
+    cecho "* Edit /etc/centminmod/custom_config.inc = customconfig" $boldgreen
     cecho "* Edit php.ini = phpedit " $boldgreen
     cecho "* Edit my.cnf = mycnf " $boldgreen
     cecho "* Edit php-fpm.conf = fpmconf " $boldgreen
@@ -18,6 +19,7 @@ if [[ "$SHORTCUTS" = [yY] ]]; then
     cecho "**********************************************************************" $boldgreen
 
 if [[ "$USEEDITOR" = 'vim' ]]; then
+    echo "vim /etc/centminmod/custom_config.inc" > /usr/bin/customconfig ; chmod 700 /usr/bin/customconfig
     echo "vim /usr/local/lib/php.ini" > /usr/bin/phpedit ; chmod 700 /usr/bin/phpedit
     echo "vim /etc/my.cnf" >/usr/bin/mycnf ; chmod 700 /usr/bin/mycnf
     echo "vim /usr/local/etc/php-fpm.conf" >/usr/bin/fpmconf ; chmod 700 /usr/bin/fpmconf
@@ -31,6 +33,7 @@ if [[ "$USEEDITOR" = 'vim' ]]; then
     echo "vim /usr/local/nginx/conf/drop.conf" >/usr/bin/dropinc ; chmod 700 /usr/bin/dropinc
     echo "vim /usr/local/nginx/conf/staticfiles.conf" >/usr/bin/statfilesinc ; chmod 700 /usr/bin/statfilesinc
 else
+    echo "nano -w /etc/centminmod/custom_config.inc" > /usr/bin/customconfig ; chmod 700 /usr/bin/customconfig
     echo "nano -w /usr/local/lib/php.ini" > /usr/bin/phpedit ; chmod 700 /usr/bin/phpedit
     echo "nano -w /etc/my.cnf" >/usr/bin/mycnf ; chmod 700 /usr/bin/mycnf
     echo "nano -w /usr/local/etc/php-fpm.conf" >/usr/bin/fpmconf ; chmod 700 /usr/bin/fpmconf
@@ -47,6 +50,15 @@ fi # USEEDITOR
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    # replicate the default aliases for centos 7 on
+    # centos 6 systems
+    echo "alias egrep='egrep --color=auto'" >> /root/.bashrc
+    echo "alias fgrep='fgrep --color=auto'" >> /root/.bashrc
+    echo "alias grep='grep --color=auto'" >> /root/.bashrc
+    alias egrep='egrep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias grep='grep --color=auto'
+
     echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
     echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart

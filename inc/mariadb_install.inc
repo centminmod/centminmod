@@ -1,3 +1,10 @@
+perdbiinstall() {
+    # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
+    if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
+        yum${CACHESKIP} -q -y install perl-DBD-MySQL
+    fi
+}
+
 mysqlinitfix() {
 
 if [[ -z "$(grep 'user_beancounters' /etc/init.d/mysql)" ]]; then
@@ -8,19 +15,8 @@ fi
 
 mariadb55install() {
 
-echo "MariaDB 10.x Repo setup..."
+echo "MariaDB 10.1 Repo setup..."
 echo ""
-
-# CENTOSVER=$(cat /etc/redhat-release | awk '{ print $3 }')
-
-# if [ "$CENTOSVER" == 'release' ]; then
-#     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1,2)
-# fi
-
-# if [ "$CENTOSVER" == 'Enterprise' ]; then
-#     CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
-#     OLS='y'
-# fi
 
 MARIADB55ARCH=`uname -m`
 
@@ -28,14 +24,14 @@ echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
 rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
 ###############################################################################
-if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 
     if [ "$(uname -m)" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -45,7 +41,7 @@ EOF
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos7-amd64
+baseurl = http://yum.mariadb.org/10.1/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -55,18 +51,14 @@ EOF
 fi
 
 ###############################################################################
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
 
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos6-amd64
+baseurl = http://yum.mariadb.org/10.1/centos6-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -74,13 +66,9 @@ EOF
     else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos6-x86
+baseurl = http://yum.mariadb.org/10.1/centos6-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -88,34 +76,28 @@ EOF
     fi # arch check
 fi # centos6 check
 
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' ]]; then
+if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '5.12' || "$CENTOSVER" == '5.13' ]]; then
 
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos5-amd64
+baseurl = http://yum.mariadb.org/10.1/centos5-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
+priority=8
 EOF
 
     else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
-# /etc/yum.repos.d/mariadb.repo
-# yum install MariaDB-server MariaDB-client
-# http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.0/centos5-x86
+baseurl = http://yum.mariadb.org/10.1/centos5-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
+priority=8
 EOF
 
     fi # arch check
@@ -146,8 +128,18 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo "Check for existing mariadb-libs package"
     OLDMYSQL_LIBS=`rpm -qa | grep 'mariadb-libs' | head -n1`
     if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
-        echo "rpm -e --nodeps $OLDMYSQL_LIBS"
-        rpm -e --nodeps $OLDMYSQL_LIBS
+        # echo "rpm -e --nodeps $OLDMYSQL_LIBS"
+        # rpm -e --nodeps $OLDMYSQL_LIBS
+        echo "yum -y remove mariadb-libs"
+        yum -y remove mariadb-libs
+    fi
+    echo ""
+    # Should not exist on CentOS 7 systems
+    echo "Check for existing MySQL-shared-compat"
+    OLDMYSQL_SHAREDCOMPAT=`rpm -qa | grep 'MySQL-shared-compat' | head -n1`
+    if [[ ! -z "$OLDMYSQL_SHAREDCOMPAT" ]]; then
+        echo "yum -y remove MySQL-shared-compat"
+        yum -y remove MySQL-shared-compat
     fi
 fi # CENTOS_SEVEN != 7
 
@@ -169,7 +161,12 @@ fi # CENTOS_SEVEN = 7
 
 ###############################################################################
 echo ""
-echo "MariaDB 5.5 YUM install..."
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1 Yum Install"
+    fi
+
+echo "MariaDB 10.1 YUM install..."
 
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     DISABLEOTHERREPO=' --disablerepo=epel,rpmforge'
@@ -177,15 +174,18 @@ else
     DISABLEOTHERREPO=' --disablerepo=epel'
 fi
 
+# set /etc/my.cnf templates
+setmycnf
+
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
     echo "*************************************************"
-    cecho "MariaDB 10.x YUM install..." $boldgreen
-    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "MariaDB 10.1.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -195,14 +195,68 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
 
     echo ""
     echo "*************************************************"
-    cecho "MariaDB 10.x YUM install..." $boldgreen
-    cecho "yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "MariaDB 10.1.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum${CACHESKIP} -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "/etc/my.cnf compat checks"
+    fi
+
+###############################################################################
+echo ""
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10.1 Specific /etc/my.cnf"
+    fi
+
+cat >> "/etc/my.cnf" <<FFF
+
+
+[mariadb-10.1]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
+## wsrep specific
+# wsrep_on=OFF
+# wsrep_provider
+# wsrep_cluster_address
+# binlog_format=ROW
+# default_storage_engine=InnoDB
+# innodb_autoinc_lock_mode=2
+# innodb_doublewrite=1
+# query_cache_size=0
+
+# 2 variables needed to switch from XtraDB to InnoDB plugins
+#plugin-load=ha_innodb
+#ignore_builtin_innodb
+
+## MariaDB 10 only save and restore buffer pool pages
+## warm up InnoDB buffer pool on server restarts
+innodb_buffer_pool_dump_at_shutdown=1
+innodb_buffer_pool_load_at_startup=1
+innodb_buffer_pool_populate=0
+## Disabled settings
+performance_schema=OFF
+innodb_stats_on_metadata=OFF
+innodb_sort_buffer_size=2M
+innodb_online_alter_log_max_size=128M
+query_cache_strip_comments=0
+log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+
+# Defragmenting unused space on InnoDB tablespace
+innodb_defragment=1
+innodb_defragment_n_pages=7
+innodb_defragment_stats_accuracy=0
+innodb_defragment_fill_factor_n_recs=20
+innodb_defragment_fill_factor=0.9
+innodb_defragment_frequency=40
+FFF
 
 #cp -a /etc/my.cnf /etc/my.cnf-newold
 #cp -f /etc/my.cnf.rpmorig /etc/my.cnf
@@ -210,7 +264,15 @@ sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
 sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
 sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
 sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
-###############################################################################
+sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
+
 echo ""
 
 mysqltmpdir
@@ -221,6 +283,10 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
 fi # CENTOS_SEVEN != 7
 
 cmservice mysql restart
+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "MariaDB 10 Plugins"
+    fi
 
     echo "------------------------------------------------"
     echo "Installing MariaDB 10 plugins"
@@ -306,7 +372,9 @@ fi
 	fi #unattended
 echo ""
 
-yum${CACHESKIP} -q -y install perl-DBD-MySQL
+perdbiinstall
+# reinstall postfix removed from mariadb-libs removale
+yum -y install postfix net-snmp mytop
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 # make sure MariaDB 5.5 is updated from only one repo
@@ -364,13 +432,13 @@ if [[ "$MDB_DEBUG" = [yY] ]]; then
 exit
 fi
 
-yum${CACHESKIP} -y install perl-DBD-MySQL
+perdbiinstall
 
 cmservice mysqld stop
 
 #yum -y remove mysql mysql-libs
 
-rpm -e --nodeps $(rpm -qa mysql-libs)
+rpm -e --nodeps $(rpm -qa mysql-libs) >/dev/null 2>&1
 
 echo
 
@@ -379,37 +447,23 @@ echo
 #echo
 #echo
 
-if [[ "$lessmem" = [yY] ]]; then
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb-min.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb-min.cnf /etc/my.cnf
-
-else
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb.cnf /etc/my.cnf
-
-fi
+setmycnf
 
 #download mariadb rpms
 
-echo "rpm -i MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm
-echo "rpm -i MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm
-echo "rpm -i MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm
 
 #killall mysqld_safe
 #killall mysqld
 gzip /var/lib/mysql/{ibdata1,ib_logfile0,ib_logfile1}
 
-echo "rpm -i MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
-    rpm -i MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
+echo "rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
+    rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm
 
 # check MariaDB server installed properly
 cmservice mysql status
@@ -426,8 +480,8 @@ cecho "Ensure mysql system directory has correct permissions" $boldgreen
 cecho " chown -R mysql:mysql /var/lib/mysql/mysql/" $boldgreen
 chown -R mysql:mysql /var/lib/mysql/mysql/
 
-#echo "rpm -i MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
-    #rpm -i MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
+#echo "rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
+    #rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
 
     yum${CACHESKIP} -y install perl-DBD-MySQL
     yum${CACHESKIP} -q clean all
@@ -471,8 +525,7 @@ cmservice mysql restart
     /etc/init.d/mysql stop
 fi
 
-if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; 
-then
+if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; then
 
     echo "*************************************************"
     cecho "* Installing MariaDB via CentOS Yum Repo " $boldgreen
@@ -480,40 +533,38 @@ then
 
 #yum -y remove mysql mysql-libs
 if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original
-rm rf /etc/my.cnf
+    cp /etc/my.cnf /etc/my.cnf-original
+    rm -rf /etc/my.cnf
 fi
 
 mariadb55install
 
-if [[ "$lessmem" = [yY] ]]; then
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "New Initial /etc/my.cnf"
+    fi
 
-echo $lessmem
+echo "new initial /etc/my.cnf"
+echo "================================================="
+cat /etc/my.cnf
+echo "================================================="
+echo
 
-echo -e "\nCopying MariaDB my-mdb10-min.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb10-min.cnf /etc/my.cnf
-
-else
-
-echo $lessmem
-
-echo -e "\nCopying MariaDB my-mdb10.cnf file to /etc/my.cnf\n"
-    cp $CUR_DIR/config/mysql/my-mdb10.cnf /etc/my.cnf
-
-fi
+# if [[ "$lessmem" = [yY] ]]; then
+#     echo $lessmem
+#     echo -e "\nCopying MariaDB my-mdb10-min.cnf file to /etc/my.cnf\n"
+#     cp $CUR_DIR/config/mysql/my-mdb10-min.cnf /etc/my.cnf
+# else
+#     echo $lessmem
+#     echo -e "\nCopying MariaDB my-mdb10.cnf file to /etc/my.cnf\n"
+#     cp $CUR_DIR/config/mysql/my-mdb10.cnf /etc/my.cnf
+# fi
 
 if [[ ! `grep exclude /etc/yum.conf` ]]; then
-
-cecho "Can't find exclude line in /etc/yum.conf... adding exclude line for mysql*" $boldgreen
-
-echo "exclude=mysql*">> /etc/yum.conf
-
+    cecho "Can't find exclude line in /etc/yum.conf... adding exclude line for mysql*" $boldgreen
+    echo "exclude=mysql*">> /etc/yum.conf
 else
-
-cecho "exclude line exists... adding exclude line for mysql*" $boldgreen
-
-sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 mysql\*/" /etc/yum.conf
-
+    cecho "exclude line exists... adding exclude line for mysql*" $boldgreen
+    sed -i "s/exclude=\*.i386 \*.i586 \*.i686/exclude=\*.i386 \*.i586 \*.i686 mysql\*/" /etc/yum.conf
 fi
 
     echo "*************************************************"
@@ -539,7 +590,11 @@ else
     gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
     cmservice mysql start
 fi
-  
+
+# https://community.centminmod.com/posts/25691/
+if [ -f /usr/local/src/centminmod/tools/setio.sh ]; then
+    /usr/local/src/centminmod/tools/setio.sh set
+fi  
     echo "*************************************************"
     cecho "* MariaDB installed" $boldgreen
     echo "*************************************************"

@@ -4,17 +4,20 @@
 # .09 beta01 and higher written by George Liu
 # modified for wordpress setup
 ################################################################
-branchname='123.08stable'
+branchname='123.09beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
+CENTMINLOGDIR='/root/centminlogs'
+DT=$(date +"%d%m%y-%H%M%S")
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 DIR_TMP=/svr-setup
 OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
-# CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
-CENTMINLOGDIR='/root/centminlogs'
-DT=`date +"%d%m%y-%H%M%S"`
+# CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 ################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -48,16 +51,40 @@ echo -e "$color$message" ; $Reset
 return
 }
 ###############################################################
+if [ ! -d "$CENTMINLOGDIR" ]; then
+  mkdir -p "$CENTMINLOGDIR"
+fi
 
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
 fi
 
-if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+  # extended custom nginx log format = main_ext for nginx amplify metric support
+  # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
+  if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      NGX_LOGFORMAT='main_ext'
+    else
+      NGX_LOGFORMAT='combined'
+    fi
+  else
+    NGX_LOGFORMAT='combined'
+  fi
+
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
+  HTTPTWO=y
+  LISTENOPT='ssl spdy http2'
+  COMP_HEADER='spdy_headers_comp 5'
+  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'  
+elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
   LISTENOPT='ssl http2'
   COMP_HEADER='#spdy_headers_comp 5'
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
 else
   HTTPTWO=n
   LISTENOPT='ssl spdy'
@@ -159,6 +186,10 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     OLS='y'
 fi
 
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 cmservice() {
         servicename=$1
         action=$2
@@ -181,7 +212,8 @@ dbsetup() {
   DBNB=$RANDOM
   DBNC=$RANDOM
   DBND=$RANDOM
-  DB="wp${DBN}db_${DBND}"
+  DBNE=$RANDOM
+  DB="wp${DBNE}${DBN}db_${DBND}"
   DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
@@ -280,7 +312,7 @@ if [ ! -f /usr/local/nginx/conf/ssl ]; then
   mkdir -p /usr/local/nginx/conf/ssl
 fi
 
-if [ ! -f /usr/local/nginx/conf/ssl/${vhostname} ]; then
+if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 
@@ -318,57 +350,57 @@ fi
 openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
-# cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
-# cecho "creating private key: ${vhostname}-backup.key" $boldgreen
-# sleep 5
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
+cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
+cecho "creating private key: ${vhostname}-backup.key" $boldgreen
+sleep 5
 
-# openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
-# cecho "private key's SPKI - Subject Public Key Information" $boldgreen
-# cecho "Primary private key - ${vhostname}.key" $boldgreen
-# cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
-# cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
-# sleep 5
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
+cecho "private key's SPKI - Subject Public Key Information" $boldgreen
+cecho "Primary private key - ${vhostname}.key" $boldgreen
+cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
+cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
+sleep 5
 
-# echo
-# cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
+echo
+cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
 
-# openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
+openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
 
-# echo
-# cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
+echo
+cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
 
-# openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
+openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
 
-# echo
-# cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
+echo
+cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
 
-# echo
-# cecho "for 7 days max-age including subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=604800; includeSubDomains';"
+echo
+cecho "for 7 days max-age including subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
 
-# echo
-# cecho "for 7 days max-age excluding subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=604800';"
+echo
+cecho "for 7 days max-age excluding subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
 
 
 echo
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
 
-dhparamstarttime=$(date +%s.%N)
+dhparamstarttime=$(TZ=UTC date +%s.%N)
 
 openssl dhparam -out dhparam.pem 2048
 
-dhparamendtime=$(date +%s.%N)
+dhparamendtime=$(TZ=UTC date +%s.%N)
 DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
 cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 
@@ -382,13 +414,54 @@ if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
   pureftpinstall
 fi
 
+# Support secondary dedicated IP configuration for centmin mod
+# nginx vhost generator, so out of the box, new nginx vhosts 
+# generated will use the defined SECOND_IP=111.222.333.444 where
+# the IP is a secondary IP addressed added to the server.
+# You define SECOND_IP variable is centmin mod persistent config
+# file outlined at http://centminmod.com/upgrade.html#persistent
+# you manually creat the file at /etc/centminmod/custom_config.inc
+# and add SECOND_IP=yoursecondary_IPaddress variable to it which
+# will be registered with nginx vhost generator routine so that 
+# any new nginx vhosts created via centmin.sh menu option 2 or
+# /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
+# SECOND_IP ip address set in the nginx vhost's listen directive
+if [[ -z "$SECOND_IP" ]]; then
+  DEDI_IP=""
+  DEDI_LISTEN=""
+elif [[ "$SECOND_IP" ]]; then
+  DEDI_IP=$(echo $(echo ${SECOND_IP}:))
+  DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Nginx Vhost Setup..." $boldgreen
 cecho "---------------------------------------------------------------" $boldyellow
 
 # read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 
-if [[ "$sslconfig" = [yY] ]]; then
+# check to make sure you don't add a domain name vhost that matches
+# your server main hostname setup in server_name within main hostname
+# nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
+if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+  CHECK_MAINHOSTNAME=$(awk '/server_name/ {print $2}' /usr/local/nginx/conf/conf.d/virtual.conf | sed -e 's|;||')
+  if [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" ]]; then
+    echo
+    echo " Error: $vhostname is already setup for server main hostname"
+    echo " at /usr/local/nginx/conf/conf.d/virtual.conf"
+    echo " It is important that main server hostname be setup correctly"
+    echo
+    echo " As per Getting Started Guide Step 1 centminmod.com/getstarted.html"
+    echo " The server main hostname needs to be unique. So please setup"
+    echo " the main server name vhost properly first as per Step 1 of guide."
+    echo
+    echo " Aborting nginx vhost creation..."
+    echo
+    exit 1
+  fi
+fi
+
+if [[ "$sslconfig" = [yY] ]] || [[ "$sslconfig" = 'le' ]]; then
   echo
   vhostssl=y
   # read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
@@ -423,7 +496,7 @@ umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-  ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
+  ( echo "${ftppass}" ; echo "${ftppass}" ) | pure-pw useradd "$ftpuser" -u $PUREUSER -g $PUREGROUP -d "/home/nginx/domains/$vhostname"
   pure-pw mkdb
 fi
 
@@ -497,10 +570,19 @@ if [[ "$vhostssl" = [yY] ]]; then
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
       OPEENSSL_CFPATCHED='y'
+  elif [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]; then
+      # for openssl 1.1.0 native chacha20 support
+      OPEENSSL_CFPATCHED='y'
   fi
-  
+
 if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
-  CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
+  if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  elif [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  else
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  fi
 else
   CHACHACIPHERS=""
 fi
@@ -514,12 +596,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -527,13 +610,22 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -543,6 +635,7 @@ server {
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
   # Enables directory listings when index file not found
   #autoindex  on;
@@ -594,7 +687,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # }
 
 server {
-  listen 443 $LISTENOPT;
+  listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -602,15 +695,20 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
-  ssl_ciphers ${CHACHACIPHERS}ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA:!DES-CBC3-SHA;
+  ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
+
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-  #add_header  X-Content-Type-Options "nosniff";
-  #add_header X-Frame-Options DENY;
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
   $COMP_HEADER;
-  ssl_buffer_size 1400;
+  ssl_buffer_size 1369;
   ssl_session_tickets on;
   
   # enable ocsp stapling
@@ -628,10 +726,15 @@ server {
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   # prevent access to ./directories and files
   location ~ (?:^|/)\. {
@@ -641,6 +744,7 @@ server {
 include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
   # Enables directory listings when index file not found
   #autoindex  on;
@@ -686,12 +790,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -699,15 +804,25 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
   location / {
+  include /usr/local/nginx/conf/503include-only.conf;
 
   # Enables directory listings when index file not found
   #autoindex  on;
@@ -795,7 +910,7 @@ if (\$query_string != "") { set \$cache_uri 'null cache'; }
 
 if (\$request_uri ~* "/(\?add-to-cart=|cart|my-account|checkout|addons|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
 
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") { set \$cache_uri 'null cache'; }
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|woocommerce_items_in_cart") { set \$cache_uri 'null cache'; }
 EFF
 
 ######### Wordpress Manual Install no WP-CLI ######################
@@ -843,7 +958,10 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     # making sure they do not run at very same time during cron scheduling
     DELAY=$(echo ${RANDOM:0:3})
     crontab -l > cronjoblist
+    mkdir -p /home/nginx/domains/${vhostname}/cronjobs
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
     echo "*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cron.txt
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
@@ -935,9 +1053,25 @@ chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
 
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
+if [ -f "${SCRIPT_DIR}/autoprotect.sh" ]; then
+  "${SCRIPT_DIR}/autoprotect.sh"
+fi
+
 service nginx restart
+
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
+fi
+
+FINDUPPERDIR=$(dirname $SCRIPT_DIR)
+if [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
+  echo
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "ok: $FINDUPPERDIR/addons/acmetool.sh"
+  echo ""$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname""
+  "$FINDUPPERDIR/addons/acmetool.sh" issue "$vhostname"
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo
 fi
 
 echo 
@@ -955,7 +1089,7 @@ cecho "vhost for $vhostname created successfully" $boldwhite
 echo
 cecho "domain: http://$vhostname" $boldyellow
 cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -965,8 +1099,8 @@ if [[ "$sslconfig" = [yY] ]]; then
   cecho "Self-signed SSL Certificate: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldyellow
   cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
-  # cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
-  # cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow  
+  cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
+  cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow  
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
@@ -1015,13 +1149,20 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$sslconfig" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 fi
+
+cecho "-------------------------------------------------------------" $boldyellow
+cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
+cecho "$vhostname setup info log saved at: " $boldwhite
+cecho "$LOGPATH" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+echo ""
 
 else
 
@@ -1040,7 +1181,7 @@ fi
 if [[ "$RUN" = [yY] ]]; then
   {
     funct_nginxaddvhost
-  } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 else
   usage
 fi

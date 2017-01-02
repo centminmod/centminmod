@@ -51,15 +51,15 @@ NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     cd /etc/sysconfig/
     cp $CUR_DIR/sysconfig/nsd nsd
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/nsd/nsd.conf
-    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/init.d/nsd
-fi
-
 # # only run for CentOS 6.x
 # if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cd /etc/init.d/
     cp $CUR_DIR/init/nsd nsd
+
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/nsd/nsd.conf
+    sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/init.d/nsd
+fi
 
 # add check for Windows CLRF line endings
 if [ ! -f /usr/bin/file ]; then

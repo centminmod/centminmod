@@ -1,5 +1,6 @@
 #################
 zopcachereinstall() {
+	axelsetup
 
 if [[ -f ${CONFIGSCANDIR}/xcache.ini ]]; then
     echo ""
@@ -82,7 +83,7 @@ ZENDOPCACHE_LINK="https://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
     if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
         cecho " ${ZENDOPCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${ZENDOPCACHE_LINK} $WGETRETRY 
+        download_cmd ${ZENDOPCACHE_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
@@ -160,11 +161,11 @@ if [ ! -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
 fi
 
 # check if opcache.so exists in ${CONFIGSCANDIR}/zendopcache.ini
-ZOPLUSSOCHECK=$(grep 'opcache.so' ${CONFIGSCANDIR}/zendopcache.ini)
+ZOPLUSSOCHECK=$(grep 'opcache.so' "${CONFIGSCANDIR}/zendopcache.ini" >/dev/null 2>&1; echo $?)
 
 ################
 # if opcache.so doesn't exist then ZOPPLUSSOCHECK will be empty
-if [[ -z $ZOPLUSSOCHECK ]]; then
+if [[ "$ZOPLUSSOCHECK" = '1' ]]; then
 	echo
 	read -ep "Do you want to reset zendopcache.ini settings to default (y) or keep existing zendopcache.ini settings (n)? [y/n]: " resetzocache
 
@@ -204,8 +205,8 @@ fi # check if opcache.so exists in zendopcache.ini
 ################
 
 # DOUBLE CHECK as opcache.so needs extension path
-ZOPLUSSOPATHCHECK=$(grep 'zend_extension=opcache.so' ${CONFIGSCANDIR}/zendopcache.ini)
-if [[ $ZOPLUSSOPATHCHECK ]]; then
+ZOPLUSSOPATHCHECK=$(grep 'zend_extension=opcache.so' ${CONFIGSCANDIR}/zendopcache.ini >/dev/null 2>&1; echo $?)
+if [[ "$ZOPLUSSOPATHCHECK" = '0' ]]; then
 	echo
 	echo "replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- ${CONFIGSCANDIR}/zendopcache.ini"
 	replace 'zend_extension=opcache.so' "zend_extension=${PHPEXTDIRD}/opcache.so" -- "${CONFIGSCANDIR}/zendopcache.ini"

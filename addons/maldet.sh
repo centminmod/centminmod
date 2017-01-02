@@ -6,7 +6,7 @@
 # https://www.rfxn.com/projects/linux-malware-detect/
 # http://www.clamav.net/lang/en/
 #########################################################
-DT=`date +"%d%m%y-%H%M%S"`
+DT=$(date +"%d%m%y-%H%M%S")
 TMP_DIR='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
 
@@ -52,6 +52,10 @@ return
 #########################################################
 CPUS=$(cat "/proc/cpuinfo" | grep "processor"|wc -l)
 
+if [ ! -d "$CENTMINLOGDIR" ]; then
+	mkdir -p "$CENTMINLOGDIR"
+fi
+
 if [[ "$CPUS" = '1' ]]; then
     MAXTHREADS=1
 else
@@ -67,6 +71,11 @@ else
 	cecho "CentOS / RHEL system detected" $boldyellow
 fi
 
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+  # default is at /etc/centminmod/custom_config.inc
+  . "/etc/centminmod/custom_config.inc"
+fi
+
 if [[ ! -f /usr/bin/wget ]] ; then
 	yum -y -q install wget
 fi
@@ -74,7 +83,12 @@ fi
 if [[ -z "$ALERTEMAIL" ]]; then
 	echo
 	cecho "ALERTEMAIL variable detected as empty" $boldyellow
-	cecho "edit $0 and set an email address for ALERTEMAIL" $boldyellow
+	cecho "add to persistent config file created at" $boldyellow
+  cecho "/etc/centminmod/custom_config.inc and set an" $boldyellow
+  cecho "email address for variable: " $boldyellow
+  echo
+  cecho " ALERTEMAIL='youremail@domain.com'" $boldyellow
+  echo
 	cecho "Then re-run the script $0" $boldyellow
 	exit
 fi
@@ -174,12 +188,25 @@ clamavinstall() {
     	chown clamav:clamav /var/run/clamav/
     fi
 
+if [ -f /proc/user_beancounters ]; then
+    echo ""
+    echo "*************************************************"
+    cecho "* Correct service's stack size for OpenVZ systems. Please wait...." $boldgreen
+    echo "*************************************************"
+
+sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 512\nfi\n/g' /etc/init.d/clamd
+
+echo "checking stack size ulimit -s set properly: "
+head -n 5  /etc/init.d/clamd
+fi    
+
+	/etc/init.d/clamd stop
 	/etc/init.d/clamd start
 	chkconfig clamd on
 	time freshclam
 }
 #########################################################
-starttime=$(date +%s.%N)
+starttime=$(TZ=UTC date +%s.%N)
 {
 maldetinstall
 clamavinstall
@@ -188,7 +215,7 @@ echo
 cecho "maldet + clamav installed..." $boldyellow
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_maldet_install_${DT}.log
 
-endtime=$(date +%s.%N)
+endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_maldet_install_${DT}.log

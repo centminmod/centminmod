@@ -114,7 +114,7 @@ listen = 127.0.0.1:9000
 ;                 mode is set to 0666
 ;listen.owner = nginx
 ;listen.group = nginx
-;listen.mode = 0666
+;listen.mode = 0660
 
 ; Unix user/group of processes
 ; Note: The user is mandatory. If the group is not set, the default user's group

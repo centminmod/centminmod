@@ -15,7 +15,9 @@
 if [[ "$(which convert >/dev/null 2>&1; echo $?)" = '0' && ! -d /var/cpanel ]]; then
 	POLICYPATH=$(convert -list policy | grep 'Path: ' | awk '/policy.xml/ {print $2}')
 	if [[ ! -f "$POLICYPATH" ]]; then
-		if [[ -f /etc/ImageMagick/policy.xml ]]; then
+		if [[ -f /etc/ImageMagick6/ImageMagick-6/policy.xml ]]; then
+			POLICYPATH='/etc/ImageMagick6/ImageMagick-6/policy.xml'
+		elif [[ -f /etc/ImageMagick/policy.xml ]]; then
 			POLICYPATH='/etc/ImageMagick/policy.xml'
 		fi
 	fi
@@ -43,7 +45,9 @@ if [[ "$(which convert >/dev/null 2>&1; echo $?)" = '0' && ! -d /var/cpanel ]]; 
 		echo "convert -list policy"
 		convert -list policy
 	else
-		cat $POLICYPATH
+		if [[ -f "$POLICYPATH" ]]; then
+			cat $POLICYPATH
+		fi
 	fi
 elif [ -f /usr/local/cpanel/3rdparty/etc/ImageMagick-6/policy.xml ]; then
 	POLICYPATH='/usr/local/cpanel/3rdparty/etc/ImageMagick-6/policy.xml'
@@ -71,7 +75,9 @@ elif [ -f /usr/local/cpanel/3rdparty/etc/ImageMagick-6/policy.xml ]; then
 		echo "/usr/local/cpanel/3rdparty/bin/convert -list policy"
 		/usr/local/cpanel/3rdparty/bin/convert -list policy
 	else
-		cat $POLICYPATH
+		if [[ -f "$POLICYPATH" ]]; then
+			cat $POLICYPATH
+		fi
 	fi
 
 	if [[ -f /etc/ImageMagick/policy.xml && "$(which convert >/dev/null 2>&1; echo $?)" = '0' ]]; then
@@ -100,7 +106,9 @@ elif [ -f /usr/local/cpanel/3rdparty/etc/ImageMagick-6/policy.xml ]; then
 			echo "convert -list policy"
 			convert -list policy
 		else
-			cat $POLICYPATH
+			if [[ -f "$POLICYPATH" ]]; then
+				cat $POLICYPATH
+			fi
 		fi
 	fi
 fi

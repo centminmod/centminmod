@@ -1,7 +1,13 @@
+[client]
+socket=/var/lib/mysql/mysql.sock
+
+[mysql]
+max_allowed_packet = 64M
+
 [mysqld]
 local-infile=0
 ignore-db-dir=lost+found
-#character-set-server=utf8
+character-set-server=utf8
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
 
@@ -19,22 +25,22 @@ innodb=ON
 #skip-archive
 #skip-name-resolve
 #old_passwords
-back_log = 75
+back_log = 256
 max_connections = 300
 key_buffer_size = 32M
-myisam_sort_buffer_size = 32M
+myisam_sort_buffer_size = 64M
 myisam_max_sort_file_size = 2048M
 join_buffer_size = 128K
 read_buffer_size = 128K
 sort_buffer_size = 256K
-table_definition_cache = 4096
-table_open_cache = 2048
-thread_cache_size = 64
+table_definition_cache = 8192
+table_open_cache = 4096
+thread_cache_size = 128
 wait_timeout = 1800
 connect_timeout = 10
-tmp_table_size = 32M
-max_heap_table_size = 32M
-max_allowed_packet = 32M
+tmp_table_size = 128M
+max_heap_table_size = 128M
+max_allowed_packet = 64M
 max_seeks_for_key = 1000
 group_concat_max_len = 1024
 max_length_for_sort_data = 1024
@@ -43,8 +49,10 @@ max_connect_errors = 100000
 concurrent_insert = 2
 read_rnd_buffer_size = 256K
 bulk_insert_buffer_size = 8M
-query_cache_limit = 512K
-query_cache_size = 16M
+# query_cache boost for MariaDB >10.1.2+
+# https://community.centminmod.com/posts/30811/
+query_cache_limit = 1024K
+query_cache_size = 64M
 query_cache_type = 1
 query_cache_min_res_unit = 2K
 query_prealloc_size = 262144
@@ -66,7 +74,7 @@ innodb_file_format = Barracuda
 innodb_file_per_table = 1
 innodb_open_files = 1000
 innodb_data_file_path= ibdata1:10M:autoextend
-innodb_buffer_pool_size = 48M
+innodb_buffer_pool_size = 192M
 
 ## https://mariadb.com/kb/en/mariadb/xtradbinnodb-server-system-variables/#innodb_buffer_pool_instances
 #innodb_buffer_pool_instances=2
@@ -81,9 +89,11 @@ innodb_flush_method = O_DIRECT
 innodb_support_xa=1
 
 # 200 * # DISKS
-innodb_io_capacity = 100
+innodb_io_capacity = 200
+innodb_io_capacity_max = 2000
 innodb_read_io_threads = 2
 innodb_write_io_threads = 2
+innodb_flush_neighbors = 1
 
 # mariadb settings
 [mariadb]
@@ -99,10 +109,13 @@ aria_group_commit = none
 aria_group_commit_interval = 0
 aria_log_file_size = 32M
 aria_log_purge_type = immediate 
-aria_pagecache_buffer_size = 8M
-aria_sort_buffer_size = 8M
+aria_pagecache_buffer_size = 32M
+aria_sort_buffer_size = 32M
 
 [mariadb-5.5]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
 #ignore_db_dirs=
 query_cache_strip_comments=0
 
@@ -122,7 +135,7 @@ open-files-limit = 8192
 
 [mysqldump]
 quick
-max_allowed_packet = 32M
+max_allowed_packet = 64M
 
 [myisamchk] 
 tmpdir=/home/mysqltmp
@@ -135,6 +148,9 @@ write_buffer = 16M
 interactive-timeout
 
 [mariadb-10.0]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
 # 2 variables needed to switch from XtraDB to InnoDB plugins
 #plugin-load=ha_innodb
 #ignore_builtin_innodb

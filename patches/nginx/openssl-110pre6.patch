@@ -1,0 +1,25 @@
+From de58430364416f34d6d553d31df2ae97e4ae1cdd Mon Sep 17 00:00:00 2001
+From: Kurt Cancemi <kurt@x64architecture.com>
+Date: Sat, 25 Jun 2016 00:20:14 -0400
+Subject: [PATCH] Fix nginx build
+
+OpenSSL removed unused error codes in commit
+f019f64aa8168bbbaa7457133944547450e2a253
+---
+ src/event/ngx_event_openssl.c | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/src/event/ngx_event_openssl.c b/src/event/ngx_event_openssl.c
+index 810c469..0865aa0 100644
+--- a/src/event/ngx_event_openssl.c
++++ b/src/event/ngx_event_openssl.c
+@@ -1999,7 +1999,6 @@ ngx_ssl_connection_error(ngx_connection_t *c, int sslerr, ngx_err_t err,
+             || n == SSL_R_ERROR_IN_RECEIVED_CIPHER_LIST              /*  151 */
+             || n == SSL_R_EXCESSIVE_MESSAGE_SIZE                     /*  152 */
+             || n == SSL_R_LENGTH_MISMATCH                            /*  159 */
+-            || n == SSL_R_NO_CIPHERS_PASSED                          /*  182 */
+             || n == SSL_R_NO_CIPHERS_SPECIFIED                       /*  183 */
+             || n == SSL_R_NO_COMPRESSION_SPECIFIED                   /*  187 */
+             || n == SSL_R_NO_SHARED_CIPHER                           /*  193 */
+-- 
+2.9.0

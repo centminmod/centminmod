@@ -20,13 +20,46 @@ wpinstall() {
     fi
 }
 
+installredisserver() {
+  if [[ "$(ps -C redis-server | grep redis-server >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    echo
+    echo "Install & Setup Redis Server from REMI YUM Repo"
+    echo
+    yum -y install redis --enablerepo=remi --disableplugin=priorities
+    chkconfig redis on
+    if [[ -z "$(grep '^vm.overcommit_memory' /etc/sysctl.conf)" ]]; then
+      echo "vm.overcommit_memory = 1" >> /etc/sysctl.conf
+      sysctl -p
+    fi
+    if [ -f /etc/redis.conf ]; then
+      if [[ -z "$(grep '^maxmemory 111mb' /etc/redis.conf)" ]]; then
+        echo "maxmemory 111mb" >> /etc/redis.conf
+        grep '^maxmemory 111mb' /etc/redis.conf
+        fi
+      if [[ -z "$(grep '^maxmemory-policy allkeys-lru' /etc/redis.conf)" ]]; then
+        echo "maxmemory-policy allkeys-lru" >> /etc/redis.conf
+        grep '^maxmemory-policy allkeys-lru' /etc/redis.conf
+      fi
+      if [[ -z "$(grep '^maxmemory-samples 10' /etc/redis.conf)" ]]; then
+        echo "maxmemory-samples 10" >> /etc/redis.conf
+        grep '^maxmemory-samples 10' /etc/redis.conf
+      fi
+    fi
+    service redis restart
+    echo
+    echo "Redis server installed with config file at /etc/redis.conf"
+    echo
+  fi
+}
+
 dbsetup() {
   SALT=$(openssl rand -base64 12 | cut -c1-12 | sed -e s'|/||')
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
   DBND=$RANDOM
-  DB="wp${DBN}db_${DBND}"
+  DBNE=$RANDOM
+  DB="wp${DBNE}${DBN}db_${DBND}"
   DBUSER="wpdb${DBND}u${DBNB}"
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
@@ -41,11 +74,20 @@ cecho "SSL Vhost Setup..." $boldgreen
 cecho "---------------------------------------------------------------" $boldyellow
 echo ""
 
-if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
+if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
+  HTTPTWO=y
+  LISTENOPT='ssl spdy http2'
+  COMP_HEADER='spdy_headers_comp 5'
+  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'  
+elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
   LISTENOPT='ssl http2'
   COMP_HEADER='#spdy_headers_comp 5'
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
 else
   HTTPTWO=n
   LISTENOPT='ssl spdy'
@@ -57,7 +99,7 @@ if [ ! -f /usr/local/nginx/conf/ssl ]; then
   mkdir -p /usr/local/nginx/conf/ssl
 fi
 
-if [ ! -f /usr/local/nginx/conf/ssl/${vhostname} ]; then
+if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 
@@ -95,57 +137,57 @@ fi
 openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}.csr -keyout ${vhostname}.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 openssl x509 -req -days 36500 -sha256 -in ${vhostname}.csr -signkey ${vhostname}.key -out ${vhostname}.crt
 
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
-# cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
-# cecho "creating private key: ${vhostname}-backup.key" $boldgreen
-# sleep 5
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Generating backup CSR and private key for HTTP Public Key Pinning..." $boldgreen
+cecho "creating CSR File: ${vhostname}-backup.csr" $boldgreen
+cecho "creating private key: ${vhostname}-backup.key" $boldgreen
+sleep 5
 
-# openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
+openssl req -new -newkey rsa:2048 -sha256 -nodes -out ${vhostname}-backup.csr -keyout ${vhostname}-backup.key -subj "/C=${SELFSIGNEDSSL_C}/ST=${SELFSIGNEDSSL_ST}/L=${SELFSIGNEDSSL_L}/O=${SELFSIGNEDSSL_O}/OU=${SELFSIGNEDSSL_OU}/CN=${vhostname}"
 
-# echo
-# cecho "---------------------------------------------------------------" $boldyellow
-# cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
-# cecho "private key's SPKI - Subject Public Key Information" $boldgreen
-# cecho "Primary private key - ${vhostname}.key" $boldgreen
-# cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
-# cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
-# sleep 5
+echo
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Extracting Base64 encoded information for primary and secondary" $boldgreen
+cecho "private key's SPKI - Subject Public Key Information" $boldgreen
+cecho "Primary private key - ${vhostname}.key" $boldgreen
+cecho "Backup private key - ${vhostname}-backup.key" $boldgreen
+cecho "For HPKP - HTTP Public Key Pinning hash generation..." $boldgreen
+sleep 5
 
-# echo
-# cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
+echo
+cecho "extracting SPKI Base64 encoded hash for primary private key = ${vhostname}.key ..." $boldgreen
 
-# openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
+openssl rsa -in ${vhostname}.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt
 
-# echo
-# cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
+echo
+cecho "extracting SPKI Base64 encoded hash for backup private key = ${vhostname}-backup.key ..." $boldgreen
 
-# openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
+openssl rsa -in ${vhostname}-backup.key -outform der -pubout | openssl dgst -sha256 -binary | openssl enc -base64 | tee -a /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt
 
-# echo
-# cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
+echo
+cecho "HTTP Public Key Pinning Header for Nginx" $boldgreen
 
-# echo
-# cecho "for 7 days max-age including subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=604800; includeSubDomains';"
+echo
+cecho "for 7 days max-age including subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400; includeSubDomains';"
 
-# echo
-# cecho "for 7 days max-age excluding subdomains" $boldgreen
-# echo
-# echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=604800';"
+echo
+cecho "for 7 days max-age excluding subdomains" $boldgreen
+echo
+echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
 
 
 echo
 cecho "---------------------------------------------------------------" $boldyellow
 cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
 
-dhparamstarttime=$(date +%s.%N)
+dhparamstarttime=$(TZ=UTC date +%s.%N)
 
 openssl dhparam -out dhparam.pem 2048
 
-dhparamendtime=$(date +%s.%N)
+dhparamendtime=$(TZ=UTC date +%s.%N)
 DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
 cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 
@@ -157,15 +199,35 @@ PUREGROUP=nginx
 CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
 pureftpinstall
 
+# Support secondary dedicated IP configuration for centmin mod
+# nginx vhost generator, so out of the box, new nginx vhosts 
+# generated will use the defined SECOND_IP=111.222.333.444 where
+# the IP is a secondary IP addressed added to the server.
+# You define SECOND_IP variable is centmin mod persistent config
+# file outlined at http://centminmod.com/upgrade.html#persistent
+# you manually creat the file at /etc/centminmod/custom_config.inc
+# and add SECOND_IP=yoursecondary_IPaddress variable to it which
+# will be registered with nginx vhost generator routine so that 
+# any new nginx vhosts created via centmin.sh menu option 2 or
+# /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
+# SECOND_IP ip address set in the nginx vhost's listen directive
+if [[ -z "$SECOND_IP" ]]; then
+  DEDI_IP=""
+  DEDI_LISTEN=""
+elif [[ "$SECOND_IP" ]]; then
+  DEDI_IP=$(echo $(echo ${SECOND_IP}:))
+  DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+
 wpinstall
   WPSALT=$(openssl rand -base64 18 | cut -c1-18 | sed -e 's|/||' -e 's|+||')
   WPSALTB=$(openssl rand -base64 11 | cut -c1-11 | sed -e 's|/||' -e 's|+||')
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
-  WPADMINUSER=$(echo $WPADMINUSER | sed -e 's|\/||g')
+  WPADMINUSER=$(echo $WPADMINUSER | sed -e 's|\/||g' -e 's|\+||g')
   WPADMINPASS="z${WPSALTB}wps${WPN}"
-  WPADMINPASS=$(echo $WPADMINPASS | sed -e 's|\/||g')
+  WPADMINPASS=$(echo $WPADMINPASS | sed -e 's|\/||g' -e 's|\+||g')
  
 if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
@@ -173,11 +235,32 @@ fi
 
 echo
 cecho "-------------------------------------------------------------" $boldyellow
-cecho "Setup full Nginx vhost + Wordpress + WP Super Cache" $boldgreen
+cecho "Setup full Nginx vhost + Wordpress + WP Plugins" $boldgreen
 cecho "-------------------------------------------------------------" $boldyellow
 echo
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
+
+# check to make sure you don't add a domain name vhost that matches
+# your server main hostname setup in server_name within main hostname
+# nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
+if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
+  CHECK_MAINHOSTNAME=$(awk '/server_name/ {print $2}' /usr/local/nginx/conf/conf.d/virtual.conf | sed -e 's|;||')
+  if [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" ]]; then
+    echo
+    echo " Error: $vhostname is already setup for server main hostname"
+    echo " at /usr/local/nginx/conf/conf.d/virtual.conf"
+    echo " It is important that main server hostname be setup correctly"
+    echo
+    echo " As per Getting Started Guide Step 1 centminmod.com/getstarted.html"
+    echo " The server main hostname needs to be unique. So please setup"
+    echo " the main server name vhost properly first as per Step 1 of guide."
+    echo
+    echo " Aborting nginx vhost creation..."
+    echo
+    exit 1
+  fi
+fi
 
 TESTVHOST=$(echo $vhostname | grep '\/')
 while [[ "$TESTVHOST" ]]; do
@@ -192,10 +275,115 @@ done
 if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
   echo
   read -ep "Create a self-signed SSL certificate Nginx vhost? [y/n]: " vhostssl
-  echo
+  if [[ -f "${SCRIPT_DIR}/addons/acmetool.sh" && "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    read -ep "Get Letsencrypt SSL certificate Nginx vhost? [y/n]: " vhostssl_le
+    if [[ "$vhostssl_le" = [yY] ]]; then
+      echo
+      echo "You have 4 options: "
+      echo "1. issue staging test cert with HTTP + HTTPS"
+      echo "2. issue staging test cert with HTTPS default"
+      echo "3. issue live cert with HTTP + HTTPS"
+      echo "4. issue live cert with HTTPS default"
+      read -ep "Enter option number 1-4: " vhostssl_opt
+      if [[ "$vhostssl_opt" = '1' ]]; then
+        vhostssl='le'
+      elif [[ "$vhostssl_opt" = '2' ]]; then
+        vhostssl='led'
+        wpcli_ssldefault=1
+      elif [[ "$vhostssl_opt" = '3' ]]; then
+        vhostssl='lelive'
+      elif [[ "$vhostssl_opt" = '4' ]]; then
+        vhostssl='lelived'
+        wpcli_ssldefault=1
+      fi
+      echo
+    fi
+  fi
 fi
 
-read -ep "Enter email address for Wordpress Installation: " WPADMINEMAIL
+echo "Theme Setup: "
+read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme/) [y/n]: " responsivetheme
+
+echo
+echo "Wordpress Setup: "
+read -ep "Set custom WP Admin Display Name ? [y/n]: " setdisplayname
+if [[ "$setdisplayname" = [yY] ]]; then
+  read -ep "Enter Custom WP Admin Display Name: " displayname
+  WPADMIN_DISPLAYNAME=$displayname
+fi
+read -ep "Install Wordpress in subdirectory /blog ? [y/n]: " wpsubdirinstall
+
+if [[ "$wpsubdirinstall" = [yY] ]]; then
+  SUBDIR_INSTALL=y
+  read -ep "Enter subdirectory name i.e. /blog enter = blog ? : " wpsubdir_value
+  WPSUBDIR="/$wpsubdir_value"
+  SUBDIR_INCLUDE="include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf;"
+  NONSUBDIR_INCLUDE=""
+elif [[ "$wpsubdirinstall" != [yY] ]]; then
+  SUBDIR_INSTALL=n
+  WPSUBDIR=""
+  SUBDIR_INCLUDE=""
+  NONSUBDIR_INCLUDE="include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf;"
+fi
+
+read -ep "Disable Auto Generated WP Admin Username / Password ? [y/n]: " disableautogen
+read -ep "Disable wp-login.php password protection ? (less security) [y/n]: " disablepwdprotect
+
+if [[ "$disableautogen" = [yY] ]]; then
+  if [ ! -f /usr/sbin/cracklib-check ]; then
+    yum -y -q install cracklib
+  fi
+  echo
+  cecho "--------------------------" $boldgreen
+  cecho "!! Security Note !!" $boldyellow
+  cecho "--------------------------" $boldgreen
+  cecho "Please choose a stronger Username/Password Combination" $boldyellow
+  echo
+  read -ep "Enter desired WP Admin Username: " WPADMINUSER
+  read -ep "Enter desired WP Admin Password: " WPADMINPASS
+
+  CHECKWPADMINPASSWD="$(cracklib-check <<<"$WPADMINPASS")"
+  okay="$(awk -F': ' '{ print $2}' <<<"$CHECKWPADMINPASSWD")"
+  while [[ "$okay" != "OK" ]]; do
+    cecho "!! password strength not strong enough !! " $boldyellow
+    cecho "!! do not use common dictionary words !! " $boldyellow
+    cecho "!! do not use short passwords !! " $boldyellow
+    cecho "!! do not use simplistic passwords !! " $boldyellow
+    echo
+    read -ep "Re-Enter desired WP Admin Password: " WPADMINPASS
+    CHECKWPADMINPASSWD="$(cracklib-check <<<"$WPADMINPASS")"
+    okay="$(awk -F': ' '{ print $2}' <<<"$CHECKWPADMINPASSWD")"
+  done
+fi
+
+read -ep "Enter email address for Admin User for Wordpress Installation: " WPADMINEMAIL
+
+echo
+cecho "Default is to install KeyCDN WP Cache Enabler Plugin" $boldyellow
+cecho "as it's more stable and reliable than WP Super Cache." $boldyellow
+cecho "Redis cache may have issues with caching due to long 6hr cache TTL" $boldyellow
+cecho "You can select which caching method to use below:" $boldyellow
+echo
+
+cecho "--------------------------------------------------------" $boldyellow
+cecho "        Wordpress Caching               " $boldgreen
+cecho "--------------------------------------------------------" $boldyellow
+cecho "1). KeyCDN Cache Enabler (default & recommended)" $boldgreen
+cecho "2). Redis Nginx Level Caching (may have issues with some wp plugins)" $boldgreen
+cecho "3). Wordpress Super Cache" $boldgreen
+cecho "--------------------------------------------------------" $boldyellow
+read -ep "Enter option [ 1 - 3 ] " wpcache_option
+echo
+
+if [[ "$wpcache_option" = '1' ]]; then
+  wpscache='n'
+elif [[ "$wpcache_option" = '2' ]]; then
+  wpscache='redis'
+elif [[ "$wpcache_option" = '3' ]]; then
+  wpscache='y'
+else
+  wpscache='n'
+fi
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
 # echo "$TESTEMAIL"
@@ -255,31 +443,72 @@ dbsetup
 # Checking Permissions, making directories, example index.html
 umask 027
 mkdir -p /home/nginx/domains/$vhostname/{public,private,log,backup}
+ngx_logformats
+if [[ "$wpsubdirinstall" = [yY] ]]; then
+  mkdir -p /home/nginx/domains/$vhostname/public/$wpsubdir_value
+fi
+
+if [ ! -f /usr/local/nginx/conf/wpincludes ]; then
+  mkdir -p /usr/local/nginx/conf/wpincludes
+fi
+
+if [ ! -f "/usr/local/nginx/conf/wpincludes/$vhostname" ]; then
+  mkdir -p "/usr/local/nginx/conf/wpincludes/$vhostname"
+fi
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-  ( echo ${ftppass} ; echo ${ftppass} ) | pure-pw useradd $ftpuser -u $PUREUSER -g $PUREGROUP -d /home/nginx/domains/$vhostname
+  ( echo "${ftppass}" ; echo "${ftppass}" ) | pure-pw useradd "$ftpuser" -u $PUREUSER -g $PUREGROUP -d "/home/nginx/domains/$vhostname"
   pure-pw mkdb
 fi
 
-# where index.html was
+if [[ "$wpsubdirinstall" = [yY] ]]; then
+cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
+<html>
+<head>
+<title>$vhostname</title>
+</head>
+<body>
+<p>Welcome to $vhostname. This index.html page can be removed. You have auto installed Wordpress at $vhostname$WPSUBDIR</p>
+
+<p>Useful Centmin Mod info and links to bookmark.</p>
+
+<ul>
+  <li>Getting Started Guide - <a href="http://centminmod.com/getstarted.html" target="_blank">http://centminmod.com/getstarted.html</a></li>
+  <li>Latest Centmin Mod version - <a href="http://centminmod.com" target="_blank">http://centminmod.com</a></li>
+  <li>Centmin Mod FAQ - <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a></li>
+  <li>Change Log - <a href="http://centminmod.com/changelog.html" target="_blank">http://centminmod.com/changelog.html</a></li>
+  <li>Google+ Page latest news <a href="http://centminmod.com/gpage" target="_blank">http://centminmod.com/gpage</a></li>
+  <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
+  <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
+  <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
+</ul>
+
+<p><a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Cheap VPS Hosting at Digitalocean</a></p>
+
+</body>
+</html>
+END
+fi
 
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /home/nginx/domains/$vhostname/public
 umask 022
 chown -R nginx:nginx "/home/nginx/domains/$vhostname"
 find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
-# wp-login.php password protection
-if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-  HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
-  HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
-  HTWPLOGIN=$RANDOM
-  HTWPLOGINB=$RANDOM
-  HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
-  HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
-  HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
-  HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
-  echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
-  /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
+if [[ "$disablepwdprotect" != [yY] ]]; then
+  # wp-login.php password protection
+  if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+    HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
+    HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
+    HTWPLOGIN=$RANDOM
+    HTWPLOGINB=$RANDOM
+    HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
+    HTUSER=$(echo $HTUSER | sed -e 's|\/||g')
+    HTPASS="p${HTWPLOGINSALTB}y${HTWPLOGIN}"
+    HTPASS=$(echo $HTPASS | sed -e 's|\/||g')
+    echo "/usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS"
+    /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin $HTUSER $HTPASS
+  fi
 fi
 
 # rate limit setup
@@ -294,24 +523,311 @@ if [[ -z "$WPRATECHECK" ]]; then
   sed -i 's/http {/http { \nlimit_req_zone $binary_remote_addr zone=xwplogin:10m rate=40r\/m;\n/g' /usr/local/nginx/conf/nginx.conf
 fi
 
+################################################################################
+# create wp super cache's included php config file php-wpsc.conf
 \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-wpsc.conf
 sed -i "s|fastcgi_param  SERVER_NAME        \$server_name;|fastcgi_param  SERVER_NAME        \$http_host;|" /usr/local/nginx/conf/php-wpsc.conf
 
+################################################################################
+# create wp enable enabler included files https://community.centminmod.com/posts/21220/
+
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf"<<HFA
+    # Block nginx-help log from public viewing
+    location ~* /wp-content/uploads/nginx-helper/ { deny all; }
+
+    set \$cache_uri \$request_uri;
+
+    # exclude mobile devices from redis caching
+    if (\$cmwpcache_device = mobile) { set \$cache_uri 'nullcache'; }
+
+    # bypass cache if POST requests or URLs with a query string
+    if (\$request_method = POST) {
+        set \$cache_uri 'nullcache';
+    }
+    if (\$query_string != "") {
+        set \$cache_uri 'nullcache';
+    }
+
+    # bypass cache if URLs containing the following strings
+    if (\$request_uri ~* "(\?add-to-cart=|/cart/|/my-account/|/checkout/|/shop/checkout/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
+        set \$cache_uri 'nullcache';
+    }
+
+    # bypass cache if the cookies containing the following strings
+    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle") {
+        set \$cache_uri 'nullcache';
+    }
+
+    # custom sub directory e.g. /blog
+    set \$custom_subdir '${WPSUBDIR}';
+
+    # default html file
+    set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index.html';
+
+    # webp html file
+    if (\$http_accept ~* "image/webp") {
+        set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index-webp.html';
+    }
+HFA
+
+cat > "/usr/local/nginx/conf/wpcacheenabler_map.conf"<<HFB
+map \$http_user_agent \$cmwpcache_device {
+    default                                     'desktop';
+    ~*(iPad|iPhone|Android|IEMobile|Blackberry) 'mobile';
+    "~*Firefox.*Mobile"                         'mobile';
+    "~*ipod.*mobile"                            'mobile';
+    "~*Opera\ Mini"                             'mobile';
+    "~*Opera\ Mobile"                           'mobile';
+    "~*Mobile"                                  'mobile';
+    "~*Tablet"                                  'mobile';
+    "~*Kindle"                                  'mobile';
+    "~*Windows\ Phone"                          'mobile';
+}
+HFB
+
+WPCACHEENABLERMAP_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$WPCACHEENABLERMAP_INCLUDECHECK" ]]; then
+    echo
+    echo "include file /usr/local/nginx/conf/wpcacheenabler_map.conf add to nginx.conf"
+      sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/wpcacheenabler_map.conf;|g' /usr/local/nginx/conf/nginx.conf
+  fi
+
+################################################################################
+# create nginx level redis cache included php config file php-rediscache.conf
+# https://community.centminmod.com/posts/18828/
+# \cp -f /usr/local/nginx/conf/php.conf /usr/local/nginx/conf/php-rediscache.conf
+
+cat > "/usr/local/nginx/conf/php-rediscache.conf"<<HFF
+location ~ [^/]\.php(/|\$) {
+  include /usr/local/nginx/conf/503include-only.conf;
+    fastcgi_split_path_info ^(.+?\.php)(/.*)\$;
+    if (!-f \$document_root\$fastcgi_script_name) {
+        return 404;
+    }
+
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
+    srcache_fetch_skip \$skip_cache;
+    srcache_store_skip \$skip_cache;
+    srcache_response_cache_control off;
+    set_escape_uri \$escaped_key \$key;
+    srcache_fetch GET /redis-fetch \$key;
+    srcache_store PUT /redis-store key=\$escaped_key;
+    more_set_headers 'X-Cache \$srcache_fetch_status';
+    more_set_headers 'X-Cache-2 \$srcache_store_status';
+
+    fastcgi_pass   127.0.0.1:9000;
+    #fastcgi_pass   unix:/tmp/php5-fpm.sock;
+    fastcgi_index  index.php;
+    #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+    fastcgi_param  SCRIPT_FILENAME    \$request_filename;
+    #fastcgi_param PHP_ADMIN_VALUE open_basedir=\$document_root/:/usr/local/lib/php/:/tmp/;
+
+# might shave 200+ ms off PHP requests
+# which don't pass on a content length header
+# slightly faster page response time at the
+# expense of throughput / scalability
+#sendfile on;
+#tcp_nopush off;
+#keepalive_requests 0;
+
+fastcgi_connect_timeout 60;
+fastcgi_send_timeout 180;
+fastcgi_read_timeout 180;
+fastcgi_buffer_size 512k;
+fastcgi_buffers 512 16k;
+fastcgi_busy_buffers_size 1m;
+fastcgi_temp_file_write_size 4m;
+fastcgi_max_temp_file_size 4m;
+fastcgi_intercept_errors off;
+
+# next 3 lines when uncommented / enabled
+# allow Nginx to handle uploads which then 
+# passes back the completed upload to PHP
+#fastcgi_pass_request_body off;
+#client_body_in_file_only clean;
+#fastcgi_param  REQUEST_BODY_FILE  \$request_body_file;
+
+#new .04+ map method
+fastcgi_param HTTPS \$server_https;
+
+# comment out PATH_TRANSLATED line if /usr/local/lib/php.ini sets following:
+# cgi.fix_pathinfo=0 
+# as of centminmod v1.2.3-eva2000.01 default is set to cgi.fix_pathinfo=1
+
+fastcgi_param  PATH_INFO          \$fastcgi_path_info;
+fastcgi_param  PATH_TRANSLATED    \$document_root\$fastcgi_path_info;
+
+fastcgi_param  QUERY_STRING       \$query_string;
+fastcgi_param  REQUEST_METHOD     \$request_method;
+fastcgi_param  CONTENT_TYPE       \$content_type;
+fastcgi_param  CONTENT_LENGTH     \$content_length;
+
+fastcgi_param  SCRIPT_NAME        \$fastcgi_script_name;
+fastcgi_param  REQUEST_URI        \$request_uri;
+fastcgi_param  DOCUMENT_URI       \$document_uri;
+fastcgi_param  DOCUMENT_ROOT      \$document_root;
+fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
+fastcgi_param  REQUEST_SCHEME     \$scheme;
+fastcgi_param  HTTPS              \$https if_not_empty;
+fastcgi_param  HTTP_PROXY         "";
+
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
+
+fastcgi_param  REMOTE_ADDR        \$remote_addr;
+fastcgi_param  REMOTE_PORT        \$remote_port;
+fastcgi_param  SERVER_ADDR        \$server_addr;
+fastcgi_param  SERVER_PORT        \$server_port;
+fastcgi_param  SERVER_NAME        \$server_name;
+
+# Set php-fpm geoip variables
+fastcgi_param GEOIP_COUNTRY_CODE \$geoip_country_code;
+fastcgi_param GEOIP_COUNTRY_CODE3 \$geoip_country_code3;
+fastcgi_param GEOIP_COUNTRY_NAME \$geoip_country_name;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE \$geoip_city_country_code;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE3 \$geoip_city_country_code3;
+fastcgi_param GEOIP_CITY_COUNTRY_NAME \$geoip_city_country_name;
+fastcgi_param GEOIP_REGION \$geoip_region;
+fastcgi_param GEOIP_CITY \$geoip_city;
+fastcgi_param GEOIP_POSTAL_CODE \$geoip_postal_code;
+fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;
+fastcgi_param GEOIP_LATITUDE \$geoip_latitude;
+fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;
+
+# PHP only, required if PHP was built with --enable-force-cgi-redirect
+fastcgi_param  REDIRECT_STATUS    200;
+
+                   }
+HFF
+
+cat > "/usr/local/nginx/conf/php-rediscache-shortttl.conf"<<HFI
+location ~ [^/]\.php(/|\$) {
+  include /usr/local/nginx/conf/503include-only.conf;
+    fastcgi_split_path_info ^(.+?\.php)(/.*)\$;
+    if (!-f \$document_root\$fastcgi_script_name) {
+        return 404;
+    }
+
+    set \$key "nginx-cache:\$scheme\$request_method\$host\$request_uri";
+    srcache_fetch_skip \$skip_cache;
+    srcache_store_skip \$skip_cache;
+    srcache_response_cache_control off;
+    set_escape_uri \$escaped_key \$key;
+    srcache_fetch GET /redis-fetch \$key;
+    srcache_store PUT /redis-store-shortttl key=\$escaped_key;
+    more_set_headers 'X-Cache \$srcache_fetch_status';
+    more_set_headers 'X-Cache-2 \$srcache_store_status';
+
+    fastcgi_pass   127.0.0.1:9000;
+    #fastcgi_pass   unix:/tmp/php5-fpm.sock;
+    fastcgi_index  index.php;
+    #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
+    fastcgi_param  SCRIPT_FILENAME    \$request_filename;
+    #fastcgi_param PHP_ADMIN_VALUE open_basedir=\$document_root/:/usr/local/lib/php/:/tmp/;
+
+# might shave 200+ ms off PHP requests
+# which don't pass on a content length header
+# slightly faster page response time at the
+# expense of throughput / scalability
+#sendfile on;
+#tcp_nopush off;
+#keepalive_requests 0;
+
+fastcgi_connect_timeout 60;
+fastcgi_send_timeout 180;
+fastcgi_read_timeout 180;
+fastcgi_buffer_size 512k;
+fastcgi_buffers 512 16k;
+fastcgi_busy_buffers_size 1m;
+fastcgi_temp_file_write_size 4m;
+fastcgi_max_temp_file_size 4m;
+fastcgi_intercept_errors off;
+
+# next 3 lines when uncommented / enabled
+# allow Nginx to handle uploads which then 
+# passes back the completed upload to PHP
+#fastcgi_pass_request_body off;
+#client_body_in_file_only clean;
+#fastcgi_param  REQUEST_BODY_FILE  \$request_body_file;
+
+#new .04+ map method
+fastcgi_param HTTPS \$server_https;
+
+# comment out PATH_TRANSLATED line if /usr/local/lib/php.ini sets following:
+# cgi.fix_pathinfo=0 
+# as of centminmod v1.2.3-eva2000.01 default is set to cgi.fix_pathinfo=1
+
+fastcgi_param  PATH_INFO          \$fastcgi_path_info;
+fastcgi_param  PATH_TRANSLATED    \$document_root\$fastcgi_path_info;
+
+fastcgi_param  QUERY_STRING       \$query_string;
+fastcgi_param  REQUEST_METHOD     \$request_method;
+fastcgi_param  CONTENT_TYPE       \$content_type;
+fastcgi_param  CONTENT_LENGTH     \$content_length;
+
+fastcgi_param  SCRIPT_NAME        \$fastcgi_script_name;
+fastcgi_param  REQUEST_URI        \$request_uri;
+fastcgi_param  DOCUMENT_URI       \$document_uri;
+fastcgi_param  DOCUMENT_ROOT      \$document_root;
+fastcgi_param  SERVER_PROTOCOL    \$server_protocol;
+fastcgi_param  REQUEST_SCHEME     \$scheme;
+fastcgi_param  HTTPS              \$https if_not_empty;
+fastcgi_param  HTTP_PROXY         "";
+
+fastcgi_param  GATEWAY_INTERFACE  CGI/1.1;
+fastcgi_param  SERVER_SOFTWARE    nginx/\$nginx_version;
+
+fastcgi_param  REMOTE_ADDR        \$remote_addr;
+fastcgi_param  REMOTE_PORT        \$remote_port;
+fastcgi_param  SERVER_ADDR        \$server_addr;
+fastcgi_param  SERVER_PORT        \$server_port;
+fastcgi_param  SERVER_NAME        \$server_name;
+
+# Set php-fpm geoip variables
+fastcgi_param GEOIP_COUNTRY_CODE \$geoip_country_code;
+fastcgi_param GEOIP_COUNTRY_CODE3 \$geoip_country_code3;
+fastcgi_param GEOIP_COUNTRY_NAME \$geoip_country_name;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE \$geoip_city_country_code;
+fastcgi_param GEOIP_CITY_COUNTRY_CODE3 \$geoip_city_country_code3;
+fastcgi_param GEOIP_CITY_COUNTRY_NAME \$geoip_city_country_name;
+fastcgi_param GEOIP_REGION \$geoip_region;
+fastcgi_param GEOIP_CITY \$geoip_city;
+fastcgi_param GEOIP_POSTAL_CODE \$geoip_postal_code;
+fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;
+fastcgi_param GEOIP_LATITUDE \$geoip_latitude;
+fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;
+
+# PHP only, required if PHP was built with --enable-force-cgi-redirect
+fastcgi_param  REDIRECT_STATUS    200;
+
+                   }
+HFI
+
+################################################################################
 # Setting up Nginx mapping
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
   sslvhost
 fi
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
 
   if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]; then
       # check /svr-setup/openssl-1.0.2f/crypto/chacha20poly1305/chacha20.c exists
       OPEENSSL_CFPATCHED='y'
+  elif [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]; then
+      # for openssl 1.1.0 native chacha20 support
+      OPEENSSL_CFPATCHED='y'
   fi
-  
+
 if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
-  CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
+  if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  elif [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]]; then
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  else
+    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+  fi
 else
   CHACHACIPHERS=""
 fi
@@ -325,12 +841,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -338,50 +855,72 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
-  # prevent access to ./directories and files
-  location ~ (?:^|/)\. {
-   deny all;
-  }
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
-
-  location / {
+  location /$wpsubdir_value {
+  include /usr/local/nginx/conf/503include-only.conf;
+  $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
   #autoindex  on;
 
   # for wordpress super cache plugin
-  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
+
+  # for wp cache enabler plugin
+  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;  
+
+  # Nginx level redis Wordpress
+  # https://community.centminmod.com/posts/18828/
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
 
   }
 
-location ~* /(wp-login\.php) {
+location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-location ~* /(xmlrpc\.php) {
+location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
+  $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/php-rediscache.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -405,7 +944,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # }
 
 server {
-  listen 443 $LISTENOPT;
+  listen ${DEDI_IP}443 $LISTENOPT;
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
@@ -413,15 +952,20 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
-  ssl_ciphers ${CHACHACIPHERS}ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA:!DES-CBC3-SHA;
+  ssl_ciphers ${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
+
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
   #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
-  #add_header  X-Content-Type-Options "nosniff";
-  #add_header X-Frame-Options DENY;
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
   $COMP_HEADER;
-  ssl_buffer_size 1400;
+  ssl_buffer_size 1369;
   ssl_session_tickets on;
   
   # enable ocsp stapling
@@ -436,50 +980,72 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
-  # prevent access to ./directories and files
-  location ~ (?:^|/)\. {
-   deny all;
-  }
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
-include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;  
-
-  location / {
+  location /$wpsubdir_value {
+  include /usr/local/nginx/conf/503include-only.conf;
+  $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
   #autoindex  on;
 
   # for wordpress super cache plugin
-  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
+
+  # for wp cache enabler plugin
+  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;  
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
+
+  # Nginx level redis Wordpress
+  # https://community.centminmod.com/posts/18828/
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
 
   }
 
-location ~* /(wp-login\.php) {
+location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-location ~* /(xmlrpc\.php) {
+location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
+  $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/php-rediscache.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -497,12 +1063,13 @@ cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 #server {
-#            listen   80;
+#            listen   ${DEDI_IP}80;
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }
 
 server {
+  $DEDI_LISTEN
   server_name $vhostname www.$vhostname;
 
 # ngx_pagespeed & ngx_pagespeed handler
@@ -510,45 +1077,72 @@ server {
 #include /usr/local/nginx/conf/pagespeedhandler.conf;
 #include /usr/local/nginx/conf/pagespeedstatslog.conf;
 
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
   # limit_conn limit_per_ip 16;
   # ssi  on;
 
-  access_log /home/nginx/domains/$vhostname/log/access.log combined buffer=256k flush=60m;
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=60m;
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
   root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
 
-  include /usr/local/nginx/conf/wpsupercache_${vhostname}.conf;    
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf;
+  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;  
 
-  location / {
+  location /$wpsubdir_value {
+  include /usr/local/nginx/conf/503include-only.conf;
+  $SUBDIR_INCLUDE
 
   # Enables directory listings when index file not found
   #autoindex  on;
 
   # for wordpress super cache plugin
-  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ /index.php?q=\$uri&\$args;
+  try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
+
+  # for wp cache enabler plugin
+  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;   
 
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;  
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
+
+  # Nginx level redis Wordpress
+  # https://community.centminmod.com/posts/18828/
+  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
 
   }
 
-location ~* /(wp-login\.php) {
+location ~* ${WPSUBDIR}/(wp-login\.php) {
     limit_req zone=xwplogin burst=1 nodelay;
     #limit_conn xwpconlimit 30;
     auth_basic "Private";
-    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
+    auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;  
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-location ~* /(xmlrpc\.php) {
+location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
-  include /usr/local/nginx/conf/wpsecure_${vhostname}.conf;
+  $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  # https://community.centminmod.com/posts/18828/
+  #include /usr/local/nginx/conf/php-rediscache.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -558,194 +1152,474 @@ END
 
 fi
 
-cat > "/usr/local/nginx/conf/wpsecure_${vhostname}.conf" <<EEF
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf" <<EEF
 # prevent .zip, .gz, .tar, .bzip2 files from being accessed by default
 # impossible for centmin mod to know which wp backup plugins they installed
 # which may save backups to directories in wp-content/
-# such plugins may deploy .htaccess protection but that isn't supported installed
+# such plugins may deploy .htaccess protection but that isn't supported in
 # nginx, so blocking access to these extensions is a workaround to cover all bases
-location ~* ^/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
+
+# prepare for letsencrypt 
+# https://community.centminmod.com/posts/17774/
+location ~ /.well-known {
+  location ~ /.well-known/acme-challenge/(.*) {
+    more_set_headers    "Content-Type: text/plain";
+    }
+}
+
+# allow AJAX requests in themes and plugins
+location ~ ^${WPSUBDIR}/wp-admin/admin-ajax.php$ { allow all; include /usr/local/nginx/conf/php.conf; }
+
+location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
+
+location ~ ^${WPSUBDIR}/wp-content/uploads/sucuri { deny all; }
+
+location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
+
+# Block nginx-help log from public viewing
+location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
+
+location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
 
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
-location ~ ^/wp-content/updraft { deny all; }
+location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ { deny all; }
 
-location ~* /(?:uploads|files)/.*\.php\$ {
-deny all;
+# Whitelist Exception for https://wordpress.org/plugins/onesignal-free-web-push-notifications//
+location ~ ^${WPSUBDIR}/wp-content/plugins/onesignal-free-web-push-notifications/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/sparkpost/
+location ~ ^${WPSUBDIR}/wp-content/plugins/sparkpost/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/sendgrid-email-delivery-simplified/
+location ~ ^${WPSUBDIR}/wp-content/plugins/sendgrid-email-delivery-simplified/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/mailgun/
+location ~ ^${WPSUBDIR}/wp-content/plugins/mailgun/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/mailjet-for-wordpress/
+location ~ ^${WPSUBDIR}/wp-content/plugins/mailjet-for-wordpress/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/easy-wp-smtp/
+location ~ ^${WPSUBDIR}/wp-content/plugins/easy-wp-smtp/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/postman-smtp/
+location ~ ^${WPSUBDIR}/wp-content/plugins/postman-smtp/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/sendpress/
+location ~ ^${WPSUBDIR}/wp-content/plugins/sendpress/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for https://wordpress.org/plugins/wp-mail-bank/
+location ~ ^${WPSUBDIR}/wp-content/plugins/wp-mail-bank/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/theme-check/
-location ~ ^/wp-content/plugins/theme-check/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/theme-check/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/woocommerce/
-location ~ ^/wp-content/plugins/woocommerce/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/woocommerce/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/woocommerce-csvimport/
-location ~ ^/wp-content/plugins/woocommerce-csvimport/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/woocommerce-csvimport/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/advanced-custom-fields/
-location ~ ^/wp-content/plugins/advanced-custom-fields/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/advanced-custom-fields/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/contact-form-7/
-location ~ ^/wp-content/plugins/contact-form-7/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/contact-form-7/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/duplicator/
-location ~ ^/wp-content/plugins/duplicator/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/duplicator/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/jetpack/
-location ~ ^/wp-content/plugins/jetpack/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/jetpack/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/nextgen-gallery/
-location ~ ^/wp-content/plugins/nextgen-gallery/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/nextgen-gallery/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/tinymce-advanced/
-location ~ ^/wp-content/plugins/tinymce-advanced/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/tinymce-advanced/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/updraftplus/
-location ~ ^/wp-content/plugins/updraftplus/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/updraftplus/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wordpress-importer/
-location ~ ^/wp-content/plugins/wordpress-importer/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wordpress-importer/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wordpress-seo/
-location ~ ^/wp-content/plugins/wordpress-seo/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wordpress-seo/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wpclef/
-location ~ ^/wp-content/plugins/wpclef/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wpclef/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/mailchimp-for-wp/
-location ~ ^/wp-content/plugins/mailchimp-for-wp/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/mailchimp-for-wp/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wp-optimize/
-location ~ ^/wp-content/plugins/wp-optimize/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wp-optimize/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/si-contact-form/
-location ~ ^/wp-content/plugins/si-contact-form/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/si-contact-form/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/akismet/
-location ~ ^/wp-content/plugins/akismet/ {
-  include /usr/local/nginx/conf/php.conf;
+location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/ {
+  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(form|akismet)\.(css|js)\$ { allow all; }
+  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(.+)\.(png|gif)\$ { allow all; }
+  location ~* ${WPSUBDIR}/wp-content/plugins/akismet/akismet/.*\.php\$ {
+    include /usr/local/nginx/conf/php.conf;
+    # below include file needs to be manually created at that path and to be uncommented
+    # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+    # allows you to add commonly shared settings to all wp plugin location matches which
+    # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+    #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+    allow 127.0.0.1;
+    deny all;
+  }
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/bbpress/
-location ~ ^/wp-content/plugins/bbpress/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/bbpress/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/buddypress/
-location ~ ^/wp-content/plugins/buddypress/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/buddypress/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/all-in-one-seo-pack/
-location ~ ^/wp-content/plugins/all-in-one-seo-pack/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/all-in-one-seo-pack/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/google-analytics-for-wordpress/
-location ~ ^/wp-content/plugins/google-analytics-for-wordpress/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/google-analytics-for-wordpress/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/regenerate-thumbnails/
-location ~ ^/wp-content/plugins/regenerate-thumbnails/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/regenerate-thumbnails/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wp-pagenavi/
-location ~ ^/wp-content/plugins/wp-pagenavi/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wp-pagenavi/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wordfence/
-location ~ ^/wp-content/plugins/wordfence/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wordfence/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/really-simple-captcha/
-location ~ ^/wp-content/plugins/really-simple-captcha/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/really-simple-captcha/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/wp-pagenavi/
-location ~ ^/wp-content/plugins/wp-pagenavi/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wp-pagenavi/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/ml-slider/
-location ~ ^/wp-content/plugins/ml-slider/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/ml-slider/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/black-studio-tinymce-widget/
-location ~ ^/wp-content/plugins/black-studio-tinymce-widget/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/black-studio-tinymce-widget/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/disable-comments/
-location ~ ^/wp-content/plugins/disable-comments/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/disable-comments/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/better-wp-security/
-location ~ ^/wp-content/plugins/better-wp-security/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/better-wp-security/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for http://wlmsocial.com/
-location ~ ^/wp-content/plugins/wlm-social/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/wlm-social/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for mediagrid timthumb
-location ~ ^/wp-content/plugins/media-grid/classes/ {
+location ~ ^${WPSUBDIR}/wp-content/plugins/media-grid/classes/ {
   include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Block PHP files in content directory.
-location ~* /wp-content/.*\.php\$ {
+location ~* ${WPSUBDIR}/wp-content/.*\.php\$ {
   deny all;
 }
 
 # Block PHP files in includes directory.
-location ~* /wp-includes/.*\.php\$ {
+location ~* ${WPSUBDIR}/wp-includes/.*\.php\$ {
   deny all;
 }
 
 # Block PHP files in uploads, content, and includes directory.
-location ~* /(?:uploads|files|wp-content|wp-includes)/.*\.php\$ {
+location ~* ${WPSUBDIR}/(?:uploads|files|wp-content|wp-includes)/.*\.php\$ {
   deny all;
 }
 
@@ -765,40 +1639,161 @@ location ~* (w00tw00t) {
 return 444;
 }
 
-location ~* /(\.|wp-config\.php|wp-config\.txt|changelog\.txt|readme\.txt|readme\.html|license\.txt) { deny all; }
+location ~* ${WPSUBDIR}/(\.|wp-config\.php|wp-config\.txt|changelog\.txt|readme\.txt|readme\.html|license\.txt) { deny all; }
 EEF
 
-cat > "/usr/local/nginx/conf/wpsupercache_${vhostname}.conf" <<EFF
+# WP super cache
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf" <<EFF
 set \$cache_uri \$request_uri;
 
 if (\$request_method = POST) { set \$cache_uri 'null cache'; }
 
 if (\$query_string != "") { set \$cache_uri 'null cache'; }
 
-if (\$request_uri ~* "/(\?add-to-cart=|cart|my-account|checkout|addons|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
+if (\$request_uri ~* "/(\?add-to-cart=|cart/|my-account/|checkout/|shop/checkout/|store/checkout/|customer-dashboard/|addons/|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
 
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in") { set \$cache_uri 'null cache'; }
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle") { set \$cache_uri 'null cache'; }
 EFF
+
+# for nginx level redis cache
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" <<XFF
+# Block nginx-help log from public viewing
+location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
+
+set \$skip_cache 0;
+
+# exclude mobile devices from redis caching
+if (\$redis_device = mobile) { set \$skip_cache 1; }
+
+# POST requests and urls with a query string should always go to PHP
+if (\$request_method = POST) {
+  set \$skip_cache 1;
+}
+
+if (\$query_string != "") {
+  set \$skip_cache 1;
+}
+
+# Don't cache uris containing the following segments
+if (\$request_uri ~* "\?add-to-cart=|/cart/|/my-account/|/checkout/|/shop/checkout/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") {
+  set \$skip_cache 1;
+}
+
+# Don't use the cache for logged in users or recent commenters
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle") {
+  set \$skip_cache 1;
+}
+
+location /redis-fetch {
+  internal  ;
+  set  \$redis_key \$args;
+  redis_pass  redisbackend;
+  redis_connect_timeout 60000;
+  redis_read_timeout 60000;
+  redis_send_timeout 60000;
+}
+
+location /redis-store {
+  internal  ;
+  set_unescape_uri \$key \$arg_key ;
+  redis2_query set \$key \$echo_request_body;
+  redis2_query expire \$key 6h;
+  redis2_pass  redisbackend;
+  redis2_connect_timeout 60s;
+  redis2_read_timeout 60s;
+  redis2_send_timeout 60s;
+}
+
+location /redis-store-shortttl {
+  internal  ;
+  set_unescape_uri \$key \$arg_key ;
+  redis2_query set \$key \$echo_request_body;
+  redis2_query expire \$key 3600;
+  redis2_pass  redisbackend;
+  redis2_connect_timeout 60s;
+  redis2_read_timeout 60s;
+  redis2_send_timeout 60s;
+}
+XFF
+
+cat > "/usr/local/nginx/conf/redisupstream.conf" <<GGG
+map \$http_user_agent \$redis_device {
+    default                                     'desktop';
+    ~*(iPad|iPhone|Android|IEMobile|Blackberry) 'mobile';
+    "~*Firefox.*Mobile"                         'mobile';
+    "~*ipod.*mobile"                            'mobile';
+    "~*Opera\ Mini"                             'mobile';
+    "~*Opera\ Mobile"                           'mobile';
+    "~*Mobile"                                  'mobile';
+    "~*Tablet"                                  'mobile';
+    "~*Kindle"                                  'mobile';
+    "~*Windows\ Phone"                          'mobile';
+}
+
+upstream redisbackend {
+  zone upstream_redis 64k;
+  server 127.0.0.1:6379 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6380 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6381 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6382 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6383 weight=1 max_fails=3 fail_timeout=30s;
+  #server 127.0.0.1:6384 weight=1 max_fails=3 fail_timeout=30s;
+
+  #server 127.0.0.1:6380 backup;
+  keepalive 4096;
+}
+GGG
+
+REDISUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/redisupstream.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$REDISUPSTREAM_INCLUDECHECK" ]]; then
+    echo
+    echo "include file /usr/local/nginx/conf/redisupstream.conf add to nginx.conf"
+      sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/redisupstream.conf;|g' /usr/local/nginx/conf/nginx.conf
+  fi
 
 ########### WP Super Cache Start ##############################
 # only proceed in creating vhost if VHOSTNAME directory exist
 if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   cecho "------------------------------------------------------------" $boldgreen
-  cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
+  if [[ "$wpscache" = [nN] ]]; then
+    cacheenabler=y
+    cecho "Setup Wordpress + Cache Enabler for $vhostname" $boldyellow
+  elif [[ "$wpscache" = [yY] ]]; then
+    cecho "Setup Wordpress + Super Cache for $vhostname" $boldyellow
+  elif [[ "$wpscache" = 'redis' ]]; then
+    cecho "Setup Wordpress + Redis Nginx Level Cache for $vhostname" $boldyellow
+    installredisserver
+  fi
   cecho "------------------------------------------------------------" $boldgreen
 
-cd /home/nginx/domains/${vhostname}/public
+  if [[ "$wpscache" = [nN] || "$wpscache" = 'redis' ]]; then
+    echo
+    echo "Using full static page caching may cause problems for mobile & tablet device"
+    echo "visitors depending on your WP themes used so you may want to exclude those"
+    echo
+    read -ep "Do you want to exclude mobile/tablet devices from Cache Enabler caching ? [y/n]: " exclude_mobilecache
+    if [[ "$exclude_mobilecache" = [nN] ]]; then
+      if [ -f "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf" ]; then
+        sed -i "s|^if (\$cmwpcache_device = mobile) { set \$cache_uri 'nullcache'; }|#if (\$cmwpcache_device = mobile) { set \$cache_uri 'nullcache'; }|" "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf"
+      fi
+      if [ -f "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" ]; then
+        sed -i "s|^if (\$redis_device = mobile) { set \$skip_cache 1; }|#if (\$redis_device = mobile) { set \$skip_cache 1; }|" "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf"
+      fi
+    fi
+  fi
+
+cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
  
-wp core download --allow-root
+\wp core download --allow-root
  
-wp core config --dbname=$DB --dbuser=$DBUSER --dbpass=$DBPASS --allow-root
+\wp core config --dbname=$DB --dbuser=$DBUSER --dbpass=$DBPASS --allow-root
  
 NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
 sed -i "/define('DB_COLLATE', '');/ a\
-/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', true);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
+/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
 " wp-config.php
 
 if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
@@ -806,109 +1801,275 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     # making sure they do not run at very same time during cron scheduling
     DELAY=$(echo ${RANDOM:0:3})
     crontab -l > cronjoblist
-    echo "*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    mkdir -p /home/nginx/domains/${vhostname}/cronjobs
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
+    # only insert cronjob if one doesn't already exist
+    if [[ -z $(grep "${vhostname}\/wp-cron.php" cronjoblist) ]]; then
+      echo "#*/15 * * * * sleep ${DELAY}s ; wget -O - -q -t 1 http://${vhostname}/wp-cron.php?doing_wp_cron=1 > /dev/null 2>&1" >> cronjoblist
+    fi
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cron.txt
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
 fi
 
-wp core install --url=http://${vhostname} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
+\wp core install --url=http://${vhostname}${WPSUBDIR} --title=${vhostname} --admin_email=${WPADMINEMAIL} --admin_password=${WPADMINPASS} --admin_name=${WPADMINUSER} --allow-root
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
 WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
-# wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
-wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+# \wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+\wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
+
+if [[ "$setdisplayname" = [yY] ]]; then
+  \wp user update ${WUID} --display_name=${WPADMIN_DISPLAYNAME} --allow-root
+fi
 
 # add index on autoload
-wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx (autoload)" --allow-root
+\wp db query "ALTER TABLE ${NEWPREFIX}_options ADD INDEX autoload_idx (autoload)" --allow-root
 
-cecho "------------------------------------------------------------" $boldgreen
-wp theme install responsive --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
+# change permalinks out of the box
+\wp rewrite structure '/%post_id%/%postname%/' --allow-root
+
+if [[ "$WPCLI_SUPERCACHEPLUGIN" = [yY] && ! -f /root/.wp-cli/commands/super-cache/cli.php ]]; then
+  # https://github.com/wp-cli/wp-super-cache-cli.git
+  mkdir -p /root/.wp-cli/commands
+  git clone https://github.com/wp-cli/wp-super-cache-cli.git /root/.wp-cli/commands/super-cache
+  echo "require:" > /root/.wp-cli/config.yml
+  echo "  - commands/super-cache/cli.php" >> /root/.wp-cli/config.yml
+elif [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then
+  cd /root/.wp-cli/commands/super-cache
+  git stash
+  git pull
+  cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
+fi
+
+if [[ "$responsivetheme" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp theme install responsive --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
  
 chown nginx:nginx /home/nginx/domains/${vhostname}/public
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
 
-cd /home/nginx/domains/${vhostname}/public
+cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 
 chmod 0770 wp-content
 chmod 0400 readme.html
 rm -rf readme.html
 
 # installed + activated by default
+# wp super cache
+if [[ "$wpscache" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wp-super-cache --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
+
+# wp cache enabler
+if [[ "$wpscache" = [nN] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install cache-enabler --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen 
+  \wp plugin install optimus --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
+
+# redis nginx cache
+if [[ "$wpscache" = 'redis' ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install nginx-helper --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  touch "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
+  chmod 0660 "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
+  chown nginx:nginx "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
+fi
+
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-super-cache --activate --allow-root
+\wp plugin install sucuri-scanner --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-super-cache-clear-cache-menu --activate --allow-root
+\wp plugin install disable-xml-rpc --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-widget-cache --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install autoptimize --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install rocket-lazy-load --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-security-scan --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install sucuri-scanner --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install disable-xml-rpc --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install limit-login-attempts --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-updates-notifier --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install no-longer-in-directory --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-# wp plugin install google-sitemap-generator --activate --allow-root
-# cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wp-optimize --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-# wp plugin install wp-smushit --activate --allow-root
-# cecho "------------------------------------------------------------" $boldgreen
-wp plugin install tpc-memory-usage --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install gtmetrix-for-wordpress --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install p3-profiler --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install wordpress-seo --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-# wp plugin install updraftplus --activate --allow-root
-# cecho "------------------------------------------------------------" $boldgreen
-wp plugin install google-analytics-for-wordpress --activate --allow-root
+\wp plugin install cdn-enabler --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
-# installed but disabled by default
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install query-monitor --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install go-newrelic --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install db-cache-reloaded-fix --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install google-authenticator --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install addthis-smart-layers --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-wp plugin install search-regex --allow-root
-cecho "------------------------------------------------------------" $boldgreen
+if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  \wp plugin install autoptimize --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install rocket-lazy-load --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wp-security-scan --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install limit-login-attempts --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wp-updates-notifier --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install no-longer-in-directory --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  # \wp plugin install google-sitemap-generator --activate --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wp-optimize --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  # \wp plugin install wp-smushit --activate --allow-root
+  # cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install tpc-memory-usage --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install gtmetrix-for-wordpress --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install p3-profiler --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wordpress-seo --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install updraftplus --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install google-analytics-for-wordpress --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install heartbeat-control --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  
+  # installed but disabled by default
+  # cecho "------------------------------------------------------------" $boldgreen
+  # \wp plugin install nginx-helper --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install query-monitor --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install go-newrelic --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install db-cache-reloaded-fix --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install google-authenticator --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install addthis-smart-layers --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install search-regex --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install disable-emojis --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install wp-user-avatar --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install lazy-load-for-videos --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  #\wp plugin install disable-xml-rpc-pingback --allow-root
+  #cecho "------------------------------------------------------------" $boldgreen
+fi # WPPLUGINS_ALL=y
+
+# remove hello plugin
+\wp plugin uninstall hello --allow-root
+
+# allows user to add custom wp-cli commands after initiall install to
+# further customise their installation. you create a custom file at
+# /etc/centminmod/customwp_domain.com.inc where domain.com is the 
+# intended centmin.sh menu option 22 vhost site domain for your wp
+# installation. Then in that file add your wp-cli commands to the file
+# wrapped in a shell function named mywpcmds() { yourcode }. i.e. for
+# wp language install https://community.centminmod.com/posts/26045/
+# the below check will check for /etc/centminmod/customwp_domain.com.inc
+# file and then source include it into this routine and run the shell
+# function named mywpcmds which contains your custom wp-cli cmds that will
+# trigger and run
+if [ -f "${CONFIGSCANBASE}/customwp_${vhostname}.inc" ]; then
+    # default is at /etc/centminmod/customwp_${vhostname}.inc
+    source "${CONFIGSCANBASE}/customwp_${vhostname}.inc"
+    mywpcmds
+fi
+
 # update all plugins to make sure they are latest available
-wp plugin update --all --allow-root
+\wp plugin update --all --allow-root
 echo
-wp plugin status --allow-root
+\wp plugin status --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 
-chown -R nginx:nginx /home/nginx/domains/${vhostname}/public/wp-content/plugins/
+if [[ -f /root/.wp-cli/commands/super-cache/cli.php && "$cacheenabler" != [yY] ]]; then
+  \wp super-cache enable --allow-root
+fi
+
+chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/
+
+# sucuri-scanner change SUCURI_DATA_STORAGE path above web root
+# /home/nginx/domains/${vhostname}/sucuri_data_storage
+if [ -d "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/uploads/sucuri" ]; then
+  sucuri_datapath=$(echo "/home/nginx/domains/${vhostname}/sucuri_data_storage" | sed -e 's|/|\\\/|g')
+  rm -rf "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  mkdir -p "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  chown nginx:nginx "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  sed -i "s|\"}|\",\"sucuriscan_datastore_path\":\"$sucuri_datapath\"}|" "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/uploads/sucuri/sucuri-settings.php"
+  sed -i 's|/|\\/|g' "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/uploads/sucuri/sucuri-settings.php"
+  ls -lah "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  \cp -Rpf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/uploads/sucuri/* "/home/nginx/domains/${vhostname}/sucuri_data_storage"
+  cat "/home/nginx/domains/${vhostname}/sucuri_data_storage/sucuri-settings.php"
+fi
 
 # write permissions for log
-chmod 0660 wp-content/plugins/tpc-memory-usage/logs/tpcmem.log
+if [ -f wp-content/plugins/tpc-memory-usage/logs/tpcmem.log ]; then
+  chmod 0660 wp-content/plugins/tpc-memory-usage/logs/tpcmem.log
+fi
 
 # fix tcpmem.css incorrect reference to images
-sed -i 's|(images\/|(..\/images\/|g' wp-content/plugins/tpc-memory-usage/css/tpcmem.css
+if [ -f wp-content/plugins/tpc-memory-usage/css/tpcmem.css ]; then
+  sed -i 's|(images\/|(..\/images\/|g' wp-content/plugins/tpc-memory-usage/css/tpcmem.css
+fi
 
-\cp -af wp-content/plugins/wp-super-cache/wp-cache-config-sample.php wp-content/wp-cache-config.php
-\cp -af wp-content/plugins/wp-super-cache/advanced-cache.php wp-content/advanced-cache.php
+if [[ "$wpscache" = [nN] ]]; then
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+    fi
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    fi
+fi
+
+if [[ "$wpscache" = 'redis' ]]; then
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|#include /usr/local/nginx/conf/php-wpsc.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#include /usr/local/nginx/conf/php-rediscache.conf;|include /usr/local/nginx/conf/php-rediscache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+    fi
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+        sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|#include /usr/local/nginx/conf/php-wpsc.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#include /usr/local/nginx/conf/php-rediscache.conf;|include /usr/local/nginx/conf/php-rediscache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+    fi
+fi
+
+if [[ "$wpscache" = [nN] ]]; then
+  # cache enabler expiry cronjob setup
+    DELAY=$(echo ${RANDOM:0:3})
+    crontab -l > cronjoblist
+    mkdir -p /home/nginx/domains/${vhostname}/cronjobs
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cacheenabler.txt
+    # only insert cronjob if one doesn't already exist
+    if [[ -z $(grep "$vhostname cacheenabler cron" cronjoblist) ]]; then
+      echo "16 23 * * * echo "$vhostname cacheenabler cron"; sleep ${DELAY}s ; rm -rf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/cache/cache-enabler/* > /dev/null 2>&1" >> cronjoblist
+    fi
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cacheenabler.txt
+    crontab cronjoblist
+    rm -rf cronjoblist
+    crontab -l
+fi
+
+if [[ "$wpscache" = [nN] ]]; then
+  if [ -f wp-content/plugins/wp-super-cache/wp-cache-config-sample.php ]; then
+    \cp -af wp-content/plugins/wp-super-cache/wp-cache-config-sample.php wp-content/wp-cache-config.php
+  fi
+  if [ -f wp-content/plugins/wp-super-cache/advanced-cache.php ]; then
+    \cp -af wp-content/plugins/wp-super-cache/advanced-cache.php wp-content/advanced-cache.php
+  fi
+fi
 mkdir -p wp-content/cache/
 mkdir -p wp-content/cache/supercache/
 chown -R nginx:nginx wp-content/
@@ -928,13 +2089,15 @@ cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.conf
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
 rm -rf /home/nginx/domains/${vhostname}
-rm -rf /usr/local/nginx/conf/wpsecure_${vhostname}.conf
-rm -rf /usr/local/nginx/conf/wpsupercache_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf
 rm -rf /root/tools/wp_updater_${vhostname}.sh
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
@@ -952,12 +2115,14 @@ chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
 
 cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
 #!/bin/bash
-PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin
+PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin:/bin
 EMAIL=$WPADMINEMAIL
+EMAILFROM=$WPADMINEMAIL
+DT=\$(date +"%d%m%y-%H%M%S")
 
 {
-cd /home/nginx/domains/${vhostname}/public
-echo "/home/nginx/domains/${vhostname}/public"
+cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
+echo "/home/nginx/domains/${vhostname}/public${WPSUBDIR}"
 #/usr/bin/wp cli update --allow-root
 echo "update wp-cli"
 rm -rf /usr/bin/wp
@@ -969,8 +2134,13 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core check-update --allow-root
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
-chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
-} 2>&1 | dos2unix | mail -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+#/usr/bin/wp core update --allow-root
+chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
+pure-pw userdel $ftpuser >/dev/null 2>&1
+/usr/bin/nprestart
+} 2>&1 | tee /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
+cat -v /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log | /usr/bin/tr -cd '\11\12\15\40-\176' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAILFROM -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
+#rm -rf /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
 ENDA
 
 chmod 0700 /root/tools/wp_updater_${vhostname}.sh
@@ -981,7 +2151,10 @@ if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
     # do not run at very same time during cron scheduling
     DELAY=$(echo ${RANDOM:0:3})
     crontab -l > cronjoblist
-    echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh 2>/dev/null" >> cronjoblist
+    mkdir -p /home/nginx/domains/${vhostname}/cronjobs
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-updater.txt
+    echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh >/dev/null 2>&1" >> cronjoblist
+    cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-updater.txt
     crontab cronjoblist
     rm -rf cronjoblist
     crontab -l
@@ -989,13 +2162,64 @@ fi
 
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
+if [ -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]; then
+  "${SCRIPT_DIR}/tools/autoprotect.sh"
+fi
+
 cmservice nginx reload
+
+cmservice php-fpm restart
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart
 fi
 
 if [ -f /tmp/setupwp.log ]; then
   rm -rf /tmp/setupwp.log
+fi
+
+if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
+  if [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'le' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptest
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'led' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wptestd
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelive' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplive
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  elif [ -f "${SCRIPT_DIR}/addons/acmetool.sh" ] && [[ "$vhostssl" = 'lelived' ]]; then
+    echo
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo "ok: ${SCRIPT_DIR}/addons/acmetool.sh"
+    chmod +x "${SCRIPT_DIR}/addons/acmetool.sh"
+    echo ""${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived"
+    "${SCRIPT_DIR}/addons/acmetool.sh" issue "$vhostname" wplived
+    cecho "-------------------------------------------------------------" $boldyellow
+    echo
+  fi
+fi
+
+if [[ "$wpcli_ssldefault" = '1' ]]; then
+  \wp option update home "https://${vhostname}${WPSUBDIR}"  --allow-root
+  \wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
 fi
 
 {
@@ -1012,9 +2236,11 @@ fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
 echo
-cecho "domain: http://$vhostname" $boldyellow
-cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$wpcli_ssldefault" != '1' ]]; then
+  cecho "domain: http://$vhostname" $boldyellow
+  cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+fi
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
   echo
   cecho "vhost ssl for $vhostname created successfully" $boldwhite
   echo
@@ -1024,8 +2250,8 @@ if [[ "$vhostssl" = [yY] ]]; then
   cecho "Self-signed SSL Certificate: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt" $boldyellow
   cecho "SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldyellow
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
-  # cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
-  # cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow  
+  cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
+  cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow  
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
@@ -1050,22 +2276,40 @@ cecho "Wordpress Admin User ID: ${WUID}" $boldyellow
 cecho "Wordpress Admin User: $WPADMINUSER" $boldyellow
 cecho "Wordpress Admin Pass: $WPADMINPASS" $boldyellow
 cecho "Wordpress Admin Email: $WPADMINEMAIL" $boldyellow
+if [[ "$setdisplayname" = [yY] ]]; then
+  cecho "Wordpress Admin Display Name: $WPADMIN_DISPLAYNAME" $boldyellow
+fi
 
-if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-  echo  
-  cecho "Wordpress wp-login.php password protection info:" $boldyellow
-  cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
-  cecho "wp-login.php protection Username: $HTUSER" $boldyellow
-  cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-  cecho "http://${HTUSER}:${HTPASS}@${vhostname}/wp-login.php" $boldyellow
-  echo
-  cecho "Resetting wp-login.php protection:" $boldyellow
-  cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
-  cecho "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
-  cecho "Step 2. run command:" $boldyellow
-  cecho "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" $boldyellow
-  cecho "Step 3. restart Nginx + PHP-FPM services" $boldyellow
-  cecho "     nprestart" $boldyellow
+if [[ "$disablepwdprotect" != [yY] ]]; then
+  if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+    echo  
+    cecho "Wordpress wp-login.php password protection info:" $boldyellow
+    cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+    cecho "wp-login.php protection Username: $HTUSER" $boldyellow
+    cecho "wp-login.php protection Password: $HTPASS" $boldyellow
+    if [[ "$wpcli_ssldefault" = '1' ]]; then
+      cecho "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
+    else
+      cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
+    fi
+    echo
+    cecho "Resetting wp-login.php protection:" $boldyellow
+    cecho "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+    cecho "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
+    cecho "Step 2. run command:" $boldyellow
+    cecho "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" $boldyellow
+    cecho "Step 3. restart Nginx + PHP-FPM services" $boldyellow
+    cecho "     nprestart" $boldyellow
+  fi
+elif [[ "$disablepwdprotect" = [yY] ]]; then
+    # disable wp-login.php password protection if user opts to do so
+    sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
+    sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
+    if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
+      sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
+      sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
+    fi
+    /usr/bin/nprestart
 fi
 
 echo
@@ -1074,7 +2318,7 @@ cecho "Current vhost listing at: /usr/local/nginx/conf/conf.d/" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/conf.d/ | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
 
-if [[ "$vhostssl" = [yY] ]]; then
+if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
@@ -1085,33 +2329,90 @@ fi
 echo
 cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
-cecho "1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
-2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
-3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
-   (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
-4. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
-5. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
-6. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
-7. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
-8. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
-9. WP-Optimize Menu and configure as needed
-10. Memory Usage Menu > Settings and adjust accordingly
-11. GTmetrix Menu > setup and register your GTmetrix Account and API Key
-12. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
-13. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
-14. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
-15. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
-16. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option
-17. Seo Menu (Yoast SEO) > configure accordingly
-18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
-19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
-cecho "------------------------------------------------------------" $boldgreen
+if [[ "$wpscache" = [nN] ]]; then
+  cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  2. Settings Menu > Cache Enabler set options and hit Save Changes
+  3. Settings Menu > Optimus set options and hit Save Changes
+  4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+  if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+  6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+  7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+  8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+  9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+  10. WP-Optimize Menu and configure as needed
+  11. Memory Usage Menu > Settings and adjust accordingly
+  12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+  13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+  14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+  15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+  16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+  17. Seo Menu (Yoast SEO) > configure accordingly
+  18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+  19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+  fi
+  cecho "------------------------------------------------------------" $boldgreen
+elif [[ "$wpscache" = [yY] ]]; then
+  cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
+  3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
+    (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
+  4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+  if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "
+  5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+  6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+  7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+  8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+  9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+  10. WP-Optimize Menu and configure as needed
+  11. Memory Usage Menu > Settings and adjust accordingly
+  12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+  13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+  14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+  15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+  16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+  17. Seo Menu (Yoast SEO) > configure accordingly
+  18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+  19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+  fi
+  cecho "------------------------------------------------------------" $boldgreen
+elif [[ "$wpscache" = 'redis' ]]; then
+  cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
+  2. Settings Menu > Nginx Helper Enable Purging set Caching Method to Redis Cache, & set Purging Conditions
+  3. Settings Menu > CDN Enabler and set CDN up or disable plugin
+  4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
+  if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "5. WP Security Menu > Settings > Check All except Enable Live Traffic tool and hit Update settings
+  6. Settings Menu > Updates Notifier and setup your notify email address and cronjob (save and test button to check)
+  7. Settings Mnenu > Autoptimize and check Optimize HTML, JavaScript and CSS options (show advanced settings)
+  8. Settings Menu > Limit Login Attempts and configure as desired or leave as defaults
+  9. Sucuri Security Menu and top left click Generate API key for your domain/email and configure your Settings tab
+  10. WP-Optimize Menu and configure as needed
+  11. Memory Usage Menu > Settings and adjust accordingly
+  12. GTmetrix Menu > setup and register your GTmetrix Account and API Key
+  13. go-newrelic plugin installed but not activated read https://wordpress.org/plugins/go-newrelic/installation/
+  14. Tools > P3 Plugin Profiler > Start Scan to profile all your plugins
+  15. Plugins > Query Monitor is disabled by default, enable to check MySQL query stats
+  16. Plugins > DB Cache Reloaded disabled by default unsure if works with Wordpress 4.x ?
+  17. Seo Menu (Yoast SEO) > configure accordingly
+  18. Settings > UpdraftPlus Backups > Settings set file/database backup intervals & optional backup to remote storage
+  19. Analytics > Settings > configure your Google Analytics UA Code" $boldyellow
+  fi
+  cecho "------------------------------------------------------------" $boldgreen
+fi
 } 2>&1 | tee /tmp/setupwp.log
-cat /tmp/setupwp.log | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+cat -v /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+cp -a /tmp/setupwp.log "${CENTMINLOGDIR}/setupwp-$(date +"%d%m%y-%H%M%S").log"
 rm -rf /tmp/setupwp.log
 
 echo
 cecho "-------------------------------------------------------------" $boldyellow
+cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
+cecho "$vhostname setup info log saved at: " $boldwhite
+cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+echo ""
 
 else
 

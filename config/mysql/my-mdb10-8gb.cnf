@@ -1,0 +1,169 @@
+[client]
+socket=/var/lib/mysql/mysql.sock
+
+[mysql]
+max_allowed_packet = 128M
+
+[mysqld]
+local-infile=0
+ignore-db-dir=lost+found
+character-set-server=utf8
+datadir=/var/lib/mysql
+socket=/var/lib/mysql/mysql.sock
+
+#bind-address=127.0.0.1
+# optimized my.cnf for MariaDB 5.5.x
+# by eva2000
+# vbtechsupport.com
+
+tmpdir=/home/mysqltmp
+
+innodb=ON
+#skip-federated
+#skip-pbxt
+#skip-pbxt_statistics
+#skip-archive
+#skip-name-resolve
+#old_passwords
+back_log = 512
+max_connections = 750
+key_buffer_size = 384M
+myisam_sort_buffer_size = 256M
+myisam_max_sort_file_size = 2048M
+join_buffer_size = 256K
+read_buffer_size = 256K
+sort_buffer_size = 512K
+table_definition_cache = 8192
+table_open_cache = 8192
+thread_cache_size = 256
+wait_timeout = 1800
+connect_timeout = 10
+tmp_table_size = 512M
+max_heap_table_size = 512M
+max_allowed_packet = 128M
+max_seeks_for_key = 1000
+group_concat_max_len = 1024
+max_length_for_sort_data = 1024
+net_buffer_length = 16384
+max_connect_errors = 100000
+concurrent_insert = 2
+read_rnd_buffer_size = 512K
+bulk_insert_buffer_size = 8M
+# query_cache boost for MariaDB >10.1.2+
+# https://community.centminmod.com/posts/30811/
+query_cache_limit = 1024K
+query_cache_size = 128M
+query_cache_type = 1
+query_cache_min_res_unit = 2K
+query_prealloc_size = 262144
+query_alloc_block_size = 65536
+transaction_alloc_block_size = 8192
+transaction_prealloc_size = 4096
+default-storage-engine = InnoDB
+
+log_warnings=1
+slow_query_log=0
+long_query_time=1
+slow_query_log_file=/var/lib/mysql/slowq.log
+log-error=/var/log/mysqld.log
+
+# innodb settings
+innodb_large_prefix=1
+innodb_purge_threads=1
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+innodb_open_files = 1000
+innodb_data_file_path= ibdata1:10M:autoextend
+innodb_buffer_pool_size = 1024M
+
+## https://mariadb.com/kb/en/mariadb/xtradbinnodb-server-system-variables/#innodb_buffer_pool_instances
+#innodb_buffer_pool_instances=2
+
+innodb_log_files_in_group = 2
+innodb_log_file_size = 384M
+innodb_log_buffer_size = 8M
+innodb_flush_log_at_trx_commit = 2
+innodb_thread_concurrency = 0
+innodb_lock_wait_timeout=50
+innodb_flush_method = O_DIRECT
+innodb_support_xa=1
+
+# 200 * # DISKS
+innodb_io_capacity = 400
+innodb_io_capacity_max = 2000
+innodb_read_io_threads = 4
+innodb_write_io_threads = 2
+innodb_flush_neighbors = 1
+
+# mariadb settings
+[mariadb]
+#thread-handling = pool-of-threads
+#thread-pool-size= 20
+#mysql --port=3307 --protocol=tcp
+#extra-port=3307
+#extra-max-connections=1
+
+userstat = 0
+key_cache_segments = 1
+aria_group_commit = none
+aria_group_commit_interval = 0
+aria_log_file_size = 64M
+aria_log_purge_type = immediate 
+aria_pagecache_buffer_size = 64M
+aria_sort_buffer_size = 64M
+
+[mariadb-5.5]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
+#ignore_db_dirs=
+query_cache_strip_comments=0
+
+innodb_read_ahead = linear
+innodb_adaptive_flushing_method = estimate
+innodb_flush_neighbor_pages = 1
+innodb_stats_update_need_lock = 0
+innodb_log_block_size = 512
+
+log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk
+
+[mysqld_safe] 
+socket=/var/lib/mysql/mysql.sock
+log-error=/var/log/mysqld.log
+#nice = -5
+open-files-limit = 8192
+
+[mysqldump]
+quick
+max_allowed_packet = 128M
+
+[myisamchk] 
+tmpdir=/home/mysqltmp
+key_buffer = 384M 
+sort_buffer = 64M
+read_buffer = 64M
+write_buffer = 64M
+
+[mysqlhotcopy]
+interactive-timeout
+
+[mariadb-10.0]
+innodb_file_format = Barracuda
+innodb_file_per_table = 1
+
+# 2 variables needed to switch from XtraDB to InnoDB plugins
+#plugin-load=ha_innodb
+#ignore_builtin_innodb
+
+## MariaDB 10 only save and restore buffer pool pages
+## warm up InnoDB buffer pool on server restarts
+innodb_buffer_pool_dump_at_shutdown=1
+innodb_buffer_pool_load_at_startup=1
+innodb_buffer_pool_populate=0
+## Disabled settings
+performance_schema=OFF
+innodb_stats_on_metadata=OFF
+innodb_sort_buffer_size=2M
+innodb_online_alter_log_max_size=128M
+query_cache_strip_comments=0
+log_slow_filter =admin,filesort,filesort_on_disk,full_join,full_scan,query_cache,query_cache_miss,tmp_table,tmp_table_on_disk

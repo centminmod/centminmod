@@ -1,3 +1,196 @@
+postfix_presetup() {
+
+	if [ ! -f /bin/mailx ]; then
+		yum -y install mailx
+	fi
+
+if [[ "$CENTOS_SIX" = '6' ]]; then
+	if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
+		if [[ ! -f /etc/init.d/postfix && ! -f /etc/init.d/sendmail ]]; then
+			echo "*************************************************"
+			cecho "* Installing sendmail" $boldgreen
+			echo "*************************************************"
+			yum${CACHESKIP} -y -q install sendmail sendmail-cf
+			chkconfig --levels 235 sendmail on
+			funct_sendmailmc
+			echo "*************************************************"
+			cecho "* sendmail installed" $boldgreen
+			echo "*************************************************"
+		elif [[ -f /etc/init.d/postfix ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "Postfix already detected, sendmail install aborted" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /etc/init.d/sendmail ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	chkconfig --levels 235 sendmail on
+        	funct_sendmailmc
+        	echo "*************************************************"
+        	cecho "sendmail already detected, sendmail install aborted" $boldgreen
+        	echo "*************************************************"
+		fi
+	fi
+	
+	if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [yY] ]]; then
+    	if [[ ! -f /etc/init.d/postfix && ! -f /etc/init.d/sendmail ]]; then
+        	echo "*************************************************"
+        	cecho "* Installing postfix" $boldgreen
+        	echo "*************************************************"
+        	yum${CACHESKIP} -y -q install postfix
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /etc/init.d/postfix ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "Postfix already detected, postfix install aborted" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /etc/init.d/sendmail ]]; then
+        	yum${CACHESKIP} -y -q remove sendmail sendmail-cf
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	fi
+	fi
+	
+	
+	if [[ "$POSTFIX_INSTALL" = [yY] && "$SENDMAIL_INSTALL" = [nN] ]]; then
+    	if [[ ! -f /etc/init.d/postfix && ! -f /etc/init.d/sendmail ]]; then
+        	echo "*************************************************"
+        	cecho "* Installing postfix" $boldgreen
+        	echo "*************************************************"
+        	yum${CACHESKIP} -y -q install postfix
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /etc/init.d/postfix ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "Postfix already detected, postfix install aborted" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /etc/init.d/sendmail ]]; then
+        	if [ -f /usr/share/sendmail-cf ]; then
+            	yum${CACHESKIP} -y -q remove sendmail sendmail-cf
+        	else
+           	yum${CACHESKIP} -y -q remove sendmail
+        	fi
+        	yum${CACHESKIP} -y -q install postfix
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	fi
+	fi
+fi # centos6
+
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+	if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
+		if [[ ! -f /usr/lib/systemd/system/postfix.service && ! -f /usr/lib/systemd/system/sendmail.service ]]; then
+			echo "*************************************************"
+			cecho "* Installing sendmail" $boldgreen
+			echo "*************************************************"
+			yum${CACHESKIP} -y -q install sendmail sendmail-cf
+			chkconfig --levels 235 sendmail on
+			funct_sendmailmc
+			echo "*************************************************"
+			cecho "* sendmail installed" $boldgreen
+			echo "*************************************************"
+		elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "Postfix already detected, sendmail install aborted" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	chkconfig --levels 235 sendmail on
+        	funct_sendmailmc
+        	echo "*************************************************"
+        	cecho "sendmail already detected, sendmail install aborted" $boldgreen
+        	echo "*************************************************"
+		fi
+	fi
+	
+	if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [yY] ]]; then
+    	if [[ ! -f /usr/lib/systemd/system/postfix.service && ! -f /usr/lib/systemd/system/sendmail.service ]]; then
+        	echo "*************************************************"
+        	cecho "* Installing postfix" $boldgreen
+        	echo "*************************************************"
+        	yum${CACHESKIP} -y -q install postfix mailx
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "Postfix already detected, postfix install aborted" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
+        	yum${CACHESKIP} -y -q remove sendmail sendmail-cf
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	fi
+	fi
+	
+	
+	if [[ "$POSTFIX_INSTALL" = [yY] && "$SENDMAIL_INSTALL" = [nN] ]]; then
+    	if [[ ! -f /usr/lib/systemd/system/postfix.service && ! -f /usr/lib/systemd/system/sendmail.service ]]; then
+        	echo "*************************************************"
+        	cecho "* Installing postfix" $boldgreen
+        	echo "*************************************************"
+        	yum${CACHESKIP} -y -q install postfix
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
+        	if [ ! -f /bin/mailx ]; then
+            	yum${CACHESKIP} -y -q install mailx
+        	fi
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "Postfix already detected, postfix install aborted" $boldgreen
+        	echo "*************************************************"
+    	elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
+        	if [ -f /usr/share/sendmail-cf ]; then
+            	yum${CACHESKIP} -y -q remove sendmail sendmail-cf
+        	else
+           	yum${CACHESKIP} -y -q remove sendmail
+        	fi
+        	yum${CACHESKIP} -y -q install postfix
+        	postfixsetup
+        	echo "*************************************************"
+        	cecho "* postfix installed" $boldgreen
+        	echo "*************************************************"
+    	fi
+	fi
+fi # centos7
+}
+
 postfixsetup() {
 
 	if [ ! -f /usr/sbin/pflogsumm ]; then

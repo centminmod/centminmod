@@ -15,8 +15,9 @@ letswait
 
 	if [[ -z "$(ps aufx | grep 'crond' | grep -v grep)" ]]; then
 echo ""
-	if [[ -z "$(rpm -qa sysstat)" || -z "$(rpm -qa cronie)" ]]; then
-		yum -y -q install sysstat cronie
+
+	if [[ $(rpm -q sysstat >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q cronie >/dev/null 2>&1; echo $?) != '0' ]]; then
+		$(which yum) -y -q install sysstat cronie
 	fi
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond & sysstat service are running" $boldyellow
@@ -40,26 +41,38 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check ccache Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	ccache -V
+	$(which ccache) -V
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check Nginx Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	nginx -V
+	if [ -f "$(which nginx)" ]; then
+		$(which nginx) -V
+	else
+		echo "can not find nginx binary.. install failed"
+	fi
+
+  if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
+      echo
+      echo "dynamic module directory at /usr/local/nginx/modules"
+      ls -lah /usr/local/nginx/modules
+      echo
+  fi
+
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check PHP-FPM Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	php -v
+	$(which php) -v
 letswait
 
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check MariaDB installed RPM Versions:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-	rpm -qa | grep -i MariaDB
+	$(which rpm) -qa | grep -i MariaDB
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
@@ -71,14 +84,14 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check CSF Firewall Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-csf -v
+$(which csf) -v
 letswait
 
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check Siege Benchmark Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-siege -V
+$(which siege) -V
 letswait
 if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
@@ -86,7 +99,7 @@ echo ""
 	cecho "Check ngx_pagespeed Control Script:" $boldyellow
 	cecho "http://centminmod.com/nginx_ngx_pagespeed.html" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-pscontrol
+/usr/bin/pscontrol
 letswait
 fi
 # echo ""
@@ -101,23 +114,25 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 /root/mysqlreport --help | head -n1
 letswait
+if [[ "$NSD_INSTALL" = [yY] ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check NSD Bind Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-nsd -v
+$(which nsd) -v
 letswait
+fi
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check pure-ftpd Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-pure-ftpd -h | head -n1 | awk '{print $1,$2}'
+$(which pure-ftpd) -h | head -n1 | awk '{print $1,$2}'
 letswait
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check YUM Repo List" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
-yum repolist
+$(which yum) repolist
 
 # echo ""
 	fi # unattended
@@ -204,16 +219,30 @@ fi
 	cecho "/usr/bin/mytimes" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 	if [ ! -f /usr/bin/mytimes ]; then
-		cp $CUR_DIR/tools/mytimes.sh /usr/bin/mytimes
+		cp "$CUR_DIR/tools/mytimes.sh" /usr/bin/mytimes
 		chmod +x /usr/bin/mytimes
 	fi
 	/usr/bin/mytimes
 	cecho "--------------------------------------------------------" $boldyellow
 
-	if [ -f "$CUR_DIR/tools/nv.sh" ]; then
-		cp $CUR_DIR/tools/nv.sh /usr/bin/nv
-		chmod +x /usr/bin/nv
-	fi	
+if [ -f /proc/user_beancounters ]; then
+	echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "OpenVZ VPS detected:" $boldyellow
+	cecho "check /proc/user_beancounters counters" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	grep oomguarpages /proc/user_beancounters  | awk '{s=$2;t=$3;u=$4; {print "VPS Memory Usage\nCurrent Held: " s/204.8"MB\nMax Held: " t/204.8 "MB\nBarrier: "u/204.8"MB" }}'
+	beans=`cat /proc/user_beancounters | grep priv`
+	max=$(echo $beans | awk '{ print $4;}')
+	use=$(echo $beans | awk '{ print $2;}')
+	let "per=$use*100/$max"
+	let "mb=$use/256"
+	echo "privvmpages: $mb MB ($per%)"
+	echo
+	cat /proc/user_beancounters
+	cecho "--------------------------------------------------------" $boldyellow
+fi
+
 }
 
 centminfinish() {
@@ -223,18 +252,18 @@ if [[ ! $(ps aufx | grep rsyslog | grep -v grep) ]]; then
 	cmchkconfig rsyslog on
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
 	axivosixyum
 fi
 
-if [[ "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	axivoseven
 fi
 
 installchecks
 DATENOW=$(date +"%b %d")
 YUMLOG=$(grep -h "$DATENOW" /var/log/yum.log)
-echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log
+echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log"
 
 
     echo "*************************************************"
@@ -242,7 +271,7 @@ echo "$YUMLOG" >> ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.lo
     echo "*************************************************"
 
 if [[ "$TS_INSTALL" = [yY] ]]; then
-	curl -s http://check.centminmod.com/utctime > ${CENTMINLOGDIR}/install.utc.time.log 2>&1
+	curl -s"${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
 fi
 
 }
