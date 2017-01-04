@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.6
+VER=0.0.5
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -106,7 +106,7 @@ fi
 
 if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 	sort -k2 $dbfile | while read -r db u p; do
-		echo "CREATE DATABASE \`$db\`;" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+		mysql ${MYSQLOPTS} -e "CREATE DATABASE $db;" >/dev/null 2>&1
 		DBCHECK=$?
 		if [[ "$DBCHECK" = '0' ]]; then
 			if [ -f /tmp/mysqladminshell_userpass.txt ]; then
@@ -223,7 +223,7 @@ read -ep " Enter new MySQL database name: " newdbname
 echo
 
 if [[ "$rootset" = [yY] && "$createnewuser" = [yY] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
 
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -237,7 +237,7 @@ if [[ "$rootset" = [yY] && "$createnewuser" = [yY] ]]; then
 	fi
 
 elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';"
 
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -251,7 +251,7 @@ elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
 	fi
 
 elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
 
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -265,7 +265,7 @@ elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
 	fi
 
 elif [[ "$rootset" = [yY] && "$createnewuser" = [nN] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+	mysql ${MYSQLOPTS} -e "CREATE DATABASE $newdbname; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON $newdbname.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';"
 
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -335,7 +335,7 @@ read -ep " Enter MySQL username you want to delete: " delmysqluser
 
 if [[ "$rootset" = [yY] ]]; then
 
-echo "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;" | mysql ${MYSQLOPTS}
+mysql ${MYSQLOPTS} -e "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -350,7 +350,7 @@ ERROR=$?
 
 else
 
-echo "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;" | mysql
+mysql -e "drop user '$delmysqluser'@'$MYSQLHOSTNAME'; flush privileges;"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -377,7 +377,7 @@ read -ep " Enter MySQL username to Show Grant permissions: " showmysqluser
 
 if [[ "$rootset" = [yY] ]]; then
 
-echo "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+mysql ${MYSQLOPTS} -e "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
@@ -392,7 +392,7 @@ ERROR=$?
 
 else
 
-echo "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';" | mysql
+mysql -e "SHOW GRANTS for '$showmysqluser'@'$MYSQLHOSTNAME';"
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
