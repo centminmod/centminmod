@@ -124,6 +124,11 @@ fi # CLOUDFLARE_PATCHSSL
 }
 
 installopenssl() {
+    if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+        # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
+        # so fall back to 1.0.2 branch if lua nginx module is enabled
+        OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
+    fi
     DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
     if [ ! -f /usr/local/go/bin/go ]; then
         # if golang is not detected BoringSSL switch will be disabled
