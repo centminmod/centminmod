@@ -147,6 +147,8 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
     # so fall back to 1.0.2 branch if lua nginx module is enabled
     OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
+    OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
+    OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
 fi
 
     if [ -f "$(which figlet)" ]; then
