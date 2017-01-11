@@ -1,16 +1,101 @@
 checkphpext() {
+    cecho "Check for php extensions" $boldyellow
+    if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" || ! -d "${DIR_TMP}/imagick-${IMAGICKPHP_VER}" ]]; then
+        echo "Downloading imagick extension"
+        imagickphpexttarball
+    fi
+    echo
+}
 
-cecho "Check for php extensions" $boldyellow
-if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" ]]; then
-echo "Downloading imagick extension"
-imagickphpexttarball
-fi
+checkimagicksys() {
 
+    if [ -f /usr/bin/re2c ]; then
+        if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
+            rerpm
+        fi
+    fi
+
+    CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+    
+    if [ "$CENTOSVER" == 'release' ]; then
+        CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+        if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+            CENTOS_SEVEN='7'
+        fi
+    fi
+    
+    if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+        CENTOS_SIX='6'
+    fi
+
+    cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
+    if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+        if [ -f /etc/yum.repos.d/remi.repo ]; then
+            if [[ $(rpm -q ImageMagick6 >/dev/null 2>&1; echo $?) = '0' ]] && [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) != '0' ]]; then
+                # skip for initial installs to speed up install
+                if [[ "$INITIALINSTALL" != [yY] ]]; then
+                    yum clean all >/dev/null 2>&1
+                    yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                fi
+            else
+                if [[ "$CENTOS_SIX" = '6' ]]; then
+                    # yum -y install libwebp libwebp-devel --skip-broken
+                    yum clean all >/dev/null 2>&1
+                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+                else
+                    yum clean all >/dev/null 2>&1
+                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                fi
+            fi
+        elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
+            # for very old centmin mod installs which never had remi yum repo setup
+            if [[ "$CENTOS_SIX" = '6' ]]; then
+                remisixyum
+            elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+                remisevenyum
+            fi
+            if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
+                echo
+                echo "----------------------------------------------------------------------------------"
+                cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
+                echo "----------------------------------------------------------------------------------"
+                yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+                yum -y remove ImageMagick
+          
+                if [[ "$CENTOS_SIX" = '6' ]]; then
+                    # yum -y install libwebp libwebp-devel --skip-broken
+                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+                else
+                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                fi
+                echo
+            else
+                # if ImageMagick doesn't exist
+                if [ ! -f /etc/yum.repos.d/remi.repo ]; then
+                    # for very old centmin mod installs which never had remi yum repo setup
+                    if [[ "$CENTOS_SIX" = '6' ]]; then
+                        remisixyum
+                    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+                        remisevenyum
+                    fi
+                fi
+                yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+                if [[ "$CENTOS_SIX" = '6' ]]; then
+                    # yum -y install libwebp libwebp-devel --skip-broken
+                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+                else
+                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                fi
+            fi
+        fi
+    fi
+    echo
 }
 
 imagickinstall() {
 
 checkphpext
+checkimagicksys
 imagick_fixes
 
     echo "*************************************************"
