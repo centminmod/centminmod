@@ -701,6 +701,10 @@ if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
     if [[ -f "${CONFIGSCANDIR}/igbinary.ini" && ! -f "$PHPEXTDIR_AUTODETECT/igbinary.so" ]]; then
         cecho "Reinstalling detected igbinary extension" $boldyellow
         funct_igbinaryinstall
+    elif [[ -f "${CONFIGSCANDIR}/igbinary.ini" && "$(php --ri igbinary | awk '/version/ {print $4}' | cut -c1)" -lt '2' ]]; then
+        # if igbinary version less than 2.x reinstall igbinary
+        cecho "Reinstalling detected igbinary extension" $boldyellow
+        funct_igbinaryinstall
     fi
 fi
 
