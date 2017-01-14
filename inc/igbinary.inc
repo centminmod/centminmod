@@ -12,26 +12,26 @@ if [ "$IGBINARYGIT" == 'y' ]; then
 
     if [[ "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.0' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '7.1' ]]; then
 
-        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary7'
+        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary'
         # fallback mirror if official github is down, use gitlab mirror
         curl -sI --connect-timeout 5 --max-time 5 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
         IGBINARYSEVEN_CURLCHECK=$?
         if [[ "$IGBINARYSEVEN_CURLCHECK" != '0' ]]; then
-            IGBINARYSEVEN_LINK='https://gitlab.com/centminmod-github-mirror/igbinary7.git'
+            IGBINARYSEVEN_LINK='https://gitlab.com/centminmod-github-mirror/igbinary.git'
         fi
 
-        # php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
+        # php7 igbinary https://github.com/igbinary/igbinary broken session serialization
         # disable it for now
         DISABLESESSION=y
-        if [[ -d "igbinary-php7" && -d "igbinary-php7/.git" ]]; then       
-            rm -rf igbinary-php7
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
-        elif [[ -d "igbinary-php7" && ! -d "igbinary-php7/.git" ]]; then
-            rm -rf igbinary-php7
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
+        if [[ -d "igbinary-php" && -d "igbinary-php/.git" ]]; then       
+            rm -rf igbinary-php
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php
+        elif [[ -d "igbinary-php" && ! -d "igbinary-php/.git" ]]; then
+            rm -rf igbinary-php
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php
         else
-            rm -rf igbinary-php7
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
+            rm -rf igbinary-php
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php
         fi
         echo
         echo "compiling igbinary PHP extension for PHP 7.x ..."
@@ -39,7 +39,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             export PHP_AUTOCONF=/usr/bin/autoconf
             export PHP_AUTOHEADER=/usr/bin/autoheader
         
-        cd igbinary-php7
+        cd igbinary-php
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
@@ -138,7 +138,7 @@ if [[ "$APCSOCHECK" = '0' ]]; then
 fi
 
 if [[ "$DISABLESESSION" = [yY] ]]; then
-# php7 igbinary https://github.com/igbinary/igbinary7 broken session serialization
+# php7 igbinary https://github.com/igbinary/igbinary broken session serialization
 # disable it for now
     sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini"
 fi
