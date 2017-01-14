@@ -697,6 +697,12 @@ elif [ -f "${CONFIGSCANDIR}/ioncube.ini" ]; then
     rm -rf "${CONFIGSCANDIR}/ioncube.ini"
 fi
 
+if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
+    if [[ -f "${CONFIGSCANDIR}/igbinary.ini" && ! -f "$PHPEXTDIR_AUTODETECT/igbinary.so" ]]; then
+        cecho "Reinstalling detected igbinary extension" $boldyellow
+        funct_igbinaryinstall
+    fi
+fi
 
 echo
 php --ini
