@@ -8,18 +8,18 @@ if [ "$IGBINARYGIT" == 'y' ]; then
     echo $PHPSEVEN_CHECKVER
 
     if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
-        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary7'
-        if [[ -d "igbinary-php7" && -d "igbinary-php7/.git" ]]; then       
-            cd igbinary-php7
+        IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary'
+        if [[ -d "igbinary-php" && -d "igbinary-php/.git" ]]; then       
+            cd igbinary-php
             git stash
             git pull
             git log -3
-        elif [[ -d "igbinary-php7" && ! -d "igbinary-php7/.git" ]]; then
-            rm -rf igbinary-php7
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
+        elif [[ -d "igbinary-php" && ! -d "igbinary-php/.git" ]]; then
+            rm -rf igbinary-php
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php
         else
-            rm -rf igbinary-php7
-            git clone "$IGBINARYSEVEN_LINK" igbinary-php7
+            rm -rf igbinary-php
+            git clone "$IGBINARYSEVEN_LINK" igbinary-php
         fi
         echo
         echo "compiling igbinary PHP extension for PHP 7.x ..."
@@ -27,7 +27,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
             export PHP_AUTOCONF=/usr/bin/autoconf
             export PHP_AUTOHEADER=/usr/bin/autoheader
         
-        cd igbinary-php7
+        cd igbinary-php
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi

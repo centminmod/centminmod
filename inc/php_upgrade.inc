@@ -466,6 +466,13 @@ if [ ! -f ${CONFIGSCANDIR}/geoip.ini ]; then
     geoipphpext
 fi
 
+if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
+    if [[ -f "${CONFIGSCANDIR}/igbinary.ini" && ! -f "$PHPEXTDIR_AUTODETECT/igbinary.so" ]]; then
+        cecho "Reinstalling detected igbinary extension" $boldyellow
+        funct_igbinaryinstall
+    fi
+fi
+
     cmservice php-fpm restart
 
 if [ -f /usr/local/nginx/html/phpi.php ]; then
