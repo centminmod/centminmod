@@ -223,7 +223,7 @@ LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='2.2.8'        # redis PHP version
-REDISPHPSEVEN_VER='3.0.0'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='3.1.1RC2'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.1.8'      # MongoDB PHP version
