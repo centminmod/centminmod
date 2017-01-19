@@ -108,22 +108,37 @@ selinxcheck() {
 		yum -q -y install libselinux-utils
 	fi	
 
-	if [[ -z $(sestatus | grep disabled) && -f /etc/selinux/config ]]; then
-		echo "---------------------------------------------------------------"
-		echo "SELINUX linux detected"
-		echo "---------------------------------------------------------------"
-		echo "disabling SELINUX..."
-		echo "will require a server reboot before running initial install"
-		sleep 3
-		sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
-		sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
-		echo
-		echo "SELINUX disabled, please reboot server and rerun install"
-		echo "on reboot you can find the centmin.sh file located at:"
-		echo "echo $(pwd)"
-		echo "---------------------------------------------------------------"
-		exit 0
-	fi
+  if [[ -z "$(sestatus | grep disabled)" && -f /etc/selinux/config ]]; then
+    echo "---------------------------------------------------------------"
+    echo "SELINUX linux detected"
+    echo "---------------------------------------------------------------"
+    echo "disabling SELINUX..."
+    echo "will require a server reboot before running initial install"
+    # sleep 3
+    sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
+    sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/selinux/config && setenforce 0
+    echo
+    echo "SELINUX disabled, please reboot server and rerun install"
+    echo "on reboot you can find the centmin.sh file located at:"
+    echo "echo $(pwd)"
+    echo "---------------------------------------------------------------"
+    # exit 0
+  elif [[ -z "$(sestatus | grep disabled)" && -f /etc/sysconfig/selinux ]]; then
+    echo "---------------------------------------------------------------"
+    echo "SELINUX linux detected"
+    echo "---------------------------------------------------------------"
+    echo "disabling SELINUX..."
+    echo "will require a server reboot before running initial install"
+    # sleep 3
+    sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/sysconfig/selinux && setenforce 0
+    sed -i 's/SELINUX=permissive/SELINUX=disabled/g' /etc/sysconfig/selinux && setenforce 0
+    echo
+    echo "SELINUX disabled, please reboot server and rerun install"
+    echo "on reboot you can find the centmin.sh file located at:"
+    echo "echo $(pwd)"
+    echo "---------------------------------------------------------------"
+    # exit 0 
+  fi
 }
 
 blockeditorcheck() {
