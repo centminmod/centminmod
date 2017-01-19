@@ -20,6 +20,13 @@ echo ""
 
 MARIADB55ARCH=`uname -m`
 
+echo "setup /var/log/mysqld.log"
+touch /var/log/mysqld.log
+chown mysql:mysql /var/log/mysqld.log
+chmod 640 /var/log/mysqld.log
+ls -lah /var/log/mysqld.log
+echo
+
 echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
 rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 
@@ -388,6 +395,9 @@ fi # CENTALTREPO_DISABLE
 if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
 echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
 fi
+
+# setup mariadb mysql log rotation
+funct_logmysqlrotate
 
 }
 
