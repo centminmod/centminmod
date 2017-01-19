@@ -1276,6 +1276,17 @@ yumfastmirror_check() {
 	fi
 }
 
+mariadb_errorlogfix() {
+  # disable custom mariadb log-error path due to changes in 10.0.29 & 10.1.21
+  # https://jira.mariadb.org/browse/MDEV-11841
+  if [ -f /etc/my.cnf ]; then
+    MDB_LOGERRORCHECK=$(grep '^log-error=\/var\/log\/mysqld.log' /etc/my.cnf)
+    if [ "$MDB_LOGERRORCHECK" ]; then
+      sed -i 's|^log-error=\/var\/log\/mysqld.log|#log-error=\/var\/log\/mysqld.log|g' /etc/my.cnf
+    fi
+  fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -1309,6 +1320,7 @@ apache_protect
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   c7mariadb_tmpdir
   mariadb_openfilesfix
+  mariadb_errorlogfix
   yumfastmirror_check
   axelcheck
   fileperm_fixes
