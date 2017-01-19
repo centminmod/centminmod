@@ -303,14 +303,14 @@ installopenssl() {
         if [[ "$(uname -m)" = 'x86_64' ]]; then
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config --prefix=$STATICLIBSSL shared enable-ec_nistp_64_gcc_128
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared enable-ec_nistp_64_gcc_128
             else
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext enable-ec_nistp_64_gcc_128
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config --prefix=$STATICLIBSSL shared
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared
             else
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext
             fi
