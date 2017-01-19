@@ -63,7 +63,7 @@ log_warnings=1
 slow_query_log=0
 long_query_time=1
 slow_query_log_file=/var/lib/mysql/slowq.log
-log-error=/var/log/mysqld.log
+#log-error=/var/log/mysqld.log
 
 # mariadb settings
 userstat = 0
@@ -108,7 +108,7 @@ innodb_write_io_threads = 2
 
 [mysqld_safe] 
 socket=/var/lib/mysql/mysql.sock
-log-error=/var/log/mysqld.log
+#log-error=/var/log/mysqld.log
 #nice = -5
 open-files-limit = 8192
 
