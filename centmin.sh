@@ -295,6 +295,7 @@ PHP_PGO='n'                   # Profile Guided Optimization https://software.int
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.2
 NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-4 GCC 5.2 even for CentOS 7 nginx compiles
 GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.2 whereever possible/coded
+CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.2 for libressl or openssl compiles
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -523,7 +524,7 @@ PCRE_SOURCEINSTALL='n'
 PCRE_VERSION='8.39'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.3RC2'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
 MEMCACHED_INSTALL='y'         # Install Memcached
@@ -535,8 +536,8 @@ LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
-REDISPHP_VER='2.2.8'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='3.0.0'   # redis PHP version for PHP =>7.x
+REDISPHP_VER='3.1.1RC2'        # redis PHP version for PHP <7.x
+REDISPHPSEVEN_VER='3.1.1RC2'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.1.8'      # MongoDB PHP version

@@ -325,6 +325,7 @@ rpm -Uvh ${CENTOSSIXPERCONALRELEASEFILE}
 
 fi
 
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
     cd $DIR_TMP
 
 if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
@@ -366,6 +367,7 @@ rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
 	fi
 
 fi
+    fi # 64bit only
 
 ####
 # axivo centos 6.x 64bit only
