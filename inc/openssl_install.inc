@@ -123,6 +123,64 @@ fi # CLOUDFLARE_PATCHSSL
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
+crypto_gcc() {
+    if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-4/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
+        scl_install
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      fi
+    fi
+    if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
+        # intel specific
+        CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+        SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
+        CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+        CPUMODELNO=$(grep -v 'model name' /proc/cpuinfo | awk -F ": " '/model/ {print $2}' | uniq)
+        SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
+        MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
+        gcc --version | tee ${CENTMINLOGDIR}/gcc_crypto_native.log
+        gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_crypto_native.log
+        
+        if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
+            CCM=64
+            CRYPTOGCC_OPT="-m${CCM} -march=native"
+            # if only 1 cpu thread use -O2 to keep compile times sane
+            if [[ "$CPUS" = '1' ]]; then
+            export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"
+            else
+            export CFLAGS="-O3 $CRYPTOGCC_OPT -pipe"
+            fi
+            export CXXFLAGS="$CFLAGS"
+        fi
+    fi
+}
+
+crypto_gccunset() {
+if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
+    unset CC
+    unset CXX
+    unset CFLAGS
+    unset CXXFLAGS
+    export CC="ccache /usr/bin/gcc"
+    export CXX="ccache /usr/bin/g++"
+fi
+}
+
 installopenssl() {
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
@@ -179,7 +237,8 @@ installopenssl() {
             export CCACHE_CPP2=yes
             CLANG_CFLAGOPT=""
             CFLAGS=""
-        fi        
+        fi
+        crypto_gcc
         ./configure --prefix=/opt/libressl
         # make${MAKETHREADS} check
         make${MAKETHREADS}
@@ -201,7 +260,8 @@ installopenssl() {
             export CXX="ccache g++"
             CLANG_CFLAGOPT=""
             CFLAGS=""            
-        fi                
+        fi
+        crypto_gccunset
         libresslinstallendtime=$(TZ=UTC date +%s.%N)
         LIBRESSLINSTALLTIME=$(echo "scale=2;$libresslinstallendtime - $libresslinstallstarttime"|bc )
 
@@ -239,6 +299,7 @@ installopenssl() {
             make clean
         fi
         opensslpatches
+        crypto_gcc
         if [[ "$(uname -m)" = 'x86_64' ]]; then
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
@@ -266,6 +327,7 @@ installopenssl() {
         else
             rm -rf "${STATICLIBSSL}/lib64"
         fi
+        crypto_gccunset
         opensslinstallendtime=$(TZ=UTC date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
 

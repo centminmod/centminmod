@@ -295,6 +295,7 @@ PHP_PGO='n'                   # Profile Guided Optimization https://software.int
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.2
 NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-4 GCC 5.2 even for CentOS 7 nginx compiles
 GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.2 whereever possible/coded
+CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.2 for libressl or openssl compiles
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
