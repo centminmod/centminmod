@@ -284,6 +284,13 @@ echo ""
 
 mysqltmpdir
 
+echo "setup /var/log/mysqld.log"
+touch /var/log/mysqld.log
+chown mysql:mysql /var/log/mysqld.log
+chmod 640 /var/log/mysqld.log
+ls -lah /var/log/mysqld.log
+echo
+
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     mysqlinitfix
