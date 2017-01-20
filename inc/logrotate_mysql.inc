@@ -117,7 +117,7 @@ cat > "/etc/logrotate.d/mysql-slowlog" <<END
 }
 END
 else
-cat > "/etc/logrotate.d/mysql" <<END
+cat > "/etc/logrotate.d/mysql-slowlog" <<END
 /var/lib/mysql/slowq.log {
   create 600 mysql mysql
   dateext
