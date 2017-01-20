@@ -488,6 +488,8 @@ funct_phpconfigure
 	ERR=$?
 	if [ $ERR != 0 ]; then
 		echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
+        free -m
+        echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
     	exit
 	else
