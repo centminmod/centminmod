@@ -97,7 +97,7 @@ touch /etc/logrotate.d/mysql-slowlog
 if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/mysql-slowlog" <<END
 /var/lib/mysql/slowq.log {
-  create 640 mysql mysql
+  create 600 mysql mysql
   maxsize 250M
   dateext
   notifempty
@@ -119,7 +119,7 @@ END
 else
 cat > "/etc/logrotate.d/mysql" <<END
 /var/lib/mysql/slowq.log {
-  create 640 mysql mysql
+  create 600 mysql mysql
   dateext
   notifempty
   daily
