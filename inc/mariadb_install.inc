@@ -23,7 +23,7 @@ MARIADB55ARCH=`uname -m`
 echo "setup /var/log/mysqld.log"
 touch /var/log/mysqld.log
 chown mysql:mysql /var/log/mysqld.log
-chmod 640 /var/log/mysqld.log
+chmod 600 /var/log/mysqld.log
 ls -lah /var/log/mysqld.log
 echo
 
@@ -287,7 +287,7 @@ mysqltmpdir
 echo "setup /var/log/mysqld.log"
 touch /var/log/mysqld.log
 chown mysql:mysql /var/log/mysqld.log
-chmod 640 /var/log/mysqld.log
+chmod 600 /var/log/mysqld.log
 ls -lah /var/log/mysqld.log
 echo
 
