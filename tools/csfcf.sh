@@ -147,9 +147,15 @@ nginxsetup() {
 	for i in $cflista; do
         	echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
 	done
-	for i in $cflistb; do
-        	echo "#set_real_ip_from $i;" >> $CFINCLUDEFILE
-	done
+	if [[ -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+		for i in $cflistb; do
+        		echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
+		done
+	else
+		for i in $cflistb; do
+        		echo "#set_real_ip_from $i;" >> $CFINCLUDEFILE
+		done
+	fi
 	echo "real_ip_header CF-Connecting-IP;" >> $CFINCLUDEFILE
 	service nginx reload >/dev/null 2>&1
 	echo "created $CFINCLUDEFILE include file"

@@ -732,6 +732,14 @@ END
 fi
 	fi
 	fi
+
+if [[ ! -f /etc/logrotate.d/mysql || ! -f /etc/logrotate.d/mysql-slowlog || ! -f /var/log/mysqld.log ]]; then
+  funct_logmysqlrotate silent
+fi
+
+if [[ -f /etc/logrotate.d/mysql && ! "$(grep 'dateext' /etc/logrotate.d/mysql)" ]]; then
+  funct_logmysqlrotate silent
+fi
 }
 
 csf_distftp() {
