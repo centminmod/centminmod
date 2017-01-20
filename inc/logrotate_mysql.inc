@@ -20,7 +20,7 @@ function funct_logmysqlrotate {
 
   QUIET=$1
 
-if [[ ! -f /etc/logrotate.d/mysql || ! -f /etc/logrotate.d/mysql-slowlog ]]; then
+if [[ ! -f /etc/logrotate.d/mysql || ! -f /etc/logrotate.d/mysql-slowlog || ! "$(grep 'dateext' /etc/logrotate.d/mysql)" ]]; then
 
 if [[ "$QUIET" != 'silent' ]]; then
 echo "----------------------------------------------"
