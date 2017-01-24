@@ -798,12 +798,17 @@ pureftpdupdates() {
 
 leupdates() {
 	# update .well-known content-type
-	if [ -f /usr/local/nginx/conf/staticfiles.conf ]; then
-	CHECKCONTENTTYPE=$(grep 'application\/jose+json' /usr/local/nginx/conf/staticfiles.conf)
-	if [ "$CHECKCONTENTTYPE" ]; then
-		sed -i "s|application\/jose+json|text\/plain|" /usr/local/nginx/conf/staticfiles.conf
-	fi
-	fi
+  if [ -f /usr/local/nginx/conf/staticfiles.conf ]; then
+   CHECKCONTENTTYPE=$(grep 'application\/jose+json' /usr/local/nginx/conf/staticfiles.conf)
+   if [ "$CHECKCONTENTTYPE" ]; then
+      sed -i "s|application\/jose+json|text\/plain|" /usr/local/nginx/conf/staticfiles.conf
+   fi
+   WELLKNOWN_CHECK=$(grep '.well-known' /usr/local/nginx/conf/staticfiles.conf)
+   if [ ! "$WELLKNOWN_CHECK" ]; then
+      { echo -e "    # prepare for letsencrypt\n    # https://community.centminmod.com/posts/17774/\n    location ~ /.well-known { location ~ /.well-known/acme-challenge/(.*) { more_set_headers    "Content-Type: text/plain"; } }\n"; cat /usr/local/nginx/conf/staticfiles.conf; } > /usr/local/nginx/conf/staticfiles.conf.tmp
+      mv -f /usr/local/nginx/conf/staticfiles.conf.tmp /usr/local/nginx/conf/staticfiles.conf
+   fi
+  fi
 }
 
 memcachedupdatechecks() {
