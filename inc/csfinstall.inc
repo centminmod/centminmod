@@ -172,9 +172,9 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         # number is whitelisted by firewalld
         FWDDETECTED_PORT=$(awk '/^Port / {print $2}' /etc/ssh/sshd_config)
         if [[ "$FWDDETECTED_PORT" = '22' ]]; then
-          FIREWALLD_PORTS='8080 8888 81 9000 9001 9312 9418 30001-50011'
+          FIREWALLD_PORTS='8080 8888 81 9312 9418 30001-50011'
         else
-          FIREWALLD_PORTS="$FWDDETECTED_PORT 8080 8888 81 9000 9001 9312 9418 30001-50011"
+          FIREWALLD_PORTS="$FWDDETECTED_PORT 8080 8888 81 9312 9418 30001-50011"
         fi
 
         for fp in $FIREWALLD_PORTS
