@@ -35,7 +35,7 @@ if [ ! -f /var/log/mysqld.log ]; then
   touch /var/log/mysqld.log
   chown mysql:mysql /var/log/mysqld.log
   chmod 600 /var/log/mysqld.log
-  ls -lah /var/log/mysqld.log
+  #ls -lah /var/log/mysqld.log
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
