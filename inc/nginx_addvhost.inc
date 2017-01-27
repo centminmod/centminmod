@@ -258,7 +258,11 @@ cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 funct_nginxaddvhost() {
 PUREUSER=nginx
 PUREGROUP=nginx
-CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+      CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    fi
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
 pureftpinstall

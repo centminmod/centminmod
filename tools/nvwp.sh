@@ -225,7 +225,11 @@ pureftpinstall() {
 	if [ ! -f /usr/bin/pure-pw ]; then
 		echo "pure-ftpd not installed"
 		echo "installing pure-ftpd"
-		CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+      CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    fi
 
 		yum -q -y install pure-ftpd
 		cmchkconfig pure-ftpd on
@@ -409,7 +413,11 @@ cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 funct_nginxaddvhost() {
 PUREUSER=nginx
 PUREGROUP=nginx
-CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+      CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    fi
 if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
   pureftpinstall
 fi

@@ -10,7 +10,15 @@ pureftpinstall() {
 	if [ ! -f /usr/bin/pure-pw ]; then
 		echo "pure-ftpd not installed"
 		echo "installing pure-ftpd"
-		CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+          if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+      CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    fi
+    fi
 
 		yum -q -y install pure-ftpd
 		cmchkconfig pure-ftpd on

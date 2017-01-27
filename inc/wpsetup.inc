@@ -196,7 +196,11 @@ cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 wpacctsetup() {
 PUREUSER=nginx
 PUREGROUP=nginx
-CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+      CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
+    fi
 pureftpinstall
 
 # Support secondary dedicated IP configuration for centmin mod

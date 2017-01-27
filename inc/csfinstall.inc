@@ -162,7 +162,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         firewall-cmd --permanent --zone=public --add-service=pop3s
         firewall-cmd --permanent --zone=public --add-service=smtp
         firewall-cmd --permanent --zone=public --add-service=openvpn
-        firewall-cmd --permanent --zone=public --add-service=nfs
+        # firewall-cmd --permanent --zone=public --add-service=nfs
 
         # firewall-cmd --reload
         systemctl restart firewalld
