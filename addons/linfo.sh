@@ -4,7 +4,7 @@
 # latest version at http://linfo.sourceforge.net/
 #################################################
 DIR_TMP='/svr-setup'
-LINFO_VER='2.0.2'
+LINFO_VER='2.0.3'
 LINFOBASE='/usr/local/nginx/html'	# DO NOT CHANGE
 LINFODIR='cinfo'
 LINFOPATH="${LINFOBASE}/${LINFODIR}"
