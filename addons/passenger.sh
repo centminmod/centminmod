@@ -5,11 +5,11 @@ VER='0.0.8'
 # for Centminmod.com
 # written by George Liu (eva2000) vbtechsupport.com
 ######################################################
-RUBYVER='2.3.1'
+RUBYVER='2.4.0'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.6.2'
+NODEJSVER='4.7.2'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
