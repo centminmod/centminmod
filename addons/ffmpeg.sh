@@ -284,6 +284,8 @@ echo
 
 phpext() {
 
+  FFMPEG_PHPVERCHECK=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)
+  if [[ "$FFMPEG_PHPVERCHECK" != '7' ]]; then
 	echo
 	echo "Install FFMPEG PHP extension..."
 
@@ -350,6 +352,11 @@ phpext() {
 	echo ""
 
 	php --ri ffmpeg
+	else
+		echo ""
+		echo "FFMPEG php extension does not support PHP 7.x"
+		echo ""		
+  fi # php version check
 
 }
 
