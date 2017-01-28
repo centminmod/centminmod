@@ -2,7 +2,10 @@ function funct_phpconfigure {
 # set locale temporarily to english
 # for php compile due to some non-english
 # locale compilation issues i.e. Turkish 
-LANG=en_US.UTF-8
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
 
 fpmconfdir
 
