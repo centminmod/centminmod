@@ -397,10 +397,10 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.39'          # PCRE version
+PCRE_VERSION='8.40'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.3RC1'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.3RC4'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
 MEMCACHED_VERSION='1.4.34'    # Use this version of Memcached server
