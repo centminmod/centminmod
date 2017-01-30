@@ -393,7 +393,7 @@ NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.39'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.40'         # Version of PCRE used for pcre-jit support in Nginx
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
 NGINX_HEADERSMORE='0.32'
@@ -521,10 +521,10 @@ GPERFTOOLS_VERSION='2.5'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
 PCRE_SOURCEINSTALL='n'     
-PCRE_VERSION='8.39'          # PCRE version
+PCRE_VERSION='8.40'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.3RC2'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.3RC4'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
 MEMCACHED_INSTALL='y'         # Install Memcached

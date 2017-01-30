@@ -158,7 +158,7 @@ CENTOSSEVENATRPMS="http://dl.atrpms.net/all/${CENTOSSEVENATRPMSFILE}"
 CENTOSSEVENATRPMSLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENATRPMSFILE}"
 
 PCRELINKFILE="pcre-${NGINX_PCREVER}.tar.gz"
-#PCRELINK="http://superb-dca2.dl.sourceforge.net/project/pcre/pcre/${NGINX_PCREVER}/${PCRELINKFILE}"
+#PCRELINK="https://ftp.pcre.org/pub/pcre/${PCRELINKFILE}"
 PCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRELINKFILE}"
 PCRELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRELINKFILE}"
 
