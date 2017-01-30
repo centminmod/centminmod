@@ -187,6 +187,10 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     fi
 fi
 
+    if [ -f /usr/local/src/centminmod/tools/csfcf.sh ]; then
+        /usr/local/src/centminmod/tools/csfcf.sh auto
+    fi
+
     echo "*************************************************"
     cecho "* CSF firewall installed " $boldgreen
     echo "*************************************************"
