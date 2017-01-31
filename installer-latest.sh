@@ -692,6 +692,9 @@ echo "NGINX_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo "GENERAL_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo "CLANG='n'" >> /etc/centminmod/custom_config.inc
 echo "LIBRESSL_SWITCH='n'" >> /etc/centminmod/custom_config.inc
+echo "NGX_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
+echo "PHP_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
+echo "NGX_LDGOLD='y'" >> /etc/centminmod/custom_config.inc
 # echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
