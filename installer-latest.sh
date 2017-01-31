@@ -660,7 +660,7 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.14'|" centmin.sh
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.15'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
@@ -692,6 +692,9 @@ echo "NGINX_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo "GENERAL_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo "CLANG='n'" >> /etc/centminmod/custom_config.inc
 echo "LIBRESSL_SWITCH='n'" >> /etc/centminmod/custom_config.inc
+echo "NGX_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
+echo "PHP_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
+echo "NGX_LDGOLD='y'" >> /etc/centminmod/custom_config.inc
 # echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
