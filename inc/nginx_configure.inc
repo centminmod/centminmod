@@ -2223,7 +2223,7 @@ else
 	fi
 fi
 
-if [[ "$NGX_GSPLITDWARF" = [yY] ]]; then
+if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_GSPLITDWARF" = [yY] ]]; then
   NGXEXTRA_CCOPT="$NGXEXTRA_CCOPT -gsplit-dwarf"
 fi
 

@@ -460,7 +460,7 @@ else
   PHP_OPENSSLOPT='--with-openssl'
 fi
 
-if [[ "$PHP_GSPLITDWARF" = [yY] ]]; then
+if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] ]]; then
   PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf"
 fi
 
