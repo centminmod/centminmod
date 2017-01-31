@@ -404,30 +404,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$CPUS" = '1' ]]; then
-      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     else
-      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe"
+      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     fi
 		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
 		PHP_MTUNEOPT="-m${CCM} -mtune=native"
-		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
 		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[disabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
 		PHP_MTUNEOPT="-m${CCM} -mtune=native"
-		export CFLAGS="-O3 $PHP_MTUNEOPT -pipe"
+		export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
 		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && -z "$SSECHECK" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
 		PHP_MTUNEOPT="-m${CCM} -mtune=generic"
-		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
 		export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=32
 		PHP_MTUNEOPT="-m${CCM} -mtune=generic"
-		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe"
+		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
 		export CXXFLAGS="$CFLAGS"
 	else
 		PHP_MTUNEOPT=""
@@ -458,6 +458,10 @@ if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
   fi
 else
   PHP_OPENSSLOPT='--with-openssl'
+fi
+
+if [[ "$PHP_GSPLITDWARF" = [yY] ]]; then
+  PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf"
 fi
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
