@@ -2009,7 +2009,7 @@ if [[ "$CLANG" = [yY] ]]; then
 	# recompiles. however on initial install ccache has no benefits, so for initial
 	# centmin mod install disabling ccache will in theory speed up first time installs
 
-if [[ "CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f /opt/sbin/llvm/bin/clang ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f /opt/sbin/llvm/bin/clang ]]; then
 	############################
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
 		export CC="ccache /opt/sbin/llvm/bin/clang -ferror-limit=0${CCTOOLSET}"
