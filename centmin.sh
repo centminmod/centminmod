@@ -297,9 +297,9 @@ PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devt
 NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-4 GCC 5.2 even for CentOS 7 nginx compiles
 GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.2 whereever possible/coded
 CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.2 for libressl or openssl compiles
-NGX_GSPLITDWARF='n'           # for Nginx compile https://community.centminmod.com/posts/44072/
-PHP_GSPLITDWARF='n'           # for PHP compile https://community.centminmod.com/posts/44072/
-NGX_LDGOLD='n'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
+NGX_GSPLITDWARF='y'           # for Nginx compile https://community.centminmod.com/posts/44072/
+PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com/posts/44072/
+NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
