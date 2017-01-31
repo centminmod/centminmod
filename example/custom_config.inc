@@ -29,6 +29,7 @@ GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.2 whereever possible/code
 CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.2 for libressl or openssl compiles
 NGX_GSPLITDWARF='n'           # for Nginx compile https://community.centminmod.com/posts/44072/
 PHP_GSPLITDWARF='n'           # for PHP compile https://community.centminmod.com/posts/44072/
+NGX_LDGOLD='n'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_NJS='n'
