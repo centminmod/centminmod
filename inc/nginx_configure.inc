@@ -2226,7 +2226,7 @@ fi
 if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_GSPLITDWARF" = [yY] ]]; then
   NGXEXTRA_CCOPT="$NGXEXTRA_CCOPT -gsplit-dwarf"
 fi
-if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_LDGOLD" = [yY] ]]; then
+if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_LDGOLD" = [yY] ]] || [[ "$CLANG" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
 	# clang 4.0 compile doesn't include the lib/LLVMgold.so linker by default, so only GCC and clang 3.4.2 do
   if [[ "$CLANG_FOUR" = [Yy] ]]; then
   	NGXEXTRA_LDOPT="$NGXEXTRA_LDOPT"
