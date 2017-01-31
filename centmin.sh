@@ -287,6 +287,7 @@ CCACHESIZE='2.2G'
 PARALLEL_MODE=y
 # compiler related
 CLANG='y'                     # Nginx and LibreSSL
+CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/posts/44039/
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
