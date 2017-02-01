@@ -369,6 +369,11 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
   gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
 
+
+  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] ]]; then
+    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf"
+  fi
+
 	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
     if [[ "$CPU_MARCH" = 'silvermont' ]]; then
@@ -458,10 +463,6 @@ if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
   fi
 else
   PHP_OPENSSLOPT='--with-openssl'
-fi
-
-if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] ]]; then
-  PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf"
 fi
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
