@@ -1300,6 +1300,22 @@ mariadb_errorlogfix() {
   fi
 }
 
+expand_cmdprompt() {
+  if [[ -z "$(grep 'PS1' /root/.bashrc)" ]]; then
+    if [ "$(id -u)" -eq 0 ]; then 
+      # you are root
+      ORIG=$PS1
+      # PS1="\e[40;1;37m[\A][\u@\H \w]\\$ \e[m " 
+      echo 'export PS1="[\A][\u@\H \W]\\$ "' >> /root/.bashrc
+      export PS1="[\A][\u@\H \W]\\$ "
+    else
+      ORIG=$PS1
+      echo 'export PS1="[\A][\u@\H \W]\\$ "' >> /root/.bashrc
+      export PS1="[\A][\u@\H \W]\\$ "
+    fi
+  fi  
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -1331,6 +1347,7 @@ pathfixes
 apache_protect
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+  expand_cmdprompt
   c7mariadb_tmpdir
   mariadb_openfilesfix
   mariadb_errorlogfix

@@ -18,6 +18,7 @@ lowmemcheck() {
 
 cpcheck
 histformat
+expand_cmdprompt
 
 # Check memory installed threshold
 if [ "$CHECKLOWMEM" == "1" ]; then
