@@ -1305,13 +1305,13 @@ expand_cmdprompt() {
     if [ "$(id -u)" -eq 0 ]; then 
       # you are root
       ORIG=$PS1
-      # PS1="\e[40;1;37m[\A][\u@\H \w]\$ \e[m " 
-      echo 'export PS1="[\A][\u@\H \W]\$ "' >> /root/.bashrc
-      export PS1="[\A][\u@\H \W]\$ "
+      # PS1="\e[40;1;37m[\A][\u@\H \w]\\$ \e[m " 
+      echo 'export PS1="[\A][\u@\H \W]\\$ "' >> /root/.bashrc
+      export PS1="[\A][\u@\H \W]\\$ "
     else
       ORIG=$PS1
-      echo 'export PS1="[\A][\u@\H \W]\$ "' >> /root/.bashrc
-      export PS1="[\A][\u@\H \W]\$ "
+      echo 'export PS1="[\A][\u@\H \W]\\$ "' >> /root/.bashrc
+      export PS1="[\A][\u@\H \W]\\$ "
     fi
   fi  
 }
