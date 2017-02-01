@@ -1306,11 +1306,11 @@ expand_cmdprompt() {
       # you are root
       ORIG=$PS1
       # PS1="\e[40;1;37m[\A][\u@\H \w]\$ \e[m " 
-      echo 'export PS1="[\u@\H \w]\$ "' >> /root/.bashrc
+      echo 'export PS1="[\A][\u@\H \w]\$ "' >> /root/.bashrc
       export PS1="[\A][\u@\H \w]\$ "
     else
       ORIG=$PS1
-      echo 'export PS1="[\u@\H \w]\$ "' >> /root/.bashrc
+      echo 'export PS1="[\A][\u@\H \w]\$ "' >> /root/.bashrc
       export PS1="[\A][\u@\H \w]\$ "
     fi
   fi  
