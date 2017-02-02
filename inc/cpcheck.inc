@@ -1316,6 +1316,12 @@ expand_cmdprompt() {
   fi  
 }
 
+setup_pwdh() {
+  if [[ -z "$(grep -w 'pwdh' /root/.bashrc)" ]]; then
+    echo "alias pwdh='echo -n \"\$HOSTNAME\"; echo \" \$PWD\"'" >> /root/.bashrc
+  fi
+}
+
 cpcheck() {
 
 if [ -f /var/cpanel/cpanel.config ]; then
@@ -1345,9 +1351,11 @@ checkovzkernels
 kernelchecks
 pathfixes
 apache_protect
+setup_pwdh
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   expand_cmdprompt
+  setup_pwdh
   c7mariadb_tmpdir
   mariadb_openfilesfix
   mariadb_errorlogfix

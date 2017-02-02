@@ -28,12 +28,16 @@ else
 	PHPDEBUGOPT=''
 fi
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
 	OPCACHEOPT=" --enable-opcache"
-elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 	# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 	# Zend Opcache version with one available from pecl site	
 	OPCACHEOPT=" --disable-opcache"	
+elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [nN] ]]; then
+  # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
+  # Zend Opcache version with one available from pecl site  
+  OPCACHEOPT=" --disable-opcache" 
 else
 	OPCACHEOPT=""
 fi
@@ -302,7 +306,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
   # php upgrades
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         scl_install
@@ -343,7 +347,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
   # php upgrades
-  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-4/enable
@@ -440,7 +444,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 fi
 
 # zend opcache hugepages
-if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
+if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' ]]; then
 	opcachehugepages
 elif [[ "$PHPMUVER" != '7.0' ]]; then	
 	if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
