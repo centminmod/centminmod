@@ -75,7 +75,7 @@ cmservice nginx reload
 #################
 zopcacheupgrade() {
 	if [[ "$PHP_INSTALL" = [yY] ]]; then
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' ]]; then
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]]; then
 	echo ""
 	echo "-----------------------------------------------------------------------------------------"
 	cecho "Detected PHP $PHPMUVER branch." $boldyellow
@@ -92,6 +92,12 @@ if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHP
 	echo "-----------------------------------------------------------------------------------------"
 	read -ep "Do you want to use Zend OPcache [y/n] ? " zendopcacheon
 	echo ""
+
+if [[ "$zendopcacheon" = [nN] ]]; then
+	if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
+		rm -rf ${CONFIGSCANDIR}/zendopcache.ini
+	fi
+fi
 
 if [[ "$zendopcacheon" = [yY] ]]; then
 
@@ -139,8 +145,8 @@ if [[ "$zendopcacheon" = [yY] ]]; then
 		fi
 	
 
-	DETECTXCACHE=n
-    DETECTAPC=n
+  DETECTXCACHE=n
+  DETECTAPC=n
     
 
 ######################################################
