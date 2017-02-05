@@ -25,9 +25,6 @@ nginxzlib_install() {
     echo "install zlib ${NGINX_ZLIBVER}..."
     echo
     pushd "$DIR_TMP"
-    if [ -d "zlib-${NGINX_ZLIBVER}" ]; then
-      rm -rf "zlib-${NGINX_ZLIBVER}"
-    fi
     cd "zlib-${NGINX_ZLIBVER}"
     ./configure
     make${MAKETHREADS}
