@@ -24,6 +24,9 @@ nginxzlib_install() {
     echo
     echo "install zlib ${NGINX_ZLIBVER}..."
     echo
+    if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
+        nginxzlibtarball
+    fi
     pushd "$DIR_TMP"
     cd "zlib-${NGINX_ZLIBVER}"
     ./configure
