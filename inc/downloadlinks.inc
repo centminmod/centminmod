@@ -166,6 +166,10 @@ PCRE_SOURCELINKFILE="pcre-${PCRE_VERSION}.tar.gz"
 PCRE_SOURCELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOURCELINKFILE}"
 PCRE_SOURCELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOURCELINKFILE}"
 
+NGX_ZLIBLINKFILE="zlib-${NGINX_ZLIBVER}.tar.gz"
+NGX_ZLIBLINK="http://zlib.net/${NGX_ZLIBLINKFILE}"
+NGX_ZLIBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zlib/${NGX_ZLIBLINKFILE}"
+
 # wget renamed
 NGX_WEBDAVLINKFILE="nginx-dav-ext-module-${NGINX_EXTWEBDAVVER}.tar.gz"
 NGX_WEBDAVLINK="https://github.com/arut/nginx-dav-ext-module/archive/v${NGINX_EXTWEBDAVVER}.tar.gz"

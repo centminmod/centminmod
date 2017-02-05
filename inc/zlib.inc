@@ -18,3 +18,23 @@ zlibng_install() {
     echo
   fi
 }
+
+nginxzlib_install() {
+  if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
+    echo
+    echo "install zlib ${NGINX_ZLIBVER}..."
+    echo
+    pushd "$DIR_TMP"
+    if [ -d "zlib-${NGINX_ZLIBVER}" ]; then
+      rm -rf "zlib-${NGINX_ZLIBVER}"
+    fi
+    cd "zlib-${NGINX_ZLIBVER}"
+    ./configure
+    make${MAKETHREADS}
+    make install
+    popd
+    echo
+    echo "zlib ${NGINX_ZLIBVER} installed"
+    echo
+  fi
+}

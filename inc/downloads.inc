@@ -730,6 +730,39 @@ echo ""
 	fi
 }
 
+nginxzlibtarball() {
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${NGX_ZLIBLINKFILE} ..." $boldyellow
+    if [ -s "${NGX_ZLIBLINKFILE}" ]; then
+        cecho "${NGX_ZLIBLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        wget -c --progress=bar "${NGX_ZLIBLINK}" --tries=3 
+        # wget -c --progress=bar ${NGX_ZLIBLINKLOCAL} --tries=3 
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+    fi
+
+tar xzf "${NGX_ZLIBLINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${NGX_ZLIBLINKFILE} extraction failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "${NGX_ZLIBLINKFILE} valid file." $boldyellow
+echo ""
+  fi
+}
+
 nginxwebdavtarball() {
 
     cd "$DIR_TMP"
