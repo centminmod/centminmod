@@ -2015,25 +2015,33 @@ if [[ "$CLANG" = [yY] ]]; then
 	# centmin mod install disabling ccache will in theory speed up first time installs
 
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f /opt/sbin/llvm/bin/clang ]]; then
+	# if [ -f /opt/sbin/llvm/lib/LLVMgold.so ]; then
+	# 	LLVMLTO_OPT=' -flto'
+	# 	# export AR="$BUILD_DIR/llvmgold.binutils/binutils/ar"
+	# 	# export NM="$BUILD_DIR/llvmgold.binutils/binutils/nm-new"
+	# 	# export RANLIB=/bin/true
+	# else
+	# 	LLVMLTO_OPT=""
+	# fi
 	############################
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
-		export CC="ccache /opt/sbin/llvm/bin/clang -ferror-limit=0${CCTOOLSET}"
-		export CXX="ccache /opt/sbin/llvm/bin/clang++ -ferror-limit=0"
+		export CC="ccache /opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}"
+		export CXX="ccache /opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0"
 		export CCACHE_CPP2=yes
 		CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
 echo "
-export CC=\"ccache /opt/sbin/llvm/bin/clang -ferror-limit=0${CCTOOLSET}\"
-export CXX=\"ccache /opt/sbin/llvm/bin/clang++ -ferror-limit=0\"
+export CC=\"ccache /opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}\"
+export CXX=\"ccache /opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0\"
 export CCACHE_CPP2=yes
 CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
 	else
-		export CC="/opt/sbin/llvm/bin/clang -ferror-limit=0${CCTOOLSET}"
-		export CXX="/opt/sbin/llvm/bin/clang++ -ferror-limit=0"
+		export CC="/opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}"
+		export CXX="/opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0"
 		# export CCACHE_CPP2=yes
 		CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
 echo "	
-export CC=\"/opt/sbin/llvm/bin/clang -ferror-limit=0${CCTOOLSET}\"
-export CXX=\"/opt/sbin/llvm/bin/clang++ -ferror-limit=0\"
+export CC=\"/opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}\"
+export CXX=\"/opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0\"
 # export CCACHE_CPP2=yes
 CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
 	fi
