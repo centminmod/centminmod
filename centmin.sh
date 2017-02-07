@@ -205,6 +205,8 @@ else
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
+        CPUS=$(echo "$CPUS+4" | bc)
+    elif [[ "$CPUS" -eq '8' ]]; then
         CPUS=$(echo "$CPUS+2" | bc)
     else
         CPUS=$(echo "$CPUS+1" | bc)
@@ -278,7 +280,7 @@ MARIADB_JEMALLOC='n'
 #####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
-CCACHE_VER="3.3.2"
+CCACHE_VER="3.3.3"
 CCACHESIZE='2.2G'
 
 #####################################################

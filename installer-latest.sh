@@ -124,6 +124,12 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  # set ld.gold linker as system default
+  /usr/sbin/alternatives --set ld /usr/bin/ld.gold
+  ld -v
+fi
+
 if [ -f /proc/user_beancounters ]; then
     echo "OpenVZ system detected, NTP not installed"
 else
@@ -669,6 +675,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
 echo "NGINX_PAGESPEED=y" > /etc/centminmod/custom_config.inc
+echo "NGINX_ZLIBCUSTOM='y'" >> /etc/centminmod/custom_config.inc
 echo "ORESTY_LUANGINX=y" >> /etc/centminmod/custom_config.inc
 echo "NGINX_XSLT='n'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc

@@ -3569,11 +3569,13 @@ if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -g
   csftarball &
   pythontarball &
   mailparsephpexttarball &
+  nginxzlibtarball &
   wait
 else
   csftarball
   pythontarball
   mailparsephpexttarball
+  nginxzlibtarball
 fi
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then

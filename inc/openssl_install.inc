@@ -283,9 +283,6 @@ installopenssl() {
             yum -q -y install imake
         fi
     
-        echo "Compiling OpenSSL..."
-        #download openssl centos 6.x
-    
         # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
         # export OPENSSL_BPATH=$OPENSSL_CUSTOMPATH
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
@@ -301,11 +298,17 @@ installopenssl() {
         opensslpatches
         crypto_gcc
         if [[ "$(uname -m)" = 'x86_64' ]]; then
+            ECNISTP_CHECK=$(gcc -dM -E - </dev/null | grep __SIZEOF_INT128__)
+            if [ "$ECNISTP_CHECK" ]; then
+                ECNISTP_OPT=' enable-ec_nistp_64_gcc_128'
+            else
+                ECNISTP_OPT=""
+            fi
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared enable-ec_nistp_64_gcc_128
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}
             else
-                ./config --prefix=$STATICLIBSSL shared enable-tlsext enable-ec_nistp_64_gcc_128
+                ./config --prefix=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
