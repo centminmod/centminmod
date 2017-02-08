@@ -857,6 +857,13 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
+              if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                systemctl daemon-reload
+              fi
+              if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                  /usr/bin/memcachedstop >/dev/null
+                  /usr/bin/memcachedstart >/dev/null
+              fi
               popd
           fi
       elif [[ "$SOCKETPATCH" = [Yy] ]]; then
@@ -866,6 +873,13 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
+              if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                systemctl daemon-reload
+              fi
+              if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                  /usr/bin/memcachedstop >/dev/null
+                  /usr/bin/memcachedstart >/dev/null
+              fi
               popd
           fi
       fi

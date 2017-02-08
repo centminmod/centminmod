@@ -156,6 +156,13 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
             pushd /etc/init.d/
             patch -s < memcached-socketfix.patch >/dev/null 2>&1
             rm -rf memcached-socketfix.patch
+            if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                systemctl daemon-reload
+            fi
+            if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                /usr/bin/memcachedstop >/dev/null
+                /usr/bin/memcachedstart >/dev/null
+            fi
             popd
         fi
     elif [[ "$SOCKETPATCH" = [Yy] ]]; then
@@ -165,6 +172,13 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
             pushd /etc/init.d/
             patch -s < memcached-socketfix.patch >/dev/null 2>&1
             rm -rf memcached-socketfix.patch
+            if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                systemctl daemon-reload
+            fi
+            if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                /usr/bin/memcachedstop >/dev/null
+                /usr/bin/memcachedstart >/dev/null
+            fi
             popd
         fi
     fi
