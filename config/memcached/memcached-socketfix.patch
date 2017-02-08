@@ -31,10 +31,10 @@
 +setperm() {
 +if [[ "$SOCKET_ENABLE" = [yY] ]]; then
 +    chown -R ${USER}:nginx /var/run/memcached/ 2>&1 >/dev/null
-+    if [ -f "$SOCKETNAMEA" ]; then
++    if [ -S "$SOCKETNAMEA" ]; then
 +        chown ${USER}:nginx "$SOCKETNAMEA" 2>&1 >/dev/null
 +    fi
-+    if [ -f "$SOCKETNAMEB" ]; then
++    if [ -S "$SOCKETNAMEB" ]; then
 +        chown ${USER}:nginx "$SOCKETNAMEB" 2>&1 >/dev/null
 +    fi
 +fi
