@@ -131,6 +131,58 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
     echo "*************************************************"
     cecho "* Installing memcached" $boldgreen
     echo "*************************************************"
+
+    if [ ! "$(grep -w 'memcached' /etc/passwd)" ]; then
+      echo "Update memcached server setup"
+      echo "Adding memcached user/group and adding to nginx group"
+      adduser -s /sbin/nologin -M memcached >/dev/null
+      usermod -G nginx memcached >/dev/null
+      id memcached
+      SOCKETPATCH=y
+    elif [[ "$(grep -w 'memcached' /etc/passwd)" && "$(grep -w 'nginx' /etc/passwd)" ]]; then
+      if [[ "$(id memcached | grep -o nginx)" != 'nginx' ]]; then
+        usermod -G nginx memcached >/dev/null
+        id memcached
+        SOCKETPATCH=y
+      fi
+    fi
+    if [[ "$(grep -w "USER=nobody" /etc/init.d/memcached)" && "$SOCKETPATCH" = [Yy] ]]; then
+        echo "Changing memcached server user from nobody to memcached"
+        sed -i 's|USER=nobody|USER=memcached|' /etc/init.d/memcached
+        grep -w "USER=memcached" /etc/init.d/memcached
+        echo "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch"
+        if [[ -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" && -f /etc/init.d/memcached ]]; then
+            \cp -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" /etc/init.d/memcached-socketfix.patch
+            pushd /etc/init.d/
+            patch -s < memcached-socketfix.patch >/dev/null 2>&1
+            rm -rf memcached-socketfix.patch
+            if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                systemctl daemon-reload
+            fi
+            if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                /usr/bin/memcachedstop >/dev/null
+                /usr/bin/memcachedstart >/dev/null
+            fi
+            popd
+        fi
+    elif [[ "$SOCKETPATCH" = [Yy] ]]; then
+        echo "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch"
+        if [[ -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" && -f /etc/init.d/memcached ]]; then
+            \cp -f "${SCRIPT_DIR}/config/memcached/memcached-socketfix.patch" /etc/init.d/memcached-socketfix.patch
+            pushd /etc/init.d/
+            patch -s < memcached-socketfix.patch >/dev/null 2>&1
+            rm -rf memcached-socketfix.patch
+            if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                systemctl daemon-reload
+            fi
+            if [ "$(ps -C memcached | grep -w memcached)" ]; then
+                /usr/bin/memcachedstop >/dev/null
+                /usr/bin/memcachedstart >/dev/null
+            fi
+            popd
+        fi
+    fi
+
     echo "Downloading memcached..."
     cd "$DIR_TMP"
 

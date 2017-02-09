@@ -4,7 +4,7 @@
 # processname: memcached
 BINNAME=memcached
 BIN=/usr/local/bin/memcached
-USER=nobody
+USER=memcached
 LOGGING='n'
 LOGFILE="/var/log/memcached.log"
 LOGFILEB="/var/log/memcached2.log"
@@ -17,8 +17,10 @@ CHUNKF=1.25
 PORT1=11211
 PORT2=11212
 SOCKET_ENABLE=n
-SOCKETA='-s /var/run/memcached/memcached1.sock -a 0755'
-SOCKETB='-s /var/run/memcached/memcached2.sock -a 0755'
+SOCKETNAMEA='/var/run/memcached/memcached1.sock'
+SOCKETA="-s $SOCKETNAMEA -a 0775"
+SOCKETNAMEB='/var/run/memcached/memcached2.sock'
+SOCKETB="-s $SOCKETNAMEB -a 0775"
 MEMSIZE=8
 SERVERCOUNT=2
 SERVERIP='127.0.0.1'
@@ -44,8 +46,8 @@ fi
 
 if [ ! -d /var/run/memcached/ ]; then
         mkdir -p /var/run/memcached/
-        chmod 755 /var/run/memcached/
-        chown nobody:nobody /var/run/memcached/
+        chmod 755 /var/run/memcached/ 2>&1 >/dev/null
+        chown -R ${USER}:${USER} /var/run/memcached/ 2>&1 >/dev/null
 fi
 
 if [[ "$SOCKET_ENABLE" = [yY] ]]; then
@@ -59,6 +61,17 @@ fi
 DEBUG='n'
 CPUSET='n'
 #############################
+setperm() {
+if [[ "$SOCKET_ENABLE" = [yY] ]]; then
+    chown -R ${USER}:nginx /var/run/memcached/ 2>&1 >/dev/null
+    if [ -f "$SOCKETNAMEA" ]; then
+        chown ${USER}:nginx "$SOCKETNAMEA" 2>&1 >/dev/null
+    fi
+    if [ -f "$SOCKETNAMEB" ]; then
+        chown ${USER}:nginx "$SOCKETNAMEB" 2>&1 >/dev/null
+    fi
+fi
+}
 
 processcheck() {
         PROCESS=$(ps ax | grep memcached | grep -Ev '(/etc/init.d/memcached|grep|memcached status|memcached start|memcached stop|memcached restart|memcached_reinstall)')
@@ -131,9 +144,11 @@ fi
 mstart() {
 if [ "$SERVERCOUNT" == '2' ]; then
         twomem
+        setperm
 elif  [ "$SERVERCOUNT" == '1' ]; then
         onemem
         setcpu
+        setperm
 fi
 }
 
@@ -151,35 +166,45 @@ if [[ "$CHECKM" != 'nomemcached' ]]; then
                 RETVALA=$?
                 if [ $RETVALA -eq 0 ] ; then
                         rm -rf $PIDA 2>/dev/null
+                        rm -rf $SOCKETNAMEA 2>/dev/null
                         rm -rf $PIDB 2>/dev/null
+                        rm -rf $SOCKETNAMEB 2>/dev/null
                         kill -9 $(pidof $BINNAME) 2>/dev/null
                 fi
                 kill -9 $(cat $PIDB 2>/dev/null) 2>/dev/null
                 RETVALB=$?
                 if [ $RETVALB -eq 0 ] ; then
                         rm -rf $PIDA 2>/dev/null
+                        rm -rf $SOCKETNAMEA 2>/dev/null
                         rm -rf $PIDB 2>/dev/null
+                        rm -rf $SOCKETNAMEB 2>/dev/null
                         kill -9 $(pidof $BINNAME) 2>/dev/null
                 fi
                 if [[ -f "$PIDA" || -f "$PIDB" ]]; then
                         rm -rf $PIDA 2>/dev/null
+                        rm -rf $SOCKETNAMEA 2>/dev/null
                         rm -rf $PIDB 2>/dev/null
+                        rm -rf $SOCKETNAMEB 2>/dev/null
                 fi                
         else
                 kill -9 $(pidof $BINNAME) 2>/dev/null
                 RETVALA=$?
                 if [ $RETVALA -eq 0 ] ; then
                         rm -rf $PIDA 2>/dev/null
+                        rm -rf $SOCKETNAMEA 2>/dev/null
                         kill -9 $(pidof $BINNAME) 2>/dev/null
                 fi
                 if [ -f "$PIDA" ]; then
                         rm -rf $PIDA 2>/dev/null
+                        rm -rf $SOCKETNAMEA 2>/dev/null
                 fi
         fi
 else
         # echo "Memcached server already stopped "
         rm -rf $PIDA 2>/dev/null
+        rm -rf $SOCKETNAMEA 2>/dev/null
         rm -rf $PIDB 2>/dev/null
+        rm -rf $SOCKETNAMEB 2>/dev/null
         kill -9 $(pidof $BINNAME) 2>/dev/null
 fi
 }

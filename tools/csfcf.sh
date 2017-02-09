@@ -146,6 +146,10 @@ nginxsetup() {
 	echo > $CFINCLUDEFILE
 	cflista=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/)
 	cflistb=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/)
+	if [ ! -f /usr/local/nginx/conf/cloudflare_customips.conf ]; then
+		touch /usr/local/nginx/conf/cloudflare_customips.conf
+	fi
+	echo "include /usr/local/nginx/conf/cloudflare_customips.conf;" >> $CFINCLUDEFILE
 	for i in $cflista; do
         	echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
 	done
