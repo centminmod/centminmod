@@ -6,7 +6,7 @@
 # backup nginx vhost site's directory & file permissions
 # using
 # backup
-# getfacl -R < /path/to/filename.acl
+# getfacl -R -L --absolute-names /home/nginx/domains/domain.com > /path/to/filename.acl
 # restore
 # setfacl --restore=/path/to/filename.acl
 ################################################################
