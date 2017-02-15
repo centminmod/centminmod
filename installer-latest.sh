@@ -118,7 +118,7 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.11'
+  AXEL_VER='2.12'
   AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
   AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
