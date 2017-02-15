@@ -3606,13 +3606,17 @@ fi
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
   gperftools &
-  openssldownload &
+  if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+    openssldownload &
+  fi
   libressldownload &
   pcretarball &
   wait
 else
   gperftools
-  openssldownload
+  if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+    openssldownload
+  fi
   libressldownload
   pcretarball
 fi
