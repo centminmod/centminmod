@@ -2897,6 +2897,8 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
+  ping -c4 $(echo "${OPENSSL_LINK}" | awk -F "/" '{print $3}')
+  dig $(echo "${OPENSSL_LINK}" | awk -F "/" '{print $3}')
 checklogdetails
 	exit #$ERROR
 else 
