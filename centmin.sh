@@ -665,7 +665,7 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.11'
+  AXEL_VER='2.12'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS

@@ -2849,8 +2849,10 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
+          echo "wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
           wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
         else
+          echo "download_cmd "${OPENSSL_LINK}" "$WGETRETRY""
           download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
         fi
 ERROR=$?
@@ -2886,13 +2888,17 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
+          echo "wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
           wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
         else
+          echo "download_cmd "${OPENSSL_LINK}" "$WGETRETRY""
           download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
         fi
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
+  ping -c4 $(echo "${OPENSSL_LINK}" | awk -F "/" '{print $3}')
+  dig $(echo "${OPENSSL_LINK}" | awk -F "/" '{print $3}')
 checklogdetails
 	exit #$ERROR
 else 
@@ -3606,13 +3612,17 @@ fi
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then
   gperftools &
-  openssldownload &
+  if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+    openssldownload &
+  fi
   libressldownload &
   pcretarball &
   wait
 else
   gperftools
-  openssldownload
+  if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+    openssldownload
+  fi
   libressldownload
   pcretarball
 fi
