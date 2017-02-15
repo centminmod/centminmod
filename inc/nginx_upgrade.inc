@@ -221,12 +221,16 @@ if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACH
 
     if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep "processor" /proc/cpuinfo |wc -l)" -gt '1' ]]; then
         ngxmoduletarball &
-        openssldownload &
+        if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+            openssldownload &
+        fi
         # libressldownload &
         wait
     else
         ngxmoduletarball
-        openssldownload
+        if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+            openssldownload
+        fi
         # libressldownload
     fi
 fi
