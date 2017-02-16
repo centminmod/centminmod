@@ -29,6 +29,8 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     fi
 fi
 
+sshdtweaks
+
 # swap file detection and setup routine add a 1GB swap file 
 # to servers without swap setup and non-openvz based as a 
 # precaution for low memory vps systems <1GB which require
@@ -146,8 +148,6 @@ if [ -f /etc/centminmod-release ];then
 else
 	setupmotd
 fi
-
-sshdtweaks
 
 countcpus
 
