@@ -38,8 +38,10 @@ fi
 # an additional memory buffer
   FINDSWAPSIZE=$(free -m | awk '/Swap: / {print $2}' | head -n1)
   # if free -m output swap size = 0, create a 1GB swap file for
-  # non-openvz systems
-  if [[ "$FINDSWAPSIZE" = '0' && ! -f /proc/user_beancounters && ! -f /swapfile ]]; then
+  # non-openvz systems or if less than 1GB of memory and swap 
+  # smaller than 512MB on non-openvz systems, create a 1GB additional
+  # swap file
+  if [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && ! -f /swapfile ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '1048576' && "$FINDSWAPSIZE" -le '512' && ! -f /proc/user_beancounters && ! -f /swapfile ]]; then
     {
     echo
     free -m
