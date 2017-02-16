@@ -47,7 +47,8 @@ fi
     free -m
     echo
     echo "create 1GB swap file"; 
-    dd if=/dev/zero of=/swapfile bs=1024 count=1024k; 
+    fallocate -l 1G /swapfile
+    # dd if=/dev/zero of=/swapfile bs=1024 count=1024k; 
     ls -lah /swapfile; 
     mkswap /swapfile; 
     swapon /swapfile; 
