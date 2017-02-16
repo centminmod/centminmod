@@ -47,8 +47,11 @@ fi
     free -m
     echo
     echo "create 1GB swap file"; 
-    fallocate -l 1G /swapfile
-    # dd if=/dev/zero of=/swapfile bs=1024 count=1024k; 
+    if [ "$(df -hT | grep -w xfs)" ]; then
+        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+    else
+        fallocate -l 1G /swapfile
+    fi
     ls -lah /swapfile; 
     mkswap /swapfile; 
     swapon /swapfile; 
