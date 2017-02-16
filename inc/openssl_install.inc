@@ -19,7 +19,7 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
 fi
 
-if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2k' ]]; then
+if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2m' ]]; then
     # cloudflare patch chacha20 support does not seem to
     # work with openssl 1.0.2i
     # https://community.centminmod.com/posts/36691/

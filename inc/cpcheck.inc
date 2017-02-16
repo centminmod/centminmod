@@ -197,7 +197,7 @@ gitenv_askupdate() {
       else
         GET_GITREMOTEURL=$(cd /usr/local/src/centminmod >/dev/null 2>&1; git remote -v | awk '/\(fetch/ {print $2}' | head -n1)
       fi
-      if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
+      if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]] && [[ ! -z "$CURL_GITURL" ]]; then
         cecho "-------------------------------------------------------------" $boldgreen
         cecho " Centmin Mod remote branch has changed" $boldyellow
         cecho " from $GET_GITREMOTEURL" $boldyellow

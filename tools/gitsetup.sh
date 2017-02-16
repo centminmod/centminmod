@@ -60,7 +60,7 @@ git branch -a
 echo
 cecho "list git log last commit" $boldyellow
 cecho "	git log -a" $boldgreen
-git log -1
+git log -1 | sed -e 's|Author: George Liu <.*>|Author: George Liu <snipped>|g'
 
 echo
 cecho "to update centmin mod ${branchname} branch repo via git" $boldyellow
