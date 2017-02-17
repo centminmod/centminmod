@@ -26,6 +26,14 @@ nano_highlight() {
   fi
 }
 
+fixwp_updater() {
+  # auto correct bug
+  # https://community.centminmod.com/posts/44969/
+  if [ -d /root/tools ]; then
+    for f in $(find /root/tools/ -type f -name "wp_updater_*"); do grep -w 'pure-pw' $f && sed -i "/pure-pw/d" $f; done
+  fi
+}
+
 fixnodejs_epel() {
   # prevent node.js 6.x install by epel in favour of nodesource
   # repo via addons/nodejs.sh
@@ -1459,6 +1467,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   nano_highlight
   checkwoff
   checkipvsix
+  fixwp_updater
 fi
 
 }
