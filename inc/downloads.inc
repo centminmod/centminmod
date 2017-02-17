@@ -2849,13 +2849,17 @@ if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
+          echo "wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          ERROR=$?
+          echo $ERROR
         else
           echo "download_cmd "${OPENSSL_LINK}" "$WGETRETRY""
-          download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
+          download_cmd "${OPENSSL_LINK}" "$WGETRETRY"
+          ERROR=$?
+          echo $ERROR
         fi
-ERROR=$?
+
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
 checklogdetails
@@ -2871,7 +2875,7 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} extraction failed." $boldgreen
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "${OPENSSL_LINKFILE} valid file." $boldyellow
 echo ""
@@ -2888,19 +2892,23 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget ${WGETOPT} --progress=bar "${OPENSSL_LINK}" "$WGETRETRY" 
+          echo "wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          ERROR=$?
+          echo $ERROR
         else
           echo "download_cmd "${OPENSSL_LINK}" "$WGETRETRY""
-          download_cmd "${OPENSSL_LINK}" "$WGETRETRY" 
+          download_cmd "${OPENSSL_LINK}" "$WGETRETRY"
+          ERROR=$?
+          echo $ERROR
         fi
-ERROR=$?
+
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
   ping -c4 $(echo "${OPENSSL_LINK}" | awk -F "/" '{print $3}')
   dig $(echo "${OPENSSL_LINK}" | awk -F "/" '{print $3}')
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 #echo ""

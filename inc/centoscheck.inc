@@ -29,6 +29,8 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     fi
 fi
 
+sshdtweaks
+
 # swap file detection and setup routine add a 1GB swap file 
 # to servers without swap setup and non-openvz based as a 
 # precaution for low memory vps systems <1GB which require
@@ -38,14 +40,20 @@ fi
 # an additional memory buffer
   FINDSWAPSIZE=$(free -m | awk '/Swap: / {print $2}' | head -n1)
   # if free -m output swap size = 0, create a 1GB swap file for
-  # non-openvz systems
-  if [[ "$FINDSWAPSIZE" = '0' && ! -f /proc/user_beancounters && ! -f /swapfile ]]; then
+  # non-openvz systems or if less than 1GB of memory and swap 
+  # smaller than 512MB on non-openvz systems, create a 1GB additional
+  # swap file
+  if [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && ! -f /swapfile ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '1048576' && "$FINDSWAPSIZE" -le '512' && ! -f /proc/user_beancounters && ! -f /swapfile ]]; then
     {
     echo
     free -m
     echo
     echo "create 1GB swap file"; 
-    dd if=/dev/zero of=/swapfile bs=1024 count=1024k; 
+    if [ "$(df -hT | grep -w xfs)" ]; then
+        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+    else
+        fallocate -l 1G /swapfile
+    fi
     ls -lah /swapfile; 
     mkswap /swapfile; 
     swapon /swapfile; 
@@ -140,8 +148,6 @@ if [ -f /etc/centminmod-release ];then
 else
 	setupmotd
 fi
-
-sshdtweaks
 
 countcpus
 
