@@ -278,6 +278,12 @@ else
     fi
 fi
 
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
+  # Disable php intel optimisation flags if less than 2 cpu threads
+  # detected due to being very very slow for php compile times
+  GCCINTEL_PHP='n'
+fi
+
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
