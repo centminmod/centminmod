@@ -397,7 +397,15 @@ echo ""
 
 perdbiinstall
 # reinstall postfix removed from mariadb-libs removale
-yum -y install postfix net-snmp mytop
+if [[ $(rpm -q postfix >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y install postfix
+fi
+if [[ $(rpm -q net-snmp >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y install net-snmp
+fi
+if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y install mytop
+fi
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
 # make sure MariaDB 5.5 is updated from only one repo
