@@ -535,7 +535,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
   yum -y install epel-release
-  yum -y install figlet moreutils nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28
+  yum -y install figlet moreutils nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28 uw-imap-devel
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -y install GeoIP GeoIP-devel --disablerepo=rpmforge
   else

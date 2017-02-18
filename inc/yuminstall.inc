@@ -79,7 +79,6 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
   fi
 yumprior
 else
-yum -y -q install yum-priorities yum-fastestmirror yum-downloadonly epel-release
 
 if [[ $(rpm -q yum-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-priorities
