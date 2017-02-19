@@ -363,7 +363,7 @@ yumupdatechecker() {
 			# cecho "-------------------------------------------------------------" $boldgreen
 			echo
 			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  To updates type: " $boldyellow
+			cecho "  To update type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
 				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
