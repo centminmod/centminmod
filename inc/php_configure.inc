@@ -239,6 +239,11 @@ fi
 
 # set_intelflags
 
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
+  # Enable faster clang compiler for PHP if less than 2 cpu threads
+  CLANG_PHP='y'
+fi
+
 if [[ "$CLANG_PHP" = [yY] ]]; then
     if [[ ! -f /usr/bin/clang ]]; then
         yum -q -y install clang clang-devel
@@ -276,6 +281,12 @@ else
     	# PLACEHOLDER FOR CLAGS FOR PHP
     	# CFLAGS=
     fi
+fi
+
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
+  # Disable php intel optimisation flags if less than 2 cpu threads
+  # detected due to being very very slow for php compile times
+  GCCINTEL_PHP='n'
 fi
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then

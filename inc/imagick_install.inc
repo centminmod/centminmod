@@ -34,17 +34,17 @@ checkimagicksys() {
             if [[ $(rpm -q ImageMagick6 >/dev/null 2>&1; echo $?) = '0' ]] && [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) != '0' ]]; then
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
-                    yum clean all >/dev/null 2>&1
-                    yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    # yum clean all >/dev/null 2>&1
+                    time yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             else
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # yum -y install libwebp libwebp-devel --skip-broken
-                    yum clean all >/dev/null 2>&1
-                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+                    # yum clean all >/dev/null 2>&1
+                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
-                    yum clean all >/dev/null 2>&1
-                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    # yum clean all >/dev/null 2>&1
+                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
         elif [ ! -f /etc/yum.repos.d/remi.repo ]; then

@@ -26,6 +26,14 @@ nano_highlight() {
   fi
 }
 
+fixwp_updater() {
+  # auto correct bug
+  # https://community.centminmod.com/posts/44969/
+  if [ -d /root/tools ]; then
+    for f in $(find /root/tools/ -type f -name "wp_updater_*"); do grep -w 'pure-pw' $f && sed -i "/pure-pw/d" $f; done
+  fi
+}
+
 fixnodejs_epel() {
   # prevent node.js 6.x install by epel in favour of nodesource
   # repo via addons/nodejs.sh
@@ -355,7 +363,7 @@ yumupdatechecker() {
 			# cecho "-------------------------------------------------------------" $boldgreen
 			echo
 			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  To updates type: " $boldyellow
+			cecho "  To update type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
 				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
@@ -1459,6 +1467,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   nano_highlight
   checkwoff
   checkipvsix
+  fixwp_updater
 fi
 
 }

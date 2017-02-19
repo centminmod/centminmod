@@ -3649,7 +3649,7 @@ else
 fi
 
 #mariadbyumrepo
-validcheck_downloads
+#validcheck_downloads
 
 echo "*****************************************************"
 cecho "Downloads complete." $boldgreen

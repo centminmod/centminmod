@@ -37,12 +37,35 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
   # do not install yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-downloadonly yum-plugin-security
+    if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install yum-plugin-fastestmirror
+    fi
+    if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install yum-plugin-downloadonly
+    fi
+    if [[ $(rpm -q yum-plugin-security >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install yum-plugin-security
+    fi
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-downloadonly yum-plugin-security
+    if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install yum-plugin-fastestmirror
+    fi
+    if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install yum-plugin-downloadonly
+    fi
+    if [[ $(rpm -q yum-plugin-security >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install yum-plugin-security
+    fi
   fi
 
-yum -y -q install yum-plugin-priorities epel-release
+if [[ $(rpm -q yum-plugin-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
+  yum -y -q install yum-plugin-priorities
+fi
+
+if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
+  yum -y -q install epel-release
+fi
+
 if [[ -f /etc/yum.repos.d/epel.repo && -z "$(grep 'varnish-libs' /etc/yum.repos.d/epel.repo)" ]]; then
   sed -i 's|varnish|varnish varnish-libs|' /etc/yum.repos.d/epel.repo
 fi
@@ -56,7 +79,23 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
   fi
 yumprior
 else
-yum -y -q install yum-priorities yum-fastestmirror yum-downloadonly epel-release
+
+if [[ $(rpm -q yum-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
+  yum -y -q install yum-priorities
+fi
+
+if [[ $(rpm -q yum-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
+  yum -y -q install yum-fastestmirror
+fi
+
+if [[ $(rpm -q yum-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
+  yum -y -q install yum-downloadonly
+fi
+
+if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
+  yum -y -q install epel-release
+fi
+
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 fi
