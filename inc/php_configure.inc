@@ -248,18 +248,28 @@ if [[ "$CLANG_PHP" = [yY] ]]; then
     if [[ ! -f /usr/bin/clang ]]; then
         yum -q -y install clang clang-devel
     fi
+    if [[ "$GCCINTEL_PHP" = [yY] ]]; then
+      CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+      if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
+        CCM=64
+        PHP_MTUNEOPT="-m${CCM} -mtune=native"
+      else
+        CCM=""
+        PHP_MTUNEOPT=""
+      fi
+    fi
 	# ccache compiler has some initial overhead for compiles but speeds up subsequent
 	# recompiles. however on initial install ccache has no benefits, so for initial
 	# centmin mod install disabling ccache will in theory speed up first time installs
 	if [[ "$INITIALINSTALL" != [yY] ]]; then    
-    	export CC="ccache /usr/bin/clang"
-    	export CXX="ccache /usr/bin/clang++"
+    	export CC="ccache /usr/bin/clang ${PHP_MTUNEOPT}"
+    	export CXX="ccache /usr/bin/clang++ ${PHP_MTUNEOPT}"
     	export CCACHE_CPP2=yes
     	# PLACEHOLDER FOR CLAGS FOR PHP
     	# CFLAGS=
     else
-    	export CC="/usr/bin/clang"
-    	export CXX="/usr/bin/clang++"
+    	export CC="/usr/bin/clang ${PHP_MTUNEOPT}"
+    	export CXX="/usr/bin/clang++ ${PHP_MTUNEOPT}"
     	# export CCACHE_CPP2=yes
     	# PLACEHOLDER FOR CLAGS FOR PHP
     	# CFLAGS=
@@ -482,6 +492,33 @@ else
   PHP_OPENSSLOPT='--with-openssl'
 fi
 
+# separate make threads for PHP compiles
+if [ -f /proc/user_beancounters ]; then
+    # CPUS='1'
+    # MAKETHREADS_PHP=" -j$CPUS"
+    # speed up make
+    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
+    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
+    else
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+    fi
+    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
+else
+    # speed up make
+    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
+    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
+    else
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+    fi
+    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
+fi
+
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
 	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo --with-pdo-sqlite --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
@@ -496,7 +533,7 @@ else
 
 fi
 
-    time make${MAKETHREADS}
+    time make${MAKETHREADS_PHP}
 
 	if [[ "$PHPMAKETEST" = [yY] ]]; then
 		time make test
