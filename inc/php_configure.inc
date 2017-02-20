@@ -533,7 +533,10 @@ else
 
 fi
 
+    echo
+    echo "php_configure.inc make${MAKETHREADS_PHP}"
     time make${MAKETHREADS_PHP}
+    echo
 
 	if [[ "$PHPMAKETEST" = [yY] ]]; then
 		time make test
