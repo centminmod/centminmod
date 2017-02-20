@@ -899,6 +899,10 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
             echo "dynamic module directory at /usr/local/nginx/modules"
             ls -lah /usr/local/nginx/modules
             echo
+            echo "backup dynamic modules to /usr/local/nginx/modules.copy"
+            mkdir -p /usr/local/nginx/modules.copy
+            \cp -af /usr/local/nginx/modules/* /usr/local/nginx/modules.copy
+            ls -lah /usr/local/nginx/modules.copy
         fi
 
         echo "log files saved at ${CENTMINLOGDIR}"

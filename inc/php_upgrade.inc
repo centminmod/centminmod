@@ -437,14 +437,41 @@ funct_phpconfigure
 # error check
 ################
 
+# separate make threads for PHP compiles
+if [ -f /proc/user_beancounters ]; then
+    # CPUS='1'
+    # MAKETHREADS_PHP=" -j$CPUS"
+    # speed up make
+    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
+    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
+    else
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+    fi
+    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
+else
+    # speed up make
+    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
+    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
+    else
+        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+    fi
+    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
+fi
+
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Make"
     fi
     echo "PHPMUVER = $PHPMUVER"
     echo "PHP_PGO = $PHP_PGO"
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' ]]; then
-        echo "make${MAKETHREADS} prof-gen"
-        time make${MAKETHREADS} prof-gen
+        echo "make${MAKETHREADS_PHP} prof-gen"
+        time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP"
             git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
@@ -475,11 +502,11 @@ funct_phpconfigure
         fi
         echo "make prof-clean"
         time make prof-clean
-        echo "make${MAKETHREADS} prof-use"
-        time make${MAKETHREADS} prof-use
+        echo "make${MAKETHREADS_PHP} prof-use"
+        time make${MAKETHREADS_PHP} prof-use
     else
-        echo "make${MAKETHREADS}"
-        time make${MAKETHREADS}
+        echo "make${MAKETHREADS_PHP}"
+        time make${MAKETHREADS_PHP}
     fi
 
 ################
