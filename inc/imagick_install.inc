@@ -95,8 +95,11 @@ checkimagicksys() {
 imagickinstall() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPIMAGICK" = [yY] ]]; then
-        checkphpext
-        checkimagicksys
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            # no need to check for initial install runs
+            checkphpext
+            checkimagicksys
+        fi
         imagick_fixes
     echo "*************************************************"
     cecho "* Installing imagick PHP Extension" $boldgreen
