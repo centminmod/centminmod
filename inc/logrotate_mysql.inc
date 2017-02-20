@@ -6,7 +6,7 @@ function funct_listlogmysqlrotatedir {
 echo "---------------------------------------------------------------------------"
 echo "Current mysql log directories:"
 echo "---------------------------------------------------------------------------"
-if [ -d /var/log/]; then
+if [ -d /var/log/ ]; then
 echo "ls -lh /var/log/ | egrep 'mysql|mysql-slowlog'"
 ls -lh /var/log/ | egrep 'mysql|mysql-slowlog'
 echo "---------------------------------------------------------------------------"
