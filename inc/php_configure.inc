@@ -423,7 +423,9 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       PHP_MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse"
     fi
     # if only 1 cpu thread use -O2 to keep compile times sane
-    if [[ "$CPUS" = '1' ]]; then
+    if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
       export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     else
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
