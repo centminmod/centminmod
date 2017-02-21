@@ -1648,6 +1648,17 @@ if [ -f src/http/ngx_http_header_filter_module.c ]; then
 	fi
 fi
 
+if [[ -f src/core/ngx_log.h && "$NGINX_MAXERRBYTELIMIT" -ne '2048' && ! -z "$NGINX_MAXERRBYTELIMIT" ]]; then
+	sed -i "s|^#define NGX_MAX_ERROR_STR.*|#define NGX_MAX_ERROR_STR   $NGINX_MAXERRBYTELIMIT|" src/core/ngx_log.h
+	echo "NGX_MAX_ERROR_STR value"
+	grep -w 'NGX_MAX_ERROR_STR' src/core/ngx_log.h
+	echo
+else
+	echo "NGX_MAX_ERROR_STR value"
+	grep -w 'NGX_MAX_ERROR_STR' src/core/ngx_log.h
+	echo
+fi
+
 if [[ ! -f /usr/bin/jemalloc.sh || ! -d /usr/include/jemalloc ]]; then
 	yum -y install jemalloc jemalloc-devel
 	if [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
