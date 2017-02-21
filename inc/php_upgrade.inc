@@ -432,6 +432,9 @@ funct_phpconfigure
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP configure ok\n"
@@ -526,6 +529,9 @@ fi
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP make ok\n"
@@ -565,6 +571,9 @@ fi
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP was installed properly\n"

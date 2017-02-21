@@ -587,6 +587,9 @@ fi
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
             echo
             exit
         fi
@@ -608,6 +611,10 @@ fi
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         echo
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
+
         rm -rf "$DIR_TMP/nginx-*.tar.gz"
         exit
     fi
@@ -643,6 +650,9 @@ funct_nginxconfigure
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
         exit
 	else
     	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
@@ -688,6 +698,9 @@ funct_nginxconfigure
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
     	exit
 	else
 	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
@@ -762,6 +775,10 @@ fi
         free -m
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
+
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
