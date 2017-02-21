@@ -966,6 +966,8 @@ find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exe
             echo
             echo "nginx -V"
             nginx -V
+            echo
+            nginx -t
         fi
 
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
