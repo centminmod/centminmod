@@ -590,6 +590,20 @@ fi
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
+        if [[ -d "${SCRIPT_DIR}/.git" ]]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
             echo
             exit
         fi
@@ -614,6 +628,13 @@ fi
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
 
         rm -rf "$DIR_TMP/nginx-*.tar.gz"
         exit
@@ -653,6 +674,13 @@ funct_nginxconfigure
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
         exit
 	else
     	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
@@ -701,6 +729,13 @@ funct_nginxconfigure
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
     	exit
 	else
 	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
@@ -778,6 +813,13 @@ fi
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
 
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
