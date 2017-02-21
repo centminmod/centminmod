@@ -428,6 +428,20 @@ funct_phpconfigure
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP configure ok\n"
@@ -518,6 +532,20 @@ fi
         free -m
         echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP make ok\n"
@@ -553,6 +581,20 @@ fi
 	if [ $ERR != 0 ]; then
 		echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "version increment history"
+        tail -5 /etc/centminmod-versionlog
+        if [ -d "${SCRIPT_DIR}/.git" ]; then
+            echo
+            echo "last Centmin Mod local git commit entry"
+            pushd "${SCRIPT_DIR}"
+            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+            popd
+        fi
     	exit
 	else
     	echo -e "\n`date`\nSuccess: PHP was installed properly\n"

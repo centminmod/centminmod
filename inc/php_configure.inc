@@ -441,6 +441,21 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     fi
 		export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'core-avx-i')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'corei7')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'core2')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
 	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
 		PHP_MTUNEOPT="-m${CCM} -mtune=native"

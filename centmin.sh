@@ -19,7 +19,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='002'
+SCRIPT_INCREMENTVER='004'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}.${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2017'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
@@ -351,6 +351,7 @@ NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routin
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
 NGXMODULE_ALTORDER='y'       # nginx configure module ordering alternative order
 NGINX_ZERODT='n'             # nginx zero downtime reloading on nginx upgrades
+NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by editing value i.e. http://openresty-reference.readthedocs.io/en/latest/Lua_Nginx_API/#print
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
@@ -605,7 +606,7 @@ CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
-WGET_VERSION='1.19'
+WGET_VERSION='1.19.1'
 ###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
 # the details of the self-signed SSL certificate that is auto 
