@@ -583,6 +583,10 @@ fi
             echo "try again by running centmin.sh menu option 4"
             echo "make sure you type the correct nginx version"
             echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
             echo
             exit
         fi
@@ -599,6 +603,10 @@ fi
         echo "try again by running centmin.sh menu option 4"
         echo "make sure you type the correct nginx version"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         echo
         rm -rf "$DIR_TMP/nginx-*.tar.gz"
         exit
@@ -631,6 +639,10 @@ funct_nginxconfigure
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         exit
 	else
     	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
@@ -672,6 +684,10 @@ funct_nginxconfigure
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
     	exit
 	else
 	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
@@ -742,6 +758,10 @@ fi
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo
+        free -m
+        echo
+        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
