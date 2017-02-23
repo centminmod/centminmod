@@ -2167,25 +2167,49 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
 	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
 		scl_install
-		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
+		if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+			export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-6/root/usr/bin/gcc"
+		else
+			export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
+		fi
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
-		if [[ "$INITIALINSTALL" != [yY] ]]; then
-			source /opt/rh/devtoolset-4/enable
-			which gcc
-			which g++
-			unset CC
-			unset CXX
-			export CC="ccache gcc"
-			export CXX="ccache g++"
+		if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+			if [[ "$INITIALINSTALL" != [yY] ]]; then
+				source /opt/rh/devtoolset-6/enable
+				which gcc
+				which g++
+				unset CC
+				unset CXX
+				export CC="ccache gcc"
+				export CXX="ccache g++"
+			else
+				source /opt/rh/devtoolset-6/enable
+				which gcc
+				which g++
+				unset CC
+				unset CXX
+				export CC="gcc"
+				export CXX="g++"
+			fi
 		else
-			source /opt/rh/devtoolset-4/enable
-			which gcc
-			which g++
-			unset CC
-			unset CXX
-			export CC="gcc"
-			export CXX="g++"
+			if [[ "$INITIALINSTALL" != [yY] ]]; then
+				source /opt/rh/devtoolset-4/enable
+				which gcc
+				which g++
+				unset CC
+				unset CXX
+				export CC="ccache gcc"
+				export CXX="ccache g++"
+			else
+				source /opt/rh/devtoolset-4/enable
+				which gcc
+				which g++
+				unset CC
+				unset CXX
+				export CC="gcc"
+				export CXX="g++"
+			fi
 		fi
 	elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
 		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-6/root/usr/bin/gcc"
@@ -2269,7 +2293,7 @@ else
 	fi
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector'
-	elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]]; then
+	elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]] || [[ -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ && "$CENTOS_SIX" = '6' ]]; then
 		FSTACKPROTECT='-fstack-protector-strong'
 	elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector-strong'
