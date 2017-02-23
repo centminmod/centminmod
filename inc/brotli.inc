@@ -5,23 +5,43 @@ scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
-    if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-      source /opt/rh/devtoolset-4/enable
+    if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+      if [[ -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-6/enable
+      fi
+    else
+      if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-4/enable
+      fi
     fi
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
-      echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+        echo
+        /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-6/root/usr/bin/g++ --version
+      else
+        yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+        echo
+        /opt/rh/devtoolset-4/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      fi
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
-      echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+        echo
+        /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-6/root/usr/bin/g++ --version
+      else
+        yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+        echo
+        /opt/rh/devtoolset-4/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      fi
   fi # centos 6 only needed
 }
 
@@ -29,8 +49,16 @@ libbroti_install() {
 	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
 		# if devtoolset-4 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
       	scl_install
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+      elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/rh/devtoolset-6/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
@@ -76,15 +104,18 @@ libbroti_install() {
 		make install
 		echo
 
-		if [[ "$CENTOS_SIX" = '6' ]]; then
-		if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-			scl_install
-    		unset CC
-    		unset CXX		
-		elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-    		unset CC
-    		unset CXX	
-		fi		
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+    if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      scl_install
+      unset CC
+      unset CXX		
+    elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      unset CC
+      unset CXX
+    elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      unset CC
+      unset CXX	
+    fi		
 		fi # centos 6 only needed
 	fi
 }

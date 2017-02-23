@@ -194,10 +194,10 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
 		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$REINSTALL" = [yY] ]]; then
 	
-			if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+			if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
 				scl_install
-			elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-				CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
+			elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+				CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-6/root/usr/'
 				unset CC
 				unset CXX
 				CLANG_CCOPT=""
@@ -205,6 +205,15 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 				export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
 				export CCACHE_CPP2=yes
 				echo ""
+      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+        CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
+        unset CC
+        unset CXX
+        CLANG_CCOPT=""
+        export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
+        export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
+        export CCACHE_CPP2=yes
+        echo ""
 			fi
 		
     		cd $DIR_TMP

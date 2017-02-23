@@ -45,6 +45,16 @@ fixnodejs_epel() {
   fi
 }
 
+fixnginx_epel() {
+  # prevent nginx install via epel yum repo
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep nginx > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_NGINXEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) nginx")
+    sed -i "s|^exclude=.*|$NEW_NGINXEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
 fixclamav_epel() {
   # prevent clamav-devel install by epel in favour of rpmforge version
   # https://community.centminmod.com/posts/38359/
@@ -1463,6 +1473,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixphpfpm_httpproxy
   fixlibmysqlclient_symlink
   fixnodejs_epel
+  fixnginx_epel
   fixclamav_epel
   nano_highlight
   checkwoff
