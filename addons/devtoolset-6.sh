@@ -81,8 +81,16 @@ install() {
     if [[ "$CENTOS_SIX" = '6' && ! -f /etc/yum.repos.d/CentOS-SCLo-scl.repo ]]; then
       cd $DIR_TMP
       yum clean all
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+      else
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      fi
       echo
       /opt/rh/devtoolset-6/root/usr/bin/gcc --version
       /opt/rh/devtoolset-6/root/usr/bin/g++ --version
@@ -92,8 +100,16 @@ install() {
         rm -rf /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo
       fi
       yum clean all
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+      else
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      fi
       echo
       /opt/rh/devtoolset-6/root/usr/bin/gcc --version
       /opt/rh/devtoolset-6/root/usr/bin/g++ --version
@@ -101,8 +117,16 @@ install() {
       yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
       rm -rf /etc/yum.repos.d/slc6-scl.repo
       yum clean all
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+      else
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      fi
       echo
       /opt/rh/devtoolset-6/root/usr/bin/gcc --version
       /opt/rh/devtoolset-6/root/usr/bin/g++ --version
@@ -112,16 +136,32 @@ install() {
         rm -rf /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo
       fi
       yum clean all
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+      else
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      fi
       echo
       /opt/rh/devtoolset-6/root/usr/bin/gcc --version
       /opt/rh/devtoolset-6/root/usr/bin/g++ --version
 		elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       cd $DIR_TMP
       yum clean all
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
-      yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+      else
+        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+      fi
       echo
       /opt/rh/devtoolset-6/root/usr/bin/gcc --version
       /opt/rh/devtoolset-6/root/usr/bin/g++ --version

@@ -64,15 +64,27 @@ if [[ ! -f /usr/bin/xslt-config ]]; then
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
-	yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+	 yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+  else
+    yum -q -y install libicu libicu-devel --disablerepo=epel
+  fi
 fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
-	yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+	 yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
+  else
+    yum -q -y install aspell aspell-devel --disablerepo=epel
+  fi
 fi
 
 if [[ ! -f /usr/include/recode.h ]]; then
-	yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+	 yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
+  else
+    yum -q -y install recode recode-devel --disablerepo=epel
+  fi
 fi
 
 if [[ ! -f /usr/include/tidy.h ]]; then
@@ -80,15 +92,27 @@ if [[ ! -f /usr/include/tidy.h ]]; then
 fi
 
 if [[ ! -d /usr/include/enchant ]]; then
-	yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
+  else
+    yum -q -y install enchant enchant-devel --disablerepo=epel
+  fi
 fi
 
 if [[ ! -d /usr/include/net-snmp ]]; then
-	yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
+  else
+    yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=epel
+  fi
 fi
 
 if [[ ! -f /usr/include/expect.h ]]; then
-	yum -q -y install expect-devel --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum -q -y install expect-devel --disablerepo=rpmforge,epel
+  else
+    yum -q -y install expect-devel --disablerepo=epel
+  fi
 fi
 
 if [ "$PHPMSSQL" == 'y' ]; then
@@ -106,14 +130,22 @@ fi
 if [[ -d /usr/include/vpx ]]; then
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 else
-	yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+  else
+    yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
+  fi
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 fi
 
 if [[ -f /usr/include/t1lib.h ]]; then
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 else
-	yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
+	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
+  else
+    yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
+  fi
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 fi
  
@@ -165,11 +197,19 @@ fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
-		yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+    if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+    else
+      yum${CACHESKIP} -y install uw-imap-devel
+    fi
 	fi
 else
 	if [[ $(rpm -q libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
-		yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+		if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+    else
+      yum${CACHESKIP} -y install libc-client-devel --disablerepo=epel
+    fi
 	fi
 fi
 
