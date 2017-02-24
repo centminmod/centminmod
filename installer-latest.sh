@@ -191,7 +191,11 @@ scl_install() {
     fi
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
@@ -213,7 +217,11 @@ scl_install() {
       fi
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-      yum -y -q install centos-release-scl --disablerepo=rpmforge
+      if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+        yum -y -q install centos-release-scl
+      else
+        yum -y -q install centos-release-scl --disablerepo=rpmforge
+      fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
