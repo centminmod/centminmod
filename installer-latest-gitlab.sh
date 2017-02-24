@@ -195,12 +195,20 @@ scl_install() {
       echo "install centos-release-scl for newer gcc and g++ versions"
       yum -y -q install centos-release-scl --disablerepo=rpmforge
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
-        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+        else
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+        fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
-        yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+        else
+          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+        fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
         /opt/rh/devtoolset-4/root/usr/bin/g++ --version
@@ -209,12 +217,20 @@ scl_install() {
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       yum -y -q install centos-release-scl --disablerepo=rpmforge
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
-        yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+        else
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+        fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
-        yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+        else
+          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+        fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
         /opt/rh/devtoolset-4/root/usr/bin/g++ --version
