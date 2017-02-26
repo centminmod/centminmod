@@ -4,7 +4,7 @@
 # /home/nginx/domains/domain.com/tools/backup-perm.sh
 #
 # 2. setup cronjob to run every 6 hours at 11th minute
-# 11 */6 * * * /home/nginx/domains/domain.com/tools/backup-perm.sh 2>&1 /dev/null
+# 11 */6 * * * /home/nginx/domains/domain.com/tools/backup-perm.sh backup 2>&1 /dev/null
 #
 # this will backup nginx vhost site's directory & file permissions
 # using
