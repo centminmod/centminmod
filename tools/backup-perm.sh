@@ -1,12 +1,17 @@
 #!/bin/bash
 ################################################################
-# for centminmod.com LEMP stacks to be placed in
+# 1, for centminmod.com LEMP stacks to be placed in
 # /home/nginx/domains/domain.com/tools/backup-perm.sh
 #
-# backup nginx vhost site's directory & file permissions
+# 2. setup cronjob to run every 6 hours at 11th minute
+# 11 */6 * * * /home/nginx/domains/domain.com/tools/backup-perm.sh backup 2>&1 /dev/null
+#
+# this will backup nginx vhost site's directory & file permissions
 # using
+# 
 # backup
 # getfacl -R -L --absolute-names /home/nginx/domains/domain.com > /path/to/filename.acl
+# 
 # restore
 # setfacl --restore=/path/to/filename.acl
 ################################################################
@@ -36,6 +41,13 @@ if [[ "$DELOLD" = [yY] ]]; then
 fi
 }
 
+exec_nginxperm() {
+	echo "/usr/bin/chown -R nginx:nginx $BASEDIR"
+	/usr/bin/chown -R nginx:nginx "$BASEDIR"
+	echo
+	ls -lah "$BASEDIR"
+}
+
 backupperm() {
 	echo
 	echo "-------------------------------------------------------"
@@ -45,6 +57,9 @@ backupperm() {
 	getfacl -R -L --absolute-names $BASEDIR > "$BASEDIR/backup/permissions/permissions-$DT.acl"
 	ls -lah "$BASEDIR/backup/permissions/permissions-$DT.acl"
 	echo "-------------------------------------------------------"
+	echo
+	echo "ensure directory and files have correct nginx user:group permission"
+	exec_nginxperm
 	echo
 }
 ################################################################
