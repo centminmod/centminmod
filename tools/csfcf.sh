@@ -124,7 +124,7 @@ csfadd() {
 	do
 		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]]; then
 			csf -a "$ip" cloudflare
-			echo "ip" >> /etc/csf/csf.ignore
+			echo "$ip" >> /etc/csf/csf.ignore
 		fi
 	done
 
@@ -133,10 +133,14 @@ csfadd() {
 	do
 		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]]; then
 			csf -a "$ip" cloudflare
-			echo "ip" >> /etc/csf/csf.ignore
+			echo "$ip" >> /etc/csf/csf.ignore
 		fi
 	done
 	fi
+
+	# auto fix previous bug
+	# https://community.centminmod.com/posts/45907/
+	sed -i '/^ip/d' /etc/csf/csf.ignore
 }
 
 ###############################
