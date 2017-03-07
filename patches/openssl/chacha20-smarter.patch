@@ -1,31 +1,32 @@
-From 4fb0dc4dfgtrh65876987ottjrt45657e08b35d6a Mon Sep 17 00:00:00 2001
+From 4fb0dc4dfgtrh65876987ottj6768gdfsdklilod6a Mon Sep 17 00:00:00 2001
 From: Bassie / Buik <allesisvoorbassiesdikkebuik@local>
-Date: Mon, 5 Sept 2016 19:09:47 -0800
-Subject: [PATCH] Use ChaCha20+Poly1305 if it is the client's most preferred cipher suite.
-
-Use OpenSSL 1.1 ChaCha20+Poly1305 if it is the client's most preferred cipher suite.
-
-Ported from OpenSSL 1.0.2g source: github.com/cloudflare/sslconfig/patches/openssl_chacha20_poly1305_draft_and_rfc_ossl102g.patch.
-
+Date: Fri, 25 Nov 2016 12:05:27 -0800
+Subject: [PATCH] Use OpenSSL 1.1's ChaCha20+Poly1305 if it is the client's most preferred cipher suite.
+Use OpenSSL 1.1.0c's ChaCha20+Poly1305 if it is the client's most preferred cipher suite. With improved cipher negotiation: a common ChaCha cipher will always be found,
+even when the first priority is not ChaCha.
+Ported from the following source: https://github.com/cloudflare/sslconfig
 Index: ssl/s3_lib.c
 ===================================================================
---- a/ssl/s3_lib.c 2016-08-25 17:29:22.000000000 +0200
-+++ b/ssl/s3_lib.c 2016-09-04 19:54:21.749766219 +0200
-@@ -3582,6 +3582,8 @@
+--- a/ssl/s3_lib.c 2016-11-10 15:03:46.000000000 +0100
++++ b/ssl/s3_lib.c 2016-12-08 03:08:45.167225455 +0100
+@@ -3582,6 +3582,7 @@ const SSL_CIPHER *ssl3_choose_cipher(SSL
      STACK_OF(SSL_CIPHER) *prio, *allow;
      int i, ii, ok;
      unsigned long alg_k, alg_a, mask_k, mask_a;
-+    /* Port to OpenSSL 1.1 / Use ChaCha20+Poly1305 iff it's client's most preferred cipher suite */
 +    int use_chacha = 0;
  
      /* Let's see which ciphers we can support */
  
-@@ -3614,9 +3616,17 @@
+@@ -3610,13 +3611,20 @@ const SSL_CIPHER *ssl3_choose_cipher(SSL
+         fprintf(stderr, "%p:%s\n", (void *)c, c->name);
+     }
+ #endif
+-
++retry:
      if (s->options & SSL_OP_CIPHER_SERVER_PREFERENCE || tls1_suiteb(s)) {
          prio = srvr;
          allow = clnt;
-+        /* Port to OpenSSL 1.1 / Use ChaCha20+Poly1305 iff it's client's most preferred cipher suite */
-+        /* Use ChaPoly iff it's client's most preferred cipher suite */
++    /* Use ChaCha20+Poly1305 iff it's client's most preferred cipher suite */
 +        if (sk_SSL_CIPHER_num(clnt) > 0) {
 +            c = sk_SSL_CIPHER_value(clnt, 0);
 +            if (c->algorithm_enc == SSL_CHACHA20POLY1305)
@@ -38,15 +39,29 @@ Index: ssl/s3_lib.c
      }
  
      tls1_set_cert_validity(s);
-@@ -3633,6 +3643,11 @@
-             (DTLS_VERSION_LT(s->version, c->min_dtls) ||
+@@ -3634,6 +3642,10 @@ const SSL_CIPHER *ssl3_choose_cipher(SSL
               DTLS_VERSION_GT(s->version, c->max_dtls)))
              continue;
-+        /* Port to OpenSSL 1.1 / Use ChaCha20+Poly1305 iff it's client's most preferred cipher suite */
-+        /* Skip ChaCha unless top client priority */
+ 
++                /* Skip ChaCha unless top client priority */
 +        if ((c->algorithm_enc == SSL_CHACHA20POLY1305) && !use_chacha)
 +            continue;
 +
- 
          mask_k = s->s3->tmp.mask_k;
          mask_a = s->s3->tmp.mask_a;
+ #ifndef OPENSSL_NO_SRP
+@@ -3687,6 +3699,15 @@ const SSL_CIPHER *ssl3_choose_cipher(SSL
+             break;
+         }
+     }
++
++        if (ret == NULL && !use_chacha) {
++        /* If no shared cipher was found due to some unusual preferences, try
++         * again with CHACHA enabled even if not top priority */
++        use_chacha = 1;
++        goto retry;
++    }
++
++
+     return (ret);
+ }
