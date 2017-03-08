@@ -28,7 +28,8 @@ CURL_CACERTURL='https://curl.haxx.se/ca/cacert.pem'
 # CURL_CACERTURL='https://centminmod.com/centminmodparts/curl/cacert.pem'
 
 CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
-CCCACHELINK="https://www.samba.org/ftp/ccache/${CCACHEFILE}"
+#CCCACHELINK="https://www.samba.org/ftp/ccache/${CCACHEFILE}"
+CCCACHELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/ccache/${CCACHEFILE}"
 CCCACHELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/ccache/${CCACHEFILE}"
 
 # dynamic mirror check for EPEL below overrides these values now
