@@ -1,14 +1,21 @@
 ccacheinstall() {
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
-	if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
-		echo "update ccache version... one time task"
-		sleep 2
-		echo "download ccache $CCACHE_VER"
-		sleep 2
-		cd ${DIR_TMP}
-		wget -cq ${CCCACHELINK}
-		tar xzf ${CCACHEFILE}
+	if [ -f /usr/bin/ccache ]; then
+		OLDERCM_INSTALL=y
+	fi
+	if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ "$OLDERCM_INSTALL" = [Yy] && ! -f "${DIR_TMP}/${CCACHEFILE}" ]]; then
+		if [[ "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')"  ]]; then
+			echo "update ccache version... one time task"
+			sleep 2
+			echo "download ccache $CCACHE_VER"
+			sleep 2
+			cd ${DIR_TMP}
+			wget -cq ${CCCACHELINK}
+			if [ ! -d "${DIR_TMP}/ccache-${CCACHE_VER}" ]; then
+				tar xzf ${CCACHEFILE}
+			fi
+		fi
 	fi
 
 	if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}" && "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')" ]]; then
