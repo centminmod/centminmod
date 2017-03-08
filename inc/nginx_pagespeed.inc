@@ -59,6 +59,12 @@ nano -w /usr/local/nginx/conf/pagespeedstatslog.conf
 psoff() {
 sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeed.conf
 sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeedadmin.conf
+if [ -d /var/ngx_pagespeed_cache ]; then
+    rm -rf /var/ngx_pagespeed_cache/*
+fi
+if [ -d /tmp/ngx_pagespeed_cache ]; then
+    rm -rf /tmp/ngx_pagespeed_cache/*
+fi
 cmservice nginx restart
 }
 
@@ -489,8 +495,9 @@ if [[ -f /usr/bin/pscontrol ]]; then
 PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
 PSADMINCHECK=$(grep 'psadmin' /usr/bin/pscontrol)
 PSADMINFIXCHECK=$(grep '1.9.32.1 fixed' /usr/bin/pscontrol)
+PSCLEARCACHECHECK=$(grep 'ngx_pagespeed_cache' /usr/bin/pscontrol)
 
-	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" || -z "$PSADMINFIXCHECK" ]]; then
+	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" || -z "$PSADMINFIXCHECK" || -z "$PSCLEARCACHECHECK" ]]; then
 	rm -rf /usr/bin/pscontrol
 	rm -rf /usr/local/nginx/conf/pscontrol
 	genpscontrolfile

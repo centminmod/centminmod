@@ -51,6 +51,12 @@ nano -w /usr/local/nginx/conf/pagespeed.conf
 psoff() {
 sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeed.conf
 sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeedadmin.conf
+if [ -d /var/ngx_pagespeed_cache ]; then
+    rm -rf /var/ngx_pagespeed_cache/*
+fi
+if [ -d /tmp/ngx_pagespeed_cache ]; then
+    rm -rf /tmp/ngx_pagespeed_cache/*
+fi
 cmservice nginx restart
 }
 
