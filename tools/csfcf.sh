@@ -122,7 +122,7 @@ csfadd() {
 
 	for ip in $CFIPS; 
 	do
-		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]]; then
+		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
 			csf -a "$ip" cloudflare
 			echo "$ip" >> /etc/csf/csf.ignore
 		fi
@@ -131,7 +131,7 @@ csfadd() {
 	if [[ "$(awk -F '= ' '/^IPV6 =/ {print $2}' /etc/csf/csf.conf | sed -e 's|\"||g')" = '1' ]]; then
 	for ip in $CFIP6S; 
 	do
-		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]]; then
+		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
 			csf -a "$ip" cloudflare
 			echo "$ip" >> /etc/csf/csf.ignore
 		fi
