@@ -3486,19 +3486,36 @@ ccachetarball() {
 
         cecho "Download ${CCACHEFILE} ..." $boldyellow
     if [ -s "${CCACHEFILE}" ]; then
-        cecho "ccache ${CCACHE_VER} Archive found, skipping download..." $boldgreen 
+      cecho "ccache ${CCACHE_VER} Archive found, skipping download..." $boldgreen 
     else
-        # download_cmd "${CCCACHELINKLOCAL}" $WGETRETRY
+      # download_cmd "${CCCACHELINKLOCAL}" $WGETRETRY
+      download_cmd ${CCCACHELINK} $WGETRETRY
+      ERROR=$?
+      if [[ "$ERROR" != '0' ]]; then
+        CCACHE_FAILEDDOWNLOAD='y'
+        rm -rf "${DIR_TMP}/ccache-${CCACHE_VER}*"
+        CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
+        CCCACHELINK="https://centmin.sh/centminmodparts/ccache/${CCACHEFILE}"
+        cecho "Error: ${CCACHEFILE} download failed." $boldgreen
+        echo
+        cecho "Re-try download via alternate ccache ${CCACHE_VER} mirror ${CCCACHELINK}" $boldgreen 
         download_cmd ${CCCACHELINK} $WGETRETRY
-ERROR=$?
-    if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: ${CCACHEFILE} download failed." $boldgreen
-checklogdetails
-    exit #$ERROR
-else 
-         cecho "Download ${CCACHEFILE} done." $boldyellow
-#echo ""
-    fi
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+          rm -rf "${DIR_TMP}/ccache-${CCACHE_VER}*"
+          CCACHEFILE="ccache-${CCACHE_VER}.tar.gz"
+          CCCACHELINK="https://centmin.com/centminmodparts/ccache/${CCACHEFILE}"
+          cecho "Error: ${CCACHEFILE} download failed." $boldgreen
+          echo
+          cecho "Re-try again download via alternate ccache ${CCACHE_VER} mirror ${CCCACHELINK}" $boldgreen 
+          download_cmd ${CCCACHELINK} $WGETRETRY
+          ERROR=$?
+        else
+          cecho "Download ${CCACHEFILE} done." $boldyellow
+        fi
+      else
+        cecho "Download ${CCACHEFILE} done." $boldyellow
+      fi
     fi
 
 tar xzf "${CCACHEFILE}"
