@@ -112,6 +112,13 @@ fi
   	WITHOPENSSL_OPTECHO=""
   fi
 
+  # override NGINX_OPENRESTY='n' if detected redis cache at nginx
+  # level as it requires NGINX_OPENRESTY='y' for dependent nginx
+  # modules provided by openresty
+  if [[ -d /usr/local/nginx/conf/wpincludes && "$(find /usr/local/nginx/conf/wpincludes -type f -name "rediscache.*" >/dev/null 2>&1; echo $?)" -eq '0'  ]]; then
+  	NGINX_OPENRESTY='y'
+  fi
+
 	# fix no longer needed with lua-nginx 0.10.2+
 	# https://github.com/openresty/lua-nginx-module/commit/b1a326eedf47b77e98b378fae1160e5340b75006
 	#luaworkaroundfix

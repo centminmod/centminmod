@@ -1,5 +1,6 @@
 mimefix() {
 	silence=$1
+  \cp -af /usr/local/nginx/conf/mime.types /usr/local/nginx/conf/mime.types.bak-$DT
 
 if [ -z "$silence" ]; then
 	# Current Nginx mime types for eot, ttf, otf, woff

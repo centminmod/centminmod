@@ -2120,7 +2120,7 @@ chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
 
 cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
 #!/bin/bash
-PATH=/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin:/bin
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin:/bin
 EMAIL=$WPADMINEMAIL
 EMAILFROM=$WPADMINEMAIL
 DT=\$(date +"%d%m%y-%H%M%S")

@@ -1,5 +1,5 @@
 #!/bin/sh
-export PATH="/usr/lib64/ccache:/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 #####################################################
 EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
@@ -387,7 +387,7 @@ NGINX_AUTHREQ='n'            # http://nginx.org/en/docs/http/ngx_http_auth_reque
 NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_link_module.html
 NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_FANCYINDEXVER='0.4.0'  # https://github.com/aperezdc/ngx-fancyindex/releases
-NGINX_VHOSTSTATS='y'         # https://github.com/vozlt/nginx-module-vts
+NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
 NGINX_LIBBROTLI='n'          # https://github.com/google/ngx_brotli
 NGINX_LIBBROTLISTATIC='n'
 NGINX_PAGESPEED='n'          # Install ngx_pagespeed
