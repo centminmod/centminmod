@@ -688,6 +688,7 @@ source "inc/cpucount.inc"
 source "inc/motd.inc"
 source "inc/cpcheck.inc"
 source "inc/memcheck.inc"
+source "inc/lowmem.inc"
 source "inc/ccache.inc"
 source "inc/bookmark.inc"
 source "inc/centminlogs.inc"
@@ -864,6 +865,10 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
 fi
+
+# function checks if persistent config file has low mem variable enabled
+# LOWMEM_INSTALL='y'
+checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 
