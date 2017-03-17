@@ -837,8 +837,10 @@ fi
 
 case "$1" in
   install)
-    source_pcreinstall
-    source_wgetinstall
+    if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+      source_pcreinstall
+      source_wgetinstall
+    fi
     install_axel
     fileperm_fixes
     cminstall
