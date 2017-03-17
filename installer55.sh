@@ -756,8 +756,10 @@ rm -rf /etc/centminmod/email-secondary.ini
 }
 
 if [[ "$DEF" = 'novalue' ]]; then
-  source_pcreinstall
-  source_wgetinstall
+  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    source_pcreinstall
+    source_wgetinstall
+  fi
   install_axel
   fileperm_fixes
   cminstall
