@@ -1466,7 +1466,9 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   imagick_fixes
   apache_protect
   centossix_crsetup
-  wgetver_check
+  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    wgetver_check
+  fi
   check_jemstatsfile
   nginx_mutexoff
   fixphpfpm_includes

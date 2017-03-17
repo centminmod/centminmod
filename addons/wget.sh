@@ -22,6 +22,11 @@ WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 ###########################################################
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+  # default is at /etc/centminmod/custom_config.inc
+  . "/etc/centminmod/custom_config.inc"
+fi
+
 if [ ! -d "$CENTMINLOGDIR" ]; then
   mkdir -p "$CENTMINLOGDIR"
 fi
@@ -325,8 +330,10 @@ case $1 in
   install)
 starttime=$(TZ=UTC date +%s.%N)
 {
-  source_pcreinstall
-  source_wgetinstall
+  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    source_pcreinstall
+    source_wgetinstall
+  fi
 } 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
 
 endtime=$(TZ=UTC date +%s.%N)
@@ -339,7 +346,9 @@ tail -1 "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
   pcre)
 starttime=$(TZ=UTC date +%s.%N)
 {
-  source_pcreinstall
+  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    source_pcreinstall
+  fi
 } 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
 
 endtime=$(TZ=UTC date +%s.%N)
