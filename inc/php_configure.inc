@@ -26,7 +26,7 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 # LOWMEM_INSTALL='y' is set 
 # https://community.centminmod.com/posts/46321/
 if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
-  SQLLITEOPT='  --without-sqlite3'
+  SQLLITEOPT=' --without-sqlite3'
 fi
 
 if [[ "$PHPDEBUGMODE" = [yY] ]]; then
