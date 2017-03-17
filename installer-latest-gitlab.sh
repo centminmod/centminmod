@@ -766,6 +766,9 @@ echo "NGX_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
 echo "PHP_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
 echo "NGX_LDGOLD='y'" >> /etc/centminmod/custom_config.inc
 # echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
+if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
+  echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
+fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 

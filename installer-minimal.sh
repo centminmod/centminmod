@@ -764,6 +764,9 @@ sed -i "s|ISLOWMEM='262144'|ISLOWMEM='115000'|" inc/memcheck.inc
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
+if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
+  echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
+fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 "${INSTALLDIR}/centminmod/centmin.sh" install

@@ -731,6 +731,9 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
+if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
+  echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
+fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 
