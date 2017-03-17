@@ -255,10 +255,12 @@ gitenv_askupdate() {
 
 wgetver_check() {
   if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    if [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/sbin/nginx ]]; then
-      echo "update wget to ${WGET_VERSION} version... one time task"
-      sleep 6
-      "${SCRIPT_DIR}/addons/wget.sh" install
+    if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+      if [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/sbin/nginx ]]; then
+        echo "update wget to ${WGET_VERSION} version... one time task"
+        sleep 6
+        "${SCRIPT_DIR}/addons/wget.sh" install
+      fi
     fi
   elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
     echo "fix pcre install for missing UTF8 support... one time task"
@@ -1466,7 +1468,9 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   imagick_fixes
   apache_protect
   centossix_crsetup
-  wgetver_check
+  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    wgetver_check
+  fi
   check_jemstatsfile
   nginx_mutexoff
   fixphpfpm_includes

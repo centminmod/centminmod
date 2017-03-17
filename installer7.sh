@@ -101,20 +101,20 @@ if [ -f /proc/user_beancounters ]; then
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        CPUS=$(echo "$CPUS+2" | bc)
+        CPUS=$(echo $(($CPUS+2)))
     else
-        CPUS=$(echo "$CPUS+1" | bc)
+        CPUS=$(echo $(($CPUS+1)))
     fi
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        CPUS=$(echo "$CPUS+4" | bc)
+        CPUS=$(echo $(($CPUS+4)))
     elif [[ "$CPUS" -eq '8' ]]; then
-        CPUS=$(echo "$CPUS+2" | bc)
+        CPUS=$(echo $(($CPUS+2)))
     else
-        CPUS=$(echo "$CPUS+1" | bc)
+        CPUS=$(echo $(($CPUS+1)))
     fi
     MAKETHREADS=" -j$CPUS"
 fi
@@ -124,6 +124,10 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
   AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
+fi
+
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
 fi
 
 if [ -f /proc/user_beancounters ]; then
@@ -719,7 +723,7 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.16'|" centmin.sh
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.17'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
@@ -727,6 +731,9 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
+if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
+  echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
+fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
 "${INSTALLDIR}/centminmod/centmin.sh" install
@@ -752,8 +759,10 @@ rm -rf /etc/centminmod/email-secondary.ini
 }
 
 if [[ "$DEF" = 'novalue' ]]; then
-  source_pcreinstall
-  source_wgetinstall
+  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    source_pcreinstall
+    source_wgetinstall
+  fi
   install_axel
   fileperm_fixes
   cminstall
@@ -800,8 +809,10 @@ fi
 
 case "$1" in
   install)
-    source_pcreinstall
-    source_wgetinstall
+    if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+      source_pcreinstall
+      source_wgetinstall
+    fi
     install_axel
     fileperm_fixes
     cminstall

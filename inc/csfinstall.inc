@@ -1,5 +1,13 @@
 csfinstalls() {
 
+    # centos 6.6 minimal bug
+    # https://bugzilla.redhat.com/show_bug.cgi?id=1161682
+    # if [[ "$CENTOS_SIX" = '6' && ! -f /etc/sysconfig/iptables ]]; then
+    #     yum -y install system-config-firewall-base
+    #     lokkit --default=server
+    #     service iptables restart
+    # fi
+
 # CSF is compulsory
 CSFINSTALLOK='y'
 

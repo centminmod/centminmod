@@ -196,20 +196,20 @@ if [ -f /proc/user_beancounters ]; then
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        CPUS=$(echo "$CPUS+2" | bc)
+        CPUS=$(echo $(($CPUS+2)))
     else
-        CPUS=$(echo "$CPUS+1" | bc)
+        CPUS=$(echo $(($CPUS+1)))
     fi
     MAKETHREADS=" -j$CPUS"
 else
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        CPUS=$(echo "$CPUS+4" | bc)
+        CPUS=$(echo $(($CPUS+4)))
     elif [[ "$CPUS" -eq '8' ]]; then
-        CPUS=$(echo "$CPUS+2" | bc)
+        CPUS=$(echo $(($CPUS+2)))
     else
-        CPUS=$(echo "$CPUS+1" | bc)
+        CPUS=$(echo $(($CPUS+1)))
     fi
     MAKETHREADS=" -j$CPUS"
 fi
@@ -688,6 +688,7 @@ source "inc/cpucount.inc"
 source "inc/motd.inc"
 source "inc/cpcheck.inc"
 source "inc/memcheck.inc"
+source "inc/lowmem.inc"
 source "inc/ccache.inc"
 source "inc/bookmark.inc"
 source "inc/centminlogs.inc"
@@ -864,6 +865,10 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
 fi
+
+# function checks if persistent config file has low mem variable enabled
+# LOWMEM_INSTALL='y'
+checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 

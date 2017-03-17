@@ -1,11 +1,11 @@
 #!/bin/bash
-VER='0.0.3'
+VER='0.0.4'
 ######################################################
 # golang binary installer
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
-GO_VERSION='1.7.5'
+GO_VERSION='1.8'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
