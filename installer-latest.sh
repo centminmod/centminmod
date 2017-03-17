@@ -124,6 +124,10 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 fi
 
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   # set ld.gold linker as system default
   /usr/sbin/alternatives --set ld /usr/bin/ld.gold
