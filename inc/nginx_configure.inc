@@ -2288,7 +2288,11 @@ if [[ "$CLANG" = [yY] ]]; then
 		# https://community.centminmod.com/posts/36274/
 		GCC_OPTLEVEL='-O2'
 	else
-		GCC_OPTLEVEL='-O3'
+		if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
+			GCC_OPTLEVEL='-O2'
+		else
+			GCC_OPTLEVEL='-O3'
+		fi
 	fi
 	FSTACKPROTECT='-fstack-protector'
 else
@@ -2296,7 +2300,11 @@ else
 		# https://community.centminmod.com/posts/36274/
 		GCC_OPTLEVEL='-O2'
 	else
-		GCC_OPTLEVEL='-O3'
+		if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
+			GCC_OPTLEVEL='-O2'
+		else
+			GCC_OPTLEVEL='-O3'
+		fi
 	fi
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
 		FSTACKPROTECT='-fstack-protector'
