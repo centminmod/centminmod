@@ -2,7 +2,7 @@ checkfor_lowmem() {
   if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
     ISLOWMEM='131072'
     CLANG='y'
-    CLANG_PHP='y'
+    CLANG_PHP='n'
     GCCINTEL_PHP='n'
     PHP_PGO='n'
     PHP_PGO_CENTOSSIX='n'
