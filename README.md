@@ -1,3 +1,5 @@
+![Centmin Mod](/centmin-mod-logo2.jpg)
+
 Centmin Mod can be installed via 2 different ways or latest install instructions on [Official Install Guide](https://centminmod.com/install.html):
 
 1. Centmin Mod Unattended Command Line Install (highly recommended)
