@@ -161,7 +161,7 @@ fi # NSD_VERCHECK
     chown -R nsd:nsd /var/run/nsd/
     chown -R nsd:nsd /var/db/nsd/
     chown -R nsd:nsd /etc/nsd/
-    chmod 0755/var/db/nsd/
+    chmod 0755 /var/db/nsd/
 
 #killall -9 nsd
 /etc/init.d/nsd stop
