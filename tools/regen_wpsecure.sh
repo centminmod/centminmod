@@ -124,7 +124,12 @@ location ~ /.well-known {
     }
 }
 
+# allow AJAX requests in themes and plugins
+location ~ ^${WPSUBDIR}/wp-admin/admin-ajax.php$ { allow all; include /usr/local/nginx/conf/php.conf; }
+
 location ~* ^${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z)\$ { deny all; }
+
+location ~ ^${WPSUBDIR}/wp-content/uploads/sucuri { deny all; }
 
 location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
 
@@ -142,8 +147,16 @@ location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
 
 # Deny access to any files with a .php extension in the uploads directory
 # Works in sub-directory installs and also in multisite network
-location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ {
-deny all;
+location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ { deny all; }
+
+# Whitelist Exception for https://wordpress.org/plugins/onesignal-free-web-push-notifications//
+location ~ ^${WPSUBDIR}/wp-content/plugins/onesignal-free-web-push-notifications/ {
+  include /usr/local/nginx/conf/php.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for https://wordpress.org/plugins/sparkpost/
