@@ -81,7 +81,7 @@ fi # xcachever=2.0.0
     if [ -s xcache-${xcachever}.tar.gz ]; then
         cecho "xcache ${xcachever} Archive found, skipping download..." $boldgreen
     else
-        download_cmd http://xcache.lighttpd.net/pub/Releases/${xcachever}/xcache-${xcachever}.tar.gz $WGETRETRY
+        $DOWNLOADAPP http://xcache.lighttpd.net/pub/Releases/${xcachever}/xcache-${xcachever}.tar.gz $WGETRETRY
     fi
 
 XCACHESOCHECK=`grep 'xcache.so' /usr/local/lib/php.ini`

@@ -59,7 +59,7 @@ else
     if [ -s APC-${apcver}.tgz ]; then
         cecho "APC-${apcver}.tgz Archive found, skipping download..." $boldgreen
     else
-        download_cmd https://pecl.php.net/get/APC-${apcver}.tgz $WGETRETRY
+        $DOWNLOADAPP https://pecl.php.net/get/APC-${apcver}.tgz $WGETRETRY
     fi
 
 tar xvzf APC-${apcver}.tgz
