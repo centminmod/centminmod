@@ -687,6 +687,20 @@ AXELPHPTARGZ=''
 AXELPHPUPGRADETARGZ=''
 fi
 
+download_cmd() {
+  HTTPS_AXELCHECK=$(echo "$1" |awk -F '://' '{print $1}')
+  if [[ "$(curl -Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
+    # axel doesn't natively support ECC 256bit ssl certs
+    # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
+    echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"
+    DOWNLOADAPP="wget ${WGETOPT}"
+  elif [[ "$CENTOS_SIX" = '6' && "$HTTPS_AXELCHECK" = 'https' ]]; then
+    echo "CentOS 6 Axel fallback to wget for HTTPS download"
+    DOWNLOADAPP="wget ${WGETOPT}"
+  fi
+  download_cmd $1 $2 $3 $4
+}
+
 # if [ "${ARCH_OVERRIDE}" != '' ]
 # then
 #     ARCH=${ARCH_OVERRIDE}
@@ -1532,7 +1546,7 @@ if [ -s iopingcentmin.sh ]; then
   if [[ $iopingdownloadupdate = [yY] ]]; then
 
   rm -rf iopingcentmin.sh
-  $DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
+  download_cmd http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
 
   echo ""
   cecho "--------------------------------------------------------" $boldyellow
@@ -1552,7 +1566,7 @@ if [ -s iopingcentmin.sh ]; then
 
   else
   echo "Error: iopingcentmin.sh not found!!! Downloading now......"
-  $DOWNLOADAPP http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
+  download_cmd http://vbtechsupport.com/centminmenu/iopingcentmin/iopingcentmin.sh $WGETRETRY
 
 fi
 

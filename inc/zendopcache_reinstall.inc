@@ -82,7 +82,7 @@ ZENDOPCACHE_LINK="https://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
     if [ -s ${ZENDOPCACHE_LINKFILE} ]; then
         cecho " ${ZENDOPCACHE_LINKFILE} Archive found, skipping download..." $boldgreen
     else
-        $DOWNLOADAPP ${ZENDOPCACHE_LINK} $WGETRETRY 
+        download_cmd ${ZENDOPCACHE_LINK} $WGETRETRY 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${ZENDOPCACHE_LINKFILE} download failed." $boldgreen
