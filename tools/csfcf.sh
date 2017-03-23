@@ -10,7 +10,7 @@ CFIPCSFLOG='/root/csf_log.log'
 CFINCLUDEFILE='/usr/local/nginx/conf/cloudflare.conf'
 CURL_TIMEOUTS='--max-time 20 --connect-timeout 20'
 ###############################
-if [[ ! -f /usr/bin/curl ]]; then
+if [ ! -f /usr/bin/curl ]; then
 	echo "Installing curl please wait..."
 	yum -y -q install curl
 fi
@@ -33,8 +33,10 @@ ipv4get() {
 	
 	for ip in $CFIPS; 
 	do
-		echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
-		echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
+		if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+			echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
+			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
+		fi
 	done
 	echo "real_ip_header CF-Connecting-IP;" >> $CFIPNGINXLOG
 	
@@ -76,8 +78,10 @@ ipv6get() {
 	
 	for ip in $CFIPS; 
 	do
-		echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
-		echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
+		if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+			echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
+			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
+		fi
 	done
 	echo "real_ip_header CF-Connecting-IP;" >> $CFIPNGINXLOG
 	
@@ -123,8 +127,10 @@ csfadd() {
 	for ip in $CFIPS; 
 	do
 		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
-			csf -a "$ip" cloudflare
-			echo "$ip" >> /etc/csf/csf.ignore
+			if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+				csf -a "$ip" cloudflare
+				echo "$ip" >> /etc/csf/csf.ignore
+			fi
 		fi
 	done
 
@@ -132,8 +138,10 @@ csfadd() {
 	for ip in $CFIP6S; 
 	do
 		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
-			csf -a "$ip" cloudflare
-			echo "$ip" >> /etc/csf/csf.ignore
+			if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+				csf -a "$ip" cloudflare
+				echo "$ip" >> /etc/csf/csf.ignore
+			fi
 		fi
 	done
 	fi
@@ -155,15 +163,21 @@ nginxsetup() {
 	fi
 	echo "include /usr/local/nginx/conf/cloudflare_customips.conf;" >> $CFINCLUDEFILE
 	for i in $cflista; do
+      if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
         	echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
+      fi
 	done
 	if [[ -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
 		for i in $cflistb; do
+      if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
         		echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
+      fi
 		done
 	else
 		for i in $cflistb; do
+      if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
         		echo "#set_real_ip_from $i;" >> $CFINCLUDEFILE
+      fi
 		done
 	fi
 	echo "real_ip_header CF-Connecting-IP;" >> $CFINCLUDEFILE
