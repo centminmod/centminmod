@@ -187,6 +187,7 @@ nginxsetup() {
 	if [[ "$(diff -u "${CFINCLUDEFILE}.bak" "$CFINCLUDEFILE" >/dev/vull 2>&1; echo $?)" -ne '0' ]]; then
 		service nginx reload >/dev/null 2>&1
 	fi
+	rm -rf "${CFINCLUDEFILE}.bak"
 	echo "created $CFINCLUDEFILE include file"
 }
 
