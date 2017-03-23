@@ -161,6 +161,9 @@ nginxsetup() {
 	if [ ! -f /usr/local/nginx/conf/cloudflare_customips.conf ]; then
 		touch /usr/local/nginx/conf/cloudflare_customips.conf
 	fi
+	if [ -f "$CFINCLUDEFILE" ]; then
+		\cp -af "$CFINCLUDEFILE" "${CFINCLUDEFILE}.bak"
+	fi
 	echo "include /usr/local/nginx/conf/cloudflare_customips.conf;" >> $CFINCLUDEFILE
 	for i in $cflista; do
       if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
@@ -181,7 +184,9 @@ nginxsetup() {
 		done
 	fi
 	echo "real_ip_header CF-Connecting-IP;" >> $CFINCLUDEFILE
-	service nginx reload >/dev/null 2>&1
+	if [[ "$(diff -u "${CFINCLUDEFILE}.bak" "$CFINCLUDEFILE" >/dev/vull 2>&1; echo $?)" -ne '0' ]]; then
+		service nginx reload >/dev/null 2>&1
+	fi
 	echo "created $CFINCLUDEFILE include file"
 }
 
