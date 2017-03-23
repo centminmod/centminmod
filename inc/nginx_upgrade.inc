@@ -708,12 +708,14 @@ funct_nginxconfigure
     ERR=$?
 
     if [[ "$STRIPNGINX" = [yY] ]]; then
-        echo
-        echo "strip nginx binary..."
-        ls -lah objs/nginx
-        strip -s objs/nginx
-        ls -lah objs/nginx
-        echo
+        if [ -f objs/nginx ]; then
+            echo
+            echo "strip nginx binary..."
+            ls -lah objs/nginx
+            strip -s objs/nginx
+            ls -lah objs/nginx
+            echo
+        fi
     fi
 
 ################
