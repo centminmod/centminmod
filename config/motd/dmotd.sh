@@ -129,7 +129,7 @@ ngxver_checker() {
       cecho "* see https://centminmod.com/nginx.html#nginxupgrade" $boldyellow
       cecho "===============================================================================" $boldgreen
       cecho "* Current Nginx Version: $CURRENT_NGINXVERS" $boldyellow
-      cecho "* Latest Nginx Available: $LASTEST_NGINXVERS" $boldyellow
+      cecho "* Latest Nginx Available: $LASTEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi
