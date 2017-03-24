@@ -677,6 +677,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 				popd
 			fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ECHO" = [yY] ]]; then
+			echonginx_patch
 			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
 				ECHOOPT=" --add-dynamic-module=../echo-nginx-module-master"
 			else
@@ -689,6 +690,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so.old
 			fi
 		else
+			echonginx_patch
 			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
 				ECHOOPT=" --add-module=../echo-nginx-module-master"
 			else
