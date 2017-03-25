@@ -757,6 +757,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi
 
 	if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+		luanginx_patch
 		# lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
 		# so fall back to 1.0.2 branch if lua nginx module is enabled
 		OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
