@@ -816,7 +816,7 @@ if [[ "$DEF" = 'novalue' ]]; then
   #touch ${CENTMINLOGDIR}/firstyum_installtime_${DT}.log
   echo "" > "/root/centminlogs/firstyum_installtime_${DT}.log"
 echo "---------------------------------------------------------------------------"
-  echo "Total Curl Installer YUM / DNF Time: $FIRSTYUMINSTALLTIME seconds" >> "/root/centminlogs/firstyum_installtime_${DT}.log"
+  echo "Total Curl Installer YUM or DNF Time: $FIRSTYUMINSTALLTIME seconds" >> "/root/centminlogs/firstyum_installtime_${DT}.log"
   tail -1 /root/centminlogs/firstyum_installtime_*.log
   tail -1 /root/centminlogs/centminmod_yumtimes_*.log
   DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
@@ -834,7 +834,7 @@ echo "--------------------------------------------------------------------------
   TT=$(printf "%0.4f\n" $TT)
   ST=$(echo "$CT - ($DTIME_SEC + $NTIME_SEC + $PTIME_SEC)" | bc)
   ST=$(printf "%0.4f\n" $ST)
-  echo "Total YUM / DNF + Source Download Time: $(printf "%0.4f\n" $DTIME_SEC)"
+  echo "Total YUM or DNF + Source Download Time: $(printf "%0.4f\n" $DTIME_SEC)"
   echo "Total Nginx First Time Install Time: $(printf "%0.4f\n" $NTIME_SEC)"
   echo "Total PHP First Time Install Time: $(printf "%0.4f\n" $PTIME_SEC)"
   echo "Download Zip From Github Time: $GETCMTIME"
