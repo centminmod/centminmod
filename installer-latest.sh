@@ -129,7 +129,7 @@ if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   yum -y install epel-release
   yum -y install dnf
   YUMDNFBIN='dnf'

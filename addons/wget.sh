@@ -75,7 +75,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   $YUMDNFBIN -y -q install epel-release
   $YUMDNFBIN -y -q install dnf
   YUMDNFBIN='dnf'
