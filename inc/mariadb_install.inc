@@ -176,7 +176,7 @@ echo ""
 echo "MariaDB 10.1 YUM install..."
 
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    DISABLEOTHERREPO=' --disablerepo=epel,rpmforge'
+    DISABLEOTHERREPO=' --disablerepo=epel --disablerepo=rpmforge'
 else
     DISABLEOTHERREPO=' --disablerepo=epel'
 fi
@@ -192,7 +192,7 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
     echo "*************************************************"
     echo ""
-    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
+    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -203,10 +203,10 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.1.x YUM install..." $boldgreen
-    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
     echo "*************************************************"
     echo ""
-    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
@@ -398,13 +398,13 @@ echo ""
 perdbiinstall
 # reinstall postfix removed from mariadb-libs removale
 if [[ $(rpm -q postfix >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install postfix
+    $YUMDNFBIN -y install postfix${DISABLEOTHERREPO} 
 fi
 if [[ $(rpm -q net-snmp >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install net-snmp
+    $YUMDNFBIN -y install net-snmp${DISABLEOTHERREPO} 
 fi
 if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install mytop
+    yum -y install mytop
 fi
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then

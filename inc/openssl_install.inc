@@ -222,7 +222,7 @@ installopenssl() {
         fi
         if [[ "$CLANG" = [yY] ]]; then
             if [[ ! -f /usr/bin/clang ]]; then
-                $YUMDNFBIN -q -y install clang clang-devel
+                yum -q -y install clang clang-devel
             fi
             # ccache compiler has some initial overhead for compiles but speeds up subsequent
             # recompiles. however on initial install ccache has no benefits, so for initial

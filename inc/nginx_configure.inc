@@ -2015,7 +2015,7 @@ ngxgeoipmemtweak
 
 if [[ "$CLANG" = [yY] ]]; then
 	if [[ ! -f /usr/bin/clang ]]; then
-		$YUMDNFBIN -q -y install clang clang-devel
+		yum -q -y install clang clang-devel
 	fi
 	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
 		if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
