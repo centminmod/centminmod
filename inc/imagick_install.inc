@@ -28,6 +28,21 @@ checkimagicksys() {
         CENTOS_SIX='6'
     fi
 
+
+    if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+    yum -y -q install epel-release
+    yum -y -q install dnf
+    if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+        DISABLEREPO_DNF=' --disablerepo=rpmforge'
+        YUMDNFBIN="dnf${DISABLEREPO_DNF}"
+    else
+        DISABLEREPO_DNF=""
+        YUMDNFBIN='dnf'
+    fi
+    else
+    YUMDNFBIN='yum'
+    fi
+
     cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
     if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
         if [ -f /etc/yum.repos.d/remi.repo ]; then
@@ -41,10 +56,10 @@ checkimagicksys() {
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
                     # yum clean all >/dev/null 2>&1
-                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
                     # yum clean all >/dev/null 2>&1
-                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
         elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
