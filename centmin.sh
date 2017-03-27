@@ -868,7 +868,7 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
-  yum -y -q epel-release
+  yum -y -q install epel-release
   yum -y -q install dnf
   YUMDNFBIN='dnf'
 else

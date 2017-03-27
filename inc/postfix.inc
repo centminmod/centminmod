@@ -1,7 +1,7 @@
 postfix_presetup() {
 
 	if [ ! -f /bin/mailx ]; then
-		yum -y install mailx
+		$YUMDNFBIN -y install mailx
 	fi
 
 if [[ "$CENTOS_SIX" = '6' ]]; then

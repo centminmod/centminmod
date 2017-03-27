@@ -1,7 +1,7 @@
 perdbiinstall() {
     # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
     if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
-        yum${CACHESKIP} -q -y install perl-DBD-MySQL
+        ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBD-MySQL
     fi
 }
 
@@ -137,16 +137,16 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
         # echo "rpm -e --nodeps $OLDMYSQL_LIBS"
         # rpm -e --nodeps $OLDMYSQL_LIBS
-        echo "yum -y remove mariadb-libs"
-        yum -y remove mariadb-libs
+        echo "$YUMDNFBIN -y remove mariadb-libs"
+        $YUMDNFBIN -y remove mariadb-libs
     fi
     echo ""
     # Should not exist on CentOS 7 systems
     echo "Check for existing MySQL-shared-compat"
     OLDMYSQL_SHAREDCOMPAT=`rpm -qa | grep 'MySQL-shared-compat' | head -n1`
     if [[ ! -z "$OLDMYSQL_SHAREDCOMPAT" ]]; then
-        echo "yum -y remove MySQL-shared-compat"
-        yum -y remove MySQL-shared-compat
+        echo "$YUMDNFBIN -y remove MySQL-shared-compat"
+        $YUMDNFBIN -y remove MySQL-shared-compat
     fi
 fi # CENTOS_SEVEN != 7
 
@@ -192,13 +192,13 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
+    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     # run for CentOS 7.x
-    echo "time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install perl-DBI"
-    time yum${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install perl-DBI
+    echo "time ${YUMDNFBIN}${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install perl-DBI"
+    time ${YUMDNFBIN}${CACHESKIP} -q -y --disableplugin=fastestmirror,downloadonly${DISABLECENTALTREPO}${DISABLEOTHERREPO} install perl-DBI
 
     echo ""
     echo "*************************************************"
@@ -206,7 +206,7 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
     echo "*************************************************"
     echo ""
-    time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
@@ -398,13 +398,13 @@ echo ""
 perdbiinstall
 # reinstall postfix removed from mariadb-libs removale
 if [[ $(rpm -q postfix >/dev/null 2>&1; echo $?) != '0' ]]; then
-    yum -y install postfix
+    $YUMDNFBIN -y install postfix
 fi
 if [[ $(rpm -q net-snmp >/dev/null 2>&1; echo $?) != '0' ]]; then
-    yum -y install net-snmp
+    $YUMDNFBIN -y install net-snmp
 fi
 if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
-    yum -y install mytop
+    $YUMDNFBIN -y install mytop
 fi
 
 if [[ "$CENTALTREPO_DISABLE" = [nN] ]]; then
@@ -437,7 +437,7 @@ then
 
 cmservice mysqld stop
 
-yum${CACHESKIP} -y remove mysql mysql-libs
+${YUMDNFBIN}${CACHESKIP} -y remove mysql mysql-libs
 
 if [ ! -d /home/mysqltmp ]; then
 mkdir /home/mysqltmp
@@ -470,7 +470,7 @@ perdbiinstall
 
 cmservice mysqld stop
 
-#yum -y remove mysql mysql-libs
+#$YUMDNFBIN -y remove mysql mysql-libs
 
 rpm -e --nodeps $(rpm -qa mysql-libs) >/dev/null 2>&1
 
@@ -517,8 +517,8 @@ chown -R mysql:mysql /var/lib/mysql/mysql/
 #echo "rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
     #rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
 
-    yum${CACHESKIP} -y install perl-DBD-MySQL
-    yum${CACHESKIP} -q clean all
+    ${YUMDNFBIN}${CACHESKIP} -y install perl-DBD-MySQL
+    ${YUMDNFBIN}${CACHESKIP} -q clean all
 
 #download mysqltuner mysqlreport
 
@@ -565,7 +565,7 @@ if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; then
     cecho "* Installing MariaDB via CentOS Yum Repo " $boldgreen
     echo "*************************************************"
 
-#yum -y remove mysql mysql-libs
+#$YUMDNFBIN -y remove mysql mysql-libs
 if [ -f /etc/my.cnf ]; then
     cp /etc/my.cnf /etc/my.cnf-original
     rm -rf /etc/my.cnf

@@ -1413,7 +1413,7 @@ exit
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
-  yum -y -q epel-release
+  yum -y -q install epel-release
   yum -y -q install dnf
   YUMDNFBIN='dnf'
 else

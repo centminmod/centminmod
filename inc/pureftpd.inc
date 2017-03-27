@@ -1,10 +1,10 @@
 pureftpinstall() {
 	# detect if vsftpd and proftpd already installed and remove it
   if [[ -f /usr/sbin/vsftpd || "$(rpm -qa vsftpd | grep vsftpd)" ]]; then
-    yum -y remove vsftpd
+    $YUMDNFBIN -y remove vsftpd
   fi
   if [[ -f /usr/sbin/proftpd || "$(rpm -qa proftpd | grep proftpd)" ]]; then
-    yum -y remove proftpd
+    $YUMDNFBIN -y remove proftpd
   fi
 	
 	if [ ! -f /usr/bin/pure-pw ]; then
@@ -20,7 +20,7 @@ pureftpinstall() {
     fi
     fi
 
-		yum -q -y install pure-ftpd
+		$YUMDNFBIN -q -y install pure-ftpd
 		cmchkconfig pure-ftpd on
 		sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
 		sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;5;300\"/g' /etc/csf/csf.conf

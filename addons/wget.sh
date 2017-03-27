@@ -75,6 +75,13 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
+  $YUMDNFBIN -y -q install epel-release
+  $YUMDNFBIN -y -q install dnf
+  YUMDNFBIN='dnf'
+else
+  YUMDNFBIN='yum'
+fi
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -126,24 +133,24 @@ scl_install() {
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -152,24 +159,24 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version

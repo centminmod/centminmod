@@ -222,7 +222,7 @@ installopenssl() {
         fi
         if [[ "$CLANG" = [yY] ]]; then
             if [[ ! -f /usr/bin/clang ]]; then
-                yum -q -y install clang clang-devel
+                $YUMDNFBIN -q -y install clang clang-devel
             fi
             # ccache compiler has some initial overhead for compiles but speeds up subsequent
             # recompiles. however on initial install ccache has no benefits, so for initial
@@ -289,7 +289,7 @@ installopenssl() {
         echo "Compiling OpenSSL..."
     
         if [ ! -f /usr/bin/makedepend ]; then
-            yum -q -y install imake
+            $YUMDNFBIN -q -y install imake
         fi
     
         # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
