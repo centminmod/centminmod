@@ -137,16 +137,16 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
         # echo "rpm -e --nodeps $OLDMYSQL_LIBS"
         # rpm -e --nodeps $OLDMYSQL_LIBS
-        echo "$YUMDNFBIN -y remove mariadb-libs"
-        $YUMDNFBIN -y remove mariadb-libs
+        echo "yum -y remove mariadb-libs"
+        yum -y remove mariadb-libs
     fi
     echo ""
     # Should not exist on CentOS 7 systems
     echo "Check for existing MySQL-shared-compat"
     OLDMYSQL_SHAREDCOMPAT=`rpm -qa | grep 'MySQL-shared-compat' | head -n1`
     if [[ ! -z "$OLDMYSQL_SHAREDCOMPAT" ]]; then
-        echo "$YUMDNFBIN -y remove MySQL-shared-compat"
-        $YUMDNFBIN -y remove MySQL-shared-compat
+        echo "yum -y remove MySQL-shared-compat"
+        yum -y remove MySQL-shared-compat
     fi
 fi # CENTOS_SEVEN != 7
 
@@ -470,7 +470,7 @@ perdbiinstall
 
 cmservice mysqld stop
 
-#$YUMDNFBIN -y remove mysql mysql-libs
+#yum -y remove mysql mysql-libs
 
 rpm -e --nodeps $(rpm -qa mysql-libs) >/dev/null 2>&1
 
@@ -565,7 +565,7 @@ if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; then
     cecho "* Installing MariaDB via CentOS Yum Repo " $boldgreen
     echo "*************************************************"
 
-#$YUMDNFBIN -y remove mysql mysql-libs
+#yum -y remove mysql mysql-libs
 if [ -f /etc/my.cnf ]; then
     cp /etc/my.cnf /etc/my.cnf-original
     rm -rf /etc/my.cnf

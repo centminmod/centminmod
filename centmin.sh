@@ -1032,7 +1032,7 @@ then
         \cp -f /etc/yum.conf /etc/yum.bak
 
         echo "removing any i686 packages installed by default"
-        $YUMDNFBIN -y remove \*.i686
+        yum -y remove \*.i686
 
 ex -s /etc/yum.conf << EOF
 :/plugins=1/

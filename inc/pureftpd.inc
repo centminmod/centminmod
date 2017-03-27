@@ -1,10 +1,10 @@
 pureftpinstall() {
 	# detect if vsftpd and proftpd already installed and remove it
   if [[ -f /usr/sbin/vsftpd || "$(rpm -qa vsftpd | grep vsftpd)" ]]; then
-    $YUMDNFBIN -y remove vsftpd
+    yum -y remove vsftpd
   fi
   if [[ -f /usr/sbin/proftpd || "$(rpm -qa proftpd | grep proftpd)" ]]; then
-    $YUMDNFBIN -y remove proftpd
+    yum -y remove proftpd
   fi
 	
 	if [ ! -f /usr/bin/pure-pw ]; then

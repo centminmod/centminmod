@@ -60,7 +60,7 @@ checkimagicksys() {
                 cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
                 echo "----------------------------------------------------------------------------------"
                 $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
-                $YUMDNFBIN -y remove ImageMagick
+                yum -y remove ImageMagick
           
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
