@@ -76,9 +76,15 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
-  $YUMDNFBIN -y -q install epel-release
-  $YUMDNFBIN -y -q install dnf
-  YUMDNFBIN='dnf'
+  yum -y -q install epel-release
+  yum -y -q install dnf
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      DISABLEREPO_DNF=' --disablerepo=rpmforge'
+      YUMDNFBIN="dnf${DISABLEREPO_DNF}"
+  else
+      DISABLEREPO_DNF=""
+      YUMDNFBIN='dnf'
+  fi
 else
   YUMDNFBIN='yum'
 fi

@@ -1,7 +1,7 @@
 perdbiinstall() {
     # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
     if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
-        ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBD-MySQL
+        yum${CACHESKIP} -q -y install perl-DBD-MySQL
     fi
 }
 
@@ -189,10 +189,10 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.1.x YUM install..." $boldgreen
-    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel" $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
     echo "*************************************************"
     echo ""
-    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
+    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -517,8 +517,8 @@ chown -R mysql:mysql /var/lib/mysql/mysql/
 #echo "rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm"
     #rpm -Uvh MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm
 
-    ${YUMDNFBIN}${CACHESKIP} -y install perl-DBD-MySQL
-    ${YUMDNFBIN}${CACHESKIP} -q clean all
+    yum ${CACHESKIP} -y install perl-DBD-MySQL
+    yum ${CACHESKIP} -q clean all
 
 #download mysqltuner mysqlreport
 
