@@ -272,6 +272,7 @@ ENABLE_MENU='y'
 # CentOS 7 specific
 FIREWALLD_DISABLE='y'
 DNF_ENABLE='y'
+DNF_COPR='y'
 
 #####################################################
 # MariaDB Jemalloc
@@ -869,7 +870,21 @@ fi
 
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   yum -y -q install epel-release
-  yum -y -q install dnf
+  if [[ "$DNF_COPR" = [yY] ]]; then
+cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
+[dnf-centos]
+name=Copr repo for dnf-centos owned by @rpm-software-management
+baseurl=https://copr-be.cloud.fedoraproject.org/results/@rpm-software-management/dnf-centos/epel-7-\$basearch/
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/@rpm-software-management/dnf-centos/pubkey.gpg
+enabled=1
+enabled_metadata=1
+EOF
+  fi
+  if [[ ! -f /usr/bin/dnf ]]; then
+    yum -y -q install dnf
+  fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       DISABLEREPO_DNF=' --disablerepo=rpmforge'
       YUMDNFBIN="dnf${DISABLEREPO_DNF}"

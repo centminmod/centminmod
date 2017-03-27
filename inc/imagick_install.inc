@@ -30,8 +30,10 @@ checkimagicksys() {
 
 
     if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
-        yum -y -q install epel-release
-        yum -y -q install dnf
+        # yum -y -q install epel-release
+        if [[ ! -f /usr/bin/dnf ]]; then
+            yum -y -q install dnf
+        fi
         if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
             DISABLEREPO_DNF=' --disablerepo=rpmforge'
             YUMDNFBIN="dnf${DISABLEREPO_DNF}"
