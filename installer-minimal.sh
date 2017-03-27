@@ -818,7 +818,9 @@ if [[ "$DEF" = 'novalue' ]]; then
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
   FIRSTYUMINSTALLTIME=$(printf "%0.4f\n" $FIRSTYUMINSTALLTIME)
   GETCMTIME=$(echo "$getcmendtime - $getcmstarttime" | bc)
+  echo $GETCMTIME > "/root/centminlogs/getcmtime_installtime_${DT}.log"
   GETCMTIME=$(printf "%0.4f\n" $GETCMTIME)
+  echo $GETCMTIME >> "/root/centminlogs/getcmtime_installtime_${DT}.log"
   #touch ${CENTMINLOGDIR}/firstyum_installtime_${DT}.log
   echo "" > "/root/centminlogs/firstyum_installtime_${DT}.log"
 echo "---------------------------------------------------------------------------"
