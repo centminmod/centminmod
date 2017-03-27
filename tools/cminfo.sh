@@ -108,6 +108,12 @@ CPUCORES=$((${CPUCORES} * ${PHYSICALCPUS}));
     else HT=no; 
 fi
 #####################################################
+list_logs() {
+    echo
+    echo "List all /root/centminlogs in data ascending order"
+    ls -lahrt /root/centminlogs
+}
+
 setupdate() {
 cat > "/usr/bin/cminfo_updater"<<EOF
 #!/bin/bash
@@ -327,6 +333,9 @@ case "$1" in
         ;;
     update)
     setupdate
+        ;;
+    listlogs)
+    list_logs
         ;;
     *)
     infooutput
