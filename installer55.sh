@@ -6,7 +6,7 @@
 #######################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 DT=$(date +"%d%m%y-%H%M%S")
-branchname=123.09beta01
+branchname=123.09beta01-dnf
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
@@ -95,6 +95,13 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
+  yum -y epel-release
+  yum -y install dnf
+  YUMDNFBIN='dnf'
+else
+  YUMDNFBIN='yum'
+fi
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
@@ -140,7 +147,7 @@ else
     echo "The date/time before was:"
     date
     echo
-    yum -y install ntp
+    $YUMDNFBIN -y install ntp
     chkconfig ntpd on
     if [ -f /etc/ntp.conf ]; then
     if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
@@ -192,24 +199,24 @@ scl_install() {
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -218,24 +225,24 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -572,34 +579,34 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   # do not install yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-security
+    $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-security
+    $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install nmap-ncat
+      $YUMDNFBIN -y install nmap-ncat
     fi
   else
     if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install nc libgcj
+      $YUMDNFBIN -y install nc libgcj
     fi
   fi
 
-  yum -y install virt-what gawk unzip bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx
+  $YUMDNFBIN -y install virt-what gawk unzip bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx
   # allows curl install to skip checking for already installed yum packages 
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
-  yum -y install epel-release
-  yum -y install figlet moreutils nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28 uw-imap-devel
+  $YUMDNFBIN -y install epel-release
+  $YUMDNFBIN -y install figlet moreutils nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28 uw-imap-devel uw-imap-devel
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum -y install GeoIP GeoIP-devel --disablerepo=rpmforge
+    $YUMDNFBIN -y install GeoIP GeoIP-devel --disablerepo=rpmforge
   else
-    yum -y install GeoIP GeoIP-devel
+    $YUMDNFBIN -y install GeoIP GeoIP-devel
   fi
   if [[ "$CENTOS_SIX" = '6' ]]; then
-    yum -y install centos-release-cr
+    $YUMDNFBIN -y install centos-release-cr
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
     # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
   fi
@@ -614,8 +621,8 @@ fi
 
 yumupdater() {
   yum clean all
-  yum -y update
-  #yum -y install expect imake bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel vim-minimal nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-ExtUtils-MakeMaker perl-Time-HiRes cyrus-sasl cyrus-sasl-devel strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git
+  $YUMDNFBIN -y update
+  #$YUMDNFBIN -y install expect imake bind-utils readline readline-devel libedit libedit-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel vim-minimal nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-ExtUtils-MakeMaker perl-Time-HiRes cyrus-sasl cyrus-sasl-devel strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git
 }
 
 install_axel() {
@@ -774,7 +781,7 @@ if [[ "$DEF" = 'novalue' ]]; then
   #touch ${CENTMINLOGDIR}/firstyum_installtime_${DT}.log
   echo "" > "/root/centminlogs/firstyum_installtime_${DT}.log"
 echo "---------------------------------------------------------------------------"
-  echo "Total Curl Installer YUM Time: $FIRSTYUMINSTALLTIME seconds" >> "/root/centminlogs/firstyum_installtime_${DT}.log"
+  echo "Total Curl Installer YUM / DNF Time: $FIRSTYUMINSTALLTIME seconds" >> "/root/centminlogs/firstyum_installtime_${DT}.log"
   tail -1 /root/centminlogs/firstyum_installtime_*.log
   tail -1 /root/centminlogs/centminmod_yumtimes_*.log
   DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
@@ -792,7 +799,7 @@ echo "--------------------------------------------------------------------------
   TT=$(printf "%0.4f\n" $TT)
   ST=$(echo "$CT - ($DTIME_SEC + $NTIME_SEC + $PTIME_SEC)" | bc)
   ST=$(printf "%0.4f\n" $ST)
-  echo "Total YUM + Source Download Time: $(printf "%0.4f\n" $DTIME_SEC)"
+  echo "Total YUM / DNF + Source Download Time: $(printf "%0.4f\n" $DTIME_SEC)"
   echo "Total Nginx First Time Install Time: $(printf "%0.4f\n" $NTIME_SEC)"
   echo "Total PHP First Time Install Time: $(printf "%0.4f\n" $PTIME_SEC)"
   echo "Download Zip From Github Time: $GETCMTIME"

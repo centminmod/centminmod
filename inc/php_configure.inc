@@ -54,74 +54,74 @@ fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
+		${YUMDNFBIN}${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
 	else
-		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
+		${YUMDNFBIN}${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
 	fi
 fi
 
 # Microsoft SQL Server PHP driver support
 if [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
-  yum -q -y install unixODBC-devel freetds-devel
+  $YUMDNFBIN -q -y install unixODBC-devel freetds-devel
 elif [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
-  yum -q -y install unixODBC-devel
+  $YUMDNFBIN -q -y install unixODBC-devel
 elif [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]]; then
-  yum -q -y install freetds-devel
+  $YUMDNFBIN -q -y install freetds-devel
 fi
 
 if [[ ! -f /usr/bin/xslt-config ]]; then
-	yum -q -y install libxslt libxslt-devel
+	$YUMDNFBIN -q -y install libxslt libxslt-devel
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	 yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+	 $YUMDNFBIN -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
   else
-    yum -q -y install libicu libicu-devel --disablerepo=epel
+    $YUMDNFBIN -q -y install libicu libicu-devel --disablerepo=epel
   fi
 fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	 yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
+	 $YUMDNFBIN -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
   else
-    yum -q -y install aspell aspell-devel --disablerepo=epel
+    $YUMDNFBIN -q -y install aspell aspell-devel --disablerepo=epel
   fi
 fi
 
 if [[ ! -f /usr/include/recode.h ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	 yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
+	 $YUMDNFBIN -q -y install recode recode-devel --disablerepo=rpmforge,epel
   else
-    yum -q -y install recode recode-devel --disablerepo=epel
+    $YUMDNFBIN -q -y install recode recode-devel --disablerepo=epel
   fi
 fi
 
 if [[ ! -f /usr/include/tidy.h ]]; then
-	yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge
+	$YUMDNFBIN -q -y install libtidy libtidy-devel --disablerepo=rpmforge
 fi
 
 if [[ ! -d /usr/include/enchant ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
+    $YUMDNFBIN -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
   else
-    yum -q -y install enchant enchant-devel --disablerepo=epel
+    $YUMDNFBIN -q -y install enchant enchant-devel --disablerepo=epel
   fi
 fi
 
 if [[ ! -d /usr/include/net-snmp ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
+    $YUMDNFBIN -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
   else
-    yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=epel
+    $YUMDNFBIN -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=epel
   fi
 fi
 
 if [[ ! -f /usr/include/expect.h ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum -q -y install expect-devel --disablerepo=rpmforge,epel
+    $YUMDNFBIN -q -y install expect-devel --disablerepo=rpmforge,epel
   else
-    yum -q -y install expect-devel --disablerepo=epel
+    $YUMDNFBIN -q -y install expect-devel --disablerepo=epel
   fi
 fi
 
@@ -141,9 +141,9 @@ if [[ -d /usr/include/vpx ]]; then
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 else
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+    ${YUMDNFBIN}${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
   else
-    yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
+    ${YUMDNFBIN}${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
   fi
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 fi
@@ -152,9 +152,9 @@ if [[ -f /usr/include/t1lib.h ]]; then
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 else
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
+    ${YUMDNFBIN}${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
   else
-    yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
+    ${YUMDNFBIN}${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
   fi
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 fi
@@ -208,17 +208,17 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-      yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+      ${YUMDNFBIN}${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
     else
-      yum${CACHESKIP} -y install uw-imap-devel
+      ${YUMDNFBIN}${CACHESKIP} -y install uw-imap-devel
     fi
 	fi
 else
 	if [[ $(rpm -q libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-      yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+      ${YUMDNFBIN}${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
     else
-      yum${CACHESKIP} -y install libc-client-devel --disablerepo=epel
+      ${YUMDNFBIN}${CACHESKIP} -y install libc-client-devel --disablerepo=epel
     fi
 	fi
 fi
@@ -254,8 +254,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		echo "----------------------------------------------------------------------------------"
 		cecho "Installing $pkg" $boldyellow
 		echo "----------------------------------------------------------------------------------"
-        		yum${CACHESKIP} -q -y install $pkg
-        		# yum${CACHESKIP} -q list $pkg
+        		${YUMDNFBIN}${CACHESKIP} -q -y install $pkg
+        		# ${YUMDNFBIN}${CACHESKIP} -q list $pkg
 		echo "----------------------------------------------------------------------------------"
         		fi
 		done
@@ -278,8 +278,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		echo "----------------------------------------------------------------------------------"
 		cecho "Installing $pkgx" $boldyellow
 		echo "----------------------------------------------------------------------------------"
-        		yum${CACHESKIP} -q -y install $pkgx
-        		# yum${CACHESKIP} -q list $pkgx
+        		${YUMDNFBIN}${CACHESKIP} -q -y install $pkgx
+        		# ${YUMDNFBIN}${CACHESKIP} -q list $pkgx
 		echo "----------------------------------------------------------------------------------"
         		fi
 		done
@@ -296,7 +296,7 @@ fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
     if [[ ! -f /usr/bin/clang ]]; then
-        yum -q -y install clang clang-devel
+        $YUMDNFBIN -q -y install clang clang-devel
     fi
     if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)

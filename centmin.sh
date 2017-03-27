@@ -271,6 +271,7 @@ ENABLE_MENU='y'
 #####################################################
 # CentOS 7 specific
 FIREWALLD_DISABLE='y'
+DNF_ENABLE='y'
 
 #####################################################
 # MariaDB Jemalloc
@@ -866,6 +867,14 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     fi
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
+  yum -y -q epel-release
+  yum -y -q install dnf
+  YUMDNFBIN='dnf'
+else
+  YUMDNFBIN='yum'
+fi
+
 # function checks if persistent config file has low mem variable enabled
 # LOWMEM_INSTALL='y'
 checkfor_lowmem
@@ -1004,11 +1013,11 @@ fi
 #if [[ "$key" = [yY] ]];
 #then
 #    echo "Let's do that then..."
-#    yum${CACHESKIP} -q clean all
-#    yum${CACHESKIP} -y update glibc\*
-#    yum${CACHESKIP} -y update yum\* rpm\* python\*
-#    yum${CACHESKIP} -q clean all
-#    yum${CACHESKIP} -y update
+#    ${YUMDNFBIN}${CACHESKIP} -q clean all
+#    ${YUMDNFBIN}${CACHESKIP} -y update glibc\*
+#    ${YUMDNFBIN}${CACHESKIP} -y update yum\* rpm\* python\*
+#    ${YUMDNFBIN}${CACHESKIP} -q clean all
+#    ${YUMDNFBIN}${CACHESKIP} -y update
 #fi
 
 if [ ${ARCH} == 'x86_64' ];
@@ -1023,7 +1032,7 @@ then
         \cp -f /etc/yum.conf /etc/yum.bak
 
         echo "removing any i686 packages installed by default"
-        yum -y remove \*.i686
+        $YUMDNFBIN -y remove \*.i686
 
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
@@ -1252,7 +1261,7 @@ else
         cecho "* Installing NTP (and syncing time)" $boldgreen
         echo "*************************************************"
         if [ ! -f /usr/sbin/ntpd ]; then
-            yum${CACHESKIP} -y install ntp
+            ${YUMDNFBIN}${CACHESKIP} -y install ntp
             chkconfig --levels 235 ntpd on
         fi
         # skip re-running this routine if custom logfile already set i.e.
@@ -1325,8 +1334,8 @@ funct_centos6check
 
 if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
   # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
-  echo "yum -y erase php*"
-  yum${CACHESKIP} -y erase php*
+  echo "${YUMDNFBIN} -y erase php*"
+  ${YUMDNFBIN}${CACHESKIP} -y erase php*
 
 fi
 
@@ -1397,11 +1406,11 @@ fi
 
 # add check for Windows CLRF line endings
 if [ ! -f /usr/bin/file ]; then
-    yum -q -y install file
+    $YUMDNFBIN -q -y install file
 fi
 if [[ "$(file /etc/init.d/php-fpm)" =~ CRLF && -f /etc/init.d/php-fpm ]]; then
     if [ ! -f /usr/bin/dos2unix ]; then
-        yum -q -y install dos2unix
+        $YUMDNFBIN -q -y install dos2unix
     fi
     echo "detected CRLF line endings converting to Unix LF"
     dos2unix /etc/init.d/php-fpm
@@ -1721,7 +1730,7 @@ funct_installiopingcentmin() {
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installing..."
         cecho "--------------------------------------------------------" $boldyellow
-        yum -q -y install ioping
+        $YUMDNFBIN -q -y install ioping
         echo ""
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installed"

@@ -102,7 +102,7 @@ fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
-    yum -y install nmap-ncat
+    $YUMDNFBIN -y install nmap-ncat
   fi
 else
   if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
@@ -150,16 +150,16 @@ YUMINSTALLRPMCHECK=$(rpm -ql $pkg >/dev/null 2>&1; echo $?)
 #echo $YUMINSTALLRPMCHECK
         if [[ "$YUMINSTALLRPMCHECK" = '0' ]]; then
 echo "----------------------------------------------------------------------------------"
-        # yum${CACHESKIP}-q -y update $pkg
-        # yum${CACHESKIP} -q list $pkg
+        # ${YUMDNFBIN}${CACHESKIP}-q -y update $pkg
+        # ${YUMDNFBIN}${CACHESKIP} -q list $pkg
         echo "$pkg already installed"
 echo "----------------------------------------------------------------------------------"
         else
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkg" $boldyellow
 echo "----------------------------------------------------------------------------------"
-        yum${CACHESKIP} -q -y install $pkg
-        # yum${CACHESKIP} -q list $pkg
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkg
+        # ${YUMDNFBIN}${CACHESKIP} -q list $pkg
 echo "----------------------------------------------------------------------------------"
         fi
 done
@@ -202,16 +202,16 @@ YUMINSTALLRPMCHECK=$(rpm -qi $pkggp | awk '/Install Date/' | wc -l)
 #echo $YUMINSTALLRPMCHECK
         if [[ "$YUMINSTALLRPMCHECK" = '2' ]]; then
 echo "----------------------------------------------------------------------------------"
-        # yum${CACHESKIP}-q -y update $pkgg
-        # yum${CACHESKIP} -q list $pkgg
+        # ${YUMDNFBIN}${CACHESKIP}-q -y update $pkgg
+        # ${YUMDNFBIN}${CACHESKIP} -q list $pkgg
         echo "$pkgg already installed"
 echo "----------------------------------------------------------------------------------"
         else
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgg" $boldyellow
 echo "----------------------------------------------------------------------------------"
-        yum${CACHESKIP} -q -y install $pkggp
-        # yum${CACHESKIP} -q list $pkggp
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkggp
+        # ${YUMDNFBIN}${CACHESKIP} -q list $pkggp
 echo "----------------------------------------------------------------------------------"
         fi
 done
@@ -219,7 +219,7 @@ done
 fi # /usr/local/src/curlinstall_yum.txt
 
 
-yum${CACHESKIP} -y -q install mytop iftop
+${YUMDNFBIN}${CACHESKIP} -y -q install mytop iftop
 if [ -f /usr/bin/mytop ]; then
 sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi

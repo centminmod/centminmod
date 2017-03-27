@@ -542,7 +542,7 @@ axivo_remove() {
 		# remove Axivo outdated yum repo
 		# if detected as being installed
 		# yum list installed --disablerepo=* --enablerepo=axivo --disableplugin=priorities | grep axivo
-		yum -y -q remove axivo-release >/dev/null 2>&1
+		$YUMDNFBIN -y -q remove axivo-release >/dev/null 2>&1
 		yum clean all -q
 	fi
 }
@@ -550,7 +550,7 @@ axivo_remove() {
 csfipsetcheck() {
 	if [[ ! -f /proc/user_beancounters && "$(lsmod | grep ip_set)" ]]; then
 		if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
-			yum -y -q install ipset ipset-devel
+			$YUMDNFBIN -y -q install ipset ipset-devel
 			if [ -f /etc/csf/csf.conf ]; then
 			sed -i 's/LF_IPSET = "0"/LF_IPSET = "1"/g' /etc/csf/csf.conf
 			fi
@@ -992,7 +992,7 @@ auto_gitupdate() {
 
 figletcheck() {
     if [[ ! -f "$(rpm -ql figlet | grep 'bin\/figlet')" && -f /etc/yum.repos.d/epel.repo ]]; then
-        yum -y -q install figlet
+        $YUMDNFBIN -y -q install figlet
     fi
 }
 
@@ -1329,10 +1329,10 @@ apache_protect() {
 centossix_crsetup() {
 	# centos <=6.7 openssl fix https://community.centminmod.com/posts/31166/
 	if [[ ! -f /etc/yum.repos.d/CentOS-CR.repo && "$CENTOS_SIX" = '6' && "$(awk '{ print $3 }' /etc/redhat-release | sed -e 's|\.||')" -lt '68' ]]; then
-		yum -y -q install centos-release-cr
+		$YUMDNFBIN -y -q install centos-release-cr
 		sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
 		echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
-		yum -y -q update openssl openssl-devel --disableplugin=priorities --enablerepo=cr >/dev/null 2>&1
+		$YUMDNFBIN -y -q update openssl openssl-devel --disableplugin=priorities --enablerepo=cr >/dev/null 2>&1
 	fi
 }
 
@@ -1410,6 +1410,14 @@ if [ -f /etc/init.d/directadmin ]; then
 echo "DirectAdmin detected.. centmin mod NOT compatible"
 echo "aborting script..."
 exit
+fi
+
+if [[ "$CENTOS_SEVEN" = '7' && "DNF_ENABLE" = [yY] ]]; then
+  yum -y -q epel-release
+  yum -y -q install dnf
+  YUMDNFBIN='dnf'
+else
+  YUMDNFBIN='yum'
 fi
 
 yumfastmirror_check
@@ -1507,7 +1515,7 @@ chmod 0700 /usr/bin/cminfo_updater
 
 # insert itself into cronjob for auto updates
 if [ ! -f /usr/bin/crontab ]; then
-	yum -y -q install cronie
+	$YUMDNFBIN -y -q install cronie
 		if [[ "$CENTOS_SEVEN" != '7' ]]; then
 			service crond restart
 			chkconfig crond on
@@ -1518,7 +1526,7 @@ if [ ! -f /usr/bin/crontab ]; then
 fi
 
 if [ ! -f /usr/bin/sar ]; then
-	yum -y -q install sysstat
+	$YUMDNFBIN -y -q install sysstat
 		if [[ "$CENTOS_SEVEN" != '7' ]]; then
 			service sysstat restart
 			chkconfig sysstat on
