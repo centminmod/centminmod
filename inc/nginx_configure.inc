@@ -2014,7 +2014,7 @@ fi
 ngxgeoipmemtweak
 
 if [[ "$CLANG" = [yY] ]]; then
-	if [[ ! -f /usr/bin/clang ]]; then
+	if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
 		yum -q -y install clang clang-devel
 	fi
 	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then

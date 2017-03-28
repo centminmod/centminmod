@@ -221,7 +221,7 @@ installopenssl() {
             bash autogen.sh
         fi
         if [[ "$CLANG" = [yY] ]]; then
-            if [[ ! -f /usr/bin/clang ]]; then
+            if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
                 yum -q -y install clang clang-devel
             fi
             # ccache compiler has some initial overhead for compiles but speeds up subsequent
