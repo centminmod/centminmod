@@ -841,7 +841,7 @@ echo "--------------------------------------------------------------------------
 if [[ "$DNF_ENABLE" = [yY] ]]; then
   CURLT=$(awk '{print $8}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
 else
-  CURLT=$(awk '{print $6}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
+  CURLT=$(awk '{print $8}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
 fi
   CT=$(awk '{print $6}' /root/centminlogs/*_install.log | tail -1)
   TT=$(echo "$CURLT + $CT + $GETCMTIME" | bc)
