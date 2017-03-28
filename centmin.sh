@@ -868,6 +868,19 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     fi
 fi
 
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+  if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/plugins=1/
+:a
+exclude=*.i386 *.i586 *.i686
+.
+:w
+:q
+EOF
+  fi
+fi
+
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   yum -y -q install epel-release
   if [[ "$DNF_COPR" = [yY] ]]; then
@@ -1055,6 +1068,7 @@ then
         echo "removing any i686 packages installed by default"
         yum -y remove \*.i686
 
+if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
 :a
@@ -1063,6 +1077,7 @@ exclude=*.i386 *.i586 *.i686
 :w
 :q
 EOF
+fi
         echo "Your origional yum configuration has been backed up to /etc/yum.bak"
     else
         rm -rf "$CUR_DIR/config/yum"

@@ -132,6 +132,19 @@ if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
 fi
 
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+  if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/plugins=1/
+:a
+exclude=*.i386 *.i586 *.i686
+.
+:w
+:q
+EOF
+  fi
+fi
+
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   yum -y -q install epel-release
   if [[ "$DNF_COPR" = [yY] ]]; then
