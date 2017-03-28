@@ -1,25 +1,28 @@
 pureftpinstall() {
 
-	if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
-  	yum -y -q install epel-release
-  	yum -y -q install dnf
-  	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-      	DISABLEREPO_DNF=' --disablerepo=rpmforge'
-      	YUMDNFBIN="dnf${DISABLEREPO_DNF}"
-  	else
-      	DISABLEREPO_DNF=""
-      	YUMDNFBIN='dnf'
-  	fi
-	else
-  	YUMDNFBIN='yum'
-	fi
+if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      DISABLEREPO_DNF=' --disablerepo=rpmforge'
+      YUMDNFBIN="dnf${DISABLEREPO_DNF}"
+  else
+      DISABLEREPO_DNF=""
+      YUMDNFBIN='dnf'
+  fi
+else
+  YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
+fi
 
 	# detect if vsftpd and proftpd already installed and remove it
   if [[ -f /usr/sbin/vsftpd || "$(rpm -qa vsftpd | grep vsftpd)" ]]; then
-    yum -y remove vsftpd
+    yum -y remove vsftpd${DISABLEREPO_DNF}
   fi
   if [[ -f /usr/sbin/proftpd || "$(rpm -qa proftpd | grep proftpd)" ]]; then
-    yum -y remove proftpd
+    yum -y remove proftpd${DISABLEREPO_DNF}
   fi
 	
 	if [ ! -f /usr/bin/pure-pw ]; then
@@ -35,7 +38,7 @@ pureftpinstall() {
     fi
     fi
 
-		$YUMDNFBIN -q -y install pure-ftpd
+		$YUMDNFBIN -q -y install pure-ftpd${DISABLEREPO_DNF}
 		cmchkconfig pure-ftpd on
 		sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
 		sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;5;300\"/g' /etc/csf/csf.conf

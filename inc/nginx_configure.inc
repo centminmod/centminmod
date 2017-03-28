@@ -1670,7 +1670,7 @@ else
 fi
 
 if [[ ! -f /usr/bin/jemalloc.sh || ! -d /usr/include/jemalloc ]]; then
-	yum -y install jemalloc jemalloc-devel
+	$YUMDNFBIN -y install jemalloc jemalloc-devel${DISABLEREPO_DNF}
 	if [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
 		if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
 			JEMALLOC_LD=""
@@ -1889,7 +1889,7 @@ fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
 			NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
 			if [ ! -f /usr/bin/hg ]; then
-				yum -y install mercurial
+				$YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
 			fi
 			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
 				pushd "$DIR_TMP"
@@ -1913,7 +1913,7 @@ fi
 		else
 			NGINX_NJSOPT=' --add-module=../njs/nginx'
 			if [ ! -f /usr/bin/hg ]; then
-				yum -y install mercurial
+				$YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
 			fi
 			if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
 				pushd "$DIR_TMP"

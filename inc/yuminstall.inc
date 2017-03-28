@@ -38,32 +38,32 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
   # for yum fastmirror operation
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install yum-plugin-fastestmirror
+      yum -y install yum-plugin-fastestmirror${DISABLEREPO_DNF}
     fi
     if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install yum-plugin-downloadonly
+      yum -y install yum-plugin-downloadonly${DISABLEREPO_DNF}
     fi
     if [[ $(rpm -q yum-plugin-security >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install yum-plugin-security
+      yum -y install yum-plugin-security${DISABLEREPO_DNF}
     fi
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
     if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install yum-plugin-fastestmirror
+      yum -y install yum-plugin-fastestmirror${DISABLEREPO_DNF}
     fi
     if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install yum-plugin-downloadonly
+      yum -y install yum-plugin-downloadonly${DISABLEREPO_DNF}
     fi
     if [[ $(rpm -q yum-plugin-security >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install yum-plugin-security
+      yum -y install yum-plugin-security${DISABLEREPO_DNF}
     fi
   fi
 
 if [[ $(rpm -q yum-plugin-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
-  yum -y -q install yum-plugin-priorities
+  yum -y -q install yum-plugin-priorities${DISABLEREPO_DNF}
 fi
 
 if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
-  yum -y -q install epel-release
+  yum -y -q install epel-release${DISABLEREPO_DNF}
 fi
 
 if [[ -f /etc/yum.repos.d/epel.repo && -z "$(grep 'varnish-libs' /etc/yum.repos.d/epel.repo)" ]]; then
@@ -73,7 +73,7 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
   # centos 6 unlike centos 7 doesn't install CR yum repo by default
   # https://wiki.centos.org/AdditionalResources/Repositories/CR
   if [[ "$CENTOS_SIX" = '6' ]]; then
-    yum -y -q install centos-release-cr
+    yum -y -q install centos-release-cr${DISABLEREPO_DNF}
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
     # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
   fi
@@ -81,19 +81,19 @@ yumprior
 else
 
 if [[ $(rpm -q yum-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
-  yum -y -q install yum-priorities
+  yum -y -q install yum-priorities${DISABLEREPO_DNF}
 fi
 
 if [[ $(rpm -q yum-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
-  yum -y -q install yum-fastestmirror
+  yum -y -q install yum-fastestmirror${DISABLEREPO_DNF}
 fi
 
 if [[ $(rpm -q yum-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
-  yum -y -q install yum-downloadonly
+  yum -y -q install yum-downloadonly${DISABLEREPO_DNF}
 fi
 
 if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
-  yum -y -q install epel-release
+  yum -y -q install epel-release${DISABLEREPO_DNF}
 fi
 
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
@@ -225,7 +225,7 @@ sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
 
 if [ ! -f /proc/user_beancounters ]; then
-  yum -y install ipset ipset-devel
+  yum -y install ipset ipset-devel${DISABLEREPO_DNF}
 fi
 
 yum clean all -q
@@ -267,7 +267,7 @@ fi
 rm -rf /tmp/curlinstaller-yum
 
 # duplicate
-# yum -y update
+# yum -y update${DISABLEREPO_DNF}
 
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 
