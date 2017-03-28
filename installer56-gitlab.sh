@@ -162,6 +162,9 @@ EOF
   if [[ ! -f /usr/bin/dnf ]]; then
     yum -y -q install dnf
   fi
+  if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
+    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf  
+  fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       DISABLEREPO_DNF=' --disablerepo=rpmforge'
       YUMDNFBIN="dnf${DISABLEREPO_DNF}"
