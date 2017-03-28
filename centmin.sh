@@ -899,9 +899,13 @@ EOF
     yum -y -q install dnf
   fi
   if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
-    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf  
+    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
+  fi
+  if [ ! "$(grep -w 'fastestmirror=true' /etc/dnf/dnf.conf)" ]; then
+    echo "fastestmirror=true" >> /etc/dnf/dnf.conf
   fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
       DISABLEREPO_DNF=' --disablerepo=rpmforge'
       YUMDNFBIN="dnf${DISABLEREPO_DNF}"
   else

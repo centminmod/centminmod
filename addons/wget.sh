@@ -83,6 +83,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
     yum -y -q install dnf
   fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
       DISABLEREPO_DNF=' --disablerepo=rpmforge'
       YUMDNFBIN="dnf${DISABLEREPO_DNF}"
   else
