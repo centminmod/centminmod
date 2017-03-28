@@ -222,7 +222,7 @@ installopenssl() {
         fi
         if [[ "$CLANG" = [yY] ]]; then
             if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
-                yum -q -y install clang clang-devel
+                $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
             fi
             # ccache compiler has some initial overhead for compiles but speeds up subsequent
             # recompiles. however on initial install ccache has no benefits, so for initial

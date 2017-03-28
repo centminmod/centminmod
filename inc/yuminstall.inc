@@ -102,11 +102,11 @@ fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install nmap-ncat
+    $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
   fi
 else
   if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
-    yum -y install nc libgcj
+    $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
   fi
 fi
 
@@ -158,7 +158,7 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkg" $boldyellow
 echo "----------------------------------------------------------------------------------"
-        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkg
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkg${DISABLEREPO_DNF}
         # ${YUMDNFBIN}${CACHESKIP} -q list $pkg
 echo "----------------------------------------------------------------------------------"
         fi
@@ -210,7 +210,7 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgg" $boldyellow
 echo "----------------------------------------------------------------------------------"
-        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkggp
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkggp${DISABLEREPO_DNF}
         # ${YUMDNFBIN}${CACHESKIP} -q list $pkggp
 echo "----------------------------------------------------------------------------------"
         fi
@@ -219,7 +219,7 @@ done
 fi # /usr/local/src/curlinstall_yum.txt
 
 
-${YUMDNFBIN}${CACHESKIP} -y -q install mytop iftop
+${YUMDNFBIN}${CACHESKIP} -y -q install mytop iftop${DISABLEREPO_DNF}
 if [ -f /usr/bin/mytop ]; then
 sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
@@ -243,22 +243,22 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       echo "----------------------------------------------------------------------------------"
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
       echo "----------------------------------------------------------------------------------"
-      yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+      ${YUMDNFBIN} -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
   
-      yum -y remove ImageMagick
+      ${YUMDNFBIN} -y remove ImageMagick${DISABLEREPO_DNF}
   
       if [[ "$CENTOS_SIX" = '6' ]]; then
-        # yum -y install libwebp libwebp-devel --skip-broken
-        yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
+        # ${YUMDNFBIN} -y install libwebp libwebp-devel --skip-broken
+        ${YUMDNFBIN} -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken${DISABLEREPO_DNF}
       else
-        yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+        ${YUMDNFBIN} -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
       fi
       
       echo
     fi
 
     if [[ "$(rpm -qa ImageMagick6)" ]]; then
-      yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+      ${YUMDNFBIN} -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
     fi
   fi
 fi

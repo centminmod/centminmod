@@ -631,11 +631,11 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
-      $YUMDNFBIN -y install nmap-ncat
+      $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
     fi
   else
     if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y install nc libgcj
+      $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
     fi
   fi
 

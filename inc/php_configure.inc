@@ -254,8 +254,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		echo "----------------------------------------------------------------------------------"
 		cecho "Installing $pkg" $boldyellow
 		echo "----------------------------------------------------------------------------------"
-        		yum${CACHESKIP} -q -y install $pkg
-        		# yum${CACHESKIP} -q list $pkg
+        		$YUMDNFBIN${CACHESKIP} -q -y install $pkg${DISABLEREPO_DNF}
+        		# $YUMDNFBIN${CACHESKIP} -q list $pkg
 		echo "----------------------------------------------------------------------------------"
         		fi
 		done
@@ -278,8 +278,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		echo "----------------------------------------------------------------------------------"
 		cecho "Installing $pkgx" $boldyellow
 		echo "----------------------------------------------------------------------------------"
-        		yum${CACHESKIP} -q -y install $pkgx
-        		# yum${CACHESKIP} -q list $pkgx
+        		$YUMDNFBIN${CACHESKIP} -q -y install $pkgx${DISABLEREPO_DNF}
+        		# $YUMDNFBIN${CACHESKIP} -q list $pkgx
 		echo "----------------------------------------------------------------------------------"
         		fi
 		done
@@ -296,7 +296,7 @@ fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
-        yum -q -y install clang clang-devel
+        $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
     fi
     if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
