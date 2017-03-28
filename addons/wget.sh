@@ -92,6 +92,11 @@ if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   fi
 else
   YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
 fi
 ###########################################################
 # Setup Colours

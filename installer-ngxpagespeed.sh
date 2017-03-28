@@ -178,6 +178,11 @@ EOF
   fi
 else
   YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
 fi
 
 if [ -f /proc/user_beancounters ]; then

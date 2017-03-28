@@ -914,6 +914,11 @@ EOF
   fi
 else
   YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
 fi
 
 # function checks if persistent config file has low mem variable enabled
