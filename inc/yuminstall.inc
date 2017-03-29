@@ -102,11 +102,11 @@ fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
+    time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
   fi
 else
   if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
+    time $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
   fi
 fi
 

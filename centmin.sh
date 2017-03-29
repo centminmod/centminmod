@@ -1456,11 +1456,11 @@ fi
 
 # add check for Windows CLRF line endings
 if [ ! -f /usr/bin/file ]; then
-    $YUMDNFBIN -q -y install file
+    time $YUMDNFBIN -q -y install file${DISABLEREPO_DNF}
 fi
 if [[ "$(file /etc/init.d/php-fpm)" =~ CRLF && -f /etc/init.d/php-fpm ]]; then
     if [ ! -f /usr/bin/dos2unix ]; then
-        $YUMDNFBIN -q -y install dos2unix
+        time $YUMDNFBIN -q -y install dos2unix${DISABLEREPO_DNF}
     fi
     echo "detected CRLF line endings converting to Unix LF"
     dos2unix /etc/init.d/php-fpm
@@ -1780,7 +1780,7 @@ funct_installiopingcentmin() {
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installing..."
         cecho "--------------------------------------------------------" $boldyellow
-        $YUMDNFBIN -q -y install ioping
+        time $YUMDNFBIN -q -y install ioping${DISABLEREPO_DNF}
         echo ""
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installed"

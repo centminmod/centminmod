@@ -206,7 +206,7 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}" $boldgreen
     echo "*************************************************"
     echo ""
-    time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
+    time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
@@ -398,10 +398,10 @@ echo ""
 perdbiinstall
 # reinstall postfix removed from mariadb-libs removale
 if [[ $(rpm -q postfix >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install postfix${DISABLEOTHERREPO} 
+    time $YUMDNFBIN -y install postfix${DISABLEOTHERREPO} 
 fi
 if [[ $(rpm -q net-snmp >/dev/null 2>&1; echo $?) != '0' ]]; then
-    $YUMDNFBIN -y install net-snmp${DISABLEOTHERREPO} 
+    time $YUMDNFBIN -y install net-snmp${DISABLEOTHERREPO} 
 fi
 if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y install mytop

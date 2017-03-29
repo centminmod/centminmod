@@ -14,7 +14,7 @@ function funct_apcsourceinstall {
 
         if [[ "$CLANG_APC" = [yY] ]]; then
             if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
-                $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
+                time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
             fi
             export CC="ccache /usr/bin/clang -ferror-limit=0"
             export CXX="ccache /usr/bin/clang++ -ferror-limit=0"

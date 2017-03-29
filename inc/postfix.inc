@@ -1,7 +1,7 @@
 postfix_presetup() {
 
 	if [ ! -f /bin/mailx ]; then
-		$YUMDNFBIN -y install mailx
+		time $YUMDNFBIN -y install mailx${DISABLEREPO_DNF}
 	fi
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -194,9 +194,9 @@ fi # centos7
 postfixsetup() {
 
 	if [ ! -f /usr/sbin/pflogsumm ]; then
-		$YUMDNFBIN -q -y install postfix-perl-scripts${DISABLEREPO_DNF}
+		time $YUMDNFBIN -q -y install postfix-perl-scripts${DISABLEREPO_DNF}
 	fi
-	$YUMDNFBIN -q -y update postfix --disableplugin=priorities${DISABLEREPO_DNF}
+	time $YUMDNFBIN -q -y update postfix --disableplugin=priorities${DISABLEREPO_DNF}
 
 	CHECKSENDMAILPATH=$(grep sendmail_path /usr/local/lib/php.ini)
 	if [ "$CHECKSENDMAILPATH" == ';sendmail_path =' ]; then

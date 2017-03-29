@@ -38,7 +38,7 @@ fi
     fi
     fi
 
-		$YUMDNFBIN -q -y install pure-ftpd${DISABLEREPO_DNF}
+		time $YUMDNFBIN -q -y install pure-ftpd${DISABLEREPO_DNF}
 		cmchkconfig pure-ftpd on
 		sed -i 's/LF_FTPD = "10"/LF_FTPD = "3"/g' /etc/csf/csf.conf
 		sed -i 's/PORTFLOOD = \"\"/PORTFLOOD = \"21;tcp;5;300\"/g' /etc/csf/csf.conf
