@@ -1197,7 +1197,7 @@ fi
 ################################################################
 # SCRIPT START
 #
-clear
+# clear
 cecho "**********************************************************************" $boldyellow
 cecho "* Centmin Mod Nginx, MariaDB MySQL, PHP & DNS Install script for CentOS" $boldgreen
 cecho "* Version: $SCRIPT_VERSION - Date: $SCRIPT_DATE" $boldgreen

@@ -266,7 +266,8 @@ fi
 # remove /tmp/curlinstaller-yum
 rm -rf /tmp/curlinstaller-yum
 
-yum -y update
+# duplicate
+# yum -y update
 
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_yumtimes_${DT}.log
 

@@ -13,7 +13,7 @@ function funct_apcsourceinstall {
     echo "*************************************************"
 
         if [[ "$CLANG_APC" = [yY] ]]; then
-            if [[ ! -f /usr/bin/clang ]]; then
+            if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
                 yum -q -y install clang clang-devel
             fi
             export CC="ccache /usr/bin/clang -ferror-limit=0"

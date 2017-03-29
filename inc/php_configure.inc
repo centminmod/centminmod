@@ -295,7 +295,7 @@ if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
 fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
-    if [[ ! -f /usr/bin/clang ]]; then
+    if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
         yum -q -y install clang clang-devel
     fi
     if [[ "$GCCINTEL_PHP" = [yY] ]]; then
