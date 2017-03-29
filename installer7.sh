@@ -146,7 +146,9 @@ EOF
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
-  yum -y -q install epel-release
+  if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y -q install epel-release
+  fi
   if [[ "$DNF_COPR" = [yY] ]]; then
 cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
 [dnf-centos]
