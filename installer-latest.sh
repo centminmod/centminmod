@@ -158,6 +158,7 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
+    yum clean all
   fi
   if [[ "$DNF_COPR" = [yY] ]]; then
 cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
@@ -173,6 +174,7 @@ EOF
   fi
   if [[ ! -f /usr/bin/dnf ]]; then
     yum -y -q install dnf
+    dnf clean all
   fi
   if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
     echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
