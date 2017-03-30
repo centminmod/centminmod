@@ -1669,7 +1669,7 @@ else
 	echo
 fi
 
-if [[ ! -f /usr/bin/jemalloc.sh || ! -d /usr/include/jemalloc ]]; then
+if [ ! -f /usr/bin/jemalloc.sh ]; then
 	time $YUMDNFBIN -y install jemalloc jemalloc-devel${DISABLEREPO_DNF}
 	if [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
 		if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
