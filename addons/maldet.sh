@@ -88,6 +88,14 @@ if [ -f "/etc/centminmod/custom_config.inc" ]; then
   . "/etc/centminmod/custom_config.inc"
 fi
 
+if [[ ! "$(grep -w 'enabled = 1' /etc/yum.repos.d/rpmforge.repo)" ]]; then
+  echo "rpmforge repo is disabled"
+  echo "aborting maldet.sh install due to clamav rpmforge requirements"
+  echo "check forums for any updates to this issue at"
+  echo "https://community.centminmod.com/forums/add-ons.10/"
+  exit
+fi
+
 if [[ ! -f /usr/bin/wget ]] ; then
 	yum -y -q install wget
 fi

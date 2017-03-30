@@ -271,6 +271,8 @@ ENABLE_MENU='y'
 #####################################################
 # CentOS 7 specific
 FIREWALLD_DISABLE='y'
+DNF_ENABLE='n'
+DNF_COPR='y'
 
 #####################################################
 # MariaDB Jemalloc
@@ -866,6 +868,63 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     fi
 fi
 
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+  if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/plugins=1/
+:a
+exclude=*.i386 *.i586 *.i686
+.
+:w
+:q
+EOF
+  fi
+fi
+
+if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+  if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
+    yum -y -q install epel-release
+    yum clean all
+  fi
+  if [[ "$DNF_COPR" = [yY] ]]; then
+cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
+[dnf-centos]
+name=Copr repo for dnf-centos owned by @rpm-software-management
+baseurl=https://copr-be.cloud.fedoraproject.org/results/@rpm-software-management/dnf-centos/epel-7-\$basearch/
+skip_if_unavailable=True
+gpgcheck=1
+gpgkey=https://copr-be.cloud.fedoraproject.org/results/@rpm-software-management/dnf-centos/pubkey.gpg
+enabled=1
+enabled_metadata=1
+EOF
+  fi
+  if [[ ! -f /usr/bin/dnf ]]; then
+    yum -y -q install dnf
+    dnf clean all
+  fi
+  if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
+    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
+  fi
+  if [ ! "$(grep -w 'fastestmirror=true' /etc/dnf/dnf.conf)" ]; then
+    echo "fastestmirror=true" >> /etc/dnf/dnf.conf
+  fi
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
+      DISABLEREPO_DNF=' --disablerepo=rpmforge'
+      YUMDNFBIN="dnf${DISABLEREPO_DNF}"
+  else
+      DISABLEREPO_DNF=""
+      YUMDNFBIN='dnf'
+  fi
+else
+  YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
+fi
+
 # function checks if persistent config file has low mem variable enabled
 # LOWMEM_INSTALL='y'
 checkfor_lowmem
@@ -1004,11 +1063,11 @@ fi
 #if [[ "$key" = [yY] ]];
 #then
 #    echo "Let's do that then..."
-#    yum${CACHESKIP} -q clean all
-#    yum${CACHESKIP} -y update glibc\*
-#    yum${CACHESKIP} -y update yum\* rpm\* python\*
-#    yum${CACHESKIP} -q clean all
-#    yum${CACHESKIP} -y update
+#    ${YUMDNFBIN}${CACHESKIP} -q clean all
+#    ${YUMDNFBIN}${CACHESKIP} -y update glibc\*
+#    ${YUMDNFBIN}${CACHESKIP} -y update yum\* rpm\* python\*
+#    ${YUMDNFBIN}${CACHESKIP} -q clean all
+#    ${YUMDNFBIN}${CACHESKIP} -y update
 #fi
 
 if [ ${ARCH} == 'x86_64' ];
@@ -1025,6 +1084,7 @@ then
         echo "removing any i686 packages installed by default"
         yum -y remove \*.i686
 
+if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
 :a
@@ -1033,6 +1093,7 @@ exclude=*.i386 *.i586 *.i686
 :w
 :q
 EOF
+fi
         echo "Your origional yum configuration has been backed up to /etc/yum.bak"
     else
         rm -rf "$CUR_DIR/config/yum"
@@ -1252,7 +1313,7 @@ else
         cecho "* Installing NTP (and syncing time)" $boldgreen
         echo "*************************************************"
         if [ ! -f /usr/sbin/ntpd ]; then
-            yum${CACHESKIP} -y install ntp
+            ${YUMDNFBIN}${CACHESKIP} -y install ntp
             chkconfig --levels 235 ntpd on
         fi
         # skip re-running this routine if custom logfile already set i.e.
@@ -1325,8 +1386,8 @@ funct_centos6check
 
 if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
   # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
-  echo "yum -y erase php*"
-  yum${CACHESKIP} -y erase php*
+  echo "${YUMDNFBIN} -y erase php*"
+  ${YUMDNFBIN}${CACHESKIP} -y erase php*
 
 fi
 
@@ -1397,11 +1458,11 @@ fi
 
 # add check for Windows CLRF line endings
 if [ ! -f /usr/bin/file ]; then
-    yum -q -y install file
+    time $YUMDNFBIN -q -y install file${DISABLEREPO_DNF}
 fi
 if [[ "$(file /etc/init.d/php-fpm)" =~ CRLF && -f /etc/init.d/php-fpm ]]; then
     if [ ! -f /usr/bin/dos2unix ]; then
-        yum -q -y install dos2unix
+        time $YUMDNFBIN -q -y install dos2unix${DISABLEREPO_DNF}
     fi
     echo "detected CRLF line endings converting to Unix LF"
     dos2unix /etc/init.d/php-fpm
@@ -1721,7 +1782,7 @@ funct_installiopingcentmin() {
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installing..."
         cecho "--------------------------------------------------------" $boldyellow
-        yum -q -y install ioping
+        time $YUMDNFBIN -q -y install ioping${DISABLEREPO_DNF}
         echo ""
         cecho "--------------------------------------------------------" $boldyellow
         echo "ioping installed"

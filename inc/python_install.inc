@@ -9,7 +9,7 @@ then
     echo "Installing..."
 
 if [[ ! -f /usr/bin/python-config ]]; then
-	yum -y install python-devel python-paramiko python-recaptcha-client
+	time $YUMDNFBIN -y install python-devel python-paramiko python-recaptcha-client
 fi
 
 cd $DIR_TMP
