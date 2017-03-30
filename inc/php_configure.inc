@@ -54,9 +54,9 @@ fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
+		time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
 	else
-		yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
+		time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
 	fi
 fi
 
@@ -141,9 +141,9 @@ if [[ -d /usr/include/vpx ]]; then
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 else
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+    time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
   else
-    yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
+    time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
   fi
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 fi
@@ -152,9 +152,9 @@ if [[ -f /usr/include/t1lib.h ]]; then
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 else
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
+    time yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
   else
-    yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
+    time yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
   fi
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 fi
@@ -208,17 +208,17 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-      yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+      time yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
     else
-      yum${CACHESKIP} -y install uw-imap-devel
+      time yum${CACHESKIP} -y install uw-imap-devel
     fi
 	fi
 else
 	if [[ $(rpm -q libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-      yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+      time yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
     else
-      yum${CACHESKIP} -y install libc-client-devel --disablerepo=epel
+      time yum${CACHESKIP} -y install libc-client-devel --disablerepo=epel
     fi
 	fi
 fi
@@ -254,8 +254,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		echo "----------------------------------------------------------------------------------"
 		cecho "Installing $pkg" $boldyellow
 		echo "----------------------------------------------------------------------------------"
-        		$YUMDNFBIN${CACHESKIP} -q -y install $pkg${DISABLEREPO_DNF}
-        		# $YUMDNFBIN${CACHESKIP} -q list $pkg
+        		time $YUMDNFBIN${CACHESKIP} -q -y install $pkg${DISABLEREPO_DNF}
+        		# time $YUMDNFBIN${CACHESKIP} -q list $pkg
 		echo "----------------------------------------------------------------------------------"
         		fi
 		done
@@ -278,8 +278,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		echo "----------------------------------------------------------------------------------"
 		cecho "Installing $pkgx" $boldyellow
 		echo "----------------------------------------------------------------------------------"
-        		$YUMDNFBIN${CACHESKIP} -q -y install $pkgx${DISABLEREPO_DNF}
-        		# $YUMDNFBIN${CACHESKIP} -q list $pkgx
+        		time $YUMDNFBIN${CACHESKIP} -q -y install $pkgx${DISABLEREPO_DNF}
+        		# time $YUMDNFBIN${CACHESKIP} -q list $pkgx
 		echo "----------------------------------------------------------------------------------"
         		fi
 		done
