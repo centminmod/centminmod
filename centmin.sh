@@ -925,6 +925,29 @@ else
   fi
 fi
 
+if [ ! -f /usr/bin/sar ]; then
+  time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+elif [ -f /usr/bin/sar ]; then
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+fi
+
 # function checks if persistent config file has low mem variable enabled
 # LOWMEM_INSTALL='y'
 checkfor_lowmem

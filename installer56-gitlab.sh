@@ -201,6 +201,29 @@ else
   fi
 fi
 
+if [ ! -f /usr/bin/sar ]; then
+  time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+elif [ -f /usr/bin/sar ]; then
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+fi
+
 if [ -f /proc/user_beancounters ]; then
     echo "OpenVZ system detected, NTP not installed"
 else
@@ -246,6 +269,16 @@ else
     date
   fi
 fi
+
+systemstats() {
+  if [ -d /root/centminlogs ]; then
+    sar -u > /root/centminlogs/sar-u-installstats.log
+    sar -q > /root/centminlogs/sar-q-installstats.log
+    sar -r > /root/centminlogs/sar-r-installstats.log
+    sar -d > /root/centminlogs/sar-d-installstats.log
+    sar -b > /root/centminlogs/sar-b-installstats.log
+  fi
+}
 
 scl_install() {
 	# if gcc version is less than 4.7 (407) install scl collection yum repo
@@ -888,6 +921,7 @@ fi
 echo "---------------------------------------------------------------------------"
   echo "Total Install Time (curl yum + cm install + zip download): $TT seconds"    
 echo "---------------------------------------------------------------------------"
+  systemstats
 fi
 
 if [ -f "${INSTALLDIR}/curlinstall_yum.txt" ]; then
