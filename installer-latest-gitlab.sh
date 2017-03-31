@@ -271,6 +271,23 @@ systemstats() {
     sar -r > /root/centminlogs/sar-r-installstats.log
     sar -d > /root/centminlogs/sar-d-installstats.log
     sar -b > /root/centminlogs/sar-b-installstats.log
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        if [ -f /var/cache/yum/x86_64/7/timedhosts.txt ]; then
+          sort -k2 /var/cache/yum/x86_64/7/timedhosts.txt > /root/centminlogs/yum-timedhosts.txt
+        fi
+      fi
+    else
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        if [ -f /var/cache/yum/timedhosts.txt ]; then
+          sort -k2 /var/cache/yum/timedhosts.txt > /root/centminlogs/yum-timedhosts.txt
+        fi
+      else
+        if [ -f /var/cache/yum/i386/6/timedhosts.txt ]; then
+          sort -k2 /var/cache/yum/i386/6/timedhosts.txt > /root/centminlogs/yum-timedhosts.txt
+        fi
+      fi
+    fi
   fi
 }
 
