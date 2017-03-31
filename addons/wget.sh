@@ -111,6 +111,39 @@ else
     DISABLEREPO_DNF=""
   fi
 fi
+
+if [ ! -f /usr/bin/sar ]; then
+  time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+elif [ -f /usr/bin/sar ]; then
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+fi
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -145,6 +178,9 @@ return
 }
 
 ###########################################################
+sar_call() {
+  $SARCALL 1 1
+}
 
 scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
@@ -163,14 +199,18 @@ scl_install() {
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
+        sar_call
       else
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
@@ -178,8 +218,10 @@ scl_install() {
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -189,14 +231,18 @@ scl_install() {
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
+        sar_call
       else
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
@@ -204,8 +250,10 @@ scl_install() {
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -268,8 +316,11 @@ source_pcreinstall() {
   cd "pcre-${ALTPCRE_VERSION}"
   make clean >/dev/null 2>&1
   ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+  sar_call
   make${MAKETHREADS}
+  sar_call
   make install
+  sar_call
   /usr/local/bin/pcre-config --version
   fi
 }
@@ -331,8 +382,11 @@ source_wgetinstall() {
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
   ./configure --with-ssl=openssl
+  sar_call
   make${MAKETHREADS}
+  sar_call
   make install
+  sar_call
   echo "/usr/local/lib/" > /etc/ld.so.conf.d/wget.conf
   ldconfig
   if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]] && [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then

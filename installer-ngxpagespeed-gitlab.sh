@@ -203,6 +203,11 @@ fi
 
 if [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
   if [[ "$CENTOS_SEVEN" != '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     service sysstat restart
@@ -213,6 +218,11 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl enable sysstat.service
   fi
 elif [ -f /usr/bin/sar ]; then
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
   if [[ "$CENTOS_SEVEN" != '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     service sysstat restart
@@ -270,6 +280,10 @@ else
   fi
 fi
 
+sar_call() {
+  $SARCALL 1 1
+}
+
 systemstats() {
   if [ -d /root/centminlogs ]; then
     sar -u > /root/centminlogs/sar-u-installstats.log
@@ -298,7 +312,7 @@ systemstats() {
 }
 
 scl_install() {
-	# if gcc version is less than 4.7 (407) install scl collection yum repo
+  # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
     if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
@@ -314,14 +328,18 @@ scl_install() {
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
+        sar_call
       else
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
@@ -329,8 +347,10 @@ scl_install() {
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -340,14 +360,18 @@ scl_install() {
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
+        sar_call
       else
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
@@ -355,8 +379,10 @@ scl_install() {
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -418,8 +444,11 @@ source_pcreinstall() {
   fi
   cd "pcre-${ALTPCRE_VERSION}"
   ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+  sar_call
   make${MAKETHREADS}
+  sar_call
   make install
+  sar_call
   /usr/local/bin/pcre-config --version
   fi
 }
@@ -470,8 +499,11 @@ source_wgetinstall() {
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
   ./configure --with-ssl=openssl
+  sar_call
   make${MAKETHREADS}
+  sar_call
   make install
+  sar_call
   echo "/usr/local/lib/" > /etc/ld.so.conf.d/wget.conf
   ldconfig
   if [[ ! "$(grep '^alias wget' /root/.bashrc)" ]]; then
@@ -693,38 +725,49 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   # do not install yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-security
+    time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
+    sar_call
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-security
+    time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
+    sar_call
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
+      sar_call
     fi
   else
     if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
-      time $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
+      time $YUMDNFBIN -y install nc libgcj
+      sar_call
     fi
   fi
 
   time $YUMDNFBIN -y install virt-what gawk unzip bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${DISABLEREPO_DNF}
+  sar_call
   # allows curl install to skip checking for already installed yum packages 
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
+  sar_call
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
     time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion mlocate re2c kernel-headers kernel-devel uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    sar_call
   else
     time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    sar_call
   fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     time $YUMDNFBIN -y install GeoIP GeoIP-devel --disablerepo=rpmforge
+    sar_call
   else
     time $YUMDNFBIN -y install GeoIP GeoIP-devel
+    sar_call
   fi
   if [[ "$CENTOS_SIX" = '6' ]]; then
-    yum -y install centos-release-cr
+    time $YUMDNFBIN -y install centos-release-cr
+    sar_call
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
     # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
   fi
@@ -795,6 +838,7 @@ cd $INSTALLDIR
       getcmstarttime=$(TZ=UTC date +%s.%N)
       echo "git clone Centmin Mod repo..."
       time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
+      sar_call
       cd centminmod
       chmod +x centmin.sh
       getcmendtime=$(TZ=UTC date +%s.%N)   
@@ -869,6 +913,7 @@ sed -i "s|^#CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|CMGIT='http
 echo "CMGIT='https://gitlab.com/centminmod/centminmod.git'" > /etc/centminmod/custom_config.inc
 
 "${INSTALLDIR}/centminmod/centmin.sh" install
+sar_call
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini
 

@@ -239,6 +239,7 @@ funct_nginxconfigure
             time make
         fi
     fi
+    sar_call
 
     if [[ "$STRIPNGINX" = [yY] ]]; then
         if [ -f objs/nginx ]; then
@@ -256,6 +257,7 @@ funct_nginxconfigure
     fi
 
     time make install
+    sar_call
 
 if [[ "$CLANG" = [yY] ]]; then
     unset CC

@@ -52,11 +52,13 @@ checkimagicksys() {
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     # yum clean all >/dev/null 2>&1
-                    time time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    sar_call
                 fi
             else
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
+                    sar_call
                     # yum clean all >/dev/null 2>&1
                     time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities --skip-broken
                 else
@@ -77,13 +79,17 @@ checkimagicksys() {
                 cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
                 echo "----------------------------------------------------------------------------------"
                 time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                sar_call
                 yum -y remove ImageMagick${DISABLEREPO_DNF}
+                sar_call
           
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities --skip-broken
+                    sar_call
                 else
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    sar_call
                 fi
                 echo
             else
@@ -97,11 +103,14 @@ checkimagicksys() {
                     fi
                 fi
                 time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                sar_call
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities --skip-broken
+                    sar_call
                 else
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    sar_call
                 fi
             fi
         fi
@@ -141,12 +150,15 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "
         git stash
         git pull
         git log -3
+        sar_call
     elif [[ -d "imagick-php7" && ! -d "imagick-php7/.git" ]]; then
         rm -rf imagick-php7
         git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
+        sar_call
     else
         rm -rf imagick-php7
         git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
+        sar_call
     fi
     echo
     echo "compiling imagick PHP extension for PHP 7.x ..."
@@ -156,8 +168,11 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "
     fi
     /usr/local/bin/phpize
     ./configure --with-php-config=/usr/local/bin/php-config
+    sar_call
     make${MAKETHREADS}
+    sar_call
     make install
+    sar_call
 else    
     cd imagick-${IMAGICKPHP_VER}
     if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -165,8 +180,11 @@ else
     fi
     /usr/local/bin/phpize
     ./configure --with-php-config=/usr/local/bin/php-config
+    sar_call
     make${MAKETHREADS}
+    sar_call
     make install
+    sar_call
 fi # php 7 or not
 
 #######################################################

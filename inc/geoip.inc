@@ -18,24 +18,30 @@ if [[ -d /usr/share/GeoIP ]]; then
 	if [ ! -f /usr/bin/svn ]; then
 		echo "installing subversion..."
 		yum -y -q install subversion
+		sar_call
 	fi
 	
 	echo "compiling geoip PHP extension..."
 	cd $DIR_TMP
 	if [[ ! -d ${DIR_TMP}/geoip ]]; then
 		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+		sar_call
 	fi
 	if [ -d geoip ]; then
 		rm -rf geoip
 		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+		sar_call
 		cd geoip
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
 			make clean
 		fi
 		/usr/local/bin/phpize
 		./configure --with-php-config=/usr/local/bin/php-config
+		sar_call
 		make$MAKETHREADS
+		sar_call
 		make install
+		sar_call
 
 cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
@@ -56,6 +62,7 @@ if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     # GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
     if [[ $(rpm -q GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
+        sar_call
         rpm -ql GeoIP-devel GeoIP
     fi
 else
@@ -63,6 +70,7 @@ else
 		# GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
     if [[ $(rpm -q GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum -y -q install GeoIP GeoIP-devel
+        sar_call
         rpm -ql GeoIP-devel GeoIP
     fi
 fi

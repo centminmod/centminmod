@@ -27,8 +27,11 @@ then
     #tar -xzf siege-${SIEGE_VERSION}.tar.gz
     cd siege-${SIEGE_VERSION}
     ./configure --with-ssl=/usr
+    sar_call
     make$MAKETHREADS
+    sar_call
     make install
+    sar_call
     mkdir -p /usr/local/var/
 
     siege -q -b -c1 -r1 localhost >/dev/null 2>&1
@@ -48,8 +51,11 @@ if [[ "$UALL" != 'y' ]]; then
     #tar -xzf sproxy-latest.tar.gz
     cd sproxy-1.02
     ./configure
+    sar_call
     make$MAKETHREADS
+    sar_call
     make install
+    sar_call
 ) &
 fi # UALL
 wait
