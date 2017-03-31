@@ -24,9 +24,6 @@ NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     else
         download_cmd http://www.nlnetlabs.nl/downloads/nsd/nsd-${NSD_VERSION}.tar.gz $WGETRETRY
     fi
-    # check if NSD is v3 or v4
-    NSD_VERCHECK=$(echo $NSD_VERSION | cut -d . -f1)
-    NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     tar xzvf nsd-${NSD_VERSION}.tar.gz
 
     echo "Compiling NSD..."
