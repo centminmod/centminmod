@@ -316,6 +316,9 @@ yumpriorrpmforge() {
   forgefix
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 cp -p /etc/yum.repos.d/rpmforge.repo /etc/yum.repos.d/rpmforge.OLD
+    if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+        sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
+    fi
 if [ -n "$(grep ^priority /etc/yum.repos.d/rpmforge.repo)" ]
         then
                 #echo priorities already set for rpmforge.repo

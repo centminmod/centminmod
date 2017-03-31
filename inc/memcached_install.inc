@@ -88,7 +88,7 @@ function funct_memcachedreinstall {
 
         if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
             if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
-                yum -q -y install clang clang-devel
+                time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
             fi
             # ccache compiler has some initial overhead for compiles but speeds up subsequent
             # recompiles. however on initial install ccache has no benefits, so for initial
@@ -302,7 +302,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         fi
     
         rm -rf memcache-php7
-        git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
+        time git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
         cd memcache-php7
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
@@ -350,13 +350,13 @@ if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
         if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-            yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi,epel,rpmforge --disableplugin=priorities
+            ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi --disablerepo=epel --disablerepo=rpmforge --disableplugin=priorities
         else
-            yum${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi,epel --disableplugin=priorities
+            ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi --disablerepo=epel --disableplugin=priorities
         fi
     elif [[ "$CENTOS_SEVEN" != '7' && -f /etc/yum.repos.d/remi.repo ]]; then
         cecho "Installing libmemcached via REMI YUM repo ..." $boldgreen
-        yum${CACHESKIP} -q -y install libmemcached-last libmemcached-last-devel --enablerepo=remi --disableplugin=priorities
+        ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached-last libmemcached-last-devel --enablerepo=remi --disableplugin=priorities
     else    
         cecho "Compiling libmemcached-${LIBMEMCACHED_VER} ..." $boldgreen
         pwd
@@ -415,7 +415,7 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
     echo
     echo "compiling memcached PHP extension for PHP 7.x ..."
     rm -rf memcached-php7
-    git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+    time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
     cd memcached-php7
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean

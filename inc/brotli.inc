@@ -17,24 +17,24 @@ scl_install() {
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        time $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -43,24 +43,24 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        time $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -111,10 +111,10 @@ libbroti_install() {
 			LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
 		fi
     if [ ! -d libbrotli ]; then
-      git clone "$LIBBROTLI_LINK"
+      time git clone "$LIBBROTLI_LINK"
     elif [ -d libbrotli ]; then
       rm -rf libbrotli
-      git clone "$LIBBROTLI_LINK"
+      time git clone "$LIBBROTLI_LINK"
     fi
 		cd libbrotli
 		# if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -166,7 +166,7 @@ ngxbrotli_download() {
 		fi
 
     if [ ! -d ngx_brotli ]; then
-      git clone --recursive "$NGXBROTLILINK"
+      time git clone --recursive "$NGXBROTLILINK"
     fi
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
         cd ngx_brotli

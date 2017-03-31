@@ -488,7 +488,7 @@ fi
         time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP"
-            git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
+            time git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
             popd
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf)
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"

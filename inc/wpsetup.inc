@@ -1838,7 +1838,7 @@ fi
 if [[ "$WPCLI_SUPERCACHEPLUGIN" = [yY] && ! -f /root/.wp-cli/commands/super-cache/cli.php ]]; then
   # https://github.com/wp-cli/wp-super-cache-cli.git
   mkdir -p /root/.wp-cli/commands
-  git clone https://github.com/wp-cli/wp-super-cache-cli.git /root/.wp-cli/commands/super-cache
+  time git clone https://github.com/wp-cli/wp-super-cache-cli.git /root/.wp-cli/commands/super-cache
   echo "require:" > /root/.wp-cli/config.yml
   echo "  - commands/super-cache/cli.php" >> /root/.wp-cli/config.yml
 elif [ -f /root/.wp-cli/commands/super-cache/cli.php ]; then

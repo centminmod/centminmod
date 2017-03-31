@@ -24,10 +24,10 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
             git log -3
         elif [[ -d "LuaJIT-${LUAJIT_GITINSTALLVER}" && ! -d "LuaJIT-${LUAJIT_GITINSTALLVER}/.git" ]]; then
             rm -rf LuaJIT-*
-            git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
+            time git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
             cd LuaJIT-${LUAJIT_GITINSTALLVER}
         else
-            git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
+            time git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
             cd LuaJIT-${LUAJIT_GITINSTALLVER}
         fi
         if [[ "$INITIALINSTALL" != [yY] ]]; then

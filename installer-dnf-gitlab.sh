@@ -859,6 +859,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
+echo "DNF_ENABLE='y'" > /etc/centminmod/custom_config.inc
 if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
   echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
 fi

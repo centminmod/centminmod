@@ -21,10 +21,10 @@ DIR_TMP='/svr-setup'
 # Centmin Mod Git Repo URL - primary repo
 # https://github.com/centminmod/centminmod
 GITINSTALLED='y'
-#CMGIT='https://github.com/centminmod/centminmod.git'
+CMGIT='https://github.com/centminmod/centminmod.git'
 # Gitlab backup repo 
 # https://gitlab.com/centminmod/centminmod
-CMGIT='https://gitlab.com/centminmod/centminmod.git'
+#CMGIT='https://gitlab.com/centminmod/centminmod.git'
 #####################################################
 # wget renamed github
 AXEL='n'
@@ -234,7 +234,7 @@ else
     echo "The date/time before was:"
     date
     echo
-    time $YUMDNFBIN -y install ntp${DISABLEREPO_DNF}
+    time $YUMDNFBIN -y install ntp
     chkconfig ntpd on
     if [ -f /etc/ntp.conf ]; then
     if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
@@ -693,9 +693,9 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   # do not install yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-security
+    time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
-    yum -y install yum-plugin-fastestmirror yum-plugin-security
+    time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -704,7 +704,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   else
     if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
-      time $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
+      time $YUMDNFBIN -y install nc libgcj
     fi
   fi
 
@@ -723,10 +723,8 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   else
     time $YUMDNFBIN -y install GeoIP GeoIP-devel
   fi
-  # centos 6 unlike centos 7 doesn't install CR yum repo by default
-  # https://wiki.centos.org/AdditionalResources/Repositories/CR
   if [[ "$CENTOS_SIX" = '6' ]]; then
-    yum -y install centos-release-cr
+    time $YUMDNFBIN -y install centos-release-cr
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
     # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
   fi
@@ -751,7 +749,7 @@ install_axel() {
   if [ -s $AXEK_LINKFILE ]; then
     echo "Axel ${AXEL_VER} Archive found, skipping download..." 
   else
-    wget -O $AXEK_LINKFILE $AXEK_LINKLOCAL
+    wget -O $AXEK_LINKFILE $AXEK_LINK
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
      echo "Error: $AXEK_LINKFILE download failed."
@@ -760,7 +758,6 @@ install_axel() {
       echo "Download $AXEK_LINKFILE done."
     fi
   fi
-
   if [[ "$(tar -tzf axel-${AXEL_VER}.tar.gz >/dev/null; echo $?)" != '0' ]]; then
     rm -rf /svr-setup/axel-${AXEL_VER}.*
     echo "re-try download form local mirror..."
@@ -859,17 +856,12 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
+echo "DNF_ENABLE='y'" > /etc/centminmod/custom_config.inc
 if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
   echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
 fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
-
-# setup gitlab as default git repo instead of github
-sed -i "s|^CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|#CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|" centmin.sh
-sed -i "s|^#CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|" centmin.sh
-echo "CMGIT='https://gitlab.com/centminmod/centminmod.git'" > /etc/centminmod/custom_config.inc
-
 "${INSTALLDIR}/centminmod/centmin.sh" install
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini

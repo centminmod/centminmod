@@ -7,6 +7,8 @@
 # is just an alias wget command setup
 ###########################################################
 DT=$(date +"%d%m%y-%H%M%S")
+DNF_ENABLE='n'
+DNF_COPR='y'
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
@@ -20,6 +22,19 @@ WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 ###########################################################
+# set locale temporarily to english
+# for wget compile due to some non-english
+# locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+
+shopt -s expand_aliases
+for g in "" e f; do
+    alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
+done
+
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
@@ -75,6 +90,27 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
+if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+  # yum -y -q install epel-release
+  if [[ ! -f /usr/bin/dnf ]]; then
+    yum -y -q install dnf
+  fi
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
+      DISABLEREPO_DNF=' --disablerepo=rpmforge'
+      YUMDNFBIN="dnf${DISABLEREPO_DNF}"
+  else
+      DISABLEREPO_DNF=""
+      YUMDNFBIN='dnf'
+  fi
+else
+  YUMDNFBIN='yum'
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEREPO_DNF=' --disablerepo=rpmforge'
+  else
+    DISABLEREPO_DNF=""
+  fi
+fi
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -126,24 +162,24 @@ scl_install() {
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        time $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -152,24 +188,24 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        yum -y -q install centos-release-scl
+        time $YUMDNFBIN -y -q install centos-release-scl
       else
-        yum -y -q install centos-release-scl --disablerepo=rpmforge
+        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version

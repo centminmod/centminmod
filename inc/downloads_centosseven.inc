@@ -191,7 +191,7 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
 	 cecho "Download done." $boldyellow
     rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-7
     rpm -Uvh ${CENTOSSEVENEPELFILE}
-	 #yum${CACHESKIP} -q list ccache 2>&1 >/dev/null
+	 #${YUMDNFBIN}${CACHESKIP} -q list ccache 2>&1 >/dev/null
 	 ERR=$?
 	 CCEPELCHECK="$ERR"
 		  if [ "$CCEPELCHECK" == '0' ]; then
@@ -243,7 +243,7 @@ if [[ "$RPMFORGEREPO_DISABLE" = [nN] ]]; then
           cecho "Download done." $boldyellow
   rpm --import http://apt.sw.be/RPM-GPG-KEY.dag.txt
   rpm -Uvh ${CENTOSSEVENRPMFORGEFILE}
-    # yum${CACHESKIP} -q list axel 2>&1 >/dev/null
+    # ${YUMDNFBIN}${CACHESKIP} -q list axel 2>&1 >/dev/null
     ERR=$?
     CCRPMFORGECHECK="$ERR"
       if [ "$CCRPMFORGECHECK" == '0' ]; then
@@ -394,16 +394,16 @@ YUMINSTALLRPMCHECK=$(rpm -ql $pkg >/dev/null 2>&1; echo $?)
 #echo $YUMINSTALLRPMCHECK
         if [[ "$YUMINSTALLRPMCHECK" = '0' ]]; then
 echo "----------------------------------------------------------------------------------"
-        # yum${CACHESKIP} -q -y update $pkgs
-        # yum${CACHESKIP} -q list $pkgs
+        # ${YUMDNFBIN}${CACHESKIP} -q -y update $pkgs
+        # ${YUMDNFBIN}${CACHESKIP} -q list $pkgs
         echo "$pkg already installed"
 echo "----------------------------------------------------------------------------------"
         else
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgs" $boldyellow
 echo "----------------------------------------------------------------------------------"
-        yum${CACHESKIP} -q -y install $pkgs
-        # yum${CACHESKIP} -q list $pkgs
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
+        # ${YUMDNFBIN}${CACHESKIP} -q list $pkgs
 echo "----------------------------------------------------------------------------------"
         fi
 done
