@@ -302,7 +302,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         fi
     
         rm -rf memcache-php7
-        git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
+        time git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
         cd memcache-php7
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
@@ -415,7 +415,7 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
     echo
     echo "compiling memcached PHP extension for PHP 7.x ..."
     rm -rf memcached-php7
-    git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+    time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
     cd memcached-php7
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean

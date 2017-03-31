@@ -111,10 +111,10 @@ libbroti_install() {
 			LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
 		fi
     if [ ! -d libbrotli ]; then
-      git clone "$LIBBROTLI_LINK"
+      time git clone "$LIBBROTLI_LINK"
     elif [ -d libbrotli ]; then
       rm -rf libbrotli
-      git clone "$LIBBROTLI_LINK"
+      time git clone "$LIBBROTLI_LINK"
     fi
 		cd libbrotli
 		# if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -166,7 +166,7 @@ ngxbrotli_download() {
 		fi
 
     if [ ! -d ngx_brotli ]; then
-      git clone --recursive "$NGXBROTLILINK"
+      time git clone --recursive "$NGXBROTLILINK"
     fi
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
         cd ngx_brotli

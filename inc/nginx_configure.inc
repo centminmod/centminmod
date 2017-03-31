@@ -246,7 +246,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	if [[ "$NGINX_RDNS" = [yY] ]]; then
 		cd "$DIR_TMP"
 		rm -rf nginx-http-rdns
-		git clone https://github.com/flant/nginx-http-rdns.git nginx-http-rdns
+		time git clone https://github.com/flant/nginx-http-rdns.git nginx-http-rdns
 		RDNSOPT=" --add-module=../nginx-http-rdns"
 	else
 		RDNSOPT=""
@@ -276,7 +276,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		if [[ "$NGINX_LENGTHHIDEGIT" = [yY] ]]; then
 			pushd "$DIR_TMP"
 			rm -rf nginx-length-hiding-filter-module
-			git clone -b master --depth=1 https://github.com/nulab/nginx-length-hiding-filter-module nginx-length-hiding-filter-module
+			time git clone -b master --depth=1 https://github.com/nulab/nginx-length-hiding-filter-module nginx-length-hiding-filter-module
 			popd
 		fi
 		# nginx 1.9.11+ dynamic module support 
@@ -453,7 +453,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 			pushd "$DIR_TMP"
 			rm -rf headers-more-nginx-module-master
-			git clone -b master --depth=1 https://github.com/openresty/headers-more-nginx-module.git headers-more-nginx-module-master
+			time git clone -b master --depth=1 https://github.com/openresty/headers-more-nginx-module.git headers-more-nginx-module-master
 			popd
 		fi
 		# nginx 1.9.11+ dynamic module support 
@@ -633,7 +633,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
 				pushd "$DIR_TMP"
 				rm -rf set-misc-nginx-module-master
-				git clone -b master --depth=1 https://github.com/openresty/set-misc-nginx-module.git set-misc-nginx-module-master
+				time git clone -b master --depth=1 https://github.com/openresty/set-misc-nginx-module.git set-misc-nginx-module-master
 				popd
 			fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_SETMISC" = [yY] ]]; then
@@ -673,7 +673,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			if [[ "$ORESTY_ECHOGIT" = [yY] ]]; then
 				pushd "$DIR_TMP"
 				rm -rf echo-nginx-module-master
-				git clone -b master --depth=1 https://github.com/openresty/echo-nginx-module.git echo-nginx-module-master
+				time git clone -b master --depth=1 https://github.com/openresty/echo-nginx-module.git echo-nginx-module-master
 				popd
 			fi
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_ECHO" = [yY] ]]; then
@@ -938,7 +938,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			VTSOPT=" --add-module=../nginx-module-vts"
 			if [[ ! -d "${DIR_TMP}/nginx-module-vts" ]]; then
 				cd "$DIR_TMP"
-				git clone "$NGX_VTSLINK" nginx-module-vts
+				time git clone "$NGX_VTSLINK" nginx-module-vts
 				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
 				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
 				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
@@ -957,7 +957,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
 				rm -rf "${DIR_TMP}/nginx-module-vts"
 				cd "$DIR_TMP"
-				git clone "$NGX_VTSLINK" nginx-module-vts
+				time git clone "$NGX_VTSLINK" nginx-module-vts
 				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
 				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
 				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
@@ -1283,7 +1283,7 @@ else
 		if [[ "$ORESTY_HEADERSMOREGIT" = [yY] ]]; then
 			pushd "$DIR_TMP"
 			rm -rf headers-more-nginx-module-master
-			git clone -b master --depth=1 https://github.com/openresty/headers-more-nginx-module.git headers-more-nginx-module-master
+			time git clone -b master --depth=1 https://github.com/openresty/headers-more-nginx-module.git headers-more-nginx-module-master
 			popd
 		fi
 		# nginx 1.9.11+ dynamic module support 

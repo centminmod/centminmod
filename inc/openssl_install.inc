@@ -355,7 +355,7 @@ installopenssl() {
 
         echo "Compiling BoringSSL..."
         cd $DIR_TMP
-        git clone https://boringssl.googlesource.com/boringssl
+        time git clone https://boringssl.googlesource.com/boringssl
         cd boringssl
         mkdir -p build
         cd build

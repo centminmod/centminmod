@@ -94,7 +94,7 @@ phpng_download() {
 		if [ -d php-${PHPNGVER} ]; then
 			rm -rf php-${PHPNGVER}
 		fi
-		git clone https://git.php.net/repository/php-src.git php-${PHPNGVER}
+		time git clone https://git.php.net/repository/php-src.git php-${PHPNGVER}
 		cecho "Download PHP $PHPMUVER completed" $boldyellow
 		echo
 		cecho "Creating tar archive" $boldyellow

@@ -140,7 +140,7 @@ if [[ "$FFMPEGGIT_CURLCHECK" != '0' ]]; then
 	FFMPEGGITLINK='https://gitlab.com/centminmod-github-mirror/ffmpeg-php'
 fi
 
-git clone "${FFMPEGGITLINK}.git" ffmpeg-php-git
+time git clone "${FFMPEGGITLINK}.git" ffmpeg-php-git
 cd ffmpeg-php-git
 # cd ffmpeg-php-${FFMPEGVER}
 

@@ -68,7 +68,7 @@ enable_syntax() {
     echo
     read -ep "Which color do you want to set for text in syntax highlighting ? " color_opt
     echo
-    git clone --depth=1 https://github.com/centminmod/nanorc
+    time git clone --depth=1 https://github.com/centminmod/nanorc
     if [ -d nanorc ]; then
         cd nanorc
         make install-global TEXT=$color_opt

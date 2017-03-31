@@ -7,7 +7,7 @@ zlibng_install() {
     if [ -d zlib-ng ]; then
       rm -rf zlib-ng
     fi
-    git clone https://github.com/Dead2/zlib-ng
+    time git clone https://github.com/Dead2/zlib-ng
     cd zlib-ng
     ./configure --zlib-compat
     #make${MAKETHREADS}

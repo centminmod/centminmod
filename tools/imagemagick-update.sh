@@ -296,10 +296,10 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = 'NGDEBUG' || "
         git log -3
     elif [[ -d "imagick-php7" && ! -d "imagick-php7/.git" ]]; then
         rm -rf imagick-php7
-        git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
+        time git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
     else
         rm -rf imagick-php7
-        git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
+        time git clone -b phpseven "$IMAGICKGITLINK" imagick-php7
     fi
     echo
     echo "compiling imagick PHP extension for PHP 7.x ..."

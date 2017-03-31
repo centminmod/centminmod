@@ -183,7 +183,7 @@ fi
             echo
             echo "download nginx-rtmp-module from github"
             cd "$DIR_TMP"
-            git clone git://github.com/arut/nginx-rtmp-module.git
+            time git clone git://github.com/arut/nginx-rtmp-module.git
         elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then
             echo
             echo "get latest updates nginx-rtmp-module from github"
