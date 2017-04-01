@@ -179,7 +179,7 @@ EOF
     dnf clean all
   fi
   if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
-    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
+    echo "excludepkgs=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
   fi
   if [ ! "$(grep -w 'fastestmirror=true' /etc/dnf/dnf.conf)" ]; then
     echo "fastestmirror=true" >> /etc/dnf/dnf.conf
@@ -750,6 +750,18 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
     time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
     sar_call
+  fi
+
+  if [[ -f /etc/machine-info && "$(grep -qi 'OVH bhs' /etc/machine-info; echo $?)" -eq '0' ]]; then
+    # detected OVH BHS based server so disable slower babylon network mirror
+    # https://community.centminmod.com/posts/47320/
+    if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+      echo "exclude=ca.mirror.babylon.network" >> /etc/yum/pluginconf.d/fastestmirror.conf
+      cat /etc/yum/pluginconf.d/fastestmirror.conf
+    fi
+    # if [[ -f /etc/dnf/dnf.conf && "$(grep -qw 'exclude' /etc/dnf/dnf.conf; echo $?)" -eq '0' ]]; then
+    #   echo "exclude=ca.mirror.babylon.network" >> /etc/dnf/dnf.conf
+    # fi
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then

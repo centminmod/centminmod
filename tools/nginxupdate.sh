@@ -378,6 +378,7 @@ fi
 
 ###################################################################################
 # source file dependencies for variables
+source "${SCRIPT_DIR}inc/fastmirrors.conf"
 source "${SCRIPT_DIR}/inc/customrpms.inc"
 source "${SCRIPT_DIR}/inc/pureftpd.inc"
 source "${SCRIPT_DIR}/inc/htpasswdsh.inc"
