@@ -210,10 +210,16 @@ if [ ! -f /usr/bin/sar ]; then
   fi
   if [[ "$CENTOS_SEVEN" != '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
   else
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -225,10 +231,16 @@ elif [ -f /usr/bin/sar ]; then
   fi
   if [[ "$CENTOS_SEVEN" != '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
   else
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -313,6 +325,9 @@ systemstats() {
         fi
       fi
     fi
+  fi
+  if [ -f /etc/cron.d/cmsar ]; then
+    rm -rf /etc/cron.d/cmsar
   fi
 }
 
