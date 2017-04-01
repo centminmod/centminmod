@@ -768,6 +768,23 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     # if [[ -f /etc/dnf/dnf.conf && "$(grep -qw 'exclude' /etc/dnf/dnf.conf; echo $?)" -eq '0' ]]; then
     #   echo "exclude=ca.mirror.babylon.network" >> /etc/dnf/dnf.conf
     # fi
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        if [ -f /var/cache/yum/x86_64/7/timedhosts.txt ]; then
+          sed -i 's|centos.bhs.mirrors.ovh.net .*|centos.bhs.mirrors.ovh.net 0.000115046005249|' /var/cache/yum/x86_64/7/timedhosts.txt
+        fi
+      fi
+    else
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        if [ -f /var/cache/yum/timedhosts.txt ]; then
+          sed -i 's|centos.bhs.mirrors.ovh.net .*|centos.bhs.mirrors.ovh.net 0.000115046005249|' /var/cache/yum/timedhosts.txt
+        fi
+      else
+        if [ -f /var/cache/yum/i386/6/timedhosts.txt ]; then
+          sed -i 's|centos.bhs.mirrors.ovh.net .*|centos.bhs.mirrors.ovh.net 0.000110046005249|' /var/cache/yum/i386/6/timedhosts.txt
+        fi
+      fi
+    fi
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
