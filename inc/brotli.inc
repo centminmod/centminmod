@@ -2,7 +2,7 @@
 # + libbrotli https://github.com/bagder/libbrotli
 
 scl_install() {
-	# if gcc version is less than 4.7 (407) install scl collection yum repo
+  # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
     if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
@@ -18,14 +18,18 @@ scl_install() {
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
+        sar_call
       else
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
@@ -33,8 +37,10 @@ scl_install() {
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version
@@ -44,14 +50,18 @@ scl_install() {
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
+        sar_call
       else
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
@@ -59,8 +69,10 @@ scl_install() {
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          sar_call
         else
           time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          sar_call
         fi
         echo
         /opt/rh/devtoolset-4/root/usr/bin/gcc --version

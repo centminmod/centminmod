@@ -25,8 +25,11 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
 		cd ${DIR_TMP}/ccache-${CCACHE_VER}/
 		make clean -s
 		./configure -q
+		sar_call
 		make${MAKETHREADS} -s
+		sar_call
 		make install -s
+		sar_call
 		echo
 		if [ -f /usr/local/bin/ccache ]; then
 			echo "completed update to ccache $CCACHE_VER"

@@ -25,18 +25,22 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 
     if [[ $(rpm -q perl-Crypt-SSLeay >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q perl-Net-SSLeay >/dev/null 2>&1; echo $?) != '0' ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay
+        sar_call
     elif [[ -z "$(rpm -qa perl-libwww-perl)" ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
+        sar_call
     fi
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         if [[ $(rpm -q perl-LWP-Protocol-https >/dev/null 2>&1; echo $?) != '0' ]]; then
             yum${CACHESKIP} -y install perl-LWP-Protocol-https
+            sar_call
         fi
     fi
 
     #tar xzf csf.tgz
     cd "$DIR_TMP/csf"
     sh install.sh
+    sar_call
 
     # echo "Test IP Tables Modules..."
 
@@ -144,6 +148,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     
         # install iptables-services package
         yum -y install iptables-services
+        sar_call
     
         # start iptables and ip6tables services
         systemctl start iptables

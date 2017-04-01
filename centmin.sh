@@ -927,6 +927,11 @@ fi
 
 if [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
   if [[ "$CENTOS_SEVEN" != '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     service sysstat restart
@@ -937,6 +942,11 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl enable sysstat.service
   fi
 elif [ -f /usr/bin/sar ]; then
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
   if [[ "$CENTOS_SEVEN" != '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     service sysstat restart
@@ -972,6 +982,10 @@ else
     AXELPHPTARGZ=''
     AXELPHPUPGRADETARGZ=''
 fi
+
+sar_call() {
+  $SARCALL 1 1
+}
 
 download_cmd() {
   HTTPS_AXELCHECK=$(echo "$1" |awk -F '://' '{print $1}')

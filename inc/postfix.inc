@@ -11,6 +11,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
 			cecho "* Installing sendmail" $boldgreen
 			echo "*************************************************"
 			$YUMDNFBIN${CACHESKIP} -y -q install sendmail sendmail-cf${DISABLEREPO_DNF}
+            sar_call
 			chkconfig --levels 235 sendmail on
 			funct_sendmailmc
 			echo "*************************************************"
@@ -19,6 +20,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
 		elif [[ -f /etc/init.d/postfix ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	postfixsetup
         	echo "*************************************************"
@@ -27,6 +29,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     	elif [[ -f /etc/init.d/sendmail ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	chkconfig --levels 235 sendmail on
         	funct_sendmailmc
@@ -42,6 +45,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
         	cecho "* Installing postfix" $boldgreen
         	echo "*************************************************"
         	$YUMDNFBIN${CACHESKIP} -y -q install postfix${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -49,6 +53,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     	elif [[ -f /etc/init.d/postfix ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	postfixsetup
         	echo "*************************************************"
@@ -56,6 +61,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
         	echo "*************************************************"
     	elif [[ -f /etc/init.d/sendmail ]]; then
         	$YUMDNFBIN${CACHESKIP} -y -q remove sendmail sendmail-cf${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -70,6 +76,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
         	cecho "* Installing postfix" $boldgreen
         	echo "*************************************************"
         	$YUMDNFBIN${CACHESKIP} -y -q install postfix${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -77,6 +84,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     	elif [[ -f /etc/init.d/postfix ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	postfixsetup
         	echo "*************************************************"
@@ -85,10 +93,13 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     	elif [[ -f /etc/init.d/sendmail ]]; then
         	if [ -f /usr/share/sendmail-cf ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q remove sendmail sendmail-cf${DISABLEREPO_DNF}
+                sar_call
         	else
            	$YUMDNFBIN${CACHESKIP} -y -q remove sendmail${DISABLEREPO_DNF}
+            sar_call
         	fi
         	$YUMDNFBIN${CACHESKIP} -y -q install postfix${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -104,6 +115,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 			cecho "* Installing sendmail" $boldgreen
 			echo "*************************************************"
 			$YUMDNFBIN${CACHESKIP} -y -q install sendmail sendmail-cf${DISABLEREPO_DNF}
+            sar_call
 			chkconfig --levels 235 sendmail on
 			funct_sendmailmc
 			echo "*************************************************"
@@ -112,6 +124,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 		elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	postfixsetup
         	echo "*************************************************"
@@ -120,6 +133,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     	elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	chkconfig --levels 235 sendmail on
         	funct_sendmailmc
@@ -135,6 +149,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         	cecho "* Installing postfix" $boldgreen
         	echo "*************************************************"
         	$YUMDNFBIN${CACHESKIP} -y -q install postfix mailx${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -142,6 +157,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     	elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	postfixsetup
         	echo "*************************************************"
@@ -149,6 +165,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         	echo "*************************************************"
     	elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
         	$YUMDNFBIN${CACHESKIP} -y -q remove sendmail sendmail-cf${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -163,6 +180,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         	cecho "* Installing postfix" $boldgreen
         	echo "*************************************************"
         	$YUMDNFBIN${CACHESKIP} -y -q install postfix${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen
@@ -170,6 +188,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     	elif [[ -f /usr/lib/systemd/system/postfix.service ]]; then
         	if [ ! -f /bin/mailx ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q install mailx${DISABLEREPO_DNF}
+                sar_call
         	fi
         	postfixsetup
         	echo "*************************************************"
@@ -178,10 +197,13 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     	elif [[ -f /usr/lib/systemd/system/sendmail.service ]]; then
         	if [ -f /usr/share/sendmail-cf ]; then
             	$YUMDNFBIN${CACHESKIP} -y -q remove sendmail sendmail-cf${DISABLEREPO_DNF}
+                sar_call
         	else
            	$YUMDNFBIN${CACHESKIP} -y -q remove sendmail${DISABLEREPO_DNF}
+            sar_call
         	fi
         	$YUMDNFBIN${CACHESKIP} -y -q install postfix${DISABLEREPO_DNF}
+            sar_call
         	postfixsetup
         	echo "*************************************************"
         	cecho "* postfix installed" $boldgreen

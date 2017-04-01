@@ -55,73 +55,92 @@ fi
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 		time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
+    sar_call
 	else
 		time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
+    sar_call
 	fi
 fi
 
 # Microsoft SQL Server PHP driver support
 if [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
   yum -q -y install unixODBC-devel freetds-devel
+  sar_call
 elif [[ ! -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]]; then
   yum -q -y install unixODBC-devel
+  sar_call
 elif [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include/sql.h && "$PHPMSSQL" = [yY] ]]; then
   yum -q -y install freetds-devel
+  sar_call
 fi
 
 if [[ ! -f /usr/bin/xslt-config ]]; then
 	yum -q -y install libxslt libxslt-devel
+  sar_call
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 	 yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+   sar_call
   else
     yum -q -y install libicu libicu-devel --disablerepo=epel
+    sar_call
   fi
 fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 	 yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
+   sar_call
   else
     yum -q -y install aspell aspell-devel --disablerepo=epel
+    sar_call
   fi
 fi
 
 if [[ ! -f /usr/include/recode.h ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 	 yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
+   sar_call
   else
     yum -q -y install recode recode-devel --disablerepo=epel
+    sar_call
   fi
 fi
 
 if [[ ! -f /usr/include/tidy.h ]]; then
 	yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge
+  sar_call
 fi
 
 if [[ ! -d /usr/include/enchant ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install enchant enchant-devel --disablerepo=rpmforge,epel
+    sar_call
   else
     yum -q -y install enchant enchant-devel --disablerepo=epel
+    sar_call
   fi
 fi
 
 if [[ ! -d /usr/include/net-snmp ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=rpmforge,epel
+    sar_call
   else
     yum -q -y install net-snmp net-snmp-devel net-snmp-libs net-snmp-utils --disablerepo=epel
+    sar_call
   fi
 fi
 
 if [[ ! -f /usr/include/expect.h ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -q -y install expect-devel --disablerepo=rpmforge,epel
+    sar_call
   else
     yum -q -y install expect-devel --disablerepo=epel
+    sar_call
   fi
 fi
 
@@ -142,8 +161,10 @@ if [[ -d /usr/include/vpx ]]; then
 else
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+    sar_call
   else
     time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
+    sar_call
   fi
 	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
 fi
@@ -153,8 +174,10 @@ if [[ -f /usr/include/t1lib.h ]]; then
 else
 	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     time yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
+    sar_call
   else
     time yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
+    sar_call
   fi
 	TLIBOPT=" --with-t1lib=${PLIBDIR}"
 fi
@@ -209,16 +232,20 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ $(rpm -q uw-imap-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       time yum${CACHESKIP} -y install uw-imap-devel --disablerepo=rpmforge
+      sar_call
     else
       time yum${CACHESKIP} -y install uw-imap-devel
+      sar_call
     fi
 	fi
 else
 	if [[ $(rpm -q libc-client-devel >/dev/null 2>&1; echo $?) != '0' ]]; then 
 		if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       time yum${CACHESKIP} -y install libc-client-devel --disablerepo=rpmforge,epel
+      sar_call
     else
       time yum${CACHESKIP} -y install libc-client-devel --disablerepo=epel
+      sar_call
     fi
 	fi
 fi
@@ -637,17 +664,20 @@ else
 ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT} --with-mhash --with-zlib --with-gettext --enable-exif --enable-zip --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization --with-imap --with-imap-ssl --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
 fi
-
+sar_call
     echo
     echo "php_configure.inc make${MAKETHREADS_PHP}"
     time make${MAKETHREADS_PHP}
+    sar_call
     echo
 
 	if [[ "$PHPMAKETEST" = [yY] ]]; then
 		time make test
+    sar_call
 	fi
 
     time make install
+    sar_call
 
 if [[ "$STRIPPHP" = [yY] ]]; then
     echo

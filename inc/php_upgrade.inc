@@ -527,6 +527,7 @@ fi
 # error check
 
 	ERR=$?
+    sar_call
 	if [ $ERR != 0 ]; then
 		echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
         free -m
@@ -578,6 +579,7 @@ fi
 # error check
 
 	ERR=$?
+    sar_call
 	if [ $ERR != 0 ]; then
 		echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
@@ -791,6 +793,7 @@ find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7
 find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -print
 find "$DIR_TMP" -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -exec rm -rf {} \;
+sar_call
 
     cmservice php-fpm restart
 

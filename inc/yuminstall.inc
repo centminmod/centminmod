@@ -39,31 +39,39 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-fastestmirror${DISABLEREPO_DNF}
+      sar_call
     fi
     if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-downloadonly${DISABLEREPO_DNF}
+      sar_call
     fi
     if [[ $(rpm -q yum-plugin-security >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-security${DISABLEREPO_DNF}
+      sar_call
     fi
   elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
     if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-fastestmirror${DISABLEREPO_DNF}
+      sar_call
     fi
     if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-downloadonly${DISABLEREPO_DNF}
+      sar_call
     fi
     if [[ $(rpm -q yum-plugin-security >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-security${DISABLEREPO_DNF}
+      sar_call
     fi
   fi
 
 if [[ $(rpm -q yum-plugin-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-plugin-priorities${DISABLEREPO_DNF}
+  sar_call
 fi
 
 if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install epel-release${DISABLEREPO_DNF}
+  sar_call
 fi
 
 if [[ -f /etc/yum.repos.d/epel.repo && -z "$(grep 'varnish-libs' /etc/yum.repos.d/epel.repo)" ]]; then
@@ -74,6 +82,7 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
   # https://wiki.centos.org/AdditionalResources/Repositories/CR
   if [[ "$CENTOS_SIX" = '6' ]]; then
     yum -y -q install centos-release-cr${DISABLEREPO_DNF}
+    sar_call
     sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/CentOS-CR.repo
     # echo "priority=1" >> /etc/yum.repos.d/CentOS-CR.repo
   fi
@@ -82,18 +91,22 @@ else
 
 if [[ $(rpm -q yum-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-priorities${DISABLEREPO_DNF}
+  sar_call
 fi
 
 if [[ $(rpm -q yum-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-fastestmirror${DISABLEREPO_DNF}
+  sar_call
 fi
 
 if [[ $(rpm -q yum-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-downloadonly${DISABLEREPO_DNF}
+  sar_call
 fi
 
 if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install epel-release${DISABLEREPO_DNF}
+  sar_call
 fi
 
 sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
@@ -103,10 +116,12 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
     time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
+    sar_call
   fi
 else
   if [[ $(rpm -q nc >/dev/null 2>&1; echo $?) != '0' ]]; then
     time $YUMDNFBIN -y install nc libgcj${DISABLEREPO_DNF}
+    sar_call
   fi
 fi
 
@@ -163,6 +178,7 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
         fi
 done
+sar_call
 
 fi # /usr/local/src/curlinstall_yum.txt
 
@@ -215,7 +231,7 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
         fi
 done
-
+sar_call
 fi # /usr/local/src/curlinstall_yum.txt
 
 
@@ -226,6 +242,7 @@ fi
 
 if [ ! -f /proc/user_beancounters ]; then
   yum -y install ipset ipset-devel${DISABLEREPO_DNF}
+  sar_call
 fi
 
 yum clean all -q
@@ -244,14 +261,18 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
       echo "----------------------------------------------------------------------------------"
       ${YUMDNFBIN} -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+      sar_call
   
       ${YUMDNFBIN} -y remove ImageMagick${DISABLEREPO_DNF}
+      sar_call
   
       if [[ "$CENTOS_SIX" = '6' ]]; then
         # ${YUMDNFBIN} -y install libwebp libwebp-devel --skip-broken
         ${YUMDNFBIN} -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken${DISABLEREPO_DNF}
+        sar_call
       else
         ${YUMDNFBIN} -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
+        sar_call
       fi
       
       echo
@@ -259,6 +280,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
 
     if [[ "$(rpm -qa ImageMagick6)" ]]; then
       ${YUMDNFBIN} -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
+      sar_call
     fi
   fi
 fi
