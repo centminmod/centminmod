@@ -18,8 +18,10 @@ cat <<EOF
 ###############################################################
 EOF
 
+if [[ "$INITIALINSTALL" != [yY] ]]; then
   yumupdatechecker
   ngxver_checker
   gitenv_askupdate
+fi
 
 }
