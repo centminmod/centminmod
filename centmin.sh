@@ -680,6 +680,7 @@ fi
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
+source "inc/fastmirrors.conf"
 source "inc/tcp.inc"
 source "inc/customrpms.inc"
 source "inc/pureftpd.inc"
@@ -903,7 +904,7 @@ EOF
     dnf clean all
   fi
   if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
-    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
+    echo "excludepkgs=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
   fi
   if [ ! "$(grep -w 'fastestmirror=true' /etc/dnf/dnf.conf)" ]; then
     echo "fastestmirror=true" >> /etc/dnf/dnf.conf

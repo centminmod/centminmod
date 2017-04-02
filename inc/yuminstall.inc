@@ -40,6 +40,7 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-fastestmirror${DISABLEREPO_DNF}
       sar_call
+      fastmirror_tweaks
     fi
     if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-downloadonly${DISABLEREPO_DNF}
@@ -53,6 +54,7 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
     if [[ $(rpm -q yum-plugin-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-fastestmirror${DISABLEREPO_DNF}
       sar_call
+      fastmirror_tweaks
     fi
     if [[ $(rpm -q yum-plugin-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install yum-plugin-downloadonly${DISABLEREPO_DNF}

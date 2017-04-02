@@ -1430,7 +1430,7 @@ EOF
     yum -y -q install dnf
   fi
   if [ ! "$(grep -w 'exclude' /etc/dnf/dnf.conf)" ]; then
-    echo "exclude=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
+    echo "excludepkgs=*.i386 *.i586 *.i686" >> /etc/dnf/dnf.conf
   fi
   if [ ! "$(grep -w 'fastestmirror=true' /etc/dnf/dnf.conf)" ]; then
     echo "fastestmirror=true" >> /etc/dnf/dnf.conf

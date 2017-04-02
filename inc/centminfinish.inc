@@ -112,6 +112,7 @@ echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check mysqlreport version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
+	chmod +x /root/mysqlreport
 /root/mysqlreport --help | head -n1
 letswait
 if [[ "$NSD_INSTALL" = [yY] ]]; then
