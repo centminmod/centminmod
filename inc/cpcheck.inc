@@ -337,6 +337,9 @@ pureftpdupdates() {
     echo "may take a while to create..."
     openssl dhparam -out /etc/ssl/private/pure-ftpd-dhparams.pem 2048 >/dev/null 2>&1
     echo "pure-ftpd: /etc/ssl/private/pure-ftpd-dhparams.pem created"
+    if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]];
+      service pure-ftpd restart >/dev/null 2>&1
+    fi
   fi
 }
 
