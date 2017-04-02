@@ -781,7 +781,7 @@ pureftpdupdates() {
     CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
     if [ "$CHECKPFTPD_ANON" ]; then
       sed -i 's|NoAnonymous                 no|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
-      if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+      if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]];
         service pure-ftpd restart >/dev/null 2>&1
       fi
       echo
@@ -799,7 +799,7 @@ pureftpdupdates() {
       sed -i 's|^MaxClientsNumber .*|MaxClientsNumber            1000|' /etc/pure-ftpd/pure-ftpd.conf
       sed -i 's|^MaxClientsPerIP .*|MaxClientsPerIP             500|' /etc/pure-ftpd/pure-ftpd.conf
     fi
-			if [[ "$(ps aufx | grep pure-ftpd | grep -v grep)" ]]; then
+			if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]];
 				service pure-ftpd restart >/dev/null 2>&1
 			fi
 			# echo
@@ -819,6 +819,9 @@ pureftpdupdates() {
     echo "may take a while to create..."
     openssl dhparam -out /etc/ssl/private/pure-ftpd-dhparams.pem 2048 >/dev/null 2>&1
     echo "pure-ftpd: /etc/ssl/private/pure-ftpd-dhparams.pem created"
+    if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]];
+      service pure-ftpd restart >/dev/null 2>&1
+    fi
   fi
 }
 
