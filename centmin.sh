@@ -1737,11 +1737,11 @@ funct_openvz_stacksize
 checkxcacheadmin
 
 
-    echo "*************************************************"
-    cecho "* Running updatedb command. Please wait...." $boldgreen
-    echo "*************************************************"
+#     echo "*************************************************"
+#     cecho "* Running updatedb command. Please wait...." $boldgreen
+#     echo "*************************************************"
 
-time updatedb
+# time updatedb
 
 centminfinish
 memcacheadmin
