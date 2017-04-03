@@ -91,6 +91,7 @@ if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$
 		DEVELKITOPT=" --add-module=../${DEVELKITDIR}"
 		ECHOOPT=" --add-module=../${ECHODIR}"
 		REDISOPT=" --add-module=../${REDISDIR}"
+		echonginx_patch
 	else
 		MEMCOPT=""
 		SRCCACHEOPT=""

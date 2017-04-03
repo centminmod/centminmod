@@ -1,3 +1,23 @@
+echonginx_patch() {
+   if [ "$ngver" ]; then
+     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+     echo "$DETECT_NGXVER"
+   else
+     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+     echo "$DETECT_NGXVER"
+   fi
+   if [[ "$NGINX_OPENRESTY" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_ECHOVER" = '0.60' ]]; then
+     ECHODIR=$(ls -rt $DIR_TMP | grep echo-nginx-module | egrep -v 'gz|zip' | tail -1)
+     pushd "${DIR_TMP}/${ECHODIR}/src"
+     rm -rf ngx_http_echo_request_info.c
+     wget -cnv https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
+     ls -lah
+     echo 
+     echo "patching echo nginx module for nginx 1.11.11+"
+     popd
+   fi
+}
+ 
 ngxopenresty_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
