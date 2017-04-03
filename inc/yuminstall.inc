@@ -243,8 +243,10 @@ sed -i 's/"long|!"/"long|long_nums|l!"/g' /usr/bin/mytop
 fi
 
 if [ ! -f /proc/user_beancounters ]; then
-  yum -y install ipset ipset-devel${DISABLEREPO_DNF}
-  sar_call
+  if [[ ! -f /usr/sbin/ipset || ! -f /usr/include/libipset/data.h ]]; then
+    yum -y install ipset ipset-devel${DISABLEREPO_DNF}
+    sar_call
+  fi
 fi
 
 yum clean all -q

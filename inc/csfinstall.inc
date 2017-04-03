@@ -147,8 +147,10 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         systemctl stop firewalld
     
         # install iptables-services package
-        yum -y install iptables-services
-        sar_call
+        if [ ! -f /usr/lib/systemd/system/iptables.service ]; then
+            yum -y install iptables-services
+            sar_call
+        fi
     
         # start iptables and ip6tables services
         systemctl start iptables
