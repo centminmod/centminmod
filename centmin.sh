@@ -677,6 +677,11 @@ fi
 #     CLANG='n'
 # fi
 
+if [[ "$1" = 'install' ]]; then
+  INITIALINSTALL='y'
+  export INITIALINSTALL='y'
+fi
+
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
