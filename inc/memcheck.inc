@@ -13,11 +13,11 @@ TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
 ISLOWMEMMB=`echo "scale=0;$ISLOWMEM/1024" | bc`
 CHECKLOWMEM=`expr $TOTALMEM \< $ISLOWMEM`
 #############################################################
-# function checks if persistent config file has low mem variable enabled
-# LOWMEM_INSTALL='y'
-checkfor_lowmem
 
 lowmemcheck() {
+  # function checks if persistent config file has low mem variable enabled
+  # LOWMEM_INSTALL='y'
+  checkfor_lowmem
 
 cpcheck
 histformat
