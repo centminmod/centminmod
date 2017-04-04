@@ -1958,7 +1958,11 @@ if [[ "$1" = 'install' ]]; then
         CACHESKIP=""
     fi
 
-    lowmemcheck
+    if [[ "$INITIALINSTALL" = [Yy] ]]; then
+        lowmemcheck initialinstall
+    else
+        lowmemcheck
+    fi
     # setramdisk
     centminlog
     diskalert
