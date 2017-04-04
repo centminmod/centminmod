@@ -2081,7 +2081,11 @@ else
                 CACHESKIP=""
             fi
 
-            lowmemcheck
+            if [[ "$INITIALINSTALL" = [Yy] ]]; then
+                lowmemcheck initialinstall
+            else
+                lowmemcheck
+            fi
             # setramdisk
             centminlog
             diskalert
@@ -2669,7 +2673,11 @@ EOF
             CACHESKIP=""
         fi
 
-        lowmemcheck
+        if [[ "$INITIALINSTALL" = [Yy] ]]; then
+            lowmemcheck initialinstall
+        else
+            lowmemcheck
+        fi
         # setramdisk
         diskalert
         alldownloads

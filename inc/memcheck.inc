@@ -15,11 +15,22 @@ CHECKLOWMEM=`expr $TOTALMEM \< $ISLOWMEM`
 #############################################################
 
 lowmemcheck() {
+  MEMFIRSTINSTALL=$1
+  if [[ "$MEMFIRSTINSTALL" = 'initialinstall' ]]; then
+    INITIALINSTALL='y'
+  else
+    INITIALINSTALL='n'
+  fi
+
   # function checks if persistent config file has low mem variable enabled
   # LOWMEM_INSTALL='y'
   checkfor_lowmem
 
-cpcheck
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
+    cpcheck initialinstall
+  else
+    cpcheck
+  fi
 histformat
 expand_cmdprompt
 
