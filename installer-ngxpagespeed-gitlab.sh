@@ -1000,7 +1000,8 @@ sed -i "s|^CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|#CMGIT='http
 sed -i "s|^#CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|" centmin.sh
 echo "CMGIT='https://gitlab.com/centminmod/centminmod.git'" > /etc/centminmod/custom_config.inc
 
-"${INSTALLDIR}/centminmod/centmin.sh" install
+cd "${INSTALLDIR}/centminmod"
+./centmin.sh install
 sar_call
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini

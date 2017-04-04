@@ -994,7 +994,8 @@ if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
 fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
-"${INSTALLDIR}/centminmod/centmin.sh" install
+cd "${INSTALLDIR}/centminmod"
+./centmin.sh install
 sar_call
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini
