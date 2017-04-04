@@ -315,7 +315,12 @@ installopenssl() {
             fi
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}
+                if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+                    TLSONETHREEOPT=' enable-tls1_3'
+                else
+                    TLSONETHREEOPT=""
+                fi
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
             else
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
