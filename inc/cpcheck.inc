@@ -814,7 +814,7 @@ pureftpdupdates() {
 			echo
 		fi	
 	fi
-  if [ ! -f /etc/ssl/private/pure-ftpd-dhparams.pem ]; then
+  if [[ "$INITIALINSTALL" = ! [Yy] && ! -f /etc/ssl/private/pure-ftpd-dhparams.pem ]]; then
     echo "pure-ftpd: one time setup /etc/ssl/private/pure-ftpd-dhparams.pem file"
     echo "may take a while to create..."
     openssl dhparam -out /etc/ssl/private/pure-ftpd-dhparams.pem 2048 >/dev/null 2>&1
