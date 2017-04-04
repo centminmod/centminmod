@@ -797,6 +797,7 @@ mysqltmpdir
 # echo $1
 if [[ "$1" = 'install' ]]; then
   INITIALINSTALL='y'
+  export INITIALINSTALL='y'
   cpcheck initialinstall
 else
   cpcheck
