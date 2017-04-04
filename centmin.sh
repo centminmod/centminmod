@@ -793,7 +793,12 @@ source "inc/centminfinish.inc"
 
 checkcentosver
 mysqltmpdir
-cpcheck
+
+if [[ "$INITIALINSTALL" = [yY] ]]; then
+  cpcheck initialinstall
+else
+  cpcheck
+fi
 
 if [ ! -f /etc/centminmod-release ];then
 echo "$SCRIPT_VERSION" > /etc/centminmod-release

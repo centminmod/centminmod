@@ -1402,6 +1402,12 @@ setup_pwdh() {
 }
 
 cpcheck() {
+  FIRSTINSTALL=$1
+  if [[ "$FIRSTINSTALL" = 'initialinstall' ]]; then
+    INITIALINSTALL='y'
+  else
+    INITIALINSTALL='n'
+  fi
 
 if [ -f /var/cpanel/cpanel.config ]; then
 echo "WHM/Cpanel detected.. centmin mod NOT compatible"
