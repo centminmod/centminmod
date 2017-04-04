@@ -296,6 +296,45 @@ else
   fi
 fi
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    echo ""
+    echo "Check for existing mysql-server packages"
+    OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
+    if [[ ! -z "$OLDMYSQLSERVER" ]]; then
+        echo "rpm -e --nodeps $OLDMYSQLSERVER"
+        rpm -e --nodeps $OLDMYSQLSERVER
+    fi
+fi # CENTOS_SEVEN != 7
+
+# only run for CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    echo ""
+    echo "Check for existing mariadb packages"
+    OLDMYSQLSERVER=`rpm -qa | grep 'mariadb-server' | head -n1`
+    if [[ ! -z "$OLDMYSQLSERVER" ]]; then
+        echo "rpm -e --nodeps $OLDMYSQLSERVER"
+        rpm -e --nodeps $OLDMYSQLSERVER
+    fi
+    echo ""
+    echo "Check for existing mariadb-libs package"
+    OLDMYSQL_LIBS=`rpm -qa | grep 'mariadb-libs' | head -n1`
+    if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
+        # echo "rpm -e --nodeps $OLDMYSQL_LIBS"
+        # rpm -e --nodeps $OLDMYSQL_LIBS
+        echo "yum -y remove mariadb-libs"
+        yum -y remove mariadb-libs
+    fi
+    echo ""
+    # Should not exist on CentOS 7 systems
+    echo "Check for existing MySQL-shared-compat"
+    OLDMYSQL_SHAREDCOMPAT=`rpm -qa | grep 'MySQL-shared-compat' | head -n1`
+    if [[ ! -z "$OLDMYSQL_SHAREDCOMPAT" ]]; then
+        echo "yum -y remove MySQL-shared-compat"
+        yum -y remove MySQL-shared-compat
+    fi
+fi # CENTOS_SEVEN != 7
+
 sar_call() {
   $SARCALL 1 1
 }
@@ -305,12 +344,16 @@ systemstats() {
     sar -u > /root/centminlogs/sar-u-installstats.log
     sar -q > /root/centminlogs/sar-q-installstats.log
     sar -r > /root/centminlogs/sar-r-installstats.log
+    if [ ! -f /proc/user_beancounters ]; then
     sar -d > /root/centminlogs/sar-d-installstats.log
+    fi
     sar -b > /root/centminlogs/sar-b-installstats.log
     sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-u-installstats.log
     sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-q-installstats.log
     sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-r-installstats.log
+    if [ ! -f /proc/user_beancounters ]; then
     sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-d-installstats.log
+    fi
     sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-b-installstats.log
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -797,7 +840,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  time $YUMDNFBIN -y install virt-what gawk unzip bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${DISABLEREPO_DNF}
+  time $YUMDNFBIN -y install virt-what gawk unzip bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${DISABLEREPO_DNF}
   sar_call
   # allows curl install to skip checking for already installed yum packages 
   # later on in initial curl installations
@@ -805,10 +848,10 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   sar_call
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion mlocate re2c kernel-headers kernel-devel uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion mlocate re2c kernel-headers kernel-devel uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
     sar_call
   else
-    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
     sar_call
   fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
@@ -955,7 +998,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 mkdir -p /etc/centminmod/
 echo "NGINX_PAGESPEED=y" > /etc/centminmod/custom_config.inc
 echo "NGINX_ZLIBCUSTOM='y'" >> /etc/centminmod/custom_config.inc
-echo "ORESTY_LUANGINX=y" >> /etc/centminmod/custom_config.inc
+echo "ORESTY_LUANGINX=n" >> /etc/centminmod/custom_config.inc
 echo "NGINX_XSLT='n'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc
 # Nginx Dynamic Module Switches
@@ -987,7 +1030,8 @@ if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
 fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
-"${INSTALLDIR}/centminmod/centmin.sh" install
+cd "${INSTALLDIR}/centminmod"
+./centmin.sh install
 sar_call
 rm -rf /etc/centminmod/email-primary.ini
 rm -rf /etc/centminmod/email-secondary.ini

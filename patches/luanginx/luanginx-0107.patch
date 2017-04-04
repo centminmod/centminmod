@@ -1,0 +1,19 @@
+--- ngx_http_lua_headers.c      2016-11-04 19:09:18.000000000 +0000
++++ ngx_http_lua_headers.c.new  2017-04-04 03:23:51.803698145 +0000
+@@ -718,7 +718,7 @@
+         ngx_str_null(&value);
+ 
+     } else if (lua_type(L, 3) == LUA_TTABLE) {
+-        n = luaL_getn(L, 3);
++        n = lua_objlen(L, 3);
+         if (n == 0) {
+             ngx_str_null(&value);
+ 
+@@ -852,7 +852,7 @@
+         ngx_str_null(&value);
+ 
+     } else if (lua_type(L, 2) == LUA_TTABLE) {
+-        n = luaL_getn(L, 2);
++        n = lua_objlen(L, 2);
+         if (n == 0) {
+             ngx_str_null(&value);

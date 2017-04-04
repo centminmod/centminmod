@@ -677,6 +677,11 @@ fi
 #     CLANG='n'
 # fi
 
+if [[ "$1" = 'install' ]]; then
+  INITIALINSTALL='y'
+  export INITIALINSTALL='y'
+fi
+
 # source "inc/mainmenu.inc"
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
@@ -690,8 +695,8 @@ source "inc/entropy.inc"
 source "inc/cpucount.inc"
 source "inc/motd.inc"
 source "inc/cpcheck.inc"
-source "inc/memcheck.inc"
 source "inc/lowmem.inc"
+source "inc/memcheck.inc"
 source "inc/ccache.inc"
 source "inc/bookmark.inc"
 source "inc/centminlogs.inc"
@@ -793,7 +798,15 @@ source "inc/centminfinish.inc"
 
 checkcentosver
 mysqltmpdir
-cpcheck
+
+# echo $1
+if [[ "$1" = 'install' ]]; then
+  INITIALINSTALL='y'
+  export INITIALINSTALL='y'
+  cpcheck initialinstall
+else
+  cpcheck
+fi
 
 if [ ! -f /etc/centminmod-release ];then
 echo "$SCRIPT_VERSION" > /etc/centminmod-release
@@ -1086,6 +1099,8 @@ unsetramdisk() {
 ###
 
 funct_centmininstall() {
+    INITIALINSTALL='y'
+    export INITIALINSTALL='y'
 
 #check centmin install previously
 
@@ -1737,11 +1752,11 @@ funct_openvz_stacksize
 checkxcacheadmin
 
 
-    echo "*************************************************"
-    cecho "* Running updatedb command. Please wait...." $boldgreen
-    echo "*************************************************"
+#     echo "*************************************************"
+#     cecho "* Running updatedb command. Please wait...." $boldgreen
+#     echo "*************************************************"
 
-time updatedb
+# time updatedb
 
 centminfinish
 memcacheadmin
@@ -1933,6 +1948,7 @@ trap cleanup_msg SIGHUP SIGINT SIGTERM
 if [[ "$1" = 'install' ]]; then
     starttime=$(TZ=UTC date +%s.%N)
     INITIALINSTALL='y'
+    export INITIALINSTALL='y'
 
     # skip cache update check for first time install YUM runs
     if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -1942,7 +1958,11 @@ if [[ "$1" = 'install' ]]; then
         CACHESKIP=""
     fi
 
-    lowmemcheck
+    if [[ "$INITIALINSTALL" = [Yy] ]]; then
+        lowmemcheck initialinstall
+    else
+        lowmemcheck
+    fi
     # setramdisk
     centminlog
     diskalert
@@ -2055,6 +2075,7 @@ else
             CM_MENUOPT=1
             starttime=$(TZ=UTC date +%s.%N)
             INITIALINSTALL='y'
+            export INITIALINSTALL='y'
 
             # skip cache update check for first time install YUM runs
             if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -2064,7 +2085,11 @@ else
                 CACHESKIP=""
             fi
 
-            lowmemcheck
+            if [[ "$INITIALINSTALL" = [Yy] ]]; then
+                lowmemcheck initialinstall
+            else
+                lowmemcheck
+            fi
             # setramdisk
             centminlog
             diskalert
@@ -2642,6 +2667,7 @@ EOF
         case "$1" in
         install)
         INITIALINSTALL='y'
+        export INITIALINSTALL='y'
 
         # skip cache update check for first time install YUM runs
         if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -2651,7 +2677,11 @@ EOF
             CACHESKIP=""
         fi
 
-        lowmemcheck
+        if [[ "$INITIALINSTALL" = [Yy] ]]; then
+            lowmemcheck initialinstall
+        else
+            lowmemcheck
+        fi
         # setramdisk
         diskalert
         alldownloads
