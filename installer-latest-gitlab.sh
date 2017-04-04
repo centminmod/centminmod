@@ -996,7 +996,7 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 mkdir -p /etc/centminmod/
 echo "NGINX_PAGESPEED=y" > /etc/centminmod/custom_config.inc
 echo "NGINX_ZLIBCUSTOM='y'" >> /etc/centminmod/custom_config.inc
-echo "ORESTY_LUANGINX=y" >> /etc/centminmod/custom_config.inc
+echo "ORESTY_LUANGINX=n" >> /etc/centminmod/custom_config.inc
 echo "NGINX_XSLT='n'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc
 # Nginx Dynamic Module Switches
