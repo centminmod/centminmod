@@ -794,7 +794,8 @@ source "inc/centminfinish.inc"
 checkcentosver
 mysqltmpdir
 
-if [[ "$INITIALINSTALL" = [yY] ]]; then
+# echo $1
+if [[ "$1" = 'install' ]]; then
   cpcheck initialinstall
 else
   cpcheck
@@ -1091,6 +1092,8 @@ unsetramdisk() {
 ###
 
 funct_centmininstall() {
+    INITIALINSTALL='y'
+    export INITIALINSTALL='y'
 
 #check centmin install previously
 

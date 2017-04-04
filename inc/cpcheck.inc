@@ -1408,7 +1408,7 @@ cpcheck() {
   else
     INITIALINSTALL='n'
   fi
-
+  
 if [ -f /var/cpanel/cpanel.config ]; then
 echo "WHM/Cpanel detected.. centmin mod NOT compatible"
 echo "aborting script..."
