@@ -298,6 +298,45 @@ else
   fi
 fi
 
+# only run for CentOS 6.x
+if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    echo ""
+    echo "Check for existing mysql-server packages"
+    OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
+    if [[ ! -z "$OLDMYSQLSERVER" ]]; then
+        echo "rpm -e --nodeps $OLDMYSQLSERVER"
+        rpm -e --nodeps $OLDMYSQLSERVER
+    fi
+fi # CENTOS_SEVEN != 7
+
+# only run for CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    echo ""
+    echo "Check for existing mariadb packages"
+    OLDMYSQLSERVER=`rpm -qa | grep 'mariadb-server' | head -n1`
+    if [[ ! -z "$OLDMYSQLSERVER" ]]; then
+        echo "rpm -e --nodeps $OLDMYSQLSERVER"
+        rpm -e --nodeps $OLDMYSQLSERVER
+    fi
+    echo ""
+    echo "Check for existing mariadb-libs package"
+    OLDMYSQL_LIBS=`rpm -qa | grep 'mariadb-libs' | head -n1`
+    if [[ ! -z "$OLDMYSQL_LIBS" ]]; then
+        # echo "rpm -e --nodeps $OLDMYSQL_LIBS"
+        # rpm -e --nodeps $OLDMYSQL_LIBS
+        echo "yum -y remove mariadb-libs"
+        yum -y remove mariadb-libs
+    fi
+    echo ""
+    # Should not exist on CentOS 7 systems
+    echo "Check for existing MySQL-shared-compat"
+    OLDMYSQL_SHAREDCOMPAT=`rpm -qa | grep 'MySQL-shared-compat' | head -n1`
+    if [[ ! -z "$OLDMYSQL_SHAREDCOMPAT" ]]; then
+        echo "yum -y remove MySQL-shared-compat"
+        yum -y remove MySQL-shared-compat
+    fi
+fi # CENTOS_SEVEN != 7
+
 sar_call() {
   $SARCALL 1 1
 }
