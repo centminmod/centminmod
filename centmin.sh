@@ -1933,6 +1933,7 @@ trap cleanup_msg SIGHUP SIGINT SIGTERM
 if [[ "$1" = 'install' ]]; then
     starttime=$(TZ=UTC date +%s.%N)
     INITIALINSTALL='y'
+    export INITIALINSTALL='y'
 
     # skip cache update check for first time install YUM runs
     if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -2055,6 +2056,7 @@ else
             CM_MENUOPT=1
             starttime=$(TZ=UTC date +%s.%N)
             INITIALINSTALL='y'
+            export INITIALINSTALL='y'
 
             # skip cache update check for first time install YUM runs
             if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -2642,6 +2644,7 @@ EOF
         case "$1" in
         install)
         INITIALINSTALL='y'
+        export INITIALINSTALL='y'
 
         # skip cache update check for first time install YUM runs
         if [[ "$INITIALINSTALL" = [yY] ]]; then
