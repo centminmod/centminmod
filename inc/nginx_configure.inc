@@ -521,14 +521,24 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+			else
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			# export OPENSSL_BPATH=$DIR_TMP
-			export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+			else
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		fi
 	fi
@@ -1351,14 +1361,24 @@ else
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+			else
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			# export OPENSSL_BPATH=$DIR_TMP
-			export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+			else
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		fi
 	fi

@@ -292,13 +292,19 @@ installopenssl() {
             time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
         fi
     
-        # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
-        # export OPENSSL_BPATH=$OPENSSL_CUSTOMPATH
-        export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
-    
-        tar xzf ${OPENSSL_LINKFILE}
         #-- Build static openssl
-        cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+        if [[ "$TLSONETHREE" = [yY] ]]; then
+            OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
+            export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+            cd "$DIR_TMP"
+            rm -rf ${DIR_TMP}/openssl-tls1.3
+            git clone -b tls1.3-draft-18 https://github.com/openssl/openssl/ openssl-tls1.3
+            cd ${DIR_TMP}/openssl-tls1.3
+        else
+            export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+            tar xzf ${OPENSSL_LINKFILE}
+            cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+        fi
         rm -rf "$STATICLIBSSL"
         mkdir -p "$STATICLIBSSL"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -327,7 +333,12 @@ installopenssl() {
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared
+                if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+                    TLSONETHREEOPT=' enable-tls1_3'
+                else
+                    TLSONETHREEOPT=""
+                fi
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${TLSONETHREEOPT}
             else
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext
             fi
