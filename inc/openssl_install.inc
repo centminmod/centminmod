@@ -99,16 +99,17 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
 fi # CLOUDFLARE_PATCHSSL
 
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+    if [[ "$TLSONETHREE" != [yY] ]]; then
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patch"
         fi
-        echo  "######################################################################"
+        echo "######################################################################"
         echo "Patching OpenSSL 1.1.0 branch"
-        echo  "######################################################################"
+        echo "######################################################################"
         echo "Cloudflare Smart ChaCha20 patch"
         echo "https://community.centminmod.com/posts/35727/"
         echo "only support ChaCha20 if client's preferred cipher"
-        echo  "######################################################################"
+        echo "######################################################################"
         echo "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
         if [ -f "$CUR_DIR/patches/openssl/chacha20-smarter.patch" ]; then
             patch -p1 < "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
@@ -119,6 +120,11 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patched"
             fi
         fi
+    else
+        echo "######################################################################"
+        echo "TLSONETHREE='y' : Skip Cloudflare Smart ChaCha20 patch"
+        echo "######################################################################"
+    fi
 fi # CLOUDFLARE_PATCHSSL
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }

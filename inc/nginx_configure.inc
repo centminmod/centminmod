@@ -528,7 +528,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
 			if [[ "$TLSONETHREE" = [yY] ]]; then
-				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
 			fi
@@ -540,7 +540,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			if [[ "$TLSONETHREE" = [yY] ]]; then
 				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
-				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -1368,7 +1368,7 @@ else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
 			if [[ "$TLSONETHREE" = [yY] ]]; then
-				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
 			fi
@@ -1380,7 +1380,7 @@ else
 			if [[ "$TLSONETHREE" = [yY] ]]; then
 				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
-				OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
