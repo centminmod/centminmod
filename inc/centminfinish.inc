@@ -262,6 +262,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 fi
 
 installchecks
+nvcheck
 DATENOW=$(date +"%b %d")
 YUMLOG=$(grep -h "$DATENOW" /var/log/yum.log)
 echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log"
