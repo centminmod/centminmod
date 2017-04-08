@@ -28,6 +28,12 @@ dynamicmodule_file() {
 			rm -rf /usr/local/nginx/conf/dynamic-modules.conf
 		fi
 		touch /usr/local/nginx/conf/dynamic-modules.conf
+		if [ ! -f /usr/local/nginx/conf/dynamic-modules-includes.conf ]; then
+			touch /usr/local/nginx/conf/dynamic-modules-includes.conf
+		fi
+		echo "# place custom load_module lines in this dynamic-modules-includes.conf" >> /usr/local/nginx/conf/dynamic-modules.conf
+		echo "# file so that they persistent i.e. for manually dropped in dynamic modules" >> /usr/local/nginx/conf/dynamic-modules.conf
+		echo "include /usr/local/nginx/conf/dynamic-modules-includes.conf;" >> /usr/local/nginx/conf/dynamic-modules.conf
 		# setup include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
 		if [[ ! "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
 			sed -i 's|^pcre_jit on;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
