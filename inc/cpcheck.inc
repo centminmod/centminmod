@@ -64,6 +64,14 @@ fixclamav_epel() {
     sed -i "s|^exclude=.*|$NEW_CLAMAVDEVELEXCLUDES|" /etc/yum.repos.d/epel.repo
     fi
   fi
+  # prevent mongodb epel install in favour of official repo install
+  # https://docs.mongodb.com/manual/tutorial/install-mongodb-on-red-hat/
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep 'mongodb\*' > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_MONGODBEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mongodb*")
+    sed -i "s|^exclude=.*|$NEW_MONGODBEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
 }
 
 c7mariadb_tmpdir() {

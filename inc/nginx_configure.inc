@@ -28,6 +28,12 @@ dynamicmodule_file() {
 			rm -rf /usr/local/nginx/conf/dynamic-modules.conf
 		fi
 		touch /usr/local/nginx/conf/dynamic-modules.conf
+		if [ ! -f /usr/local/nginx/conf/dynamic-modules-includes.conf ]; then
+			touch /usr/local/nginx/conf/dynamic-modules-includes.conf
+		fi
+		echo "# place custom load_module lines in this dynamic-modules-includes.conf" >> /usr/local/nginx/conf/dynamic-modules.conf
+		echo "# file so that they persistent i.e. for manually dropped in dynamic modules" >> /usr/local/nginx/conf/dynamic-modules.conf
+		echo "include /usr/local/nginx/conf/dynamic-modules-includes.conf;" >> /usr/local/nginx/conf/dynamic-modules.conf
 		# setup include file /usr/local/nginx/conf/dynamic-modules.conf in nginx.conf
 		if [[ ! "$(grep 'dynamic-modules.conf' /usr/local/nginx/conf/nginx.conf)" ]]; then
 			sed -i 's|^pcre_jit on;|pcre_jit on;\ninclude \/usr\/local\/nginx\/conf\/dynamic-modules.conf;\n|g' /usr/local/nginx/conf/nginx.conf
@@ -54,19 +60,31 @@ dynamicmodule_file() {
 }
 
 ngx_dynamicfunction() {
-	if [ ! -d /usr/local/nginx/conf ]; then
-		mkdir -p /usr/local/nginx/conf
-	fi
-	if [ -d /usr/local/nginx/conf ]; then
-		# detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
-  	if [ -f "$(which figlet)" ]; then
-      	figlet -ckf standard "Check Nginx Dynamic Module Support"
-  	fi
-		echo
-		echo "NGX_DYNAMICCHECK nginx_configure"
-		pwd
-		dynamicmodule_file
-	fi # check for /usr/local/nginx/conf
+  if [ ! -d /usr/local/nginx/conf ]; then
+    mkdir -p /usr/local/nginx/conf
+  fi
+  if [ -d /usr/local/nginx/conf ]; then
+    # detection routine to see if Nginx supports Dynamic modules from nginx 1.9.11+
+    if [ -f "$(which figlet)" ]; then
+        figlet -ckf standard "Check Nginx Dynamic Module Support"
+    fi
+    echo
+    echo "NGX_DYNAMICCHECK nginx_configure"
+    pwd
+    dynamicmodule_file
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$DETECT_NGXVER" -ge '1011005' && "$DYNAMIC_SUPPORT" = [yY] ]]; then
+    WITHCOMPAT_OPT=' --with-compat'
+  else
+    WITHCOMPAT_OPT=""
+  fi
+  fi # check for /usr/local/nginx/conf
 }
 
 luaworkaroundfix() {
@@ -243,6 +261,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	fi
 
+ 	if [[ "$NGINX_REALIP" = [yY] ]]; then
+		REALIPOPT=' --with-http_realip_module'
+	else
+		REALIPOPT=""
+	fi	
+
 	if [[ "$NGINX_RDNS" = [yY] ]]; then
 		cd "$DIR_TMP"
 		rm -rf nginx-http-rdns
@@ -305,7 +329,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HIDELENGTH='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so.old ]; then
@@ -314,7 +338,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		HIDELENGTHOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so.old ]; then
@@ -339,7 +363,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_IMAGEFILTER='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -348,7 +372,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		IMAGEFILTEROPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -373,7 +397,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_XSLT='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
@@ -382,7 +406,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		NGXXSLTOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
@@ -410,7 +434,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_PERL='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -419,7 +443,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		NGXPERLOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -482,7 +506,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HEADERSMORE='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -491,7 +515,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		HEADERSMOREOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -521,14 +545,24 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
+			else
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			# export OPENSSL_BPATH=$DIR_TMP
-			export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
+			else
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		fi
 	fi
@@ -568,7 +602,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_DEVELKIT='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ndk_http_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ndk_http_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ndk_http_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ndk_http_module.so.old ]; then
@@ -594,7 +628,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_MEMC='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_memc_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_memc_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so.old ]; then
@@ -620,7 +654,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_SRCCACHE='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_srcache_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so.old ]; then
@@ -660,7 +694,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_SETMISC='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
@@ -702,7 +736,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_ECHO='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_echo_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
@@ -728,7 +762,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_REDISTWO='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_redis2_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_redis2_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so.old ]; then
@@ -742,13 +776,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		DEVELKITOPT=""
 		ECHOOPT=""
 		REDISOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so.old
 			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_echo_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
@@ -803,7 +837,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_LUA='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
@@ -856,7 +890,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	else
 		LUAOPT=""
 		LUALD_OPT="-Wl,-rpath,/usr/local/lib"
-			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
@@ -1029,7 +1063,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1045,7 +1079,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1054,7 +1088,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     fi
 	else
 		PGSPEEDOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1169,7 +1203,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_IMAGEFILTER='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -1178,7 +1212,7 @@ else
 		fi
 	else
 		IMAGEFILTEROPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -1203,7 +1237,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_XSLT='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
@@ -1212,7 +1246,7 @@ else
 		fi
 	else
 		NGXXSLTOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
@@ -1240,7 +1274,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_PERL='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -1249,7 +1283,7 @@ else
 		fi
 	else
 		NGXPERLOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -1312,7 +1346,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HEADERSMORE='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -1321,7 +1355,7 @@ else
 		fi
 	else
 		HEADERSMOREOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -1351,14 +1385,24 @@ else
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
+			else
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			# export OPENSSL_BPATH=$DIR_TMP
-			export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 			LIBRESSLOPT=""
-			OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			if [[ "$TLSONETHREE" = [yY] ]]; then
+				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
+			else
+				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+			fi
 			LRT=""
 		fi
 	fi
@@ -1476,7 +1520,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1492,7 +1536,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1501,7 +1545,7 @@ else
     fi
 	else
 		PGSPEEDOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1714,7 +1758,7 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VE
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_STREAM='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
@@ -1758,7 +1802,7 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_STREAM='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
@@ -1767,7 +1811,7 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
 		fi
 	else
 		STREAM=""
-			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
@@ -1930,14 +1974,14 @@ fi
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NJS='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
 			fi
 				# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_js_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so.old ]; then
@@ -1946,7 +1990,7 @@ fi
 		fi
 	else
 		NGINX_NJSOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
@@ -2357,25 +2401,25 @@ fi
       			echo
       		fi
       		echo "nginx configure options (alternate ordering):"
-      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
+      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
     	else
     		pwd
     		echo "nginx configure options (alternate ordering):"
-    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM} --with-http_realip_module${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
+    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${OPENSSLOPT}${LIBRESSLOPT}${MODSEC_OPT}${RDNSOPT}
     	fi
     else
     	if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
       		pwd
       		echo "nginx configure options:"
-      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
+      		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
     	else
     		pwd
     		echo "nginx configure options:"
-    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
-			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT} --with-http_realip_module${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
+    		echo "./configure --with-ld-opt=\"${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}\" --with-cc-opt=\"${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPTECHO}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+			./configure --with-ld-opt="${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}" --with-cc-opt="${MTUNEOPT}-g $GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4 -Wformat -Werror=format-security -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${DYNAMICOPT_BEGIN} --with-http_ssl_module${HTTPTWOOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${BROTLIOPT}${STUBSTATUSOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${REALIPOPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${WITHOPENSSL_OPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${MEMCOPT}${SRCCACHEOPT}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${VTSOPT}${HEADERSMOREOPT}${OPENSSLOPT}${LIBRESSLOPT}${LIBATOMICOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT}${HIDELENGTHOPT}${SPDYOPT}${NGXPERLOPT}${NGXXSLTOPT}${PGSPEEDOPT}${MODSEC_OPT}${RDNSOPT}
     	fi
 	fi # NGXMODULE_ALTORDER
 	sar_call

@@ -33,6 +33,7 @@ PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com
 NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 
 # Nginx Dynamic Module Switches
+NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
 NGXDYNAMIC_NJS='n'
 NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'
@@ -62,7 +63,7 @@ PHP_UPDATEMAINTENANCE='n'
 MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.11.10'       # Use this version of Nginx
+NGINX_VERSION='1.11.13'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
@@ -81,6 +82,7 @@ NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/d
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install

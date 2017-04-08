@@ -164,6 +164,7 @@ MYSQLSERVICE_DISABLED='n'     # when set to =y,  MariaDB MySQL service disabled 
 PUREFTPD_DISABLED='n'         # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # Nginx Dynamic Module Switches
+NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
 NGXDYNAMIC_NJS='n'
 NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'
@@ -204,6 +205,7 @@ NGINX_INSTALL='y'            # Install Nginx (Webserver)
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_MODSECURITY='n'          # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
 NGINX_GEOIP='y'              # Nginx GEOIP module install

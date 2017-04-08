@@ -99,16 +99,17 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
 fi # CLOUDFLARE_PATCHSSL
 
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+    if [[ "$TLSONETHREE" != [yY] ]]; then
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patch"
         fi
-        echo  "######################################################################"
+        echo "######################################################################"
         echo "Patching OpenSSL 1.1.0 branch"
-        echo  "######################################################################"
+        echo "######################################################################"
         echo "Cloudflare Smart ChaCha20 patch"
         echo "https://community.centminmod.com/posts/35727/"
         echo "only support ChaCha20 if client's preferred cipher"
-        echo  "######################################################################"
+        echo "######################################################################"
         echo "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
         if [ -f "$CUR_DIR/patches/openssl/chacha20-smarter.patch" ]; then
             patch -p1 < "$CUR_DIR/patches/openssl/chacha20-smarter.patch"
@@ -119,6 +120,11 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patched"
             fi
         fi
+    else
+        echo "######################################################################"
+        echo "TLSONETHREE='y' : Skip Cloudflare Smart ChaCha20 patch"
+        echo "######################################################################"
+    fi
 fi # CLOUDFLARE_PATCHSSL
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
@@ -292,13 +298,19 @@ installopenssl() {
             time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
         fi
     
-        # from https://wiki.mozilla.org/Security/Server_Side_TLS#Nginx
-        # export OPENSSL_BPATH=$OPENSSL_CUSTOMPATH
-        export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
-    
-        tar xzf ${OPENSSL_LINKFILE}
         #-- Build static openssl
-        cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+        if [[ "$TLSONETHREE" = [yY] ]]; then
+            OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
+            export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+            cd "$DIR_TMP"
+            rm -rf ${DIR_TMP}/openssl-tls1.3
+            git clone -b tls1.3-draft-18 https://github.com/openssl/openssl/ openssl-tls1.3
+            cd ${DIR_TMP}/openssl-tls1.3
+        else
+            export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+            tar xzf ${OPENSSL_LINKFILE}
+            cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+        fi
         rm -rf "$STATICLIBSSL"
         mkdir -p "$STATICLIBSSL"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -315,14 +327,24 @@ installopenssl() {
             fi
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}
+                if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+                    TLSONETHREEOPT=' enable-tls1_3'
+                else
+                    TLSONETHREEOPT=""
+                fi
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
             else
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared
+                if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+                    TLSONETHREEOPT=' enable-tls1_3'
+                else
+                    TLSONETHREEOPT=""
+                fi
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${TLSONETHREEOPT}
             else
                 ./config --prefix=$STATICLIBSSL shared enable-tlsext
             fi
