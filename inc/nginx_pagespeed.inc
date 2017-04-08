@@ -415,11 +415,21 @@ cecho "**********************************************************************" $
 
 #####################################################
 # if NGINX_PAGESPEED=n is disabled in centmin.sh do some commenting out
+# modified to support detecting ngx_pagespeed.so dynamic module + load module line
+# even if NGINX_PAGESPEED=n set https://community.centminmod.com/posts/47781/
 if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
+  PSCHECK_DYNAMICMODULE=$(ls /usr/local/nginx/modules | grep -qw 'ngx_pagespeed.so'; echo $?)
+  PSCHECK_DYNAMICMODULELOAD=$(grep -qw 'ngx_pagespeed.so' /usr/local/nginx/conf/dynamic-modules.conf; echo $?)
   PSADMINCHECK=$(grep '^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
 
+  # do not disable pagespeedadmin.conf if dynamic module and load module line detected
+  # for ngx_pagespeed.so
+  if [[ "$DYNAMIC_SUPPORT" = [yY] && "$PSCHECK_DYNAMICMODULE" -eq '0' && "$PSCHECK_DYNAMICMODULELOAD" -eq '0' ]]; then
+    # enable/uncomment pagespeedadmin.conf include line in nginx.conf if ngx_pagespeed.so dynamic module
+    # is detected and loaded
+    sed -i 's/^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
   # disable pagespeedadmin.conf if enabled/uncommented
-  if [[ ! -z "$PSADMINCHECK" ]]; then
+  elif [[ ! -z "$PSADMINCHECK" ]]; then
     sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
   fi
 
