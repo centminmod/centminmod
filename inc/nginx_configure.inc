@@ -1905,7 +1905,8 @@ if [[ "$NGINX_STREAMREALIP" = [yY] ]]; then
     # dynamic module isn't supported yet
     STREAMREALIPOPT=' --with-stream_realip_module'
     if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
-      echo "load_module \"modules/ngx_stream_realip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+      # echo "load_module \"modules/ngx_stream_realip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+      echo "skip modules/ngx_stream_realip_module.so not supported yet"
     fi
     if [ -f /usr/local/nginx/modules/ngx_stream_realip_module.so.old ]; then
       rm -rf /usr/local/nginx/modules/ngx_stream_realip_module.so.old
