@@ -1901,7 +1901,9 @@ if [[ "$NGINX_STREAMREALIP" = [yY] ]]; then
   fi
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAMREALIP" = [yY] ]] && [ "$NGX_STREAMREALIPCHECK" ]; then
   	NGXDYNAMIC_GEOIP='y'
-    STREAMREALIPOPT=' --with-stream_realip_module=dynamic'
+    #STREAMREALIPOPT=' --with-stream_realip_module=dynamic'
+    # dynamic module isn't supported yet
+    STREAMREALIPOPT=' --with-stream_realip_module'
     if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
       echo "load_module \"modules/ngx_stream_realip_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
     fi
