@@ -329,7 +329,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HIDELENGTH='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so.old ]; then
@@ -338,7 +338,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		HIDELENGTHOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_length_hiding_filter_module.so.old ]; then
@@ -363,7 +363,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_IMAGEFILTER='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -372,7 +372,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		IMAGEFILTEROPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -397,7 +397,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_XSLT='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
@@ -406,7 +406,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		NGXXSLTOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_filter_module.so.old ]; then
@@ -434,7 +434,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_PERL='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -443,7 +443,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		NGXPERLOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -506,7 +506,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HEADERSMORE='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -515,7 +515,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	else
 		HEADERSMOREOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -602,7 +602,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_DEVELKIT='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ndk_http_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ndk_http_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ndk_http_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ndk_http_module.so.old ]; then
@@ -628,7 +628,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_MEMC='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_memc_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_memc_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_memc_module.so.old ]; then
@@ -654,7 +654,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_SRCCACHE='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_srcache_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_srcache_filter_module.so.old ]; then
@@ -694,7 +694,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_SETMISC='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
@@ -736,7 +736,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_ECHO='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_echo_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
@@ -762,7 +762,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_REDISTWO='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_redis2_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_redis2_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_redis2_module.so.old ]; then
@@ -776,13 +776,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		DEVELKITOPT=""
 		ECHOOPT=""
 		REDISOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so.old
 			fi
-			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_echo_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_echo_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_echo_module.so.old ]; then
@@ -837,7 +837,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_LUA='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
@@ -890,7 +890,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	else
 		LUAOPT=""
 		LUALD_OPT="-Wl,-rpath,/usr/local/lib"
-			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
@@ -1063,7 +1063,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1079,7 +1079,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1088,7 +1088,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     fi
 	else
 		PGSPEEDOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1203,7 +1203,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_IMAGEFILTER='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -1212,7 +1212,7 @@ else
 		fi
 	else
 		IMAGEFILTEROPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_image_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_image_filter_module.so.old ]; then
@@ -1237,7 +1237,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_XSLT='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
@@ -1246,7 +1246,7 @@ else
 		fi
 	else
 		NGXXSLTOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_xslt_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_xslt_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_xslt_module.so.old ]; then
@@ -1274,7 +1274,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_PERL='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -1283,7 +1283,7 @@ else
 		fi
 	else
 		NGXPERLOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_perl_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_perl_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_perl_module.so.old ]; then
@@ -1346,7 +1346,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_HEADERSMORE='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -1355,7 +1355,7 @@ else
 		fi
 	else
 		HEADERSMOREOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_headers_more_filter_module.so.old ]; then
@@ -1520,7 +1520,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1536,7 +1536,7 @@ else
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NGXPAGESPEED='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1545,7 +1545,7 @@ else
     fi
 	else
 		PGSPEEDOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_pagespeed.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_pagespeed.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_pagespeed.so.old ]; then
@@ -1758,7 +1758,7 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VE
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_STREAM='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
@@ -1802,7 +1802,7 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_STREAM='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
@@ -1811,7 +1811,7 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
 		fi
 	else
 		STREAM=""
-			if [ -f /usr/local/nginx/modules/ngx_stream_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_module.so.old ]; then
@@ -1974,14 +1974,14 @@ fi
 			# however, it seems if you then later recompile nginx with NGXDYNAMIC_NJS='y'
 			# the old dynamic module would still be left in nginx dynamic modules directory
 			# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
 			fi
 				# this is a check for that old dynamic module and if it exists, remove it
-			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_stream_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_stream_js_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_stream_js_module.so.old ]; then
@@ -1990,7 +1990,7 @@ fi
 		fi
 	else
 		NGINX_NJSOPT=""
-			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so ]; then
+			if [[ -f /usr/local/nginx/modules/ngx_http_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
 				rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
 			fi
 			if [ -f /usr/local/nginx/modules/ngx_http_js_module.so.old ]; then

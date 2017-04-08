@@ -164,6 +164,7 @@ MYSQLSERVICE_DISABLED='n'     # when set to =y,  MariaDB MySQL service disabled 
 PUREFTPD_DISABLED='n'         # when set to =y, Pure-ftpd service disabled by default with chkconfig off
 
 # Nginx Dynamic Module Switches
+NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
 NGXDYNAMIC_NJS='n'
 NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'

@@ -33,6 +33,7 @@ PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com
 NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 
 # Nginx Dynamic Module Switches
+NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
 NGXDYNAMIC_NJS='n'
 NGXDYNAMIC_XSLT='n'
 NGXDYNAMIC_PERL='n'
