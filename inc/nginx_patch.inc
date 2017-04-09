@@ -6,7 +6,7 @@ luanginx_patch() {
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
     echo "$DETECT_NGXVER"
   fi
-  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]]; then
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]] || [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
     NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
     pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
     rm -rf ngx_http_lua_headers.c
@@ -16,11 +16,18 @@ luanginx_patch() {
     echo "patching lua nginx module for nginx 1.11.11+"
     popd
   fi
-  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]] || [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]]; then
     pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
     cecho "patching lua nginx 0.10.7 for community.centminmod.com/posts/47450/" $boldyellow
     cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0107.patch" $boldyellow
     patch -p0 < "$CUR_DIR/patches/luanginx/luanginx-0107.patch"
+    popd
+  fi
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
+    pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
+    cecho "patching lua nginx 0.10.8 for community.centminmod.com/posts/47450/" $boldyellow
+    cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0108.patch" $boldyellow
+    patch -p0 < "$CUR_DIR/patches/luanginx/luanginx-0108.patch"
     popd
   fi
 }
