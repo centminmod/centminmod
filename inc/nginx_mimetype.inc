@@ -1,4 +1,5 @@
 mimefix() {
+  if [ -f /usr/local/nginx/conf/mime.types ]; then
 	silence=$1
   \cp -af /usr/local/nginx/conf/mime.types /usr/local/nginx/conf/mime.types.bak-$DT
 
@@ -47,5 +48,5 @@ cat >> "/usr/local/nginx/conf/mime.types" <<EAF
 }
 EAF
 fi
-
+  fi
 }
