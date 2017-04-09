@@ -16,7 +16,7 @@ luanginx_patch() {
     echo "patching lua nginx module for nginx 1.11.11+"
     popd
   fi
-  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]]; then
+  if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]] || [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
     pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
     cecho "patching lua nginx 0.10.7 for community.centminmod.com/posts/47450/" $boldyellow
     cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0107.patch" $boldyellow
