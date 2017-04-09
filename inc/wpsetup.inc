@@ -67,6 +67,31 @@ dbsetup() {
   mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
 }
 
+wpinfo_notice() {
+cecho "---------------------------------------------------------------" $boldyellow
+cecho "Important Information" $boldgreen
+cecho "---------------------------------------------------------------" $boldyellow
+echo
+echo "You are about to create an Wordpress based Nginx vhost site with"
+echo "or without HTTPS/SSL support."
+echo" Also read the continually updated Getting Started Guide"
+echo "at centminmod.com/getstarted.html if you haven't already"
+cecho "---------------------------------------------------------------" $boldyellow
+echo "403 Permission denied message handling"
+echo "if after vhost site setup you encounter 403 permission denied errors,"
+echo "check https://community.centminmod.com/threads/11215/ to see if your"
+echo "site needs tools/autoprotect.sh tweaking & whitelisting"
+cecho "---------------------------------------------------------------" $boldyellow
+echo
+read -ep "Do you want to continue with Nginx vhost site creation ? [y/n] " dovhost_continue
+echo
+
+if [[ "$dovhost_continue" != [yY] ]]; then
+  echo "aborting Wordpress + Nginx vhost setup..."
+  exit
+fi
+}
+
 sslvhost() {
 
 cecho "---------------------------------------------------------------" $boldyellow
@@ -242,6 +267,8 @@ cecho "-------------------------------------------------------------" $boldyello
 cecho "Setup full Nginx vhost + Wordpress + WP Plugins" $boldgreen
 cecho "-------------------------------------------------------------" $boldyellow
 echo
+
+wpinfo_notice
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 
