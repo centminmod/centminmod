@@ -95,6 +95,8 @@ echo -e "# Xenforo bypass $PROTECTDIR\n
 echo -e "# Xenforo bypass $PROTECTDIR\n"
             elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/data' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/library/XenForo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'wp-content\/uploads' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/wp-content/uploads")" && -f "/usr/local/nginx/conf/wpincludes/${domain}/wpsecure_${domain}.conf" ]]; then
+echo -e "# centmin.sh menu option 22 installed WP bypass $PROTECTDIR\n"
 
             elif [[ "$(echo $PROTECTDIR_PATH | grep 'sucuri-scanner' )" ]]; then
               # proper sucuri-scanner secure lock down

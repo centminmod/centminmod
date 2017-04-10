@@ -140,6 +140,12 @@ echo "at centminmod.com/nginx_domain_dns_setup.html. Also read the"
 echo "continually updated Getting Started Guide for Centmin Mod usage"
 echo "at centminmod.com/getstarted.html which covers the pure-ftpd"
 echo "ftp username that is auto generated with the Nginx vhost site."
+cecho "---------------------------------------------------------------" $boldyellow
+echo "403 Permission denied message handling"
+echo "if after vhost site setup you encounter 403 permission denied errors,"
+echo "check https://community.centminmod.com/threads/7308/ to see if your"
+echo "site needs tools/autoprotect.sh tweaking/whitelisting"
+cecho "---------------------------------------------------------------" $boldyellow
 echo
 read -ep "Do you want to continue with Nginx vhost site creation ? [y/n] " dovhost_continue
 echo
