@@ -2048,11 +2048,9 @@ else
 	THREADS=""
 fi	
 
-if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
-    if [ "$(grep 'NGX_FOPENOPT' "${CM_INSTALLDIR}/inc/z_custom.inc")" ]; then
-        fastopenconfig
-    fi
-fi
+# Enable TCP Fast Open if system supports it
+# https://en.wikipedia.org/wiki/TCP_Fast_Open
+fastopenconfig
 
 # on low memory systems <=768MB or when NGINX_GEOIPMEM=n
 # optimise nginx memory usage when nginx geoip module is 

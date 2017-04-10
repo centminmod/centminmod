@@ -412,6 +412,7 @@ source "${SCRIPT_DIR}/inc/openssl_install.inc"
 if [ -f ${SCRIPT_DIR}/inc/brotli.inc ]; then
 source "${SCRIPT_DIR}/inc/brotli.inc"
 fi
+source "${SCRIPT_DIR}/inc/fastopen.inc"
 source "${SCRIPT_DIR}/inc/nginx_configure.inc"
 source "${SCRIPT_DIR}/inc/geoip.inc"
 source "${SCRIPT_DIR}/inc/luajit.inc"
