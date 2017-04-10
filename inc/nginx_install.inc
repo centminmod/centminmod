@@ -202,7 +202,9 @@ luajitinstall
         MBIT='32'
     fi
 
-    #tar xvfz nginx-${NGINX_VERSION}.tar.gz
+    if [[ ! -d "nginx-${NGINX_VERSION}" && -f "${NGX_LINKFILE}" ]]; then
+        tar xzf "${NGX_LINKFILE}"
+    fi
     cd nginx-${NGINX_VERSION}
 
 # set_intelflags
