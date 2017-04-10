@@ -1447,10 +1447,10 @@ if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
 
 fi
 
-#download php tarball
-
-    #tar xzvf php-${PHP_VERSION}.tar.gz
-
+    #download php tarball
+    if [[ ! -d "php-${PHP_VERSION}" && -f "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]]; then
+        tar xzvf "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    fi
     cd "php-${PHP_VERSION}"
 
     ./buildconf --force
