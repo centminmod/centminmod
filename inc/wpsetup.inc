@@ -74,7 +74,7 @@ cecho "---------------------------------------------------------------" $boldyel
 echo
 echo "You are about to create an Wordpress based Nginx vhost site with"
 echo "or without HTTPS/SSL support."
-echo" Also read the continually updated Getting Started Guide"
+echo "Also read the continually updated Getting Started Guide"
 echo "at centminmod.com/getstarted.html if you haven't already"
 cecho "---------------------------------------------------------------" $boldyellow
 echo "403 Permission denied message handling"
