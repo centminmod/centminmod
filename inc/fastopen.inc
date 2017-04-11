@@ -33,11 +33,19 @@ else
 fi
 if [[ "$TCPFASTOPEN" -eq '1' && "$SUPPORT_REUSEPORT" = [yY] ]]; then
 	if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
-		sed -i 's|listen 80 default_server backlog=2048 reuseport.*|listen 80 default_server backlog=2048 reuseport fastopen=256;|' /usr/local/nginx/conf/conf.d/virtual.conf
+		if [ "$(grep -w 'listen 80 default_server backlog=2048 reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]; then
+			sed -i 's|listen 80 default_server backlog=2048 reuseport.*|listen 80 default_server backlog=2048 reuseport fastopen=256;|' /usr/local/nginx/conf/conf.d/virtual.conf
+		elif [ "$(grep -w 'listen   80 default_server backlog=2048 reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]; then
+			sed -i 's|listen   80 default_server backlog=2048 reuseport.*|listen   80 default_server backlog=2048 reuseport fastopen=256;|' /usr/local/nginx/conf/conf.d/virtual.conf
+		fi
 	fi
 elif [[ "$TCPFASTOPEN" -eq '1' && "$SUPPORT_REUSEPORT" = [nN] ]]; then
 	if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
-		sed -i 's|listen 80 default_server backlog=2048.*|listen 80 default_server backlog=2048 fastopen=256;|' /usr/local/nginx/conf/conf.d/virtual.conf
+		if [ "$(grep -w 'listen 80 default_server backlog=2048' /usr/local/nginx/conf/conf.d/virtual.conf)" ]; then
+			sed -i 's|listen 80 default_server backlog=2048.*|listen 80 default_server backlog=2048 fastopen=256;|' /usr/local/nginx/conf/conf.d/virtual.conf
+		elif [ "$(grep -w 'listen   80 default_server backlog=2048' /usr/local/nginx/conf/conf.d/virtual.conf)" ]; then
+			sed -i 's|listen   80 default_server backlog=2048.*|listen   80 default_server backlog=2048 fastopen=256;|' /usr/local/nginx/conf/conf.d/virtual.conf
+		fi
 	fi
 fi
 }
