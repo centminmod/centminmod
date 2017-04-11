@@ -520,7 +520,7 @@ NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.4.5'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.5.3'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 # not working yet just prep work
@@ -727,6 +727,7 @@ source "inc/nginx_mimetype.inc"
 source "inc/openssl_install.inc"
 source "inc/brotli.inc"
 source "inc/nginx_patch.inc"
+source "inc/fastopen.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
@@ -1446,10 +1447,10 @@ if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
 
 fi
 
-#download php tarball
-
-    #tar xzvf php-${PHP_VERSION}.tar.gz
-
+    #download php tarball
+    if [[ ! -d "php-${PHP_VERSION}" && -f "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]]; then
+        tar xzvf "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    fi
     cd "php-${PHP_VERSION}"
 
     ./buildconf --force
