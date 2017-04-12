@@ -446,7 +446,7 @@ AXEK_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/arc
 AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
+WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
 LIBUNWIND_LINKFILE="libunwind-${LIBUNWIND_VERSION}.tar.gz"
 LIBUNWIND_LINKDIR="libunwind-${LIBUNWIND_VERSION}"
