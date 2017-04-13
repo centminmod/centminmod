@@ -57,32 +57,42 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 		MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
 	fi
 	
-	if [[ "$HP_CHECK" = '[always]' ]]; then
-		echo
-		echo "set vm.nr.hugepages in /etc/sysctl.conf"
-		if [[ -z "$(grep '^vm.nr_hugepages' /etc/sysctl.conf)" ]]; then
-			echo "vm.nr_hugepages=$NRHUGEPAGES_COUNT" >> /etc/sysctl.conf
-			sysctl -p
-		else
-			sed -i "s|vm.nr_hugepages=.*|vm.nr_hugepages=$NRHUGEPAGES_COUNT|" /etc/sysctl.conf
-			sysctl -p
-		fi
-		echo
-		echo "set system max locked memory limit"
-		echo
-		echo "/etc/security/limits.conf"
-		echo "* soft memlock $MAXLOCKEDMEM_SIZE"
-		echo "* hard memlock $MAXLOCKEDMEM_SIZE"
-		if [[ -z "$(grep '^memlock' /etc/security/limits.conf)" ]]; then
-			echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
-			echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+	if [[ "$NRHUGEPAGES_COUNT" -ge '1' ]]; then
+		if [[ "$HP_CHECK" = '[always]' ]]; then
 			echo
-		else
-			sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+			echo "set vm.nr.hugepages in /etc/sysctl.conf"
+			if [[ -z "$(grep '^vm.nr_hugepages' /etc/sysctl.conf)" ]]; then
+				echo "vm.nr_hugepages=$NRHUGEPAGES_COUNT" >> /etc/sysctl.conf
+				sysctl -p
+			else
+				sed -i "s|vm.nr_hugepages=.*|vm.nr_hugepages=$NRHUGEPAGES_COUNT|" /etc/sysctl.conf
+				sysctl -p
+			fi
+			echo
+			echo "set system max locked memory limit"
+			echo
+			echo "/etc/security/limits.conf"
+			echo "* soft memlock $MAXLOCKEDMEM_SIZE"
+			echo "* hard memlock $MAXLOCKEDMEM_SIZE"
+			if [[ -z "$(grep '^memlock' /etc/security/limits.conf)" ]]; then
+				echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+				echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+				echo
+			else
+				sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+			fi
+			cat /etc/security/limits.conf
+			echo
 		fi
-		cat /etc/security/limits.conf
-		echo
-	fi
+	else
+		echo "NRHUGEPAGES_COUNT = $NRHUGEPAGES_COUNT"
+		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
+			echo never > /sys/kernel/mm/transparent_hugepage/enabled
+			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
+				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+			fi
+		fi
+	fi # end NRHUGEPAGES_COUNT > 0 check
 elif [[ "$HP_CHECK" = '[never]' ]]; then
 	echo
 	echo "transparent huge pages not enabled"
