@@ -2117,6 +2117,17 @@ fi
 
 cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
 #/bin/bash
+echo "-------------------------------------------------------------------------"
+echo "Do you want to uninstall/delete WP install for ${vhostname}"
+echo "This will delete all data from /home/nginx/domains/${vhostname}"
+echo "including any non-wordpress data installed at /home/nginx/domains/${vhostname}"
+echo "-------------------------------------------------------------------------"
+read -ep "Uninstall WP Install For ${vhostname} [y/n]: " uninstall
+echo
+if [[ "\$uninstall" != [yY] ]]; then
+  exit
+fi
+
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.conf
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
 rm -rf /home/nginx/domains/${vhostname}
