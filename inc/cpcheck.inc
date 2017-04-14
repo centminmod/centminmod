@@ -1,3 +1,18 @@
+update_nginxconf() {
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$NGINX_ALLOWOVERRIDE" = [yY] ]]; then
+    NGX_WRKCON=$(grep -w 'worker_connections' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}')
+    NGX_KT=$(grep -w 'keepalive_timeout' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}')
+    # adjust to new default higher values only if previous defaults are detected
+    # do not adjust if end user has changed values from previous defaults
+    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' ]]; then
+      sed -i 's|worker_connections .*|worker_connections  50000;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$NGX_KT" -eq '8' ]]; then
+      sed -i 's|keepalive_timeout .*|keepalive_timeout  5;|' /usr/local/nginx/conf/nginx.conf
+    fi
+  fi
+}
+
 checkipvsix() {
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
@@ -1541,6 +1556,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   checkwoff
   checkipvsix
   fixwp_updater
+  update_nginxconf
 fi
 
 }
