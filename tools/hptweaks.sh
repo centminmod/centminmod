@@ -46,13 +46,25 @@ fi
 
 if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 	if [[ "$CENTOS_SIX" = '6' && "$HP_CHECK" = '[always]' ]]; then
-		FREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
-		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16))
+		if [ -f /usr/bin/numactl ]; then
+  		# account for multiple cpu socket numa based memory
+  		# https://community.centminmod.com/posts/48189/
+  		FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
+		else
+  		FREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
+		fi
+		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
 		MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
 		MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
 	elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
-		FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
-		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16))
+		if [ -f /usr/bin/numactl ]; then
+  		# account for multiple cpu socket numa based memory
+  		# https://community.centminmod.com/posts/48189/
+  		FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
+		else
+  		FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+		fi
+		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
 		MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
 		MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
 	fi
