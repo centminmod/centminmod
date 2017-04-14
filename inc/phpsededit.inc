@@ -80,7 +80,7 @@ phpsededit() {
     echo "max_input_nesting_level = 128" >> ${CUSTOMPHPINIFILE}
     echo "max_input_vars = 10000" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.net_cmd_buffer_size = 16384" >> ${CUSTOMPHPINIFILE}
-    if [[ "$PHPMUVER" -ge '5.6' || "$PHPMUVER" = 'NGDEBUG' || "$PHPMVER" -ge '5.6' ]]; then
+    if [[ "$PHPMUVER" > 5.5 || "$PHPMVER" > 5.5 ]]; then
         echo "always_populate_raw_post_data=-1" >> ${CUSTOMPHPINIFILE}
     else
         echo ";always_populate_raw_post_data=-1" >> ${CUSTOMPHPINIFILE}
@@ -93,7 +93,7 @@ phpsededit() {
     if [ ! -f /etc/ssl/certs/cacert.pem ]; then
         wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
-        if [[ "$PHPMUVER" -ge '5.6' || "$PHPMUVER" = 'NGDEBUG' || "$PHPMVER" -ge '5.6' ]]; then
+        if [[ "$PHPMUVER" > 5.5 || "$PHPMVER" > 5.5 ]]; then
             # echo "openssl.cafile = '/etc/ssl/certs/cacert.pem'" >> ${CONFIGSCANDIR}/curlcainfo.ini
             sed -i '/openssl.cafile/d' ${CONFIGSCANDIR}/curlcainfo.ini
         else
@@ -103,7 +103,7 @@ phpsededit() {
         # redownload if older than 90 days
         wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
         echo "curl.cainfo = '/etc/ssl/certs/cacert.pem'" > ${CONFIGSCANDIR}/curlcainfo.ini
-        if [[ "$PHPMUVER" -ge '5.6' || "$PHPMUVER" = 'NGDEBUG' || "$PHPMVER" -ge '5.6' ]]; then
+        if [[ "$PHPMUVER" > 5.5 || "$PHPMVER" > 5.5 ]]; then
             # echo "openssl.cafile = '/etc/ssl/certs/cacert.pem'" >> ${CONFIGSCANDIR}/curlcainfo.ini
             sed -i '/openssl.cafile/d' ${CONFIGSCANDIR}/curlcainfo.ini
         else
