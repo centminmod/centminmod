@@ -38,18 +38,13 @@ else
 	PHPDEBUGOPT=''
 fi
 
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [nN] ]]; then
-	OPCACHEOPT=" --enable-opcache"
-elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [yY] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
-	# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
-	# Zend Opcache version with one available from pecl site	
-	OPCACHEOPT=" --disable-opcache"	
-elif [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]] && [[ "$zendopcacheon" = [nN] ]]; then
-  # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
-  # Zend Opcache version with one available from pecl site  
-  OPCACHEOPT=" --disable-opcache" 
+# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.x's inbuilt included Zend Opcache version with one available from pecl site
+if [[ -n "$PHPMUVER" && "$PHPMUVER" = 5.[234] || "$PHPMVER" = 5.[234] ]]; then
+    OPCACHEOPT=''
+elif [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$ZOPCACHEDFT" = [nN] || "$zendopcacheon" = [nN] ]]; then
+    OPCACHEOPT=' --disable-opcache'
 else
-	OPCACHEOPT=""
+    OPCACHEOPT=' --enable-opcache'
 fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
@@ -380,7 +375,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
   # initial php install
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] ]] && [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.2' ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
