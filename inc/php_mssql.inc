@@ -2,7 +2,7 @@ php_mssqlinstall() {
 if [[ "$PHPMSSQL" = [yY] ]]; then
   # compile php mssql extension for PHP versions 5.4-5.6 but not php 7 which
   # removed php mssql extension support
-  if [[ "$PHPMUVER" != '7.0' || "$PHPMUVER" != '7.1' || "$PHPMUVER" != '7.2' || "$PHPMUVER" != 'NGDEBUG' ]]; then
+  if [[ -n "$PHPMUVER" && "$PHPMUVER" < 7 || "$PHPMVER" < 7 ]]; then
     if [[ ! -z "$phpver" ]]; then
       MSSQL_EXTDIR="${DIR_TMP}/php-${phpver}/ext/mssql"
     else

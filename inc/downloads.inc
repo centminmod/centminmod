@@ -2841,7 +2841,8 @@ if [[ "$OPENSSL_CURLCHECK" != '0' ]]; then
   OPENSSL_LINK="${OPENSSL_MIRRORURL}/openssl-${OPENSSL_VERSION}.tar.gz"
 fi
 
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '5.12' || "$CENTOSVER" == '5.13' || "$CENTOSVER" == '5.14' ]]; then
+if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
+
     cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
@@ -2883,7 +2884,7 @@ echo ""
 
 fi # for nginx openssl
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOSVER" > 6 ]]; then
     # Install OpenSSL
     cd "$DIR_TMP"
 
