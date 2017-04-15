@@ -41,13 +41,13 @@ echo "-------------------------------------------------------------------"
 
 
 # only prompt for Zend Opcache version if PHP version is between 5.2 and 5.4 inclusive
-if [[ "$(expr $PHPMVER \>= 5.2)" = 1 && "$(expr $PHPMVER \<= 5.4)" = 1 ]] && [[ "$(expr $PHPCURRENTVER \>= 5.2)" = 1 && "$(expr $PHPCURRENTVER \<= 5.4)" = 1 ]]; then
+if [[ "$PHPMVER" = 5.[234] && "$PHPCURRENTVER" = 5.[234] ]]; then
 	ZOPCACHEPROMPT='y'
 # prompt if ZOPCACHE_OVERRIDE=y for PHP versions between 5.5-5.6
-elif [[ "$(expr $PHPMVER \>= 5.5)" = 1 && "$(expr $PHPMVER \<= 5.6)" = 1 && "$ZOPCACHE_OVERRIDE" = [yY] ]] && [[ "$(expr $PHPCURRENTVER \>= 5.5)" = 1 && "$(expr $PHPCURRENTVER \<= 5.6)" = 1 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+elif [[ "$PHPMVER" = 5.[56] && "$PHPCURRENTVER" = 5.[56] && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 	ZOPCACHEPROMPT='y'
 # prompt if ZOPCACHE_OVERRIDE=y for PHP version 7.0	
-elif [[ "$(expr $PHPMVER \= 7.0)" = 1 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+elif [[ "$PHPMVER" > 7 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 	ZOPCACHEPROMPT='y'	
 else
 	ZOPCACHEPROMPT='n'
@@ -55,13 +55,13 @@ fi
 
 # check if this is a PHP upgrade task
 if [ "$PHPMUVER" ]; then
-	if [[ "$(expr $PHPMUVER \>= 5.2)" = 1 && "$(expr $PHPMUVER \<= 5.4)" = 1 ]]; then
+	if [[ "$PHPMUVER" = 5.[234] ]]; then
 		ZOPCACHEPROMPT='y'
 	# prompt if ZOPCACHE_OVERRIDE=y for PHP versions between 5.5-5.6
-	elif [[ "$(expr $PHPMUVER \>= 5.5)" = 1 && "$(expr $PHPMUVER \<= 5.6)" = 1 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+	elif [[ "$PHPMUVER" = 5.[56] && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 		ZOPCACHEPROMPT='y'
 	# prompt if ZOPCACHE_OVERRIDE=y for PHP version 7.0		
-	elif [[ "$(expr $PHPMUVER \= 7.0)" = 1 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+	elif [[ "$PHPMUVER" > 7 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 		ZOPCACHEPROMPT='y'		
 	else
 		ZOPCACHEPROMPT='n'

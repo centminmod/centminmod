@@ -75,7 +75,7 @@ cmservice nginx reload
 #################
 zopcacheupgrade() {
 	if [[ "$PHP_INSTALL" = [yY] ]]; then
-if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = 'NGDEBUG' ]]; then
+if [[ "$PHPMUVER" > 5.5 ]]; then
 	echo ""
 	echo "-----------------------------------------------------------------------------------------"
 	cecho "Detected PHP $PHPMUVER branch." $boldyellow

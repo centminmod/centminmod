@@ -315,7 +315,7 @@ fi
 
     phpgeolocation
 
-if [[ "$PHPMUVER" != '5.5' || "$PHPMUVER" != '5.6' || "$PHPMUVER" != '5.7' || "$PHPMUVER" != '7.0' || "$PHPMUVER" != '7.1' ]]; then
+if [[ "$PHPMUVER" = 5.[234] ]]; then
     PHPEXTSION='gz'
     PHPTAR_FLAGS='xzf'
 fi
