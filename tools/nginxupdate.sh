@@ -359,17 +359,15 @@ SELFSIGNEDSSL_OU=''
 
 MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
-if [ "${ARCH_OVERRIDE}" != '' ]
-then
-    ARCH=${ARCH_OVERRIDE}
+if [ "${ARCH_OVERRIDE}" ]; then
+  ARCH=${ARCH_OVERRIDE}
 else
-    if [ "${MACHINE_TYPE}" == 'x86_64' ];
-    then
-        ARCH='x86_64'
-        MDB_ARCH='amd64'
-    else
-        ARCH='i386'
-    fi
+  if [ "${MACHINE_TYPE}" == 'x86_64' ]; then
+      ARCH='x86_64'
+      MDB_ARCH='amd64'
+  else
+      ARCH='i386'
+  fi
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required
