@@ -1,36 +1,49 @@
 ################################
 # http://www.hardened-php.net/suhosin/
+suhosin_no() {
+  PHPVERCHECK=$(cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}')
+    echo ""
+    echo ""
+    echo "$PHPVERCHECK not compatible with Suhosin PHP extension"
+    echo "install aborted"
+    echo ""
+    exit
+}
+
 suhosinsetup() {
+  PHPVERCHECK=$(cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}')
 
-PHPVERCHECK=`cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}'`
+  if [[ "$PHPVERCHECK" = '5.7' ]]; then
+    suhosin_no
+  elif [[ "$PHPVERCHECK" = '7.0' ]]; then
+    suhosin_no
+  elif [[ "$PHPVERCHECK" = '7.1' ]]; then
+    suhosin_no
+  fi # PHPVERCHECK
 
-if [[ "$PHPVERCHECK" != '5.7' || "$PHPVERCHECK" != '7.0' ]]; then
+  cd $DIR_TMP
+  
+  if [ -s suhosin-${SUHOSINVER}.tar.gz ]; then
+    echo "suhosin-${SUHOSINVER}.tar.gz [found]"
+    else
+    echo "Error: suhosin-${SUHOSINVER}.tar.gz not found!!! Downloading now......"
+    wget -c --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tar.gz --tries=3
+  fi
+  
+  tar xvzf suhosin-${SUHOSINVER}.tar.gz
+  cd suhosin-${SUHOSINVER}
+  make clean
+  phpize
+  ./configure
+  make${MAKETHREADS}
+  make install
+  
+  if [ ! -f ${CONFIGSCANDIR}/suhosin.ini ]; then
+	 touch ${CONFIGSCANDIR}/suhosin.ini
+  fi
 
-cd $DIR_TMP
-
-if [ -s suhosin-${SUHOSINVER}.tar.gz ]; then
-  echo "suhosin-${SUHOSINVER}.tar.gz [found]"
-  else
-  echo "Error: suhosin-${SUHOSINVER}.tar.gz not found!!! Downloading now......"
-  wget -c --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tar.gz --tries=3
-fi
-
-tar xvzf suhosin-${SUHOSINVER}.tar.gz
-cd suhosin-${SUHOSINVER}
-make clean
-phpize
-./configure
-make${MAKETHREADS}
-make install
-
-if [ ! -f ${CONFIGSCANDIR}/suhosin.ini ]; then
-	touch ${CONFIGSCANDIR}/suhosin.ini
-fi
-
-SUHOSINCHECK=$(grep 'extension=suhosin.so' "${CONFIGSCANDIR}/suhosin.ini" >/dev/null 2>&1; echo $?)
-if [[ "$SUHOSINCHECK" = '1' ]]; then
-# echo "" >> "${CONFIGSCANDIR}/suhosin.ini"
-# echo "extension=suhosin.so" >> "${CONFIGSCANDIR}/suhosin.ini"
+  SUHOSINCHECK=$(grep 'extension=suhosin.so' "${CONFIGSCANDIR}/suhosin.ini" >/dev/null 2>&1; echo $?)
+  if [[ "$SUHOSINCHECK" = '1' ]]; then
 
 cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
 extension=suhosin.so
@@ -57,26 +70,15 @@ suhosin.upload.max_uploads = 25
 suhosin.upload.remove_binary = 0
 EOF
 
-fi
+  fi
 
-if [[ "$SUHOSINCHECK" = '0' ]]; then
-    echo "sed -i 's/;extension=suhosin.so/extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinon ; chmod 700 /usr/bin/suhosinon
-    echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
-fi
-
-cmservice php-fpm restart
-
-php -v
-
-else 
-
-echo ""
-echo ""
-echo "$PHPVERCHECK not compatible with Suhosin PHP extension"
-echo "install aborted"
-echo ""
-echo ""
-
-fi # PHPVERCHECK
+  if [[ "$SUHOSINCHECK" = '0' ]]; then
+      echo "sed -i 's/;extension=suhosin.so/extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinon ; chmod 700 /usr/bin/suhosinon
+      echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' ${CONFIGSCANDIR}/suhosin.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
+  fi
+  
+  cmservice php-fpm restart
+  
+  php -v
 
 } # suhosininstall

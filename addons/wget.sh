@@ -19,7 +19,7 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.19.1'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
-WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
+WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 ###########################################################
 # set locale temporarily to english

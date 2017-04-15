@@ -1,3 +1,7 @@
+sar_call() {
+  $SARCALL 1 1
+}
+
 ccacheinstall() {
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
