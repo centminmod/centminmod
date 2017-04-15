@@ -39,32 +39,19 @@ echo "Current PHP upgrade version set: $PHPMUVER"
 echo "-------------------------------------------------------------------"
 
 
+ZOPCACHEPROMPT='n'
 
-# only prompt for Zend Opcache version if PHP version is between 5.2 and 5.4 inclusive
-if [[ "$PHPMVER" = 5.[234] && "$PHPCURRENTVER" = 5.[234] ]]; then
-	ZOPCACHEPROMPT='y'
-# prompt if ZOPCACHE_OVERRIDE=y for PHP versions between 5.5-5.6
-elif [[ "$PHPMVER" = 5.[56] && "$PHPCURRENTVER" = 5.[56] && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
-	ZOPCACHEPROMPT='y'
-# prompt if ZOPCACHE_OVERRIDE=y for PHP version 7.0	
-elif [[ "$PHPMVER" > 7 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
-	ZOPCACHEPROMPT='y'	
-else
-	ZOPCACHEPROMPT='n'
-fi
+# prompt for Zend Opcache version if PHP version is 5.2-5.4 or if ZOPCACHE_OVERRIDE=y for PHP versions 5.5 and higher
 
-# check if this is a PHP upgrade task
 if [ "$PHPMUVER" ]; then
-	if [[ "$PHPMUVER" = 5.[234] ]]; then
+# run if this is a PHP upgrade task
+	if [[ "$PHPMUVER" = 5.[234] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 		ZOPCACHEPROMPT='y'
-	# prompt if ZOPCACHE_OVERRIDE=y for PHP versions between 5.5-5.6
-	elif [[ "$PHPMUVER" = 5.[56] && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+	fi
+else
+# run from Zend Opcache sub menu
+	if [[ "$PHPCURRENTVER" = 5.[234] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 		ZOPCACHEPROMPT='y'
-	# prompt if ZOPCACHE_OVERRIDE=y for PHP version 7.0		
-	elif [[ "$PHPMUVER" > 7 && "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
-		ZOPCACHEPROMPT='y'		
-	else
-		ZOPCACHEPROMPT='n'
 	fi
 fi
 
