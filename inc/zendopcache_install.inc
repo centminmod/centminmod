@@ -90,7 +90,7 @@ echo "Current centmin.sh set PHP_VERSION: $PHPMVER"
 echo "Current PHP upgrade version set: $PHPMUVER"
 echo "-------------------------------------------------------------------"
 
-if [[ "$ZOPCACHE_OVERRIDE" = [yY] || "$PHPMVER" != '7.0' || "$PHPCURRENTVER" != '7.0' || "$PHPMVER" != '5.7' || "$PHPCURRENTVER" != '5.7' || "$PHPMVER" != '5.6' || "$PHPCURRENTVER" != '5.6' || "$PHPMVER" != '5.5' || "$PHPCURRENTVER" != '5.5' || "$PHPMVER" = '5.4' ||"$PHPMVER" = '5.3' ||"$PHPMVER" = '5.2' ]]; then
+if [[ "$PHPCURRENTVER" == 5.[2-4] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 
 	if [[ ! -d "${DIR_TMP}/zendopcache-${ZOPCACHECACHE_VERSION}" || ! -f "${DIR_TMP}/${ZENDOPCACHE_LINKFILE}" ]]; then
 		zopcachetarball
@@ -199,6 +199,6 @@ else
 	echo "Detected PHP branch: 5.5+ which has native support for Zend OPcache"
 	echo "To enable Zend OPcache run menu option #5 and specify PHP 5.5.0 or higher"
 
-fi # check for PHPMVER !=5.5
+fi # check for PHPCURRENTVER
 	fi # PHP_INSTALL=y
 }
