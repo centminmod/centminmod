@@ -429,8 +429,7 @@ mariadbinstallfunct() {
 
 MDB_DEBUG='n'
 
-if [[ "$MDB_INSTALL" = [yY] ]]; 
-then
+if [[ "$MDB_INSTALL" = [yY] ]]; then
     echo "*************************************************"
     cecho "* Installing MariaDB " $boldgreen
     echo "*************************************************"
@@ -559,7 +558,7 @@ cmservice mysql restart
     /etc/init.d/mysql stop
 fi
 
-if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; then
+if [[ "$MDB_YUMREPOINSTALL" = [yY] && "$MDB_INSTALL" = [nN] ]]; then
 
     echo "*************************************************"
     cecho "* Installing MariaDB via CentOS Yum Repo " $boldgreen
