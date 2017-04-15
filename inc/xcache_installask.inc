@@ -26,7 +26,7 @@ if [[ -z $XCACHESOCHECK || -z $XCACHESOCHECKB ]]; then
 
 		echo $lessxcachemem
 
-		if [[ "$PHPVERCHECK" == '5.4' || "$PHPVERCHECK" == '5.5' ]]; then
+		if [[ "$PHPVERCHECK" > 5.3 ]]; then
 			#echo -e "\nCopying xcache-min_php54.ini >> /usr/local/lib/php.ini\n"
 			#  cat $CUR_DIR/config/xcache/xcache-min_php54.ini >> /usr/local/lib/php.ini
 			echo -e "\nCopying xcache-min_php54.ini > ${CONFIGSCANDIR}/xcache.ini\n"
@@ -44,7 +44,7 @@ if [[ -z $XCACHESOCHECK || -z $XCACHESOCHECKB ]]; then
 
 		echo ""
 
-		if [[ "$PHPVERCHECK" == '5.4' || "$PHPVERCHECK" == '5.5' ]]; then
+		if [[ "$PHPVERCHECK" > 5.3 ]]; then
 			#echo -e "\nCopying xcache-min_php54.ini >> /usr/local/lib/php.ini\n"
 			#    cat $CUR_DIR/config/xcache/xcache_php54.ini >> /usr/local/lib/php.ini
 			echo -e "\nCopying xcache-min_php54.ini > ${CONFIGSCANDIR}/xcache.ini\n"

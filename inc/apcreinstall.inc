@@ -55,9 +55,9 @@ PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
 axelsetup
 
-if [[ "$PHPCURRENTVER" = '5.5' ]]; then
+if [[ "$PHPCURRENTVER" = 5.5 ]]; then
     apcdevfix
-elif [[ "$PHPCURRENTVER" = '5.2' || "$PHPCURRENTVER" = '5.3' || "$PHPCURRENTVER" = '5.4' ]]; then
+elif [[ "$PHPCURRENTVER" = 5.[234] ]]; then
     if [ -s APC-${apcver}.tgz ]; then
         cecho "APC-${apcver}.tgz Archive found, skipping download..." $boldgreen
     else
@@ -65,7 +65,7 @@ elif [[ "$PHPCURRENTVER" = '5.2' || "$PHPCURRENTVER" = '5.3' || "$PHPCURRENTVER"
     fi
     tar xvzf APC-${apcver}.tgz
     cd APC-${apcver}
-elif [[ "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' || "$PHPCURRENTVER" = '7.0' ]]; then
+elif [[ "$PHPCURRENTVER" > 5.5 ]]; then
     echo "Your current PHP $PHPCURRENTVER version is not supported. Use Zend Opcache instead"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         exit
