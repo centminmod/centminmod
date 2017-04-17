@@ -283,6 +283,7 @@ echo
 for u in $(pure-pw list | awk '{print $1}'); do 
 echo "-------------------------------------"
 echo "Virtual FTP user: $u"; 
+echo "password displayed is encrypted"; 
 pure-pw show $u; 
 done
 echo
