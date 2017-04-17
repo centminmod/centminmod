@@ -70,7 +70,7 @@ SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
 APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
 OPCACHE_INFOVER=$(php -v 2>&1 | grep OPcache | awk '{print $4}' | sed 's/,//')
 
-if [ -f "$(which nsd >/dev/null 2>&1; echo $?)" -eq '0' ]; then
+if [[ "$(which nsd >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
   NSD_INFOVER=$(nsd -v 2>&1 | head -n1 | awk '{print $3}')
 else
   NSD_INFOVER=" - "
