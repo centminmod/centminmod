@@ -83,7 +83,7 @@ EOF
     fi # arch check
 fi # centos6 check
 
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '5.12' || "$CENTOSVER" == '5.13' ]]; then
+if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
 
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
@@ -429,8 +429,7 @@ mariadbinstallfunct() {
 
 MDB_DEBUG='n'
 
-if [[ "$MDB_INSTALL" = [yY] ]]; 
-then
+if [[ "$MDB_INSTALL" = [yY] ]]; then
     echo "*************************************************"
     cecho "* Installing MariaDB " $boldgreen
     echo "*************************************************"
@@ -559,7 +558,7 @@ cmservice mysql restart
     /etc/init.d/mysql stop
 fi
 
-if [[ "$MDB_YUMREPOINSTALL" = [yY] ]]; then
+if [[ "$MDB_YUMREPOINSTALL" = [yY] && "$MDB_INSTALL" = [nN] ]]; then
 
     echo "*************************************************"
     cecho "* Installing MariaDB via CentOS Yum Repo " $boldgreen

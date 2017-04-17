@@ -12,8 +12,8 @@ do
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "        Zend OpCache Sub-Menu              " $boldgreen
 	cecho "--------------------------------------------------------" $boldyellow
-	cecho "1). Install Zend OpCache for PHP <5.5 or <5.6" $boldgreen
-	cecho "2). Reinstall Zend OpCache for PHP <5.5 or <5.6" $boldgreen
+	cecho "1). Install Zend OpCache" $boldgreen
+	cecho "2). Reinstall Zend OpCache" $boldgreen
 	cecho "3). Back to Main menu" $boldgreen
 	cecho "--------------------------------------------------------" $boldyellow
 

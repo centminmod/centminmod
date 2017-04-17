@@ -43,10 +43,10 @@ fi
 
 if [[ "$PHPCURRENTVER" = '5.5' ]]; then
     apcdevfix
-elif [[ "$PHPCURRENTVER" = '5.2' || "$PHPCURRENTVER" = '5.3' || "$PHPCURRENTVER" = '5.4' ]]; then
+elif [[ "$PHPCURRENTVER" = 5.[234] ]]; then
     #tar xvzf APC-${APCCACHE_VERSION}.tgz
     cd APC-${APCCACHE_VERSION}
-elif [[ "$PHPCURRENTVER" = '5.6' || "$PHPCURRENTVER" = '5.7' || "$PHPCURRENTVER" = '7.0' ]]; then
+elif [[ "$PHPCURRENTVER" > 5.5 ]]; then
     echo "Your current PHP $PHPCURRENTVER version is not supported. Use Zend Opcache instead"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         exit

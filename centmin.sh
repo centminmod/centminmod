@@ -652,17 +652,15 @@ LETSENCRYPT_DETECT='n'
 
 MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
-if [ "${ARCH_OVERRIDE}" != '' ]
-then
-    ARCH=${ARCH_OVERRIDE}
+if [ "${ARCH_OVERRIDE}" ]; then
+  ARCH=${ARCH_OVERRIDE}
 else
-    if [ "${MACHINE_TYPE}" == 'x86_64' ];
-    then
-        ARCH='x86_64'
-        MDB_ARCH='amd64'
-    else
-        ARCH='i386'
-    fi
+  if [ "${MACHINE_TYPE}" == 'x86_64' ]; then
+      ARCH='x86_64'
+      MDB_ARCH='amd64'
+  else
+      ARCH='i386'
+  fi
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required
@@ -959,7 +957,7 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
-elif [ -f /usr/bin/sar ]; then
+else
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
   else
@@ -1603,24 +1601,12 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 # Zend Opcache version with one available from pecl site
-if [[ "$ZOPCACHE_OVERRIDE" = [yY] && "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.4' || "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' ]]; then
-    zopcacheinstall
+if [[ "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = 5.[234] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+	zopcacheinstall
 fi
 
-if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.4' ]]; then
-    zopcacheinstall
-fi
-
-if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.3' ]]; then
-    zopcacheinstall
-fi
-
-if [[ "$ZOPCACHEDFT" = [yY] && "$PHPMVER" = '5.2' ]]; then
-    zopcacheinstall
-fi
-
-# if PHP_VERSION = 5.5, 5.6 or 5.7 will need to setup a zendopcache.ini settings file
-if [[ "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '5.7' || "$PHPMVER" = '7.0' ]]; then
+# if PHP_VERSION = 5.5 or newer will need to setup a zendopcache.ini settings file
+if [[ "$PHPMVER" > 5.4 && "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]]; then
 	zopcache_initialini
 fi
 
@@ -1804,7 +1790,7 @@ fi
 funct_centos6check() {
 
 
-if [[ "$CENTOSVER" == '5.6' || "$CENTOSVER" == '5.7'|| "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' || "$CENTOSVER" == '5.11' || "$CENTOSVER" == '6.0' || "$CENTOSVER" == '6.1' || "$CENTOSVER" == '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOSVER" > 5.5 ]]; then
 
 MCRYPT=" --with-mcrypt"
 

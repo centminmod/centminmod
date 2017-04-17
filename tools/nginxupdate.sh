@@ -359,17 +359,15 @@ SELFSIGNEDSSL_OU=''
 
 MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
-if [ "${ARCH_OVERRIDE}" != '' ]
-then
-    ARCH=${ARCH_OVERRIDE}
+if [ "${ARCH_OVERRIDE}" ]; then
+  ARCH=${ARCH_OVERRIDE}
 else
-    if [ "${MACHINE_TYPE}" == 'x86_64' ];
-    then
-        ARCH='x86_64'
-        MDB_ARCH='amd64'
-    else
-        ARCH='i386'
-    fi
+  if [ "${MACHINE_TYPE}" == 'x86_64' ]; then
+      ARCH='x86_64'
+      MDB_ARCH='amd64'
+  else
+      ARCH='i386'
+  fi
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required
@@ -446,7 +444,7 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 
-if [[ "$CENTOSVER" = '6.0' || "$CENTOSVER" = '6.1' || "$CENTOSVER" = '6.2' || "$CENTOSVER" = '6.3' || "$CENTOSVER" = '6.4' || "$CENTOSVER" = '6.5' || "$CENTOSVER" = '6.6' || "$CENTOSVER" = '6.7' || "$CENTOSVER" = '6.8' || "$CENTOSVER" = '6.9' || "$CENTOSVER" = '7.0' || "$CENTOSVER" = '7.1' || "$CENTOSVER" = '7.2' || "$CENTOSVER" = '7.3' || "$CENTOSVER" = '7.4' || "$CENTOSVER" = '7.5' || "$CENTOSVER" = '7.6' || "$CENTOSVER" = '7.7' ]]; then
+if [[ "$CENTOSVER" > 6 ]]; then
 DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
 WGETRETRY='--tries=3'
 AXELPHPTARGZ="-O php-${PHP_VERSION}.tar.gz"

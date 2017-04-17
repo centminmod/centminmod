@@ -188,7 +188,7 @@ EOF
     fi # arch check
 fi # centos6 check
 
-if [[ "$CENTOSVER" = '5.3' || "$CENTOSVER" = '5.4' || "$CENTOSVER" = '5.5' || "$CENTOSVER" = '5.6' || "$CENTOSVER" = '5.7' || "$CENTOSVER" == '5.8' || "$CENTOSVER" == '5.9' || "$CENTOSVER" == '5.10' ]]; then
+if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
 
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
