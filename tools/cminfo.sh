@@ -47,6 +47,10 @@ if [ ! -f /usr/sbin/lshw ]; then
     yum -y -q install lshw
 fi
 
+if [ ! -f /usr/bin/tree ]; then
+    yum -y -q install tree
+fi
+
 if [ -z $PASS ]; then
     MYSQLADMINOPT="-h $MYSQLHOST"
 else
@@ -229,7 +233,8 @@ echo " Site Nginx Vhost Accounts:"
 echo "------------------------------------------------------------------"
 echo
 for d in $VHOSTS; do 
-    echo "* $d - /home/nginx/domains/${d}"; 
+    echo -n "* $d: ";
+    tree -dl --noreport -L 1 "/home/nginx/domains/${d}"
 done
 
 echo "------------------------------------------------------------------"
