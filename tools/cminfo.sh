@@ -67,9 +67,14 @@ MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
 MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
 CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
 SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
-NSD_INFOVER=$(nsd -v 2>&1 | head -n1 | awk '{print $3}')
 APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
 OPCACHE_INFOVER=$(php -v 2>&1 | grep OPcache | awk '{print $4}' | sed 's/,//')
+
+if [ -f "$(which nsd >/dev/null 2>&1; echo $?)" -eq '0' ]; then
+  NSD_INFOVER=$(nsd -v 2>&1 | head -n1 | awk '{print $3}')
+else
+  NSD_INFOVER=" - "
+fi
 
 # only assign variables if mysql is running
 if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
