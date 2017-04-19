@@ -53,11 +53,11 @@ sshdtweaks() {
 	fi
 	
 	if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKHOSTKEYB" || ! -z "$CHECKHOSTKEYC" || ! -z "$CHECKHOSTKEYD" || ! -z "$CHECKTCPALIVE" || -z "$CHECKVALUES" ]]; then
-		echo "----------------------------"
-		echo "Configure sshd_config"
-		echo "----------------------------"
+		# echo "----------------------------"
+		# echo "Configure sshd_config"
+		# echo "----------------------------"
 		/usr/sbin/sshd -t
-		cmservice sshd restart
+		service sshd restart >/dev/null 2>&1
 	fi
 }
 
@@ -184,7 +184,7 @@ if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
 		fi
 	fi
 	
-	cmservice sshd  restart
+	service sshd restart >/dev/null 2>&1
 fi # safeguard line 129
 
 if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
