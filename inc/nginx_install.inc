@@ -397,6 +397,7 @@ geoipphp
     fi
 
     countcpus
+    detect_tlsonethree
 
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen

@@ -806,7 +806,9 @@ fi
 
 ################
 # error check
-
+    if [ $ERR = 0 ]; then
+        detect_tlsonethree
+    fi
 	if [ $ERR != 0 ]; then
     	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
