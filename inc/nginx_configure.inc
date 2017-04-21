@@ -1,3 +1,19 @@
+detect_tlsonethree() {
+  if [ -f /usr/local/nginx/conf/ssl_include.conf ]; then
+    if [ "$ngver" ]; then
+      NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+    else
+      NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
+    if [[ "$(grep -w 'define NGX_SSL_TLSv1_3' "${NGINX_DIRINSTALL}/src/event/ngx_event_openssl.h")" ]]; then
+      # Nginx supports TLS 1.3 ssl_protocols directive
+      sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
+    else
+      sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl_include.conf
+    fi
+  fi
+}
+
 libresslcompile_fix() {
 	if [[ "$(grep install_sw auto/lib/openssl/make >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
 		if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
