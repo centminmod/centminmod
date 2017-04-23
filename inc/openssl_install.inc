@@ -329,8 +329,10 @@ installopenssl() {
                 # openssl 1.1.0 unsupported flag enable-tlsext
                 if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
+                    TLSONETHREE_DETECT='y'
                 else
                     TLSONETHREEOPT=""
+                    TLSONETHREE_DETECT='n'
                 fi
                 ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
             else
@@ -341,8 +343,10 @@ installopenssl() {
                 # openssl 1.1.0 unsupported flag enable-tlsext
                 if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
+                    TLSONETHREE_DETECT='y'
                 else
                     TLSONETHREEOPT=""
+                    TLSONETHREE_DETECT='n'
                 fi
                 ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${TLSONETHREEOPT}
             else

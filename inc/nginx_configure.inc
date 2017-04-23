@@ -1404,7 +1404,11 @@ else
 			if [[ "$TLSONETHREE" = [yY] ]]; then
 				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
-				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt=enable-tls1_3"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        fi
 			fi
 			LRT=""
 		else
@@ -1417,7 +1421,11 @@ else
 				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
-				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt=enable-tls1_3"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        fi
 			fi
 			LRT=""
 		fi
