@@ -19,7 +19,7 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
 fi
 
-if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2m' ]]; then
+if [[ "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2m' ]] || [[ "$TLSONETHREE" = [yY] ]] || [[ "$(grep -w 'tls1_3' Configure)" ]]; then
     # cloudflare patch chacha20 support does not seem to
     # work with openssl 1.0.2i
     # https://community.centminmod.com/posts/36691/
@@ -299,7 +299,7 @@ installopenssl() {
         fi
     
         #-- Build static openssl
-        if [[ "$TLSONETHREE" = [yY] ]]; then
+        if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
             OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
             cd "$DIR_TMP"
