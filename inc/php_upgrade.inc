@@ -235,9 +235,9 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.10, NGDEBUG)"
-    echo "PHP 7.0.10 is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 7.1.0 minus incompatible PHP extensions"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.18, NGDEBUG)"
+    echo "PHP 7.x/7.1.x is GA Stable but still may have broken PHP extensions."
+    echo "NGDEBUG is PHP 7.2.0 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo "----------------------------------------------------------------"
@@ -280,7 +280,7 @@ PHPMU_ALPHAVER=$(echo "$phpver")
     phpng_download
     autodetectextensions
     zopcacheupgrade
-
+    addmysql_legacy
 
     echo "*************************************************"
     cecho "* Upgrading PHP" $boldgreen
@@ -777,6 +777,8 @@ if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
         funct_igbinaryinstall
     fi
 fi
+
+addmysql_legacyinstall
 
 echo
 php --ini

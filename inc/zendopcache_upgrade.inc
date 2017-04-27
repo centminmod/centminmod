@@ -241,7 +241,7 @@ fi # zendopcacheon
 
     # cmservice php-fpm restart
     echo "*************************************************"
-    cecho "* Zend Optimizer Plus OPcache installed" $boldgreen
+    cecho "* Zend Optimizer Plus OPcache configured" $boldgreen
     echo "*************************************************"
 
 fi # $PHPMUVER = 5.5
