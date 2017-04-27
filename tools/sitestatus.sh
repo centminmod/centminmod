@@ -115,10 +115,10 @@ son() {
      }
 
 case "$1" in
-          on)
+          on|online)
           soff
           ;;
-          off)
+          off|offline)
           son 
           ;;
           setup)
@@ -126,6 +126,6 @@ case "$1" in
           vhostsetup
           ;;
           * )
-          echo "$0 {on|off|setup}"
+          echo "$0 {on|off|online|offline|setup}"
           ;;
 esac

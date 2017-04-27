@@ -27,7 +27,7 @@ phpxz_detect() {
       PHPXZ_CHECK=$(echo "$PHP_VERSION" | cut -d . -f1,2)
   fi
 
-  if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
+  if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" < '5.5' ]]; then
       PHPEXTSION='gz'
       PHPTAR_FLAGS='xzf'    
   elif [ -f /usr/bin/xz ]; then
@@ -39,10 +39,10 @@ phpxz_detect() {
   fi
   
   if [[ "$INITIALINSTALL" = [yY] ]]; then
-      if [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
-          PHPEXTSION='gz'
-          PHPTAR_FLAGS='xzf'
-      fi
+    if [[ "$PHPXZ_CHECK" < '5.5' ]]; then
+        PHPEXTSION='gz'
+        PHPTAR_FLAGS='xzf'
+    fi
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' ]]; then

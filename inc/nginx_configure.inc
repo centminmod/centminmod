@@ -1,10 +1,17 @@
 detect_tlsonethree() {
-  if [ -f /usr/local/nginx/conf/ssl_include.conf ]; then
-    if [ "$ngver" ]; then
-      NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+  if [ "$ngver" ]; then
+    NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
+  else
+    NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+  fi
+  if [ -f /usr/local/nginx/conf/ssl-include.conf ]; then
+    if [[ "$(grep -w 'define NGX_SSL_TLSv1_3' "${NGINX_DIRINSTALL}/src/event/ngx_event_openssl.h")" ]]; then
+      # Nginx supports TLS 1.3 ssl_protocols directive
+      sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
     else
-      NGINX_DIRINSTALL="$DIR_TMP/nginx-${NGINX_VERSION}"
+      sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl-include.conf
     fi
+  elif [ -f /usr/local/nginx/conf/ssl_include.conf ]; then
     if [[ "$(grep -w 'define NGX_SSL_TLSv1_3' "${NGINX_DIRINSTALL}/src/event/ngx_event_openssl.h")" ]]; then
       # Nginx supports TLS 1.3 ssl_protocols directive
       sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
@@ -561,7 +568,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			if [[ "$TLSONETHREE" = [yY] ]]; then
+			if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
 				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -571,7 +578,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			# export OPENSSL_BPATH=$DIR_TMP
 			LIBRESSLOPT=""
-			if [[ "$TLSONETHREE" = [yY] ]]; then
+			if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
 				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
@@ -1401,23 +1408,31 @@ else
 		if [ "$NOSOURCEOPENSSL" == 'n' ]; then
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			LIBRESSLOPT=""
-			if [[ "$TLSONETHREE" = [yY] ]]; then
+			if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
 				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
-				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt=enable-tls1_3"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        fi
 			fi
 			LRT=""
 		else
 			OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
 			# export OPENSSL_BPATH=$DIR_TMP
 			LIBRESSLOPT=""
-			if [[ "$TLSONETHREE" = [yY] ]]; then
+			if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
 				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
 				OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt=enable-tls1_3"
 			else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
-				OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt=enable-tls1_3"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+        fi
 			fi
 			LRT=""
 		fi
@@ -1756,7 +1771,8 @@ fi
 # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGXINSTALL_VER=$(echo "$NGINX_VERSION" | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo "$ngver" | cut -d . -f1,2)
-if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] ; then
+if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]]; then
+# if [[ "$ngver" && "$NGXUPGRADE_VER" > '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
 			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
@@ -1800,7 +1816,7 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VE
 	# workaround for nginx 1.9 compatibility
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
-elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.10' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.11' ]]; then
+elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.10' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.11' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.12' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.13' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
 			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
