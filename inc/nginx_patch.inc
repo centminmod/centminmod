@@ -8,27 +8,33 @@ luanginx_patch() {
   fi
   if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]] || [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
     NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
-    pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
-    rm -rf ngx_http_lua_headers.c
-    wget -cnv https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
-    ls -lah
-    echo 
-    echo "patching lua nginx module for nginx 1.11.11+"
-    popd
+    if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}/src" ]; then
+      pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
+      rm -rf ngx_http_lua_headers.c
+      wget -cnv https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
+      ls -lah
+      echo 
+      echo "patching lua nginx module for nginx 1.11.11+"
+      popd
+    fi
   fi
   if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.7' ]]; then
-    pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
-    cecho "patching lua nginx 0.10.7 for community.centminmod.com/posts/47450/" $boldyellow
-    cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0107.patch" $boldyellow
-    patch -p0 < "$CUR_DIR/patches/luanginx/luanginx-0107.patch"
-    popd
+    if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}/src" ]; then
+      pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
+      cecho "patching lua nginx 0.10.7 for community.centminmod.com/posts/47450/" $boldyellow
+      cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0107.patch" $boldyellow
+      patch -p0 < "$CUR_DIR/patches/luanginx/luanginx-0107.patch"
+      popd
+    fi
   fi
   if [[ "$ORESTY_LUANGINX" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_LUANGINXVER" = '0.10.8' ]]; then
-    pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
-    cecho "patching lua nginx 0.10.8 for community.centminmod.com/posts/47450/" $boldyellow
-    cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0108.patch" $boldyellow
-    patch -p0 < "$CUR_DIR/patches/luanginx/luanginx-0108.patch"
-    popd
+    if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}/src" ]; then
+      pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
+      cecho "patching lua nginx 0.10.8 for community.centminmod.com/posts/47450/" $boldyellow
+      cecho "patch -p0 < $CUR_DIR/patches/luanginx/luanginx-0108.patch" $boldyellow
+      patch -p0 < "$CUR_DIR/patches/luanginx/luanginx-0108.patch"
+      popd
+    fi
   fi
 }
 
@@ -42,13 +48,15 @@ echonginx_patch() {
   fi
   if [[ "$NGINX_OPENRESTY" = [yY] && "$DETECT_NGXVER" -ge '1011011' && "$ORESTY_ECHOVER" = '0.60' ]]; then
     ECHODIR=$(tar -tzf "$DIR_TMP/${NGX_ECHOLINKFILE}" | head -1 | cut -f1 -d"/")
-    pushd "${DIR_TMP}/${ECHODIR}/src"
-    rm -rf ngx_http_echo_request_info.c
-    wget -cnv https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
-    ls -lah
-    echo 
-    echo "patching echo nginx module for nginx 1.11.11+"
-    popd
+    if [ -d "${DIR_TMP}/${ECHODIR}/src" ]; then
+      pushd "${DIR_TMP}/${ECHODIR}/src"
+      rm -rf ngx_http_echo_request_info.c
+      wget -cnv https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
+      ls -lah
+      echo 
+      echo "patching echo nginx module for nginx 1.11.11+"
+      popd
+    fi
   fi
 }
 
@@ -70,16 +78,20 @@ ngxopenresty_patch() {
     echo "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src"
     echo "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src"
     if [[ "$ORESTY_REDISVERPARSED" -le '13' && -f "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch" && -z $(grep -ro 1011006 "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src") ]]; then
-      pushd "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src"
-      echo "patch < $CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
-      patch < "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
-      popd
+      if [ -d "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src" ]; then
+        pushd "$DIR_TMP/redis2-nginx-module-${ORESTY_REDISVER}/src"
+        echo "patch < $CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
+        patch < "$CUR_DIR/patches/redis2-nginx/redis2-nginx-1116.patch"
+        popd
+      fi
     fi
     if [[ "$ORESTY_MEMCVERPARSED" -le '17' && -f "$CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch" && -z $(grep -ro 1011006 "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src") ]]; then
-      pushd "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src"
-      echo "patch < $CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
-      patch < "$CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
-      popd
+      if [ -d "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src" ]; then
+        pushd "$DIR_TMP/memc-nginx-module-${ORESTY_MEMCVER}/src"
+        echo "patch < $CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
+        patch < "$CUR_DIR/patches/memc-nginx/memc-nginx-1116.patch"
+        popd
+      fi
     fi
   fi
   # exit
@@ -232,15 +244,17 @@ patchnginx() {
 luapatch() {
 	if [ ! -f lua.patch ]; then
     {
-		# echo
-		echo "patching lua for nginx 1.9.11 workaround"
-		# patch for nginx 1.9.11 and lua nginx 0.9.20
-		# from https://github.com/openresty/lua-nginx-module/pull/669
-		# https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945
-		wget -O "$DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/lua.patch" https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945.patch
-		pushd "$DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/"
-		patch -p1 < lua.patch
-		popd
+    # echo
+    echo "patching lua for nginx 1.9.11 workaround"
+    # patch for nginx 1.9.11 and lua nginx 0.9.20
+    # from https://github.com/openresty/lua-nginx-module/pull/669
+    # https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945
+    wget -O "$DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/lua.patch" https://github.com/charlesportwoodii/lua-nginx-module/commit/8a63903c7152b5417e1bf326f6d6ffad0b729945.patch
+    if [ -d "$DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/" ]; then
+      pushd "$DIR_TMP/lua-nginx-module-${ORESTY_LUANGINXVER}/"
+      patch -p1 < lua.patch
+      popd
+    fi
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_luapatch_${DT}.log"
 
 	fi
