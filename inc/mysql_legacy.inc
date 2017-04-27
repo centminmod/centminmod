@@ -44,11 +44,5 @@ addmysql_legacyinstall() {
     	# echo "extension=mysql.so" > /etc/centminmod/php.d/mysql.ini
     	popd
   	fi
-  else
-  	if [ -d "${DIR_TMP}/php-${phpver}/ext" ]; then
-    	pushd "${DIR_TMP}/php-${phpver}/ext"
-    	rm -rf mysql
-    	popd
-  	fi
   fi
 }
