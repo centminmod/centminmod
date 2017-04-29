@@ -1,3 +1,81 @@
+update_cmdshortcuts() {
+  if [ -f /usr/bin/ngxstop ]; then
+    if [[ "$(grep 'service' /usr/bin/npstop)" ]]; then
+      sed -i 's|service nginx stop;service php-fpm stop|\/etc\/init.d\/nginx stop;\/etc\/init.d\/php-fpm stop|' /usr/bin/npstop
+    fi
+  fi
+  if [ -f /usr/bin/npstart ]; then
+    if [[ "$(grep 'service' /usr/bin/npstart)" ]]; then
+      sed -i 's|service nginx start;service php-fpm start|\/etc\/init.d\/nginx start;\/etc\/init.d\/php-fpm start|' /usr/bin/npstart
+    fi
+  fi
+  if [ -f /usr/bin/nprestart ]; then
+    if [[ "$(grep 'service' /usr/bin/nprestart)" ]]; then
+      sed -i 's|service nginx restart;service php-fpm restart|\/etc\/init.d\/nginx restart;\/etc\/init.d\/php-fpm restart|' /usr/bin/nprestart
+    fi
+  fi
+  if [ -f /usr/bin/npreload ]; then
+    if [[ "$(grep 'service' /usr/bin/npreload)" ]]; then
+      sed -i 's|service nginx reload;service php-fpm reload|\/etc\/init.d\/nginx reload;\/etc\/init.d\/php-fpm reload|' /usr/bin/npreload
+    fi
+  fi
+  if [ -f /usr/bin/ngxstop ]; then
+    if [[ "$(grep 'service' /usr/bin/ngxstop)" ]]; then
+      sed -i 's|service nginx stop|\/etc\/init.d\/nginx stop|' /usr/bin/ngxstop
+    fi
+  fi
+  if [ -f /usr/bin/ngxstart ]; then
+    if [[ "$(grep 'service' /usr/bin/ngxstart)" ]]; then
+      sed -i 's|service nginx start|\/etc\/init.d\/nginx start|' /usr/bin/ngxstart
+    fi
+  fi
+  if [ -f /usr/bin/ngxrestart ]; then
+    if [[ "$(grep 'service' /usr/bin/ngxrestart)" ]]; then
+      sed -i 's|service nginx restart|\/etc\/init.d\/nginx restart|' /usr/bin/ngxrestart
+    fi
+  fi
+  if [ -f /usr/bin/ngxreload ]; then
+    if [[ "$(grep 'service' /usr/bin/ngxreload)" ]]; then
+      sed -i 's|service nginx reload|\/etc\/init.d\/nginx reload|' /usr/bin/ngxreload
+    fi
+  fi
+  if [ -f /usr/bin/fpmstop ]; then
+    if [[ "$(grep 'service' /usr/bin/fpmstop)" ]]; then
+      sed -i 's|service php-fpm stop|\/etc\/init.d\/php-fpm stop|' /usr/bin/fpmstop
+    fi
+  fi
+  if [ -f /usr/bin/fpmstart ]; then
+    if [[ "$(grep 'service' /usr/bin/fpmstart)" ]]; then
+      sed -i 's|service php-fpm start|\/etc\/init.d\/php-fpm start|' /usr/bin/fpmstart
+    fi
+  fi
+  if [ -f /usr/bin/fpmrestart ]; then
+    if [[ "$(grep 'service' /usr/bin/fpmrestart)" ]]; then
+      sed -i 's|service php-fpm restart|\/etc\/init.d\/php-fpm restart|' /usr/bin/fpmrestart
+    fi
+  fi
+  if [ -f /usr/bin/fpmreload ]; then
+    if [[ "$(grep 'service' /usr/bin/fpmreload)" ]]; then
+      sed -i 's|service php-fpm reload|\/etc\/init.d\/php-fpm reload|' /usr/bin/fpmreload
+    fi
+  fi
+  if [ -f /usr/bin/memcachedstop ]; then
+    if [[ "$(grep 'service' /usr/bin/memcachedstop)" ]]; then
+      sed -i 's|service memcached stop|\/etc\/init.d\/memcached stop|' /usr/bin/memcachedstop
+    fi
+  fi
+  if [ -f /usr/bin/memcachedstart ]; then
+    if [[ "$(grep 'service' /usr/bin/memcachedstart)" ]]; then
+      sed -i 's|service memcached start|\/etc\/init.d\/memcached start|' /usr/bin/memcachedstart
+    fi
+  fi
+  if [ -f /usr/bin/memcachedrestart ]; then
+    if [[ "$(grep 'service' /usr/bin/memcachedrestart)" ]]; then
+      sed -i 's|service memcached restart|\/etc\/init.d\/memcached restart|' /usr/bin/memcachedrestart
+    fi
+  fi
+}
+
 update_nginxconf() {
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$NGINX_ALLOWOVERRIDE" = [yY] ]]; then
     NGX_WRKCON=$(grep -w 'worker_connections' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}')
@@ -1557,6 +1635,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   checkipvsix
   fixwp_updater
   update_nginxconf
+  update_cmdshortcuts
 fi
 
 }
