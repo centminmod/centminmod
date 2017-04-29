@@ -33,17 +33,21 @@ if [ -d /etc/sudoers.d ]; then
   echo
   # read -ep "Enter the username for sudo user you want to create: " sudo_username
   sudo_username=$1
-  useradd $sudo_username
-  usermod -aG wheel $sudo_username
+  useradd "$sudo_username"
+  usermod -aG wheel "$sudo_username"
   # read -ep "Enter the password for $sudo_username: " sudo_userpass
-  passwd $sudo_username
+  passwd "$sudo_username"
+
+  # https://community.centminmod.com/posts/39469/
+  echo "alias cmdir='pushd /usr/local/src/centminmod'" >> "/home/${sudo_username}/.bash_profile"
+
   echo
   # echo "${sudo_username}:${sudo_userpass}" | chpasswd
   echo "$sudo_username with password: $sudo_userpass created"
   echo "sudo setup for $sudo_username"
-  echo "${sudo_username}    ALL=(ALL:ALL) ALL" > /etc/sudoers.d/sudo.${sudo_username};
-  chmod 0440 /etc/sudoers.d/sudo.${sudo_username}
-  visudo -c -q -f /etc/sudoers.d/sudo.${sudo_username}
+  echo "${sudo_username}    ALL=(ALL:ALL) ALL" > "/etc/sudoers.d/sudo.${sudo_username}"
+  chmod 0440 "/etc/sudoers.d/sudo.${sudo_username}"
+  visudo -c -q -f "/etc/sudoers.d/sudo.${sudo_username}"
   shift # shift all parameters;
   echo
   echo "${sudo_username} sudo user setup at /etc/sudoers.d/sudo.${sudo_username}"
