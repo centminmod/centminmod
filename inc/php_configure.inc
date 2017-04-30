@@ -151,17 +151,28 @@ else
 	LDAPOPT=""
 fi
 
-if [[ -d /usr/include/vpx ]]; then
-	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
-else
-	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
-    sar_call
+if [[ "$PHPMVER" > 7 || "$PHPMUVER" > 7 ]]; then
+  if [[ "$(rpm -ql libwebp | grep libwebp.so >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    LIBVPXOPT=' --with-webp-dir=/usr'
   else
-    time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
-    sar_call
+    time yum${CACHESKIP} -y install libwebp libwebp-devel
+    LIBVPXOPT=' --with-webp-dir=/usr'
   fi
-	LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+elif [[ "$PHPMVER" = 5.[56] || "$PHPMUVER" = 5.[56] ]] && [[ "$PHPMVER" < 7 || "$PHPMUVER" < 7 ]]; then
+  if [[ -d /usr/include/vpx ]]; then
+	 LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+  else
+	 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
+      sar_call
+    else
+      time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
+      sar_call
+    fi
+	 LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+  fi
+else
+  LIBVPXOPT=''
 fi
 
 if [[ -f /usr/include/t1lib.h ]]; then
