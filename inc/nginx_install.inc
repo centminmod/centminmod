@@ -175,8 +175,6 @@ then
 
 fi # GPERFTOOLS_SOURCE INSTALL
 
-pcredir_check
-
 installopenssl
 
     if [ -f "$(which figlet)" ]; then
