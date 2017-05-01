@@ -390,13 +390,13 @@ if [ ! -f /usr/local/src/curlinstall_yum.txt ]; then
 for pkgs in ${arrays[@]}
 do
 echo Processing package: $pkgs
-YUMINSTALLRPMCHECK=$(rpm -ql $pkg >/dev/null 2>&1; echo $?)
+YUMINSTALLRPMCHECK=$(rpm -ql $pkgs >/dev/null 2>&1; echo $?)
 #echo $YUMINSTALLRPMCHECK
         if [[ "$YUMINSTALLRPMCHECK" = '0' ]]; then
 echo "----------------------------------------------------------------------------------"
         # ${YUMDNFBIN}${CACHESKIP} -q -y update $pkgs
         # ${YUMDNFBIN}${CACHESKIP} -q list $pkgs
-        echo "$pkg already installed"
+        echo "$pkgs already installed"
 echo "----------------------------------------------------------------------------------"
         else
 echo "----------------------------------------------------------------------------------"
