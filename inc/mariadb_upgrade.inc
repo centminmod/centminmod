@@ -1,8 +1,3 @@
-checklogdetails() {
-	echo "check Centmin Mod log for details at /root/centminlogs/"
-	echo "Aborting script..."
-}
-
 function funct_mariadbupgrade {
 
     echo "*************************************************"
