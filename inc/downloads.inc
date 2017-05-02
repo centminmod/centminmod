@@ -23,44 +23,31 @@ checklogdetails() {
 
 ###############################################
 phpxz_detect() {
-  if [[ "$INITIALINSTALL" = [yY] ]]; then
-      PHPXZ_CHECK=$(echo "$PHP_VERSION" | cut -d . -f1,2)
-  fi
-
-  if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" < '5.5' ]]; then
-      PHPEXTSION='gz'
-      PHPTAR_FLAGS='xzf'    
-  elif [ -f /usr/bin/xz ]; then
-      PHPEXTSION='xz'
-      PHPTAR_FLAGS='xJf'
-  else
-      PHPEXTSION='gz'
-      PHPTAR_FLAGS='xzf'
-  fi
-  
-  if [[ "$INITIALINSTALL" = [yY] ]]; then
-    if [[ "$PHPXZ_CHECK" < '5.5' ]]; then
-        PHPEXTSION='gz'
-        PHPTAR_FLAGS='xzf'
+	if [ -n "$PHPMUVER"]; then
+		PHPXZ_CHECK="$PHPMUVER" # upgrade
+	else
+		PHPXZ_CHECK="$PHPMVER"  # clean install
     fi
-  fi
 
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
-      DOWNLOADAPP='axel'
-      WGETRETRY=''
-      AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-      AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-  elif [[ "$CENTOS_SIX" = '6' ]]; then
-      DOWNLOADAPP='axel'
-      WGETRETRY=''
-      AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-      AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-  else
-      DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-      WGETRETRY='--tries=3'
-      AXELPHPTARGZ=''
-      AXELPHPUPGRADETARGZ=''
-  fi   
+	if [[ -f /usr/bin/xz && "$PHPXZ_CHECK" > 5.4 ]]; then
+		PHPEXTSION='xz'
+		PHPTAR_FLAGS='xJf'
+	else
+		PHPEXTSION='gz'
+		PHPTAR_FLAGS='xzf'
+	fi
+  
+	if [[ "$CENTOS_SEVEN" = 7 || "$CENTOS_SIX" = 6 ]]; then
+		DOWNLOADAPP='axel'
+		WGETRETRY=''
+		AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
+		AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
+	else
+		DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
+		WGETRETRY='--tries=3'
+		AXELPHPTARGZ=''
+		AXELPHPUPGRADETARGZ=''
+	fi   
 }
 
 phpgeolocation() {
@@ -670,13 +657,7 @@ else
 	fi
     fi
   
-if [[ -f /usr/bin/xz && "$INITIALINSTALL" = [yY] ]] && [[ "$PHPXZ_CHECK" != '5.5' || "$PHPXZ_CHECK" != '5.6' || "$PHPXZ_CHECK" != '5.7' || "$PHPXZ_CHECK" != '7.0' || "$PHPXZ_CHECK" != '7.1' ]]; then
   tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-elif [ -f /usr/bin/xz ]; then
-  XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-else
-  tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-fi
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

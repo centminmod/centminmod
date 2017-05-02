@@ -312,28 +312,6 @@ fi
 
     phpgeolocation
 
-if [[ "$PHPMUVER" = 5.[234] ]]; then
-    PHPEXTSION='gz'
-    PHPTAR_FLAGS='xzf'
-fi
-
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    DOWNLOADAPP='axel'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-elif [[ "$CENTOS_SIX" = '6' ]]; then
-    DOWNLOADAPP='axel'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-else
-    DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY='--tries=3'
-    AXELPHPTARGZ=''
-    AXELPHPUPGRADETARGZ=''
-fi   
-
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Download"
     fi
@@ -348,12 +326,27 @@ fi
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
         $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPUPGRADETARGZ $WGETRETRY
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+            cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
+            checklogdetails
+            exit
+        else 
+            cecho "Download done." $boldyellow
+            echo ""
+        fi
     fi
 
-    if [ -f /usr/bin/xz ]; then
-        XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
-    else
-        tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+    tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+
+    ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+        cecho "Error: php-${phpver}.tar.${PHPEXTSION} extraction failed." $boldgreen
+        checklogdetails
+        exit
+    else 
+        cecho "php-${phpver}.tar.${PHPEXTSION} valid file." $boldyellow
+        echo ""
     fi
 
     cd "php-${phpver}"

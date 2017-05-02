@@ -981,23 +981,12 @@ checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 
-phpxz_detect
-
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = 7 || "$CENTOS_SIX" = 6 ]]; then
     DOWNLOADAPP='axel'
     WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-elif [[ "$CENTOS_SIX" = '6' ]]; then
-    DOWNLOADAPP='axel'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
 else
     DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
     WGETRETRY='--tries=3'
-    AXELPHPTARGZ=''
-    AXELPHPUPGRADETARGZ=''
 fi
 
 sar_call() {
@@ -1438,8 +1427,6 @@ funct_centos6check
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
 
-    cd "$DIR_TMP"
-
 if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
   # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
   echo "${YUMDNFBIN} -y erase php*"
@@ -1447,11 +1434,7 @@ if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
 
 fi
 
-    #download php tarball
-    if [[ ! -d "php-${PHP_VERSION}" && -f "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]]; then
-        tar xzvf "php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    fi
-    cd "php-${PHP_VERSION}"
+    cd "${DIR_TMP}/php-${PHP_VERSION}"
 
     ./buildconf --force
     mkdir fpm-build && cd fpm-build
