@@ -1,12 +1,12 @@
 #!/bin/bash
-VER='0.0.6'
+VER='0.0.7'
 ######################################################
 # node.js installer
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.7.2'
+NODEJSVER='4.8.2'
 NODEJS_SOURCEINSTALL='y'
 REINSTALL='y'
 
@@ -272,7 +272,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 			make${MAKETHREADS}
 			make install
 			make doc
-    		npm install npm@latest -g
+    	npm install npm@latest -g
 		
 			echo
 			cecho "---------------------------" $boldyellow

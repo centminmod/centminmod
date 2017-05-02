@@ -235,9 +235,9 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.10, NGDEBUG)"
-    echo "PHP 7.0.10 is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 7.1.0 minus incompatible PHP extensions"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.18, NGDEBUG)"
+    echo "PHP 7.x/7.1.x is GA Stable but still may have broken PHP extensions."
+    echo "NGDEBUG is PHP 7.2.0 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo "----------------------------------------------------------------"
@@ -280,7 +280,7 @@ PHPMU_ALPHAVER=$(echo "$phpver")
     phpng_download
     autodetectextensions
     zopcacheupgrade
-
+    addmysql_legacy
 
     echo "*************************************************"
     cecho "* Upgrading PHP" $boldgreen
@@ -312,28 +312,6 @@ fi
 
     phpgeolocation
 
-if [[ "$PHPMUVER" = 5.[234] ]]; then
-    PHPEXTSION='gz'
-    PHPTAR_FLAGS='xzf'
-fi
-
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    DOWNLOADAPP='axel'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-elif [[ "$CENTOS_SIX" = '6' ]]; then
-    DOWNLOADAPP='axel'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-else
-    DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY='--tries=3'
-    AXELPHPTARGZ=''
-    AXELPHPUPGRADETARGZ=''
-fi   
-
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Download"
     fi
@@ -348,12 +326,27 @@ fi
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
         $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPUPGRADETARGZ $WGETRETRY
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+            cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
+            checklogdetails
+            exit
+        else 
+            cecho "Download done." $boldyellow
+            echo ""
+        fi
     fi
 
-    if [ -f /usr/bin/xz ]; then
-        XZ_OPT='--memory=max' tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
-    else
-        tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+    tar $PHPTAR_FLAGS "php-${phpver}.tar.${PHPEXTSION}"
+
+    ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+        cecho "Error: php-${phpver}.tar.${PHPEXTSION} extraction failed." $boldgreen
+        checklogdetails
+        exit
+    else 
+        cecho "php-${phpver}.tar.${PHPEXTSION} valid file." $boldyellow
+        echo ""
     fi
 
     cd "php-${phpver}"
@@ -777,6 +770,8 @@ if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
         funct_igbinaryinstall
     fi
 fi
+
+addmysql_legacyinstall
 
 echo
 php --ini

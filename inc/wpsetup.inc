@@ -2127,6 +2127,9 @@ echo "-------------------------------------------------------------------------"
 echo "Do you want to uninstall/delete WP install for ${vhostname}"
 echo "This will delete all data from /home/nginx/domains/${vhostname}"
 echo "including any non-wordpress data installed at /home/nginx/domains/${vhostname}"
+echo "This script will NOT delete the database, you will have to manually remove the"
+echo "database named: $DB"
+echo "Please backup your MySQL database called $DB before deleting"
 echo "-------------------------------------------------------------------------"
 read -ep "Uninstall WP Install For ${vhostname} [y/n]: " uninstall
 echo
