@@ -474,12 +474,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			fi
 	fi
 
-	if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
-		NGX_CACHEPURGEDIR=$(tar -tzf "$DIR_TMP/${NGX_CACHEPURGEFILE}" | head -1 | cut -f1 -d"/")
-		CACHEPURGEOPT=" --add-module=../$NGX_CACHEPURGEDIR"
-	else
-		CACHEPURGEOPT=""
-	fi
+  if [[ "$NGINX_CACHEPURGE" = [yY] ]]; then
+    ngx_cachepurge_patch
+    NGX_CACHEPURGEDIR=$(tar -tzf "$DIR_TMP/${NGX_CACHEPURGEFILE}" | head -1 | cut -f1 -d"/")
+    CACHEPURGEOPT=" --add-module=../$NGX_CACHEPURGEDIR"
+  else
+    CACHEPURGEOPT=""
+  fi
 
 	if [[ "$NGINX_ACCESSKEY" = [yY] ]]; then
 		ACCESSKEYOPT=" --add-module=../nginx-accesskey-2.0.3"
