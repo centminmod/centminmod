@@ -11,4 +11,3 @@
 +#  endif /* nginx_version >= 1011006 */
      ngx_str_t                      location;
      ngx_str_t                      url;
- 
