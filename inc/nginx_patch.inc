@@ -9,6 +9,12 @@ ngx_cachepurge_patch() {
   if [[ "$NGINX_CACHEPURGE" = [yY] && "$DETECT_NGXVER" -ge '1011006' && "$NGINX_CACHEPURGEVER" = 2.[3] ]]; then
     NGX_CACHEPURGEDIR=$(tar -tzf "$DIR_TMP/${NGX_CACHEPURGEFILE}" | head -1 | cut -f1 -d"/")
     if [ -d "${DIR_TMP}/${NGX_CACHEPURGEDIR}" ]; then
+      rm -rf "${DIR_TMP}/${NGX_CACHEPURGEDIR}"
+      pushd "${DIR_TMP}"
+      if [ -f "$DIR_TMP/${NGX_CACHEPURGEFILE}" ]; then
+        tar xzf "$DIR_TMP/${NGX_CACHEPURGEFILE}"
+      fi
+      popd
       pushd "${DIR_TMP}/${NGX_CACHEPURGEDIR}"
       cecho "patching ngx_cache_purge for community.centminmod.com/threads/11598/" $boldyellow
       cecho "patch -p0 < $CUR_DIR/patches/ngx-cache-purge/ngx-cache-purge-1116.patch" $boldyellow
