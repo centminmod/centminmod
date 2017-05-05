@@ -1,4 +1,4 @@
-function enable_clang() {
+enable_clang() {
    if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]] && [[ ! -f /usr/bin/clang ]]; then
       time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
    fi
@@ -15,7 +15,7 @@ function enable_clang() {
 }
 
 
-function enable_devtoolset() {
+enable_devtoolset() {
    # ccache compiler has some initial overhead for compiles but speeds up subsequent
    # recompiles. however on initial install ccache has no benefits, so for initial
    # centmin mod install disabling ccache will in theory speed up first time installs
@@ -77,7 +77,7 @@ function enable_devtoolset() {
    fi
 }
 
-function disable_devtoolset() {
+disable_devtoolset() {
   if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
     if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
         echo "$CFLAGS"
@@ -93,7 +93,7 @@ function disable_devtoolset() {
   fi
 }
 
-function set_intelflags() {
+set_intelflags() {
 	if [[ "$INTELOPT" = [yY] ]]; then
     	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
         	CFLAGS='-O2 -m64 -march=native -pipe -g -mmmx -msse3'
@@ -109,7 +109,7 @@ function set_intelflags() {
 	fi
 }
 
-function unset_intelflags() {
+unset_intelflags() {
 	if [[ "$INTELOPT" = [yY] ]]; then
     	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
         	unset CFLAGS
@@ -123,7 +123,7 @@ function unset_intelflags() {
 
 
 # function currently disabled not ready for use
-function checkgcc() {
+checkgcc() {
 
 if [[ "$INTELOPT" = [yY] ]]; then
 	NGINX_GCCOPT='y'

@@ -84,7 +84,7 @@ checkigbinary() {
 }
 
 #######################################################
-function funct_memcachedreinstall {
+funct_memcachedreinstall {
    if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
       enable_clang
    else
