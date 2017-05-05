@@ -1,155 +1,80 @@
+enable_clang() {
+   if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]] && [[ ! -f /usr/bin/clang ]]; then
+      time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
+   fi
+   if [[ "$INITIALINSTALL" != [yY] ]]; then             
+      export CC="ccache /usr/bin/clang -ferror-limit=0"
+      export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
+      export CCACHE_CPP2=yes
+   else
+      export CC="/usr/bin/clang -ferror-limit=0"
+      export CXX="/usr/bin/clang++ -ferror-limit=0"
+   fi
+   CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
+   export CFLAGS="$CLANG_CFLAGOPT"
+}
+
+
 enable_devtoolset() {
-# devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
-# centos 6 based gcc 4.4.7
-if [[ "$CENTOS_SIX" = '6' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
-  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-    scl_install
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-4/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
-    else
-      source /opt/rh/devtoolset-4/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="gcc"
-      export CXX="g++"
-    fi
-  elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-    # update devtoolset-6 repo
-    # place holder if need to update devtoolset-6 in future
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-6/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
-    else
-      source /opt/rh/devtoolset-6/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="gcc"
-      export CXX="g++"
-    fi
-  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-    # update devtoolset-4 repo
-    # place holder if need to update devtoolset-4 in future
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-4/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
-    else
-      source /opt/rh/devtoolset-4/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="gcc"
-      export CXX="g++"
-    fi
-  fi
-fi
+   # ccache compiler has some initial overhead for compiles but speeds up subsequent
+   # recompiles. however on initial install ccache has no benefits, so for initial
+   # centmin mod install disabling ccache will in theory speed up first time installs
+   if [[ "$INITIALINSTALL" != [yY] ]]; then            
+      export CC="ccache /usr/bin/gcc"
+      export CXX="ccache /usr/bin/g++"
+      export CCACHE_CPP2=yes
+   else
+      export CC="/usr/bin/gcc"
+      export CXX="/usr/bin/g++"
+   fi
+   CLANG_CFLAGOPT=""
+   CFLAGS=""
 
-# devtoolset-4 usage of GCC 4.9 even for CentOS7
-if [[ "$CENTOS_SEVEN" = '7' && "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
-  if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-    scl_install
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-      if [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-6/enable
-      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-4/enable
+   if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+      # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
+      # centos 6 based gcc 4.4.7
+      if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]]; then
+         if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+            if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+               scl_install
+            fi       
+            source /opt/rh/devtoolset-6/enable
+         else
+            if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+               scl_install
+            fi
+            source /opt/rh/devtoolset-4/enable
+         fi
+         which gcc
+         which g++
+         unset CC
+         unset CXX
+         if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+         else
+            export CC="gcc"
+            export CXX="g++"
+         fi
       fi
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
-    else
-      if [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-6/enable
-      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-4/enable
-      fi
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="gcc"
-      export CXX="g++"
-    fi
-  elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-6/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
-    else
-      source /opt/rh/devtoolset-6/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="gcc"
-      export CXX="g++"
-    fi
-  elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-      source /opt/rh/devtoolset-4/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
-    else
-      source /opt/rh/devtoolset-4/enable
-      which gcc
-      which g++
-      unset CC
-      unset CXX
-      export CC="gcc"
-      export CXX="g++"
-    fi
-  fi
-fi
 
-if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
-  # intel specific
-  CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
-  SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
-  gcc --version | tee ${CENTMINLOGDIR}/gcc_general_native.log
-  gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
-  if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
-      CCM=64
-      GEN_MTUNEOPT="-m${CCM} -march=native"
-      # if only 1 cpu thread use -O2 to keep compile times sane
-      if [[ "$CPUS" = '1' ]]; then
-        export CFLAGS="-O2 $GEN_MTUNEOPT -pipe"
-      else
-        export CFLAGS="-O3 $GEN_MTUNEOPT -pipe"
+      # intel specific
+      CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
+      SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
+      gcc --version | tee ${CENTMINLOGDIR}/gcc_general_native.log
+      gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
+      if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
+         CCM=64
+         GEN_MTUNEOPT="-m${CCM} -march=native"
+         # if only 1 cpu thread use -O2 to keep compile times sane
+         if [[ "$CPUS" = '1' ]]; then
+            export CFLAGS="-O2 $GEN_MTUNEOPT -pipe"
+         else
+            export CFLAGS="-O3 $GEN_MTUNEOPT -pipe"
+         fi
+         export CXXFLAGS="$CFLAGS"
       fi
-      export CXXFLAGS="$CFLAGS"
-  fi
-fi
+   fi
 }
 
 disable_devtoolset() {
