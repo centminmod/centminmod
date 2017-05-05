@@ -84,47 +84,12 @@ checkigbinary() {
 }
 
 #######################################################
-function funct_memcachedreinstall {
-
-        if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
-            if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
-                time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
-            fi
-            # ccache compiler has some initial overhead for compiles but speeds up subsequent
-            # recompiles. however on initial install ccache has no benefits, so for initial
-            # centmin mod install disabling ccache will in theory speed up first time installs
-            if [[ "$INITIALINSTALL" != [yY] ]]; then             
-                export CC="ccache /usr/bin/clang -ferror-limit=0"
-                export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
-                export CCACHE_CPP2=yes
-                CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
-                export CFLAGS="$CLANG_CFLAGOPT"
-            else
-                export CC="/usr/bin/clang -ferror-limit=0"
-                export CXX="/usr/bin/clang++ -ferror-limit=0"
-                # export CCACHE_CPP2=yes
-                CLANG_CFLAGOPT='-Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-implicit-function-declaration -Wno-incompatible-pointer-types -Wno-undefined-inline -Wno-unused-function -Wno-int-conversion -Wno-implicit-function-declaration -Wno-non-literal-null-conversion'
-                export CFLAGS="$CLANG_CFLAGOPT"
-            fi                
-        else
-            # ccache compiler has some initial overhead for compiles but speeds up subsequent
-            # recompiles. however on initial install ccache has no benefits, so for initial
-            # centmin mod install disabling ccache will in theory speed up first time installs
-            if [[ "$INITIALINSTALL" != [yY] ]]; then            
-                export CC="ccache /usr/bin/gcc"
-                export CXX="ccache /usr/bin/g++"
-                export CCACHE_CPP2=yes
-                CLANG_CFLAGOPT=""
-                CFLAGS=""
-            else
-                export CC="/usr/bin/gcc"
-                export CXX="/usr/bin/g++"
-                # export CCACHE_CPP2=yes
-                CLANG_CFLAGOPT=""
-                CFLAGS=""
-            fi
-            enable_devtoolset
-        fi       
+funct_memcachedreinstall() {
+   if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
+      enable_clang
+   else
+      enable_devtoolset
+   fi
 
 PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}')
 
