@@ -314,7 +314,7 @@ NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.5.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.5.4'   # Use this version of LibreSSL http://www.libressl.org/
 # BoringSSL
 # not working yet just prep work
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server

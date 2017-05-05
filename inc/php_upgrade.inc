@@ -480,7 +480,7 @@ fi
             pushd "$DIR_TMP"
             time git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
             popd
-            GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf)
+            GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
             echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""

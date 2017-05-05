@@ -23,7 +23,7 @@ checklogdetails() {
 
 ###############################################
 phpxz_detect() {
-	if [ -n "$PHPMUVER"]; then
+	if [ -n "$PHPMUVER" ]; then
 		PHPXZ_CHECK="$PHPMUVER" # upgrade
 	else
 		PHPXZ_CHECK="$PHPMVER"  # clean install
