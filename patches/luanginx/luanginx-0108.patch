@@ -17,3 +17,4 @@
 +        n = lua_objlen(L, 2);
          if (n == 0) {
              ngx_str_null(&value);
+ 
