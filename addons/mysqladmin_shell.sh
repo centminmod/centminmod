@@ -478,7 +478,7 @@ case "$1" in
 		;;
 	*)
 		echo ""
-		cecho "$0 {multidb|setglobaluser|setuserdb|setpass|deluser|showgrants}" $boldyellow
+		cecho "$0 {multidb|setglobaluser|setuserdb|setpass|createuserdb|deluser|showgrants}" $boldyellow
 		echo ""
 cecho "multidb - multiple mysql databse/user creation mode passing a file name containing db, user, pass 3 column entries
 setglobaluser - create a mysql username with access to all databases on server without SUPER ADMIN privileges (non-root)
