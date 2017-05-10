@@ -431,7 +431,7 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.8'     # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.9rc1'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.19'       # openresty https://github.com/openresty/lua-resty-mysql
@@ -444,7 +444,7 @@ ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.11'     # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUARESTYCOREVER='0.1.12rc1' # openresty https://github.com/openresty/lua-resty-core
 ORESTY_LUAUPSTREAMVER='0.06'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 NGX_LUAUPSTREAM='n'                # disable https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
@@ -663,12 +663,6 @@ else
   fi
 fi
 
-# ensure if ORESTY_LUANGINX is enabled, that the other required
-# Openresty modules are enabled if folks forget to enable them
-if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
-    NGINX_OPENRESTY='y'
-fi
-
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.12'
 fi
@@ -883,6 +877,13 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
+fi
+
+# ensure if ORESTY_LUANGINX is enabled, that the other required
+# Openresty modules are enabled if folks forget to enable them
+if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+    NGINX_OPENRESTY='y'
+    LIBRESSL_SWITCH='n'
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
