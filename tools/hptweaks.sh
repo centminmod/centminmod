@@ -86,7 +86,9 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 			echo "/etc/security/limits.conf"
 			echo "* soft memlock $MAXLOCKEDMEM_SIZE"
 			echo "* hard memlock $MAXLOCKEDMEM_SIZE"
-			if [[ -z "$(grep '^memlock' /etc/security/limits.conf)" ]]; then
+			sed -i '/hard memlock/d' /etc/security/limits.conf
+			sed -i '/soft memlock/d' /etc/security/limits.conf
+			if [[ -z "$(grep 'memlock' /etc/security/limits.conf)" ]]; then
 				echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
 				echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
 				echo
