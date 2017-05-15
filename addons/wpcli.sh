@@ -52,12 +52,12 @@ updatewpcli() {
     echo "alias wp='wp --allow-root'" >> /root/.bashrc
   fi
   
-  if [[ "$(wp package list | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
+  if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
     echo "-------------------------------------------------------------"
     echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
     /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
   fi
-  if [[ "$(wp package list | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
+  if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
     echo "-------------------------------------------------------------"
     echo "install wp-cli https://github.com/markri/wp-sec"
     /usr/bin/wp package install markri/wp-sec --allow-root
@@ -145,12 +145,12 @@ if [[ -z "$WPALIASCHECK" ]]; then
   echo "alias wp='wp --allow-root'" >> /root/.bashrc
 fi
 
-if [[ "$(wp package list | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
+if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
   echo "-------------------------------------------------------------"
   echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
   /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
 fi
-if [[ "$(wp package list | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
+if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
   echo "-------------------------------------------------------------"
   echo "install wp-cli https://github.com/markri/wp-sec"
   /usr/bin/wp package install markri/wp-sec --allow-root
