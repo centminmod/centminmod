@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.24'
+ACMEVER='1.0.25'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -20,6 +20,7 @@ KEYLENGTH='2048'
 RENEWDAYS='60'
 
 CENTMINLOGDIR='/root/centminlogs'
+USE_NGINXMAINEXTLOGFORMAT='n'
 DIR_TMP='/svr-setup'
 MAIN_HOSTNAMEVHOSTFILE='/usr/local/nginx/conf/conf.d/virtual.conf'
 MAIN_HOSTNAMEVHOSTSSLFILE='/usr/local/nginx/conf/conf.d/virtual.ssl.conf'
@@ -215,10 +216,11 @@ else
   ECC_ACMEHOMESUFFIX=""
 fi
 
+ngx_logformats() {
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
-    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    if [[ "$USE_NGINXMAINEXTLOGFORMAT" = [yY] && "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
       NGX_LOGFORMAT='main_ext'
     else
       NGX_LOGFORMAT='combined'
@@ -226,6 +228,7 @@ fi
   else
     NGX_LOGFORMAT='combined'
   fi
+}
 
 #####################
 listlogs() {

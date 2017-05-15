@@ -68,6 +68,7 @@ NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self si
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
 NGINXUPGRADESLEEP='3'
+USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NSD_INSTALL='y'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL='y'              # Install Network time protocol daemon

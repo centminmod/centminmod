@@ -347,6 +347,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # General Configuration
 NGINXUPGRADESLEEP='3'
+USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NSD_INSTALL='n'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version

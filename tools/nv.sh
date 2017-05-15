@@ -18,6 +18,7 @@ OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh
 # CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log"
+USE_NGINXMAINEXTLOGFORMAT='n'
 ###############################################################
 # Letsencrypt integration via addons/acmetool.sh auto detection
 # in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
@@ -86,10 +87,11 @@ if [ -f "${CUR_DIR}/inc/z_custom.inc" ]; then
     source "${CUR_DIR}/inc/z_custom.inc"
 fi
 
+ngx_logformats() {
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
-    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    if [[ "$USE_NGINXMAINEXTLOGFORMAT" = [yY] && "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
       NGX_LOGFORMAT='main_ext'
     else
       NGX_LOGFORMAT='combined'
@@ -97,6 +99,7 @@ fi
   else
     NGX_LOGFORMAT='combined'
   fi
+}
 
 if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
   HTTPTWO=y
