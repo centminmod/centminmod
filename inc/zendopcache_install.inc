@@ -61,14 +61,15 @@ fi
 echo ""
 cmservice nginx reload
 
-	echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	cecho "Password protected ${hname}/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	cecho "Username: $OPUSER" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	cecho "Password: $OPPASS" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-	echo "" >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "File Location: /usr/local/nginx/html/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "Password protected ${hname}/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "Username: $OPUSER" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "Password: $OPPASS" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  echo "" >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
 }
 ###############
 

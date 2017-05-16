@@ -63,7 +63,8 @@ sed -i "s/'ADMIN_USERNAME','memcacheuser'/'ADMIN_USERNAME','${memcacheduser}'/g"
 sed -i "s/'ADMIN_PASSWORD','memcachepass'/'ADMIN_PASSWORD','${memcachedpassword}'/g" /usr/local/nginx/html/memcache_${N}.php 2>&1>/dev/null
 
 echo "*************************************************"
-cecho "Memcached Server Admin Login: /usr/local/nginx/html/memcache_${N}.php" $boldgreen
+cecho "Memcached Server Admin Login File: /usr/local/nginx/html/memcache_${N}.php" $boldgreen
+cecho "Memcached Server Admin Login: ${hname}/memcache_${N}.php" $boldgreen
 cecho "new memcached username: ${memcacheduser}" $boldgreen
 cecho "new memcached password: ${memcachedpassword}" $boldgreen
 echo "*************************************************"
