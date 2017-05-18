@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.25'
+ACMEVER='1.0.26'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -949,6 +949,7 @@ sed -i '/ssl_trusted_certificate/d' /usr/local/nginx/conf/conf.d/${vhostname}.ss
 sslvhostsetup() {
   HTTPSONLY=$1
   CHECKFORWP=$2
+  ngx_logformats
 
   echo
   echo "[self-signed ssl cert check] required by acmetool.sh"
