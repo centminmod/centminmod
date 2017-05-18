@@ -87,7 +87,6 @@ if [ -f "${CUR_DIR}/inc/z_custom.inc" ]; then
     source "${CUR_DIR}/inc/z_custom.inc"
 fi
 
-ngx_logformats() {
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
@@ -99,7 +98,7 @@ ngx_logformats() {
   else
     NGX_LOGFORMAT='combined'
   fi
-}
+
 
 if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
   HTTPTWO=y
@@ -721,8 +720,6 @@ if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
 else
   TLSONETHREE_CIPHERS=""
 fi
-
-ngx_logformats
 
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS

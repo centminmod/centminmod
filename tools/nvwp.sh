@@ -72,7 +72,6 @@ if [ ! -d /root/tools ]; then
   mkdir -p /root/tools
 fi
 
-ngx_logformats() {
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
@@ -84,7 +83,6 @@ ngx_logformats() {
   else
     NGX_LOGFORMAT='combined'
   fi
-}
 
 if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]] && [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_spdy_module')" = 'with-http_spdy_module' ]]; then
   HTTPTWO=y
@@ -609,8 +607,6 @@ if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHE
 else
   CHACHACIPHERS=""
 fi
-
-ngx_logformats
 
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS

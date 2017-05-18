@@ -216,7 +216,6 @@ else
   ECC_ACMEHOMESUFFIX=""
 fi
 
-ngx_logformats() {
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
@@ -228,7 +227,6 @@ ngx_logformats() {
   else
     NGX_LOGFORMAT='combined'
   fi
-}
 
 #####################
 listlogs() {
@@ -949,7 +947,6 @@ sed -i '/ssl_trusted_certificate/d' /usr/local/nginx/conf/conf.d/${vhostname}.ss
 sslvhostsetup() {
   HTTPSONLY=$1
   CHECKFORWP=$2
-  ngx_logformats
 
   echo
   echo "[self-signed ssl cert check] required by acmetool.sh"
