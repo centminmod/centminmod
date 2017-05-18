@@ -722,6 +722,8 @@ else
   TLSONETHREE_CIPHERS=""
 fi
 
+ngx_logformats
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
