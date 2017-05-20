@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.26'
+ACMEVER='1.0.27'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -260,7 +260,7 @@ checkdate() {
    echo "----------------------------------------------"
    echo "acme.sh obtained"
    echo "----------------------------------------------"
-   for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain|ca'); do
+   for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain.cer|ca.cer'); do
     if [ -f $ca ]; then
       expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
       fingerprint=$(openssl x509 -fingerprint -noout -in $ca | sed 's|:||g' | awk -F "=" '// {print $2}')
