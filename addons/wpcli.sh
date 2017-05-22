@@ -45,6 +45,28 @@ fi
 # functions
 updatewpcli() {
 	if [ -f /usr/bin/wp ]; then
+
+  WPALIASCHECK=$(grep 'allow-root' /root/.bashrc)
+  
+  if [[ -z "$WPALIASCHECK" ]]; then
+    echo "alias wp='wp --allow-root'" >> /root/.bashrc
+  fi
+  
+  if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
+    echo "-------------------------------------------------------------"
+    echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
+    /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
+  fi
+  if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
+    echo "-------------------------------------------------------------"
+    echo "install wp-cli https://github.com/markri/wp-sec"
+    /usr/bin/wp package install markri/wp-sec --allow-root
+  fi
+  echo "-------------------------------------------------------------"
+  echo "update wp-cli packages"
+  /usr/bin/wp package update --allow-root
+  echo "-------------------------------------------------------------"
+
 		echo "update wp-cli"
 		rm -rf /usr/bin/wp
 		wget -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
@@ -84,7 +106,9 @@ else
 	fi
 fi
 
-chmod 0700 /usr/bin/wp
+if [ -f /usr/bin/wp ]; then
+  chmod 0700 /usr/bin/wp
+fi
 
 echo ""
 if [ -s "${WPCLIDIR}/wp-completion.bash" ]; then
@@ -115,7 +139,27 @@ if [[ -z "$WPCLICHECK" ]]; then
 	echo "source ${WPCLIDIR}/wp-completion.bash" >> /root/.bash_profile
 fi
 
+WPALIASCHECK=$(grep 'allow-root' /root/.bashrc)
+
+if [[ -z "$WPALIASCHECK" ]]; then
+  echo "alias wp='wp --allow-root'" >> /root/.bashrc
+fi
+
+if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
+  echo "-------------------------------------------------------------"
+  echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
+  /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
+fi
+if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
+  echo "-------------------------------------------------------------"
+  echo "install wp-cli https://github.com/markri/wp-sec"
+  /usr/bin/wp package install markri/wp-sec --allow-root
+fi
 echo "-------------------------------------------------------------"
+echo "update wp-cli packages"
+/usr/bin/wp package update --allow-root
+echo "-------------------------------------------------------------"
+echo "wp-cli info"
 /usr/bin/wp --info --allow-root
 echo "-------------------------------------------------------------"
 

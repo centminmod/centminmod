@@ -34,8 +34,17 @@ fi
 	if [[ -f /usr/bin/redis-cli ]]; then
 		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 			echo never > /sys/kernel/mm/transparent_hugepage/enabled
+			sed -i 's/transparent_hugepage/d' /etc/rc.local
 			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
 				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+			fi
+		fi
+	else
+		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
+			echo always > /sys/kernel/mm/transparent_hugepage/enabled
+			sed -i 's/transparent_hugepage/d' /etc/rc.local
+			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
+				echo "echo always > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
 			fi
 		fi
 	fi
@@ -86,7 +95,9 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 			echo "/etc/security/limits.conf"
 			echo "* soft memlock $MAXLOCKEDMEM_SIZE"
 			echo "* hard memlock $MAXLOCKEDMEM_SIZE"
-			if [[ -z "$(grep '^memlock' /etc/security/limits.conf)" ]]; then
+			sed -i '/hard memlock/d' /etc/security/limits.conf
+			sed -i '/soft memlock/d' /etc/security/limits.conf
+			if [[ -z "$(grep 'soft memlock' /etc/security/limits.conf)" ]]; then
 				echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
 				echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
 				echo

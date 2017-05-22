@@ -21,16 +21,6 @@ detect_tlsonethree() {
   fi
 }
 
-libresslcompile_fix() {
-	if [[ "$(grep install_sw auto/lib/openssl/make >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-		if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-			if [ -f auto/lib/openssl/make ]; then
-				sed -i 's|install_sw LIBDIR=lib|install LIBDIR=lib|' auto/lib/openssl/make
-			fi
-		fi
-	fi
-}
-
 dynamicmodule_file() {
 	if [ "$ngver" ]; then
 		NGINX_DIRINSTALL="$DIR_TMP/nginx-${ngver}"
@@ -125,6 +115,16 @@ luaworkaroundfix() {
 		LIBRESSL_SWITCH='n'
 		luaopensslpatch
 	fi
+}
+
+libresslcompile_fix() {
+  if [[ "$(grep install_sw auto/lib/openssl/make >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+      if [ -f auto/lib/openssl/make ]; then
+        sed -i 's|install_sw LIBDIR=lib|install LIBDIR=lib|' auto/lib/openssl/make
+      fi
+    fi
+  fi
 }
 
 funct_nginxconfigure() {

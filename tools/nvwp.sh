@@ -18,6 +18,7 @@ OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh
 # CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
+USE_NGINXMAINEXTLOGFORMAT='n'
 ################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -74,7 +75,7 @@ fi
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
-    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    if [[ "$USE_NGINXMAINEXTLOGFORMAT" = [yY] && "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
       NGX_LOGFORMAT='main_ext'
     else
       NGX_LOGFORMAT='combined'

@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.24'
+ACMEVER='1.0.28'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -13,6 +13,7 @@ ACMEGITURL='https://github.com/Neilpang/acme.sh.git'
 ACMEBACKUPDIR='/usr/local/nginx/conf/acmevhostbackup'
 ACMESH_BACKUPDIR='/home/acmesh-backups'
 ACMECERTHOME='/root/.acme.sh/'
+ACME_MUSTSTAPLE='n'
 # options for KEYLENGTH
 # 2048, 3072, 4096, 8192, ec-256, ec-384
 KEYLENGTH='2048'
@@ -20,6 +21,7 @@ KEYLENGTH='2048'
 RENEWDAYS='60'
 
 CENTMINLOGDIR='/root/centminlogs'
+USE_NGINXMAINEXTLOGFORMAT='n'
 DIR_TMP='/svr-setup'
 MAIN_HOSTNAMEVHOSTFILE='/usr/local/nginx/conf/conf.d/virtual.conf'
 MAIN_HOSTNAMEVHOSTSSLFILE='/usr/local/nginx/conf/conf.d/virtual.ssl.conf'
@@ -205,6 +207,12 @@ else
   ACMEDEBUG_OPT=""
 fi
 
+if [[ "$ACME_MUSTSTAPLE" = [yY] ]]; then
+  ACMEOCSP=' --ocsp'
+else
+  ACMEOCSP=''
+fi
+
 if [[ "$KEYLENGTH" = 'ec-256' || "$KEYLENGTH" = 'ec-384' ]]; then
   ECCFLAG=' --ecc'
   ECC_SUFFIX='-ecc'
@@ -218,7 +226,7 @@ fi
   # extended custom nginx log format = main_ext for nginx amplify metric support
   # https://github.com/nginxinc/nginx-amplify-doc/blob/master/amplify-guide.md#additional-nginx-metrics
   if [ -f /usr/local/nginx/conf/nginx.conf ]; then
-    if [[ "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    if [[ "$USE_NGINXMAINEXTLOGFORMAT" = [yY] && "$(grep 'main_ext' /usr/local/nginx/conf/nginx.conf)" ]]; then
       NGX_LOGFORMAT='main_ext'
     else
       NGX_LOGFORMAT='combined'
@@ -259,7 +267,7 @@ checkdate() {
    echo "----------------------------------------------"
    echo "acme.sh obtained"
    echo "----------------------------------------------"
-   for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain|ca'); do
+   for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain.cer|ca.cer'); do
     if [ -f $ca ]; then
       expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
       fingerprint=$(openssl x509 -fingerprint -noout -in $ca | sed 's|:||g' | awk -F "=" '// {print $2}')
@@ -1448,8 +1456,8 @@ issue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1470,7 +1478,7 @@ issue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY"  --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
@@ -1687,8 +1695,8 @@ reissue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1709,8 +1717,8 @@ reissue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
-     echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1920,8 +1928,8 @@ renew_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1942,8 +1950,8 @@ renew_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2205,8 +2213,8 @@ webroot_issueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2227,8 +2235,8 @@ webroot_issueacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2492,8 +2500,8 @@ webroot_reissueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2751,8 +2759,8 @@ webroot_renewacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2773,8 +2781,8 @@ webroot_renewacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then

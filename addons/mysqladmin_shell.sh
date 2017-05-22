@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.6
+VER=0.0.7
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -207,90 +207,104 @@ createuserglobal() {
 }
 
 createuserdb() {
+	UNATTENDED=$1
+	cinput_dbname=$2
+	cinput_dbuser=$3
+	cinput_dbpass=$4
 
-read -ep " Do you want to create a new MySQL username (type = y) or `echo $'\n '`Add a new database name to existing MySQL username (type = n) ? `echo $'\n '`Enter y or n: " createnewuser
-
-if [[ "$createnewuser" = [yY] ]]; then
-	cecho "---------------------------------" $boldyellow
-	cecho "Create MySQL username:" $boldgreen
-	cecho "---------------------------------" $boldyellow
-
-	read -ep " Enter new MySQL username you want to create: " newmysqluser
-	read -ep " Enter new MySQL username's password: " newmysqluserpass
-else
-	createnewuser='n'
-	cecho "-------------------------------------------------------------------------" $boldyellow
-	cecho "Add new database name to existing MySQL username:" $boldgreen
-	cecho "-------------------------------------------------------------------------" $boldyellow
-	read -ep " Enter existing MySQL username you want to add new database name to: " existingmysqluser
-fi
-
-cecho "---------------------------------" $boldyellow
-cecho "Create MySQL database:" $boldgreen
-cecho "---------------------------------" $boldyellow
-
-read -ep " Enter new MySQL database name: " newdbname
-
-echo
-
-if [[ "$rootset" = [yY] && "$createnewuser" = [yY] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
-
-	ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-		echo ""
-		cecho "Error: command was unsuccessful" $boldgreen
-		echo
-	else 
-		echo ""
-		cecho "Ok: MySQL user: $newmysqluser MySQL database: $newdbname created successfully" $boldyellow
-		echo
+	if [[ "$UNATTENDED" = 'unattended' ]]; then
+		MYSQLOPTS="--defaults-extra-file=${MYSQLEXTRA_FILE}"
+		rootset=y
+		createnewuser=y
+		newmysqluser=$cinput_dbuser
+		newmysqluserpass=$cinput_dbpass
+		newdbname=$cinput_dbname
 	fi
 
-elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
-
-	ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-		echo ""
-		cecho "Error: command was unsuccessful" $boldgreen
+	if [[ "$UNATTENDED" != 'unattended' ]]; then
+		read -ep " Do you want to create a new MySQL username (type = y) or `echo $'\n '`Add a new database name to existing MySQL username (type = n) ? `echo $'\n '`Enter y or n: " createnewuser
+		
+		if [[ "$createnewuser" = [yY] ]]; then
+			cecho "---------------------------------" $boldyellow
+			cecho "Create MySQL username:" $boldgreen
+			cecho "---------------------------------" $boldyellow
+		
+			read -ep " Enter new MySQL username you want to create: " newmysqluser
+			read -ep " Enter new MySQL username's password: " newmysqluserpass
+		else
+			createnewuser='n'
+			cecho "-------------------------------------------------------------------------" $boldyellow
+			cecho "Add new database name to existing MySQL username:" $boldgreen
+			cecho "-------------------------------------------------------------------------" $boldyellow
+			read -ep " Enter existing MySQL username you want to add new database name to: " existingmysqluser
+		fi
+		
+		cecho "---------------------------------" $boldyellow
+		cecho "Create MySQL database:" $boldgreen
+		cecho "---------------------------------" $boldyellow
+		
+		read -ep " Enter new MySQL database name: " newdbname
+		
 		echo
-	else 
-		echo ""
-		cecho "Ok: MySQL user: $newmysqluser MySQL database: $newdbname created successfully" $boldyellow
-		echo
-	fi
-
-elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
-
-	ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-		echo ""
-		cecho "Error: command was unsuccessful" $boldgreen
-		echo
-	else 
-		echo ""
-		cecho "Ok: New MySQL database: $newdbname assigned to existing MySQL user: $existingmysqluser" $boldyellow
-		echo
-	fi
-
-elif [[ "$rootset" = [yY] && "$createnewuser" = [nN] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
-
-	ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-		echo ""
-		cecho "Error: command was unsuccessful" $boldgreen
-		echo
-	else 
-		echo ""
-		cecho "Ok: New MySQL database: $newdbname assigned to existing MySQL user: $existingmysqluser" $boldyellow
-		echo
-	fi
-
-fi
-
+	fi # if UNATTENDED != unattended
+		
+		if [[ "$rootset" = [yY] && "$createnewuser" = [yY] ]]; then
+	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary 		tables, execute, lock tables ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+		
+			ERROR=$?
+			if [[ "$ERROR" != '0' ]]; then
+				echo ""
+				cecho "Error: command was unsuccessful" $boldgreen
+				echo
+			else 
+				echo ""
+				cecho "Ok: MySQL user: $newmysqluser MySQL database: $newdbname created successfully" $boldyellow
+				echo
+			fi
+		
+		elif [[ "$rootset" = [nN] && "$createnewuser" = [yY] ]]; then
+	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; CREATE USER '$newmysqluser'@'$MYSQLHOSTNAME' IDENTIFIED BY '$newmysqluserpass'; GRANT index, select, insert, delete, update, create, drop, alter, create temporary 		tables, execute, lock tables ON \`$newdbname\`.* TO '$newmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$newmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+		
+			ERROR=$?
+			if [[ "$ERROR" != '0' ]]; then
+				echo ""
+				cecho "Error: command was unsuccessful" $boldgreen
+				echo
+			else 
+				echo ""
+				cecho "Ok: MySQL user: $newmysqluser MySQL database: $newdbname created successfully" $boldyellow
+				echo
+			fi
+		
+		elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
+	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$existingmysqluser'@'$		MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+		
+			ERROR=$?
+			if [[ "$ERROR" != '0' ]]; then
+				echo ""
+				cecho "Error: command was unsuccessful" $boldgreen
+				echo
+			else 
+				echo ""
+				cecho "Ok: New MySQL database: $newdbname assigned to existing MySQL user: $existingmysqluser" $boldyellow
+				echo
+			fi
+		
+		elif [[ "$rootset" = [yY] && "$createnewuser" = [nN] ]]; then
+	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables ON \`$newdbname\`.* TO '$existingmysqluser'@'$		MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+		
+			ERROR=$?
+			if [[ "$ERROR" != '0' ]]; then
+				echo ""
+				cecho "Error: command was unsuccessful" $boldgreen
+				echo
+			else 
+				echo ""
+				cecho "Ok: New MySQL database: $newdbname assigned to existing MySQL user: $existingmysqluser" $boldyellow
+				echo
+			fi
+		
+		fi
 }
 
 changeuserpass() {
@@ -443,6 +457,13 @@ case "$1" in
 		mysqlperm
 		createuserdb
 		;;
+	createuserdb)
+		input_dbname=$1
+		input_dbuser=$2
+		input_dbpass=$3
+		mysqlperm
+		createuserdb unattended $input_dbname $input_dbuser $input_dbpass
+		;;
 	setpass)
 		mysqlperm
 		changeuserpass
@@ -457,12 +478,13 @@ case "$1" in
 		;;
 	*)
 		echo ""
-		cecho "$0 {multidb|setglobaluser|setuserdb|setpass|deluser|showgrants}" $boldyellow
+		cecho "$0 {multidb|setglobaluser|setuserdb|setpass|createuserdb|deluser|showgrants}" $boldyellow
 		echo ""
 cecho "multidb - multiple mysql databse/user creation mode passing a file name containing db, user, pass 3 column entries
 setglobaluser - create a mysql username with access to all databases on server without SUPER ADMIN privileges (non-root)
 setuserdb - create individual mysql username and databases or assign a new database to an existing mysql username
 setpass - change mysql username password
+createuserdb - unattended create individual mysql username & databases fields required are dbname dbuser dbpass
 deluser - delete a mysql usernames
 showgrants - show existing mysql username granted privileges" $boldyellow
 		;;
