@@ -286,6 +286,17 @@ CCACHE_VER="3.3.4"
 CCACHESIZE='2.2G'
 
 #####################################################
+# Networking
+# do not edit below variables but instead set them in
+# /etc/centminmod/custom_config.inc as outlined on 
+# official site at 
+# http://centminmod.com/upgrade.html#persistent to
+# override defaults
+# disable system IPv6 support
+# https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
+DISABLE_IPVSIX='n'
+
+#####################################################
 # experimental use of subshells to download some
 # tarballs in parallel for faster initial installs
 PARALLEL_MODE=y
