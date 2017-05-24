@@ -343,9 +343,9 @@ installopenssl() {
                     TLSONETHREEOPT=""
                     TLSONETHREE_DETECT='n'
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
             else
-                ./config --prefix=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
@@ -357,9 +357,9 @@ installopenssl() {
                     TLSONETHREEOPT=""
                     TLSONETHREE_DETECT='n'
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${TLSONETHREEOPT}
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}
             else
-                ./config --prefix=$STATICLIBSSL shared enable-tlsext
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext
             fi
         fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
