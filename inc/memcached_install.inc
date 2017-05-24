@@ -147,6 +147,9 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
             popd
         fi
     fi
+    if [[ ! "$(grep -w '\-a 0766' /etc/init.d/memcached)" ]]; then
+      sed -i 's|0775|0766|g' /etc/init.d/memcached
+    fi # 766 fix
 
     echo "Downloading memcached..."
     cd "$DIR_TMP"

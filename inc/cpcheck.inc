@@ -1068,6 +1068,9 @@ memcachedupdatechecks() {
               popd
           fi
       fi
+      if [[ ! "$(grep -w '\-a 0766' /etc/init.d/memcached)" ]]; then
+        sed -i 's|0775|0766|g' /etc/init.d/memcached
+      fi # 766 fix
 		fi # init.d check
 	fi
 }
