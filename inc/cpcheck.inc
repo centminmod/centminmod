@@ -100,6 +100,9 @@ checkipvsix() {
   # disable system IPv6 support
   # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
   if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
+    if [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '0' ]]; then
+      DETECH_CHANGES='y'
+    fi
     if [[ ! "$(grep 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf)" ]]; then
       echo 'net.ipv6.conf.all.disable_ipv6 = 1' >> /etc/sysctl.conf
       sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null 2>&1
@@ -115,6 +118,9 @@ checkipvsix() {
       sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
+    if [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '1' ]]; then
+      DETECH_CHANGES='y'
+    fi
     if [[ ! "$(grep 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf)" ]]; then
       echo 'net.ipv6.conf.all.disable_ipv6 = 0' >> /etc/sysctl.conf
       sysctl -w net.ipv6.conf.all.disable_ipv6=0 >/dev/null 2>&1
@@ -146,6 +152,9 @@ checkipvsix() {
   elif [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '1' && "$(sysctl -a | awk '/net.ipv6.conf.default.disable_ipv6/ {print $NF}')" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1
+  fi
+  if [[ "$DETECH_CHANGES" = [yY] ]]; then
+    service network restart >/dev/null 2>&1
   fi
 }
 
