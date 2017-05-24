@@ -100,7 +100,7 @@ checkipvsix() {
   # disable system IPv6 support
   # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
   if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
-    if [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '0' ]]; then
+    if [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' ]]; then
       DETECH_CHANGES='y'
     fi
     if [[ ! "$(grep 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf)" ]]; then
@@ -118,7 +118,7 @@ checkipvsix() {
       sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
-    if [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '1' ]]; then
+    if [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' ]]; then
       DETECH_CHANGES='y'
     fi
     if [[ ! "$(grep 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf)" ]]; then
@@ -136,20 +136,20 @@ checkipvsix() {
       sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null 2>&1
     fi
   fi
-  if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '0' && "$(sysctl -a | awk '/net.ipv6.conf.default.disable_ipv6/ {print $NF}')" -eq '0' ]]; then
+  if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1
     NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
-  elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]] && [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '1' && "$(sysctl -a | awk '/net.ipv6.conf.default.disable_ipv6/ {print $NF}')" -eq '1' ]]; then
+  elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1
-  elif [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '0' && "$(sysctl -a | awk '/net.ipv6.conf.default.disable_ipv6/ {print $NF}')" -eq '0' ]]; then
+  elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1
     NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
-  elif [[ "$(sysctl -a | awk '/net.ipv6.conf.all.disable_ipv6/ {print $NF}')" -eq '1' && "$(sysctl -a | awk '/net.ipv6.conf.default.disable_ipv6/ {print $NF}')" -eq '1' ]]; then
+  elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
     csf -r  > /dev/null 2>&1
   fi
