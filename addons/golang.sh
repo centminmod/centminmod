@@ -5,7 +5,7 @@ VER='0.0.4'
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
-GO_VERSION='1.8.2'
+GO_VERSION='1.8.3'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
