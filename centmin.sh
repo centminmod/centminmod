@@ -543,8 +543,8 @@ BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default s
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
 GPERFTOOLS_SOURCEINSTALL='n'
-LIBUNWIND_VERSION='1.2-rc1'     # note google perftool specifically requies v0.99 and no other
-GPERFTOOLS_VERSION='2.5'     # Use this version of google-perftools
+LIBUNWIND_VERSION='1.2'     # note google perftool specifically requies v0.99 and no other
+GPERFTOOLS_VERSION='2.5.93'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
 PCRE_SOURCEINSTALL='n'     
