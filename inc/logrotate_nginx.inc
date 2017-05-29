@@ -45,7 +45,6 @@ fi
 if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
-        su nginx nginx
         daily
         dateext
         missingok
@@ -62,7 +61,6 @@ END
 else
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
-        su nginx nginx
         daily
         dateext
         missingok

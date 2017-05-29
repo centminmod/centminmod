@@ -823,7 +823,7 @@ mjemalloc() {
 
 fixlogrotate() {
 	if [ -f /etc/logrotate.d/nginx ]; then
-	if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || -z "$(grep -w 'su nginx' /etc/logrotate.d/nginx)" ]]; then
+	if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || "$(grep -w 'su nginx' /etc/logrotate.d/nginx)" ]]; then
 		# sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
 	if [[ "$CENTOS_SEVEN" = '7' ]]; then
 		VARDFSIZE=$(df --output=avail /var | tail -1)
@@ -833,7 +833,6 @@ fixlogrotate() {
 if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
-        su nginx nginx
         daily
         dateext
         missingok
@@ -850,7 +849,6 @@ END
 else
 cat > "/etc/logrotate.d/nginx" <<END
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
-        su nginx nginx
         daily
         dateext
         missingok
