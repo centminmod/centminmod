@@ -483,7 +483,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   fi
 
 	if [[ "$NGINX_ACCESSKEY" = [yY] ]]; then
-		ACCESSKEYOPT=" --add-module=../nginx-accesskey-2.0.3"
+		ACCESSKEYOPT=" --add-module=../nginx-accesskey-master"
 	else
 		ACCESSKEYOPT=""
 	fi		
