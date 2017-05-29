@@ -2,6 +2,7 @@
 # nano -w /etc/logrotate.d/nginx
 
 /var/log/nginx/*.log /usr/local/nginx/logs/*.log /home/nginx/domains/*/log/*.log {
+        su nginx nginx
         daily
         missingok
         rotate 10
