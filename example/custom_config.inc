@@ -74,7 +74,7 @@ PHP_UPDATEMAINTENANCE='n'
 MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
-NGINX_VERSION='1.13.0'       # Use this version of Nginx
+NGINX_VERSION='1.13.1'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
