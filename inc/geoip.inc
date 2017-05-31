@@ -61,7 +61,6 @@ geoip.custom_directory=/usr/share/GeoIP
 EOF
 	else
 		echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
-	fi # geoip directory check
 fi
     fi # PHP_INSTALL=y
 }
