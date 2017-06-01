@@ -1,5 +1,6 @@
 # logrotate
 # nano -w /etc/logrotate.d/mysql
+# logrotate -df /etc/logrotate.d/mysql
 
 function funct_listlogmysqlrotatedir {
 

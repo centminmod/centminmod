@@ -286,6 +286,17 @@ CCACHE_VER="3.3.4"
 CCACHESIZE='2.2G'
 
 #####################################################
+# Networking
+# do not edit below variables but instead set them in
+# /etc/centminmod/custom_config.inc as outlined on 
+# official site at 
+# http://centminmod.com/upgrade.html#persistent to
+# override defaults
+# disable system IPv6 support
+# https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
+DISABLE_IPVSIX='n'
+
+#####################################################
 # experimental use of subshells to download some
 # tarballs in parallel for faster initial installs
 PARALLEL_MODE=y
@@ -432,7 +443,7 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.9rc3'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.9rc5'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.19'       # openresty https://github.com/openresty/lua-resty-mysql
@@ -445,7 +456,7 @@ ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.12rc3' # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUARESTYCOREVER='0.1.12rc5' # openresty https://github.com/openresty/lua-resty-core
 ORESTY_LUAUPSTREAMVER='0.06'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 NGX_LUAUPSTREAM='n'                # disable https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
@@ -503,7 +514,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.13.0'       # Use this version of Nginx
+NGINX_VERSION='1.13.1'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
@@ -514,8 +525,8 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2k'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.0.2k'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION='1.0.2l'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.0.2l'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
 CLOUDFLARE_PATCHSSL='y'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
@@ -532,8 +543,8 @@ BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default s
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
 GPERFTOOLS_SOURCEINSTALL='n'
-LIBUNWIND_VERSION='1.2-rc1'     # note google perftool specifically requies v0.99 and no other
-GPERFTOOLS_VERSION='2.5'     # Use this version of google-perftools
+LIBUNWIND_VERSION='1.2'     # note google perftool specifically requies v0.99 and no other
+GPERFTOOLS_VERSION='2.5.93'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
 PCRE_SOURCEINSTALL='n'     
@@ -544,7 +555,7 @@ IMAGICKPHP_VER='3.4.3'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
 MEMCACHED_INSTALL='y'         # Install Memcached
-LIBEVENT_VERSION='2.0.22'   # Use this version of Libevent
+LIBEVENT_VERSION='2.1.8'   # Use this version of Libevent
 MEMCACHED_VERSION='1.4.36'  # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'    # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server

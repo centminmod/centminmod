@@ -1,5 +1,6 @@
 # logrotate
 # nano -w /etc/logrotate.d/php-fpm
+# logrotate -df /etc/logrotate.d/php-fpm
 
 function funct_listphplogrotatedir {
 

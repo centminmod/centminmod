@@ -307,8 +307,8 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2k'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.0.2k'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION='1.0.2l'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.0.2l'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
 CLOUDFLARE_PATCHSSL='y'    # set 'y' to implement Cloudflare's chacha20 patch https://github.com/cloudflare/sslconfig
 NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
 
@@ -323,8 +323,8 @@ BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default s
 # Choose whether to compile Nginx --with-google_perftools_module
 # no longer used in Centmin Mod v1.2.3-eva2000.01 and higher
 GPERFTOOLS_SOURCEINSTALL='n'
-LIBUNWIND_VERSION='1.2-rc1'     # note google perftool specifically requies v0.99 and no other
-GPERFTOOLS_VERSION='2.5'     # Use this version of google-perftools
+LIBUNWIND_VERSION='1.2'     # note google perftool specifically requies v0.99 and no other
+GPERFTOOLS_VERSION='2.5.93'     # Use this version of google-perftools
 
 WGETOPT='-cnv --no-dns-cache -4'
 

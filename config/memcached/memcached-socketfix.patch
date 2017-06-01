@@ -7,9 +7,9 @@
 -SOCKETA='-s /var/run/memcached/memcached1.sock -a 0755'
 -SOCKETB='-s /var/run/memcached/memcached2.sock -a 0755'
 +SOCKETNAMEA='/var/run/memcached/memcached1.sock'
-+SOCKETA="-s $SOCKETNAMEA -a 0775"
++SOCKETA="-s $SOCKETNAMEA -a 0766"
 +SOCKETNAMEB='/var/run/memcached/memcached2.sock'
-+SOCKETB="-s $SOCKETNAMEB -a 0775"
++SOCKETB="-s $SOCKETNAMEB -a 0766"
  MEMSIZE=8
  SERVERCOUNT=1
  SERVERIP='127.0.0.1'

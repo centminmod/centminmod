@@ -1,5 +1,6 @@
 # logrotate
 # nano -w /etc/logrotate.d/nginx
+# logrotate -df /etc/logrotate.d/nginx
 
 function funct_listlogrotatedir {
 

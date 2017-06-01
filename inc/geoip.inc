@@ -23,14 +23,26 @@ if [[ -d /usr/share/GeoIP ]]; then
 	
 	echo "compiling geoip PHP extension..."
 	cd $DIR_TMP
-	if [[ ! -d ${DIR_TMP}/geoip ]]; then
-		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
+	# fallback mirror if official php svn repo is down, use local centmin mod mirror
+	# each php recompile will check again so if php svn repo is backup, the source
+	# code will switch back to official php svn repo again
+  curl -sI --connect-timeout 5 --max-time 5 http://svn.php.net/repository/pecl/geoip/trunk/ | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+  SVNGEOIP_CURLCHECK=$?
+  if [[ "$SVNGEOIP_CURLCHECK" != '0' ]]; then
+  	if [ -d geoip ]; then
+  		\cp -Rpf geoip geoip-backup
+  		rm -rf geoip
+  	fi
+  	git clone https://github.com/centminmod/geoip geoip
+  	sar_call
+  else
+  	if [ -d geoip ]; then
+  		\cp -Rpf geoip geoip-backup
+  		rm -rf geoip
+  	fi
+		svn checkout http://svn.php.net/repository/pecl/geoip/trunk/ geoip
 		sar_call
-	fi
-	if [ -d geoip ]; then
-		rm -rf geoip
-		svn checkout http://svn.php.net/repository/pecl/geoip/trunk geoip
-		sar_call
+  fi
 		cd geoip
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
 			make clean
@@ -49,7 +61,6 @@ geoip.custom_directory=/usr/share/GeoIP
 EOF
 	else
 		echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
-	fi # geoip directory check
 fi
     fi # PHP_INSTALL=y
 }

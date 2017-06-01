@@ -274,6 +274,7 @@ installopenssl() {
         fi
         cp -a /etc/pki/tls/openssl.cnf /etc/pki/tls/openssl.cnf-bakb4libressl
         ln -s /etc/pki/tls/openssl.cnf /etc/ssl/openssl.cnf
+        \cp -Rpf /etc/ssl/certs/* /opt/libressl/etc/ssl/certs/
 
         if [[ "$CLANG" = [yY] ]]; then
             unset CC
@@ -343,9 +344,9 @@ installopenssl() {
                     TLSONETHREEOPT=""
                     TLSONETHREE_DETECT='n'
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
             else
-                ./config --prefix=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
@@ -357,9 +358,9 @@ installopenssl() {
                     TLSONETHREEOPT=""
                     TLSONETHREE_DETECT='n'
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL shared${TLSONETHREEOPT}
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}
             else
-                ./config --prefix=$STATICLIBSSL shared enable-tlsext
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext
             fi
         fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
@@ -374,6 +375,7 @@ installopenssl() {
         else
             rm -rf "${STATICLIBSSL}/lib64"
         fi
+        \cp -Rpf /etc/ssl/certs/* /opt/openssl/certs/
         crypto_gccunset
         opensslinstallendtime=$(TZ=UTC date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
