@@ -1225,16 +1225,19 @@ elif [[ ! -f /proc/user_beancounters ]]; then
     # total memory size is greater than 8GB
     # will give /tmp a size equal to 1/2 total memory
     if [[ "$TOTALMEM" -ge '8100001' ]]; then
-	   rm -rf /tmp
+	   cp -ar /tmp /tmp_backup
+       rm -rf /tmp
 	   mkdir -p /tmp
 	   mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
 	   chmod 1777 /tmp
+       cp -ar /tmp_backup/* /tmp
 	   echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
-	   rm -rf /var/tmp
+       rm -rf /var/tmp
 	   ln -s /tmp /var/tmp
     elif [[ "$TOTALMEM" -ge '2050061' || "$TOTALMEM" -lt '8100000' ]]; then
        # set on disk non-tmpfs /tmp to 4GB size
        # if total memory is between 2GB and <8GB
+       cp -ar /tmp /tmp_backup
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
         dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
@@ -1247,12 +1250,14 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        mkdir -p /tmp
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
+       cp -ar /tmp_backup/* /tmp
        echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
     elif [[ "$TOTALMEM" -ge '1153434' || "$TOTALMEM" -lt '2050060' ]]; then
        # set on disk non-tmpfs /tmp to 2GB size
        # if total memory is between 1.1-2GB
+       cp -ar /tmp /tmp_backup
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
         dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
@@ -1265,12 +1270,14 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        mkdir -p /tmp
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
+       cp -ar /tmp_backup/* /tmp
        echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp
     elif [[ "$TOTALMEM" -le '1153433' ]]; then
        # set on disk non-tmpfs /tmp to 1GB size
        # if total memory is <1.1GB
+       cp -ar /tmp /tmp_backup
        rm -rf /tmp
        if [[ "$HOME_DFSIZE" -le '15750000' ]]; then
         dd if=/dev/zero of=/home/usertmp_donotdelete bs=1024 count=1048576
@@ -1283,6 +1290,7 @@ elif [[ ! -f /proc/user_beancounters ]]; then
        mkdir -p /tmp
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
+       cp -ar /tmp_backup/* /tmp
        echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
        rm -rf /var/tmp
        ln -s /tmp /var/tmp       
