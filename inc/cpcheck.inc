@@ -6,6 +6,9 @@ update_initphpfpm() {
       systemctl daemon-reload
     fi
   fi
+  if [ ! -f /usr/bin/fpmconfigtest ]; then
+    echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
+  fi
 }
 
 update_phpfpmconfg() {
