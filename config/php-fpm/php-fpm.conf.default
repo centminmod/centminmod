@@ -29,6 +29,7 @@
 ; Default Value: log/php-fpm.log
 ;error_log = log/php-fpm.log
 
+[global]
 ; Log level
 ; Possible Values: alert, error, warning, notice, debug
 ; Default Value: notice
