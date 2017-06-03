@@ -220,7 +220,7 @@ cmservice() {
 }
 
 dbsetup() {
-  SALT=$(openssl rand -base64 12 | cut -c1-12 | sed -e s'|/||')
+  SALT=$(openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
@@ -555,8 +555,8 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 
 # wp-login.php password protection
 if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-  HTWPLOGINSALT=$(openssl rand -base64 13 | cut -c1-13)
-  HTWPLOGINSALTB=$(openssl rand -base64 19 | cut -c1-19)
+  HTWPLOGINSALT=$(openssl rand 14 -base64 | tr -dc 'a-zA-Z0-9')
+  HTWPLOGINSALTB=$(openssl rand 20 -base64 | tr -dc 'a-zA-Z0-9')
   HTWPLOGIN=$RANDOM
   HTWPLOGINB=$RANDOM
   HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"

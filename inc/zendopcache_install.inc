@@ -8,9 +8,9 @@ opprotectinstall() {
 gethtpasswdsh
 
 hname=$(hostname)
-OPSALT=$(openssl rand 3 -base64)
-OPUSER=$(echo "opadmin${CSALT}")
-OPPASS=$(openssl rand 16 -base64)
+OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
+OPUSER=$(echo "opadmin${OPSALT}")
+OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
 
 	echo ""
 	cecho "Creating htpasswd_opcache user/pass..." $boldyellow
@@ -127,8 +127,7 @@ fi
 
 ######################################################
 # Randomize ${N}_opcache.php filename
-N=$(od -vAn -N4 -tx < /dev/urandom)
-N=$(echo ${N} | sed -e 's/\s//')
+N=$(od -vAn -N8 -tx < /dev/urandom | sed -e 's/\s//g')
 echo
 echo "setup initial /usr/local/nginx/html/opcache.php"
 echo
