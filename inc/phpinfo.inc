@@ -18,5 +18,6 @@ phpiadmin() {
         cecho "PHP Info Login username: ${PHPIUSER}" $boldgreen
         cecho "PHP Info Login password: ${PHPIPASS}" $boldgreen
         echo "*************************************************"
+        echo
     fi
 }
