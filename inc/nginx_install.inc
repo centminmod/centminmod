@@ -349,14 +349,6 @@ fi
     chkconfig --levels 235 nginx on
 #fi # CENTOS_SEVEN != 7
 
-if [ -f /usr/local/nginx/html/phpi.php ]; then
-# Randomize phpi.php filename
-NPHP=$(od -vAn -N4 -tx < /dev/urandom)
-NPHP=$(echo ${NPHP} | sed -e 's/\s//')
-mv /usr/local/nginx/html/phpi.php /usr/local/nginx/html/${NPHP}_phpi.php
-chown nginx:nginx /usr/local/nginx/html/${NPHP}_phpi.php
-fi
-
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     # rackspace cloud servers block port 80 so need to allow it

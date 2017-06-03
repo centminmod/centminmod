@@ -737,6 +737,7 @@ source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"
 source "inc/luajit.inc"
+source "inc/phpinfo.inc"
 source "inc/nginx_install.inc"
 source "inc/nginx_upgrade.inc"
 source "inc/mailparse.inc"
@@ -1877,6 +1878,7 @@ checkxcacheadmin
 
 centminfinish
 memcacheadmin
+phpiadmin
 
     if [ -f "${CENTMINLOGDIR}/zendopcache_passfile.txt" ]; then
       echo "*************************************************"
