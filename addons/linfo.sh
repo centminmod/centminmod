@@ -113,9 +113,9 @@ rm -rf ${LINFOPATH}/config.inc.php
 ###########################################
 passp() {
 
-CSALT=$(openssl rand 5 -base64)
+CSALT=$(openssl rand 6 -base64 | tr -dc 'a-zA-Z0-9')
 CUSER=$(echo "admin${CSALT}")
-CPASS=$(openssl rand 10 -base64)
+CPASS=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
 hname=$(hostname)
 
 echo ""

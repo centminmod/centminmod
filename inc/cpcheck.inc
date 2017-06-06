@@ -1,3 +1,22 @@
+update_initphpfpm() {
+  if [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    \cp -f "${SCRIPT_DIR}/init/php-fpm" /etc/init.d/php-fpm
+    chmod +x /etc/init.d/php-fpm
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+      systemctl daemon-reload
+    fi
+  fi
+  if [ ! -f /usr/bin/fpmconfigtest ]; then
+    echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
+  fi
+}
+
+update_phpfpmconfg() {
+  if [[ -f /usr/local/etc/php-fpm.conf && "$(grep -qw '\[global\]' /usr/local/etc/php-fpm.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    sed -i '1i[global]' /usr/local/etc/php-fpm.conf
+  fi
+}
+
 update_cmdshortcuts() {
   if [ -f /usr/bin/ngxstop ]; then
     if [[ "$(grep 'service' /usr/bin/npstop)" ]]; then
@@ -1694,6 +1713,8 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixwp_updater
   update_nginxconf
   update_cmdshortcuts
+  update_initphpfpm
+  update_phpfpmconfg
 fi
 
 }

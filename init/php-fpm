@@ -1,5 +1,15 @@
 #!/bin/sh
 
+### BEGIN INIT INFO
+# Provides:          php-fpm
+# Required-Start:    $remote_fs $network
+# Required-Stop:     $remote_fs $network
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts php-fpm
+# Description:       starts the PHP FastCGI Process Manager daemon
+### END INIT INFO
+
 if [ -f /proc/user_beancounters ]; then
 ulimit -s 256
 fi
@@ -14,23 +24,6 @@ if [ ! -d /var/run/php-fpm ]; then
     chmod 0644 /var/run/php-fpm/php-fpm.pid
 fi
 
-### BEGIN INIT INFO
-# Provides:          php-fpm
-# Required-Start:    $remote_fs $network
-# Required-Stop:     $remote_fs $network
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
-# Short-Description: starts php-fpm
-# Description:       starts the PHP FastCGI Process Manager daemon
-### END INIT INFO
-
-#prefix=@prefix@
-#exec_prefix=${prefix}
-
-#php_fpm_BIN=@sbindir@/php-fpm
-#php_fpm_CONF=@sysconfdir@/php-fpm.conf
-#php_fpm_PID=@localstatedir@/run/php-fpm.pid
-
 prefix=/usr/local
 exec_prefix=${prefix}
 
@@ -38,9 +31,7 @@ php_fpm_BIN=${prefix}/sbin/php-fpm
 php_fpm_CONF=${prefix}/etc/php-fpm.conf
 php_fpm_PID=/var/run/php-fpm/php-fpm.pid
 
-
-php_opts="--fpm-config $php_fpm_CONF"
-
+php_opts="--fpm-config $php_fpm_CONF --pid $php_fpm_PID"
 
 wait_for_pid () {
         try=0
@@ -71,13 +62,11 @@ wait_for_pid () {
 
 }
 
-kill -0 `cat /var/run/php-fpm/php-fpm.pid 2>/dev/null` &> /dev/null
-running=$?
 case "$1" in
         start)
                 echo -n "Starting php-fpm "
 
-                $php_fpm_BIN $php_opts
+                $php_fpm_BIN --daemonize $php_opts
 
                 if [ "$?" != 0 ] ; then
                         echo " failed"
@@ -107,10 +96,24 @@ case "$1" in
                 wait_for_pid removed $php_fpm_PID
 
                 if [ -n "$try" ] ; then
-                        echo " failed. Use force-exit"
+                        echo " failed. Use force-quit"
                         exit 1
                 else
                         echo " done"
+                fi
+        ;;
+
+        status)
+                if [ ! -r $php_fpm_PID ] ; then
+                        echo "php-fpm is stopped"
+                        exit 0
+                fi
+
+                PID=`cat $php_fpm_PID`
+                if ps -p $PID | grep -q $PID; then
+                        echo "php-fpm (pid $PID) is running..."
+                else
+                        echo "php-fpm dead but pid file exists"
                 fi
         ;;
 
@@ -139,14 +142,6 @@ case "$1" in
                 $0 start
         ;;
 
-        status)
-                if [ "$running" = '0' ]; then
-                    echo "php-fpm is running"
-                else
-                    echo "php-fpm is not running"
-                fi
-        ;;
-
         reload)
 
                 echo -n "Reload service php-fpm "
@@ -161,8 +156,11 @@ case "$1" in
                 echo " done"
         ;;
 
+        configtest)
+                $php_fpm_BIN -t
+        ;;
         *)
-                echo "Usage: $0 {start|stop|force-quit|restart|status|reload}"
+                echo "Usage: $0 {start|stop|force-quit|restart|reload|status|configtest}"
                 exit 1
         ;;
 

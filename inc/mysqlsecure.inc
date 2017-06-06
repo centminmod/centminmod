@@ -1,5 +1,5 @@
 securemysql() {
-THEMYSQLPASS=$(openssl rand 12 -base64)
+THEMYSQLPASS=$(openssl rand 21 -base64 | tr -dc 'a-zA-Z0-9')
 
 # mysql -e "DELETE FROM mysql.user WHERE User=""; FLUSH PRIVILEGES;"
 # mysqladmin -u root password $THEMYSQLPASS
