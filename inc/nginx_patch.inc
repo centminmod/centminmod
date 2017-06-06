@@ -1,3 +1,28 @@
+ngx_httppush_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$NGINX_HTTPPUSH" = [yY] && "$DETECT_NGXVER" -ge '1011012' ]]; then
+    NGX_HTTPPUSHDIR='http2-push-nginx-module'
+    if [[ -d "${DIR_TMP}/${NGX_HTTPPUSHDIR}" || ! -d "${DIR_TMP}/${NGX_HTTPPUSHDIR}" ]]; then
+      rm -rf "${DIR_TMP}/${NGX_HTTPPUSHDIR}"
+      pushd "${DIR_TMP}"
+      git clone https://github.com/ghedo/http2-push-nginx-module
+      pushd "${DIR_TMP}/${NGX_HTTPPUSHDIR}"
+      cecho "patching nginx http2 push for community.centminmod.com/threads/11910/" $boldyellow
+      cecho "patch -p0 < $CUR_DIR/patches/nginx-http2push/nginx_1.11.12_http2_server_push.patch" $boldyellow
+      patch -p01 < "$CUR_DIR/patches/nginx-http2push/nginx_1.11.12_http2_server_push.patch"
+      echo 
+      echo "patching nginx http2 push for nginx 1.11.12+"
+      popd
+    fi
+  fi
+}
+
 ngx_cachepurge_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
