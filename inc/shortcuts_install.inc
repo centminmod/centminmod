@@ -68,6 +68,7 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo "/etc/init.d/php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
     echo "/etc/init.d/php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
     echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
+    echo "/etc/init.d/php-fpm status" >/usr/bin/fpmstatus ; chmod 700 /usr/bin/fpmstatus
 
     if [ -f /etc/init.d/mysql ]; then
     
