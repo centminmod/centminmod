@@ -1,25 +1,25 @@
 ########################################################################
 phpng_download() {
-	if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.1.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.1.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.1.0RC'  ]]; then
+	if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.2.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.2.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.2.0RC'  ]]; then
 			PHPNGVER=$PHPMU_ALPHAVER
-		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~krakjoe/" $boldyellow
+		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~pollita/" $boldyellow
 		cd $DIR_TMP
-		if [ -f php-${PHPNGVER}.tar.gz ]; then
-			rm -rf php-${PHPNGVER}.tar.gz
+		if [ -f php-${PHPNGVER}.tar.xz ]; then
+			rm -rf php-${PHPNGVER}.tar.xz
 		fi
 		if [ -d php-${PHPNGVER} ]; then
 			rm -rf php-${PHPNGVER}
 		fi
 ####################################################################
-        cecho "Download php-${PHPNGVER}.tar.gz ..." $boldyellow
-    	if [ -s php-${PHPNGVER}.tar.gz ]; then
-       	 cecho "php-${PHPNGVER}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download php-${PHPNGVER}.tar.xz ..." $boldyellow
+    	if [ -s php-${PHPNGVER}.tar.xz ]; then
+       	 cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
     	else
-        	echo "wget -cnv https://downloads.php.net/~krakjoe/php-${PHPNGVER}.tar.gz --tries=3"
-        	wget -cnv https://downloads.php.net/~krakjoe/php-${PHPNGVER}.tar.gz --tries=3
+        	echo "wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.xz --tries=3"
+        	wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.xz --tries=3
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
-				cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen
+				cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
 				checklogdetails
 				exit #$ERROR
 			else 
@@ -28,14 +28,14 @@ phpng_download() {
 			fi
     	fi
 
-		tar xzf php-${PHPNGVER}.tar.gz 
+		tar xzf php-${PHPNGVER}.tar.xz 
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
-				cecho "Error: php-${PHPNGVER}.tar.gz extraction failed." $boldgreen
+				cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
 				checklogdetails
 				exit #$ERROR
 			else 
-        	 	cecho "php-${PHPNGVER}.tar.gz valid file." $boldyellow
+        	 	cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
 				echo ""
 			fi		
 ####################################################################	
