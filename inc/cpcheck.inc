@@ -1,3 +1,9 @@
+cityfan_fix() {
+  if [[ -f /etc/yum.repos.d/city-fan.org.repo && ! $(grep libtidy /etc/yum.repos.d/city-fan.org.repo) ]]; then
+    sed -i 's|^gpgkey=.*|&\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
+  fi
+}
+
 update_initphpfpm() {
   if [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
     \cp -f "${SCRIPT_DIR}/init/php-fpm" /etc/init.d/php-fpm
@@ -1715,6 +1721,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_cmdshortcuts
   update_initphpfpm
   update_phpfpmconfg
+  cityfan_fix
 fi
 
 }
