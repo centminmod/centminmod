@@ -123,7 +123,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 			PRIOREXISTS=1
 		else
       echo "setting yum priorities for city-fan.org.repo"
-      sed -i 's|^gpgkey=.*|&\npriority=99|' /etc/yum.repos.d/city-fan.org.repo
+      sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
 		fi
 	fi # repo file check
 	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
@@ -154,7 +154,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 			PRIOREXISTS=1
   	else
       echo "setting yum priorities for city-fan.org.repo"
-			sed -i 's|^gpgkey=.*|&\npriority=99|' /etc/yum.repos.d/city-fan.org.repo
+			sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
 		fi
 	fi # repo file check
 	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
@@ -185,7 +185,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 			PRIOREXISTS=1
   	else
       echo "setting yum priorities for city-fan.org.repo"
-      sed -i 's|^gpgkey=.*|&\npriority=99|' /etc/yum.repos.d/city-fan.org.repo
+      sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
 		fi
 	fi # repo file check
 	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
