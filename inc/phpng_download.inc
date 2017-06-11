@@ -4,22 +4,22 @@ phpng_download() {
 			PHPNGVER=$PHPMU_ALPHAVER
 		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~pollita/" $boldyellow
 		cd $DIR_TMP
-		if [ -f php-${PHPNGVER}.tar.gz ]; then
-			rm -rf php-${PHPNGVER}.tar.gz
+		if [ -f php-${PHPNGVER}.tar.xz ]; then
+			rm -rf php-${PHPNGVER}.tar.xz
 		fi
 		if [ -d php-${PHPNGVER} ]; then
 			rm -rf php-${PHPNGVER}
 		fi
 ####################################################################
-        cecho "Download php-${PHPNGVER}.tar.gz ..." $boldyellow
-    	if [ -s php-${PHPNGVER}.tar.gz ]; then
-       	 cecho "php-${PHPNGVER}.tar.gz found, skipping download..." $boldgreen
+        cecho "Download php-${PHPNGVER}.tar.xz ..." $boldyellow
+    	if [ -s php-${PHPNGVER}.tar.xz ]; then
+       	 cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
     	else
-        	echo "wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.gz --tries=3"
-        	wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.gz --tries=3
+        	echo "wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.xz --tries=3"
+        	wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.xz --tries=3
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
-				cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen
+				cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
 				checklogdetails
 				exit #$ERROR
 			else 
@@ -28,14 +28,14 @@ phpng_download() {
 			fi
     	fi
 
-		tar xzf php-${PHPNGVER}.tar.gz 
+		tar xJf php-${PHPNGVER}.tar.xz 
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
-				cecho "Error: php-${PHPNGVER}.tar.gz extraction failed." $boldgreen
+				cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
 				checklogdetails
 				exit #$ERROR
 			else 
-        	 	cecho "php-${PHPNGVER}.tar.gz valid file." $boldyellow
+        	 	cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
 				echo ""
 			fi		
 ####################################################################	
