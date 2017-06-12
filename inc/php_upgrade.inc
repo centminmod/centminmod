@@ -485,6 +485,10 @@ fi
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
             echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            echo "time ./sapi/cgi/php-cgi -T20 ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T20 ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T10 ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T10 ../Zend/micro_bench.php
             if [ -f "$PHPPGO_INDEXPATH" ]; then
                 echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
                 time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"
@@ -499,6 +503,10 @@ fi
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
             echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            echo "time ./sapi/cgi/php-cgi -T20 ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T20 ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T10 ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T10 ../Zend/micro_bench.php
             if [ -f "$PHPPGO_INDEXPATH" ]; then
                 echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
                 time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"

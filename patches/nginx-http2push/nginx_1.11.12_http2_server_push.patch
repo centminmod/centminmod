@@ -1,0 +1,70 @@
+diff --git a/src/http/v2/ngx_http_v2.c b/src/http/v2/ngx_http_v2.c
+index f3050f1d..88d6dd2c 100644
+--- a/src/http/v2/ngx_http_v2.c
++++ b/src/http/v2/ngx_http_v2.c
+@@ -40,6 +40,7 @@
+ 
+ /* settings fields */
+ #define NGX_HTTP_V2_HEADER_TABLE_SIZE_SETTING    0x1
++#define NGX_HTTP_V2_ENABLE_PUSH_SETTING          0x2
+ #define NGX_HTTP_V2_MAX_STREAMS_SETTING          0x3
+ #define NGX_HTTP_V2_INIT_WINDOW_SIZE_SETTING     0x4
+ #define NGX_HTTP_V2_MAX_FRAME_SIZE_SETTING       0x5
+@@ -245,6 +246,9 @@ ngx_http_v2_init(ngx_event_t *rev)
+ 
+     h2c->frame_size = NGX_HTTP_V2_DEFAULT_FRAME_SIZE;
+ 
++    h2c->next_sid = 2;
++    h2c->enable_push = 1;
++
+     h2scf = ngx_http_get_module_srv_conf(hc->conf_ctx, ngx_http_v2_module);
+ 
+     h2c->pool = ngx_create_pool(h2scf->pool_size, h2c->connection->log);
+@@ -2029,6 +2033,19 @@ ngx_http_v2_state_settings_params(ngx_http_v2_connection_t *h2c, u_char *pos,
+             h2c->frame_size = value;
+             break;
+ 
++        case NGX_HTTP_V2_ENABLE_PUSH_SETTING:
++            if (value > 1) {
++                ngx_log_error(NGX_LOG_INFO, h2c->connection->log, 0,
++                              "client sent SETTINGS frame with incorrect "
++                              "ENABLE_PUSH value %ui", value);
++
++                return ngx_http_v2_connection_error(h2c,
++                                                    NGX_HTTP_V2_PROTOCOL_ERROR);
++            }
++
++            h2c->enable_push = h2c->enable_push ? value : 0;
++            break;
++
+         default:
+             break;
+         }
+diff --git a/src/http/v2/ngx_http_v2.h b/src/http/v2/ngx_http_v2.h
+index cddfccd2..1b405f69 100644
+--- a/src/http/v2/ngx_http_v2.h
++++ b/src/http/v2/ngx_http_v2.h
+@@ -12,6 +12,7 @@
+ #include <ngx_core.h>
+ #include <ngx_http.h>
+ 
++typedef struct ngx_http_v2_push_state ngx_http_v2_push_state_t;
+ 
+ #define NGX_HTTP_V2_ALPN_ADVERTISE       "\x02h2"
+ #define NGX_HTTP_V2_NPN_ADVERTISE        NGX_HTTP_V2_ALPN_ADVERTISE
+@@ -141,11 +142,15 @@ struct ngx_http_v2_connection_s {
+     ngx_queue_t                      closed;
+ 
+     ngx_uint_t                       last_sid;
++    ngx_uint_t                       next_sid;
++
++    ngx_http_v2_push_state_t        *push_state;
+ 
+     unsigned                         closed_nodes:8;
+     unsigned                         settings_ack:1;
+     unsigned                         blocked:1;
+     unsigned                         goaway:1;
++    unsigned                         enable_push:1;
+ };
+ 
+ 

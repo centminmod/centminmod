@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.30'
+ACMEVER='1.0.31'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -420,7 +420,9 @@ split_domains() {
 nvcheck() {
   if [ ! -h /usr/bin/nv ]; then
     rm -rf /usr/bin/nv
-    ln -s "${SCRIPT_DIR}/nv.sh" /usr/bin/nv
+    if [ -f /usr/local/src/centminmod/tools/nv.sh ]; then
+      ln -s /usr/local/src/centminmod/tools/nv.sh /usr/bin/nv
+    fi
     chmod +x /usr/bin/nv
   fi
 }
