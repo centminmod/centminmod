@@ -296,7 +296,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
-exclude=varnish varnish-libs clamd clamav clamav-devel clamav-db galera nodejs nginx mongodb*
+exclude=varnish varnish-libs galera nodejs nginx mongodb*
 .
 :w
 :q
@@ -329,7 +329,7 @@ PRIOREXISTS=1
 :/\[rpmforge\]/ , /gpgcheck/
 :a
 priority=5
-exclude=pure-ftpd optipng
+exclude=pure-ftpd optipng clamav* clamd
 .
 :w
 :q

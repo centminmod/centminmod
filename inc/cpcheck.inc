@@ -1712,7 +1712,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixlibmysqlclient_symlink
   fixnodejs_epel
   fixnginx_epel
-  fixclamav_epel
+  #fixclamav_epel
   nano_highlight
   checkwoff
   checkipvsix
