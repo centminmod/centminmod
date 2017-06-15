@@ -96,13 +96,13 @@ disable_devtoolset() {
 set_intelflags() {
 	if [[ "$INTELOPT" = [yY] ]]; then
     	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	CFLAGS='-O2 -m64 -march=native -pipe -g -mmmx -msse3'
-        	CXXFLAGS='-O2 -m64 -march=native -pipe -g -mmmx -msse3' 
+        	CFLAGS='-O2 -m64 -march=native -pipe -g'
+        	CXXFLAGS='-O2 -m64 -march=native -pipe -g' 
         	export CFLAGS
         	export CXXFLAGS
     	elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	CFLAGS='-O2 -m32 -march=native -pipe -g -mmmx -msse3'
-        	CXXFLAGS='-O2 -m32 -march=native -pipe -g -mmmx -msse3' 
+        	CFLAGS='-O2 -m32 -march=native -pipe -g'
+        	CXXFLAGS='-O2 -m32 -march=native -pipe -g' 
         	export CFLAGS
         	export CXXFLAGS
     	fi
