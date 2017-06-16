@@ -44,14 +44,14 @@ phpsededit() {
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM" -gt '1049576' && "$TOTALMEM" -le '2097152' ]]; then
         ZOLIMIT='240'
-        PHP_MEMORYLIMIT='256M'
-        PHP_UPLOADLIMIT='256M'
+        PHP_MEMORYLIMIT='320M'
+        PHP_UPLOADLIMIT='320M'
         PHP_REALPATHLIMIT='384k'
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM" -gt '2097152' && "$TOTALMEM" -le '3145728' ]]; then
         ZOLIMIT='304'
-        PHP_MEMORYLIMIT='320M'
-        PHP_UPLOADLIMIT='320M'
+        PHP_MEMORYLIMIT='384M'
+        PHP_UPLOADLIMIT='384M'
         PHP_REALPATHLIMIT='512k'
         PHP_REALPATHTTL='43200'
     elif [[ "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
