@@ -61,12 +61,53 @@ echo ""
   fi
 
 letswait
+  if [[ "$PHP_INSTALL" = [yY] ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check PHP-FPM Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 	$(which php) -v
 letswait
+  else
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check PHP-FPM Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	echo "PHP_INSTALL='n' set"
+  fi
+
+  if [ -f /usr/bin/php72 ]; then
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check PHP-FPM 7.2 Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	/usr/bin/php72 -v
+letswait
+  fi
+  if [ -f /usr/bin/php71 ]; then
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check PHP-FPM 7.1 Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	/usr/bin/php71 -v
+letswait
+  fi
+  if [ -f /usr/bin/php70 ]; then
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check PHP-FPM 7.0 Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	/usr/bin/php70 -v
+letswait
+  fi
+  if [ -f /usr/bin/php56 ]; then
+echo ""
+	cecho "--------------------------------------------------------" $boldyellow
+	cecho "Check PHP-FPM 5.6 Version:" $boldyellow
+	cecho "--------------------------------------------------------" $boldyellow
+	/usr/bin/php56 -v
+letswait
+  fi
 
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
