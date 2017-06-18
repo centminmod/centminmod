@@ -146,6 +146,19 @@ echo "if after vhost site setup you encounter 403 permission denied errors,"
 echo "check https://community.centminmod.com/threads/7308/ to see if your"
 echo "site needs tools/autoprotect.sh tweaking/whitelisting"
 cecho "---------------------------------------------------------------" $boldyellow
+if [[ "$LETSENCRYPT_DETECT" != [yY] ]]; then
+echo "[ LETSENCRYPT_DETECT is not enabled ]"
+echo "Ignore this message if you do not want HTTPS based web site otherwise"
+echo "read below carefully."
+echo
+echo "Free letsencrypt SSL certificates integration is in beta testing if"
+echo "you want to obtain free letsencrypt SSL certificate for HTTPS site,"
+echo "you will need to manually enable LETSENCRYPT_DETECT='y' outlined"
+echo "at https://centminmod.com/acmetool so exit this vhost routine first"
+echo "set LETSENCRYPT_DETECT='y' and update domain DNS A record first"
+echo "then re-run vhost site creation menu option"
+cecho "---------------------------------------------------------------" $boldyellow
+fi
 echo
 read -ep "Do you want to continue with Nginx vhost site creation ? [y/n] " dovhost_continue
 echo
@@ -617,7 +630,12 @@ else
   SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
 fi
 
-if [[ -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+if [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php72-remi.conf;
+  #include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;
+  #include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
   MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
   #include /usr/local/nginx/conf/php70-remi.conf;
   #include /usr/local/nginx/conf/php56-remi.conf;'

@@ -189,7 +189,7 @@ patchnginx() {
           cecho "$CUR_DIR/patches/nginx/openssl-110ticket.patch not found" $boldyellow
         fi
       elif [[ "$DETECT_NGXVER" -lt '1011000' ]]; then
-        # OPENSSL_VERSION='1.0.2l'
+        # OPENSSL_VERSION='1.1.0f'
         cecho "skipping patching due to Nginx version less than 1.11.0" $boldyellow
       fi
     fi
