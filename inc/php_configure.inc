@@ -553,7 +553,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$CENTOS_SEVEN" = '7' && "$CPU_MARCH" = 'core2' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core2"
     else
-      PHP_MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse"
+      PHP_MTUNEOPT="-m${CCM} -mtune=native"
     fi
     # if only 1 cpu thread use -O2 to keep compile times sane
     if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then

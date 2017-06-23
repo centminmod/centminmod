@@ -2368,7 +2368,7 @@ if [[ "$CLANG" = [nN] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | 
 	MTUNEOPT="-m${CCM} -march=native${NGX_FOPENOPT} "
 elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
-	MTUNEOPT="-m${CCM} -mtune=native -mfpmath=sse${NGX_FOPENOPT} "
+	MTUNEOPT="-m${CCM} -mtune=native{NGX_FOPENOPT} "
 elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=32
 	MTUNEOPT="-m${CCM} -mtune=generic${NGX_FOPENOPT} "
