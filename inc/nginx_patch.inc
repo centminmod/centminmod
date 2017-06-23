@@ -1,3 +1,26 @@
+ngx_hpack_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECT_NGXVER" -ge '1013001' ]]; then
+    pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+    cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
+    cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
+    wget https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
+    patch -p1 < nginx_1.13.1_http2_hpack.patch
+    echo 
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.13.1+"
+    popd
+  fi
+}
+
 ngx_httppush_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -294,6 +317,7 @@ patchnginx() {
   		rm -rf "${NGINXTLSPATCH_NAME}"
   	 fi
 	fi
+  ngx_hpack_patch
 } 2>&1 | tee "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
