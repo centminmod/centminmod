@@ -2388,7 +2388,11 @@ if [[ "$CLANG" = [yY] ]]; then
 		if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
 			GCC_OPTLEVEL='-O2'
 		else
-			GCC_OPTLEVEL='-O3'
+      if [[ "$NGINX_HPACK" = [yY] ]]; then
+        GCC_OPTLEVEL='-O2'
+      else
+			  GCC_OPTLEVEL='-O3'
+      fi
 		fi
 	fi
 	FSTACKPROTECT='-fstack-protector'
@@ -2400,7 +2404,11 @@ else
 		if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
 			GCC_OPTLEVEL='-O2'
 		else
-			GCC_OPTLEVEL='-O3'
+      if [[ "$NGINX_HPACK" = [yY] ]]; then
+        GCC_OPTLEVEL='-O2'
+      else
+        GCC_OPTLEVEL='-O3'
+      fi
 		fi
 	fi
 	if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -lt '40805' ]]; then
