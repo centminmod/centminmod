@@ -20,6 +20,7 @@ ngx_hpack_patch() {
     echo 
     echo "patching nginx http/2 full HPACK encoding for nginx 1.13.1+"
     popd
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   elif [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECTOPENSSL_ONEZERO" = '1.1' && "$DETECT_NGXVER" -ge '1013001' ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
@@ -31,6 +32,9 @@ ngx_hpack_patch() {
     echo 
     echo "patching nginx http/2 full HPACK encoding for nginx 1.13.1+"
     popd
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  else
+    NGX_HPACK_OPT=""
   fi
 }
 
