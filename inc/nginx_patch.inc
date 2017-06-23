@@ -13,7 +13,8 @@ ngx_hpack_patch() {
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
-    wget https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    rm -rf nginx_1.13.1_http2_hpack.patch
+    wget -cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
     cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
     patch -p1 < nginx_1.13.1_http2_hpack.patch
     echo 
@@ -23,7 +24,8 @@ ngx_hpack_patch() {
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
-    wget https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    rm -rf nginx_1.13.1_http2_hpack.patch
+    wget -cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
     cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
     patch -p1 < nginx_1.13.1_http2_hpack.patch
     echo 
