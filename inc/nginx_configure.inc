@@ -2389,9 +2389,9 @@ if [[ "$CLANG" = [yY] ]]; then
 			GCC_OPTLEVEL='-O2'
 		else
       if [[ "$NGINX_HPACK" = [yY] ]]; then
-        GCC_OPTLEVEL='-O2'
+        GCC_OPTLEVEL=""
       else
-			  GCC_OPTLEVEL='-O3'
+        GCC_OPTLEVEL='-O3'
       fi
 		fi
 	fi
@@ -2405,7 +2405,7 @@ else
 			GCC_OPTLEVEL='-O2'
 		else
       if [[ "$NGINX_HPACK" = [yY] ]]; then
-        GCC_OPTLEVEL='-O2'
+        GCC_OPTLEVEL=""
       else
         GCC_OPTLEVEL='-O3'
       fi
