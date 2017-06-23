@@ -19,6 +19,16 @@ ngx_hpack_patch() {
     echo 
     echo "patching nginx http/2 full HPACK encoding for nginx 1.13.1+"
     popd
+  elif [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECTOPENSSL_ONEZERO" = '1.1' && "$DETECT_NGXVER" -ge '1013001' ]]; then
+    pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+    cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
+    cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
+    wget https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
+    patch -p1 < nginx_1.13.1_http2_hpack.patch
+    echo 
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.13.1+"
+    popd
   fi
 }
 
