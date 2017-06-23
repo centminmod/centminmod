@@ -160,9 +160,9 @@ fi
   	NGINX_OPENRESTY='y'
   fi
 
-  if [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECTOPENSSL_ONEZERO" = '1.0' && "$DETECT_NGXVER" -ge '1013001' ]]; then
+  if [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECT_NGXVER" -ge '1013001' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECTOPENSSL_ONEZERO" = '1.1' && "$DETECT_NGXVER" -ge '1013001' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECT_NGXVER" -ge '1013001' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
     NGX_HPACK_OPT=""
