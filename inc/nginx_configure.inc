@@ -2443,7 +2443,7 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
   if [[ "$CLANG_FOUR" = [Yy] ]]; then
   	NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   else
-  	NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -fuse-ld=gold"
+  	NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -flto -fuse-ld=gold"
   fi
 fi
 
