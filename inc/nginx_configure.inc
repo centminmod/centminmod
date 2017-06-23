@@ -160,6 +160,14 @@ fi
   	NGINX_OPENRESTY='y'
   fi
 
+  if [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECTOPENSSL_ONEZERO" = '1.0' && "$DETECT_NGXVER" -ge '1013001' ]]; then
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  elif [[ "$NGINX_HPACK" = [yY] && "$LIBRESSL_SWITCH" = [nN] && "$DETECTOPENSSL_ONEZERO" = '1.1' && "$DETECT_NGXVER" -ge '1013001' ]]; then
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  else
+    NGX_HPACK_OPT=""
+  fi
+
 	# fix no longer needed with lua-nginx 0.10.2+
 	# https://github.com/openresty/lua-nginx-module/commit/b1a326eedf47b77e98b378fae1160e5340b75006
 	#luaworkaroundfix
