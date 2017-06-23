@@ -587,7 +587,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 			LIBRESSLOPT=""
 			if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3 enable-ec_nistp_64_gcc_128'"
+          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         fi
@@ -607,7 +607,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3 enable-ec_nistp_64_gcc_128'"
+          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         fi
@@ -1443,14 +1443,14 @@ else
 			LIBRESSLOPT=""
 			if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3 enable-ec_nistp_64_gcc_128'"
+          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         fi
 			else
         if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
           if [[ "$(uname -m)" = 'x86_64' ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3 enable-ec_nistp_64_gcc_128'"
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
           fi
@@ -1471,7 +1471,7 @@ else
 				OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3 enable-ec_nistp_64_gcc_128'"
+          OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         fi
@@ -1479,7 +1479,7 @@ else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
           if [[ "$(uname -m)" = 'x86_64' ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3 enable-ec_nistp_64_gcc_128'"
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
           fi
