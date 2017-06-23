@@ -101,6 +101,8 @@ user:postfix
 user:dovecot
 user:www-data
 user:spamfilter
+exe:/sbin/rpcbind
+exe:/usr/sbin/rpcbind
 exe:/usr/libexec/dovecot/imap
 exe:/usr/libexec/dovecot/pop3
 exe:/usr/libexec/dovecot/anvil
@@ -126,6 +128,16 @@ exe:/usr/libexec/postfix/scache
 exe:/usr/libexec/postfix/cleanup
 exe:/usr/libexec/postfix/trivial-rewrite
 exe:/usr/libexec/postfix/master
+exe:/home/virtfs/reviews/opt/cpanel/ea-php56/root/usr/bin/php-cgi
+cmd:/opt/cpanel/ea-php56/root/usr/bin/php-cgi
+exe:/home/virtfs/reviews/opt/cpanel/ea-php55/root/usr/bin/php-cgi
+cmd:/opt/cpanel/ea-php55/root/usr/bin/php-cgi
+exe:/home/virtfs/reviews/opt/cpanel/ea-php70/root/usr/bin/php-cgi
+cmd:/opt/cpanel/ea-php70/root/usr/bin/php-cgi
+exe:/home/virtfs/reviews/opt/cpanel/ea-php71/root/usr/bin/php-cgi
+cmd:/opt/cpanel/ea-php71/root/usr/bin/php-cgi
+exe:/home/virtfs/reviews/opt/cpanel/ea-php72/root/usr/bin/php-cgi
+cmd:/opt/cpanel/ea-php72/root/usr/bin/php-cgi
 EOF
 
 fi # check to see if csf.pignore already has custom apps added
