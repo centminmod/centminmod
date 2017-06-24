@@ -1,8 +1,8 @@
 checkphpextmailparse() {
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0|7.1'
+    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0||7.1|7.2'
 else
-    echo $PHP_VERSION | cut -d . -f1,2 | egrep '7.0|7.1'
+    echo $PHP_VERSION | cut -d . -f1,2 | egrep '7.0||7.1|7.2'
 fi
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
