@@ -3,6 +3,40 @@ sar_call() {
 }
 
 ccacheinstall() {
+
+if [ ! -f /usr/bin/sar ]; then
+  time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+else
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    SARCALL='/usr/lib64/sa/sa1'
+  else
+    SARCALL='/usr/lib/sa/sa1'
+  fi
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    service sysstat restart
+    chkconfig sysstat on
+  else
+    sed -i 's|10|5|g' /etc/cron.d/sysstat
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  fi
+fi
+
 # http://ccache.samba.org/manual.html#_environment_variables
 if [ "$CCACHEINSTALL" == 'y' ]; then
 	if [ -f /usr/bin/ccache ]; then
