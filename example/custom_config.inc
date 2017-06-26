@@ -236,7 +236,7 @@ PCRE_VERSION='8.40'          # PCRE version
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.3'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.0.1' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.0.2' # For PHP 7
 MEMCACHED_INSTALL='y'       # Install Memcached
 LIBEVENT_VERSION='2.1.8'   # Use this version of Libevent
 MEMCACHED_VERSION='1.4.37'  # Use this version of Memcached server
