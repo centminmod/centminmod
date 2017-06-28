@@ -324,10 +324,10 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
     if [[ "$vhostssl_le" = [yY] ]]; then
       echo
       echo "You have 4 options: "
-      echo "1. issue staging test cert with HTTP + HTTPS"
-      echo "2. issue staging test cert with HTTPS default"
-      echo "3. issue live cert with HTTP + HTTPS"
-      echo "4. issue live cert with HTTPS default"
+      echo "1. issue staging test cert with HTTP + HTTPS (untrusted)"
+      echo "2. issue staging test cert with HTTPS default (untrusted)"
+      echo "3. issue live cert with HTTP + HTTPS (trusted)"
+      echo "4. issue live cert with HTTPS default (trusted)"
       read -ep "Enter option number 1-4: " vhostssl_opt
       if [[ "$vhostssl_opt" = '1' ]]; then
         vhostssl='le'
