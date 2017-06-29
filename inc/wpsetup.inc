@@ -2195,13 +2195,23 @@ wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/p
 chmod 0700 /usr/bin/wp
 /usr/bin/wp --info --allow-root
 /usr/bin/wp plugin status --allow-root
-/usr/bin/wp plugin update --all --allow-root
+/usr/bin/wp plugin update --all --allow-root | tee .wpcli-status
 #/usr/bin/wp core check-update --allow-root
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
 #/usr/bin/wp core update --allow-root
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
-/usr/bin/nprestart
+if [[ -f .wpcli-status && ! "$(grep -w 'Plugin already updated' .wpcli-status)" ]]; then
+  exec 99>/tmp/wp_updater_phpfpm.lock
+  if flock -n -x 99; then
+  /usr/bin/nprestart
+  rm -rf /tmp/wp_updater_phpfpm.lock
+  else
+  echo "already detected running process"
+  echo "skipping nprestart"
+  fi
+fi
+rm -rf .wpcli-status
 } 2>&1 | tee /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
 cat -v /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log | /usr/bin/tr -cd '\11\12\15\40-\176' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAILFROM -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 #rm -rf /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
