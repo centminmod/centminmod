@@ -2213,8 +2213,40 @@ if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
     # generate random number of seconds to delay cron start
     # making sure wp_updater for several wordpress nginx installs
     # do not run at very same time during cron scheduling
-    DELAY=$(echo ${RANDOM:0:3})
     crontab -l > cronjoblist
+
+    DELAY=$(echo ${RANDOM:0:3})
+    DELAY_DUPCHECK=$(echo $DELAY | cut -c1,2)
+    echo $DELAY
+    echo $DELAY_DUPCHECK
+
+    # while [[ "$(crontab -l | awk '/ sleep / {print $7}' | grep "$DELAY_DUPCHECK")" ]]; do
+    #   cat cronjoblist | awk '/ sleep / {print $7}' | while read s; do 
+    #     CRONSLEEP_CHECK=$(echo $s | cut -c1,2)
+    #     echo "CRONSLEEP_CHECK = $CRONSLEEP_CHECK"
+    #     if [[ "$CRONSLEEP_CHECK" -eq "$DELAY_DUPCHECK" ]]; then
+    #       DELAY=$(echo ${RANDOM:0:3})
+    #       DELAY_DUPCHECK=$(echo $DELAY | cut -c1,2)
+    #       echo $DELAY
+    #       echo $DELAY_DUPCHECK
+    #     fi
+    #   done
+    #   echo "final $DELAY"
+    #   echo "final $DELAY_DUPCHECK"
+    # done
+
+    # ensure random sleep times do not overlap https://community.centminmod.com/posts/51310/
+    while [[ "$(cat cronjoblist | awk '/ sleep / {print $7}' | grep "$DELAY_DUPCHECK")" ]]; do
+      DELAY=$(echo ${RANDOM:0:3})
+      DELAY_DUPCHECK=$(echo $DELAY | cut -c1,2)
+      echo $DELAY
+      echo $DELAY_DUPCHECK
+      echo "calculated $DELAY"
+      echo "calculated $DELAY_DUPCHECK"
+    done
+    echo "final $DELAY"
+    echo "final $DELAY_DUPCHECK"
+
     mkdir -p /home/nginx/domains/${vhostname}/cronjobs
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-updater.txt
     echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh >/dev/null 2>&1" >> cronjoblist
