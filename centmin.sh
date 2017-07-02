@@ -519,6 +519,7 @@ POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL
 NGINX_VERSION='1.13.2'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
+VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'

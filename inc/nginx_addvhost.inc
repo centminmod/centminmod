@@ -652,6 +652,15 @@ elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; th
   MULTIPHP_INCLUDES=""
 fi
 
+if [[ "$VHOST_PRESTATICINC" = [yY] ]]; then
+  PRESTATIC_INCLUDES="include /usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf;
+  include /usr/local/nginx/conf/pre-staticfiles-global.conf;"
+  touch "/usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf"
+  touch /usr/local/nginx/conf/pre-staticfiles-global.conf
+else
+  PRESTATIC_INCLUDES=""
+fi
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -714,6 +723,7 @@ server {
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
@@ -811,6 +821,7 @@ server {
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
@@ -883,6 +894,7 @@ server {
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}

@@ -882,6 +882,37 @@ else
   TLSONETHREE_CIPHERS=""
 fi
 
+if [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php72-remi.conf;
+  #include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;
+  #include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;
+  #include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;'
+elif [[ -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;'
+elif [[ ! -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php70-remi.conf;'
+elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES=""
+fi
+
+if [[ "$VHOST_PRESTATICINC" = [yY] ]]; then
+  PRESTATIC_INCLUDES="include /usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf;
+  include /usr/local/nginx/conf/pre-staticfiles-global.conf;"
+  touch "/usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf"
+  touch /usr/local/nginx/conf/pre-staticfiles-global.conf
+else
+  PRESTATIC_INCLUDES=""
+fi
+
 # main non-ssl vhost at yourdomain.com.conf for Wordpress
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -969,8 +1000,10 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
 
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  ${MULTIPHP_INCLUDES}
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -1080,6 +1113,7 @@ location ~* ${WPSUBDIR}/(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
@@ -1088,14 +1122,17 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  ${MULTIPHP_INCLUDES}
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -1177,6 +1214,7 @@ location ~* ${WPSUBDIR}/(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;  
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
@@ -1185,14 +1223,17 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  ${MULTIPHP_INCLUDES}
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
