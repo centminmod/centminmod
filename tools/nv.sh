@@ -19,6 +19,7 @@ OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log"
 USE_NGINXMAINEXTLOGFORMAT='n'
+VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 ###############################################################
 # Letsencrypt integration via addons/acmetool.sh auto detection
 # in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
@@ -743,6 +744,15 @@ elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; th
   MULTIPHP_INCLUDES=""
 fi
 
+if [[ "$VHOST_PRESTATICINC" = [yY] ]]; then
+  PRESTATIC_INCLUDES="include /usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf;
+  include /usr/local/nginx/conf/pre-staticfiles-global.conf;"
+  touch "/usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf"
+  touch /usr/local/nginx/conf/pre-staticfiles-global.conf
+else
+  PRESTATIC_INCLUDES=""
+fi
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -795,13 +805,12 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files    \$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
@@ -900,13 +909,12 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files    \$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
@@ -997,13 +1005,12 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files    \$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
@@ -1090,13 +1097,12 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files    \$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
@@ -1160,13 +1166,12 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files		\$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}

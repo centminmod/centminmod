@@ -324,10 +324,10 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
     if [[ "$vhostssl_le" = [yY] ]]; then
       echo
       echo "You have 4 options: "
-      echo "1. issue staging test cert with HTTP + HTTPS"
-      echo "2. issue staging test cert with HTTPS default"
-      echo "3. issue live cert with HTTP + HTTPS"
-      echo "4. issue live cert with HTTPS default"
+      echo "1. issue staging test cert with HTTP + HTTPS (untrusted)"
+      echo "2. issue staging test cert with HTTPS default (untrusted)"
+      echo "3. issue live cert with HTTP + HTTPS (trusted)"
+      echo "4. issue live cert with HTTPS default (trusted)"
       read -ep "Enter option number 1-4: " vhostssl_opt
       if [[ "$vhostssl_opt" = '1' ]]; then
         vhostssl='le'
@@ -882,6 +882,37 @@ else
   TLSONETHREE_CIPHERS=""
 fi
 
+if [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php72-remi.conf;
+  #include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;
+  #include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;
+  #include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;'
+elif [[ -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php71-remi.conf;'
+elif [[ ! -f /usr/bin/php71 && -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php70-remi.conf;'
+elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ ! -f /usr/bin/php71 && ! -f /usr/bin/php70 && ! -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES=""
+fi
+
+if [[ "$VHOST_PRESTATICINC" = [yY] ]]; then
+  PRESTATIC_INCLUDES="include /usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf;
+  include /usr/local/nginx/conf/pre-staticfiles-global.conf;"
+  touch "/usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf"
+  touch /usr/local/nginx/conf/pre-staticfiles-global.conf
+else
+  PRESTATIC_INCLUDES=""
+fi
+
 # main non-ssl vhost at yourdomain.com.conf for Wordpress
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -969,8 +1000,10 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
 
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  ${MULTIPHP_INCLUDES}
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -1080,6 +1113,7 @@ location ~* ${WPSUBDIR}/(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;    
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
@@ -1088,14 +1122,17 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  ${MULTIPHP_INCLUDES}
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -1177,6 +1214,7 @@ location ~* ${WPSUBDIR}/(wp-login\.php) {
     auth_basic "Private";
     auth_basic_user_file /home/nginx/domains/$vhostname/htpasswd_wplogin;  
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
@@ -1185,14 +1223,17 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
     # https://community.centminmod.com/posts/18828/
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
+  ${MULTIPHP_INCLUDES}
   # https://community.centminmod.com/posts/18828/
   #include /usr/local/nginx/conf/php-rediscache.conf;
+  ${PRESTATIC_INCLUDES}
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -2195,13 +2236,23 @@ wget -cnv --no-check-certificate https://raw.github.com/wp-cli/builds/gh-pages/p
 chmod 0700 /usr/bin/wp
 /usr/bin/wp --info --allow-root
 /usr/bin/wp plugin status --allow-root
-/usr/bin/wp plugin update --all --allow-root
+/usr/bin/wp plugin update --all --allow-root | tee .wpcli-status
 #/usr/bin/wp core check-update --allow-root
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
 #/usr/bin/wp core update --allow-root
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
-/usr/bin/nprestart
+if [[ -f .wpcli-status && ! "$(grep -w 'Plugin already updated' .wpcli-status)" ]]; then
+  exec 99>/tmp/wp_updater_phpfpm.lock
+  if flock -n -x 99; then
+  /usr/bin/nprestart
+  rm -rf /tmp/wp_updater_phpfpm.lock
+  else
+  echo "already detected running process"
+  echo "skipping nprestart"
+  fi
+fi
+rm -rf .wpcli-status
 } 2>&1 | tee /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
 cat -v /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log | /usr/bin/tr -cd '\11\12\15\40-\176' | sed -r "s/\x1B\[([0-9]{1,2}(;[0-9]{1,2})?)?[m|K]//g" | dos2unix | mail -r \$EMAILFROM -s "Wordpress WP-CLI Auto Update \$(date)" \$EMAIL
 #rm -rf /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
@@ -2213,8 +2264,40 @@ if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
     # generate random number of seconds to delay cron start
     # making sure wp_updater for several wordpress nginx installs
     # do not run at very same time during cron scheduling
-    DELAY=$(echo ${RANDOM:0:3})
     crontab -l > cronjoblist
+
+    DELAY=$(echo ${RANDOM:0:3})
+    DELAY_DUPCHECK=$(echo $DELAY | cut -c1,2)
+    echo $DELAY
+    echo $DELAY_DUPCHECK
+
+    # while [[ "$(crontab -l | awk '/ sleep / {print $7}' | grep "$DELAY_DUPCHECK")" ]]; do
+    #   cat cronjoblist | awk '/ sleep / {print $7}' | while read s; do 
+    #     CRONSLEEP_CHECK=$(echo $s | cut -c1,2)
+    #     echo "CRONSLEEP_CHECK = $CRONSLEEP_CHECK"
+    #     if [[ "$CRONSLEEP_CHECK" -eq "$DELAY_DUPCHECK" ]]; then
+    #       DELAY=$(echo ${RANDOM:0:3})
+    #       DELAY_DUPCHECK=$(echo $DELAY | cut -c1,2)
+    #       echo $DELAY
+    #       echo $DELAY_DUPCHECK
+    #     fi
+    #   done
+    #   echo "final $DELAY"
+    #   echo "final $DELAY_DUPCHECK"
+    # done
+
+    # ensure random sleep times do not overlap https://community.centminmod.com/posts/51310/
+    while [[ "$(cat cronjoblist | awk '/ sleep / {print $7}' | grep "$DELAY_DUPCHECK")" ]]; do
+      DELAY=$(echo ${RANDOM:0:3})
+      DELAY_DUPCHECK=$(echo $DELAY | cut -c1,2)
+      echo $DELAY
+      echo $DELAY_DUPCHECK
+      echo "calculated $DELAY"
+      echo "calculated $DELAY_DUPCHECK"
+    done
+    echo "final $DELAY"
+    echo "final $DELAY_DUPCHECK"
+
     mkdir -p /home/nginx/domains/${vhostname}/cronjobs
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-updater.txt
     echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh >/dev/null 2>&1" >> cronjoblist
