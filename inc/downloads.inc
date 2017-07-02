@@ -661,11 +661,31 @@ else
 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
-checklogdetails
-	exit #$ERROR
+    cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} extraction failed." $boldgreen
+    checklogdetails
+    # exit #$ERROR
+    if [[ "$ERROR" -eq '2' ]]; then
+      PHP_MIRRORURL="http://php.net"
+      PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+      rm -rf "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+      cecho "Download again php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow
+      if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
+        cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
+      else
+        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY"
+        $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+          cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download again failed." $boldgreen
+          checklogdetails
+        else 
+          cecho "Download again done." $boldyellow
+        fi
+      fi
+      tar $PHPTAR_FLAGS "php-${PHP_VERSION}.tar.${PHPEXTSION}"
+    fi # error 2
 else 
-         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} valid file." $boldyellow
+  cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} valid file." $boldyellow
 echo ""
 	fi
 
