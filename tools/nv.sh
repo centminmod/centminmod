@@ -1152,10 +1152,8 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files		\$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
