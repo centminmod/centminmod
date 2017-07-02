@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.31'
+ACMEVER='1.0.32'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -901,14 +901,14 @@ server {
     # block common exploits, sql injections etc
     #include /usr/local/nginx/conf/block.conf;
     
-    #               Enables directory listings when index file not found
-    #               autoindex  on;
+    #Enables directory listings when index file not found
+    #autoindex  on;
     
-    #               Shows file listing times as local time
-    #               autoindex_localtime on;
+    #Shows file listing times as local time
+    #autoindex_localtime on;
     
-    #               Enable for vBulletin usage WITHOUT vbSEO installed
-    #               try_files               $uri $uri/ /index.php;
+    # Wordpress Permalinks example
+    #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
   }
 
   include /usr/local/nginx/conf/staticfiles.conf;
@@ -1198,10 +1198,8 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files    \$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
@@ -1306,10 +1304,8 @@ server {
   # Shows file listing times as local time
   #autoindex_localtime on;
 
-  # Enable for vBulletin usage WITHOUT vbSEO installed
-  # More example Nginx vhost configurations at
-  # http://centminmod.com/nginx_configure.html
-  #try_files    \$uri \$uri/ /index.php;
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
 
   }
 
