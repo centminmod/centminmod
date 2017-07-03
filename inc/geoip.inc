@@ -26,7 +26,7 @@ if [[ -d /usr/share/GeoIP ]]; then
 	# fallback mirror if official php svn repo is down, use local centmin mod mirror
 	# each php recompile will check again so if php svn repo is backup, the source
 	# code will switch back to official php svn repo again
-  curl -sI --connect-timeout 5 --max-time 5 http://svn.php.net/repository/pecl/geoip/trunk/ | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+  curl -4Is --connect-timeout 5 --max-time 5 http://svn.php.net/repository/pecl/geoip/trunk/ | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
   SVNGEOIP_CURLCHECK=$?
   if [[ "$SVNGEOIP_CURLCHECK" != '0' ]]; then
   	if [ -d geoip ]; then
@@ -89,11 +89,11 @@ fi
 	cd $DIR_TMP
 
 cecho "GeoLiteCity database download ..." $boldyellow
-	wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+	wget -cnv4 http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
 	gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
 	cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 	
-	# wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+	# wget -cnv4 http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
 	# gzip -df /usr/share/GeoIP/GeoIP.dat.gz
 }
 

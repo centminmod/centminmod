@@ -95,7 +95,7 @@ go_install() {
   if [ -s go${GO_VERSION}.linux-${GOARCH}.tar.gz ]; then
   	cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz Archive found, skipping download..." $boldgreen
   else
-  	wget -c --progress=bar https://storage.googleapis.com/golang/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
+  	wget -c4 --progress=bar https://storage.googleapis.com/golang/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
 			cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz download failed." $boldgreen

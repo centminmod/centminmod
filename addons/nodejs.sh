@@ -154,7 +154,7 @@ scl_install() {
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
-      curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+      curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
       yum -y install nodejs --disableplugin=priorities --disablerepo=epel
       npm install npm@latest -g
   
@@ -182,7 +182,7 @@ installnodejs() {
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
     	cd $DIR_TMP
-    	curl --silent --location https://rpm.nodesource.com/setup_4.x | bash -
+    	curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
     	yum -y install nodejs --disableplugin=priorities --disablerepo=epel
     	npm install npm@latest -g
 	
@@ -243,7 +243,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
     		if [ -s node-v${NODEJSVER}.tar.gz ]; then
         		cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
     		else
-        		wget -c --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
+        		wget -c4 --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
 			cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen

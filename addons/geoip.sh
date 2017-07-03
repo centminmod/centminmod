@@ -78,7 +78,7 @@ fi
 rpm -ql GeoIP-devel GeoIP
 
 	cd $DIR
-# 	# wget http://geolite.maxmind.com/download/geoip/api/c/GeoIP.tar.gz
+# 	# wget -4 http://geolite.maxmind.com/download/geoip/api/c/GeoIP.tar.gz
 # 	# tar -zxvf GeoIP.tar.gz
 
 #         cecho "Download GeoIP.tar.gz ..." $boldyellow
@@ -116,13 +116,13 @@ rpm -ql GeoIP-devel GeoIP
 # 	ldconfig -v | grep GeoIP
 
 cecho "GeoLiteCity database download ..." $boldyellow
-	wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+	wget -cnv4 http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
 	# gzip -d /usr/local/share/GeoIP/GeoLiteCity.dat.gz
 	gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
 	cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 	
 	# cp -a /usr/share/GeoIP/GeoIP.dat /usr/share/GeoIP/GeoIP.dat-backup
-	# wget -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+	# wget -cnv4 http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
 	# gzip -df /usr/share/GeoIP/GeoIP.dat.gz
 	
 # if [[ "$GEOIPUPDATE" == [yY] ]]; then

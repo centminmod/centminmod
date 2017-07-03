@@ -14,7 +14,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
     rm -rf nginx_1.13.1_http2_hpack.patch
-    wget -cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    wget -cnv4 https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
     cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
     patch -p1 < nginx_1.13.1_http2_hpack.patch
     echo 
@@ -26,7 +26,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
     rm -rf nginx_1.13.1_http2_hpack.patch
-    wget -cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    wget -cnv4 https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
     cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
     patch -p1 < nginx_1.13.1_http2_hpack.patch
     echo 
@@ -107,7 +107,7 @@ luanginx_patch() {
     if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}/src" ]; then
       pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
       rm -rf ngx_http_lua_headers.c
-      wget -cnv https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
+      wget -cnv4 https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
       ls -lah
       echo 
       echo "patching lua nginx module for nginx 1.11.11+"
@@ -147,7 +147,7 @@ echonginx_patch() {
     if [ -d "${DIR_TMP}/${ECHODIR}/src" ]; then
       pushd "${DIR_TMP}/${ECHODIR}/src"
       rm -rf ngx_http_echo_request_info.c
-      wget -cnv https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
+      wget -cnv4 https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
       ls -lah
       echo 
       echo "patching echo nginx module for nginx 1.11.11+"
@@ -250,8 +250,8 @@ patchnginx() {
 			echo
 			cecho "patching nginx for http/2 support" $boldyellow
 			echo
-			cecho "wget http://nginx.org/patches/http2/patch.http2.txt" $boldyellow
-			wget http://nginx.org/patches/http2/patch.http2.txt
+			cecho "wget -4 http://nginx.org/patches/http2/patch.http2.txt" $boldyellow
+			wget -4 http://nginx.org/patches/http2/patch.http2.txt
 		
 			cecho "patch -p1 < patch.http2.txt" $boldyellow
 			patch -p1 < patch.http2.txt
@@ -275,12 +275,12 @@ patchnginx() {
      rm -rf "${NGINXSPDYPATCHED_NAME}"
      NGINXTLSPATCHLINK="https://raw.githubusercontent.com/felixbuenemann/sslconfig/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      # fallback mirror if github down, use gitlab mirror
-     curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+     curl -4Is --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
      NGINXTLSPATCH_CURLCHECK=$?
      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig-felix-group/raw/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      fi
-     wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
+     wget -cnv4 --no-check-certificate "$NGINXTLSPATCHLINK"
      if [[ -f "${NGINXSPDYPATCHED_NAME}" && ! "$(grep 'ngx_http_spdy_filter' auto/modules)" ]]; then
        patch -p1 < "${NGINXSPDYPATCHED_NAME}"
      fi
@@ -313,12 +313,12 @@ patchnginx() {
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
       NGINXTLSPATCHLINK="https://raw.githubusercontent.com/cloudflare/sslconfig/master/patches/${NGINXTLSPATCH_NAME}"
 		  # fallback mirror if github down, use gitlab mirror
-      curl -sI --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+      curl -4Is --connect-timeout 5 --max-time 5 "${NGINXTLSPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
       NGINXTLSPATCH_CURLCHECK=$?
       if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
         NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
       fi
-      wget -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
+      wget -cnv4 --no-check-certificate "$NGINXTLSPATCHLINK"
       if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
     	   echo "patch -p1 < "${NGINXTLSPATCH_NAME}""
          patch -p1 < "${NGINXTLSPATCH_NAME}"
@@ -370,7 +370,7 @@ luaopensslpatch() {
 	OPENRESTYLUAPATCHLINK='https://github.com/openresty/openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch'
 	
 	# fallback mirror if github down, use gitlab mirror
-	curl -sI --connect-timeout 5 --max-time 5 $OPENRESTYLUAPATCHLINK | grep 'HTTP\/' | egrep '200|302' >/dev/null 2>&1
+	curl -4Is --connect-timeout 5 --max-time 5 $OPENRESTYLUAPATCHLINK | grep 'HTTP\/' | egrep '200|302' >/dev/null 2>&1
 	OPENRESTYLUAPATCH_CURLCHECK=$?
 	if [[ "$OPENRESTYLUAPATCH_CURLCHECK" != '0' ]]; then
 		OPENRESTYLUAPATCHLINK='https://gitlab.com/centminmod-github-mirror/openresty/raw/master/patches/nginx-1.9.7-ssl_cert_cb_yield.patch'

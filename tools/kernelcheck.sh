@@ -61,11 +61,11 @@ done
 
 kernelchecker_get() {
   mkdir -p /root/tools
-  curl -sI --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+  curl -4Is --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
   WGET_CURLCHECK=$?
   if [[ "$WGET_CURLCHECK" = '0' ]]; then
     rm -rf /root/tools/kernelchecker.py
-    wget -cnv -O /root/tools/kernelchecker.py "$WGET_LINK" >/dev/null 2>&1
+    wget -cnv4 -O /root/tools/kernelchecker.py "$WGET_LINK" >/dev/null 2>&1
   fi
 }
 

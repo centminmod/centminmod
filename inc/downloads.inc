@@ -149,7 +149,7 @@ libresslgeolocation() {
   if [[ -z "$SERVER_COUNTRY" ]]; then
     LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -159,12 +159,12 @@ libresslgeolocation() {
     echo "AT server detected"
     LIBRESSL_MIRRORURL="http://ftp2.eu.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -175,12 +175,12 @@ libresslgeolocation() {
     echo "AU server detected"
     LIBRESSL_MIRRORURL="http://mirror.aarnet.edu.au/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -191,12 +191,12 @@ libresslgeolocation() {
     echo "BG server detected"
     LIBRESSL_MIRRORURL="http://mirror.telepoint.bg/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -207,12 +207,12 @@ libresslgeolocation() {
     echo "BR server detected"
     LIBRESSL_MIRRORURL="http://mirrors.unb.br/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -223,12 +223,12 @@ libresslgeolocation() {
     echo "CA server detected"
     LIBRESSL_MIRRORURL="http://openbsd.cs.toronto.edu/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -239,12 +239,12 @@ libresslgeolocation() {
     echo "CN server detected"
     LIBRESSL_MIRRORURL="http://mirror.yandex.ru/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -255,12 +255,12 @@ libresslgeolocation() {
     echo "CR server detected"
     LIBRESSL_MIRRORURL="http://mirrors.ucr.ac.cr/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -271,12 +271,12 @@ libresslgeolocation() {
     echo "DE server detected"
     LIBRESSL_MIRRORURL="http://ftp.hostserver.de/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -287,12 +287,12 @@ libresslgeolocation() {
     echo "DK server detected"
     LIBRESSL_MIRRORURL="http://mirror.one.com/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -303,12 +303,12 @@ libresslgeolocation() {
     echo "FR server detected"
     LIBRESSL_MIRRORURL="http://ftp.fr.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -319,12 +319,12 @@ libresslgeolocation() {
     echo "GB server detected"
     LIBRESSL_MIRRORURL="http://mirror.bytemark.co.uk/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -335,12 +335,12 @@ libresslgeolocation() {
     echo "HK server detected"
     LIBRESSL_MIRRORURL="http://www.ftp.ne.jp/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -351,12 +351,12 @@ libresslgeolocation() {
     echo "ID server detected"
     LIBRESSL_MIRRORURL="http://kartolo.sby.datautama.net.id/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -367,12 +367,12 @@ libresslgeolocation() {
     echo "IE server detected"
     LIBRESSL_MIRRORURL="http://ftp.heanet.ie/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -383,12 +383,12 @@ libresslgeolocation() {
     echo "IN server detected"
     LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -399,12 +399,12 @@ libresslgeolocation() {
     echo "IT server detected"
     LIBRESSL_MIRRORURL="http://openbsd.mirror.garr.it/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -415,12 +415,12 @@ libresslgeolocation() {
     echo "NL server detected"
     LIBRESSL_MIRRORURL="http://ftp.bit.nl/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -431,12 +431,12 @@ libresslgeolocation() {
     echo "JP server detected"
     LIBRESSL_MIRRORURL="http://www.ftp.ne.jp/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -447,12 +447,12 @@ libresslgeolocation() {
     echo "PH server detected"
     LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -463,12 +463,12 @@ libresslgeolocation() {
     echo "PL server detected"
     LIBRESSL_MIRRORURL="http://ftp.icm.edu.pl/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -479,12 +479,12 @@ libresslgeolocation() {
     echo "RU server detected"
     LIBRESSL_MIRRORURL="http://mirror.yandex.ru/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -495,12 +495,12 @@ libresslgeolocation() {
     echo "SE server detected"
     LIBRESSL_MIRRORURL="http://ftp.eu.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -511,12 +511,12 @@ libresslgeolocation() {
     echo "SG server detected"
     LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -527,12 +527,12 @@ libresslgeolocation() {
     echo "TH server detected"
     LIBRESSL_MIRRORURL="http://mirror.rise.ph/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -543,27 +543,27 @@ libresslgeolocation() {
     echo "US server detected"
     LIBRESSL_MIRRORURL="http://ftp3.usa.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-        curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+        curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
         LIBRESSL_CURLCHECK=$?
         if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
           LIBRESSL_MIRRORURL="http://mirrors.sonic.net/pub/OpenBSD/LibreSSL"
           LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-          curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+          curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
           LIBRESSL_CURLCHECK=$?
           if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
             LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
             LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-            curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+            curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
             LIBRESSL_CURLCHECK=$?
             if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
               LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -577,12 +577,12 @@ libresslgeolocation() {
     echo "VN server detected"
     LIBRESSL_MIRRORURL="http://www.ftp.ne.jp/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -592,27 +592,27 @@ libresslgeolocation() {
   else
     LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
     LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-    curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
     LIBRESSL_CURLCHECK=$?
     if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
       LIBRESSL_MIRRORURL="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL"
       LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-      curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+      curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
       LIBRESSL_CURLCHECK=$?
       if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
         LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
         LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-        curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+        curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
         LIBRESSL_CURLCHECK=$?
         if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
           LIBRESSL_MIRRORURL="http://mirrors.sonic.net/pub/OpenBSD/LibreSSL"
           LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-          curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+          curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
           LIBRESSL_CURLCHECK=$?
           if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
             LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
             LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
-            curl -sI --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
+            curl -4Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
             LIBRESSL_CURLCHECK=$?
             if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
               LIBRESSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl"
@@ -632,7 +632,7 @@ if [[ "$PHP_INSTALL" = [yY] ]];
 then
 
     phpgeolocation
-    curl -sI --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
+    curl -4Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
     PHPGEO_CURLCHECK=$?
     if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
         PHP_MIRRORURL="http://php.net"
@@ -706,8 +706,8 @@ nginxpcretarball() {
     if [ -s "${PCRELINKFILE}" ]; then
         cecho "${PCRELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar "${PCRELINK}" --tries=3 
-        # wget -c --progress=bar ${PCRELINKLOCAL} --tries=3 
+        wget -c4 --progress=bar "${PCRELINK}" --tries=3 
+        # wget -c4 --progress=bar ${PCRELINKLOCAL} --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${PCRELINKFILE} download failed." $boldgreen
@@ -739,8 +739,8 @@ nginxzlibtarball() {
     if [ -s "${NGX_ZLIBLINKFILE}" ]; then
         cecho "${NGX_ZLIBLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar "${NGX_ZLIBLINK}" --tries=3 
-        # wget -c --progress=bar ${NGX_ZLIBLINKLOCAL} --tries=3 
+        wget -c4 --progress=bar "${NGX_ZLIBLINK}" --tries=3 
+        # wget -c4 --progress=bar ${NGX_ZLIBLINKLOCAL} --tries=3 
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${NGX_ZLIBLINKFILE} download failed." $boldgreen
@@ -772,7 +772,7 @@ nginxwebdavtarball() {
     if [ -s "${NGX_WEBDAVLINKFILE}" ]; then
         cecho "${NGX_WEBDAVLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_WEBDAVLINK}" -O "${NGX_WEBDAVLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_WEBDAVLINKFILE} download failed." $boldgreen
@@ -809,8 +809,8 @@ nginxpgspeedtarball() {
     		if [ -s "${NGX_PAGESPEEDGITLINKFILE}" ]; then
         	cecho "${NGX_PAGESPEEDGITLINKFILE} Archive found, skipping download..." $boldgreen
     else
-    	    echo "wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3"
-          wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3 
+    	    echo "wget -c4 --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3"
+          wget -c4 --progress=bar --no-check-certificate "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3 
 			ERROR=$?
 				if [[ "$ERROR" != '0' ]]; then
 					cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} download failed." $boldgreen
@@ -828,8 +828,8 @@ nginxpgspeedtarball() {
     if [ -s "${NGX_PAGESPEEDLINKFILE}" ]; then
         cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        echo "wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3"
-        wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3 
+        echo "wget -c4 --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3"
+        wget -c4 --progress=bar --no-check-certificate "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
@@ -887,7 +887,7 @@ fi
         if [ -s "${NGX_PAGESPEEDPSOLINKLFILE}" ]; then
           cecho "${NGX_PAGESPEEDPSOLINKLFILE} Archive found, skipping download..." $boldgreen
         else
-          wget -c --progress=bar --no-check-certificate "${NGX_PAGESPEEDPSOLINKL}" --tries=3 
+          wget -c4 --progress=bar --no-check-certificate "${NGX_PAGESPEEDPSOLINKL}" --tries=3 
           ERROR=$?
 	        if [[ "$ERROR" != '0' ]]; then
 	          cecho "Error: ${NGX_PAGESPEEDPSOLINKLFILE} download failed." $boldgreen
@@ -923,7 +923,7 @@ ngxmoduletarball() {
     if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
         cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
+        wget -c4 --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
@@ -953,7 +953,7 @@ rm -rf "${NGX_FANCYINDEXLINKFILE}"
     if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
         cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
+        wget -c4 --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
@@ -1035,7 +1035,7 @@ echo ""
     if [ -s "${NGX_CONCATLINKFILE}" ]; then
         cecho "${NGX_CONCATLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate "${NGX_CONCATLINK}" -O "${NGX_CONCATLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_CONCATLINK}" -O "${NGX_CONCATLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CONCATLINKFILE} download failed." $boldgreen
@@ -1063,7 +1063,7 @@ echo ""
     if [ -s "${NGX_HEADERSMORELINKFILE}" ]; then
         cecho "${NGX_HEADERSMORELINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate "${NGX_HEADERSMORELINK}" -O "${NGX_HEADERSMORELINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_HEADERSMORELINK}" -O "${NGX_HEADERSMORELINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_HEADERSMORELINKFILE} download failed." $boldgreen
@@ -1091,7 +1091,7 @@ echo ""
     if [ -s "${NGX_STICKYLINKFILE}" ]; then
         cecho "${NGX_STICKYLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar "${NGX_STICKYLINK}" -O "${NGX_STICKYLINKFILE}" --tries=3
+        wget -c4 --progress=bar "${NGX_STICKYLINK}" -O "${NGX_STICKYLINKFILE}" --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_STICKYLINKFILE} download failed." $boldgreen
@@ -1120,7 +1120,7 @@ echo ""
     if [ -s "${NGX_UPSTREAMCHECKLINKFILE}" ]; then
         cecho "${NGX_UPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
     else
-        wget -c --progress=bar --no-check-certificate "${NGX_UPSTREAMCHECKLINK}" -O "${NGX_UPSTREAMCHECKLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_UPSTREAMCHECKLINK}" -O "${NGX_UPSTREAMCHECKLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_UPSTREAMCHECKLINKFILE} download failed." $boldgreen
@@ -1188,7 +1188,7 @@ if [ -s "${NGX_MEMCLINKFILE}" ]; then
   cecho "${NGX_MEMCLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_MEMCLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_MEMCLINK}" -O "${NGX_MEMCLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_MEMCLINK}" -O "${NGX_MEMCLINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_MEMCLINKFILE} download failed." $boldgreen
@@ -1216,7 +1216,7 @@ if [ -s "${NGX_SRCACHELINKFILE}" ]; then
   cecho "${NGX_SRCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_SRCACHELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_SRCACHELINK}" -O "${NGX_SRCACHELINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_SRCACHELINK}" -O "${NGX_SRCACHELINKFILE}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_SRCACHELINKFILE} download failed." $boldgreen
@@ -1244,7 +1244,7 @@ if [ -s "${NGX_DEVELKITLINKFILE}" ]; then
   cecho "${NGX_DEVELKITLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_DEVELKITLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_DEVELKITLINK}" -O "${NGX_DEVELKITLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_DEVELKITLINK}" -O "${NGX_DEVELKITLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_DEVELKITLINKFILE} download failed." $boldgreen
@@ -1272,7 +1272,7 @@ if [ -s "${NGX_SETMISCLINKFILE}" ]; then
   cecho "${NGX_SETMISCLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_SETMISCLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_SETMISCLINK}" -O "${NGX_SETMISCLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_SETMISCLINK}" -O "${NGX_SETMISCLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_SETMISCLINKFILE} download failed." $boldgreen
@@ -1300,7 +1300,7 @@ if [ -s "${NGX_ECHOLINKFILE}" ]; then
   cecho "${NGX_ECHOLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_ECHOLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_ECHOLINK}" -O "${NGX_ECHOLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_ECHOLINK}" -O "${NGX_ECHOLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_ECHOLINKFILE} download failed." $boldgreen
@@ -1328,7 +1328,7 @@ if [ -s "${NGX_REDISLINKFILE}" ]; then
   cecho "${NGX_REDISLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_REDISLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_REDISLINK}" -O "${NGX_REDISLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_REDISLINK}" -O "${NGX_REDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_REDISLINKFILE} download failed." $boldgreen
@@ -1359,7 +1359,7 @@ if [ -s "${NGX_LUANGINXLINKFILE}" ]; then
   cecho "${NGX_LUANGINXLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUANGINXLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUANGINXLINK}" -O "${NGX_LUANGINXLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUANGINXLINK}" -O "${NGX_LUANGINXLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUANGINXLINKFILE} download failed." $boldgreen
@@ -1387,7 +1387,7 @@ if [ -s "${NGX_LUAGITLINKFILE}" ]; then
   cecho "${NGX_LUAGITLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAGITLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAGITLINK}" -O "${NGX_LUAGITLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAGITLINK}" -O "${NGX_LUAGITLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAGITLINKFILE} download failed." $boldgreen
@@ -1415,7 +1415,7 @@ if [ -s "${NGX_LUAMEMCACHEDLINKFILE}" ]; then
   cecho "${NGX_LUAMEMCACHEDLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAMEMCACHEDLINK}" -O "${NGX_LUAMEMCACHEDLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAMEMCACHEDLINK}" -O "${NGX_LUAMEMCACHEDLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMEMCACHEDLINKFILE} download failed." $boldgreen
@@ -1443,7 +1443,7 @@ if [ -s "${NGX_LUAMYSQLLINKFILE}" ]; then
   cecho "${NGX_LUAMYSQLLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAMYSQLLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAMYSQLLINK}" -O "${NGX_LUAMYSQLLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAMYSQLLINK}" -O "${NGX_LUAMYSQLLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAMYSQLLINKFILE} download failed." $boldgreen
@@ -1471,7 +1471,7 @@ if [ -s "${NGX_LUAREDISLINKFILE}" ]; then
   cecho "${NGX_LUAREDISLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAREDISLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAREDISLINK}" -O "${NGX_LUAREDISLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAREDISLINK}" -O "${NGX_LUAREDISLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISLINKFILE} download failed." $boldgreen
@@ -1499,7 +1499,7 @@ if [ -s "${NGX_LUADNSLINKFILE}" ]; then
   cecho "${NGX_LUADNSLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUADNSLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUADNSLINK}" -O "${NGX_LUADNSLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUADNSLINK}" -O "${NGX_LUADNSLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUADNSLINKFILE} download failed." $boldgreen
@@ -1527,7 +1527,7 @@ if [ -s "${NGX_LUAUPLOADLINKFILE}" ]; then
   cecho "${NGX_LUAUPLOADLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPLOADLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPLOADLINK}" -O "${NGX_LUAUPLOADLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAUPLOADLINK}" -O "${NGX_LUAUPLOADLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPLOADLINKFILE} download failed." $boldgreen
@@ -1555,7 +1555,7 @@ if [ -s "${NGX_LUAWEBSOCKETLINKFILE}" ]; then
   cecho "${NGX_LUAWEBSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAWEBSOCKETLINK}" -O "${NGX_LUAWEBSOCKETLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAWEBSOCKETLINK}" -O "${NGX_LUAWEBSOCKETLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAWEBSOCKETLINKFILE} download failed." $boldgreen
@@ -1583,7 +1583,7 @@ if [ -s "${NGX_LUALOCKLINKFILE}" ]; then
   cecho "${NGX_LUALOCKLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUALOCKLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUALOCKLINK}" -O "${NGX_LUALOCKLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUALOCKLINK}" -O "${NGX_LUALOCKLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOCKLINKFILE} download failed." $boldgreen
@@ -1611,7 +1611,7 @@ if [ -s "${NGX_LUASTRINGLINKFILE}" ]; then
   cecho "${NGX_LUASTRINGLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUASTRINGLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUASTRINGLINK}" -O "${NGX_LUASTRINGLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUASTRINGLINK}" -O "${NGX_LUASTRINGLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUASTRINGLINKFILE} download failed." $boldgreen
@@ -1639,7 +1639,7 @@ if [ -s "${NGX_LUAREDISPARSERLINKFILE}" ]; then
   cecho "${NGX_LUAREDISPARSERLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAREDISPARSERLINK}" -O "${NGX_LUAREDISPARSERLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAREDISPARSERLINK}" -O "${NGX_LUAREDISPARSERLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAREDISPARSERLINKFILE} download failed." $boldgreen
@@ -1667,7 +1667,7 @@ if [ -s "${NGX_LUAUPSTREAMCHECKLINKFILE}" ]; then
   cecho "${NGX_LUAUPSTREAMCHECKLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMCHECKLINK}" -O "${NGX_LUAUPSTREAMCHECKLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMCHECKLINK}" -O "${NGX_LUAUPSTREAMCHECKLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCHECKLINKFILE} download failed." $boldgreen
@@ -1695,7 +1695,7 @@ if [ -s "${NGX_LUALRUCACHELINKFILE}" ]; then
   cecho "${NGX_LUALRUCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUALRUCACHELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUALRUCACHELINK}" -O "${NGX_LUALRUCACHELINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUALRUCACHELINK}" -O "${NGX_LUALRUCACHELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALRUCACHELINKFILE} download failed." $boldgreen
@@ -1723,7 +1723,7 @@ if [ -s "${NGX_LUARESTYCORELINKFILE}" ]; then
   cecho "${NGX_LUARESTYCORELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUARESTYCORELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUARESTYCORELINK}" -O "${NGX_LUARESTYCORELINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUARESTYCORELINK}" -O "${NGX_LUARESTYCORELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUARESTYCORELINKFILE} download failed." $boldgreen
@@ -1751,7 +1751,7 @@ if [ -s "${NGX_LUAUPSTREAMLINKFILE}" ]; then
   cecho "${NGX_LUAUPSTREAMLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMLINK}" -O "${NGX_LUAUPSTREAMLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMLINK}" -O "${NGX_LUAUPSTREAMLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMLINKFILE} download failed." $boldgreen
@@ -1779,7 +1779,7 @@ if [ -s "${NGX_LUALOGGERSOCKETLINKFILE}" ]; then
   cecho "${NGX_LUALOGGERSOCKETLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUALOGGERSOCKETLINK}" -O "${NGX_LUALOGGERSOCKETLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUALOGGERSOCKETLINK}" -O "${NGX_LUALOGGERSOCKETLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUALOGGERSOCKETLINKFILE} download failed." $boldgreen
@@ -1807,7 +1807,7 @@ if [ -s "${NGX_LUACOOKIELINKFILE}" ]; then
   cecho "${NGX_LUACOOKIELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUACOOKIELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUACOOKIELINK}" -O "${NGX_LUACOOKIELINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUACOOKIELINK}" -O "${NGX_LUACOOKIELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACOOKIELINKFILE} download failed." $boldgreen
@@ -1835,7 +1835,7 @@ if [ -s "${NGX_LUAUPSTREAMCACHELINKFILE}" ]; then
   cecho "${NGX_LUAUPSTREAMCACHELINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMCACHELINK}" -O "${NGX_LUAUPSTREAMCACHELINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUAUPSTREAMCACHELINK}" -O "${NGX_LUAUPSTREAMCACHELINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUAUPSTREAMCACHELINKFILE} download failed." $boldgreen
@@ -1863,7 +1863,7 @@ if [ -s "${NGX_LUACJSONLINKFILE}" ]; then
   cecho "${NGX_LUACJSONLINKFILE} Archive found, skipping download..." $boldgreen
   else
   cecho "Error: ${NGX_LUACJSONLINKFILE} not found!!! Downloading now......"
-        wget -c --progress=bar --no-check-certificate "${NGX_LUACJSONLINK}" -O "${NGX_LUACJSONLINKFILE}" --tries=3 
+        wget -c4 --progress=bar --no-check-certificate "${NGX_LUACJSONLINK}" -O "${NGX_LUACJSONLINKFILE}" --tries=3 
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${NGX_LUACJSONLINKFILE} download failed." $boldgreen
@@ -2835,7 +2835,7 @@ fi
 ###############################################
 openssldownload() {
 
-curl -sI --connect-timeout 5 --max-time 5 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
+curl -4Is --connect-timeout 5 --max-time 5 "$OPENSSL_LINK" | grep 'HTTP\/' | grep '200'
 OPENSSL_CURLCHECK=$?
 if [[ "$OPENSSL_CURLCHECK" != '0' ]]; then
   OPENSSL_MIRRORURL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl"
@@ -2851,8 +2851,8 @@ if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          echo "wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
         else
@@ -2894,8 +2894,8 @@ if [[ "$CENTOSVER" > 6 ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          echo "wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
         else
@@ -3134,7 +3134,7 @@ if [ -s "${PYTHON_SETUPTOOLSLINKFILE}" ]; then
   cecho "${PYTHON_SETUPTOOLSLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PYTHON_SETUPTOOLSLINKFILE} not found !!! Downloading now......"
-        wget -c --no-check-certificate "${PYTHON_SETUPTOOLSLINK}" --tries=3 
+        wget -c4 --no-check-certificate "${PYTHON_SETUPTOOLSLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "${PYTHON_SETUPTOOLSLINKFILE} download failed." $boldgreen

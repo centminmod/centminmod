@@ -2,7 +2,7 @@
 #######################################################
 # centminmod.com cli installer
 # To run installer.sh type: 
-# curl -sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
+# curl -4sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
 #######################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 DT=$(date +"%d%m%y-%H%M%S")
@@ -490,7 +490,7 @@ source_pcreinstall() {
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$ALTPCRELINK" --tries=3 
+    wget -c4 --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -527,7 +527,7 @@ source_wgetinstall() {
   if [ -s "$WGET_FILENAME" ]; then
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
+    wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $WGET_FILENAME download failed." $boldgreen
@@ -954,7 +954,7 @@ cd $INSTALLDIR
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
-      wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+      wget -c4 --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*

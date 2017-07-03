@@ -130,7 +130,7 @@ rm -rf /usr/bin/cminfo
 CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
 
 # fallback mirror
-curl -sI --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -4Is --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 CMINFO_CURLCHECK=\$?
 if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
     CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'
@@ -175,7 +175,7 @@ echo "------------------------------------------------------------------"
 
 echo "Server Location Info"
 # echo
-curl -s${CURL_TIMEOUTS} ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
+curl -4s${CURL_TIMEOUTS} ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
 
 echo
 echo "Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"

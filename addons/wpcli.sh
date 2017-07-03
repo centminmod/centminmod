@@ -36,7 +36,7 @@ fi
 
 # fallback mirror if official wp-cli download http status is not 200, use local
 # centminmod.com mirror download instead
-curl -sI --connect-timeout 5 --max-time 5 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -4Is --connect-timeout 5 --max-time 5 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 WPCLI_CURLCHECK=$?
 if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
 	WPCLILINK='https://centminmod.com/centminmodparts/wp-cli/wp-cli.phar'
@@ -69,7 +69,7 @@ updatewpcli() {
 
 		echo "update wp-cli"
 		rm -rf /usr/bin/wp
-		wget -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
+		wget -cnv4 --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
 		chmod 0700 /usr/bin/wp
 		/usr/bin/wp --info --allow-root	
 		echo ""
@@ -96,7 +96,7 @@ if [ -s /usr/bin/wp ]; then
   echo "/usr/bin/wp [found]"
   else
   echo "Error: /usr/bin/wp not found !!! Downloading now......"
-  wget -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
+  wget -cnv4 --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: /usr/bin/wp download failed."
@@ -115,7 +115,7 @@ if [ -s "${WPCLIDIR}/wp-completion.bash" ]; then
   echo "${WPCLIDIR}/wp-completion.bash [found]"
   else
   echo "Error: ${WPCLIDIR}/wp-completion.bash not found !!! Downloading now......"
-  wget -cnv --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
+  wget -cnv4 --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: ${WPCLIDIR}/wp-completion.bash download failed."

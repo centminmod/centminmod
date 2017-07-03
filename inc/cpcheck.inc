@@ -383,9 +383,9 @@ gitenv_askupdate() {
       # https://github.com/centminmod/centminmod/raw/${branchname}/giturl.txt
       # check if you can properly resolve raw.githubusercontent.com first in case of dns outpages
       # issues at github end https://community.centminmod.com/threads/centmin-mod-github-com-repo-504-timeouts.9232/
-      CURL_GITURLCHECKER=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
+      CURL_GITURLCHECKER=$(curl -s4 https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
       if [[ "$CURL_GITURLCHECKER" = '0' ]]; then
-        CURL_GITURL=$(curl -s https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+        CURL_GITURL=$(curl -s4 https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
       else
         # just default to https://github.com/centminmod/centminmod.git if can not resolve the
         # https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt
@@ -480,7 +480,7 @@ set_logdate() {
 
 ngxver_checker() {
 	if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-		LASTEST_NGINXVERS=$(curl -sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+		LASTEST_NGINXVERS=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
 		CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
 		if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
 			echo
@@ -1273,7 +1273,7 @@ ovhkernelcheck() {
 		# Intel Xeon D-15xx Broadwell-DE processors which need
 		# OVH custom kernel for the newer Intel network NIC support
 		# Intel Corporation Ethernet Connection X552/X557-AT 10GBASE-T
-		OVHASNCHECK=$(curl -s${CURL_TIMEOUTS} ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+		OVHASNCHECK=$(curl -4s${CURL_TIMEOUTS} ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
 		OVHKERNEL_CHECK=$(uname -r | grep '\-grs' >/dev/null 2>&1; echo $?)
 		BROADWELLDE_CHECK=$(grep 'Xeon(R) CPU D-15' /proc/cpuinfo >/dev/null 2>&1; echo $?)
 		# more sure way to check for OVH custom kernel if /root/.ovhrc file exists

@@ -97,7 +97,7 @@ if [[ "$PHPCURRENTVER" == 5.[2-4] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
 		zopcachetarball
 	fi
 
-#wget http://pecl.php.net/get/zendopcache-7.0.5.tgz
+#wget -4 http://pecl.php.net/get/zendopcache-7.0.5.tgz
 #tar xvzf zendopcache-7.0.5.tgz
 #cd zendopcache-7.0.5
 cd zendopcache-${ZOPCACHECACHE_VERSION}

@@ -90,7 +90,7 @@ FFF
 
 checkstatus() {
      if [[ "$CHECK" = [yY] ]]; then
-          curl -I $CHECKURL
+          curl -4I $CHECKURL
      fi
 }
 

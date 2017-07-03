@@ -14,7 +14,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
 
         IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary'
         # fallback mirror if official github is down, use gitlab mirror
-        curl -sI --connect-timeout 5 --max-time 5 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+        curl -4Is --connect-timeout 5 --max-time 5 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
         IGBINARYSEVEN_CURLCHECK=$?
         if [[ "$IGBINARYSEVEN_CURLCHECK" != '0' ]]; then
             IGBINARYSEVEN_LINK='https://gitlab.com/centminmod-github-mirror/igbinary.git'
@@ -56,7 +56,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         if [ -s igbinary-igbinary-1.1.2-dev.tar.gz ]; then
             cecho "igbinary-igbinary-1.1.2-dev.tar.gz Archive found, skipping download..." $boldgreen
         else
-            wget -c --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
+            wget -c4 --progress=bar --no-check-certificate https://github.com/igbinary/igbinary/tarball/master -O igbinary-igbinary-1.1.2-dev.tar.gz --tries=3
         fi
     
         tar -xzvf igbinary-igbinary-1.1.2-dev.tar.gz
