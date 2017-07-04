@@ -162,7 +162,7 @@ rclone_install() {
       echo "------------------------------------------------"
       cd "$DIR_TMP"
       rm -rf rclone-*
-      wget -cnv4 -O rclone-current-linux-amd64.zip "${BASEURL}/rclone-current-linux-amd64.zip"
+      wget -4 -cnv -O rclone-current-linux-amd64.zip "${BASEURL}/rclone-current-linux-amd64.zip"
       unzip rclone-current-linux-amd64.zip
       cd rclone-*-linux-amd64
       \cp -f rclone /usr/sbin/
@@ -184,7 +184,7 @@ rclone_install() {
       echo "------------------------------------------------"
       cd "$DIR_TMP"
       rm -rf rclone-*
-      wget -cnv4 -O rclone-current-linux-386.zip "${BASEURL}/rclone-current-linux-386.zip"
+      wget -4 -cnv -O rclone-current-linux-386.zip "${BASEURL}/rclone-current-linux-386.zip"
       unzip rclone-current-linux-386.zip
       cd rclone-*-linux-386
       \cp -f rclone /usr/sbin/

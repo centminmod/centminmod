@@ -2851,8 +2851,8 @@ if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          echo "wget -4 -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget -4 -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
         else
@@ -2894,8 +2894,8 @@ if [[ "$CENTOSVER" > 6 ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
         if [[ "$CENTOS_SIX" = '6' ]]; then
-          echo "wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
-          wget -cnv4 -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
+          echo "wget -4 -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY""
+          wget -4 -cnv -4 --progress=bar "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
         else

@@ -1404,7 +1404,7 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   # download wordpress latest zip
   rm -rf latest.zip
-  wget -cnv4 https://wordpress.org/latest.zip
+  wget -4 -cnv https://wordpress.org/latest.zip
   unzip -q latest.zip
   cd wordpress
   \cp -Rf * /home/nginx/domains/${vhostname}/public

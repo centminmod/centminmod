@@ -14,7 +14,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
     rm -rf nginx_1.13.1_http2_hpack.patch
-    wget -cnv4 https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    wget -4 -cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
     cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
     patch -p1 < nginx_1.13.1_http2_hpack.patch
     echo 
@@ -26,7 +26,7 @@ ngx_hpack_patch() {
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch" $boldyellow
     rm -rf nginx_1.13.1_http2_hpack.patch
-    wget -cnv4 https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
+    wget -4 -cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx_1.13.1_http2_hpack.patch
     cecho "patch -p1 < nginx_1.13.1_http2_hpack.patch" $boldyellow
     patch -p1 < nginx_1.13.1_http2_hpack.patch
     echo 
@@ -107,7 +107,7 @@ luanginx_patch() {
     if [ -d "${DIR_TMP}/${NGX_LUANGINXDIR}/src" ]; then
       pushd "${DIR_TMP}/${NGX_LUANGINXDIR}/src"
       rm -rf ngx_http_lua_headers.c
-      wget -cnv4 https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
+      wget -4 -cnv https://gist.githubusercontent.com/centminmod/48a61dcbcb6240fa1b52843be8290573/raw/ngx_http_lua_headers.c
       ls -lah
       echo 
       echo "patching lua nginx module for nginx 1.11.11+"
@@ -147,7 +147,7 @@ echonginx_patch() {
     if [ -d "${DIR_TMP}/${ECHODIR}/src" ]; then
       pushd "${DIR_TMP}/${ECHODIR}/src"
       rm -rf ngx_http_echo_request_info.c
-      wget -cnv4 https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
+      wget -4 -cnv https://gist.githubusercontent.com/centminmod/c2519f3cfdeff90196a13a3188ef0cfa/raw/ngx_http_echo_request_info.c
       ls -lah
       echo 
       echo "patching echo nginx module for nginx 1.11.11+"
@@ -280,7 +280,7 @@ patchnginx() {
      if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
        NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig-felix-group/raw/updated-nginx-1.9.15-spdy-patch/patches/${NGINXSPDYPATCHED_NAME}"
      fi
-     wget -cnv4 --no-check-certificate "$NGINXTLSPATCHLINK"
+     wget -4 -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
      if [[ -f "${NGINXSPDYPATCHED_NAME}" && ! "$(grep 'ngx_http_spdy_filter' auto/modules)" ]]; then
        patch -p1 < "${NGINXSPDYPATCHED_NAME}"
      fi
@@ -318,7 +318,7 @@ patchnginx() {
       if [[ "$NGINXTLSPATCH_CURLCHECK" != '0' ]]; then
         NGINXTLSPATCHLINK="https://gitlab.com/centminmod-github-mirror/sslconfig/raw/master/patches/${NGINXTLSPATCH_NAME}"
       fi
-      wget -cnv4 --no-check-certificate "$NGINXTLSPATCHLINK"
+      wget -4 -cnv --no-check-certificate "$NGINXTLSPATCHLINK"
       if [[ -f "${NGINXTLSPATCH_NAME}" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
     	   echo "patch -p1 < "${NGINXTLSPATCH_NAME}""
          patch -p1 < "${NGINXTLSPATCH_NAME}"

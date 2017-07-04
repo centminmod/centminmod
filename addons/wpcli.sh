@@ -69,7 +69,7 @@ updatewpcli() {
 
 		echo "update wp-cli"
 		rm -rf /usr/bin/wp
-		wget -cnv4 --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
+		wget -4 -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
 		chmod 0700 /usr/bin/wp
 		/usr/bin/wp --info --allow-root	
 		echo ""
@@ -96,7 +96,7 @@ if [ -s /usr/bin/wp ]; then
   echo "/usr/bin/wp [found]"
   else
   echo "Error: /usr/bin/wp not found !!! Downloading now......"
-  wget -cnv4 --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
+  wget -4 -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: /usr/bin/wp download failed."
@@ -115,7 +115,7 @@ if [ -s "${WPCLIDIR}/wp-completion.bash" ]; then
   echo "${WPCLIDIR}/wp-completion.bash [found]"
   else
   echo "Error: ${WPCLIDIR}/wp-completion.bash not found !!! Downloading now......"
-  wget -cnv4 --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
+  wget -4 -cnv --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: ${WPCLIDIR}/wp-completion.bash download failed."

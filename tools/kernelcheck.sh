@@ -65,7 +65,7 @@ kernelchecker_get() {
   WGET_CURLCHECK=$?
   if [[ "$WGET_CURLCHECK" = '0' ]]; then
     rm -rf /root/tools/kernelchecker.py
-    wget -cnv4 -O /root/tools/kernelchecker.py "$WGET_LINK" >/dev/null 2>&1
+    wget -4 -cnv -O /root/tools/kernelchecker.py "$WGET_LINK" >/dev/null 2>&1
   fi
 }
 
