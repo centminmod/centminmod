@@ -1715,7 +1715,7 @@ elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGX
 fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
-	libbroti_install
+	#libbroti_install
 	ngxbrotli_download
 	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
 		BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
