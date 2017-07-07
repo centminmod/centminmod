@@ -29,7 +29,7 @@ phpxz_detect() {
 		PHPXZ_CHECK="$PHPMVER"  # clean install
     fi
 
-	if [[ -f /usr/bin/xz && "$PHPXZ_CHECK" > 5.4 ]]; then
+	if [[ -f /usr/bin/xz && "$PHPXZ_CHECK" > 5.4 ]] && [[ "$lessphpmem" != [yY] ]]; then
 		PHPEXTSION='xz'
 		PHPTAR_FLAGS='xJf'
 	else
