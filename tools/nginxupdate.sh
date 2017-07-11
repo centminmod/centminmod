@@ -249,7 +249,7 @@ NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.40'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.41'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
@@ -459,7 +459,7 @@ fi
 
 download_cmd() {
   HTTPS_AXELCHECK=$(echo "$1" |awk -F '://' '{print $1}')
-  if [[ "$(curl -Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
+  if [[ "$(curl -4Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
     # axel doesn't natively support ECC 256bit ssl certs
     # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
     echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"

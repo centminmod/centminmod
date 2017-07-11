@@ -15,7 +15,7 @@ CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 DIR_TMP=/svr-setup
 OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
-# CURRENTCOUNTRY=$(curl -s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
+# CURRENTCOUNTRY=$(curl -4s${CURL_TIMEOUTS} ipinfo.io/$CURRENTIP/country)
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 USE_NGINXMAINEXTLOGFORMAT='n'
@@ -1404,7 +1404,7 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
   # download wordpress latest zip
   rm -rf latest.zip
-  wget -cnv https://wordpress.org/latest.zip
+  wget -4 -cnv https://wordpress.org/latest.zip
   unzip -q latest.zip
   cd wordpress
   \cp -Rf * /home/nginx/domains/${vhostname}/public

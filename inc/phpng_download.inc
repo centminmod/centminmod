@@ -2,7 +2,7 @@
 phpng_download() {
 	if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.2.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.2.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.2.0RC'  ]]; then
 			PHPNGVER=$PHPMU_ALPHAVER
-		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~pollita/" $boldyellow
+		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~remi/" $boldyellow
 		cd $DIR_TMP
 		if [ -f php-${PHPNGVER}.tar.xz ]; then
 			rm -rf php-${PHPNGVER}.tar.xz
@@ -15,8 +15,8 @@ phpng_download() {
     	if [ -s php-${PHPNGVER}.tar.xz ]; then
        	 cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
     	else
-        	echo "wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.xz --tries=3"
-        	wget -cnv https://downloads.php.net/~pollita/php-${PHPNGVER}.tar.xz --tries=3
+        	echo "wget -4 -cnv https://downloads.php.net/~remi/php-${PHPNGVER}.tar.xz --tries=3"
+        	wget -4 -cnv https://downloads.php.net/~remi/php-${PHPNGVER}.tar.xz --tries=3
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
 				cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
@@ -54,8 +54,8 @@ phpng_download() {
     	if [ -s php-${PHPNGVER}.tar.gz ]; then
        	 cecho "php-${PHPNGVER}.tar.gz found, skipping download..." $boldgreen
     	else
-        	echo "wget -cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3"
-        	wget -cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3
+        	echo "wget -4 -cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3"
+        	wget -4 -cnv https://downloads.php.net/~ab/php-${PHPNGVER}.tar.gz --tries=3
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
 				cecho "Error: php-${PHPNGVER}.tar.gz download failed." $boldgreen

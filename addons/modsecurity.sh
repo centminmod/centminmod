@@ -67,7 +67,7 @@ modsec_install() {
 	
 	cd $TMP_DIR
 	if [[ ! -f apr-${APR_VER}.tar.gz ]]; then
-		wget -cnv http://apache.mirror.uber.com.au//apr/apr-${APR_VER}.tar.gz
+		wget -4 -cnv http://apache.mirror.uber.com.au//apr/apr-${APR_VER}.tar.gz
 	fi
 	tar xzf apr-${APR_VER}.tar.gz
 	cd apr-${APR_VER}
@@ -78,7 +78,7 @@ modsec_install() {
 	
 	cd $TMP_DIR
 	if [[ ! -f apr-util-${APRU_VER}.tar.gz ]]; then
-		wget -cnv http://apache.mirror.uber.com.au/apr/apr-util-${APRU_VER}.tar.gz
+		wget -4 -cnv http://apache.mirror.uber.com.au/apr/apr-util-${APRU_VER}.tar.gz
 	fi
 	tar xzf apr-util-${APRU_VER}.tar.gz
 	cd apr-util-${APRU_VER}
@@ -92,7 +92,7 @@ modsec_install() {
 	cd $TMP_DIR
 	mkdir modsec_pcre
 	cd modsec_pcre
-	wget -cnv $PCRELINK
+	wget -4 -cnv $PCRELINK
 	tar xzf $PCRELINKFILE
 	cd pcre-${MODSEC_PCREVER}
 	make clean
@@ -104,7 +104,7 @@ modsec_install() {
 	
 	cd $TMP_DIR
 	if [[ ! -f modsecurity-${MODSEC_VER}.tar.gz ]]; then
-		wget -cnv https://www.modsecurity.org/tarball/2.9.0/modsecurity-${MODSEC_VER}.tar.gz
+		wget -4 -cnv https://www.modsecurity.org/tarball/2.9.0/modsecurity-${MODSEC_VER}.tar.gz
 	fi
 	tar xvzf modsecurity-${MODSEC_VER}.tar.gz
 	cd modsecurity-${MODSEC_VER}

@@ -13,7 +13,7 @@ CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
-ALTPCRE_VERSION='8.40'
+ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
@@ -294,7 +294,7 @@ source_pcreinstall() {
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$ALTPCRELINK" --tries=3 
+    wget -c4 --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -333,14 +333,14 @@ source_wgetinstall() {
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
 
-    curl -sI --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
+    curl -4Is --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
     WGET_CURLCHECK=$?
     if [[ "$WGET_CURLCHECK" = '0' ]]; then
-      wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+      wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
     else
       WGET_LINK="$WGET_LINKLOCAL"
-      echo "wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
-      wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+      echo "wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
+      wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
     fi
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then

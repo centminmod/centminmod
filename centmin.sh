@@ -420,7 +420,7 @@ NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.40'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.41'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
@@ -516,7 +516,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.13.2'       # Use this version of Nginx
+NGINX_VERSION='1.13.3'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
@@ -551,7 +551,7 @@ GPERFTOOLS_VERSION='2.5.93'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
 PCRE_SOURCEINSTALL='n'     
-PCRE_VERSION='8.40'          # PCRE version
+PCRE_VERSION='8.41'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.3'   # PHP extension for imagick
@@ -559,7 +559,7 @@ MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.2' # For PHP 7
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.8'   # Use this version of Libevent
-MEMCACHED_VERSION='1.4.38'  # Use this version of Memcached server
+MEMCACHED_VERSION='1.4.39'  # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'    # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
 LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
@@ -580,7 +580,7 @@ PHP_MEMCACHED='y'           # memcached PHP extension
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.37.1'
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
-PHP_VERSION='5.6.30'        # Use this version of PHP
+PHP_VERSION='5.6.31'        # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
@@ -1012,7 +1012,7 @@ sar_call() {
 
 download_cmd() {
   HTTPS_AXELCHECK=$(echo "$1" |awk -F '://' '{print $1}')
-  if [[ "$(curl -Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
+  if [[ "$(curl -4Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
     # axel doesn't natively support ECC 256bit ssl certs
     # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
     echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"

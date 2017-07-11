@@ -378,7 +378,7 @@ else
     # enter, ngxver will be empty so should fall back to
     # the nginx version defined by NGINX_VERSION variable
     if [ -z "$ngver" ]; then
-        LASTEST_NGINXVERS=$(curl -sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+        LASTEST_NGINXVERS=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
         ngver="$LASTEST_NGINXVERS"
     fi
 
@@ -781,7 +781,7 @@ elif [[ "$NGINX_ZERODT" = [yY] ]]; then
   echo "nginx master id: $GETNGXPID"
   echo
   echo "---------------------------------------------------------------------------"
-  curl -s localhost/nginx_status
+  curl -s -4 localhost/nginx_status
   echo "---------------------------------------------------------------------------"
   ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
   echo "---------------------------------------------------------------------------"
@@ -893,7 +893,7 @@ fi
          echo "---------------------------------------------------------------------------"
          echo "nginx master id: $GETNGXPID"
          echo "---------------------------------------------------------------------------"
-         curl -s localhost/nginx_status
+         curl -s -4 localhost/nginx_status
          echo "---------------------------------------------------------------------------"
          echo "kill -USR2 $GETNGXPID"
          kill -USR2 $GETNGXPID
@@ -902,14 +902,14 @@ fi
          echo
          ls -lah /usr/local/sbin/nginx*
          echo "---------------------------------------------------------------------------"
-         curl -s localhost/nginx_status
+         curl -s -4 localhost/nginx_status
          echo "---------------------------------------------------------------------------"
          echo "kill -WINCH $GETNGXPID"
          kill -WINCH $GETNGXPID
          sleep 3
          ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
          echo "---------------------------------------------------------------------------"
-         curl -s localhost/nginx_status
+         curl -s -4 localhost/nginx_status
          echo "---------------------------------------------------------------------------"
          echo " waiting for old nginx worker processes to exit..."
          while [[ "$(ps awx -o ppid,command | grep 'nginx: worker' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep | awk '{print $1}' | uniq)" = "$GETNGXPPID" ]]; do
@@ -922,7 +922,7 @@ fi
          sleep 3
          ps axw -o pid,ppid,user,%cpu,vsz,wchan,command | egrep '(nginx: |PID)' | egrep -v '(nginx_upgrade|amplify|php-fpm|hhvm)' | egrep -v grep
          echo "---------------------------------------------------------------------------"
-         curl -s localhost/nginx_status
+         curl -s -4 localhost/nginx_status
          echo "---------------------------------------------------------------------------"
        fi
 

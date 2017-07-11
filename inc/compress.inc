@@ -19,14 +19,14 @@ function funct_pigzinstall {
       echo "pigz-${PIGZ_VER}.tar.gz [found]"
       else
       echo "Error: pigz-${PIGZ_VER}.tar.gz not found!!!  Downloading now......"
-      wget -c --no-check-certificate http://zlib.net/pigz/pigz-${PIGZ_VER}.tar.gz --tries=3
+      wget -c4 --no-check-certificate http://zlib.net/pigz/pigz-${PIGZ_VER}.tar.gz --tries=3
     fi
     
     tar xzf pigz-${PIGZ_VER}.tar.gz
     cd pigz-${PIGZ_VER}
     make clean
     # rm -rf Makefile
-    # wget -c --no-check-certificate https://raw.github.com/madler/pigz/5316bf3440025ca37d84d7580a8f616c0127668a/Makefile -O Makefile
+    # wget -c4 --no-check-certificate https://raw.github.com/madler/pigz/5316bf3440025ca37d84d7580a8f616c0127668a/Makefile -O Makefile
     make
     \cp -f pigz unpigz /usr/bin
     ls -lh /usr/bin | grep pigz
@@ -75,7 +75,7 @@ function funct_lbzip2install {
       echo "lbzip2-${LBZIP_VER}.tar.gz [found]"
       else
       echo "Error: lbzip2-${LBZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c --no-check-certificate http://archive.lbzip2.org/lbzip2-${LBZIP_VER}.tar.gz --tries=3
+      wget -c4 --no-check-certificate http://archive.lbzip2.org/lbzip2-${LBZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lbzip2-${LBZIP_VER}.tar.gz

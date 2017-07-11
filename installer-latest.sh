@@ -2,7 +2,7 @@
 #######################################################
 # centminmod.com cli installer
 # To run installer.sh type: 
-# curl -sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
+# curl -4sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
 #######################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 DT=$(date +"%d%m%y-%H%M%S")
@@ -33,7 +33,7 @@ AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
 AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 #######################################################
-ALTPCRE_VERSION='8.40'
+ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
@@ -490,7 +490,7 @@ source_pcreinstall() {
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$ALTPCRELINK" --tries=3 
+    wget -c4 --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -527,7 +527,7 @@ source_wgetinstall() {
   if [ -s "$WGET_FILENAME" ]; then
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
-    wget -c --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
+    wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $WGET_FILENAME download failed." $boldgreen
@@ -954,7 +954,7 @@ cd $INSTALLDIR
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
-      wget -c --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+      wget -c4 --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*
@@ -996,7 +996,7 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.20'|" centmin.sh
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.21'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
