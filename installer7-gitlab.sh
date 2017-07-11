@@ -33,7 +33,7 @@ AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
 AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
 AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 #######################################################
-ALTPCRE_VERSION='8.40'
+ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
