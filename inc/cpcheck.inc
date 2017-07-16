@@ -230,6 +230,16 @@ fixnginx_epel() {
   fi
 }
 
+fixsclutils_epel() {
+  # prevent scl-utils install via epel yum repo
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep scl-utils > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_SCLUTILSEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) scl-utils")
+    sed -i "s|^exclude=.*|$NEW_SCLUTILSEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
 fixclamav_epel() {
   # prevent clamav-devel install by epel in favour of rpmforge version
   # https://community.centminmod.com/posts/38359/
@@ -1717,6 +1727,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixlibmysqlclient_symlink
   fixnodejs_epel
   fixnginx_epel
+  fixsclutils_epel
   #fixclamav_epel
   nano_highlight
   checkwoff
