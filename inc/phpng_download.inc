@@ -1,7 +1,8 @@
 ########################################################################
 phpng_download() {
 	if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.2.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.2.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.2.0RC'  ]]; then
-			PHPNGVER=$PHPMU_ALPHAVER
+		PHPNG_YES='y'
+		PHPNGVER=$PHPMU_ALPHAVER
 		cecho "Downloading PHP $PHPNGVER from https://downloads.php.net/~remi/" $boldyellow
 		cd $DIR_TMP
 		if [ -f php-${PHPNGVER}.tar.xz ]; then
