@@ -116,7 +116,7 @@ passp() {
 CSALT=$(openssl rand 6 -base64 | tr -dc 'a-zA-Z0-9')
 CUSER=$(echo "admin${CSALT}")
 CPASS=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
-hname=$(hostname)
+hname=$(hostname -f)
 
 echo ""
 cecho "Creating cinfo_htpasswd user/pass..." $boldyellow

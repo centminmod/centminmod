@@ -556,7 +556,7 @@ yumupdatechecker() {
 		if [[ "$UPDATE_CHECK" = '100' ]]; then
 			echo
 			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  New YUM Updates available for host $(hostname)" $boldyellow
+			cecho "  New YUM Updates available for host $(hostname -f)" $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen

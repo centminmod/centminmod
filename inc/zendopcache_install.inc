@@ -7,7 +7,7 @@ opprotectinstall() {
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
-hname=$(hostname)
+hname=$(hostname -f)
 OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
 OPUSER=$(echo "opadmin${OPSALT}")
 OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
