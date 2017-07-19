@@ -11,7 +11,7 @@ DEBUG='y'
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 BASEURL='http://downloads.rclone.org'
-HOSTDOMAIN=$(hostname)
+HOSTDOMAIN=$(hostname -f)
 ###########################################################
 # set locale temporarily to english
 # due to some non-english locale issues

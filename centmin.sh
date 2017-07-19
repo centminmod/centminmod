@@ -536,7 +536,7 @@ NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.5.4'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.5.5'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 # not working yet just prep work
@@ -566,8 +566,8 @@ LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
-REDISPHP_VER='3.1.3RC2'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='3.1.3RC2'   # redis PHP version for PHP =>7.x
+REDISPHP_VER='3.1.3'        # redis PHP version for PHP <7.x
+REDISPHPSEVEN_VER='3.1.3'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.1.8'      # MongoDB PHP version

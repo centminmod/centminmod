@@ -230,6 +230,16 @@ fixnginx_epel() {
   fi
 }
 
+fixsclutils_epel() {
+  # prevent scl-utils install via epel yum repo
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep scl-utils > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_SCLUTILSEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) scl-utils")
+    sed -i "s|^exclude=.*|$NEW_SCLUTILSEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
 fixclamav_epel() {
   # prevent clamav-devel install by epel in favour of rpmforge version
   # https://community.centminmod.com/posts/38359/
@@ -546,7 +556,7 @@ yumupdatechecker() {
 		if [[ "$UPDATE_CHECK" = '100' ]]; then
 			echo
 			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  New YUM Updates available for host $(hostname)" $boldyellow
+			cecho "  New YUM Updates available for host $(hostname -f)" $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
@@ -997,6 +1007,9 @@ pureftpdupdates() {
 			echo
 		fi	
 	fi
+  if [ ! -d /etc/ssl/private ]; then
+    mkdir -p /etc/ssl/private
+  fi
   if [[ "$INITIALINSTALL" != [yY] && ! -f /etc/ssl/private/pure-ftpd-dhparams.pem ]]; then
     echo "pure-ftpd: one time setup /etc/ssl/private/pure-ftpd-dhparams.pem file"
     echo "may take a while to create..."
@@ -1714,6 +1727,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixlibmysqlclient_symlink
   fixnodejs_epel
   fixnginx_epel
+  fixsclutils_epel
   #fixclamav_epel
   nano_highlight
   checkwoff

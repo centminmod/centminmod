@@ -348,13 +348,13 @@ systemstats() {
     sar -d > /root/centminlogs/sar-d-installstats.log
     fi
     sar -b > /root/centminlogs/sar-b-installstats.log
-    sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-u-installstats.log
-    sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-q-installstats.log
-    sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-r-installstats.log
+    sed -i "s|$(hostname -f)|hostname|" /root/centminlogs/sar-u-installstats.log
+    sed -i "s|$(hostname -f)|hostname|" /root/centminlogs/sar-q-installstats.log
+    sed -i "s|$(hostname -f)|hostname|" /root/centminlogs/sar-r-installstats.log
     if [ ! -f /proc/user_beancounters ]; then
-    sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-d-installstats.log
+    sed -i "s|$(hostname -f)|hostname|" /root/centminlogs/sar-d-installstats.log
     fi
-    sed -i "s|$(hostname)|hostname|" /root/centminlogs/sar-b-installstats.log
+    sed -i "s|$(hostname -f)|hostname|" /root/centminlogs/sar-b-installstats.log
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ "$(uname -m)" = 'x86_64' ]]; then
         if [ -f /var/cache/yum/x86_64/7/timedhosts.txt ]; then

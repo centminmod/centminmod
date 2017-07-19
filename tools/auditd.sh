@@ -224,6 +224,9 @@ audit_setup() {
     # only setup audit for non-openvz systems
     if [[ ! -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
         yum -q install audit audit-libs
+        if [ -f /etc/audisp/plugins.d/syslog.conf ]; then
+            sed -i 's|args = LOG_INFO|args = LOG_AUTHPRIV6|' /etc/audisp/plugins.d/syslog.conf
+        fi
         if [ -f /etc/audit/auditd.conf ]; then
             cp -a /etc/audit/auditd.conf /etc/audit/auditd.conf.bak-initial
             sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
@@ -233,6 +236,9 @@ audit_setup() {
             chkconfig auditd on >/dev/null 2>&1
         fi
     elif [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
+        if [ -f /etc/audisp/plugins.d/syslog.conf ]; then
+            sed -i 's|args = LOG_INFO|args = LOG_AUTHPRIV6|' /etc/audisp/plugins.d/syslog.conf
+        fi
         sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
         sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
         sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf

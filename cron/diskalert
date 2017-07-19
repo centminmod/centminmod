@@ -28,7 +28,7 @@ do
   partition=$(echo $output | awk '{print $2}')
 if [ ! "$usep" == "" ] ; then
   if [[ "$usep" -ge "$ALERT" ]]; then
-     echo "Running out of space \"$partition ($usep%)\" on server $(hostname), $(date)" | mail -s "$(hostname) Disk Alert: Almost out of disk space $usep%" $ADMIN
+     echo "Running out of space \"$partition ($usep%)\" on server $(hostname -f), $(date)" | mail -s "$(hostname -f) Disk Alert: Almost out of disk space $usep%" $ADMIN
   fi
 fi
 done
