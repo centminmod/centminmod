@@ -2408,6 +2408,9 @@ gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${
 if [[ "$CLANG" = [nN] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
 	MTUNEOPT="-m${CCM} -march=native${NGX_FOPENOPT} "
+elif [[ -f /opt/sbin/llvm/bin/clang && "$CLANG" = [yY] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
+  CCM=64
+  MTUNEOPT="-m${CCM} -march=native${NGX_FOPENOPT} "
 elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
 	MTUNEOPT="-m${CCM} -mtune=native${NGX_FOPENOPT} "
@@ -2483,7 +2486,7 @@ fi
 if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_LDGOLD" = [yY] ]] || [[ "$CLANG" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
 	# clang 4.0 compile doesn't include the lib/LLVMgold.so linker by default, so only GCC and clang 3.4.2 do
   if [[ "$CLANG_FOUR" = [Yy] ]]; then
-  	NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+    NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   else
     if [[ "$CLANG" = [yY] ]]; then
       NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -fuse-ld=gold"
