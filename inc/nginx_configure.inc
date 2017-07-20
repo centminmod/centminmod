@@ -2493,6 +2493,8 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
 	# clang 4.0 compile doesn't include the lib/LLVMgold.so linker by default, so only GCC and clang 3.4.2 do
   if [[ "$CLANG_FOUR" = [Yy] ]]; then
     NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+  elif [[ "$CLANG_FIVE" = [Yy] ]]; then
+    NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   else
     if [[ "$CLANG" = [yY] ]]; then
       NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -fuse-ld=gold"
