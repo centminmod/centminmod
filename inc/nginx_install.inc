@@ -290,7 +290,7 @@ if [[ "$(grep 'nginx hard nofile 262144' /etc/security/limits.conf >/dev/null 2>
 fi
 
     umask 027
-    mkdir /home/nginx/domains
+    mkdir -p /home/nginx/domains
     #chmod 0771 /home/nginx/domains/
     mkdir -p /home/nginx/domains/demodomain.com/{public,private,log,backup}
     cp -R $CUR_DIR/htdocs/demodomain.com/* /home/nginx/domains/demodomain.com/public
