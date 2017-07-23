@@ -11,7 +11,6 @@ DEBUG='y'
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 BASEURL='http://downloads.rclone.org'
-HOSTDOMAIN=$(hostname -f)
 ###########################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -24,6 +23,12 @@ shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
+
+  if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+    HOSTDOMAIN=$(hostname)
+  else
+    HOSTDOMAIN=$(hostname -f)
+  fi
 
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 

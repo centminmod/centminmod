@@ -116,7 +116,12 @@ passp() {
 CSALT=$(openssl rand 6 -base64 | tr -dc 'a-zA-Z0-9')
 CUSER=$(echo "admin${CSALT}")
 CPASS=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
-hname=$(hostname -f)
+
+    if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+      hname=$(hostname)
+    else
+      hname=$(hostname -f)
+    fi
 
 echo ""
 cecho "Creating cinfo_htpasswd user/pass..." $boldyellow
