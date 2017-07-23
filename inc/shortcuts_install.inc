@@ -2,21 +2,24 @@ shortcutsinstall() {
 
 #read -ep "Add script shortcuts (as shown in command_shortcuts.txt) ? [y/n] " shortcutask
 if [[ "$SHORTCUTS" = [yY] ]]; then
-    cecho "**********************************************************************" $boldgreen
-    cecho "* Add cmd shortcuts for php.ini, my.cnf, php-fpm.conf, nginx.conf and virtual.conf " $boldgreen
-    cecho "* Edit /etc/centminmod/custom_config.inc = customconfig" $boldgreen
-    cecho "* Edit php.ini = phpedit " $boldgreen
-    cecho "* Edit my.cnf = mycnf " $boldgreen
-    cecho "* Edit php-fpm.conf = fpmconf " $boldgreen
-    cecho "* Edit nginx.conf = nginxconf " $boldgreen
-    cecho "* Edit virtual.conf = vhostconf " $boldgreen
-    cecho "* nginx stop/start/restart = ngxstop/ngxstart/ngxrestart " $boldgreen
-    cecho "* php-fpm stop/start/restart = fpmstop/fpmstart/fpmrestart " $boldgreen
-    cecho "* mysql stop/start/restart = mysqlstop/mysqlstart/mysqlrestart " $boldgreen
-    cecho "* nginx + php-fpm stop/start/restart = npstop/npstart/nprestart " $boldgreen
-    cecho "* memcached stop/start/restart = memcachedstop/memcachedstart/memcachedrestart " $boldgreen
-    cecho "* csf stop/start/restart = csfstop/csfstart/csfrestart " $boldgreen
-    cecho "**********************************************************************" $boldgreen
+    if [[ "$INITIALINSTALL" != [yY] && ! -f /usr/bin/customconfig ]]; then
+        echo "Updating command shortcuts..."
+    fi
+    echo "**********************************************************************"
+    echo "* Add cmd shortcuts for php.ini, my.cnf, php-fpm.conf, nginx.conf and virtual.conf "
+    echo "* Edit /etc/centminmod/custom_config.inc = customconfig"
+    echo "* Edit php.ini = phpedit "
+    echo "* Edit my.cnf = mycnf "
+    echo "* Edit php-fpm.conf = fpmconf "
+    echo "* Edit nginx.conf = nginxconf "
+    echo "* Edit virtual.conf = vhostconf "
+    echo "* nginx stop/start/restart = ngxstop/ngxstart/ngxrestart "
+    echo "* php-fpm stop/start/restart = fpmstop/fpmstart/fpmrestart "
+    echo "* mysql stop/start/restart = mysqlstop/mysqlstart/mysqlrestart "
+    echo "* nginx + php-fpm stop/start/restart = npstop/npstart/nprestart "
+    echo "* memcached stop/start/restart = memcachedstop/memcachedstart/memcachedrestart "
+    echo "* csf stop/start/restart = csfstop/csfstart/csfrestart "
+    echo "**********************************************************************"
 
 if [[ "$USEEDITOR" = 'vim' ]]; then
     echo "vim /etc/centminmod/custom_config.inc" > /usr/bin/customconfig ; chmod 700 /usr/bin/customconfig
@@ -52,12 +55,14 @@ fi # USEEDITOR
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     # replicate the default aliases for centos 7 on
     # centos 6 systems
-    echo "alias egrep='egrep --color=auto'" >> /root/.bashrc
-    echo "alias fgrep='fgrep --color=auto'" >> /root/.bashrc
-    echo "alias grep='grep --color=auto'" >> /root/.bashrc
-    alias egrep='egrep --color=auto'
-    alias fgrep='fgrep --color=auto'
-    alias grep='grep --color=auto'
+    if [[ ! "$(egrep -w 'egrep|fgrep|grep' /root/.bashrc)" ]]; then
+        echo "alias egrep='egrep --color=auto'" >> /root/.bashrc
+        echo "alias fgrep='fgrep --color=auto'" >> /root/.bashrc
+        echo "alias grep='grep --color=auto'" >> /root/.bashrc
+        alias egrep='egrep --color=auto'
+        alias fgrep='fgrep --color=auto'
+        alias grep='grep --color=auto'
+    fi
 
     echo "/etc/init.d/nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "/etc/init.d/nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
@@ -148,15 +153,17 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     fi
 fi # CENTOS_SEVEN != 7
     
-    SUHOSINCHECK=`grep 'extension=suhosin.so' /usr/local/lib/php.ini `
+    SUHOSINCHECK=$(grep 'extension=suhosin.so' /usr/local/lib/php.ini)
     if [ ! -z "$SUHOSINCHECK" ]; then
         echo "sed -i 's/;extension=suhosin.so/extension=suhosin.so/g' /usr/local/lib/php.ini; fpmrestart; php -v" >/usr/bin/suhosinon ; chmod 700 /usr/bin/suhosinon
         echo "sed -i 's/extension=suhosin.so/;extension=suhosin.so/g' /usr/local/lib/php.ini; fpmrestart; php -v" >/usr/bin/suhosinoff ; chmod 700 /usr/bin/suhosinoff
     fi
     
     if [ -f /usr/bin/glances ]; then
-        echo "alias top2=\"glances\"" >> /root/.bashrc
-        alias top2="glances"
+        if [[ ! "$(grep -w 'glances' /root/.bashrc)" ]]; then
+            echo "alias top2=\"glances\"" >> /root/.bashrc
+            alias top2="glances"
+        fi
     fi
 
 fi

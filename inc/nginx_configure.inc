@@ -2171,7 +2171,13 @@ if [[ "$CLANG" = [yY] ]]; then
 	# recompiles. however on initial install ccache has no benefits, so for initial
 	# centmin mod install disabling ccache will in theory speed up first time installs
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f /opt/sbin/llvm/bin/clang ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
+  CLANG_NEWBIN='/opt/sbin/llvm-release_40/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] ]]; then
+  CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
+fi
+
+if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
 	# if [ -f /opt/sbin/llvm/lib/LLVMgold.so ]; then
 	# 	LLVMLTO_OPT=' -flto'
 	# 	# export AR="$BUILD_DIR/llvmgold.binutils/binutils/ar"
@@ -2182,23 +2188,23 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f /opt/sbin/llvm/bin/cla
 	# fi
 	############################
 	if [[ "$INITIALINSTALL" != [yY] ]]; then
-		export CC="ccache /opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}"
-		export CXX="ccache /opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0"
+		export CC="ccache ${CLANG_NEWBIN}${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}"
+		export CXX="ccache ${CLANG_NEWBIN}++${LLVMLTO_OPT} -ferror-limit=0"
 		export CCACHE_CPP2=yes
 		CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
 echo "
-export CC=\"ccache /opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}\"
-export CXX=\"ccache /opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0\"
+export CC=\"ccache ${CLANG_NEWBIN}${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}\"
+export CXX=\"ccache ${CLANG_NEWBIN}++${LLVMLTO_OPT} -ferror-limit=0\"
 export CCACHE_CPP2=yes
 CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
 	else
-		export CC="/opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}"
-		export CXX="/opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0"
+		export CC="${CLANG_NEWBIN}${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}"
+		export CXX="${CLANG_NEWBIN}++${LLVMLTO_OPT} -ferror-limit=0"
 		# export CCACHE_CPP2=yes
 		CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
 echo "	
-export CC=\"/opt/sbin/llvm/bin/clang${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}\"
-export CXX=\"/opt/sbin/llvm/bin/clang++${LLVMLTO_OPT} -ferror-limit=0\"
+export CC=\"${CLANG_NEWBIN}${LLVMLTO_OPT} -ferror-limit=0${CCTOOLSET}\"
+export CXX=\"${CLANG_NEWBIN}++${LLVMLTO_OPT} -ferror-limit=0\"
 # export CCACHE_CPP2=yes
 CLANG_CCOPT=' -Wno-sign-compare -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
 	fi
@@ -2408,6 +2414,9 @@ gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | tee ${
 if [[ "$CLANG" = [nN] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
 	MTUNEOPT="-m${CCM} -march=native${NGX_FOPENOPT} "
+elif [[ -f "${CLANG_NEWBIN}" && "$CLANG" = [yY] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
+  CCM=64
+  MTUNEOPT="-m${CCM} -march=native${NGX_FOPENOPT} "
 elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
 	MTUNEOPT="-m${CCM} -mtune=native${NGX_FOPENOPT} "
@@ -2483,7 +2492,9 @@ fi
 if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_LDGOLD" = [yY] ]] || [[ "$CLANG" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
 	# clang 4.0 compile doesn't include the lib/LLVMgold.so linker by default, so only GCC and clang 3.4.2 do
   if [[ "$CLANG_FOUR" = [Yy] ]]; then
-  	NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+    NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+  elif [[ "$CLANG_FIVE" = [Yy] ]]; then
+    NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   else
     if [[ "$CLANG" = [yY] ]]; then
       NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -fuse-ld=gold"

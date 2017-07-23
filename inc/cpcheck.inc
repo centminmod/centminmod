@@ -99,6 +99,9 @@ update_cmdshortcuts() {
       sed -i 's|service memcached restart|\/etc\/init.d\/memcached restart|' /usr/bin/memcachedrestart
     fi
   fi
+  if [[ "$INITIALINSTALL" != [yY] && ! -f /usr/bin/customconfig ]]; then
+    shortcutsinstall
+  fi
 }
 
 update_nginxconf() {
@@ -555,8 +558,13 @@ yumupdatechecker() {
 		fi
 		if [[ "$UPDATE_CHECK" = '100' ]]; then
 			echo
+      if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+        SERVERHOSTNAME=$(hostname)
+      else
+        SERVERHOSTNAME=$(hostname -f)
+      fi
 			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  New YUM Updates available for host $(hostname -f)" $boldyellow
+			cecho "  New YUM Updates available for host $SERVERHOSTNAME" $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
