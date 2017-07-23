@@ -3,23 +3,23 @@ shortcutsinstall() {
 #read -ep "Add script shortcuts (as shown in command_shortcuts.txt) ? [y/n] " shortcutask
 if [[ "$SHORTCUTS" = [yY] ]]; then
     if [[ "$INITIALINSTALL" != [yY] && ! -f /usr/bin/customconfig ]]; then
-        cecho "Updating command shortcuts..." $boldgreen    
+        echo "Updating command shortcuts..."
     fi
-    cecho "**********************************************************************" $boldgreen
-    cecho "* Add cmd shortcuts for php.ini, my.cnf, php-fpm.conf, nginx.conf and virtual.conf " $boldgreen
-    cecho "* Edit /etc/centminmod/custom_config.inc = customconfig" $boldgreen
-    cecho "* Edit php.ini = phpedit " $boldgreen
-    cecho "* Edit my.cnf = mycnf " $boldgreen
-    cecho "* Edit php-fpm.conf = fpmconf " $boldgreen
-    cecho "* Edit nginx.conf = nginxconf " $boldgreen
-    cecho "* Edit virtual.conf = vhostconf " $boldgreen
-    cecho "* nginx stop/start/restart = ngxstop/ngxstart/ngxrestart " $boldgreen
-    cecho "* php-fpm stop/start/restart = fpmstop/fpmstart/fpmrestart " $boldgreen
-    cecho "* mysql stop/start/restart = mysqlstop/mysqlstart/mysqlrestart " $boldgreen
-    cecho "* nginx + php-fpm stop/start/restart = npstop/npstart/nprestart " $boldgreen
-    cecho "* memcached stop/start/restart = memcachedstop/memcachedstart/memcachedrestart " $boldgreen
-    cecho "* csf stop/start/restart = csfstop/csfstart/csfrestart " $boldgreen
-    cecho "**********************************************************************" $boldgreen
+    echo "**********************************************************************"
+    echo "* Add cmd shortcuts for php.ini, my.cnf, php-fpm.conf, nginx.conf and virtual.conf "
+    echo "* Edit /etc/centminmod/custom_config.inc = customconfig"
+    echo "* Edit php.ini = phpedit "
+    echo "* Edit my.cnf = mycnf "
+    echo "* Edit php-fpm.conf = fpmconf "
+    echo "* Edit nginx.conf = nginxconf "
+    echo "* Edit virtual.conf = vhostconf "
+    echo "* nginx stop/start/restart = ngxstop/ngxstart/ngxrestart "
+    echo "* php-fpm stop/start/restart = fpmstop/fpmstart/fpmrestart "
+    echo "* mysql stop/start/restart = mysqlstop/mysqlstart/mysqlrestart "
+    echo "* nginx + php-fpm stop/start/restart = npstop/npstart/nprestart "
+    echo "* memcached stop/start/restart = memcachedstop/memcachedstart/memcachedrestart "
+    echo "* csf stop/start/restart = csfstop/csfstart/csfrestart "
+    echo "**********************************************************************"
 
 if [[ "$USEEDITOR" = 'vim' ]]; then
     echo "vim /etc/centminmod/custom_config.inc" > /usr/bin/customconfig ; chmod 700 /usr/bin/customconfig
