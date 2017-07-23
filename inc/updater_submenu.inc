@@ -102,7 +102,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
 	for k in `git branch -r|sed s/^..//`;do echo -e `git log -1 --pretty=format:"%Cgreen%ci %Cblue%cr%Creset" "$k" 2>/dev/null`\\t"$k";done| sed -e 's|origin\/||g' -e '/HEAD/d' | sort -r
 	
 	echo
-	read -ep "Enter the branch name you want to switch to i.e. 123.08beta03 : " branchname
+	read -ep "Enter the branch name you want to switch to i.e. 123.09beta01 : " branchname
 	echo
 
 	if [ ! "$(git branch -r | grep "${branchname}$")" ]; then

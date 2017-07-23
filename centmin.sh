@@ -293,7 +293,7 @@ NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
 NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.38'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.41'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.32'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
@@ -381,7 +381,7 @@ NGINXBACKUPDIR='/usr/local/nginxbackup'
 ## Nginx SSL options
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.0.2k'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSION='1.0.2l'   # Use this version of OpenSSL http://openssl.org/
 CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch https://github.com/cloudflare/sslconfig
 
 # LibreSSL
