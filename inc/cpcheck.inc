@@ -99,6 +99,9 @@ update_cmdshortcuts() {
       sed -i 's|service memcached restart|\/etc\/init.d\/memcached restart|' /usr/bin/memcachedrestart
     fi
   fi
+  if [[ "$INITIALINSTALL" != [yY] && ! -f /usr/bin/customconfig ]]; then
+    shortcutsinstall
+  fi
 }
 
 update_nginxconf() {
