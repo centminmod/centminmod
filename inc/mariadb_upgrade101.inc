@@ -382,10 +382,10 @@ fi
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.1.x check available packages" $boldgreen
-cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel" $boldgreen
+cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
+time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "MariaDB 10.1.x Install"
@@ -394,10 +394,10 @@ time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel Mari
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.1.x YUM install..." $boldgreen
-cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel" $boldgreen
+cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel
+time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
 \cp -f /etc/my.cnf /etc/my.cnf-newold
 echo ""
