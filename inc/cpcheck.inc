@@ -676,7 +676,7 @@ reuseportchecks() {
 }
 
 rclocalchecks() {
-	if [ ! -x /etc/rc.d/rc.local ]; then
+	if [[ -f /etc/rc.d/rc.local && ! -x /etc/rc.d/rc.local ]]; then
 		# centos 7 doesn't give rc.local executable permissions
 		# so /etc/rc.local isn't run on reboots like on centos 6
 		if [[ "$INITIALINSTALL" = [yY] ]]; then
