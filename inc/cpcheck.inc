@@ -676,6 +676,58 @@ reuseportchecks() {
 }
 
 rclocalchecks() {
+# https://community.centminmod.com/posts/52406/
+if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+
+
+cat > /usr/lib/systemd/system/rc-local.service <<EOF
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+EOF
+
+cat > /etc/rc.d/rc.local <<EOF
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In contrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+
+touch /var/lock/subsys/local
+EOF
+
+# remove non-standard centos 7 service file if detected
+if [ -f /etc/systemd/system/rc-local.service ]; then
+  # echo "cat /etc/systemd/system/rc-local.service"
+  # cat /etc/systemd/system/rc-local.service
+  # echo
+  rm -rf /etc/systemd/system/rc-local.service
+  rm -rf /var/lock/subsys/local
+  systemctl daemon-reload >/dev/null 2>&1
+  systemctl stop rc-local.service >/dev/null 2>&1
+fi
+
+  chmod +x /etc/rc.d/rc.local
+  cd /etc; ln -s rc.d/rc.local /etc/rc.local;
+  systemctl daemon-reload >/dev/null 2>&1
+  systemctl start rc-local.service >/dev/null 2>&1
+  systemctl status rc-local.service >/dev/null 2>&1
+fi
 	if [[ -f /etc/rc.d/rc.local && ! -x /etc/rc.d/rc.local ]]; then
 		# centos 7 doesn't give rc.local executable permissions
 		# so /etc/rc.local isn't run on reboots like on centos 6
