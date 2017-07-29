@@ -1,3 +1,11 @@
+libc-fix() {
+  # https://community.centminmod.com/posts/52555/
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client -q
+  fi
+}
+
 cityfan_fix() {
   if [[ -f /etc/yum.repos.d/city-fan.org.repo && ! $(grep libtidy /etc/yum.repos.d/city-fan.org.repo) ]]; then
     sed -i 's|^gpgkey=.*|&\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
@@ -1798,6 +1806,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_initphpfpm
   update_phpfpmconfg
   cityfan_fix
+  libc-fix
 fi
 
 }
