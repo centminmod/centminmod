@@ -1,4 +1,4 @@
-libc-fix() {
+libc_fix() {
   # https://community.centminmod.com/posts/52555/
   if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
     yum -y -q install yum-plugin-versionlock
@@ -1806,7 +1806,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_initphpfpm
   update_phpfpmconfg
   cityfan_fix
-  libc-fix
+  libc_fix
 fi
 
 }
