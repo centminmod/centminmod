@@ -2,7 +2,7 @@ libc_fix() {
   # https://community.centminmod.com/posts/52555/
   if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
     yum -y -q install yum-plugin-versionlock
-    yum versionlock libc-client -q
+    yum versionlock libc-client -q >/dev/null 2>&1
   fi
 }
 
