@@ -2145,7 +2145,7 @@ if [[ "$wpscache" = [nN] ]]; then
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cacheenabler.txt
     # only insert cronjob if one doesn't already exist
     if [[ -z $(grep "$vhostname cacheenabler cron" cronjoblist) ]]; then
-      echo "16 23 * * * echo "$vhostname cacheenabler cron"; sleep ${DELAY}s ; rm -rf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/cache/cache-enabler/* > /dev/null 2>&1" >> cronjoblist
+      echo "16 23 * * * echo \"$vhostname cacheenabler cron\"; sleep ${DELAY}s ; rm -rf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/cache/cache-enabler/* > /dev/null 2>&1" >> cronjoblist
     fi
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cacheenabler.txt
     crontab cronjoblist
@@ -2206,6 +2206,7 @@ rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
+sed -i "/$vhostname cacheenabler cron/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
 pure-pw userdel $ftpuser >/dev/null 2>&1

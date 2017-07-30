@@ -218,18 +218,18 @@ echo ""
 
     echo "*************************************************"
     cecho "* MariaDB 5.5 check available packages " $boldgreen
-    cecho "  yum -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "  yum -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-yum -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+yum -q --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities
 echo ""
 
     echo "*************************************************"
     cecho "* MariaDB 5.5 YUM install... " $boldgreen
-    cecho "  yum -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+    cecho "  yum -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-yum -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+yum -q -y --disableplugin=fastestmirror,downloadonly --disablerepo=CentALT install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities
 echo ""
 
 

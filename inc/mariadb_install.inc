@@ -225,9 +225,9 @@ echo ""
 echo "MariaDB 10.1 YUM install..."
 
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    DISABLEOTHERREPO=' --disablerepo=epel --disablerepo=rpmforge'
+    DISABLEOTHERREPO=' --disablerepo=epel --disablerepo=rpmforge --disableplugin=priorities'
 else
-    DISABLEOTHERREPO=' --disablerepo=epel'
+    DISABLEOTHERREPO=' --disablerepo=epel --disableplugin=priorities'
 fi
 
 # set /etc/my.cnf templates

@@ -1,3 +1,31 @@
+libc_fix() {
+  # https://community.centminmod.com/posts/52555/
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    INIT_DIR=$(echo $PWD)
+    cd /svr-setup
+    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q remove libc-client-2007f-14.el7.x86_64
+    yum -y -q localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    cd "$INIT_DIR"
+   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    INIT_DIR=$(echo $PWD)
+    cd /svr-setup
+    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q remove libc-client-2007f-14.el7.x86_64
+    yum -y -q localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    cd "$INIT_DIR" 
+  fi
+}
+
 cityfan_fix() {
   if [[ -f /etc/yum.repos.d/city-fan.org.repo && ! $(grep libtidy /etc/yum.repos.d/city-fan.org.repo) ]]; then
     sed -i 's|^gpgkey=.*|&\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
@@ -676,7 +704,59 @@ reuseportchecks() {
 }
 
 rclocalchecks() {
-	if [ ! -x /etc/rc.d/rc.local ]; then
+# https://community.centminmod.com/posts/52406/
+if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+
+
+cat > /usr/lib/systemd/system/rc-local.service <<EOF
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+EOF
+
+cat > /etc/rc.d/rc.local <<EOF
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In contrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+
+touch /var/lock/subsys/local
+EOF
+
+# remove non-standard centos 7 service file if detected
+if [ -f /etc/systemd/system/rc-local.service ]; then
+  # echo "cat /etc/systemd/system/rc-local.service"
+  # cat /etc/systemd/system/rc-local.service
+  # echo
+  rm -rf /etc/systemd/system/rc-local.service
+  rm -rf /var/lock/subsys/local
+  systemctl daemon-reload >/dev/null 2>&1
+  systemctl stop rc-local.service >/dev/null 2>&1
+fi
+
+  chmod +x /etc/rc.d/rc.local
+  cd /etc; ln -s rc.d/rc.local /etc/rc.local;
+  systemctl daemon-reload >/dev/null 2>&1
+  systemctl start rc-local.service >/dev/null 2>&1
+  systemctl status rc-local.service >/dev/null 2>&1
+fi
+	if [[ -f /etc/rc.d/rc.local && ! -x /etc/rc.d/rc.local ]]; then
 		# centos 7 doesn't give rc.local executable permissions
 		# so /etc/rc.local isn't run on reboots like on centos 6
 		if [[ "$INITIALINSTALL" = [yY] ]]; then
@@ -1746,6 +1826,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_initphpfpm
   update_phpfpmconfg
   cityfan_fix
+  libc_fix
 fi
 
 }

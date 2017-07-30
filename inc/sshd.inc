@@ -118,7 +118,7 @@ echo ""
 read -ep "Enter the SSH port number you want to change to: " PORTNUM
 
 if [ -f /etc/csf/csf.conf ]; then
-	CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | egrep '^TCP_IN|^TCP_OUT|^UDP_IN|^UDP_OUT' | grep -w $PORTNUM)
+	CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | egrep '^TCP_IN|^UDP_IN' | grep -w $PORTNUM)
 	if [[ "$CHECKNEWPORTNUM" ]]; then
 		echo "the new port $PORTNUM is already in use by other software defined by CSF Firewall"
 		echo "please re-run menu option 16 and try a different port"
@@ -163,7 +163,7 @@ fi
 if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
 	if [ -f /etc/csf/csf.conf ]; then
 	#check if portnum already exists
-	EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '(TCP_IN|TCP_OUT)' | grep ",${PORTNUM},")
+	EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '(TCP_IN)' | grep ",${PORTNUM},")
 	EXISTPORTCHECKED=${EXISTPORTCHECK:-novalue}
 		
 		if [[ "$EXISTPORTCHECKED" = 'novalue' ]]; then

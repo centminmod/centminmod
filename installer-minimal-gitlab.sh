@@ -608,6 +608,34 @@ fileperm_fixes() {
   fi
 }
 
+libc_fix() {
+  # https://community.centminmod.com/posts/52555/
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    yum -y install yum-plugin-versionlock
+    yum versionlock libc-client
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    INIT_DIR=$(echo $PWD)
+    cd /svr-setup
+    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
+    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y remove libc-client-2007f-14.el7.x86_64
+    yum -y localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y install yum-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel
+    cd "$INIT_DIR"
+   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    INIT_DIR=$(echo $PWD)
+    cd /svr-setup
+    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
+    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y remove libc-client-2007f-14.el7.x86_64
+    yum -y localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y install yum-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel
+    cd "$INIT_DIR" 
+  fi
+}
+
 opt_tcp() {
 #######################################################
 # check if custom open file descriptor limits already exist
@@ -616,6 +644,58 @@ opt_tcp() {
         # Set VPS hard/soft limits
         echo "* soft nofile 262144" >>/etc/security/limits.conf
         echo "* hard nofile 262144" >>/etc/security/limits.conf
+# https://community.centminmod.com/posts/52406/
+if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+
+
+cat > /usr/lib/systemd/system/rc-local.service <<EOF
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+EOF
+
+cat > /etc/rc.d/rc.local <<EOF
+#!/bin/bash
+# THIS FILE IS ADDED FOR COMPATIBILITY PURPOSES
+#
+# It is highly advisable to create own systemd services or udev rules
+# to run scripts during boot instead of using this file.
+#
+# In contrast to previous versions due to parallel execution during boot
+# this script will NOT be run after all other services.
+#
+# Please note that you must run 'chmod +x /etc/rc.d/rc.local' to ensure
+# that this script will be executed during boot.
+
+touch /var/lock/subsys/local
+EOF
+
+# remove non-standard centos 7 service file if detected
+if [ -f /etc/systemd/system/rc-local.service ]; then
+  echo "cat /etc/systemd/system/rc-local.service"
+  cat /etc/systemd/system/rc-local.service
+  echo
+  rm -rf /etc/systemd/system/rc-local.service
+  rm -rf /var/lock/subsys/local
+  systemctl daemon-reload
+  systemctl stop rc-local.service
+fi
+
+  chmod +x /etc/rc.d/rc.local
+  pushd /etc; ln -s rc.d/rc.local /etc/rc.local; popd
+  systemctl daemon-reload
+  systemctl start rc-local.service
+  systemctl status rc-local.service
+fi
         ulimit -n 262144
         echo "ulimit -n 262144" >> /etc/rc.local
     fi # check if custom open file descriptor limits already exist
@@ -857,10 +937,11 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   sar_call
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion mlocate re2c kernel-headers kernel-devel uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
+    libc_fix
     sar_call
   else
-    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
     sar_call
   fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then

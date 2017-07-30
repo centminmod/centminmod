@@ -476,6 +476,7 @@ AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall a
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
 PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
+PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
 PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
 PHPINTL='y'                  # Disable or Enable PHP intl extension
@@ -559,7 +560,7 @@ MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.2' # For PHP 7
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.8'   # Use this version of Libevent
-MEMCACHED_VERSION='1.4.39'  # Use this version of Memcached server
+MEMCACHED_VERSION='1.5.0'  # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'    # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
 LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
@@ -760,6 +761,7 @@ source "inc/postgresql.inc"
 source "inc/zendopcache_tweaks.inc"
 source "inc/php_extraopts.inc"
 source "inc/mysql_legacy.inc"
+source "inc/imap.inc"
 source "inc/php_configure.inc"
 source "inc/phpng_download.inc"
 source "inc/php_upgrade.inc"

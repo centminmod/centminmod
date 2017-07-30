@@ -257,18 +257,18 @@ fi
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.x check available packages" $boldgreen
-cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities
 
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.x YUM install..." $boldgreen
-cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared" $boldgreen
+cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
-time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared
+time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disableplugin=priorities
 
 cp -a /etc/my.cnf /etc/my.cnf-newold
 echo ""
