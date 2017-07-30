@@ -15,9 +15,59 @@ INSTALLDIR='/usr/local/src'
 #######################################################
 # 
 
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
+    OLS='y'
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
 DEF=${1:-novalue}
 
 yum clean all
+
+libc_fix() {
+  # https://community.centminmod.com/posts/52555/
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    INIT_DIR=$(echo $PWD)
+    cd /svr-setup
+    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q remove libc-client-2007f-14.el7.x86_64
+    yum -y -q localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    cd "$INIT_DIR"
+   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    INIT_DIR=$(echo $PWD)
+    cd /svr-setup
+    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q remove libc-client-2007f-14.el7.x86_64
+    yum -y -q localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    yum -y -q install yum-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+    cd "$INIT_DIR" 
+  fi
+}
 
 if [[ ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/unzip || ! -f /usr/bin/applydeltarpm ]]; then
   firstyuminstallstarttime=$(date +%s.%N)
@@ -27,6 +77,7 @@ if [[ ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/nano || ! -f /usr/bin/
   yum -y install unzip bc wget yum-plugin-fastestmirror lynx screen deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron nc gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libgcj libtool-libs libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel
   yum -y install epel-release
   yum -y install clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen aria2 pigz pbzip2 xz pxz lz4 libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28
+    libc_fix
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     yum -y install GeoIP GeoIP-devel --disablerepo=rpmforge
   else

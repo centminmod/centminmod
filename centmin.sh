@@ -337,7 +337,7 @@ PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
 PHPDEBUGMODE=n               # --enable-debug PHP compile flag
-PHPIMAP='n'                  # Disable or Enable PHP Imap extension
+PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO=n                   # Disable or Enable PHP File Info extension
 PHPPCNTL=y                   # Disable or Enable PHP Process Control extension
 PHPINTL=y                    # Disable or Enable PHP intl extension
