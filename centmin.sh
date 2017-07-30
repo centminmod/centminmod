@@ -337,11 +337,12 @@ PHP_INSTALL=y                # Install PHP /w Fast Process Manager
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
 
 PHPDEBUGMODE=n               # --enable-debug PHP compile flag
+PHPIMAP='n'                  # Disable or Enable PHP Imap extension
 PHPFINFO=n                   # Disable or Enable PHP File Info extension
-PHPPCNTL=y                    # Disable or Enable PHP Process Control extension
+PHPPCNTL=y                   # Disable or Enable PHP Process Control extension
 PHPINTL=y                    # Disable or Enable PHP intl extension
-PHPRECODE=n                   # Disable or Enable PHP Recode extension
-PHPSNMP=y                     # Disable or Enable PHP SNMP extension
+PHPRECODE=n                  # Disable or Enable PHP Recode extension
+PHPSNMP=y                    # Disable or Enable PHP SNMP extension
 SHORTCUTS=y       # shortcuts
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
