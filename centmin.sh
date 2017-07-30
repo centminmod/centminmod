@@ -476,7 +476,7 @@ AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall a
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
 PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
-PHPIMAP='n'                  # Disable or Enable PHP Imap extension
+PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
 PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
 PHPINTL='y'                  # Disable or Enable PHP intl extension
@@ -761,6 +761,7 @@ source "inc/postgresql.inc"
 source "inc/zendopcache_tweaks.inc"
 source "inc/php_extraopts.inc"
 source "inc/mysql_legacy.inc"
+source "inc/imap.inc"
 source "inc/php_configure.inc"
 source "inc/phpng_download.inc"
 source "inc/php_upgrade.inc"
