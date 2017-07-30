@@ -458,9 +458,9 @@ case "$1" in
 		createuserdb
 		;;
 	createuserdb)
-		input_dbname=$1
-		input_dbuser=$2
-		input_dbpass=$3
+		input_dbname=$2
+		input_dbuser=$3
+		input_dbpass=$4
 		mysqlperm
 		createuserdb unattended $input_dbname $input_dbuser $input_dbpass
 		;;
