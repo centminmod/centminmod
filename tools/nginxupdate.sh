@@ -412,6 +412,7 @@ if [ -f ${SCRIPT_DIR}/inc/brotli.inc ]; then
 source "${SCRIPT_DIR}/inc/brotli.inc"
 fi
 source "${SCRIPT_DIR}/inc/fastopen.inc"
+source "${SCRIPT_DIR}/inc/mod_security.inc"
 source "${SCRIPT_DIR}/inc/nginx_configure.inc"
 source "${SCRIPT_DIR}/inc/geoip.inc"
 source "${SCRIPT_DIR}/inc/luajit.inc"
