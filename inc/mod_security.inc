@@ -2,6 +2,8 @@ modsecurity_install() {
   if [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
     # https://www.nginx.com/blog/compiling-and-installing-modsecurity-for-open-source-nginx/
     # build libmodsecurity
+    echo
+    echo "build libmodsecurity..."
     pushd "$DIR_TMP"
     rm -rf ModSecurity
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
@@ -17,7 +19,12 @@ modsecurity_install() {
 
   if [[ -f /usr/local/modsecurity/lib/libmodsecurity.so ]] && [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
       MODSEC_INSTALLED=y
+      DEVTOOLSETSIX='y'
+      NGINX_DEVTOOLSETGCC='y'
+      CLANG='n'
       # MODSEC_VER=$(strings /usr/local/modsecurity/lib/libmodsecurity.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
+      echo
+      echo "setup MODSEC_OPT"
       pushd "$DIR_TMP"
       rm -rf ModSecurity-nginx
       git clone --depth 1 https://github.com/SpiderLabs/ModSecurity-nginx.git
@@ -33,4 +40,12 @@ modsecurity_install() {
   else
       MODSEC_OPT=""
   fi
+
+  if [ ! -f /usr/local/nginx/modsec/modsecurity.conf ]; then
+    mkdir -p /usr/local/nginx/modsec
+    wget -P /usr/local/nginx/modsec/ https://raw.githubusercontent.com/SpiderLabs/ModSecurity/master/modsecurity.conf-recommended
+    mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
+    # sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
+  fi
+
 }

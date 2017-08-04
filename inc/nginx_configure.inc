@@ -35,7 +35,7 @@ dynamicmodule_file() {
     DYNAMIC_SUPPORT=y
     # force disable nginx modsecurity module as it conflicts with nginx
     # 1.9.11+ dynamic module builds
-    NGINX_MODSECURITY='n'
+    # NGINX_MODSECURITY='n'
     # create include file to load nginx dynamic modules in main context in nginx.conf
     if [[ "$INITIALINSTALL" != [yY] ]]; then
       rm -rf /usr/local/nginx/conf/dynamic-modules.conf
