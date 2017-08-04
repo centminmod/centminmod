@@ -47,10 +47,24 @@ modsecurity_install() {
     mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
     # sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
   fi
+  if [ ! -f "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/crs-setup.conf" ]; then
+    pushd "$DIR_TMP"
+    wget "https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v${MODSECURITY_OWASPVER}.tar.gz"
+    tar xvzf "v${MODSECURITY_OWASPVER}.tar.gz"
+    mv "owasp-modsecurity-crs-${MODSECURITY_OWASPVER}" /usr/local/nginx
+    ls -lah "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}"
+    cp "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/crs-setup.conf.example" "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/crs-setup.conf"
+    ls -lah "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/rules/"
+    popd
+  fi
   if [ ! -f /usr/local/nginx/modsec/main.conf ]; then
 cat > "/usr/local/nginx/modsec/main.conf" <<EOF
 # Edit to set SecRuleEngine On
 Include "/usr/local/nginx/modsec/modsecurity.conf"
+
+# OWASP CRS v3 rules
+Include "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/crs-setup.conf"
+Include "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/rules/*.conf"
 
 # Basic test rule
 SecRule ARGS:testparam "@contains test" "id:1234,deny,status:403"
