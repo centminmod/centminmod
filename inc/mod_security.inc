@@ -47,5 +47,17 @@ modsecurity_install() {
     mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
     # sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
   fi
+  if [ ! -f /usr/local/nginx/modsec/main.conf ]; then
+cat > "/usr/local/nginx/modsec/main.conf" <<EOF
+# Edit to set SecRuleEngine On
+Include "/usr/local/nginx/modsec/modsecurity.conf"
+
+# Basic test rule
+SecRule ARGS:testparam "@contains test" "id:1234,deny,status:403"
+EOF
+    echo "    modsecurity on;
+    modsecurity_rules_file /usr/local/nginx/modsec/main.conf;" > "${CENTMINLOGDIR}/modsecurity_rules_file_syntax_${DT}.log"
+    # curl -I localhost?testparam=test
+  fi
 
 }
