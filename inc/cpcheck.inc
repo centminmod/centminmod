@@ -1,9 +1,9 @@
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64.rpm' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
-  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64.rpm' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
     wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
@@ -13,7 +13,7 @@ libc_fix() {
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
     cd "$INIT_DIR"
-   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64.rpm' ]]; then
+   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
     wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
