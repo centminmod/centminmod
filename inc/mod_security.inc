@@ -4,6 +4,16 @@ modsecurity_install() {
     # build libmodsecurity
     echo
     echo "build libmodsecurity..."
+    # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
+    if [[ ! -f /usr/bin/json_verify && ! -f /usr/include/yajl/yajl_common.h ]]; then
+      yum -y install yajl yajl-devel
+    fi
+    if [ ! -f /usr/bin/json_verify ]; then
+      yum -y install yajl
+    fi
+    if [ ! -f /usr/include/yajl/yajl_common.h ]; then
+      yum -y install yajl-devel
+    fi
     pushd "$DIR_TMP"
     rm -rf ModSecurity
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
@@ -72,6 +82,19 @@ EOF
     echo "    modsecurity on;
     modsecurity_rules_file /usr/local/nginx/modsec/main.conf;" > "${CENTMINLOGDIR}/modsecurity_rules_file_syntax_${DT}.log"
     # curl -I localhost?testparam=test
+  fi
+
+  MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+
+  if [[ [[ "$NGINX_MODSECURITY" = [yY] && -z "$MODSEC_INCLUDECHECK" && -f /usr/local/nginx/modsec/main.conf ]]; then
+    sed -i 's/# ssi  on;/# ssi  on; \n\n    #modsecurity on;\n    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;/g' /usr/local/nginx/conf/conf.d/virtual.conf
+  else
+    sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+  fi
+  if [[ [[ "$NGINX_MODSECURITY" != [yY] && "$MODSEC_INCLUDECHECK" ]]; then
+    sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
   fi
 
 }
