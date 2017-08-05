@@ -35,7 +35,7 @@ dynamicmodule_file() {
     DYNAMIC_SUPPORT=y
     # force disable nginx modsecurity module as it conflicts with nginx
     # 1.9.11+ dynamic module builds
-    NGINX_MODSECURITY='n'
+    # NGINX_MODSECURITY='n'
     # create include file to load nginx dynamic modules in main context in nginx.conf
     if [[ "$INITIALINSTALL" != [yY] ]]; then
       rm -rf /usr/local/nginx/conf/dynamic-modules.conf
@@ -167,43 +167,11 @@ fi
 	#luaworkaroundfix
 
 	#################################################################################
-	ngx_dynamicfunction
+  ngx_dynamicfunction
 	#################################################################################
-
-	# if centmin.sh variable NGINX_MODSECURITY=y is enabled or
-	# persistent config setup http://centminmod.com/upgrade.html#persistent
-	# with variable NGINX_MODSECURITY=y, then Nginx Modsecurity module
-	# is installed at Nginx configure time but only if added modsecurity 
-	# standalone install related files are detect
-	# 
-	# if modsecurity has been installed in default location the path
-	# to standalone.so and mod_security2.so files will exist
-	# if they exist centmin mod will determine that modsecurity is
-	# installed so it can compile Nginx with modsecurity module support
-	# using string command to check modsecurity version installed so that
-	# can make modsecurity installation a standalone centmin mod addon script
-	# on its own
-	if [[ -f /usr/local/modsecurity/lib/standalone.so && -f /usr/local/modsecurity/lib/mod_security2.so ]] && [[ "$NGINX_MODSECURITY" = [yY] ]]; then
-    	MODSEC_INSTALLED=y
-    	MODSEC_VER=$(strings /usr/local/modsecurity/lib/mod_security2.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
-    	if [[ -d "${DIR_TMP}/modsecurity-${MODSEC_VER}" ]]; then
-        	MODSEC_OPT=" --add-module=../modsecurity-${MODSEC_VER}/nginx/modsecurity"
-    	else
-        	MODSEC_OPT=""
-    	fi
-    	if [[ -d /opt/pcre/lib ]]; then
-			PCRE_CCOPT=' -I /opt/pcre/lib/include'
-			PCRE_LDOPT=' -L /opt/pcre/lib/lib'
-		else
-			PCRE_CCOPT=""
-			PCRE_LDOPT=""
-		fi
-	else
-    	MODSEC_OPT=""
-		PCRE_CCOPT=""
-		PCRE_LDOPT=""
-	fi
-
+  modsecurity_install
+  #################################################################################
+  
 # CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
 # CUR_NGINXUPGRADEVER=$(echo $ngver |sed -e 's|\.|0|g' | head -n1)
 # SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)

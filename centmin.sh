@@ -376,6 +376,7 @@ NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.c
 NGINX_HTTPPUSH='n'           # Nginx http/2 push patch https://community.centminmod.com/threads/11910/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+MODSECURITY_OWASPVER='3.0.2' # owasp modsecurity ruleset https://github.com/SpiderLabs/owasp-modsecurity-crs/releases
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
@@ -737,6 +738,7 @@ source "inc/openssl_install.inc"
 source "inc/brotli.inc"
 source "inc/nginx_patch.inc"
 source "inc/fastopen.inc"
+source "inc/mod_security.inc"
 source "inc/nginx_configure.inc"
 # source "inc/nginx_configure_openresty.inc"
 source "inc/geoip.inc"

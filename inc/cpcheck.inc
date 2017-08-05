@@ -1,26 +1,26 @@
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y -q install yum-plugin-versionlock
-    yum versionlock libc-client -q >/dev/null 2>&1
-  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
-    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
-    yum -y -q remove libc-client-2007f-14.el7.x86_64
-    yum -y -q localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    yum -y -q remove libc-client
+    yum -y -q localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
     cd "$INIT_DIR"
-   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
-    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
-    yum -y -q remove libc-client-2007f-14.el7.x86_64
-    yum -y -q localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
-    yum -y -q install yum-plugin-versionlock
+    wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget -q https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    yum versionlock delete libc-client uw-imap-devel -q >/dev/null 2>&1
+    yum -y -q remove libc-client
+    yum -y -q localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
     cd "$INIT_DIR" 
   fi
@@ -568,14 +568,19 @@ yumupdatechecker() {
 		return
 		}
 
-    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
+      YENABLEREPOS='remi,city-fan.org,remi-test'
+      YEXCLUDE='nginx* mysql*'
+    elif [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
       YENABLEREPOS='remi,city-fan.org'
+      YEXCLUDE='nginx* php* mysql*'
     elif [ -f /etc/yum.repos.d/remi.repo ]; then
       YENABLEREPOS='remi'
+      YEXCLUDE='nginx* php* mysql*'
     else
       YENABLEREPOS=""
+      YEXCLUDE='nginx* php* mysql*'
     fi
-		YEXCLUDE='nginx* php* mysql*'
 		YYUM_PARAMETER='--disableplugin=priorities'
     echo
     echo " checking for YUM updates... please wait..."
@@ -596,22 +601,26 @@ yumupdatechecker() {
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
-			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
-			else
-				echo "  yum list updates $YYUM_PARAMETER"
-			fi
-			# cecho "-------------------------------------------------------------" $boldgreen
-			echo
-			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  To update type: " $boldyellow
-			cecho "-------------------------------------------------------------" $boldgreen
-			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
-			else
-				echo "  yum update $YYUM_PARAMETER"
-			fi
-			echo
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
+        echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+      elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+        echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+      else
+        echo "  yum list updates $YYUM_PARAMETER"
+      fi
+      # cecho "-------------------------------------------------------------" $boldgreen
+      echo
+      cecho "-------------------------------------------------------------" $boldgreen
+      cecho "  To update type: " $boldyellow
+      cecho "-------------------------------------------------------------" $boldgreen
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
+        echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+      elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+        echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+      else
+        echo "  yum update $YYUM_PARAMETER"
+      fi
+      echo
     else
       echo " no YUM updates available"
 		fi

@@ -610,28 +610,28 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-4.el7.1.x86_64' ]]; then
-    yum -y install yum-plugin-versionlock
-    yum versionlock libc-client
-  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
+    yum -y install yum-plugin-versionlock uw-imap-devel
+    yum versionlock libc-client uw-imap-devel
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
-    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
-    yum -y remove libc-client-2007f-14.el7.x86_64
-    yum -y localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
+    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    yum -y remove libc-client
+    yum -y localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
     yum -y install yum-plugin-versionlock
-    yum versionlock libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel uw-imap-devel
     cd "$INIT_DIR"
-   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-4.el7.1.x86_64' ]]; then
+   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
-    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-4.el7.1.x86_64.rpm
-    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-4.el7.1.x86_64.rpm
-    yum -y remove libc-client-2007f-14.el7.x86_64
-    yum -y localinstall libc-client-2007f-4.el7.1.x86_64.rpm uw-imap-devel-2007f-4.el7.1.x86_64.rpm
-    yum -y install yum-plugin-versionlock
-    yum versionlock libc-client uw-imap-devel
+    wget https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
+    wget https://centminmod.com/centminmodparts/uw-imap/uw-imap-devel-2007f-16.el7.x86_64.rpm
+    yum versionlock delete libc-client uw-imap-devel
+    yum -y remove libc-client
+    yum -y localinstall libc-client-2007f-16.el7.x86_64.rpm uw-imap-devel-2007f-16.el7.x86_64.rpm
+    yum versionlock libc-client uw-imap-devel uw-imap-devel
     cd "$INIT_DIR" 
   fi
 }
@@ -1078,7 +1078,7 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.21'|" centmin.sh
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='7.0.22'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo

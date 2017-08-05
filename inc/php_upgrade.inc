@@ -790,10 +790,10 @@ php -m
 echo
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "php-${phpver}*" -name 'php-5*' -name 'php-7*' -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "libmemcached-${LIBMEMCACHED_VER}*" -name 'libmemcached*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'php-5*' -o -name 'php-7*' ! -name "php-${phpver}*" \)  -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'php-5*' -o -name 'php-7*' ! -name "php-${phpver}*" \)  -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'libmemcached*' ! -name "libmemcached-${LIBMEMCACHED_VER}*" \)  -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'libmemcached*' ! -name "libmemcached-${LIBMEMCACHED_VER}*" \)  -exec rm -rf {} \;
 sar_call
 
     cmservice php-fpm restart
