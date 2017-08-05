@@ -568,14 +568,19 @@ yumupdatechecker() {
 		return
 		}
 
-    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ /usr/bin/php56 || /usr/bin/php70 || /usr/bin/php71 || /usr/bin/php72 ]]; then
+      YENABLEREPOS='remi,city-fan.org,remi-test'
+      YEXCLUDE='nginx* mysql*'
+    elif [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
       YENABLEREPOS='remi,city-fan.org'
+      YEXCLUDE='nginx* php* mysql*'
     elif [ -f /etc/yum.repos.d/remi.repo ]; then
       YENABLEREPOS='remi'
+      YEXCLUDE='nginx* php* mysql*'
     else
       YENABLEREPOS=""
+      YEXCLUDE='nginx* php* mysql*'
     fi
-		YEXCLUDE='nginx* php* mysql*'
 		YYUM_PARAMETER='--disableplugin=priorities'
     echo
     echo " checking for YUM updates... please wait..."
@@ -596,22 +601,26 @@ yumupdatechecker() {
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
-			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-				echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
-			else
-				echo "  yum list updates $YYUM_PARAMETER"
-			fi
-			# cecho "-------------------------------------------------------------" $boldgreen
-			echo
-			cecho "-------------------------------------------------------------" $boldgreen
-			cecho "  To update type: " $boldyellow
-			cecho "-------------------------------------------------------------" $boldgreen
-			if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-				echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
-			else
-				echo "  yum update $YYUM_PARAMETER"
-			fi
-			echo
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ /usr/bin/php56 || /usr/bin/php70 || /usr/bin/php71 || /usr/bin/php72 ]]; then
+        echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+      elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+        echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+      else
+        echo "  yum list updates $YYUM_PARAMETER"
+      fi
+      # cecho "-------------------------------------------------------------" $boldgreen
+      echo
+      cecho "-------------------------------------------------------------" $boldgreen
+      cecho "  To update type: " $boldyellow
+      cecho "-------------------------------------------------------------" $boldgreen
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ /usr/bin/php56 || /usr/bin/php70 || /usr/bin/php71 || /usr/bin/php72 ]]; then
+        echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+      elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+        echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+      else
+        echo "  yum update $YYUM_PARAMETER"
+      fi
+      echo
     else
       echo " no YUM updates available"
 		fi
