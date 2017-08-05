@@ -568,7 +568,7 @@ yumupdatechecker() {
 		return
 		}
 
-    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ /usr/bin/php56 || /usr/bin/php70 || /usr/bin/php71 || /usr/bin/php72 ]]; then
+    if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
       YENABLEREPOS='remi,city-fan.org,remi-test'
       YEXCLUDE='nginx* mysql*'
     elif [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]]; then
@@ -601,7 +601,7 @@ yumupdatechecker() {
 			cecho "-------------------------------------------------------------" $boldgreen
 			cecho "  To list available YUM Updates type: " $boldyellow
 			cecho "-------------------------------------------------------------" $boldgreen
-      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ /usr/bin/php56 || /usr/bin/php70 || /usr/bin/php71 || /usr/bin/php72 ]]; then
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
         echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
       elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
         echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
@@ -613,7 +613,7 @@ yumupdatechecker() {
       cecho "-------------------------------------------------------------" $boldgreen
       cecho "  To update type: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
-      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ /usr/bin/php56 || /usr/bin/php70 || /usr/bin/php71 || /usr/bin/php72 ]]; then
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
         echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
       elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
         echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
