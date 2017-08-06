@@ -251,8 +251,8 @@ clamavinstall() {
     fi
   
     if [ ! -d /var/run/clamav/ ]; then
-  	 mkdir -p /var/run/clamav/
-   	  chown clamav:clamav /var/run/clamav/
+      mkdir -p /var/run/clamav/
+      chown clamav:clamav /var/run/clamav/
     fi
   
   if [[ -f /etc/rc.d/init.d/clamd && -f /proc/user_beancounters ]]; then
