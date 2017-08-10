@@ -957,16 +957,16 @@ if [[ "$NGINX_STICKY" = [yY] ]]; then
 fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find "$DIR_TMP" -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "nginx-${ngver}*" -name 'nginx-1*' -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "ngx_pagespeed-release-${NGXPGSPEED_VER}*" -name 'ngx_pagespeed*' -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "libressl-${LIBRESSL_VERSION}*" -name 'libressl*' -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "openssl-${OPENSSL_VERSION}*" -name 'openssl*' -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -print
-find "$DIR_TMP" -maxdepth 1 ! -name "pcre-${NGINX_PCREVER}*" -name 'pcre-*' -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -exec rm -rf {} \;
 
         if [ -f /usr/local/sbin/nginx ]; then
             echo
