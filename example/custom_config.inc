@@ -158,27 +158,27 @@ ORESTY_DEVELKITVER='0.3.0'  # openresty ngx_devel_kit module https://github.com/
 ORESTY_SETMISCGIT='n'        # use git master instead of version specific
 ORESTY_SETMISCVER='0.31'     # openresty set-misc-nginx module https://github.com/openresty/set-misc-nginx-module
 ORESTY_ECHOGIT='n'           # use git master instead of version specific
-ORESTY_ECHOVER='0.60'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
+ORESTY_ECHOVER='0.61'        # openresty set-misc-nginx module https://github.com/openresty/echo-nginx-module
 ORESTY_REDISVER='0.14'       # openresty redis2-nginx-module https://github.com/openresty/redis2-nginx-module
 
 LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://repo.or.cz/w/luajit-2.0.git/shortlog/refs/heads/v2.1
 LUAJIT_GITINSTALLVER='2.1'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.9rc7'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
-ORESTY_LUAGITVER='2.0.4'        # luagit http://luajit.org/
+ORESTY_LUANGINXVER='0.10.10'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
 ORESTY_LUAMEMCACHEDVER='0.14'   # openresty https://github.com/openresty/lua-resty-memcached
-ORESTY_LUAMYSQLVER='0.20rc1'    # openresty https://github.com/openresty/lua-resty-mysql
+ORESTY_LUAMYSQLVER='0.20'    # openresty https://github.com/openresty/lua-resty-mysql
 ORESTY_LUAREDISVER='0.26'       # openresty https://github.com/openresty/lua-resty-redis
-ORESTY_LUADNSVER='0.18'         # openresty https://github.com/openresty/lua-resty-dns
+ORESTY_LUADNSVER='0.19'         # openresty https://github.com/openresty/lua-resty-dns
 ORESTY_LUAUPLOADVER='0.10'      # openresty https://github.com/openresty/lua-resty-upload
 ORESTY_LUAWEBSOCKETVER='0.05'   # openresty https://github.com/openresty/lua-resty-websocket
-ORESTY_LUALOCKVER='0.06'        # openresty https://github.com/openresty/lua-resty-lock
-ORESTY_LUASTRINGVER='0.09'      # openresty https://github.com/openresty/lua-resty-string
+ORESTY_LUALOCKVER='0.07'        # openresty https://github.com/openresty/lua-resty-lock
+ORESTY_LUASTRINGVER='0.10'      # openresty https://github.com/openresty/lua-resty-string
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.04'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
-ORESTY_LUALRUCACHEVER='0.04'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.12rc7' # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUALRUCACHEVER='0.07'       # openresty https://github.com/openresty/lua-resty-lrucache
+ORESTY_LUARESTYCOREVER='0.1.12' # openresty https://github.com/openresty/lua-resty-core
 ORESTY_LUAUPSTREAMVER='0.06'       # openresty https://github.com/openresty/lua-upstream-nginx-module
 NGX_LUAUPSTREAM='n'                # disable https://github.com/openresty/lua-upstream-nginx-module
 ORESTY_LUALOGGERSOCKETVER='0.1'    # cloudflare openresty https://github.com/cloudflare/lua-resty-logger-socket
