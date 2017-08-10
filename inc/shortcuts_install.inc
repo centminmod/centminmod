@@ -122,17 +122,17 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 
     if [ -f /etc/init.d/mysql ]; then
     
-        echo "service mysql stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
-        echo "service mysql start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
-        echo "service mysql restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
-        echo "service mysql reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
+        echo "systemctl daemon-reload; service mysql stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
+        echo "systemctl daemon-reload; service mysql start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
+        echo "systemctl daemon-reload; service mysql restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "systemctl daemon-reload; service mysql reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
     
     elif [ -f /etc/init.d/mysqld ]; then
     
-        echo "service mysqld stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
-        echo "service mysqld start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
-        echo "service mysqld restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
-        echo "service mysqld reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
+        echo "systemctl daemon-reload; service mysqld stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
+        echo "systemctl daemon-reload; service mysqld start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
+        echo "systemctl daemon-reload; service mysqld restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
+        echo "systemctl daemon-reload; service mysqld reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
     
     fi
         echo "/etc/init.d/nginx stop;/etc/init.d/php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
