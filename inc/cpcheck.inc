@@ -568,6 +568,11 @@ yumupdatechecker() {
 		return
 		}
 
+    if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+        VERSIONLOCK_REPO=',versionlock'
+    else
+        VERSIONLOCK_REPO=""
+    fi
     if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
       YENABLEREPOS='remi,city-fan.org,remi-test'
       YEXCLUDE='nginx* mysql*'
