@@ -568,6 +568,11 @@ yumupdatechecker() {
 		return
 		}
 
+    if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+        VERSIONLOCK_REPO=',versionlock'
+    else
+        VERSIONLOCK_REPO=""
+    fi
     if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
       YENABLEREPOS='remi,city-fan.org,remi-test'
       YEXCLUDE='nginx* mysql*'
@@ -581,7 +586,8 @@ yumupdatechecker() {
       YENABLEREPOS=""
       YEXCLUDE='nginx* php* mysql*'
     fi
-		YYUM_PARAMETER='--disableplugin=priorities'
+		YYUM_PARAMETER="--disableplugin=priorities${VERSIONLOCK_REPO}"
+    YYUM_UPDATEPARAMETER="--disableplugin=priorities"
     echo
     echo " checking for YUM updates... please wait..."
 		if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
@@ -608,17 +614,45 @@ yumupdatechecker() {
       else
         echo "  yum list updates $YYUM_PARAMETER"
       fi
+      cecho "-------------------------------------------------------------" $boldgreen
+      cecho "  Following Updates are available: " $boldyellow
+      cecho "-------------------------------------------------------------" $boldgreen
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
+        yum -q list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep ImageMagick6 "/root/centminlogs/yumcheck-imagemagick6-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+      elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
+        yum -q list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep ImageMagick6 "/root/centminlogs/yumcheck-imagemagick6-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+      else
+        yum -q list updates $YYUM_PARAMETER | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep ImageMagick6 "/root/centminlogs/yumcheck-imagemagick6-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+      fi
       # cecho "-------------------------------------------------------------" $boldgreen
       echo
       cecho "-------------------------------------------------------------" $boldgreen
-      cecho "  To update type: " $boldyellow
+      cecho "  To update type these commands: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
       if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 ]]; then
-        echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+        if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
+          echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
+          echo
+        fi
+        echo "  yum update $YYUM_UPDATEPARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
       elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-        echo "  yum update $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+        if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
+          echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
+          echo
+        fi
+        echo "  yum update $YYUM_UPDATEPARAMETER --enablerepo=$YENABLEREPOS"
       else
-        echo "  yum update $YYUM_PARAMETER"
+        if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
+          echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
+          echo
+        fi
+        echo "  yum update $YYUM_UPDATEPARAMETER"
       fi
       echo
     else

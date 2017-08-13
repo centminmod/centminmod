@@ -76,6 +76,8 @@ pexe:/usr/local/lsws/bin/lshttpd.*
 pexe:/usr/local/lsws/fcgi-bin/lsphp.*
 exe:/usr/local/bin/memcached
 cmd:/usr/local/bin/memcached
+exe:/usr/libexec/openssh/sftp-server
+cmd:/usr/libexec/openssh/sftp-server
 user:mysql
 exe:/usr/sbin/mysqld 
 cmd:/usr/sbin/mysqld

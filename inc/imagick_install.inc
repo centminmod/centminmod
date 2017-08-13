@@ -9,6 +9,15 @@ checkphpext() {
 
 checkimagicksys() {
 
+    if [ ! -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+        yum -y install yum-plugin-versionlock
+    fi
+    if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+        VERSIONLOCK_REPO=',versionlock'
+    else
+        VERSIONLOCK_REPO=""
+    fi
+
     if [ -f /usr/bin/re2c ]; then
         if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
             rerpm
@@ -52,7 +61,7 @@ checkimagicksys() {
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     # yum clean all >/dev/null 2>&1
-                    time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     sar_call
                 fi
             else
@@ -60,10 +69,10 @@ checkimagicksys() {
                     # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
                     sar_call
                     # yum clean all >/dev/null 2>&1
-                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities --skip-broken
+                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                 else
                     # yum clean all >/dev/null 2>&1
-                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                 fi
             fi
         elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
@@ -85,10 +94,10 @@ checkimagicksys() {
           
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
-                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities --skip-broken
+                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                     sar_call
                 else
-                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     sar_call
                 fi
                 echo
@@ -106,14 +115,22 @@ checkimagicksys() {
                 sar_call
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
-                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities --skip-broken
+                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                     sar_call
                 else
-                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities
+                    time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     sar_call
                 fi
             fi
         fi
+    fi
+    echo
+    if [[ -f /etc/yum/pluginconf.d/versionlock.conf && -f /etc/yum.repos.d/remi.repo ]]; then
+        # lock imagemagick system version from general yum updates
+        # allowing only centmin.sh menu option 15 to update system
+        # imagemagick version by doing an unlock of the version
+        yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs
+        yum versionlock ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs
     fi
     echo
 }

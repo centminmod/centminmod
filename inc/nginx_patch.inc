@@ -384,16 +384,22 @@ luaopensslpatch() {
 
 ngxpagespeed_patched() {
   {
-	echo "patching ngx_pagespeed for nginx 1.9.11 support"
-	if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
-		pushd "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
-		wget -O "$DIR_TMP//ngx_pagespeed-release-${NGXPGSPEED_VER}/nginxpagespeed.patch" https://github.com/pagespeed/ngx_pagespeed/commit/1748d934f3b374d11edfeb3e38605c5c75eef14b.patch
-	elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
-		pushd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}"
-		wget -O "$DIR_TMP//ngx_pagespeed-${NGXPGSPEED_VER}/nginxpagespeed.patch" https://github.com/pagespeed/ngx_pagespeed/commit/1748d934f3b374d11edfeb3e38605c5c75eef14b.patch
-	fi
-	patch -p1 < nginxpagespeed.patch
-	popd
+  echo "patching ngx_pagespeed for nginx 1.13.4 support"
+  NGXPGSPEED_EVALVER=$(echo $NGXPGSPEED_VER | cut -d . -f1-4 | cut -d - -f1 | sed -e 's|\.||g')
+  if [[ "$NGXPGSPEED_EVALVER" -le '112342' ]]; then
+    if [ -d "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}" ]; then
+      pushd "$DIR_TMP/ngx_pagespeed-release-${NGXPGSPEED_VER}"
+      if [ -f "$CUR_DIR/patches/nginxpagespeed/nginxpagespeed-1134.patch" ]; then
+        patch -p1 < $CUR_DIR/patches/nginxpagespeed/nginxpagespeed-1134.patch
+      fi
+    elif [ -d "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}" ]; then
+      pushd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}"
+      if [ -f "$CUR_DIR/patches/nginxpagespeed/nginxpagespeed-1134.patch" ]; then
+        patch -p1 < $CUR_DIR/patches/nginxpagespeed/nginxpagespeed-1134.patch
+      fi
+    fi
+	 popd
+  fi
 } 2>&1 | tee "${CENTMINLOGDIR}/patch_ngxpagespeed_patched_${DT}.log"
 
 }

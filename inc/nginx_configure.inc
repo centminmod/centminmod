@@ -1060,6 +1060,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 	fi
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+    ngxpagespeed_patched
 		# only need to invoke ngxpagespeedinstall at this stage if it is nginx upgrade
 		# no need for it to be invoked at initial first time centmin mod install as
 		# inc/nginx_install.inc has it's own call to this function when variable
@@ -1549,6 +1550,7 @@ else
 	fi
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+    ngxpagespeed_patched
 		# only need to invoke ngxpagespeedinstall at this stage if it is nginx upgrade
 		# no need for it to be invoked at initial first time centmin mod install as
 		# inc/nginx_install.inc has it's own call to this function when variable

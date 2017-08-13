@@ -128,11 +128,11 @@ EOF
       sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
-  fi
   MODSEC_INSTALLED=y
   DEVTOOLSETSIX='y'
   NGINX_DEVTOOLSETGCC='y'
   CLANG='n'
   export CLANG='n'
   echo "ModSecurity Check for CLANG = $CLANG"
+  fi
 }

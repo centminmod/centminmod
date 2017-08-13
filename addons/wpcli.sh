@@ -14,6 +14,9 @@
 # ./wpcli.sh install
 ############################################################################
 DT=$(date +"%d%m%y-%H%M%S")
+# set WPCLI_EXTRAPACKAGES='y' in /etc/centminmod/custom_config.inc if you
+# want to install wp-sec and wp-check 3rdparty wp-cli packages
+WPCLI_EXTRAPACKAGES='n'
 CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'
@@ -34,6 +37,11 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 	mkdir -p "$CENTMINLOGDIR"
 fi
 
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+  # default is at /etc/centminmod/custom_config.inc
+  . "/etc/centminmod/custom_config.inc"
+fi
+
 # fallback mirror if official wp-cli download http status is not 200, use local
 # centminmod.com mirror download instead
 curl -4Is --connect-timeout 5 --max-time 5 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
@@ -52,15 +60,17 @@ updatewpcli() {
     echo "alias wp='wp --allow-root'" >> /root/.bashrc
   fi
   
-  if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
-    echo "-------------------------------------------------------------"
-    echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
-    /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
-  fi
-  if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
-    echo "-------------------------------------------------------------"
-    echo "install wp-cli https://github.com/markri/wp-sec"
-    /usr/bin/wp package install markri/wp-sec --allow-root
+  if [[ "$WPCLI_EXTRAPACKAGES" = [yY] ]]; then
+    if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
+      echo "-------------------------------------------------------------"
+      echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
+      /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
+    fi
+    if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
+      echo "-------------------------------------------------------------"
+      echo "install wp-cli https://github.com/markri/wp-sec"
+      /usr/bin/wp package install markri/wp-sec --allow-root
+    fi
   fi
   echo "-------------------------------------------------------------"
   echo "update wp-cli packages"
