@@ -1556,12 +1556,12 @@ fi
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
-cecho "FTP hostname : $CNIP" $boldwhite
-cecho "FTP port : 21" $boldwhite
-cecho "FTP mode : FTP (explicit SSL)" $boldwhite
-cecho "FTP Passive (PASV) : ensure is checked/enabled" $boldwhite
-cecho "FTP username created for $vhostname : $ftpuser" $boldwhite
-cecho "FTP password created for $vhostname : $ftppass" $boldwhite
+echo "FTP hostname : $CNIP"
+echo "FTP port : 21"
+echo "FTP mode : FTP (explicit SSL)"
+echo "FTP Passive (PASV) : ensure is checked/enabled"
+echo "FTP username created for $vhostname : $ftpuser"
+echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
