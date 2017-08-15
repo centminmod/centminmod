@@ -34,7 +34,7 @@ fi
 	if [[ -f /usr/bin/redis-cli ]]; then
 		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 			echo never > /sys/kernel/mm/transparent_hugepage/enabled
-			sed -i 's/transparent_hugepage/d' /etc/rc.local
+			sed -i '/transparent_hugepage/d' /etc/rc.local
 			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
 				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
 			fi
@@ -42,7 +42,7 @@ fi
 	else
 		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 			echo always > /sys/kernel/mm/transparent_hugepage/enabled
-			sed -i 's/transparent_hugepage/d' /etc/rc.local
+			sed -i '/transparent_hugepage/d' /etc/rc.local
 			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
 				echo "echo always > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
 			fi
