@@ -593,11 +593,11 @@ if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led
 
 if [[ "$(nginx -V 2>&1 | grep LibreSSL | head -n1)" ]] || [[ "$OPEENSSL_CFPATCHED" = [yY] ]]; then
   if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha20poly1305/chacha20.c" ]]; then
-    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+    CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
   elif [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/crypto/chacha/chacha_enc.c" ]]; then
-    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+    CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
   else
-    CHACHACIPHERS='EECDH+CHACHA20:EECDH+CHACHA20-draft:'
+    CHACHACIPHERS='ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:'
   fi
 else
   CHACHACIPHERS=""
@@ -761,7 +761,7 @@ server {
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
-  ssl_ciphers ${TLSONETHREE_CIPHERS}${CHACHACIPHERS}EECDH+ECDSA+AESGCM:EECDH+aRSA+AESGCM:EECDH+ECDSA+SHA256:EECDH+ECDSA+SHA384:EECDH+aRSA+SHA256:EECDH+aRSA+SHA384:EECDH+AES128:!aNULL:!eNULL:!LOW:!3DES:!MD5:!EXP:!PSK:!SRP:!DSS:!RC4:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA:!CAMELLIA;
+  ssl_ciphers ${TLSONETHREE_CIPHERS}${CHACHACIPHERS}ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS;
   ssl_prefer_server_ciphers   on;
   $SPDY_HEADER
 
@@ -961,12 +961,12 @@ fi
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
-cecho "FTP hostname : $CNIP" $boldwhite
-cecho "FTP port : 21" $boldwhite
-cecho "FTP mode : FTP (explicit SSL)" $boldwhite
-cecho "FTP Passive (PASV) : ensure is checked/enabled" $boldwhite
-cecho "FTP username created for $vhostname : $ftpuser" $boldwhite
-cecho "FTP password created for $vhostname : $ftppass" $boldwhite
+echo "FTP hostname : $CNIP"
+echo "FTP port : 21"
+echo "FTP mode : FTP (explicit SSL)"
+echo "FTP Passive (PASV) : ensure is checked/enabled"
+echo "FTP username created for $vhostname : $ftpuser"
+echo "FTP password created for $vhostname : $ftppass"
 fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite

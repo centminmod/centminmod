@@ -820,7 +820,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		luanginx_patch
 		# lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
 		# so fall back to 1.0.2 branch if lua nginx module is enabled
-		OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
+    OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
+    export OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
 		NGX_LUANGINXDIR=$(tar -tzf "$DIR_TMP/${NGX_LUANGINXLINKFILE}" | head -1 | cut -f1 -d"/")
 		if [[ "$NGX_LUAUPSTREAM" = [yY] ]]; then
 			NGX_LUAUPSTREAMDIR=$(tar -tzf "$DIR_TMP/${NGX_LUAUPSTREAMLINKFILE}" | head -1 | cut -f1 -d"/")

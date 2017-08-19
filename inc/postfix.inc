@@ -296,6 +296,12 @@ postconf -e 'smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scach
 service postfix reload
 postconf -n smtp_tls_CAfile smtp_tls_security_level smtp_tls_loglevel smtp_tls_session_cache_database
 
+if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
+    postconf -n inet_protocols
+    postconf -e 'inet_protocols = ipv4'
+    postconf -n inet_protocols
+fi
+
 cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
