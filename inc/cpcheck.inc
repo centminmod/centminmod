@@ -1423,13 +1423,25 @@ ovhkernelcheck() {
 		# more sure way to check for OVH custom kernel if /root/.ovhrc file exists
 		# can check value of variable DISTRIBKERNEL=1 for distro kernel or 
 		# DISTRIBKERNEL=0 for custom OVH kernel and let it override ASN check too
-		if [ -f /root/.ovhrc ]; then
-			OVHRC_CHECK=$(awk -F "\"" '/DISTRIBKERNEL/ {print $2}' /root/.ovhrc)
-			if [[ "$OVHRC_CHECK" != '1' ]]; then
-				OVHASNCHECK='0'
-				OVHKERNEL_CHECK='0'
-			fi		
-		fi
+    if [ -f /root/.ovhrc ]; then
+      OVHRC_CHECK=$(awk -F "\"" '/DISTRIBKERNEL/ {print $2}' /root/.ovhrc)
+      # check for both ovh dedicated and ovh vps which has empty OVHRC_CHECK values
+      # if /root/.ovhrc exists = ovh based
+      # if DISTRIBKERNEL value = 1 = distro kernel and not empty
+      # if OVHRC_CHECK is empty = ovh based non-dedicated/vps
+      if [[ "$OVHRC_CHECK" = '1' ]]; then
+        # ovh dedicated with distro kernel
+        OVHASNCHECK='1'
+        OVHKERNEL_CHECK='1'
+      elif [[ "$OVHRC_CHECK" != '1' && -z "$OVHRC_CHECK" ]]; then
+        # ovh vps
+        OVHASNCHECK='1'
+        OVHKERNEL_CHECK='1'
+      elif [[ "$OVHRC_CHECK" != '1' && ! -z "$OVHRC_CHECK" ]]; then
+        OVHASNCHECK='0'
+        OVHKERNEL_CHECK='0'
+      fi		
+    fi
 		if [[ "$OVHASNCHECK" = '0' && "$OVHKERNEL_CHECK" = '0' && "$BROADWELLDE_CHECK" != '0' ]]; then
 			echo
 			echo "Detected OVH based server with custom OVH Linux kernel"
