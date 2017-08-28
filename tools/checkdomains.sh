@@ -75,9 +75,14 @@ for d in ${OTHERDOMAINS[@]}; do
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      echo -n "$d "
-      echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
-      echo
+      for ns in ${whoisns[@]}; do
+        ns=$(echo "$ns" | tr '\n\r' ' ')
+        nsip=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $ns)
+        nsiplist=$(echo "$ns $nsip" | tr '\n\r' ' ' | tr -s ' ')
+        echo "$nsiplist" | xargs -n2 | while read nspair; do
+          echo "$nspair"
+        done
+      done
     fi
     if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       rm -rf "${CTMPDIR}/${d}.txt"
@@ -109,10 +114,28 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
+    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    for ip in ${DOMAINIPS[@]}; do
+      if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
+        ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        echo -n "$d "
+        echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
+        echo
+        rm -rf "${CTMPDIR}/${d}-ip.txt"
+      fi
+    done
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      echo -n "$d "
-      echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
-      echo
+      for ns in ${whoisns[@]}; do
+        ns=$(echo "$ns" | tr '\n\r' ' ')
+        nsip=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $ns)
+        nsiplist=$(echo "$ns $nsip" | tr '\n\r' ' ' | tr -s ' ')
+        echo "$nsiplist" | xargs -n2 | while read nspair; do
+          echo "$nspair"
+        done
+      done
     fi
     if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       rm -rf "${CTMPDIR}/${d}.txt"
@@ -145,27 +168,19 @@ for d in ${OTHERDOMAINS[@]}; do
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      echo -n "$d "
-      echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
-      echo
+      for ns in ${whoisns[@]}; do
+        ns=$(echo "$ns" | tr '\n\r' ' ')
+        nsip=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $ns)
+        nsiplist=$(echo "$ns $nsip" | tr '\n\r' ' ' | tr -s ' ')
+        echo "$nsiplist" | xargs -n2 | while read nspair; do
+          echo "$nspair"
+        done
+      done
     fi
     if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       rm -rf "${CTMPDIR}/${d}.txt"
     fi
   fi
-  DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
-  for ip in ${DOMAINIPS[@]}; do
-    if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-      curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
-      ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
-      country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
-      org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
-      echo -n "$d "
-      echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
-      echo
-      rm -rf "${CTMPDIR}/${d}-ip.txt"
-    fi
-  done
   echo
 done
 
@@ -200,9 +215,14 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        echo -n "$d "
-        echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
-        echo
+        for ns in ${whoisns[@]}; do
+          ns=$(echo "$ns" | tr '\n\r' ' ')
+          nsip=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $ns)
+          nsiplist=$(echo "$ns $nsip" | tr '\n\r' ' ' | tr -s ' ')
+          echo "$nsiplist" | xargs -n2 | while read nspair; do
+            echo "$nspair"
+          done
+        done
       fi
       if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         rm -rf "${CTMPDIR}/${d}.txt"
@@ -234,10 +254,28 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      for ip in ${DOMAINIPS[@]}; do
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+          curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
+          ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          echo -n "$d "
+          echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
+          echo
+          rm -rf "${CTMPDIR}/${d}-ip.txt"
+        fi
+      done
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        echo -n "$d "
-        echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
-        echo
+        for ns in ${whoisns[@]}; do
+          ns=$(echo "$ns" | tr '\n\r' ' ')
+          nsip=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $ns)
+          nsiplist=$(echo "$ns $nsip" | tr '\n\r' ' ' | tr -s ' ')
+          echo "$nsiplist" | xargs -n2 | while read nspair; do
+            echo "$nspair"
+          done
+        done
       fi
       if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         rm -rf "${CTMPDIR}/${d}.txt"
@@ -270,27 +308,19 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        echo -n "$d "
-        echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
-        echo
+        for ns in ${whoisns[@]}; do
+          ns=$(echo "$ns" | tr '\n\r' ' ')
+          nsip=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $ns)
+          nsiplist=$(echo "$ns $nsip" | tr '\n\r' ' ' | tr -s ' ')
+          echo "$nsiplist" | xargs -n2 | while read nspair; do
+            echo "$nspair"
+          done
+        done
       fi
       if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         rm -rf "${CTMPDIR}/${d}.txt"
       fi
     fi
-    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
-    for ip in ${DOMAINIPS[@]}; do
-      if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
-        curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
-        ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
-        country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
-        org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
-        echo -n "$d "
-        echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
-        echo
-        rm -rf "${CTMPDIR}/${d}-ip.txt"
-      fi
-    done
     echo
   done
 fi
