@@ -906,6 +906,16 @@ END
 
 fi
 
+# enable / uncomment try_files line
+if [[ "$ENABLE_TRYFILES" = [yY] ]]; then
+  if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+    sed -i 's|#try_files|try_files|'  "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+  fi
+  if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
+    sed -i 's|#try_files|try_files|'  "/usr/local/nginx/conf/conf.d/${vhostname}.conf"
+  fi
+fi
+
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
 if [ -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]; then
