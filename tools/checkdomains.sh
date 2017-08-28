@@ -7,9 +7,12 @@
 ##########################################################################
 WHOIS_TIMEOUT='4'
 
+DIGOPTS='+nocomments'
 WHOISBIN='whois'
 WHOISOPT=' -n'
-WHOIS_SHOWNS='n'
+WHOIS_SHOWNS='y'
+WHOIS_SHOWREGISTRAR='y'
+WHOIS_NAMESERVER='8.8.8.8'
 
 DEBUG='n'
 CTMPDIR=/home/checkdomainstmp
@@ -49,13 +52,17 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
     else
       whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
-    #echo "$whoisdate $whoisurl"; echo
-    echo -n "$whoisdate"
+    if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
+      echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
+      echo
+    fi
+    echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       echo -n "$d "
@@ -73,13 +80,17 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
     else
       whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
-    #echo "$whoisdate $whoisurl"; echo
-    echo -n "$whoisdate"
+    if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
+      echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
+      echo
+    fi
+    echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       echo -n "$d "
@@ -97,13 +108,17 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
     else
       whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
-    #echo "$whoisdate $whoisurl"; echo
-    echo -n "$whoisdate"
+    if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
+      echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
+      echo
+    fi
+    echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       echo -n "$d "
@@ -113,7 +128,7 @@ for d in ${OTHERDOMAINS[@]}; do
     rm -rf "${CTMPDIR}/${toplevel}.txt"
   fi
   echo -n "$d "
-  echo -n $(dig -4 @8.8.8.8 +short A $d)
+  echo -n $(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
   echo
 done
 
@@ -130,13 +145,17 @@ if [[ "$DEBUG" != [yY] ]]; then
         whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
-      #echo "$whoisdate $whoisurl"; echo
-      echo -n "$whoisdate"
+      if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
+        echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
+        echo
+      fi
+      echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         echo -n "$d "
@@ -154,13 +173,17 @@ if [[ "$DEBUG" != [yY] ]]; then
         whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
-      #echo "$whoisdate $whoisurl"; echo
-      echo -n "$whoisdate"
+      if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
+        echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
+        echo
+      fi
+      echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         echo -n "$d "
@@ -178,13 +201,17 @@ if [[ "$DEBUG" != [yY] ]]; then
         whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
-      #echo "$whoisdate $whoisurl"; echo
-      echo -n "$whoisdate"
+      if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
+        echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
+        echo
+      fi
+      echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         echo -n "$d "
@@ -194,7 +221,7 @@ if [[ "$DEBUG" != [yY] ]]; then
       rm -rf "${CTMPDIR}/${toplevel}.txt"
     fi
     echo -n "$d "
-    echo -n $(dig -4 @8.8.8.8 +short A $d)
+    echo -n $(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
     echo
   done
 fi
