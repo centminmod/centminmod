@@ -9,8 +9,9 @@ WHOIS_TIMEOUT='4'
 
 WHOISBIN='whois'
 WHOISOPT=' -n'
+WHOIS_SHOWNS='n'
 
-DEBUG='n'
+DEBUG='y'
 ##########################################################################
 check_domains() {
 if [ ! -f /usr/bin/whois ]; then
@@ -27,10 +28,10 @@ if [[ ! "$(grep -w '43' /etc/csf/csf.conf)" ]]; then
 fi
 
 if [[ "$DEBUG" != [yY] ]]; then
-LISTDOMAINS=$(egrep -rn 'http:|https:' /usr/local/src/centminmod/ | egrep -v 'http://ftp.osuosl.org|\${HTUSER}|\$request_uri|\$vhostname|\${vhostname}|rpm.axivo.com|foo.bar|master.ourdelta.org|newdomain1.com|apt.sw.be|medium.com|href=|my.incapsula.com|#|echo|cecho|<li>|<li class|centos.alt.ru|<|>|\(|\[|\)|\]|<html|<!DOCTYPE|nginx.org|centminmod.com|centmin.com|centmin.sh' | sed -e "s|<||g" -e "s|'||g" -e "s|\| bash -s stable||g" | grep -Eo '(http|https|ftp)://[^/"]+' | sed -e "s|http:\/\/||g" -e "s|https:\/\/||g" | sort | uniq -c | sort -rn | awk '{print $2}')
+LISTDOMAINS=$(egrep -rn 'http:|https:' /usr/local/src/centminmod/ | egrep -v 'http://ftp.osuosl.org|\${HTUSER}|\$request_uri|\$vhostname|\${vhostname}|rpm.axivo.com|foo.bar|master.ourdelta.org|newdomain1.com|apt.sw.be|medium.com|href=|my.incapsula.com|#|echo|cecho|<li>|<li class|centos.alt.ru|<|>|\(|\[|\)|\]|<html|<!DOCTYPE|nginx.org|centminmod.com|centmin.com|centmin.sh|github.com' | sed -e "s|<||g" -e "s|'||g" -e "s|\| bash -s stable||g" | grep -Eo '(http|https|ftp)://[^/"]+' | sed -e "s|http:\/\/||g" -e "s|https:\/\/||g" | sort | uniq -c | sort -rn | awk '{print $2}')
 fi
 
-OTHERDOMAINS='nginx.org centminmod.com centmin.com centmin.sh'
+OTHERDOMAINS='nginx.org centminmod.com centmin.com centmin.sh github.com'
 
 for d in ${OTHERDOMAINS[@]}; do
   echo "----------"
@@ -40,12 +41,18 @@ for d in ${OTHERDOMAINS[@]}; do
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
     whoisurl=$(cat ${toplevel}.txt | awk  -F ": " '/Registrar URL:/ {print $2}')
     whoisdate=$(cat ${toplevel}.txt | awk  -F ": " '/Expiry Date:/ {print $2}')
-    whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}' | tr '[:upper:]' '[:lower:]')
+    if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+      whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}')
+      whoisns=$(echo "$whoisns" | tr '[:upper:]' '[:lower:]')
+    fi
     #echo "$whoisdate $whoisurl"; echo
-    echo -n "$whoisdate"; echo
-    echo -n "$d "
-    echo "$whoisns" | tr '\n\r' ' '
+    echo -n "$whoisdate"
     echo
+    if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+      echo -n "$d "
+      echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
+      echo
+    fi
     rm -rf ${toplevel}.txt
   elif [[ "$WHOISBIN" = 'whois' && "$WHOISOPT" = ' -n' ]]; then
     echo -n "$d "
@@ -53,12 +60,18 @@ for d in ${OTHERDOMAINS[@]}; do
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
     whoisurl=$(cat ${toplevel}.txt | awk  -F ": " '/Registrar URL:/ {print $2}')
     whoisdate=$(cat ${toplevel}.txt | awk  -F ": " '/Expiry Date:/ {print $2}')
-    whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}' | tr '[:upper:]' '[:lower:]')
+    if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+      whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}')
+      whoisns=$(echo "$whoisns" | tr '[:upper:]' '[:lower:]')
+    fi
     #echo "$whoisdate $whoisurl"; echo
-    echo -n "$whoisdate"; echo
-    echo -n "$d "
-    echo "$whoisns" | tr '\n\r' ' '
+    echo -n "$whoisdate"
     echo
+    if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+      echo -n "$d "
+      echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
+      echo
+    fi
     rm -rf ${toplevel}.txt
   elif [[ "$WHOISBIN" = 'whois' ]]; then
     echo -n "$d "
@@ -66,12 +79,18 @@ for d in ${OTHERDOMAINS[@]}; do
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
     whoisurl=$(cat ${toplevel}.txt | awk  -F ": " '/Registrar:/ {print $2}')
     whoisdate=$(cat ${toplevel}.txt | awk  -F ": " '/Expiry Date:/ {print $2}')
-    whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}' | tr '[:upper:]' '[:lower:]')
+    if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+      whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}')
+      whoisns=$(echo "$whoisns" | tr '[:upper:]' '[:lower:]')
+    fi
     #echo "$whoisdate $whoisurl"; echo
-    echo -n "$whoisdate"; echo
-    echo -n "$d "
-    echo "$whoisns" | tr '\n\r' ' '
+    echo -n "$whoisdate"
     echo
+    if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+      echo -n "$d "
+      echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
+      echo
+    fi
     rm -rf ${toplevel}.txt
   fi
   echo -n "$d "
@@ -88,12 +107,18 @@ if [[ "$DEBUG" != [yY] ]]; then
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
       whoisurl=$(cat ${toplevel}.txt | awk  -F ": " '/Registrar URL:/ {print $2}')
       whoisdate=$(cat ${toplevel}.txt | awk  -F ": " '/Expiry Date:/ {print $2}')
-      whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}' | tr '[:upper:]' '[:lower:]')
+      if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+        whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}')
+        whoisns=$(echo "$whoisns" | tr '[:upper:]' '[:lower:]')
+      fi
       #echo "$whoisdate $whoisurl"; echo
-      echo -n "$whoisdate"; echo
-      echo -n "$d "
-      echo "$whoisns" | tr '\n\r' ' '
+      echo -n "$whoisdate"
       echo
+      if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+        echo -n "$d "
+        echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
+        echo
+      fi
       rm -rf ${toplevel}.txt
     elif [[ "$WHOISBIN" = 'whois' && "$WHOISOPT" = ' -n' ]]; then
       echo -n "$d "
@@ -101,12 +126,18 @@ if [[ "$DEBUG" != [yY] ]]; then
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
       whoisurl=$(cat ${toplevel}.txt | awk  -F ": " '/Registrar URL:/ {print $2}')
       whoisdate=$(cat ${toplevel}.txt | awk  -F ": " '/Expiry Date:/ {print $2}')
-      whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}' | tr '[:upper:]' '[:lower:]')
+      if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+        whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}')
+        whoisns=$(echo "$whoisns" | tr '[:upper:]' '[:lower:]')
+      fi
       #echo "$whoisdate $whoisurl"; echo
-      echo -n "$whoisdate"; echo
-      echo -n "$d "
-      echo "$whoisns" | tr '\n\r' ' '
+      echo -n "$whoisdate"
       echo
+      if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+        echo -n "$d "
+        echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
+        echo
+      fi
       rm -rf ${toplevel}.txt
     elif [[ "$WHOISBIN" = 'whois' ]]; then
       echo -n "$d "
@@ -114,12 +145,18 @@ if [[ "$DEBUG" != [yY] ]]; then
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
       whoisurl=$(cat ${toplevel}.txt | awk  -F ": " '/Registrar:/ {print $2}')
       whoisdate=$(cat ${toplevel}.txt | awk  -F ": " '/Expiry Date:/ {print $2}')
-      whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}' | tr '[:upper:]' '[:lower:]')
+      if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+        whoisns=$(cat ${toplevel}.txt | awk  -F ": " '/Name Server:/ {print $2}')
+        whoisns=$(echo "$whoisns" | tr '[:upper:]' '[:lower:]')
+      fi
       #echo "$whoisdate $whoisurl"; echo
-      echo -n "$whoisdate"; echo
-      echo -n "$d "
-      echo "$whoisns" | tr '\n\r' ' '
+      echo -n "$whoisdate"
       echo
+      if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
+        echo -n "$d "
+        echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
+        echo
+      fi
       rm -rf ${toplevel}.txt
     fi
     echo -n "$d "
