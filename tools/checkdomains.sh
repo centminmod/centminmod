@@ -12,7 +12,11 @@ WHOISOPT=' -n'
 WHOIS_SHOWNS='n'
 
 DEBUG='n'
+CTMPDIR=/home/checkdomainstmp
 ##########################################################################
+if [[ ! -d "$CTMPDIR" ]]; then
+  mkdir -p "$CTMPDIR"
+fi
 check_domains() {
 if [ ! -f /usr/bin/whois ]; then
   yum -y -q install whois
@@ -38,11 +42,16 @@ for d in ${OTHERDOMAINS[@]}; do
   if [[ "$WHOISBIN" = 'jwhois' ]]; then
     echo -n "$d "
     toplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
-    timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
-    whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${toplevel}.txt")
-    whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${toplevel}.txt")
+    tld="$(echo "$d" |grep -o '[^.]*$')"
+    timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${CTMPDIR}/${toplevel}.txt"
+    whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+    if [[ "$tld" = 'edu' ]]; then
+      whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
+    else
+      whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+    fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${toplevel}.txt")
+      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
     #echo "$whoisdate $whoisurl"; echo
@@ -53,15 +62,20 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
-    rm -rf ${toplevel}.txt
+    rm -rf "${CTMPDIR}/${toplevel}.txt"
   elif [[ "$WHOISBIN" = 'whois' && "$WHOISOPT" = ' -n' ]]; then
     echo -n "$d "
     toplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
-    timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
-    whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${toplevel}.txt")
-    whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${toplevel}.txt")
+    tld="$(echo "$d" |grep -o '[^.]*$')"
+    timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${CTMPDIR}/${toplevel}.txt"
+    whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+    if [[ "$tld" = 'edu' ]]; then
+      whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
+    else
+      whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+    fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${toplevel}.txt")
+      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
     #echo "$whoisdate $whoisurl"; echo
@@ -72,15 +86,20 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
-    rm -rf ${toplevel}.txt
+    rm -rf "${CTMPDIR}/${toplevel}.txt"
   elif [[ "$WHOISBIN" = 'whois' ]]; then
     echo -n "$d "
     toplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
-    timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
-    whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${toplevel}.txt")
-    whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${toplevel}.txt")
+    tld="$(echo "$d" |grep -o '[^.]*$')"
+    timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${CTMPDIR}/${toplevel}.txt"
+    whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+    if [[ "$tld" = 'edu' ]]; then
+      whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
+    else
+      whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+    fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${toplevel}.txt")
+      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
     #echo "$whoisdate $whoisurl"; echo
@@ -91,7 +110,7 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
-    rm -rf ${toplevel}.txt
+    rm -rf "${CTMPDIR}/${toplevel}.txt"
   fi
   echo -n "$d "
   echo -n $(dig -4 @8.8.8.8 +short A $d)
@@ -104,11 +123,16 @@ if [[ "$DEBUG" != [yY] ]]; then
     if [[ "$WHOISBIN" = 'jwhois' ]]; then
       echo -n "$d "
       toplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
-      timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
-      whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${toplevel}.txt")
-      whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${toplevel}.txt")
+      tld="$(echo "$d" |grep -o '[^.]*$')"
+      timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${CTMPDIR}/${toplevel}.txt"
+      whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      if [[ "$tld" = 'edu' ]]; then
+        whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
+      else
+        whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${toplevel}.txt")
+        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
       #echo "$whoisdate $whoisurl"; echo
@@ -119,15 +143,20 @@ if [[ "$DEBUG" != [yY] ]]; then
         echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
-      rm -rf ${toplevel}.txt
+      rm -rf "${CTMPDIR}/${toplevel}.txt"
     elif [[ "$WHOISBIN" = 'whois' && "$WHOISOPT" = ' -n' ]]; then
       echo -n "$d "
       toplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
-      timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
-      whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${toplevel}.txt")
-      whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${toplevel}.txt")
+      tld="$(echo "$d" |grep -o '[^.]*$')"
+      timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${CTMPDIR}/${toplevel}.txt"
+      whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      if [[ "$tld" = 'edu' ]]; then
+        whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
+      else
+        whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${toplevel}.txt")
+        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
       #echo "$whoisdate $whoisurl"; echo
@@ -138,15 +167,20 @@ if [[ "$DEBUG" != [yY] ]]; then
         echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
-      rm -rf ${toplevel}.txt
+      rm -rf "${CTMPDIR}/${toplevel}.txt"
     elif [[ "$WHOISBIN" = 'whois' ]]; then
       echo -n "$d "
       toplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
-      timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${toplevel}.txt"
-      whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${toplevel}.txt")
-      whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${toplevel}.txt")
+      tld="$(echo "$d" |grep -o '[^.]*$')"
+      timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$toplevel" > "${CTMPDIR}/${toplevel}.txt"
+      whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      if [[ "$tld" = 'edu' ]]; then
+        whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${toplevel}.txt" | tr -s ' ')
+      else
+        whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
+      fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${toplevel}.txt")
+        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${toplevel}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
       #echo "$whoisdate $whoisurl"; echo
@@ -157,7 +191,7 @@ if [[ "$DEBUG" != [yY] ]]; then
         echo "$whoisns" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
-      rm -rf ${toplevel}.txt
+      rm -rf "${CTMPDIR}/${toplevel}.txt"
     fi
     echo -n "$d "
     echo -n $(dig -4 @8.8.8.8 +short A $d)
