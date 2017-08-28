@@ -70,6 +70,8 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
+      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
@@ -103,6 +105,8 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
+      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
@@ -136,6 +140,8 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
+      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     echo
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
@@ -189,6 +195,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
+      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
@@ -222,6 +230,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
+      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
@@ -255,6 +265,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
+      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       echo
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
