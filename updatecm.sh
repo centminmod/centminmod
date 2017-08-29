@@ -4,7 +4,7 @@
 # https://community.centminmod.com/threads/3398/
 # 
 # setup cron job i.e. every 6 hrs
-# 0 */6 * * * /usr/local/src/centminmod/updatecm.sh
+# 0 */6 * * * /usr/local/src/centminmod/updatecm.sh 2>/dev/null
 #######################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 DT=$(date +"%d%m%y-%H%M%S")
