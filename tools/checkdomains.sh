@@ -8,6 +8,7 @@
 DT=$(date +"%d%m%y-%H%M%S")
 
 DIGOPTS='+nocomments'
+DIG_DNSSEC='y'
 
 WHOIS_TIMEOUT='4'
 WHOISBIN='whois'
@@ -40,9 +41,15 @@ if [ ! -f /usr/bin/jwhois ]; then
   yum -y -q install jwhois
 fi
 if [[ ! "$(grep -w '43' /etc/csf/csf.conf)" ]]; then
-  sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf
-  sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
-  egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
+  if [[ "$CHECKDOMAINS_DEBUG" = [yY] ]]; then
+    sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf
+    sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
+    egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
+  else
+    sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf >/dev/null 2>&1
+    sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf >/dev/null 2>&1
+    egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf >/dev/null 2>&1
+  fi
   csf -r >/dev/null 2>&1
 fi
 
@@ -55,11 +62,19 @@ OTHERDOMAINS='nginx.org centminmod.com centmin.com centmin.sh github.com php.net
 for d in ${OTHERDOMAINS[@]}; do
   echo "----------"
   if [[ "$WHOISBIN" = 'jwhois' ]]; then
-    echo -n "$d "
     ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
+    whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
     whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
+    if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+      dnssec='no'
+    elif [[ ! -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+      dnssec='yes'
+    else
+      dnssec=''
+    fi
+    echo -n "$d dnssec: ${dnssec} "
     if [[ "$tld" = 'edu' ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${d}.txt" | tr -s ' ')
@@ -138,11 +153,19 @@ for d in ${OTHERDOMAINS[@]}; do
       rm -rf "${CTMPDIR}/${d}.txt"
     fi
   elif [[ "$WHOISBIN" = 'whois' && "$WHOISOPT" = ' -n' ]]; then
-    echo -n "$d "
     ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
+    whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
     whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
+    if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+      dnssec='no'
+    elif [[ ! -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+      dnssec='yes'
+    else
+      dnssec=''
+    fi
+    echo -n "$d dnssec: ${dnssec} "
     if [[ "$tld" = 'edu' ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${d}.txt" | tr -s ' ')
@@ -221,11 +244,19 @@ for d in ${OTHERDOMAINS[@]}; do
       rm -rf "${CTMPDIR}/${d}.txt"
     fi
   elif [[ "$WHOISBIN" = 'whois' ]]; then
-    echo -n "$d "
     ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
+    whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
     whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${d}.txt")
+    if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+      dnssec='no'
+    elif [[ ! -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+      dnssec='yes'
+    else
+      dnssec=''
+    fi
+    echo -n "$d dnssec: ${dnssec} "
     if [[ "$tld" = 'edu' ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${d}.txt" | tr -s ' ')
@@ -311,11 +342,19 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
   for d in ${LISTDOMAINS[@]}; do
     echo "----------"
     if [[ "$WHOISBIN" = 'jwhois' ]]; then
-      echo -n "$d "
       ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
+      whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
       whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
+      if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+        dnssec='no'
+      elif [[ ! -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+        dnssec='yes'
+      else
+        dnssec=''
+      fi
+      echo -n "$d dnssec: ${dnssec} "
       if [[ "$tld" = 'edu' ]]; then
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
           whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${d}.txt" | tr -s ' ')
@@ -394,11 +433,19 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         rm -rf "${CTMPDIR}/${d}.txt"
       fi
     elif [[ "$WHOISBIN" = 'whois' && "$WHOISOPT" = ' -n' ]]; then
-      echo -n "$d "
       ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
+      whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
       whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
+      if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+        dnssec='no'
+      elif [[ ! -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+        dnssec='yes'
+      else
+        dnssec=''
+      fi
+      echo -n "$d dnssec: ${dnssec} "
       if [[ "$tld" = 'edu' ]]; then
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
           whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${d}.txt" | tr -s ' ')
@@ -477,11 +524,19 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         rm -rf "${CTMPDIR}/${d}.txt"
       fi
     elif [[ "$WHOISBIN" = 'whois' ]]; then
-      echo -n "$d "
       ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
+      whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
       whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${d}.txt")
+      if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+        dnssec='no'
+      elif [[ ! -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
+        dnssec='yes'
+      else
+        dnssec=''
+      fi
+      echo -n "$d dnssec: ${dnssec} "
       if [[ "$tld" = 'edu' ]]; then
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
           whoisdate=$(awk  -F ": " '/Domain expires:/ {print $2}' "${CTMPDIR}/${d}.txt" | tr -s ' ')
