@@ -88,8 +88,16 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
-      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
-      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      if [ -z "$whoisdate" ]; then
+        whoisdate=' - '
+      else
+        whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      fi
+      if [ -z "$whoisupdate" ]; then
+        whoisupdate=' - '
+      else
+        whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      fi  
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
@@ -145,8 +153,16 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
-      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
-      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      if [ -z "$whoisdate" ]; then
+        whoisdate=' - '
+      else
+        whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      fi
+      if [ -z "$whoisupdate" ]; then
+        whoisupdate=' - '
+      else
+        whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      fi  
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
@@ -217,8 +233,16 @@ for d in ${OTHERDOMAINS[@]}; do
       echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
       echo
     fi
-      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
-      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      if [ -z "$whoisdate" ]; then
+        whoisdate=' - '
+      else
+        whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      fi
+      if [ -z "$whoisupdate" ]; then
+        whoisupdate=' - '
+      else
+        whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      fi  
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
@@ -281,8 +305,16 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
-      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
-      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      if [ -z "$whoisdate" ]; then
+        whoisdate=' - '
+      else
+        whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      fi
+      if [ -z "$whoisupdate" ]; then
+        whoisupdate=' - '
+      else
+        whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      fi  
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
@@ -338,8 +370,16 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
-      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
-      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      if [ -z "$whoisdate" ]; then
+        whoisdate=' - '
+      else
+        whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      fi
+      if [ -z "$whoisupdate" ]; then
+        whoisupdate=' - '
+      else
+        whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      fi  
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
@@ -410,8 +450,16 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         echo "registrar: $whoisurl" | tr '\n\r' ' ' | tr -s ' '
         echo
       fi
-      whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
-      whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      if [ -z "$whoisdate" ]; then
+        whoisdate=' - '
+      else
+        whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
+      fi
+      if [ -z "$whoisupdate" ]; then
+        whoisupdate=' - '
+      else
+        whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
+      fi  
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
