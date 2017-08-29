@@ -100,11 +100,27 @@ for d in ${OTHERDOMAINS[@]}; do
       fi  
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-      whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      echo
+      whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
     else
       echo
     fi
+    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    for ip in ${DOMAINIPS[@]}; do
+      if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
+        ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        echo -n "$d "
+        echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
+        echo
+        if [[ "$DELETE_TMPLOGS" = [yY] ]]; then        
+          rm -rf "${CTMPDIR}/${d}-ip.txt"
+        fi
+      fi
+    done
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       for ns in ${whoisns[@]}; do
         ns=$(echo "$ns" | tr '\n\r' ' ')
@@ -167,7 +183,8 @@ for d in ${OTHERDOMAINS[@]}; do
       fi  
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-      whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      echo
+      whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
     else
       echo
@@ -249,11 +266,27 @@ for d in ${OTHERDOMAINS[@]}; do
       fi  
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-      whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      echo
+      whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
     else
       echo
     fi
+    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    for ip in ${DOMAINIPS[@]}; do
+      if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+        curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
+        ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+        echo -n "$d "
+        echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
+        echo
+        if [[ "$DELETE_TMPLOGS" = [yY] ]]; then        
+          rm -rf "${CTMPDIR}/${d}-ip.txt"
+        fi
+      fi
+    done
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       for ns in ${whoisns[@]}; do
         ns=$(echo "$ns" | tr '\n\r' ' ')
@@ -323,11 +356,27 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       fi  
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        echo
+        whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
       else
         echo
       fi
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      for ip in ${DOMAINIPS[@]}; do
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+          curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
+          ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          echo -n "$d "
+          echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
+          echo
+          if [[ "$DELETE_TMPLOGS" = [yY] ]]; then        
+            rm -rf "${CTMPDIR}/${d}-ip.txt"
+          fi
+        fi
+      done
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         for ns in ${whoisns[@]}; do
           ns=$(echo "$ns" | tr '\n\r' ' ')
@@ -390,7 +439,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       fi  
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        echo
+        whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
       else
         echo
@@ -472,11 +522,27 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       fi  
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        echo
+        whois_registrant=$(egrep -i 'registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
       else
         echo
       fi
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      for ip in ${DOMAINIPS[@]}; do
+        if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
+          curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
+          ipaddr=$(awk -F ": " '/ip:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          country=$(awk -F ": " '/country:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          org=$(awk -F ": " '/org:/ {print $2}' "${CTMPDIR}/${d}-ip.txt")
+          echo -n "$d "
+          echo "$ipaddr $country $org" | tr '\n\r' ' ' | tr -s ' '
+          echo
+          if [[ "$DELETE_TMPLOGS" = [yY] ]]; then        
+            rm -rf "${CTMPDIR}/${d}-ip.txt"
+          fi
+        fi
+      done
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         for ns in ${whoisns[@]}; do
           ns=$(echo "$ns" | tr '\n\r' ' ')
