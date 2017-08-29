@@ -68,7 +68,7 @@ for d in ${OTHERDOMAINS[@]}; do
       fi
     elif [[ "$tld" = 'au' && "$ctoplevel" = 'com.au' ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
         whoisupdate=$(awk  -F ": " '/Last Modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
@@ -76,15 +76,15 @@ for d in ${OTHERDOMAINS[@]}; do
       fi
     else
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
-        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
-        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       fi
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${d}.txt")
+      whoisnsa=$(awk  -F ": " '/Name Server:|nserver:|Nserver:/ {print $2}' "${CTMPDIR}/${d}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
     if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
@@ -151,7 +151,7 @@ for d in ${OTHERDOMAINS[@]}; do
       fi
     elif [[ "$tld" = 'au' && "$ctoplevel" = 'com.au' ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
         whoisupdate=$(awk  -F ": " '/Last Modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
@@ -159,15 +159,15 @@ for d in ${OTHERDOMAINS[@]}; do
       fi
     else
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
-        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
-        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       fi
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${d}.txt")
+      whoisnsa=$(awk  -F ": " '/Name Server:|nserver:|Nserver:/ {print $2}' "${CTMPDIR}/${d}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
     if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
@@ -234,7 +234,7 @@ for d in ${OTHERDOMAINS[@]}; do
       fi
     elif [[ "$tld" = 'au' && "$ctoplevel" = 'com.au' ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
         whoisupdate=$(awk  -F ": " '/Last Modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
@@ -242,15 +242,15 @@ for d in ${OTHERDOMAINS[@]}; do
       fi
     else
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
-        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       else
         whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
-        whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
       fi
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-      whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${d}.txt")
+      whoisnsa=$(awk  -F ": " '/Name Server:|nserver:|Nserver:/ {print $2}' "${CTMPDIR}/${d}.txt")
       whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
     fi
     if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
@@ -324,7 +324,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         fi
       elif [[ "$tld" = 'au' && "$ctoplevel" = 'com.au' ]]; then
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
           whoisupdate=$(awk  -F ": " '/Last Modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         else
           whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
@@ -332,15 +332,15 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         fi
       else
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
-          whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         else
           whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
-          whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         fi
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisnsa=$(awk  -F ": " '/Name Server:|nserver:|Nserver:/ {print $2}' "${CTMPDIR}/${d}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
       if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
@@ -407,7 +407,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         fi
       elif [[ "$tld" = 'au' && "$ctoplevel" = 'com.au' ]]; then
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
           whoisupdate=$(awk  -F ": " '/Last Modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         else
           whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
@@ -415,15 +415,15 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         fi
       else
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
-          whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         else
           whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
-          whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         fi
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisnsa=$(awk  -F ": " '/Name Server:|nserver:|Nserver:/ {print $2}' "${CTMPDIR}/${d}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
       if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
@@ -490,7 +490,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         fi
       elif [[ "$tld" = 'au' && "$ctoplevel" = 'com.au' ]]; then
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
           whoisupdate=$(awk  -F ": " '/Last Modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         else
           whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
@@ -498,15 +498,15 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
         fi
       else
         if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
-          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:/ {print $2}' "${CTMPDIR}/${d}.txt")
-          whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisdate=$(awk  -F ": " '/Expiration Date:|Expiry Date:|expires at:|expires:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         else
           whoisdate=$(awk  -F ": " '/Expiry Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
-          whoisupdate=$(awk  -F ": " '/Updated Date:/ {print $2}' "${CTMPDIR}/${d}.txt")
+          whoisupdate=$(awk  -F ": " '/Updated Date:|modified:/ {print $2}' "${CTMPDIR}/${d}.txt")
         fi
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
-        whoisnsa=$(awk  -F ": " '/Name Server:/ {print $2}' "${CTMPDIR}/${d}.txt")
+        whoisnsa=$(awk  -F ": " '/Name Server:|nserver:|Nserver:/ {print $2}' "${CTMPDIR}/${d}.txt")
         whoisns=$(echo "$whoisnsa" | tr '[:upper:]' '[:lower:]')
       fi
       if [[ "$WHOIS_SHOWREGISTRAR" = [yY] ]]; then
@@ -569,7 +569,7 @@ case "$1" in
   check )
     {
     check_domains
-  } 2>&1 | tee ${CENTMINLOGDIR}/check-domains-dns_${DT}.log
+    } 2>&1 | tee ${CENTMINLOGDIR}/check-domains-dns_${DT}.log
     ;;
   pattern )
     ;;
