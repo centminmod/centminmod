@@ -102,6 +102,8 @@ for d in ${OTHERDOMAINS[@]}; do
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
+    else
+      echo
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       for ns in ${whoisns[@]}; do
@@ -167,6 +169,8 @@ for d in ${OTHERDOMAINS[@]}; do
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
+    else
+      echo
     fi
     DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
     for ip in ${DOMAINIPS[@]}; do
@@ -247,6 +251,8 @@ for d in ${OTHERDOMAINS[@]}; do
     if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
       whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
       echo "$whois_registrant"
+    else
+      echo
     fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       for ns in ${whoisns[@]}; do
@@ -319,6 +325,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
+      else
+        echo
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         for ns in ${whoisns[@]}; do
@@ -384,6 +392,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
+      else
+        echo
       fi
       DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
       for ip in ${DOMAINIPS[@]}; do
@@ -464,6 +474,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
         whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
         echo "$whois_registrant"
+      else
+        echo
       fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         for ns in ${whoisns[@]}; do
