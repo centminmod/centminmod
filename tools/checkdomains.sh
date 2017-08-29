@@ -12,6 +12,7 @@ WHOISBIN='whois'
 WHOISOPT=' -n'
 WHOIS_SHOWNS='y'
 WHOIS_SHOWREGISTRAR='y'
+WHOIS_SHOWREGISTRANT='n'
 WHOIS_NAMESERVER='8.8.8.8'
 
 CHECKDOMAINS_DEBUG='n'
@@ -22,7 +23,9 @@ if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
   . "/etc/centminmod/custom_config.inc"
 fi
-
+if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+  WHOISOPT=''
+fi
 if [[ ! -d "$CTMPDIR" ]]; then
   mkdir -p "$CTMPDIR"
 fi
@@ -74,7 +77,10 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
-    echo
+    if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+      whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      echo "$whois_registrant"
+    fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       for ns in ${whoisns[@]}; do
         ns=$(echo "$ns" | tr '\n\r' ' ')
@@ -114,7 +120,10 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
-    echo
+    if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+      whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      echo "$whois_registrant"
+    fi
     DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
     for ip in ${DOMAINIPS[@]}; do
       if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
@@ -169,7 +178,10 @@ for d in ${OTHERDOMAINS[@]}; do
       whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
     echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
-    echo
+    if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+      whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+      echo "$whois_registrant"
+    fi
     if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
       for ns in ${whoisns[@]}; do
         ns=$(echo "$ns" | tr '\n\r' ' ')
@@ -216,7 +228,10 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
-      echo
+      if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+        whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        echo "$whois_registrant"
+      fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         for ns in ${whoisns[@]}; do
           ns=$(echo "$ns" | tr '\n\r' ' ')
@@ -256,7 +271,10 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
-      echo
+      if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+        whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        echo "$whois_registrant"
+      fi
       DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
       for ip in ${DOMAINIPS[@]}; do
         if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
@@ -311,7 +329,10 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       whoisdate=$(date -d "$whoisdate" "+%b %d %Y")
       whoisupdate=$(date -d "$whoisupdate" "+%b %d %Y")
       echo "expiry: $whoisdate updated: $whoisupdate" | tr '\n\r' ' ' | tr -s ' '
-      echo
+      if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
+        whois_registrant=$(egrep -i 'domain name:|registrant name:|registrant email:|admin name:|admin email:' "${CTMPDIR}/${d}.txt")
+        echo "$whois_registrant"
+      fi
       if [[ "$WHOIS_SHOWNS" = [yY] ]]; then
         for ns in ${whoisns[@]}; do
           ns=$(echo "$ns" | tr '\n\r' ' ')
