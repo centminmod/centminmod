@@ -214,7 +214,7 @@ echo " "
 if [[ "$UALL" = 'y' ]]; then 
     key='y'
 else
-    read -ep "PHP Upgrade - Would you like to continue? [y/n] " key
+    read -ep "PHP Upgrade/Downgrade - Would you like to continue? [y/n] " key
     if [[ "$key" = [nN] ]];
     then
         exit 0

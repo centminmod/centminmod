@@ -1183,6 +1183,16 @@ END
 
 fi
 
+# enable / uncomment try_files line
+if [[ "$ENABLE_TRYFILES" = [yY] ]]; then
+  if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+    sed -i 's|#try_files|try_files|'  "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+  fi
+  if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.conf" ]; then
+    sed -i 's|#try_files|try_files|'  "/usr/local/nginx/conf/conf.d/${vhostname}.conf"
+  fi
+fi
+
 echo 
 cecho "-------------------------------------------------------------" $boldyellow
 echo "${CUR_DIR}/tools/autoprotect.sh"
@@ -1307,6 +1317,7 @@ cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key" $boldwhi
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldwhite
 cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
 cecho " rm -rf /home/nginx/domains/$vhostname" $boldwhite
+cecho " rm -rf /root/.acme.sh/$vhostname" $boldwhite
 cecho " service nginx restart" $boldwhite
 echo ""
 cecho "-------------------------------------------------------------" $boldyellow

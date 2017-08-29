@@ -2203,6 +2203,7 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
+rm -rf /root/.acme.sh/${vhostname}
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
