@@ -5,9 +5,11 @@
 # measure in case a download's domain name dns is compromised or expiry
 # lapses and domain is picked up by a rogue or malicious person
 ##########################################################################
-WHOIS_TIMEOUT='4'
+DT=$(date +"%d%m%y-%H%M%S")
 
 DIGOPTS='+nocomments'
+
+WHOIS_TIMEOUT='4'
 WHOISBIN='whois'
 WHOISOPT=' -n'
 WHOIS_SHOWNS='y'
@@ -18,6 +20,7 @@ WHOIS_NAMESERVER='8.8.8.8'
 CHECKDOMAINS_DEBUG='n'
 DELETE_TMPLOGS='y'
 CTMPDIR=/home/checkdomainstmp
+CENTMINLOGDIR='/root/centminlogs'
 ##########################################################################
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
@@ -564,7 +567,9 @@ fi
 
 case "$1" in
   check )
+    {
     check_domains
+  } 2>&1 | tee ${CENTMINLOGDIR}/check-domains-dns_${DT}.log
     ;;
   pattern )
     ;;
