@@ -64,7 +64,8 @@ for d in ${OTHERDOMAINS[@]}; do
     ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
-    whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
+    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
     whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
     if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
       dnssec='no'
@@ -123,7 +124,7 @@ for d in ${OTHERDOMAINS[@]}; do
     else
       echo
     fi
-    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    
     for ip in ${DOMAINIPS[@]}; do
       if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
         curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
@@ -155,7 +156,8 @@ for d in ${OTHERDOMAINS[@]}; do
     ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
-    whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
+    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
     whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
     if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
       dnssec='no'
@@ -214,7 +216,7 @@ for d in ${OTHERDOMAINS[@]}; do
     else
       echo
     fi
-    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    
     for ip in ${DOMAINIPS[@]}; do
       if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
         curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
@@ -246,7 +248,8 @@ for d in ${OTHERDOMAINS[@]}; do
     ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
-    whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
+    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
     whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${d}.txt")
     if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
       dnssec='no'
@@ -305,7 +308,7 @@ for d in ${OTHERDOMAINS[@]}; do
     else
       echo
     fi
-    DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    
     for ip in ${DOMAINIPS[@]}; do
       if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
         curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
@@ -344,7 +347,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
-      whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
       whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
       if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
         dnssec='no'
@@ -403,7 +407,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       else
         echo
       fi
-      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      
       for ip in ${DOMAINIPS[@]}; do
         if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
           curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
@@ -435,7 +439,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
-      whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
       whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
       if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
         dnssec='no'
@@ -494,7 +499,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       else
         echo
       fi
-      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      
       for ip in ${DOMAINIPS[@]}; do
         if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
           curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
@@ -526,7 +531,8 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       ctoplevel="$(echo "$d" |grep -o '[^.]*\.[^.]*$')"
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
-      whoisdnssec=$(cat "${CTMPDIR}/${d}.txt" | grep -w ';; flags:' | grep -w 'ad')
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
       whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${d}.txt")
       if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
         dnssec='no'
@@ -585,7 +591,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       else
         echo
       fi
-      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      
       for ip in ${DOMAINIPS[@]}; do
         if [[ $ip =~ ^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$ ]]; then
           curl -4s ipinfo.io/$ip 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' > "${CTMPDIR}/${d}-ip.txt"
