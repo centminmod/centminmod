@@ -46,9 +46,8 @@ if [[ ! "$(grep -w '43' /etc/csf/csf.conf)" ]]; then
     sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
     egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf
   else
-    sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf >/dev/null 2>&1
-    sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf >/dev/null 2>&1
-    egrep '^TCP_|^TCP6_|^UDP_|^UDP6_' /etc/csf/csf.conf >/dev/null 2>&1
+    sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf
+    sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
   fi
   csf -r >/dev/null 2>&1
 fi
