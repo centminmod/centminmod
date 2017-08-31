@@ -37,12 +37,12 @@ CENTOSFIVEEPELFILE="epel-release-5-4.noarch.rpm"
 CENTOSFIVEEPEL="http://mirror.sfo12.us.leaseweb.net/epel/5/${RPMFARCH}/${CENTOSFIVEEPELFILE}"
 
 CENTOSFIVERPMFORGEFILE="rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm"
-CENTOSFIVERPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSFIVERPMFORGEFILE}"
+CENTOSFIVERPMFORGE="http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el5/en/${ARCH}/rpmforge/RPMS/${CENTOSFIVERPMFORGEFILE}"
 
 CENTOSFIVECENTALTFILE="centalt-release-5-3.noarch.rpm"
 CENTOSFIVECENTALT="http://centos.alt.ru/repository/centos/5/${RPMFARCH}/${CENTOSFIVECENTALTFILE}"
 
-CENTOSFIVEPERCONARELEASEFILE="percona-release-0.1-3.noarch.rpm"
+CENTOSFIVEPERCONARELEASEFILE="percona-release-0.1-4.noarch.rpm"
 CENTOSFIVEPERCONARELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSFIVEPERCONARELEASEFILE}"
 
 CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
@@ -54,13 +54,13 @@ CENTOSSIXEPEL="http://mirror.sfo12.us.leaseweb.net/epel/6/${RPMFARCH}/${CENTOSSI
 CENTOSSIXEPELLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXEPELFILE}"
 
 CENTOSSIXRPMFORGEFILE="rpmforge-release-0.5.3-1.el6.rf.${ARCH}.rpm"
-CENTOSSIXRPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSSIXRPMFORGEFILE}"
+CENTOSSIXRPMFORGE="http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el6/en/${ARCH}/rpmforge/RPMS/${CENTOSSIXRPMFORGEFILE}"
 
 CENTOSSIXCENTALTFILE="centalt-release-6-1.noarch.rpm"
 CENTOSSIXCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSSIXCENTALTFILE}"
 CENTOSSIXCENTALTLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXCENTALTFILE}"
 
-CENTOSSIXPERCONALRELEASEFILE="percona-release-0.1-3.noarch.rpm"
+CENTOSSIXPERCONALRELEASEFILE="percona-release-0.1-4.noarch.rpm"
 CENTOSSIXPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSIXPERCONALRELEASEFILE}"
 
 CENTOSSIXVARNISHFILE="varnish-4.1.el6.rpm"
@@ -80,7 +80,7 @@ CENTOSSIXATRPMS="http://dl.atrpms.net/all/${CENTOSSIXATRPMSFILE}"
 CENTOSSIXATRPMSLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXATRPMSFILE}"
 
 # dynamic mirror check for EPEL below overrides these values now
-CENTOSSEVENEPELFILE="epel-release-7-2.noarch.rpm"
+CENTOSSEVENEPELFILE="epel-release-7-10.noarch.rpm"
 CENTOSSEVENEPEL="http://mirror.sfo12.us.leaseweb.net/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPEL_B="http://dl.fedoraproject.org/pub/epel/7/${RPMFARCH}/e/${CENTOSSEVENEPELFILE}"
 CENTOSSEVENEPELLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENEPELFILE}"
@@ -133,13 +133,13 @@ fi
 fi # /etc/yum.repos.d/epel.repo file check
 
 CENTOSSEVENRPMFORGEFILE="rpmforge-release-0.5.3-1.el7.rf.${ARCH}.rpm"
-CENTOSSEVENRPMFORGE="http://pkgs.repoforge.org/rpmforge-release/${CENTOSSEVENRPMFORGEFILE}"
+CENTOSSEVENRPMFORGE="http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el7/en/${ARCH}/rpmforge/RPMS/${CENTOSSEVENRPMFORGEFILE}"
 
 CENTOSSEVENCENTALTFILE="centalt-release-6-1.noarch.rpm"
 CENTOSSEVENCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSSEVENCENTALTFILE}"
 CENTOSSEVENCENTALTLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENCENTALTFILE}"
 
-CENTOSSEVENPERCONALRELEASEFILE="percona-release-0.1-3.noarch.rpm"
+CENTOSSEVENPERCONALRELEASEFILE="percona-release-0.1-4.noarch.rpm"
 CENTOSSEVENPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSEVENPERCONALRELEASEFILE}"
 
 CENTOSSEVENVARNISHFILE="varnish-4.1.el7.rpm"
