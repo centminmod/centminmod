@@ -403,16 +403,16 @@ fi # repo file check
 }
 
 yumpriorvarnish() {
-if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
-cp -p /etc/yum.repos.d/varnish-4.1.repo /etc/yum.repos.d/varnish-4.1.OLD
-if [ -n "$(grep ^priority /etc/yum.repos.d/varnish-4.1.repo)" ]
+if [ -f "$VARNISH_REPOFILE" ]; then
+cp -p "$VARNISH_REPOFILE" /etc/yum.repos.d/varnishcache_varnish41.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/varnishcache_varnish41.repo)" ]
         then
-                #echo priorities already set for varnish-4.1.repo
+                #echo priorities already set for varnishcache_varnish41.repo
 PRIOREXISTS=1
         else
                 echo "setting yum priorities for varnish-4.1.repo"
-                ex -s /etc/yum.repos.d/varnish-4.1.repo << EOF
-:/\[varnish-4.1\]/ , /gpgcheck/
+                ex -s /etc/yum.repos.d/varnishcache_varnish41.repo << EOF
+:/\[varnishcache_varnish41\]/ , /gpgcheck/
 :a
 priority=2
 .
@@ -420,12 +420,12 @@ priority=2
 :q
 EOF
 
-# sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/varnish-4.1.repo
+# sed -i 's/enabled=1/enabled=0/g' /etc/yum.repos.d/varnishcache_varnish41.repo
 
 cecho "*************************************************" $boldgreen
-cecho "Fixing varnish-4.1.repo YUM Priorities" $boldgreen
+cecho "Fixing varnishcache_varnish41.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
-cat /etc/yum.repos.d/varnish-4.1.repo
+cat /etc/yum.repos.d/varnishcache_varnish41.repo
 echo ""
 fi
 fi # repo file check

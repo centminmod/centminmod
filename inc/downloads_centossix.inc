@@ -329,49 +329,10 @@ rpm -Uvh ${CENTOSSIXPERCONALRELEASEFILE}
 
 fi
 
-    if [[ "$(uname -m)" = 'x86_64' ]]; then
-    cd $DIR_TMP
-
-if [ -s "${CENTOSSIXVARNISHFILE}" ]; then
-  echo "${CENTOSSIXVARNISHFILE} [found]"
-  rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
-	ERR=$?
-	CCVARNISHCHECK="$ERR"
-		if [ "$CCVARNISHCHECK" == '0' ]; then
-			yumpriorvarnish
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
-			# exit $ERR
-		fi  
-  else
-  echo "Error: ${CENTOSSIXVARNISHFILE} not found !!! Downloading now......"
-  wget ${WGETOPT} ${CENTOSSIXVARNISH} --tries=3
-  # wget ${WGETOPT} ${CENTOSSIXVARNISHLOCAL} --tries=3
-ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	cecho "Error: ${CENTOSSIXVARNISHFILE} download failed." $boldgreen
-FAILVARNISH='y'
-checklogdetails
-	# exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-
-rpm --nosignature -i ${CENTOSSIXVARNISHFILE}
-	#yum -q list axel 2>&1 >/dev/null
-	ERR=$?
-	CCVARNISHCHECK="$ERR"
-		if [ "$CCVARNISHCHECK" == '0' ]; then
-			yumpriorvarnish
-			echo ""
-		else
-			cecho "Error: problem with ${CENTOSSIXVARNISHFILE} install." $boldgreen
-			# exit $ERR
-		fi
-	fi
-
-fi
-    fi # 64bit only
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    varnishfour_setup
+    yumpriorvarnish
+  fi # 64bit only
 
 ####
 # axivo centos 6.x 64bit only

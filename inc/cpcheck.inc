@@ -1,3 +1,25 @@
+varnishfour_setup() {
+  if [ ! -f "$VARNISH_REPOFILE" ]; then
+    if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
+        rm -rf /etc/yum.repos.d/varnish-4.1.repo
+        yum -q clean all
+    fi
+    os=centos
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        dist=7
+    else
+        dist=6
+    fi
+    yum_repo_path=$VARNISH_REPOFILE
+    yum_repo_config_url="https://packagecloud.io/install/repositories/varnishcache/varnish41/config_file.repo?os=${os}&dist=${dist}&source=script"
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]]; then
+        curl -4sSf "${yum_repo_config_url}" > $yum_repo_path
+        yum -q makecache -y --disablerepo='*' --enablerepo='varnishcache_varnish41'
+        yum -q -y update varnish-release
+    fi
+  fi
+}
+
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
   if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
@@ -1882,6 +1904,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_phpfpmconfg
   cityfan_fix
   libc_fix
+  varnishfour_setup
 fi
 
 }
