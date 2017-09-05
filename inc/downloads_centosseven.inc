@@ -323,48 +323,10 @@ rpm -i ${CENTOSSEVENPERCONALRELEASEFILE}
 
 fi
 
-    cd $DIR_TMP
-
-if [ -s "${CENTOSSEVENVARNISHFILE}" ]; then
-  echo "${CENTOSSEVENVARNISHFILE} [found]"
-  rpm --nosignature -i ${CENTOSSEVENVARNISHFILE}
-  ERR=$?
-  CCVARNISHCHECK="$ERR"
-    if [ "$CCVARNISHCHECK" == '0' ]; then
-      sed -i 's|el6|el7|g' /etc/yum.repos.d/varnish.repo
-      yumpriorvarnish
-      echo ""
-    else
-      cecho "Error: problem with ${CENTOSSEVENVARNISHFILE} install." $boldgreen
-      exit $ERR
-    fi  
-  else
-  echo "Error: ${CENTOSSEVENVARNISHFILE} not found !!! Downloading now......"
-  wget ${WGETOPT} ${CENTOSSEVENVARNISH} --tries=3
-  # wget ${WGETOPT} ${CENTOSSEVENVARNISHLOCAL} --tries=3
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${CENTOSSEVENVARNISHFILE} download failed." $boldgreen
-FAILVARNISH='y'
-checklogdetails
-  # exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-
-rpm --nosignature -i ${CENTOSSEVENVARNISHFILE}
-  #yum -q list axel 2>&1 >/dev/null
-  ERR=$?
-  CCVARNISHCHECK="$ERR"
-    if [ "$CCVARNISHCHECK" == '0' ]; then
-      yumpriorvarnish
-      echo ""
-    else
-      cecho "Error: problem with ${CENTOSSEVENVARNISHFILE} install." $boldgreen
-      exit $ERR
-    fi
-  fi
-
-fi
+if [[ "$(uname -m)" = 'x86_64' ]]; then
+  varnishfour_setup
+  yumpriorvarnish
+fi # 64bit only
 
 ####
 # axivo centos 6.x 64bit only
