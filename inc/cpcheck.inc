@@ -1,10 +1,10 @@
 varnishfour_setup() {
+  if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
+      rm -rf /etc/yum.repos.d/varnish-4.1.repo
+      yum -q clean all
+  fi
   if [ ! -f "$VARNISH_REPOFILE" ]; then
     echo "update varnish cache 4.1 yum repo config"
-    if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
-        rm -rf /etc/yum.repos.d/varnish-4.1.repo
-        yum -q clean all
-    fi
     os=centos
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         dist=7
