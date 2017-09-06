@@ -65,6 +65,10 @@ for d in ${OTHERDOMAINS[@]}; do
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
     DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    if [[ -z "$DOMAINIPS" ]]; then
+      WHOIS_NAMESERVER='4.2.2.2'
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    fi
     whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
     whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
     if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
@@ -157,6 +161,10 @@ for d in ${OTHERDOMAINS[@]}; do
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
     DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    if [[ -z "$DOMAINIPS" ]]; then
+      WHOIS_NAMESERVER='4.2.2.2'
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    fi
     whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
     whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
     if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
@@ -249,6 +257,10 @@ for d in ${OTHERDOMAINS[@]}; do
     tld="$(echo "$d" |grep -o '[^.]*$')"
     timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
     DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    if [[ -z "$DOMAINIPS" ]]; then
+      WHOIS_NAMESERVER='4.2.2.2'
+      DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+    fi
     whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
     whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${d}.txt")
     if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
@@ -348,6 +360,10 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
       DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      if [[ -z "$DOMAINIPS" ]]; then
+        WHOIS_NAMESERVER='4.2.2.2'
+        DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      fi
       whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
       whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
       if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
@@ -440,6 +456,10 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
       DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      if [[ -z "$DOMAINIPS" ]]; then
+        WHOIS_NAMESERVER='4.2.2.2'
+        DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      fi
       whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
       whoisurl=$(awk  -F ": " '/Registrar URL:/ {print $2}' "${CTMPDIR}/${d}.txt")
       if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
@@ -532,6 +552,10 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
       tld="$(echo "$d" |grep -o '[^.]*$')"
       timeout ${WHOIS_TIMEOUT}s ${WHOISBIN}${WHOISOPT} "$ctoplevel" > "${CTMPDIR}/${d}.txt"
       DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      if [[ -z "$DOMAINIPS" ]]; then
+        WHOIS_NAMESERVER='4.2.2.2'
+        DOMAINIPS=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} +short A $d)
+      fi
       whoisdnssec=$(dig -4 ${DIGOPTS} @${WHOIS_NAMESERVER} ${d} +dnssec +nocomments dnskey +short)
       whoisurl=$(awk  -F ": " '/Registrar:/ {print $2}' "${CTMPDIR}/${d}.txt")
       if [[ -z "$whoisdnssec" && "$DIG_DNSSEC" = [yY] ]]; then
