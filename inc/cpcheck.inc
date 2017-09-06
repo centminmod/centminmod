@@ -3,6 +3,9 @@ varnishfour_setup() {
       rm -rf /etc/yum.repos.d/varnish-4.1.repo
       # yum -q clean all
   fi
+  if [ -f /etc/yum.repos.d/varnish-4.1.OLD ]; then
+      rm -rf /etc/yum.repos.d/varnish-4.1.OLD
+  fi
   if [ ! -f "$VARNISH_REPOFILE" ]; then
     echo "update varnish cache 4.1 yum repo config"
     os=centos
@@ -16,6 +19,12 @@ varnishfour_setup() {
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]]; then
         curl -4sSf "${yum_repo_config_url}" > $yum_repo_path
         # yum -q makecache -y --disablerepo='*' --enablerepo='varnishcache_varnish41'
+        if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
+            rm -rf /etc/yum.repos.d/varnish-4.1.repo
+        fi
+        if [ -f /etc/yum.repos.d/varnish-4.1.OLD ]; then
+            rm -rf /etc/yum.repos.d/varnish-4.1.OLD
+        fi
         yum -q -y update varnish-release
     fi
     echo
