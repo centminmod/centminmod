@@ -1,3 +1,11 @@
+disablelogs() {
+  # access and error log in nginx.conf are not needed so disable them
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -z "$(grep '#error_log' /usr/local/nginx/conf/nginx.conf)" && -z "$(grep '#access_log' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|^access_log  logs\/access.log|#access_log  logs\/access.log|' /usr/local/nginx/conf/nginx.conf
+    sed -i 's|^error_log   logs\/error.log|#error_log   logs\/error.log|' /usr/local/nginx/conf/nginx.conf
+  fi
+}
+
 varnishfour_setup() {
   if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
       rm -rf /etc/yum.repos.d/varnish-4.1.repo
@@ -1917,6 +1925,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   cityfan_fix
   libc_fix
   varnishfour_setup
+  disablelogs
 fi
 
 }
