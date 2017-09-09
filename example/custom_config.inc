@@ -30,12 +30,14 @@ DISABLE_IPVSIX='n'
 # Clang & GCC Compilers
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/posts/44039/
+CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/posts/52193/
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.3
 DEVTOOLSETSIX='n'             # Enable or disable devtoolset-6 GCC 6.2 support instead of devtoolset-4 GCC 5.3 support
+DEVTOOLSETSEVEN='n'           # Enable or disable devtoolset-7 GCC 7.1 support instead of devtoolset-6 GCC 6.2 support
 NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-4 GCC 5.3 even for CentOS 7 nginx compiles
 GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.3 whereever possible/coded
 CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.3 for libressl or openssl compiles
