@@ -687,12 +687,6 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.12'
 fi
 
-if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
-  MARCH_TARGET='native'
-else
-  MARCH_TARGET='x86-64'
-fi
-
 # ensure clang alternative to gcc compiler is used only for 64bit OS
 # if [[ "$(uname -m)" != 'x86_64' ]]; then
 #     CLANG='n'
@@ -906,6 +900,12 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
     fi
+fi
+
+if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
+  MARCH_TARGET='native'
+else
+  MARCH_TARGET='x86-64'
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required
