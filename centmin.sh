@@ -301,6 +301,7 @@ DISABLE_IPVSIX='n'
 # tarballs in parallel for faster initial installs
 PARALLEL_MODE=y
 # compiler related
+MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/posts/44039/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/posts/52193/
@@ -684,6 +685,12 @@ fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.12'
+fi
+
+if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
+  MARCH_TARGET='native'
+else
+  MARCH_TARGET='x86-64'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS

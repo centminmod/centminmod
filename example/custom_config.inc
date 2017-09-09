@@ -28,12 +28,14 @@ ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 DISABLE_IPVSIX='n'
 
 # Clang & GCC Compilers
+MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/posts/44039/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/posts/52193/
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
+GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.3
 DEVTOOLSETSIX='n'             # Enable or disable devtoolset-6 GCC 6.2 support instead of devtoolset-4 GCC 5.3 support
@@ -43,6 +45,7 @@ GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.3 whereever possible/code
 CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.3 for libressl or openssl compiles
 NGX_GSPLITDWARF='y'           # for Nginx compile https://community.centminmod.com/posts/44072/
 PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com/posts/44072/
+PHP_LTO='n'                   # enable -flto compiler for GCC 4.8.5+ PHP-FPM compiles currently not working with PHP 7.x
 NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
 
 # Nginx Dynamic Module Switches

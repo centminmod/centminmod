@@ -514,7 +514,10 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
 	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
 		CCM=64
-    if [[ "$CPU_MARCH" = 'silvermont' ]]; then
+    
+    if [[ "$MARCH_TARGETNATIVE" = [nN] ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
+    elif [[ "$CPU_MARCH" = 'silvermont' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=silvermont"
     elif [[ "$CPU_MARCH" = 'bonnell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=bonnell"

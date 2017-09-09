@@ -65,7 +65,7 @@ enable_devtoolset() {
       gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
       if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
          CCM=64
-         GEN_MTUNEOPT="-m${CCM} -march=native"
+         GEN_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
          # if only 1 cpu thread use -O2 to keep compile times sane
          if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $GEN_MTUNEOPT -pipe"
@@ -96,8 +96,8 @@ disable_devtoolset() {
 set_intelflags() {
 	if [[ "$INTELOPT" = [yY] ]]; then
     	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	CFLAGS='-O2 -m64 -march=native -pipe -g'
-        	CXXFLAGS='-O2 -m64 -march=native -pipe -g' 
+        	CFLAGS='-O2 -m64 -march=${MARCH_TARGET} -pipe -g'
+        	CXXFLAGS='-O2 -m64 -march=${MARCH_TARGET} -pipe -g' 
         	export CFLAGS
         	export CXXFLAGS
     	elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
