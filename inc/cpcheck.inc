@@ -1,8 +1,12 @@
 disablelogs() {
   # access and error log in nginx.conf are not needed so disable them
-  if [[ -f /usr/local/nginx/conf/nginx.conf && -z "$(grep '#error_log' /usr/local/nginx/conf/nginx.conf)" && -z "$(grep '#access_log' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|^access_log  logs\/access.log|#access_log  logs\/access.log|' /usr/local/nginx/conf/nginx.conf
-    sed -i 's|^error_log   logs\/error.log|#error_log   logs\/error.log|' /usr/local/nginx/conf/nginx.conf
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -z "$(grep 'access_log  off' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|^access_log .*|access_log  off;|' /usr/local/nginx/conf/nginx.conf
+    sed -i 's|^#access_log .*|access_log  off;|' /usr/local/nginx/conf/nginx.conf
+  elif [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep '#error_log' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|^access_log .*|access_log  off;|' /usr/local/nginx/conf/nginx.conf
+    sed -i 's|^#access_log .*|access_log  off;|' /usr/local/nginx/conf/nginx.conf
+    sed -i 's|^#error_log   logs\/error.log|error_log   logs\/error.log|' /usr/local/nginx/conf/nginx.conf
   fi
 }
 
