@@ -176,6 +176,12 @@ pagespeed JpegQualityForSaveData 50;
 # https://developers.google.com/speed/pagespeed/module/reference-image-optimize#WebpQualityForSaveData
 pagespeed WebpQualityForSaveData 50;
 
+# https://developers.google.com/speed/pagespeed/module/filter-image-optimize#resize_rendered_image_dimensions
+pagespeed EnableFilters resize_rendered_image_dimensions;
+
+# https://developers.google.com/speed/pagespeed/module/filter-image-optimize#WebpRecompressionQuality
+pagespeed WebpRecompressionQuality 75;
+
 #######################################################
 ## 1.7.30.1 beta defaults
 ######################################
@@ -206,10 +212,22 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
 #  pagespeed ExperimentSpec "id=1;percent=50;level=CoreFilters;enabled=collapse_whitespace,remove_comments;";
 #  pagespeed ExperimentSpec "id=2;percent=50";
  
-  # Filter settings
+  # Filter settings 
   # filters outlined at http://ngxpagespeed.com/ngx_pagespeed_example/
   pagespeed RewriteLevel CoreFilters;
   pagespeed EnableFilters collapse_whitespace,remove_comments;
+
+  # https://www.modpagespeed.com/doc/config_filters#FinderPropertiesCacheExpirationTimeMs
+#  pagespeed FinderPropertiesCacheExpirationTimeMs 7200000;  
+
+  # https://www.modpagespeed.com/doc/config_filters#forbidding
+   pagespeed ForbidAllDisabledFilters true;
+
+  # https://developers.google.com/speed/pagespeed/module/filter-attribute-elide
+#  pagespeed EnableFilters elide_attributes;
+
+  # https://developers.google.com/speed/pagespeed/module/filter-dedup-inlined-images
+#  pagespeed EnableFilters dedup_inlined_images;
 
   # make_google_analytics_async
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-make-google-analytics-async
@@ -292,11 +310,11 @@ pagespeed MinImageSizeLowResolutionBytes 3072;
 
   # rewrite_images
   # https://developers.google.com/speed/docs/mod_pagespeed/filter-image-optimize
-#  pagespeed EnableFilters rewrite_images;
-   pagespeed DisableFilters rewrite_images;
-   pagespeed DisableFilters recompress_images;
-   pagespeed DisableFilters convert_png_to_jpeg;
-   pagespeed DisableFilters extend_cache_images;
+   pagespeed EnableFilters rewrite_images;
+#   pagespeed DisableFilters rewrite_images;
+#   pagespeed DisableFilters recompress_images;
+#   pagespeed DisableFilters convert_png_to_jpeg;
+#   pagespeed DisableFilters extend_cache_images;
 #  pagespeed EnableFilters convert_png_to_jpeg;
 #  pagespeed EnableFilters convert_jpeg_to_webp;
 #  pagespeed EnableFilters convert_to_webp_lossless;
