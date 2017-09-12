@@ -48,19 +48,19 @@ return
 	cd $DIR_TMP
 
         if [[ "$AXELVERBOSE" != 'silent' ]]; then
-          cecho "Download $AXEK_LINKFILE ..." $boldyellow
+          cecho "Download $AXEL_LINKFILE ..." $boldyellow
         fi
-    if [ -s $AXEK_LINKFILE ]; then
+    if [ -s $AXEL_LINKFILE ]; then
         cecho "Axel ${AXEL_VER} Archive found, skipping download..." $boldgreen 
     else
-        wget -O $AXEK_LINKFILE $AXEK_LINK
+        wget -O $AXEL_LINKFILE $AXEL_LINK
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: $AXEK_LINKFILE download failed." $boldgreen
+    cecho "Error: $AXEL_LINKFILE download failed." $boldgreen
 checklogdetails
     exit #$ERROR
 else 
-         cecho "Download $AXEK_LINKFILE done." $boldyellow
+         cecho "Download $AXEL_LINKFILE done." $boldyellow
 #echo ""
     fi
     fi
@@ -68,17 +68,17 @@ else
 if [[ "$(tar -tzf axel-${AXEL_VER}.tar.gz >/dev/null; echo $?)" != '0' ]]; then
   rm -rf /svr-setup/axel-${AXEL_VER}.*
   echo "re-try download form local mirror..."
-  wget -O $AXEK_LINKFILE $AXEK_LINKLOCAL
+  wget -O $AXEL_LINKFILE $AXEL_LINKLOCAL
 fi
 
-tar xzf $AXEK_LINKFILE
+tar xzf $AXEL_LINKFILE
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
-    cecho "Error: $AXEK_LINKFILE extraction failed." $boldgreen
+    cecho "Error: $AXEL_LINKFILE extraction failed." $boldgreen
 checklogdetails
     exit #$ERROR
 else 
-         cecho "$AXEK_LINKFILE valid file." $boldyellow
+         cecho "$AXEL_LINKFILE valid file." $boldyellow
 echo ""
     fi
 

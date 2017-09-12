@@ -602,7 +602,7 @@ SIEGE_VERSION='4.0.2'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 WGETOPT='-cnv --no-dns-cache -4'
-AXEL_VER='2.6'               # Axel source compile version https://github.com/eribertomota/axel/releases
+AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
 ###############################################################
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
@@ -684,7 +684,7 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.12'
+  AXEL_VER='2.14'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS

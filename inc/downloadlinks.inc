@@ -442,10 +442,10 @@ EZSETUPLINKFILE='ez_setup.py'
 EZSETUPLINK="https://bitbucket.org/pypa/setuptools/raw/bootstrap/${EZSETUPLINKFILE}"
 
 # wget renamed github
-AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
-AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
-AXEK_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/archive.tar.gz?ref=${AXEL_VER}"
-AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
+AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
+AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/${AXEL_VER}.tar.gz"
+AXEL_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/axel/repository/archive.tar.gz?ref=${AXEL_VER}"
+AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"

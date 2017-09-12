@@ -29,9 +29,9 @@ CMGIT='https://gitlab.com/centminmod/centminmod.git'
 # wget renamed github
 AXEL='n'
 AXEL_VER='2.6'
-AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
-AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
-AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
+AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
+AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
+AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
 #######################################################
 ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
@@ -134,10 +134,10 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.12'
-  AXEK_LINKFILE="axel-${AXEL_VER}.tar.gz"
-  AXEK_LINK="https://github.com/eribertomota/axel/archive/${AXEL_VER}.tar.gz"
-  AXEK_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
+  AXEL_VER='2.14'
+  AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
+  AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/${AXEL_VER}.tar.gz"
+  AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 fi
 
 if [ -f /etc/centminmod/custom_config.inc ]; then
@@ -974,31 +974,31 @@ yumupdater() {
 
 install_axel() {
   cd $DIR_TMP
-  echo "Download $AXEK_LINKFILE ..."
-  if [ -s $AXEK_LINKFILE ]; then
+  echo "Download $AXEL_LINKFILE ..."
+  if [ -s $AXEL_LINKFILE ]; then
     echo "Axel ${AXEL_VER} Archive found, skipping download..." 
   else
-    wget -O $AXEK_LINKFILE $AXEK_LINKLOCAL
+    wget -O $AXEL_LINKFILE $AXEL_LINKLOCAL
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
-     echo "Error: $AXEK_LINKFILE download failed."
+     echo "Error: $AXEL_LINKFILE download failed."
       exit #$ERROR
     else 
-      echo "Download $AXEK_LINKFILE done."
+      echo "Download $AXEL_LINKFILE done."
     fi
   fi
   if [[ "$(tar -tzf axel-${AXEL_VER}.tar.gz >/dev/null; echo $?)" != '0' ]]; then
     rm -rf /svr-setup/axel-${AXEL_VER}.*
     echo "re-try download form local mirror..."
-    wget -O $AXEK_LINKFILE $AXEK_LINKLOCAL
+    wget -O $AXEL_LINKFILE $AXEL_LINKLOCAL
   fi
-  tar xzf $AXEK_LINKFILE
+  tar xzf $AXEL_LINKFILE
   ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
-    echo "Error: $AXEK_LINKFILE extraction failed."
+    echo "Error: $AXEL_LINKFILE extraction failed."
     exit #$ERROR
   else 
-    echo "$AXEK_LINKFILE valid file."
+    echo "$AXEL_LINKFILE valid file."
     echo ""
   fi
 
