@@ -1243,6 +1243,8 @@ END
 
 fi
 
+touch "/usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf"
+
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf" <<EEF
 # prevent .zip, .gz, .tar, .bzip2 files from being accessed by default
 # impossible for centmin mod to know which wp backup plugins they installed
@@ -1272,6 +1274,7 @@ location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
 
 location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1286,6 +1289,7 @@ location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ { deny all; }
 # Whitelist Exception for https://wordpress.org/plugins/onesignal-free-web-push-notifications//
 location ~ ^${WPSUBDIR}/wp-content/plugins/onesignal-free-web-push-notifications/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1296,6 +1300,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/onesignal-free-web-push-notifications
 # Whitelist Exception for https://wordpress.org/plugins/sparkpost/
 location ~ ^${WPSUBDIR}/wp-content/plugins/sparkpost/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1306,6 +1311,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/sparkpost/ {
 # Whitelist Exception for https://wordpress.org/plugins/sendgrid-email-delivery-simplified/
 location ~ ^${WPSUBDIR}/wp-content/plugins/sendgrid-email-delivery-simplified/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1316,6 +1322,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/sendgrid-email-delivery-simplified/ {
 # Whitelist Exception for https://wordpress.org/plugins/mailgun/
 location ~ ^${WPSUBDIR}/wp-content/plugins/mailgun/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1326,6 +1333,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/mailgun/ {
 # Whitelist Exception for https://wordpress.org/plugins/mailjet-for-wordpress/
 location ~ ^${WPSUBDIR}/wp-content/plugins/mailjet-for-wordpress/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1336,6 +1344,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/mailjet-for-wordpress/ {
 # Whitelist Exception for https://wordpress.org/plugins/easy-wp-smtp/
 location ~ ^${WPSUBDIR}/wp-content/plugins/easy-wp-smtp/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1346,6 +1355,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/easy-wp-smtp/ {
 # Whitelist Exception for https://wordpress.org/plugins/postman-smtp/
 location ~ ^${WPSUBDIR}/wp-content/plugins/postman-smtp/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1356,6 +1366,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/postman-smtp/ {
 # Whitelist Exception for https://wordpress.org/plugins/sendpress/
 location ~ ^${WPSUBDIR}/wp-content/plugins/sendpress/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1366,6 +1377,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/sendpress/ {
 # Whitelist Exception for https://wordpress.org/plugins/wp-mail-bank/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wp-mail-bank/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1376,6 +1388,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wp-mail-bank/ {
 # Whitelist Exception for https://wordpress.org/plugins/theme-check/
 location ~ ^${WPSUBDIR}/wp-content/plugins/theme-check/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1386,6 +1399,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/theme-check/ {
 # Whitelist Exception for https://wordpress.org/plugins/woocommerce/
 location ~ ^${WPSUBDIR}/wp-content/plugins/woocommerce/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1396,6 +1410,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/woocommerce/ {
 # Whitelist Exception for https://wordpress.org/plugins/woocommerce-csvimport/
 location ~ ^${WPSUBDIR}/wp-content/plugins/woocommerce-csvimport/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1406,6 +1421,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/woocommerce-csvimport/ {
 # Whitelist Exception for https://wordpress.org/plugins/advanced-custom-fields/
 location ~ ^${WPSUBDIR}/wp-content/plugins/advanced-custom-fields/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1416,6 +1432,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/advanced-custom-fields/ {
 # Whitelist Exception for https://wordpress.org/plugins/contact-form-7/
 location ~ ^${WPSUBDIR}/wp-content/plugins/contact-form-7/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1426,6 +1443,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/contact-form-7/ {
 # Whitelist Exception for https://wordpress.org/plugins/duplicator/
 location ~ ^${WPSUBDIR}/wp-content/plugins/duplicator/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1436,6 +1454,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/duplicator/ {
 # Whitelist Exception for https://wordpress.org/plugins/jetpack/
 location ~ ^${WPSUBDIR}/wp-content/plugins/jetpack/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1446,6 +1465,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/jetpack/ {
 # Whitelist Exception for https://wordpress.org/plugins/nextgen-gallery/
 location ~ ^${WPSUBDIR}/wp-content/plugins/nextgen-gallery/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1456,6 +1476,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/nextgen-gallery/ {
 # Whitelist Exception for https://wordpress.org/plugins/tinymce-advanced/
 location ~ ^${WPSUBDIR}/wp-content/plugins/tinymce-advanced/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1466,6 +1487,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/tinymce-advanced/ {
 # Whitelist Exception for https://wordpress.org/plugins/updraftplus/
 location ~ ^${WPSUBDIR}/wp-content/plugins/updraftplus/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1476,6 +1498,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/updraftplus/ {
 # Whitelist Exception for https://wordpress.org/plugins/wordpress-importer/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wordpress-importer/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1486,6 +1509,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wordpress-importer/ {
 # Whitelist Exception for https://wordpress.org/plugins/wordpress-seo/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wordpress-seo/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1496,6 +1520,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wordpress-seo/ {
 # Whitelist Exception for https://wordpress.org/plugins/wpclef/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wpclef/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1506,6 +1531,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wpclef/ {
 # Whitelist Exception for https://wordpress.org/plugins/mailchimp-for-wp/
 location ~ ^${WPSUBDIR}/wp-content/plugins/mailchimp-for-wp/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1516,6 +1542,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/mailchimp-for-wp/ {
 # Whitelist Exception for https://wordpress.org/plugins/wp-optimize/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wp-optimize/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1526,6 +1553,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wp-optimize/ {
 # Whitelist Exception for https://wordpress.org/plugins/si-contact-form/
 location ~ ^${WPSUBDIR}/wp-content/plugins/si-contact-form/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1539,6 +1567,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/ {
   location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(.+)\.(png|gif)\$ { allow all; }
   location ~* ${WPSUBDIR}/wp-content/plugins/akismet/akismet/.*\.php\$ {
     include /usr/local/nginx/conf/php.conf;
+    include /usr/local/nginx/conf/staticfiles.conf;
     # below include file needs to be manually created at that path and to be uncommented
     # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
     # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1552,6 +1581,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/ {
 # Whitelist Exception for https://wordpress.org/plugins/bbpress/
 location ~ ^${WPSUBDIR}/wp-content/plugins/bbpress/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1562,6 +1592,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/bbpress/ {
 # Whitelist Exception for https://wordpress.org/plugins/buddypress/
 location ~ ^${WPSUBDIR}/wp-content/plugins/buddypress/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1572,6 +1603,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/buddypress/ {
 # Whitelist Exception for https://wordpress.org/plugins/all-in-one-seo-pack/
 location ~ ^${WPSUBDIR}/wp-content/plugins/all-in-one-seo-pack/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1582,6 +1614,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/all-in-one-seo-pack/ {
 # Whitelist Exception for https://wordpress.org/plugins/google-analytics-for-wordpress/
 location ~ ^${WPSUBDIR}/wp-content/plugins/google-analytics-for-wordpress/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1592,6 +1625,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/google-analytics-for-wordpress/ {
 # Whitelist Exception for https://wordpress.org/plugins/regenerate-thumbnails/
 location ~ ^${WPSUBDIR}/wp-content/plugins/regenerate-thumbnails/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1602,6 +1636,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/regenerate-thumbnails/ {
 # Whitelist Exception for https://wordpress.org/plugins/wp-pagenavi/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wp-pagenavi/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1612,6 +1647,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wp-pagenavi/ {
 # Whitelist Exception for https://wordpress.org/plugins/wordfence/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wordfence/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1622,6 +1658,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wordfence/ {
 # Whitelist Exception for https://wordpress.org/plugins/really-simple-captcha/
 location ~ ^${WPSUBDIR}/wp-content/plugins/really-simple-captcha/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1632,6 +1669,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/really-simple-captcha/ {
 # Whitelist Exception for https://wordpress.org/plugins/wp-pagenavi/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wp-pagenavi/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1642,6 +1680,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wp-pagenavi/ {
 # Whitelist Exception for https://wordpress.org/plugins/ml-slider/
 location ~ ^${WPSUBDIR}/wp-content/plugins/ml-slider/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1652,6 +1691,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/ml-slider/ {
 # Whitelist Exception for https://wordpress.org/plugins/black-studio-tinymce-widget/
 location ~ ^${WPSUBDIR}/wp-content/plugins/black-studio-tinymce-widget/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1662,6 +1702,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/black-studio-tinymce-widget/ {
 # Whitelist Exception for https://wordpress.org/plugins/disable-comments/
 location ~ ^${WPSUBDIR}/wp-content/plugins/disable-comments/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1672,6 +1713,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/disable-comments/ {
 # Whitelist Exception for https://wordpress.org/plugins/better-wp-security/
 location ~ ^${WPSUBDIR}/wp-content/plugins/better-wp-security/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1682,6 +1724,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/better-wp-security/ {
 # Whitelist Exception for http://wlmsocial.com/
 location ~ ^${WPSUBDIR}/wp-content/plugins/wlm-social/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
@@ -1692,6 +1735,7 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wlm-social/ {
 # Whitelist Exception for mediagrid timthumb
 location ~ ^${WPSUBDIR}/wp-content/plugins/media-grid/classes/ {
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
