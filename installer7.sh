@@ -136,8 +136,8 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.14'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
-  AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
-  AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
+  AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/${AXEL_VER}.tar.gz"
+  AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
 fi
 
 if [ -f /etc/centminmod/custom_config.inc ]; then
