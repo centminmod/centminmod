@@ -3,6 +3,7 @@ c7tmpsetup() {
     echo "Update MariaDB 10 setting for ProtectHome=false"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
+ProtectSystem=false
 ProtectHome=false
 TDF
     systemctl daemon-reload

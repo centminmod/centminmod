@@ -343,6 +343,17 @@ c7mariadb_tmpdir() {
     echo "Update MariaDB 10 setting for ProtectHome=false"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
+ProtectSystem=false
+ProtectHome=false
+TDF
+  systemctl daemon-reload
+  systemctl restart mysql
+ elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
+    # fix https://community.centminmod.com/posts/54571/ CentOS 7.4 changes
+    echo "Update MariaDB 10 setting for ProtectSystem=false addition"
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectSystem=false
 ProtectHome=false
 TDF
   systemctl daemon-reload

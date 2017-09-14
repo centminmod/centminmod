@@ -370,6 +370,7 @@ if [ ! -d /etc/systemd/system/mariadb.service.d/ ]; then
 fi
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
+ProtectSystem=false
 ProtectHome=false
 TDF
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
