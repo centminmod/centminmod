@@ -1,3 +1,29 @@
+c7mariadb_tmpdir() {
+  # fix for mariadb 10.1.16 introduced ProtecHome=true setting
+  # https://jira.mariadb.org/browse/MDEV-10399
+  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    mkdir -p /etc/systemd/system/mariadb.service.d
+    echo "Update MariaDB 10 setting for ProtectHome=false"
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectSystem=false
+ProtectHome=false
+TDF
+  systemctl daemon-reload
+  systemctl restart mysql
+ elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
+    # fix https://community.centminmod.com/posts/54571/ CentOS 7.4 changes
+    echo "Update MariaDB 10 setting for ProtectSystem=false addition"
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectSystem=false
+ProtectHome=false
+TDF
+  systemctl daemon-reload
+  systemctl restart mysql
+  fi
+}
+
 varnishfour_setup() {
   if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
       rm -rf /etc/yum.repos.d/varnish-4.1.repo
@@ -699,6 +725,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   mariadb_errorlogfix
   libc_fix
   varnishfour_setup
+  c7mariadb_tmpdir
 fi
 
 }

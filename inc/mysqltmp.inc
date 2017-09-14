@@ -1,3 +1,15 @@
+c7tmpsetup() {
+  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Update MariaDB 10 setting for ProtectHome=false"
+cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
+[Service]
+ProtectSystem=false
+ProtectHome=false
+TDF
+    systemctl daemon-reload
+  fi
+}
+
 mysqltmpdir() {
 
 if [ -d "/home/mysqltmp" ]; then
@@ -6,4 +18,5 @@ if [ -d "/home/mysqltmp" ]; then
     fi
 fi
 
+c7tmpsetup
 }
