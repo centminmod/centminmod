@@ -1,0 +1,63 @@
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+
+# redirect from non-www to www 
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+#server {
+#            listen   ${DEDI_IP}80;
+#            server_name $vhostname;
+#            return 301 \$scheme://www.${vhostname}\$request_uri;
+#       }
+
+server {
+  $DEDI_LISTEN
+  server_name $vhostname www.$vhostname;
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
+  root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
+
+  location / {
+  include /usr/local/nginx/conf/503include-only.conf;
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
+
+  }
+
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  ${MULTIPHP_INCLUDES}
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}

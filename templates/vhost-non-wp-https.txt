@@ -1,0 +1,89 @@
+# Centmin Mod Getting Started Guide
+# must read http://centminmod.com/getstarted.html
+# For HTTP/2 SSL Setup
+# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+
+# redirect from www to non-www  forced SSL
+# uncomment, save file and restart Nginx to enable
+# if unsure use return 302 before using return 301
+# server {
+#       listen   ${DEDI_IP}80;
+#       server_name ${vhostname} www.${vhostname};
+#       return 302 https://\$server_name\$request_uri;
+# }
+
+server {
+  listen ${DEDI_IP}443 $LISTENOPT;
+  server_name $vhostname www.$vhostname;
+
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
+  include /usr/local/nginx/conf/ssl_include.conf;
+
+  $HTTPTWO_MAXFIELDSIZE
+  $HTTPTWO_MAXHEADERSIZE
+  # mozilla recommended
+  ssl_ciphers ${TLSONETHREE_CIPHERS}${CHACHACIPHERS}ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS;
+  ssl_prefer_server_ciphers   on;
+  $SPDY_HEADER
+
+  # before enabling HSTS line below read centminmod.com/nginx_domain_dns_setup.html#hsts
+  #add_header Strict-Transport-Security "max-age=31536000; includeSubdomains;";
+  #add_header X-Frame-Options SAMEORIGIN;
+  #add_header X-Xss-Protection "1; mode=block" always;
+  #add_header X-Content-Type-Options "nosniff" always;
+  $COMP_HEADER;
+  ssl_buffer_size 1369;
+  ssl_session_tickets on;
+  
+  # enable ocsp stapling
+  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver_timeout 10s;
+  #ssl_stapling on;
+  #ssl_stapling_verify on;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
+
+# ngx_pagespeed & ngx_pagespeed handler
+#include /usr/local/nginx/conf/pagespeed.conf;
+#include /usr/local/nginx/conf/pagespeedhandler.conf;
+#include /usr/local/nginx/conf/pagespeedstatslog.conf;
+
+  # limit_conn limit_per_ip 16;
+  # ssi  on;
+
+  access_log /home/nginx/domains/$vhostname/log/access.log $NGX_LOGFORMAT buffer=256k flush=5m;
+  error_log /home/nginx/domains/$vhostname/log/error.log;
+
+  include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
+  root /home/nginx/domains/$vhostname/public;
+  # uncomment cloudflare.conf include if using cloudflare for
+  # server and/or vhost site
+  #include /usr/local/nginx/conf/cloudflare.conf;
+  include /usr/local/nginx/conf/503include-main.conf;
+
+  location / {
+  include /usr/local/nginx/conf/503include-only.conf;
+
+# block common exploits, sql injections etc
+#include /usr/local/nginx/conf/block.conf;
+
+  # Enables directory listings when index file not found
+  #autoindex  on;
+
+  # Shows file listing times as local time
+  #autoindex_localtime on;
+
+  # Wordpress Permalinks example
+  #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
+
+  }
+
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
+  include /usr/local/nginx/conf/php.conf;
+  ${MULTIPHP_INCLUDES}
+  include /usr/local/nginx/conf/drop.conf;
+  #include /usr/local/nginx/conf/errorpage.conf;
+  include /usr/local/nginx/conf/vts_server.conf;
+}
