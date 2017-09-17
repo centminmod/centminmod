@@ -1031,8 +1031,9 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # uncomment, save file and restart Nginx to enable
 # if unsure use return 302 before using return 301
 # server {
-#   server_name ${vhostname} www.${vhostname};
-#    return 302 https://\$server_name\$request_uri;
+#       listen   ${DEDI_IP}80;
+#       server_name ${vhostname} www.${vhostname};
+#       return 302 https://\$server_name\$request_uri;
 # }
 
 server {

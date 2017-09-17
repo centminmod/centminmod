@@ -1015,7 +1015,7 @@ ENSS
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
-# For SPDY SSL Setup
+# For HTTP/2 SSL Setup
 # read http://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL

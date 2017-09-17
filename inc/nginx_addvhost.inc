@@ -188,7 +188,7 @@ if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
 cat > "/usr/local/nginx/conf/ssl_include.conf"<<EVS
 ssl_session_cache      shared:SSL:10m;
 ssl_session_timeout    60m;
-ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;  
+ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;
 EVS
 fi
 
@@ -686,7 +686,7 @@ server {
 
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
-  #add_header X-Content-Type-Options "nosniff" always;  
+  #add_header X-Content-Type-Options "nosniff" always;
 
   # limit_conn limit_per_ip 16;
   # ssi  on;
@@ -737,7 +737,7 @@ ENSS
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
-# For SPDY SSL Setup
+# For HTTP/2 SSL Setup
 # read http://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
@@ -779,7 +779,7 @@ server {
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
-  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;  
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-trusted.crt;
 
 # ngx_pagespeed & ngx_pagespeed handler
 #include /usr/local/nginx/conf/pagespeed.conf;
@@ -798,11 +798,6 @@ server {
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
-
-  # prevent access to ./directories and files
-  #location ~ (?:^|/)\. {
-  # deny all;
-  #}  
 
   location / {
   include /usr/local/nginx/conf/503include-only.conf;
@@ -871,11 +866,6 @@ server {
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
   include /usr/local/nginx/conf/503include-main.conf;
-
-  # prevent access to ./directories and files
-  #location ~ (?:^|/)\. {
-  # deny all;
-  #}  
 
   location / {
   include /usr/local/nginx/conf/503include-only.conf;
