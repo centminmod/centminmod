@@ -684,7 +684,7 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.12'
+  AXEL_VER='2.14.1'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS

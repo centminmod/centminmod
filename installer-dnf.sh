@@ -30,8 +30,9 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 AXEL='n'
 AXEL_VER='2.6'
 AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
-AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/${AXEL_VER}.tar.gz"
-AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
+AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
+AXEL_LINKLOCAL="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
+
 #######################################################
 ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
@@ -134,7 +135,7 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.12'
+  AXEL_VER='2.14.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEL_LINK="https://github.com/axel-download-accelerator/axel/archive/${AXEL_VER}.tar.gz"
   AXEL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/${AXEL_VER}.tar.gz"
