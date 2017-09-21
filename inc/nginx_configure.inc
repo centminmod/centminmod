@@ -995,6 +995,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   fi
 
 	if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+    if [ ! -f /var/log/nginx/vts.db ]; then
+      touch /var/log/nginx/vts.db
+      chown nginx /var/log/nginx/vts.db
+    fi
 		if [ -f /usr/bin/git ]; then
       if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_VHOSTSTATS" = [yY] ]]; then
         VTSOPT=" --add-dynamic-module=../nginx-module-vts"
