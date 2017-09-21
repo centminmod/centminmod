@@ -996,7 +996,14 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
 	if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
 		if [ -f /usr/bin/git ]; then
-			VTSOPT=" --add-module=../nginx-module-vts"
+      if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_VHOSTSTATS" = [yY] ]]; then
+        VTSOPT=" --add-dynamic-module=../nginx-module-vts"
+        if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
+          echo "load_module \"modules/ngx_http_vhost_traffic_status_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
+        fi
+      else
+			  VTSOPT=" --add-module=../nginx-module-vts"
+      fi
 			if [[ ! -d "${DIR_TMP}/nginx-module-vts" ]]; then
 				cd "$DIR_TMP"
 				time git clone "$NGX_VTSLINK" nginx-module-vts
