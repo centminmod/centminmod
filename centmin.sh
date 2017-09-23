@@ -492,6 +492,7 @@ PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
 PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
+PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
 
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension

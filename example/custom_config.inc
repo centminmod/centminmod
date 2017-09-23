@@ -200,6 +200,7 @@ PHPMAKETEST='n'              # set to y to enable make test after PHP make for d
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 
 PHPGEOIP_ALWAYS='y'          # GeoIP php extension is always reinstalled on php recompiles
+PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on php recompiles
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
@@ -211,6 +212,8 @@ PHPIMAGICK='y'               # Disable or Enable PHP ImagicK extension
 PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
 PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
+PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
+PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
 
 ##################################
