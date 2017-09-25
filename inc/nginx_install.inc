@@ -56,12 +56,18 @@ if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
     if [[ "$(grep '^#vhost_traffic_status_zone' /usr/local/nginx/conf/vts_http.conf)" ]]; then
     sed -i 's/#vhost_traffic_status_zone/vhost_traffic_status_zone/' /usr/local/nginx/conf/vts_http.conf
     fi
+    if [[ "$(grep '^#vhost_traffic_status_dump' /usr/local/nginx/conf/vts_http.conf)" ]]; then
+    sed -i 's/#vhost_traffic_status_dump/vhost_traffic_status_dump/' /usr/local/nginx/conf/vts_http.conf
+    fi
     if [[ "$(grep '^#vhost_traffic_status on' /usr/local/nginx/conf/vts_server.conf)" ]]; then
     sed -i 's/#vhost_traffic_status on/vhost_traffic_status on/' /usr/local/nginx/conf/vts_server.conf
     fi
 else
     if [[ "$(grep '^vhost_traffic_status_zone' /usr/local/nginx/conf/vts_http.conf)" ]]; then
     sed -i 's/vhost_traffic_status_zone/#vhost_traffic_status_zone/' /usr/local/nginx/conf/vts_http.conf
+    fi
+    if [[ "$(grep '^vhost_traffic_status_dump' /usr/local/nginx/conf/vts_http.conf)" ]]; then
+    sed -i 's/vhost_traffic_status_dump/#vhost_traffic_status_dump/' /usr/local/nginx/conf/vts_http.conf
     fi
     if [[ "$(grep '^vhost_traffic_status on' /usr/local/nginx/conf/vts_server.conf)" ]]; then
     sed -i 's/vhost_traffic_status on/#vhost_traffic_status on/' /usr/local/nginx/conf/vts_server.conf
