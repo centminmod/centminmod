@@ -2,23 +2,19 @@
 ###########################################################
 # installs IUS Community YUM Repository
 # https://iuscommunity.org/pages/Repos.html
-# for access to Python 2.7, 3.2, 3.3 and 3.4 on CentOS as default
+# for access to Python 3.6 on CentOS as default
 # is Python 2.6 for CentOS 6
 #
-# i.e. python 3.4
-# yum -y install python34u python34u-devel python34u-pip python34u-setuptools python34u-tools --enablerepo=ius
-# rpm -ql python34u python34u-devel python34u-pip python34u-setuptools python34u-tools python34u-tkinter
+# i.e. python 3.6
+# yum -y install python36u python36u-devel python36u-pip python36u-setuptools python36u-tools --enablerepo=ius
+# rpm -ql python36u python36u-devel python36u-pip python36u-setuptools python36u-tools python36u-tkinter
 # 
-# rpm -ql python34u python34u-pip | grep bin
-# /usr/bin/pydoc3
-# /usr/bin/pydoc3.4
-# /usr/bin/python3
-# /usr/bin/python3.4
-# /usr/bin/python3.4m
-# /usr/bin/pyvenv
-# /usr/bin/pyvenv-3.4
-# /usr/bin/pip3
-# /usr/bin/pip3.4
+# rpm -ql python36u python36u-pip | grep bin
+# /usr/bin/pydoc3.6
+# /usr/bin/python3.6
+# /usr/bin/python3.6m
+# /usr/bin/pyvenv-3.6
+# /usr/bin/pip3.6
 # 
 # https://docs.python.org/3/library/venv.html
 ###########################################################
@@ -149,17 +145,17 @@ fi
 fi # repo file check
 
 cecho "*************************************************" $boldgreen
-cecho "Installing Python 3.4" $boldgreen
+cecho "Installing Python 3.6" $boldgreen
 cecho "*************************************************" $boldgreen
 
 # install Python 3.4 besides system default Python 2.6
-yum -y install python34u python34u-devel python34u-pip python34u-setuptools python34u-tools --enablerepo=ius
-rpm -ql python34u python34u-devel python34u-pip python34u-setuptools python34u-tools python34u-tkinter | grep bin
+yum -y install python36u python36u-devel python36u-pip python36u-setuptools python36u-tools --enablerepo=ius
+rpm -ql python36u python36u-devel python36u-pip python36u-setuptools python36u-tools python36u-tkinter | grep bin
 
-} 2>&1 | tee ${CENTMINLOGDIR}/python34-install_${DT}.log
+} 2>&1 | tee ${CENTMINLOGDIR}/python36-install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/python34-install_${DT}.log
-echo "Python 3.4 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/python34-install_${DT}.log
+echo "" >> ${CENTMINLOGDIR}/python36-install_${DT}.log
+echo "Python 3.5 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/python36-install_${DT}.log
