@@ -981,7 +981,7 @@ echo ""
     if [ -s "${NGX_CACHEPURGEFILE}" ]; then
         cecho "ngx_cache_purge ${NGINX_CACHEPURGEVER} Archive found, skipping download..." $boldgreen
     else
-        download_cmd "${NGX_CACHEPURGE}" "$WGETRETRY" 
+        wget -c4 --progress=bar -O "${NGX_CACHEPURGEFILE}" "${NGX_CACHEPURGE}" --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_CACHEPURGEFILE} download failed." $boldgreen

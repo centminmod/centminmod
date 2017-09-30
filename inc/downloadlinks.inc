@@ -195,7 +195,8 @@ NGX_FANCYINDEXLINKFILE="ngx-fancyindex-${NGINX_FANCYINDEXVER}.tar.gz"
 NGX_FANCYINDEXLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_FANCYINDEXLINKFILE}"
 
 NGX_CACHEPURGEFILE="ngx_cache_purge-${NGINX_CACHEPURGEVER}.tar.gz"
-NGX_CACHEPURGE="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_CACHEPURGEFILE}"
+NGX_CACHEPURGE="https://github.com/nginx-modules/ngx_cache_purge/archive/${NGINX_CACHEPURGEVER}.tar.gz"
+#NGX_CACHEPURGE="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_CACHEPURGEFILE}"
 
 NGX_ACCESSKEYLINKFILE="Nginx-accesskey-2.0.3.tar.gz"
 NGX_ACCESSKEYLINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nginx/modules/${NGX_ACCESSKEYLINKFILE}"
