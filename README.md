@@ -1,3 +1,5 @@
+[![GitHub stars](https://img.shields.io/github/stars/centminmod/centminmod.svg?style=flat-square)](https://github.com/centminmod/centminmod/stargazers) [![GitHub forks](https://img.shields.io/github/forks/centminmod/centminmod.svg?style=flat-square)](https://github.com/centminmod/centminmod/network) [![GitHub issues](https://img.shields.io/github/issues/centminmod/centminmod.svg?style=flat-square)](https://github.com/centminmod/centminmod/issues) [![GitHub license](https://img.shields.io/badge/license-AGPL-blue.svg?style=flat-square)](https://raw.githubusercontent.com/centminmod/centminmod/master/license.txt)
+
 ![Centmin Mod](/centmin-mod-logo2.jpg)
 
 Centmin Mod can be installed via 2 different ways or latest install instructions on [Official Install Guide](https://centminmod.com/install.html):
