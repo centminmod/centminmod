@@ -923,7 +923,7 @@ ngxmoduletarball() {
     if [ -s "${NGX_FANCYINDEXLINKFILE}" ]; then
         cecho "ngx-fancyindex $NGINX_FANCYINDEXVER Archive found, skipping download..." $boldgreen
     else
-        wget -c4 --progress=bar "${NGX_FANCYINDEXLINK}" --tries=3 
+        wget -c4 --progress=bar -O "${NGX_FANCYINDEXLINKFILE}" "${NGX_FANCYINDEXLINK}" --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${NGX_FANCYINDEXLINKFILE} download failed." $boldgreen
