@@ -96,9 +96,12 @@ if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]];
     CENTOS_SIX='6'
 fi
 
+# Check for Redhat Enterprise Linux 7.x
 if [ "$CENTOSVER" == 'Enterprise' ]; then
-    CENTOSVER=$(cat /etc/redhat-release | awk '{ print $7 }')
-    OLS='y'
+    CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
+    if [[ "$(awk '{ print $1,$2 }' /etc/redhat-release)" = 'Red Hat' && "$(awk '{ print $7 }' /etc/redhat-release | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    fi
 fi
 
 if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
