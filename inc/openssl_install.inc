@@ -344,7 +344,16 @@ installopenssl() {
                     TLSONETHREEOPT=""
                     TLSONETHREE_DETECT='n'
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}
+                # openssl 1.1. use new native threading API
+                # https://www.openssl.org/news/cl110.txt
+                if [[ "${OPENSSL_THREADS}" = [nN] ]]; then
+                    OPENSSL_THREADSOPT=' no-threads'
+                elif [[ "${OPENSSL_THREADS}" = [yY] ]]; then
+                    OPENSSL_THREADSOPT=""
+                elif [[ ! "${OPENSSL_THREADS}" ]]; then
+                    OPENSSL_THREADSOPT=""
+                fi
+                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}
             else
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
