@@ -195,6 +195,7 @@ LUACJSONVER='2.1.0.5'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
+PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_CUSTOMSSL='n'            # compile php-fpm against openssl 1.0.2+ or libressl 2.3+ whichever nginx uses
 PHPMAKETEST='n'              # set to y to enable make test after PHP make for diagnostic purposes
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
