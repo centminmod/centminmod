@@ -214,6 +214,7 @@ else
 	       PRIOREXISTS=1
                 else
                         echo "setting yum priorities for CentOS-Base.repo"
+if [[ "$REDHAT_SEVEN" != [yY] ]]; then
                 ex -s /etc/yum.repos.d/CentOS-Base.repo << EOF
 :/\[base/ , /gpgkey/
 :a
@@ -244,6 +245,7 @@ priority=2
 :w
 :q
 EOF
+fi # check for redhat 7
         
         cecho "*************************************************" $boldgreen
         cecho "Fixing CentOS-Base.repo YUM Priorities" $boldgreen
@@ -261,6 +263,7 @@ EOF
 	       PRIOREXISTS=1
                 else
                         echo "setting yum priorities for CentOS-CR.repo"
+if [[ "$REDHAT_SEVEN" != [yY] ]]; then
                 ex -s /etc/yum.repos.d/CentOS-CR.repo << EOF
 :/\[cr/ , /gpgkey/
 :a
@@ -269,6 +272,7 @@ priority=1
 :w
 :q
 EOF
+fi # check for redhat 7
         
         cecho "*************************************************" $boldgreen
         cecho "Fixing CentOS-CR.repo YUM Priorities" $boldgreen

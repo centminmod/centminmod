@@ -81,6 +81,7 @@ if [ "$CENTOSVER" == 'Enterprise' ]; then
     CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
     if [[ "$(awk '{ print $1,$2 }' /etc/redhat-release)" = 'Red Hat' && "$(awk '{ print $7 }' /etc/redhat-release | cut -d . -f1)" = '7' ]]; then
         CENTOS_SEVEN='7'
+        REDHAT_SEVEN='y'
     fi
 fi
 
