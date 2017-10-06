@@ -29,6 +29,7 @@ nginxzlib_install() {
     fi
     pushd "$DIR_TMP"
     cd "zlib-${NGINX_ZLIBVER}"
+    make clean
     ./configure
     make${MAKETHREADS}
     make install

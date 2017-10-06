@@ -190,6 +190,7 @@ installopenssl
     fi
 
 luajitinstall
+nginxzlib_install
 
     # Install nginx
     cd $DIR_TMP
