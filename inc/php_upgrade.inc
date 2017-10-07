@@ -369,6 +369,7 @@ echo "..."
     chmod 644 /usr/local/lib/php.ini
 
 phpsededit
+phptuning
 
 PHPDIFF=$(diff /usr/local/lib/php.ini /usr/local/lib/php.ini-oldversion_$DT)
 echo ""

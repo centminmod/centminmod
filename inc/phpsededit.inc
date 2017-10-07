@@ -4,73 +4,123 @@ phptuning() {
         PHP_CPUCOUNT=$(grep -c "processor" /proc/cpuinfo)
         if [[ "${PHP_CPUCOUNT}" -ge '4' && "${PHP_CPUCOUNT}" -lt '6' && "$TOTALMEM" -gt '1049576' && "$TOTALMEM" -le '2097152' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 20|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 10|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 6|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 16|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '4' && "${PHP_CPUCOUNT}" -lt '6' && "$TOTALMEM" -gt '2097152' && "$TOTALMEM" -le '3145728' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 24|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 12|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 8|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 20|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '4' && "${PHP_CPUCOUNT}" -lt '6' && "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 32|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 16|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 12|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 24|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '4' && "${PHP_CPUCOUNT}" -lt '6' && "$TOTALMEM" -gt '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 36|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 20|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 12|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 30|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '6' && "${PHP_CPUCOUNT}" -lt '8' && "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 40|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 24|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 18|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 36|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '6' && "${PHP_CPUCOUNT}" -lt '8' && "$TOTALMEM" -gt '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 48|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 30|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 24|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 42|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))            
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '8' && "${PHP_CPUCOUNT}" -lt '16' && "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 48|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 20|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 20|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 40|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))            
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '8' && "${PHP_CPUCOUNT}" -lt '12' && "$TOTALMEM" -gt '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 54|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 30|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 30|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 48|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))            
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '13' && "${PHP_CPUCOUNT}" -lt '16' && "$TOTALMEM" -gt '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 64|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 48|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 48|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 64|" /usr/local/etc/php-fpm.conf
+            # 6-4-2-6 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 6))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 6))            
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         elif [[ "${PHP_CPUCOUNT}" -ge '17' && "$TOTALMEM" -gt '4194304' ]]; then
             # min_spare_servers + (max_spare_servers - min_spare_servers) / 2
-            sed -i "s|pm.max_children = .*|pm.max_children = 68|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.start_servers = .*|pm.start_servers = 34|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = 34|" /usr/local/etc/php-fpm.conf
-            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = 64|" /usr/local/etc/php-fpm.conf
+            # 5-4-2-5 formula
+            PHP_MAXCHILDREN=$((${PHP_CPUCOUNT} * 5))
+            PHP_STARTSERVERS=$((${PHP_CPUCOUNT} * 4))
+            PHP_MINSPARESERVERS=$((${PHP_CPUCOUNT} * 2))
+            PHP_MAXSPARESERVERS=$((${PHP_CPUCOUNT} * 5))            
+            sed -i "s|pm.max_children = .*|pm.max_children = ${PHP_MAXCHILDREN}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.start_servers = .*|pm.start_servers = ${PHP_STARTSERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.min_spare_servers = .*|pm.min_spare_servers = ${PHP_MINSPARESERVERS}|" /usr/local/etc/php-fpm.conf
+            sed -i "s|pm.max_spare_servers = .*|pm.max_spare_servers = ${PHP_MAXSPARESERVERS}|" /usr/local/etc/php-fpm.conf
             sed -i "s|pm.max_requests = .*|pm.max_requests = 2000|" /usr/local/etc/php-fpm.conf
         fi
     fi
