@@ -1,3 +1,22 @@
+nginxlargefile_fix() {
+  nginxfix_count=0
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_max_body_size 50m' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|client_max_body_size 50m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=1
+  fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'output_buffers   8 256k;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|output_buffers   8 256k;|output_buffers   1 512k;|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|send_timeout     10s;|send_timeout     30s;|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$nginxfix_count" -ge '1' ]]; then
+    service nginx restart >/dev/null 2>&1
+  fi
+}
+
 disablelogs() {
   # access and error log in nginx.conf are not needed so disable them
   if [[ -f /usr/local/nginx/conf/nginx.conf && -z "$(grep 'access_log  off' /usr/local/nginx/conf/nginx.conf)" ]]; then
@@ -1941,6 +1960,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   libc_fix
   varnishfour_setup
   disablelogs
+  nginxlargefile_fix
 fi
 
 }
