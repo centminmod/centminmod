@@ -1,5 +1,9 @@
 nginxlargefile_fix() {
   nginxfix_count=0
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_max_body_size 10m' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|client_max_body_size 10m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=1
+  fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_max_body_size 50m' /usr/local/nginx/conf/nginx.conf)" ]]; then
     sed -i 's|client_max_body_size 50m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
     nginxfix_count=1
@@ -10,6 +14,10 @@ nginxlargefile_fix() {
   fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
     sed -i 's|send_timeout     10s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     15s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|send_timeout     15s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
     nginxfix_count=$(($nginxfix_count+1))
   fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     30s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
