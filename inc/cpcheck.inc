@@ -9,6 +9,10 @@ nginxlargefile_fix() {
       sed -i 's|client_max_body_size 50m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=1
     fi
+    if [[ "$(grep -w 'client_max_body_size 200m' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_max_body_size 200m|client_max_body_size 1024m|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=1
+    fi
     if [[ "$(grep -w 'output_buffers   8 256k;' /usr/local/nginx/conf/nginx.conf)" ]]; then
       sed -i 's|output_buffers   8 256k;|output_buffers   1 512k;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
@@ -57,27 +61,29 @@ nginxlargefile_fix() {
         nginxfix_count=$(($nginxfix_count+1))
       fi
     fi
-    # auto calculate client_max_body_size size and auto tune in nginx.conf to largest file
-    # detected in /home/nginx/domains/*/public vhost public web roots and is greater than
-    # the size of the existing nginx.conf set client_max_body_size directive only
-    GET_CLIENTMAXBODY=$(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf)
-    if [[ "$(echo $GET_CLIENTMAXBODY | grep 'm')" ]]; then
-      GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|m;||')))
-      CLIENTMAXBODYSIZEMB="$GET_CLIENTMAXBODYSIZE"
-      CLIENTMAXBODYSIZEKB=$(($GET_CLIENTMAXBODYSIZE * 1024))
-    elif [[ "$(echo $GET_CLIENTMAXBODY | grep 'k')" ]]; then
-      GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|k;||')))
-      CLIENTMAXBODYSIZEMB=$(($GET_CLIENTMAXBODYSIZE / 1024))
-      CLIENTMAXBODYSIZEKB="$GET_CLIENTMAXBODYSIZE"
-    fi
-    CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|awk 'NR == 1 {print $1}')
-    if [[ "$CHECKMAXFILESIZE_VHOSTS" -ge '1' ]]; then
-      MAXFILESIZE_VHOSTS=$(echo $(($CHECKMAXFILESIZE_VHOSTS * 1024 / 1000 / 1024)))
-      CLIENTMAXBODYSIZEKB_THRESHOLD='5242880'
-      if [[ "$MAXFILESIZE_VHOSTS" -ge "$CLIENTMAXBODYSIZEKB" && "$MAXFILESIZE_VHOSTS" -le "$CLIENTMAXBODYSIZEKB_THRESHOLD" ]]; then
-          SET_MAXBODYSIZE=$(($MAXFILESIZE_VHOSTS/1024))
-          sed -i "s|client_max_body_size .*|client_max_body_size ${SET_MAXBODYSIZE}m;|" /usr/local/nginx/conf/nginx.conf
-          nginxfix_count=$(($nginxfix_count+1))
+    if [[ "$AUTOTUNE_CLIENTMAXBODY" = [yY] ]]; then
+      # auto calculate client_max_body_size size and auto tune in nginx.conf to largest file
+      # detected in /home/nginx/domains/*/public vhost public web roots and is greater than
+      # the size of the existing nginx.conf set client_max_body_size directive only
+      GET_CLIENTMAXBODY=$(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf)
+      if [[ "$(echo $GET_CLIENTMAXBODY | grep 'm')" ]]; then
+        GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|m;||')))
+        CLIENTMAXBODYSIZEMB="$GET_CLIENTMAXBODYSIZE"
+        CLIENTMAXBODYSIZEKB=$(($GET_CLIENTMAXBODYSIZE * 1024))
+      elif [[ "$(echo $GET_CLIENTMAXBODY | grep 'k')" ]]; then
+        GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|k;||')))
+        CLIENTMAXBODYSIZEMB=$(($GET_CLIENTMAXBODYSIZE / 1024))
+        CLIENTMAXBODYSIZEKB="$GET_CLIENTMAXBODYSIZE"
+      fi
+      CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|awk 'NR == 1 {print $1}')
+      if [[ "$CHECKMAXFILESIZE_VHOSTS" -ge '1' ]]; then
+        MAXFILESIZE_VHOSTS=$(echo $(($CHECKMAXFILESIZE_VHOSTS * 1024 / 1000 / 1024)))
+        CLIENTMAXBODYSIZEKB_THRESHOLD='5242880'
+        if [[ "$MAXFILESIZE_VHOSTS" -ge "$CLIENTMAXBODYSIZEKB" && "$MAXFILESIZE_VHOSTS" -le "$CLIENTMAXBODYSIZEKB_THRESHOLD" ]]; then
+            SET_MAXBODYSIZE=$(($MAXFILESIZE_VHOSTS/1024))
+            sed -i "s|client_max_body_size .*|client_max_body_size ${SET_MAXBODYSIZE}m;|" /usr/local/nginx/conf/nginx.conf
+            nginxfix_count=$(($nginxfix_count+1))
+        fi
       fi
     fi
     if [[ "$nginxfix_count" -ge '1' ]]; then

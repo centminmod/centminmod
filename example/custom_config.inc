@@ -85,6 +85,7 @@ NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self si
 NGINXBACKUP='y'
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
+AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
 NGINXUPGRADESLEEP='3'
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NSD_INSTALL='y'              # Install NSD (DNS Server)

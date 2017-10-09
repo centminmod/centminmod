@@ -367,6 +367,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # General Configuration
 NGINXUPGRADESLEEP='3'
+AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NSD_INSTALL='n'              # Install NSD (DNS Server)
