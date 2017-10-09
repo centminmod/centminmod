@@ -33,6 +33,16 @@ nginxlargefile_fix() {
     nginxfix_count=$(($nginxfix_count+1))
   fi
   HOME_DISKTYPE=$(df -T /home | tail -1 | awk '{print $2}')
+  if [[ -f /usr/local/nginx/conf/nginx.conf && ! "$(grep -w 'directio_alignment' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
+      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
+    elif [[ "$HOME_DISKTYPE" = 'xfs' ]]; then
+      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
+    else
+      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
   if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
     if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'directio_alignment 4096;' /usr/local/nginx/conf/nginx.conf)" ]]; then
       sed -i 's|directio_alignment 4096;|directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
@@ -42,14 +52,6 @@ nginxlargefile_fix() {
     if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'directio_alignment 512;' /usr/local/nginx/conf/nginx.conf)" ]]; then
       sed -i 's|directio_alignment 512;|directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
-    fi
-  elif [[ -f /usr/local/nginx/conf/nginx.conf && ! "$(grep -w 'directio_alignment' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
-      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
-    elif [[ "$HOME_DISKTYPE" = 'xfs' ]]; then
-      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
-    else
-      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
     fi
   fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$nginxfix_count" -ge '1' ]]; then
