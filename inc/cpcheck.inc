@@ -9,7 +9,11 @@ nginxlargefile_fix() {
     nginxfix_count=$(($nginxfix_count+1))
   fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|send_timeout     10s;|send_timeout     30s;|' /usr/local/nginx/conf/nginx.conf
+    sed -i 's|send_timeout     10s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     30s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|send_timeout     30s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
     nginxfix_count=$(($nginxfix_count+1))
   fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_body_timeout 10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
