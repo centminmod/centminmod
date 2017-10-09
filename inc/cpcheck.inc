@@ -70,9 +70,9 @@ nginxlargefile_fix() {
       CLIENTMAXBODYSIZEMB=$(($GET_CLIENTMAXBODYSIZE / 1024))
       CLIENTMAXBODYSIZEKB="$GET_CLIENTMAXBODYSIZE"
     fi
-    CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|head -n1 | awk '{print $1}')
+    CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|awk 'NR == 1 {print $1}')
     if [[ "$CHECKMAXFILESIZE_VHOSTS" -ge '1' ]]; then
-      MAXFILESIZE_VHOSTS=$(echo $(($(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|head -n1 | awk '{print $1}') * 1024 / 1000 / 1024)))
+      MAXFILESIZE_VHOSTS=$(echo $(($(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|awk 'NR == 1 {print $1}') * 1024 / 1000 / 1024)))
       if [[ "$MAXFILESIZE_VHOSTS" -ge "$CLIENTMAXBODYSIZEKB" ]]; then
           SET_MAXBODYSIZE=$(($MAXFILESIZE_VHOSTS/1024))
           sed -i "s|client_max_body_size .*|client_max_body_size ${SET_MAXBODYSIZE}m;|" /usr/local/nginx/conf/nginx.conf
