@@ -33,6 +33,7 @@ nginxlargefile_fix() {
     nginxfix_count=$(($nginxfix_count+1))
   fi
   HOME_DISKTYPE=$(df -T /home | tail -1 | awk '{print $2}')
+  # check if directio_alignment directive exists in nginx.conf and auto add if needed
   if [[ -f /usr/local/nginx/conf/nginx.conf && ! "$(grep -w 'directio_alignment' /usr/local/nginx/conf/nginx.conf)" ]]; then
     if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
       sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
@@ -43,6 +44,7 @@ nginxlargefile_fix() {
     fi
     nginxfix_count=$(($nginxfix_count+1))
   fi
+  # check if filesystem is ext4 or xfs and set directio_alignment appropriately
   if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
     if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'directio_alignment 4096;' /usr/local/nginx/conf/nginx.conf)" ]]; then
       sed -i 's|directio_alignment 4096;|directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
@@ -53,6 +55,17 @@ nginxlargefile_fix() {
       sed -i 's|directio_alignment 512;|directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
     fi
+  fi
+  # auto calculate client_max_body_size size and auto tune in nginx.conf to largest file
+  # detected in /home/nginx/domains/*/public vhost public web roots and is greater than
+  # 200 MB in size
+  MAXFILESIZE_VHOSTS=$(echo $(($(find /home/nginx/domains/*/public -printf '%s %p\n'|sort -nr|head -n1 | awk '{print $1}') * 1024 / 1000 / 1024)))
+  if [[ "$MAXFILESIZE_VHOSTS" -ge '204800' ]]; then
+      SET_MAXBODYSIZE=$(($MAXFILESIZE_VHOSTS/1024))
+      if [[ -f /usr/local/nginx/conf/nginx.conf ]]; then
+        sed -i "s|client_max_body_size .*|client_max_body_size ${SET_MAXBODYSIZE}m;|" /usr/local/nginx/conf/nginx.conf
+        nginxfix_count=$(($nginxfix_count+1))
+      fi
   fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$nginxfix_count" -ge '1' ]]; then
     service nginx restart >/dev/null 2>&1
