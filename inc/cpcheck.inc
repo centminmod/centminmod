@@ -12,6 +12,14 @@ nginxlargefile_fix() {
     sed -i 's|send_timeout     10s;|send_timeout     30s;|' /usr/local/nginx/conf/nginx.conf
     nginxfix_count=$(($nginxfix_count+1))
   fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_body_timeout 10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|client_body_timeout 10s;|client_body_timeout 60s;|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_header_timeout  5s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|client_header_timeout  5s;|client_header_timeout  10s;|' /usr/local/nginx/conf/nginx.conf
+    nginxfix_count=$(($nginxfix_count+1))
+  fi
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$nginxfix_count" -ge '1' ]]; then
     service nginx restart >/dev/null 2>&1
   fi
