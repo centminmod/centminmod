@@ -1,74 +1,87 @@
 nginxlargefile_fix() {
-  nginxfix_count=0
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_max_body_size 10m' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|client_max_body_size 10m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=1
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_max_body_size 50m' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|client_max_body_size 50m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=1
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'output_buffers   8 256k;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|output_buffers   8 256k;|output_buffers   1 512k;|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|send_timeout     10s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     15s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|send_timeout     15s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'send_timeout     30s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|send_timeout     30s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_body_timeout 10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|client_body_timeout 10s;|client_body_timeout 60s;|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'client_header_timeout  5s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-    sed -i 's|client_header_timeout  5s;|client_header_timeout  10s;|' /usr/local/nginx/conf/nginx.conf
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  HOME_DISKTYPE=$(df -T /home | tail -1 | awk '{print $2}')
-  # check if directio_alignment directive exists in nginx.conf and auto add if needed
-  if [[ -f /usr/local/nginx/conf/nginx.conf && ! "$(grep -w 'directio_alignment' /usr/local/nginx/conf/nginx.conf)" ]]; then
+  if [[ -f /usr/local/nginx/conf/nginx.conf ]]; then
+    nginxfix_count=0
+    if [[ "$(grep -w 'client_max_body_size 10m' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_max_body_size 10m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=1
+    fi
+    if [[ "$(grep -w 'client_max_body_size 50m' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_max_body_size 50m|client_max_body_size 200m|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=1
+    fi
+    if [[ "$(grep -w 'output_buffers   8 256k;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|output_buffers   8 256k;|output_buffers   1 512k;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    if [[ "$(grep -w 'send_timeout     10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|send_timeout     10s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    if [[ "$(grep -w 'send_timeout     15s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|send_timeout     15s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    if [[ "$(grep -w 'send_timeout     30s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|send_timeout     30s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    if [[ "$(grep -w 'client_body_timeout 10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_body_timeout 10s;|client_body_timeout 60s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    if [[ "$(grep -w 'client_header_timeout  5s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_header_timeout  5s;|client_header_timeout  10s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    HOME_DISKTYPE=$(df -T /home | tail -1 | awk '{print $2}')
+    # check if directio_alignment directive exists in nginx.conf and auto add if needed
+    if [[ ! "$(grep -w 'directio_alignment' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
+        sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
+      elif [[ "$HOME_DISKTYPE" = 'xfs' ]]; then
+        sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
+      else
+        sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
+      fi
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    # check if filesystem is ext4 or xfs and set directio_alignment appropriately
     if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
-      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
-    elif [[ "$HOME_DISKTYPE" = 'xfs' ]]; then
-      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
-    else
-      sed -i 's|^ directio  4m;| directio  4m;\n directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
-    fi
-    nginxfix_count=$(($nginxfix_count+1))
-  fi
-  # check if filesystem is ext4 or xfs and set directio_alignment appropriately
-  if [[ "$HOME_DISKTYPE" = 'ext4' ]]; then
-    if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'directio_alignment 4096;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-      sed -i 's|directio_alignment 4096;|directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
-      nginxfix_count=$(($nginxfix_count+1))
-    fi
-  elif [[ "$HOME_DISKTYPE" = 'xfs' ]]; then
-    if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep -w 'directio_alignment 512;' /usr/local/nginx/conf/nginx.conf)" ]]; then
-      sed -i 's|directio_alignment 512;|directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
-      nginxfix_count=$(($nginxfix_count+1))
-    fi
-  fi
-  # auto calculate client_max_body_size size and auto tune in nginx.conf to largest file
-  # detected in /home/nginx/domains/*/public vhost public web roots and is greater than
-  # 200 MB in size
-  MAXFILESIZE_VHOSTS=$(echo $(($(find /home/nginx/domains/*/public -printf '%s %p\n'|sort -nr|head -n1 | awk '{print $1}') * 1024 / 1000 / 1024)))
-  if [[ "$MAXFILESIZE_VHOSTS" -ge '204800' ]]; then
-      SET_MAXBODYSIZE=$(($MAXFILESIZE_VHOSTS/1024))
-      if [[ -f /usr/local/nginx/conf/nginx.conf ]]; then
-        sed -i "s|client_max_body_size .*|client_max_body_size ${SET_MAXBODYSIZE}m;|" /usr/local/nginx/conf/nginx.conf
+      if [[ "$(grep -w 'directio_alignment 4096;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+        sed -i 's|directio_alignment 4096;|directio_alignment 512;|' /usr/local/nginx/conf/nginx.conf
         nginxfix_count=$(($nginxfix_count+1))
       fi
-  fi
-  if [[ -f /usr/local/nginx/conf/nginx.conf && "$nginxfix_count" -ge '1' ]]; then
-    service nginx restart >/dev/null 2>&1
+    elif [[ "$HOME_DISKTYPE" = 'xfs' ]]; then
+      if [[ "$(grep -w 'directio_alignment 512;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+        sed -i 's|directio_alignment 512;|directio_alignment 4096;|' /usr/local/nginx/conf/nginx.conf
+        nginxfix_count=$(($nginxfix_count+1))
+      fi
+    fi
+    # auto calculate client_max_body_size size and auto tune in nginx.conf to largest file
+    # detected in /home/nginx/domains/*/public vhost public web roots and is greater than
+    # the size of the existing nginx.conf set client_max_body_size directive only
+    GET_CLIENTMAXBODY=$(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf)
+    if [[ "$(echo $GET_CLIENTMAXBODY | grep 'm')" ]]; then
+      GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|m;||')))
+      CLIENTMAXBODYSIZEMB="$GET_CLIENTMAXBODYSIZE"
+      CLIENTMAXBODYSIZEKB=$(($GET_CLIENTMAXBODYSIZE * 1024))
+    elif [[ "$(echo $GET_CLIENTMAXBODY | grep 'k')" ]]; then
+      GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|k;||')))
+      CLIENTMAXBODYSIZEMB=$(($GET_CLIENTMAXBODYSIZE / 1024))
+      CLIENTMAXBODYSIZEKB="$GET_CLIENTMAXBODYSIZE"
+    fi
+    CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|head -n1 | awk '{print $1}')
+    if [[ "$CHECKMAXFILESIZE_VHOSTS" -ge '1' ]]; then
+      MAXFILESIZE_VHOSTS=$(echo $(($(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|head -n1 | awk '{print $1}') * 1024 / 1000 / 1024)))
+      if [[ "$MAXFILESIZE_VHOSTS" -ge "$CLIENTMAXBODYSIZEKB" ]]; then
+          SET_MAXBODYSIZE=$(($MAXFILESIZE_VHOSTS/1024))
+          sed -i "s|client_max_body_size .*|client_max_body_size ${SET_MAXBODYSIZE}m;|" /usr/local/nginx/conf/nginx.conf
+          nginxfix_count=$(($nginxfix_count+1))
+      fi
+    fi
+    if [[ "$nginxfix_count" -ge '1' ]]; then
+      service nginx restart >/dev/null 2>&1
+    fi
   fi
 }
 
