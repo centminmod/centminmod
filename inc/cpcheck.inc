@@ -629,29 +629,32 @@ gitenv_askupdate() {
 }
 
 wgetver_check() {
-  if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
-      if [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/sbin/nginx ]]; then
-        echo "update wget to ${WGET_VERSION} version... one time task"
-        sleep 6
-        "${SCRIPT_DIR}/addons/wget.sh" install
+  # only check if on 64bit OS
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+      if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+        if [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/sbin/nginx ]]; then
+          echo "update wget to ${WGET_VERSION} version... one time task"
+          sleep 6
+          "${SCRIPT_DIR}/addons/wget.sh" install
+        fi
       fi
+    elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      echo "fix pcre install for missing UTF8 support... one time task"
+      sleep 6
+      "${SCRIPT_DIR}/addons/wget.sh" pcre
+    elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      echo "add pcre jit support... one time task"
+      sleep 6
+      "${SCRIPT_DIR}/addons/wget.sh" pcre
     fi
-  elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    echo "fix pcre install for missing UTF8 support... one time task"
-    sleep 6
-    "${SCRIPT_DIR}/addons/wget.sh" pcre
-  elif [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    echo "add pcre jit support... one time task"
-    sleep 6
-    "${SCRIPT_DIR}/addons/wget.sh" pcre
-  fi
-  if [[ "$(uname -m)" != 'x86_64' ]]; then
-    if [ -f /root/.wgetrc ]; then
-      \cp -fp /root/.wgetrc /root/.wgetrc-bak
-      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
-    else
-      echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+    if [[ "$(uname -m)" != 'x86_64' ]]; then
+      if [ -f /root/.wgetrc ]; then
+        \cp -fp /root/.wgetrc /root/.wgetrc-bak
+        echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+      else
+        echo "ca_certificate=/etc/pki/tls/certs/ca-bundle.crt" > /root/.wgetrc
+      fi
     fi
   fi
 }
