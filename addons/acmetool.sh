@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.33'
+ACMEVER='1.0.34'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -642,7 +642,7 @@ echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/
 echo "sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x#   return 302 https://\$server_name\$request_uri;|   return 302 https://\$server_name\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i "s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 echo "sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
 
@@ -1050,7 +1050,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 #x# server {
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
-#x#   return 302 https://\$server_name\$request_uri;
+#x#   return 302 https://${vhostname}\$request_uri;
 #x#   include /usr/local/nginx/conf/staticfiles.conf;
 #x# }
 ESU
@@ -1105,7 +1105,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 #x# server {
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
-#x#   return 302 https://\$server_name\$request_uri;
+#x#   return 302 https://${vhostname}\$request_uri;
 #x#   include /usr/local/nginx/conf/staticfiles.conf;
 #x# }
 ESV
@@ -1135,7 +1135,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 #x# server {
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
-#x#   return 302 https://\$server_name\$request_uri;
+#x#   return 302 https://${vhostname}\$request_uri;
 #x#   include /usr/local/nginx/conf/staticfiles.conf;
 #x# }
 
@@ -1242,7 +1242,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # server {
 #       listen   ${DEDI_IP}80;
 #       server_name ${vhostname} www.${vhostname};
-#       return 302 https://\$server_name\$request_uri;
+#       return 302 https://${vhostname}\$request_uri;
 # }
 
 server {
