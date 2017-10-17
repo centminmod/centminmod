@@ -92,13 +92,20 @@ CENTOSSEVENEPELLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSE
 if [ ! -f /etc/yum.repos.d/epel.repo ]; then
 # dynamic mirror check for EPEL
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-	if [[ "$CENTOS_SEVEN" = '7' ]]; then
-	CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
-	CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
-	CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
-	CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
-	CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
-	fi
+  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$REDHAT_SEVEN" -eq '7' ]]; then
+      CENTOSSEVENEPEL_MIRRORURL=$(curl -4 -sI https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | awk '/Location: / {print $2}')
+      CENTOSSEVENEPEL_MIRRORURLFILE=$(curl -4 -sL https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | grep -o '<a .*href=.*>' | sed -e 's/<a /\n<a /g' | sed -e 's/<a .*href=['"'"'"]//' -e 's/["'"'"'].*$//' -e '/^$/ d' | grep 'epel-release' | grep 'rpm')
+      CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
+      CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
+    else
+      CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
+      CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
+      CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
+      CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
+      CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
+    fi
+  fi
 	
 	if [[ "$CENTOS_SIX" = '6' ]]; then
 	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/6/x86_64/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
