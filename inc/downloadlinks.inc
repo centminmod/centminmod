@@ -93,7 +93,7 @@ if [ ! -f /etc/yum.repos.d/epel.repo ]; then
 # dynamic mirror check for EPEL
 if [[ "$(uname -m)" = 'x86_64' ]]; then
 	if [[ "$CENTOS_SEVEN" = '7' ]]; then
-	CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/7/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSEVENEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
 	CENTOSSEVENEPEL_MIRRORURL=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL%/*}/)
 	CENTOSSEVENEPEL_MIRRORURLFILE=$(echo ${CENTOSSEVENEPEL_MIRRORFULLURL##*/})
 	CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
@@ -101,7 +101,7 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
 	fi
 	
 	if [[ "$CENTOS_SIX" = '6' ]]; then
-	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/6/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/6/x86_64/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
 	CENTOSSIXEPEL_MIRRORURL=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL%/*}/)
 	CENTOSSIXEPEL_MIRRORURLFILE=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL##*/})
 	CENTOSSIXEPELFILE="$CENTOSSIXEPEL_MIRRORURLFILE"
@@ -109,7 +109,7 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
 	fi
 	
 	if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
-	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/5/x86_64/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/5/x86_64/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
 	CENTOSFIVEEPEL_MIRRORURL=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL%/*}/)
 	CENTOSFIVEEPEL_MIRRORURLFILE=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL##*/})
 	CENTOSFIVEEPELFILE="$CENTOSFIVEEPEL_MIRRORURLFILE"
@@ -117,7 +117,7 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
 	fi
 else
 	if [[ "$CENTOS_SIX" = '6' ]]; then
-	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/6/i386/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSSIXEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/6/i386/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
 	CENTOSSIXEPEL_MIRRORURL=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL%/*}/)
 	CENTOSSIXEPEL_MIRRORURLFILE=$(echo ${CENTOSSIXEPEL_MIRRORFULLURL##*/})
 	CENTOSSIXEPELFILE="$CENTOSSIXEPEL_MIRRORURLFILE"
@@ -125,7 +125,7 @@ else
 	fi
 	
 	if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
-	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly http://download.fedoraproject.org/pub/epel/5/i386/repoview/epel-release.html | grep 'rpm' | awk -F " " '{print $2}')
+	CENTOSFIVEEPEL_MIRRORFULLURL=$(lynx -dump -listonly https://download.fedoraproject.org/pub/epel/5/i386/ | grep epel-release | grep 'rpm' | awk -F " " '{print $2}')
 	CENTOSFIVEEPEL_MIRRORURL=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL%/*}/)
 	CENTOSFIVEEPEL_MIRRORURLFILE=$(echo ${CENTOSFIVEEPEL_MIRRORFULLURL##*/})
 	CENTOSFIVEEPELFILE="$CENTOSFIVEEPEL_MIRRORURLFILE"
