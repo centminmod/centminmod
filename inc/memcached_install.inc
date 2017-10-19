@@ -380,11 +380,20 @@ PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+    MEMCACHEDPHP_VER="$MEMCACHEDPHP_SEVENVER"
+    PHPEXT_MEMCACHEDLINKFILE="memcached-${MEMCACHEDPHP_VER}.tgz"
+    PHPEXT_MEMCACHEDLINK="https://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
+    PHPEXT_MEMCACHEDLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
     echo
     echo "compiling memcached PHP extension for PHP 7.x ..."
-    rm -rf memcached-php7
-    time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
-    cd memcached-php7
+    # rm -rf memcached-php7
+    # time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+    # cd memcached-php7
+    if [ ! -d "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}" ]; then
+        rm -rf "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}*"
+        memcachedphplocaltarball
+    fi
+    cd "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
