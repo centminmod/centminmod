@@ -87,7 +87,7 @@ if [[ "$PHPMUVER" > 5.5 ]]; then
 	echo "You can compile Zend OPcache (Zend Optimizer Plus+) support"
 	echo "as an alternative to using APC Cache or Xcache cache."
 	echo "But Zend OPcache only provides PHP opcode cache and"
-	echo "DOESN'T do data caching, so if you web apps such as Wordpress,"
+	echo "DOESN'T do data caching, so if your web apps such as Wordpress,"
 	echo "Drupal or vBulletin require data caching to APC or Xcache,"
 	echo "it won't work with Zend OPcache."
 	echo ""
