@@ -14,7 +14,7 @@ ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="https://centminmod.com/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
-WGET_VERSION='1.18'
+WGET_VERSION='1.19.2'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="http://ftpmirror.gnu.org/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
