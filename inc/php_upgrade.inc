@@ -235,7 +235,7 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.18, NGDEBUG)"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.25, NGDEBUG)"
     echo "PHP 7.x/7.1.x is GA Stable but still may have broken PHP extensions."
     echo "NGDEBUG is PHP 7.2.0 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
@@ -252,10 +252,10 @@ else
         PHPCONF_DIFFCHECK=1
     fi
     if [[ "$PHPCONF_DIFFCHECK" != '0' && "$PHP_OVERWRITECONF" = [yY] ]]; then
-        echo "Want to update to latest php-fpm.conf ? (overwrites will auto backup existing php-fpm.conf)"
-        echo "existing php-fpm.conf will be backed up at /usr/local/etc/php-fpm.conf-oldversion_$DT"
+        echo "Want to update to latest php.conf ? (overwrites will auto backup existing php.conf)"
+        echo "existing php.conf will be backed up at /usr/local/nginx/conf/php.conf-oldversion_$DT"
         echo "----------------------------------------------------------------"
-        read -ep "Update & overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
+        read -ep "Update & overwrite your existing php.conf [y/n]: " overwritephpfpmconf
         echo "----------------------------------------------------------------"
     else
         echo "----------------------------------------------------------------"
