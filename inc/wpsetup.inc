@@ -598,7 +598,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     }
 
     # bypass cache if the cookies containing the following strings
-    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle") {
+    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wptouch_switch_toogle") {
         set \$cache_uri 'nullcache';
     }
 
@@ -1803,7 +1803,7 @@ if ( \$arg_add-to-cart != "" ) { set \$cache_uri 'null cache'; }
 ## bypass cache for empty woocommerce carts
 #if ( \$cookie_woocommerce_items_in_cart != "0" ) { set \$cache_uri 'null cache'; }
 
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle") { set \$cache_uri 'null cache'; }
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wptouch_switch_toogle") { set \$cache_uri 'null cache'; }
 EFF
 
 # for nginx level redis cache
@@ -1831,7 +1831,7 @@ if (\$request_uri ~* "\?add-to-cart=|/cart/|/my-account/|/checkout/|/shop/checko
 }
 
 # Don't use the cache for logged in users or recent commenters
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|wptouch_switch_toogle") {
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wptouch_switch_toogle") {
   set \$skip_cache 1;
 }
 
