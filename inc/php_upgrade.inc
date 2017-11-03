@@ -423,6 +423,8 @@ funct_phpconfigure
         echo
         free -m
         echo
+        df -hT
+        echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         echo
         echo "version increment history"
@@ -536,6 +538,8 @@ fi
         echo
         free -m
         echo
+        df -hT
+        echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         echo
         echo "version increment history"
@@ -585,6 +589,8 @@ fi
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         free -m
+        echo
+        df -hT
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
         echo
