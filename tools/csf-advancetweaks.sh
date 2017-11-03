@@ -121,6 +121,18 @@ EOF
   fi
 }
 
+blocklistdeb_extendedb() {
+  if [[ "$blocklistde" = [yY] && ! "$(grep 'emergingthreats' /etc/csf/csf.blocklists)" ]]; then
+    cp -a /etc/csf/csf.blocklists /etc/csf/csf.blocklists-b-$DT
+cat >> "/etc/csf/csf.blocklists" <<EOF
+
+# Emerging Threats - Russian Business Networks List
+# Details: http://doc.emergingthreats.net/bin/view/Main/RussianBusinessNetwork
+#RBN|86400|0|http://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
+EOF
+  fi
+}
 
 denyiplimits
 blocklistdeb_extended
+blocklistdeb_extendedb
