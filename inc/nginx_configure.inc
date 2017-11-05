@@ -2157,7 +2157,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
   if [[ ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
     scl_install
     CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
-  if [[ -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
+  elif [[ -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
     CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
   else
     CLANG_NEWBIN='/opt/sbin/llvm-release_40/bin/clang'
