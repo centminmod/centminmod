@@ -5,7 +5,11 @@ scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
-    if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+    if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      if [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-7/enable
+      fi
+    elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
       if [[ -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
       fi
@@ -23,7 +27,18 @@ scl_install() {
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
         sar_call
       fi
-      if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+      if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+          sar_call
+        else
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils --disablerepo=rpmforge
+          sar_call
+        fi
+        echo
+        /opt/rh/devtoolset-7/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-7/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           sar_call
@@ -55,7 +70,27 @@ scl_install() {
         time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
         sar_call
       fi
-      if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+      if [[ "$DEVTOOLSETSEVEN" = [yY] || "$CLANG_FOUR" = [yY] ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+          sar_call
+        else
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils --disablerepo=rpmforge
+          sar_call
+        fi
+        if [[ "$CLANG_FOUR" = [yY] && ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+          time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7-runtime devtoolset-7-libstdc++-devel llvm-toolset-7-clang llvm-toolset-7-llvm-libs llvm-toolset-7-llvm-static llvm-toolset-7-compiler-rt llvm-toolset-7-libomp llvm-toolset-7-clang-libs
+        fi
+        echo
+        /opt/rh/devtoolset-7/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-7/root/usr/bin/g++ --version
+        if [[ "$CLANG_FOUR" = [yY] && -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+          /opt/rh/llvm-toolset-7/root/usr/bin/clang -v
+        fi
+        # if [[ -f /opt/rh/llvm-toolset-7/root/usr/bin/clang++ ]]; then
+        #   /opt/rh/llvm-toolset-7/root/usr/bin/clang++ -v
+        # fi
+      elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           sar_call
@@ -87,6 +122,14 @@ libbroti_install() {
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
       	scl_install
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/rh/devtoolset-7/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
@@ -145,6 +188,9 @@ libbroti_install() {
       scl_install
       unset CC
       unset CXX		
+    elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      unset CC
+      unset CXX
     elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       unset CC
       unset CXX
