@@ -131,7 +131,29 @@ fi # CLOUDFLARE_PATCHSSL
 
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
-      if [[ "$DEVTOOLSETSIX" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      if [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-7/enable
+        CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc || -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-7/enable
+        CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETSIX" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-6/enable
         which gcc
@@ -182,7 +204,7 @@ crypto_gcc() {
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
-            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}"
+            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}"
             # if only 1 cpu thread use -O2 to keep compile times sane
             if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"

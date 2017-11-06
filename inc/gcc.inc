@@ -34,7 +34,14 @@ enable_devtoolset() {
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]]; then
-         if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+         if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+            if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+               scl_install
+            fi       
+            source /opt/rh/devtoolset-7/enable
+            GENERALDEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting'
+         elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
                scl_install
             fi       
@@ -65,7 +72,7 @@ enable_devtoolset() {
       gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
       if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
          CCM=64
-         GEN_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
+         GEN_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GENERALDEVTOOLSETSEVEN_FALLTHROUGH}${GENERALDEVTOOLSETSEVEN_EXTRAFLAGS}"
          # if only 1 cpu thread use -O2 to keep compile times sane
          if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $GEN_MTUNEOPT -pipe"
