@@ -28,6 +28,8 @@ scl_install() {
         sar_call
       fi
       if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      # llbm-toolset-7 for clang 4 isn't ready for centos 6.x yet
+      # if [[ "$DEVTOOLSETSEVEN" = [yY] || "$CLANG_FOUR" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
           sar_call
@@ -35,9 +37,20 @@ scl_install() {
           time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils --disablerepo=rpmforge
           sar_call
         fi
+        # llbm-toolset-7 for clang 4 isn't ready for centos 6.x yet
+        # if [[ "$CLANG_FOUR" = [yY] && ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+        #   time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7-runtime devtoolset-7-libstdc++-devel llvm-toolset-7-clang llvm-toolset-7-llvm-libs llvm-toolset-7-llvm-static llvm-toolset-7-compiler-rt llvm-toolset-7-libomp llvm-toolset-7-clang-libs
+        # fi
         echo
         /opt/rh/devtoolset-7/root/usr/bin/gcc --version
         /opt/rh/devtoolset-7/root/usr/bin/g++ --version
+        # llbm-toolset-7 for clang 4 isn't ready for centos 6.x yet
+        # if [[ "$CLANG_FOUR" = [yY] && -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+        #   /opt/rh/llvm-toolset-7/root/usr/bin/clang -v
+        # fi
+        # if [[ -f /opt/rh/llvm-toolset-7/root/usr/bin/clang++ ]]; then
+        #   /opt/rh/llvm-toolset-7/root/usr/bin/clang++ -v
+        # fi
       elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils

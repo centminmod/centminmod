@@ -2153,6 +2153,20 @@ if [[ "$CLANG" = [yY] ]]; then
 	# recompiles. however on initial install ccache has no benefits, so for initial
 	# centmin mod install disabling ccache will in theory speed up first time installs
 
+# llbm-toolset-7 for clang 4 isn't ready for centos 6.x yet
+# if [[ "$CENTOS_SIX" = '6' && "$CLANG_FOUR" = [yY] ]]; then
+#   if [[ ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
+#     scl_install
+#     CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
+#   elif [[ -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
+#     CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
+#   else
+#     CLANG_NEWBIN='/opt/sbin/llvm-release_40/bin/clang'
+#   fi
+# elif [[ "$CENTOS_SIX" = '6' && "$CLANG_FIVE" = [yY] ]]; then
+#   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
+# fi
+
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
   if [[ ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
     scl_install
