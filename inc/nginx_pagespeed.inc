@@ -57,8 +57,8 @@ nano -w /usr/local/nginx/conf/pagespeedstatslog.conf
 }
 
 psoff() {
-sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeed.conf
-sed -i 's/pagespeed on;/pagespeed off;/g' /usr/local/nginx/conf/pagespeedadmin.conf
+sed -i 's/pagespeed on;/pagespeed unplugged;/g' /usr/local/nginx/conf/pagespeed.conf
+sed -i 's/pagespeed on;/pagespeed unplugged;/g' /usr/local/nginx/conf/pagespeedadmin.conf
 if [ -d /var/ngx_pagespeed_cache ]; then
     rm -rf /var/ngx_pagespeed_cache/*
 fi
@@ -69,8 +69,8 @@ cmservice nginx restart
 }
 
 pson() {
-sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeed.conf
-sed -i 's/pagespeed off;/pagespeed on;/g' /usr/local/nginx/conf/pagespeedadmin.conf
+sed -i 's/pagespeed unplugged;/pagespeed on;/g' /usr/local/nginx/conf/pagespeed.conf
+sed -i 's/pagespeed unplugged;/pagespeed on;/g' /usr/local/nginx/conf/pagespeedadmin.conf
 cmservice nginx restart
 }
 
@@ -132,7 +132,7 @@ END
 makepsconf() {
 touch /usr/local/nginx/conf/pagespeed.conf
 cat > "/usr/local/nginx/conf/pagespeed.conf" <<END
-pagespeed off;
+pagespeed unplugged;
 
 #######################################################
 # Purge nginx pagespeed cache
@@ -345,9 +345,9 @@ cat > "/usr/local/nginx/conf/pagespeedadmin.conf" <<END
 #######################################################
 # 1.9.32.1 beta required change
 # https://community.centminmod.com/threads/how-can-i-disable-it-after-installation.1603/#post-7665
-# add a second pagespeed off; variable 
+# add a second pagespeed unplugged; variable 
 # loaded in nginx.conf via pagespeedadmin.conf include file
-pagespeed off;
+pagespeed unplugged;
 
 #######################################################
 ## https://developers.google.com/speed/pagespeed/module/admin#virtual-hosts-and-stats
@@ -479,6 +479,18 @@ if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
   if [[ "$PSADMINCHECK" ]]; then
     sed -i 's/^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
   fi
+
+  # 1.13.35.1 deprecated pagespeed off > pagespeed unplugged
+  if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -ge '35' ]]; then
+    CHECKNGXPS_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeed.conf)
+    if [[ "$CHECKNGXPS_UNPLUG" ]]; then
+      sed -i 's|pagespeed off;|pagespeed unplugged;|g' /usr/local/nginx/conf/pagespeed.conf
+    fi
+    CHECKNGXPSADMIN_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
+    if [[ "$CHECKNGXPSADMIN_UNPLUG" ]]; then
+      sed -i 's|pagespeed off;|pagespeed unplugged;|g' /usr/local/nginx/conf/pagespeedadmin.conf
+    fi
+  fi
 fi
 #####################################################
 
@@ -529,17 +541,18 @@ PSSTATSCHECK=$(grep 'statson' /usr/bin/pscontrol)
 PSADMINCHECK=$(grep 'psadmin' /usr/bin/pscontrol)
 PSADMINFIXCHECK=$(grep '1.9.32.1 fixed' /usr/bin/pscontrol)
 PSCLEARCACHECHECK=$(grep 'ngx_pagespeed_cache' /usr/bin/pscontrol)
+PSUNPLUGCHECK=$(grep 'unplugged' /usr/bin/pscontrol)
 
-	if [[ -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" || -z "$PSADMINFIXCHECK" || -z "$PSCLEARCACHECHECK" ]]; then
-	rm -rf /usr/bin/pscontrol
-	rm -rf /usr/local/nginx/conf/pscontrol
-	genpscontrolfile
-	echo "cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol"
-	cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol
-	chmod 0700 /usr/bin/pscontrol
-	else
-	echo "/usr/bin/pscontrol already up to dated"
-	fi
+  if [[ -z "$PSUNPLUGCHECK" || -z "$PSSTATSCHECK" || -z "$PSADMINCHECK" || -z "$PSADMINFIXCHECK" || -z "$PSCLEARCACHECHECK" ]]; then
+    rm -rf /usr/bin/pscontrol
+    rm -rf /usr/local/nginx/conf/pscontrol
+    genpscontrolfile
+    echo "\cp -af /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol"
+    \cp -af /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol
+    chmod 0700 /usr/bin/pscontrol
+    else
+    echo "/usr/bin/pscontrol already up to dated"
+  fi
 fi
 
 # checks for ngx_pagespeed 1.8.31.2 beta introduced features
@@ -553,7 +566,7 @@ fi
 
 # checks for ngx_pagespeed 1.9.32.1 beta change
 # https://community.centminmod.com/threads/how-can-i-disable-it-after-installation.1603/#post-7665
-ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
+ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed unplugged;' /usr/local/nginx/conf/pagespeedadmin.conf)
 
 if [[ -z "$ADMINPSSWITCHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then
   makepsadmin
@@ -572,6 +585,11 @@ fi
 } #pagespeeduptasks
 
 ngxpagespeedinstall() {
+
+if [ ! -f /usr/include/uuid/uuid.h ]; then
+  # https://github.com/pagespeed/ngx_pagespeed/issues/1499
+  time $YUMDNFBIN -y install libuuid-devel
+fi
 
 if [[ ! -f /usr/local/nginx/conf/pagespeed.conf ]]; then
 echo ""
@@ -624,8 +642,8 @@ genpscontrolfile
 fi
 
 if [[ ! -f /usr/bin/pscontrol ]]; then
-echo "cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol"
-cp /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol
+echo "\cp -af /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol"
+\cp -af /usr/local/nginx/conf/pscontrol /usr/bin/pscontrol
 chmod 0700 /usr/bin/pscontrol
 else
 echo "/usr/bin/pscontrol already exists"

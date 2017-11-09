@@ -872,7 +872,18 @@ fi
 
       # 1.12+ new method https://github.com/pagespeed/ngx_pagespeed/issues/1337
       PS_BRANCHVER=$(echo $NGXPGSPEED_VER | cut -c1-4| sed -e 's|\.|00|')
-      if [[ "$PS_BRANCHVER" -ge '10012' ]]; then
+      if [[ "$PS_BRANCHVER" -ge '10013' ]]; then
+        psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
+        wget -c $psol_url
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+          cecho "Error: $psol_url download failed." $boldgreen
+          checklogdetails
+        else 
+          cecho "Download done." $boldyellow
+        fi
+        tar xzf "$(basename ${psol_url})"
+      elif [[ "$PS_BRANCHVER" -ge '10012' ]]; then
         psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
         wget -c $psol_url
         ERROR=$?
