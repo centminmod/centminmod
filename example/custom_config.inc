@@ -70,6 +70,7 @@ NGXDYNAMIC_NGXPAGESPEED='n'
 NGXDYNAMIC_BROTLI='y'
 NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
+NGXDYNAMIC_TESTCOOKIE='n'
 NGXDYNAMIC_VHOSTSTATS='n'
 
 # Maintenance Mode (will run maintenance mode during these upgrades)
@@ -118,6 +119,8 @@ NGINX_PERL='n'               # http://nginx.org/en/docs/http/ngx_http_perl_modul
 NGINX_XSLT='n'               # http://nginx.org/en/docs/http/ngx_http_xslt_module.html
 NGINX_LENGTHHIDE='n'         # https://github.com/nulab/nginx-length-hiding-filter-module
 NGINX_LENGTHHIDEGIT='y'      # triggers only if NGINX_LENGTHHIDE='y'
+NGINX_TESTCOOKIE='n'         # https://github.com/kyprizel/testcookie-nginx-module
+NGINX_TESTCOOKIEGIT='n'      # triggers only if NGINX_TESTCOOKIE='y'
 NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
 NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
