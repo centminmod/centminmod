@@ -1746,6 +1746,8 @@ if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPG
 	CLANG='n'
 elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGXPGSPEED_VER | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SEVEN" = '7' ]]; then
 	CLANG='n'
+elif [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+  CLANG='n'
 fi
 
 if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
