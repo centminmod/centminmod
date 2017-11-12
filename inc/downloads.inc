@@ -1782,6 +1782,12 @@ if [ -s ${MEMCACHEDSERVER_LINKFILE} ]; then
   cecho "${MEMCACHEDSERVER_LINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${MEMCACHEDSERVER_LINKFILE} not found !!! Downloading now......"
+  curl -4Is --connect-timeout 5 --max-time 5 "${MEMCACHEDSERVER_LINK}" | grep 'HTTP\/' | grep '200'
+  MEMCACHEDSERVER_CURLCHECK=$?
+  if [[ "$MEMCACHEDSERVER_CURLCHECK" != '0' ]]; then
+    MEMCACHEDSERVER_LINKFILE="memcached-${MEMCACHED_VERSION}.tar.gz"
+    MEMCACHEDSERVER_LINK="$MEMCACHEDSERVER_LINKLOCAL"
+  fi
   		wget ${WGETOPT} --progress=bar ${MEMCACHEDSERVER_LINK} --tries=3
         # wget ${WGETOPT} --progress=bar http://memcached.googlecode.com/files/${MEMCACHEDSERVER_LINKFILE} --tries=3
 ERROR=$?

@@ -313,7 +313,7 @@ TWEMPERF_LINK="https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.
 
 MEMCACHEDSERVER_LINKFILE="memcached-${MEMCACHED_VERSION}.tar.gz"
 MEMCACHEDSERVER_LINK="http://www.memcached.org/files/${MEMCACHEDSERVER_LINKFILE}"
-#MEMCACHEDSERVER_LINK="http://centminmod.com/centminmodparts/memcached/${MEMCACHEDSERVER_LINKFILE}"
+MEMCACHEDSERVER_LINKLOCAL="http://centminmod.com/centminmodparts/memcached/${MEMCACHEDSERVER_LINKFILE}"
 
 MYSQLREPORT_LINKFILE="mysqlreport"
 MYSQLREPORT_LINK="http://centminmod.com/centminmodparts/mysqlreport/${MYSQLREPORT_LINKFILE}"
