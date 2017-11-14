@@ -1713,6 +1713,8 @@ net.netfilter.nf_conntrack_max = $NF_CTMAX
 net.netfilter.nf_conntrack_tcp_timeout_established = 28800
 net.netfilter.nf_conntrack_generic_timeout = 60
 net.ipv4.tcp_challenge_ack_limit = 999999999
+net.ipv4.tcp_mtu_probing = 1
+net.ipv4.tcp_base_mss = 1024
 EOF
         /sbin/sysctl --system >/dev/null 2>&1
             fi           
@@ -1748,6 +1750,12 @@ EOF
             if [[ "$(grep 'net.netfilter.nf_conntrack_generic_timeout = 60' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
 							echo "net.netfilter.nf_conntrack_generic_timeout = 60" >> /etc/sysctl.conf
             fi
+            if [[ "$(grep 'net.ipv4.tcp_mtu_probing = 1' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+              echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
+            fi
+            if [[ "$(grep 'net.ipv4.tcp_base_mss = 1024' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+              echo "net.ipv4.tcp_base_mss = 1024" >> /etc/sysctl.conf
+            fi
             sysctl -p >/dev/null 2>&1
         fi
 		fi
@@ -1764,6 +1772,36 @@ if [[ ! -f /proc/user_beancounters ]]; then
   if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.conf
+      sysctl -p >/dev/null 2>&1
+    fi
+  fi
+fi
+if [[ ! -f /proc/user_beancounters ]]; then
+  # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
+  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    if [[ -z "$(grep 'net.ipv4.tcp_mtu_probing' /etc/sysctl.d/101-sysctl.conf)" ]]; then
+      echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.d/101-sysctl.conf
+      /sbin/sysctl --system >/dev/null 2>&1
+    fi
+  fi
+  if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
+    if [[ -z "$(grep 'net.ipv4.tcp_mtu_probing' /etc/sysctl.conf)" ]]; then
+      echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.conf
+      sysctl -p >/dev/null 2>&1
+    fi
+  fi
+fi
+if [[ ! -f /proc/user_beancounters ]]; then
+  # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
+  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    if [[ -z "$(grep 'net.ipv4.tcp_base_mss' /etc/sysctl.d/101-sysctl.conf)" ]]; then
+      echo "net.ipv4.tcp_base_mss = 1024" >> /etc/sysctl.d/101-sysctl.conf
+      /sbin/sysctl --system >/dev/null 2>&1
+    fi
+  fi
+  if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
+    if [[ -z "$(grep 'net.ipv4.tcp_base_mss' /etc/sysctl.conf)" ]]; then
+      echo "net.ipv4.tcp_base_mss = 1024" >> /etc/sysctl.conf
       sysctl -p >/dev/null 2>&1
     fi
   fi
