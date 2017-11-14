@@ -342,7 +342,7 @@ remisevenyum
 atrpmssevenyum
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='figlet moreutils nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
+PACKAGEEXTRA='figlet moreutils libzip5 libzip5-devel nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
 
 declare -a arrays
 arrays=(${PACKAGEEXTRA})
@@ -366,7 +366,11 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgs" $boldyellow
 echo "----------------------------------------------------------------------------------"
+      if [[ "$pkgs" = 'libzip5' || "$pkgs" = 'libzip5-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
+      else
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
+      fi
         # ${YUMDNFBIN}${CACHESKIP} -q list $pkgs
 echo "----------------------------------------------------------------------------------"
         fi
