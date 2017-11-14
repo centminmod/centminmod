@@ -1,3 +1,10 @@
+nginx_libuuid() {
+  if [ ! -f /usr/include/uuid/uuid.h ]; then
+    # https://github.com/pagespeed/ngx_pagespeed/issues/1499
+    time $YUMDNFBIN -y install libuuid-devel
+  fi
+}
+
 genpscontrolfile() {
 
 touch /usr/local/nginx/conf/pscontrol
@@ -586,10 +593,7 @@ fi
 
 ngxpagespeedinstall() {
 
-if [ ! -f /usr/include/uuid/uuid.h ]; then
-  # https://github.com/pagespeed/ngx_pagespeed/issues/1499
-  time $YUMDNFBIN -y install libuuid-devel
-fi
+  nginx_libuuid
 
 if [[ ! -f /usr/local/nginx/conf/pagespeed.conf ]]; then
 echo ""

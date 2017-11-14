@@ -191,6 +191,7 @@ installopenssl
 
 luajitinstall
 nginxzlib_install
+nginx_libuuid
 
     # Install nginx
     cd $DIR_TMP
