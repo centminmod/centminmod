@@ -947,11 +947,11 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   sar_call
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
-    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 glances bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
     libc_fix
     sar_call
   else
-    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
+    time $YUMDNFBIN -y install clang clang-devel jemalloc jemalloc-devel libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy glances bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel cmake28 uw-imap-devel${DISABLEREPO_DNF} --enablerepo=epel
     sar_call
   fi
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
