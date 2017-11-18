@@ -296,6 +296,10 @@ checkipvsix() {
   # disable system IPv6 support
   # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
   if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
+    if [[ -d /etc/postfix && "$(postconf -n inet_protocols | grep -w 'all')" ]]; then
+      postconf -e 'inet_protocols = ipv4'
+      service postfix restart >/dev/null 2>&1
+    fi
     if [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' ]]; then
       DETECH_CHANGES='y'
     fi
@@ -314,6 +318,10 @@ checkipvsix() {
       sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
+    if [[ -d /etc/postfix && "$(postconf -n inet_protocols | grep -w 'ipv4')" ]]; then
+      postconf -e 'inet_protocols = all'
+      service postfix restart >/dev/null 2>&1
+    fi
     if [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' ]]; then
       DETECH_CHANGES='y'
     elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' ]]; then
