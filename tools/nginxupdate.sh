@@ -144,18 +144,26 @@ fi
 # tarballs in parallel for faster initial installs
 PARALLEL_MODE=y
 # compiler related
+MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
 CLANG='y'                     # Nginx and LibreSSL
+CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/posts/44039/
+CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/posts/52193/
 CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
-PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.2
-NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-4 GCC 5.2 even for CentOS 7 nginx compiles
-GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.2 whereever possible/coded
-CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.2 for libressl or openssl compiles
+PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.3
+DEVTOOLSETSIX='n'             # Enable or disable devtoolset-6 GCC 6.2 support instead of devtoolset-4 GCC 5.3 support
+DEVTOOLSETSEVEN='n'           # Enable or disable devtoolset-7 GCC 7.1 support instead of devtoolset-6 GCC 6.2 support
+NGINX_DEVTOOLSETGCC='n'       # Use devtoolset-4 GCC 5.3 even for CentOS 7 nginx compiles
+GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.3 whereever possible/coded
+CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.3 for libressl or openssl compiles
 NGX_GSPLITDWARF='y'           # for Nginx compile https://community.centminmod.com/posts/44072/
 PHP_GSPLITDWARF='y'           # for PHP compile https://community.centminmod.com/posts/44072/
+PHP_LTO='n'                   # enable -flto compiler for GCC 4.8.5+ PHP-FPM compiles currently not working with PHP 7.x
+NGX_LDGOLD='y'                # for Nginx compile i.e. passing ld.gold linker -fuse-ld=bfd or -fuse-ld=gold https://community.centminmod.com/posts/44037/
+NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
