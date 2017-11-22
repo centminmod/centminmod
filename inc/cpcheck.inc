@@ -1092,6 +1092,14 @@ nvcheck() {
   fi
 }
 
+cmupdatecheck() {
+  if [ ! -h /usr/bin/cmupdate ]; then
+    rm -rf /usr/bin/cmupdate
+    ln -s "${SCRIPT_DIR}/tools/cmupdate.sh" /usr/bin/cmupdate
+    chmod +x /usr/bin/cmupdate
+  fi
+}
+
 dmotdcheck() {
   if [ ! -h /usr/local/bin/dmotd ]; then
     if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
@@ -2014,6 +2022,7 @@ kernelchecks
 pathfixes
 apache_protect
 setup_pwdh
+cmupdatecheck
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   expand_cmdprompt
@@ -2035,6 +2044,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   checkcmdircmd
   # dmotdcheck
   nvcheck
+  cmupdatecheck
   multiphpcheck
   mjemalloc
   blockeditorcheck
