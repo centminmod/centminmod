@@ -486,18 +486,6 @@ if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
   if [[ "$PSADMINCHECK" ]]; then
     sed -i 's/^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
   fi
-
-  # 1.13.35.1 deprecated pagespeed off > pagespeed unplugged
-  if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -ge '35' ]]; then
-    CHECKNGXPS_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeed.conf)
-    if [[ "$CHECKNGXPS_UNPLUG" ]]; then
-      sed -i 's|pagespeed off;|pagespeed unplugged;|g' /usr/local/nginx/conf/pagespeed.conf
-    fi
-    CHECKNGXPSADMIN_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
-    if [[ "$CHECKNGXPSADMIN_UNPLUG" ]]; then
-      sed -i 's|pagespeed off;|pagespeed unplugged;|g' /usr/local/nginx/conf/pagespeedadmin.conf
-    fi
-  fi
 fi
 #####################################################
 
@@ -573,12 +561,51 @@ fi
 
 # checks for ngx_pagespeed 1.9.32.1 beta change
 # https://community.centminmod.com/threads/how-can-i-disable-it-after-installation.1603/#post-7665
-ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed unplugged;' /usr/local/nginx/conf/pagespeedadmin.conf)
+if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -ge '35' ]]; then
+  ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed unplugged;' /usr/local/nginx/conf/pagespeedadmin.conf)
+elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -lt '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -lt '35' ]]; then
+  ADMINPSSWITCHCHECK=$(egrep '^pagespeed on;|pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
+fi
 
 if [[ -z "$ADMINPSSWITCHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf ]]; then
   makepsadmin
   # makepsconf
   makepshandler
+fi
+
+if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+  # 1.13.35.1 deprecated pagespeed off > pagespeed unplugged
+  if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -ge '35' ]]; then
+    CHECKNGXPS_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeed.conf)
+    if [[ "$CHECKNGXPS_UNPLUG" ]]; then
+      sed -i 's|pagespeed off;|pagespeed unplugged;|g' /usr/local/nginx/conf/pagespeed.conf
+      if [[ -f /usr/bin/pscontrol ]]; then
+        sed -i 's|pagespeed off|pagespeed unplugged|g' /usr/bin/pscontrol
+      fi
+    fi
+    CHECKNGXPSADMIN_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeedadmin.conf)
+    if [[ "$CHECKNGXPSADMIN_UNPLUG" ]]; then
+      sed -i 's|pagespeed off;|pagespeed unplugged;|g' /usr/local/nginx/conf/pagespeedadmin.conf
+      if [[ -f /usr/bin/pscontrol ]]; then
+        sed -i 's|pagespeed off|pagespeed unplugged|g' /usr/bin/pscontrol
+      fi
+    fi
+  elif [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -lt '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -lt '35' ]]; then
+    CHECKNGXPS_UNPLUG=$(grep 'pagespeed unplugged;' /usr/local/nginx/conf/pagespeed.conf)
+    if [[ "$CHECKNGXPS_UNPLUG" ]]; then
+      sed -i 's|pagespeed unplugged;|pagespeed off;|g' /usr/local/nginx/conf/pagespeed.conf
+      if [[ -f /usr/bin/pscontrol ]]; then
+        sed -i 's|pagespeed unplugged|pagespeed off|g' /usr/bin/pscontrol
+      fi
+    fi
+    CHECKNGXPSADMIN_UNPLUG=$(grep 'pagespeed unplugged;' /usr/local/nginx/conf/pagespeedadmin.conf)
+    if [[ "$CHECKNGXPSADMIN_UNPLUG" ]]; then
+      sed -i 's|pagespeed unplugged;|pagespeed off;|g' /usr/local/nginx/conf/pagespeedadmin.conf
+      if [[ -f /usr/bin/pscontrol ]]; then
+        sed -i 's|pagespeed unplugged|pagespeed off|g' /usr/bin/pscontrol
+      fi
+    fi
+  fi
 fi
 
 # check for 1.8.31.3 change from ngx_pagespeed_static to pagespeed_static
