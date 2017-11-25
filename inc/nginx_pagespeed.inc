@@ -1,3 +1,13 @@
+ngxpagespeed_setpipepatch() {
+  # patch for centos 6 and ngx_pagespeed 1.13.35.1 beta
+  if [[ "$CENTOS_SIX" -eq '6' && -z "$(grep 'ifdef F_SETPIPE_SZ' "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}/src/ngx_event_connection.cc")" ]]; then
+    pushd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}/src"
+    wget -c4 --progress=bar https://gist.github.com/centminmod/72ac71f446a1ee169b3fb35cc65da0fa/raw/pagespeed-centos6.patch --tries=3
+    patch < pagespeed-centos6.patch 
+    popd
+  fi
+}
+
 nginx_libuuid() {
   if [ ! -f /usr/include/uuid/uuid.h ]; then
     # https://github.com/pagespeed/ngx_pagespeed/issues/1499
@@ -615,6 +625,7 @@ if [[ -z "$PSSTATSCHECK" ]]; then
   makepshandler
 fi
 
+ngxpagespeed_setpipepatch
 
 } #pagespeeduptasks
 

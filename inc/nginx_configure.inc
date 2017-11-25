@@ -1123,6 +1123,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
     # ngxpagespeed_patched
+    ngxpagespeed_setpipepatch
     
 		# only need to invoke ngxpagespeedinstall at this stage if it is nginx upgrade
 		# no need for it to be invoked at initial first time centmin mod install as
@@ -1614,6 +1615,7 @@ else
 
 	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
     # ngxpagespeed_patched
+    ngxpagespeed_setpipepatch
     
 		# only need to invoke ngxpagespeedinstall at this stage if it is nginx upgrade
 		# no need for it to be invoked at initial first time centmin mod install as
