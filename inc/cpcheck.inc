@@ -330,6 +330,7 @@ ListenStream=/var/run/rpcbind.sock
 ROF
       systemctl stop rpcbind.socket -q
       systemctl start rpcbind.socket -q
+      systemctl daemon-reload -q
     elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
       # rpcbind.socket is not active so does not needs restart
       mkdir -p /etc/systemd/system/rpcbind.socket.d
@@ -391,6 +392,7 @@ ROF
       fi
       systemctl stop rpcbind.socket -q
       systemctl start rpcbind.socket -q
+      systemctl daemon-reload -q
     elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
       # rpcbind.socket is not active so does not needs restart
       if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
