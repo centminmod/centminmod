@@ -36,7 +36,9 @@ fi
 # Argon2 passwords https://wiki.php.net/rfc/argon2_password_hash
 # libsodium https://wiki.php.net/rfc/libsodium
 # https://github.com/jedisct1/libsodium
-if [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 ]]; then
+# disable temporarily for php 7.2.0 due to libzip compile errors
+# https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
+if [[ "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   LIBZIP_OPT=' --with-libzip'
