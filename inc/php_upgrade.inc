@@ -789,6 +789,19 @@ fi
 
 addmysql_legacyinstall
 
+if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.2' ]]; then
+    echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
+    echo "PHPMVER=$PHPMVER"
+    echo "PHPMUVER=$PHPMUVER"
+    if [ -f /usr/local/src/centminmod/addons/php72-mcrypt.sh ]; then
+        /usr/local/src/centminmod/addons/php72-mcrypt.sh menu
+    fi
+else
+    echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
+    echo "PHPMVER=$PHPMVER"
+    echo "PHPMUVER=$PHPMUVER"
+fi
+
 echo
 php --ini
 

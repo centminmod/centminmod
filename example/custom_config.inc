@@ -275,6 +275,8 @@ PDOPGSQL_PHPVER='9.6'       # pdo-pgsql PHP extension version for postgresql
 LIBSODIUM_VER='1.0.15'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
 LIBARGON_VER='20161029'     # https://github.com/P-H-C/phc-winner-argon2
+PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
+PHP_MCRYPTPECLVER='1.0.1'   # https://pecl.php.net/package/mcrypt
 
 PHP_FTPEXT='y'              # ftp PHP extension
 PHP_MEMCACHE='y'            # memcache PHP extension 
