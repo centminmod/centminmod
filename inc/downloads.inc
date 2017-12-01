@@ -114,7 +114,7 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'RU' ]]; then
     echo "RU server detected"
-    PHP_MIRRORURL="http://ua2.php.net"
+    PHP_MIRRORURL="http://lt1.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
     echo "SG server detected"
