@@ -1,4 +1,4 @@
-# for ngx_brotli https://github.com/google/ngx_brotli
+# for ngx_brotli https://github.com/eustas/ngx_brotli
 # + libbrotli https://github.com/bagder/libbrotli
 
 scl_install() {
@@ -228,7 +228,7 @@ ngxbrotli_download() {
     echo "download ngx_brotli module"
 		cd $DIR_TMP
 
-		NGXBROTLILINK='https://github.com/google/ngx_brotli'
+		NGXBROTLILINK='https://github.com/eustas/ngx_brotli'
 		# fallback mirror if official github is down, use gitlab mirror
 		curl -4Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 		NGXBROTLICURLCHECK=$?
@@ -238,6 +238,14 @@ ngxbrotli_download() {
 
     if [ ! -d ngx_brotli ]; then
       time git clone --recursive "$NGXBROTLILINK"
+      cd ngx_brotli
+      git submodule update --init
+      cd deps/brotli
+      ./configure-cmake
+      make${MAKETHREADS}
+      make install
+      cd ../../
+      cd ../
     fi
 		if [[ "$INITIALINSTALL" != [yY] ]]; then
         cd ngx_brotli
@@ -246,6 +254,12 @@ ngxbrotli_download() {
         git reset --hard origin/master
         git pull
         git submodule update --init
+        cd deps/brotli
+        ./configure-cmake
+        make${MAKETHREADS}
+        make install
+        cd ../../
+        cd ../
 		fi
 		echo
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
