@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.7
+VER=0.0.8
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
@@ -21,6 +21,9 @@ VER=0.0.7
 MYSQLHOSTNAME='localhost'
 
 MYSQLEXTRA_FILE='/root/.my.cnf'
+
+CONFIGSCANBASE='/etc/centminmod'
+CENTMINLOGDIR='/root/centminlogs'
 ###############################################################
 # Setup Colours
 black='\E[30;40m'
@@ -67,6 +70,11 @@ shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
 
 mysqlperm() {
 
