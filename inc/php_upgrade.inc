@@ -800,6 +800,9 @@ else
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
+    if [[ -f "${CONFIGSCANDIR}/mcrypt.ini" ]]; then
+        rm -rf "${CONFIGSCANDIR}/mcrypt.ini"
+    fi
 fi
 
 echo
