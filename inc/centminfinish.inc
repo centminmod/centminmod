@@ -19,6 +19,9 @@ echo ""
 	if [[ $(rpm -q sysstat >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q cronie >/dev/null 2>&1; echo $?) != '0' ]]; then
 		$(which yum) -y -q install sysstat cronie
 	fi
+
+	grub-efi-fix
+	
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond & sysstat service are running" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow

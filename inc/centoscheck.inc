@@ -1,3 +1,17 @@
+grub-efi-fix() {
+    if [[ "$CENTOS_SEVEN" -eq '7' && -d /boot/efi/EFI/centos && ! -f /boot/efi/EFI/centos/grub.cfg ]]; then
+        echo
+        cecho "--------------------------------------------------------" $boldyellow
+        cecho "Fix CentOS 7 EFI Bios based systems with missing" $boldyellow
+        cecho "/boot/efi/EFI/centos/grub.cfg" $boldyellow
+        cecho "https://community.centminmod.com/posts/57100/" $boldyellow
+        echo
+        grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+        cecho "--------------------------------------------------------" $boldyellow
+        echo
+    fi
+}
+
 function checkcentosver {
 
 if [[ "$INITIALINSTALL" = [yY] ]]; then
