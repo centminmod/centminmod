@@ -405,10 +405,14 @@ scl_install() {
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        time $YUMDNFBIN -y -q install centos-release-scl
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl
+        fi
         sar_call
       else
-        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        fi
         sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
@@ -437,10 +441,14 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        time $YUMDNFBIN -y -q install centos-release-scl
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl
+        fi
         sar_call
       else
-        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        fi
         sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then

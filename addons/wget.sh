@@ -202,18 +202,26 @@ scl_install() {
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       echo "install centos-release-scl for newer gcc and g++ versions"
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        time $YUMDNFBIN -y -q install centos-release-scl
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl
+        fi
         sar_call
       else
-        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        fi
         sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          if [[ "$(rpm -ql devtoolset-6-gcc >/de6/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ 6/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils6>/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          fi
           sar_call
         else
-          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          if [[ "$(rpm -ql devtoolset-6-gcc >/de6/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ 6/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils6>/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          fi
           sar_call
         fi
         echo
@@ -221,10 +229,14 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          fi
           sar_call
         else
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          fi
           sar_call
         fi
         echo
@@ -234,18 +246,26 @@ scl_install() {
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-        time $YUMDNFBIN -y -q install centos-release-scl
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl
+        fi
         sar_call
       else
-        time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install centos-release-scl --disablerepo=rpmforge
+        fi
         sar_call
       fi
       if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          if [[ "$(rpm -ql devtoolset-6-gcc >/de6/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ 6/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils6>/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          fi
           sar_call
         else
-          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          if [[ "$(rpm -ql devtoolset-6-gcc >/de6/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ 6/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils6>/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          fi
           sar_call
         fi
         echo
@@ -253,10 +273,14 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          fi
           sar_call
         else
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          fi
           sar_call
         fi
         echo
