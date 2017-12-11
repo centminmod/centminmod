@@ -7,6 +7,9 @@ grub_efi_fix() {
         cecho "https://community.centminmod.com/posts/57100/" $boldyellow
         echo
         grub2-mkconfig -o /boot/efi/EFI/centos/grub.cfg
+
+        echo
+        ls -lah /boot/efi/EFI/centos/grub.cfg
         cecho "--------------------------------------------------------" $boldyellow
         echo
     fi
