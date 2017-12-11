@@ -1,4 +1,4 @@
-grub-efi-fix() {
+grub_efi_fix() {
     if [[ "$CENTOS_SEVEN" -eq '7' && -d /boot/efi/EFI/centos && ! -f /boot/efi/EFI/centos/grub.cfg ]]; then
         echo
         cecho "--------------------------------------------------------" $boldyellow

@@ -20,7 +20,7 @@ echo ""
 		$(which yum) -y -q install sysstat cronie
 	fi
 
-	grub-efi-fix
+	grub_efi_fix
 	
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond & sysstat service are running" $boldyellow
