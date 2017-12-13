@@ -5,8 +5,8 @@ zlibsymlink_fix() {
         rm -rf /usr/local/lib/libz.so
         rm -rf /usr/local/lib/libz.so.1
         pushd /usr/local/lib/
-        ln -s "libz.so.1.3.0" libz.so
-        ln -s "libz.so.1.3.0" libz.so.1
+        ln -s "libz.so.${CLOUDFLARE_ZLIBVER}" libz.so
+        ln -s "libz.so.${CLOUDFLARE_ZLIBVER}" libz.so.1
         popd
         echo
         echo "lsof | grep nginx | egrep -v 'php-fpm|scheduler' | grep libz"
@@ -57,16 +57,16 @@ nginxzlib_install() {
         echo "install zlib cloudflare..."
         echo
         pushd "$DIR_TMP"
-        if [ ! -d zlib-cloudflare ]; then
-            git clone https://github.com/cloudflare/zlib zlib-cloudflare
-        elif [ -d zlib-cloudflare/.git ]; then
-            pushd "zlib-cloudflare"
+        if [ ! -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}" ]; then
+            git clone https://github.com/cloudflare/zlib "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+        elif [ -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}/.git" ]; then
+            pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
             git stash
             git pull
             popd
         fi
-        cd "zlib-cloudflare"
-        sed -i 's|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"1.3.0\"|' zlib.h
+        cd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+        sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         ldconfig
         make -f Makefile.in distclean
         ./configure

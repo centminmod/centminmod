@@ -649,8 +649,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   fi
 
   if [[ "$CLOUDFLARE_ZLIB" = [yY] ]]; then
-    ZLIBCUSTOM_DIR='zlib-cloudflare'
-    ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare"
+    ZLIBCUSTOM_DIR="zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+    ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
   fi
 
 	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
