@@ -643,10 +643,15 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		fi
 	fi
 
-	if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-		ZLIBCUSTOM_DIR=$(tar -tzf "$DIR_TMP/${NGX_ZLIBLINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep zlib)
-		ZLIBCUSTOM_OPT=" --with-zlib=../zlib-${NGINX_ZLIBVER}"
-	fi
+  if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
+    ZLIBCUSTOM_DIR=$(tar -tzf "$DIR_TMP/${NGX_ZLIBLINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep zlib)
+    ZLIBCUSTOM_OPT=" --with-zlib=../zlib-${NGINX_ZLIBVER}"
+  fi
+
+  if [[ "$CLOUDFLARE_ZLIB" = [yY] ]]; then
+    ZLIBCUSTOM_DIR='zlib-cloudflare'
+    ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare"
+  fi
 
 	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
 		MEMCDIR=$(tar -tzf "$DIR_TMP/${NGX_MEMCLINKFILE}" | head -1 | cut -f1 -d"/")

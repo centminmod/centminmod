@@ -21,21 +21,49 @@ zlibng_install() {
 
 nginxzlib_install() {
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    echo
-    echo "install zlib ${NGINX_ZLIBVER}..."
-    echo
-    if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
-        nginxzlibtarball
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] ]]; then
+        echo
+        echo "install zlib cloudflare..."
+        echo
+        pushd "$DIR_TMP"
+        if [ ! -d zlib-cloudflare ]; then
+            git clone https://github.com/cloudflare/zlib zlib-cloudflare
+        elif [ -d zlib-cloudflare/.git ]; then
+            pushd "zlib-cloudflare"
+            git stash
+            git pull
+            popd
+        fi
+        cd "zlib-cloudflare"
+        sed -i 's|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"1.3.0\"|' zlib.h
+        ldconfig
+        make -f Makefile.in distclean
+        ./configure
+        make${MAKETHREADS}
+        make install
+
+        popd
+        echo
+        echo "zlib cloudflare installed"
+        echo
+    else
+        echo
+        echo "install zlib ${NGINX_ZLIBVER}..."
+        echo
+        if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
+            nginxzlibtarball
+        fi
+        pushd "$DIR_TMP"
+        cd "zlib-${NGINX_ZLIBVER}"
+        make clean
+        ./configure
+        make${MAKETHREADS}
+        make install
+
+        popd
+        echo
+        echo "zlib ${NGINX_ZLIBVER} installed"
+        echo
     fi
-    pushd "$DIR_TMP"
-    cd "zlib-${NGINX_ZLIBVER}"
-    make clean
-    ./configure
-    make${MAKETHREADS}
-    make install
-    popd
-    echo
-    echo "zlib ${NGINX_ZLIBVER} installed"
-    echo
   fi
 }
