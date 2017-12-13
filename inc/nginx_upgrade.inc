@@ -903,34 +903,7 @@ fi
         # empty pagespeed cache
         clear_ps
 
-        if [[ "$CLOUDFLARE_ZLIB" = [yY] ]]; then
-            echo
-            # fix symlink
-            rm -rf /usr/local/lib/libz.so
-            rm -rf /usr/local/lib/libz.so.1
-            pushd /usr/local/lib/
-            ln -s "libz.so.1.3.0" libz.so
-            ln -s "libz.so.1.3.0" libz.so.1
-            popd
-            echo
-            echo "lsof | grep nginx | egrep -v 'php-fpm|scheduler' | grep libz"
-            lsof | grep nginx | egrep -v 'php-fpm|scheduler' | grep libz
-            echo
-            echo "ls -lahrt /usr/local/lib | grep libz"
-            ls -lahrt /usr/local/lib | grep libz
-            echo
-            echo "ls -lahrt /usr/local/include | grep z"
-            ls -lahrt /usr/local/include | grep z
-            echo
-        else
-            # fix symlink
-            rm -rf /usr/local/lib/libz.so
-            rm -rf /usr/local/lib/libz.so.1
-            pushd /usr/local/lib/
-            ln -s "libz.so.${NGINX_ZLIBVER}" libz.so
-            ln -s "libz.so.${NGINX_ZLIBVER}" libz.so.1
-            popd
-        fi
+       zlibsymlink_fix
 
        if [[ "$NGINX_ZERODT" = [nN] ]]; then
          /etc/init.d/nginx restart
