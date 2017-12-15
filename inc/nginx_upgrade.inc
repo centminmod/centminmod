@@ -345,6 +345,16 @@ echo " "
 cecho "This software comes with no warranty of any kind. You are free to use" $boldyellow
 cecho "it for both personal and commercial use as licensed under the GPL." $boldyellow
 echo " "
+if [ -f /usr/local/lib/libz.so ]; then
+    echo "Upgrade Note:"
+    echo "This nginx recompile involves zlib changes which have one time"
+    echo "service restarts including MariaDB MySQL restart to switch"
+    echo "from custom zlib shared library back to system zlib library"
+    echo "for services other than Nginx. Nginx will use custom zlib"
+    echo "by itself while all other services will revert back to system"
+    echo "zlib shared library"
+fi
+echo
 if [[ "$UALL" = 'y' ]]; then 
     nukey=y
 else
@@ -903,7 +913,7 @@ fi
         # empty pagespeed cache
         clear_ps
 
-       zlibsymlink_fix
+       # zlibsymlink_fix
 
        if [[ "$NGINX_ZERODT" = [nN] ]]; then
          /etc/init.d/nginx restart
@@ -1015,6 +1025,12 @@ find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \
         echo
 
         echo "*************************************************"
+        if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" != 'sse4_2' ]]; then
+            echo
+            cecho "* CLOUDFLARE_ZLIB='y' detected but cpu SSE4.2 support not available" $boldgreen
+            cecho "* Fallback to standard zlib support in Nginx due to SSE4.2 not supported" $boldgreen
+            echo
+        fi
         cecho "* nginx updated" $boldgreen
         echo "*************************************************"
 

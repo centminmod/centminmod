@@ -399,7 +399,7 @@ geoipphp
     countcpus
     detect_tlsonethree
 
-    zlibsymlink_fix
+    # zlibsymlink_fix
 
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen

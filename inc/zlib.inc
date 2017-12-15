@@ -52,7 +52,7 @@ zlibng_install() {
 
 nginxzlib_install() {
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
         echo
         echo "install zlib cloudflare..."
         echo
@@ -65,13 +65,57 @@ nginxzlib_install() {
             git pull
             popd
         fi
-        cd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
-        sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
-        ldconfig
-        make -f Makefile.in distclean
-        ./configure
-        make${MAKETHREADS}
-        make install
+        # cd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+        # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
+        # ldconfig
+        # make -f Makefile.in distclean
+        # # ./configure --prefix=/usr/local/zlib-cf
+        # ./configure
+        # make${MAKETHREADS}
+        # ps aufxwww > zlib-process.log
+        # if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
+        #     make -d install
+        # else
+        #     make install
+        # fi
+        if [ -f /usr/local/lib/libz.so ]; then
+            pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+            make -d uninstall
+            listservices=$(lsof | grep 'libz.so' | grep 'DEL.*lib' | cut -f 1 -d ' ' | sort -u)
+            for i in ${listservices[@]}; do
+              if [ -d /usr/lib/systemd/system ]; then
+                servicepath='/usr/lib/systemd/system/'
+                systemd_yes=y
+              else
+                servicepath='/etc/init.d/'
+              fi
+              echo $i; 
+              if [ "$(grep -r "$i" "$servicepath")" ]; then
+                echo
+                echo "restarting service due to zlib changes"
+                if [[ "$systemd_yes" = 'y' && "$i" = 'mysqld' ]]; then
+                    service mysql status;
+                    service mysql restart;
+                elif [[ "$i" = 'pickup' ]]; then
+                    service postfix status;
+                    service postfix restart;
+                elif [[ "$i" = 'rsyslogd' ]]; then
+                    service rsyslog status;
+                    service rsyslog restart;
+                else
+                    service $i status;
+                    service $i restart;
+                fi
+                if [[ "$systemd_yes" = 'y' ]]; then
+                    systemctl restart polkit
+                    systemctl restart systemd-udevd
+                    systemctl daemon-reload
+                    systemctl daemon-reexec
+                fi
+              fi 
+            done
+            popd
+        fi
 
         popd
         echo
@@ -84,12 +128,50 @@ nginxzlib_install() {
         if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
             nginxzlibtarball
         fi
-        pushd "$DIR_TMP"
-        cd "zlib-${NGINX_ZLIBVER}"
-        make clean
-        ./configure
-        make${MAKETHREADS}
-        make install
+        # pushd "$DIR_TMP"
+        # cd "zlib-${NGINX_ZLIBVER}"
+        # make clean
+        # ./configure
+        # make${MAKETHREADS}
+        # make install
+        if [ -f /usr/local/lib/libz.so ]; then
+            pushd "zlib-${NGINX_ZLIBVER}"
+            make -d uninstall
+            listservices=$(lsof | grep 'libz.so' | grep 'DEL.*lib' | cut -f 1 -d ' ' | sort -u)
+            for i in ${listservices[@]}; do
+              if [ -d /usr/lib/systemd/system ]; then
+                servicepath='/usr/lib/systemd/system/'
+                systemd_yes=y
+              else
+                servicepath='/etc/init.d/'
+              fi
+              echo $i; 
+              if [ "$(grep -r "$i" "$servicepath")" ]; then
+                echo
+                echo "restarting service due to zlib changes"
+                if [[ "$systemd_yes" != 'y' && "$i" = 'mysqld' ]]; then
+                    service mysql status;
+                    service mysql restart;
+                elif [[ "$i" = 'pickup' ]]; then
+                    service postfix status;
+                    service postfix restart;
+                elif [[ "$i" = 'rsyslogd' ]]; then
+                    service rsyslog status;
+                    service rsyslog restart;
+                else
+                    service $i status;
+                    service $i restart;
+                fi
+                if [[ "$systemd_yes" = 'y' ]]; then
+                    systemctl restart polkit
+                    systemctl restart systemd-udevd
+                    systemctl daemon-reload
+                    systemctl daemon-reexec
+                fi
+              fi 
+            done
+            popd
+        fi
 
         popd
         echo
