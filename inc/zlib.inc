@@ -110,6 +110,15 @@ nginxzlib_install() {
                 elif [[ "$i" = 'lvmetad' ]]; then
                     service lvm2-lvmetad status
                     service lvm2-lvmetad restart
+                elif [[ "$i" = 'dockerd' ]]; then
+                    service docker status;
+                    service docker restart;
+                elif [[ "$i" = 'fail2ban-' ]]; then
+                    service fail2ban status;
+                    service fail2ban restart;
+                elif [[ "$i" = 'nrsysmond' ]]; then
+                    service newrelic-sysmond status;
+                    service newrelic-sysmond restart;
                 else
                     service $i status;
                     service $i restart;
@@ -199,6 +208,15 @@ nginxzlib_install() {
                 elif [[ "$i" = 'lvmetad' ]]; then
                     service lvm2-lvmetad status
                     service lvm2-lvmetad restart
+                elif [[ "$i" = 'dockerd' ]]; then
+                    service docker status;
+                    service docker restart;
+                elif [[ "$i" = 'fail2ban-' ]]; then
+                    service fail2ban status;
+                    service fail2ban restart;
+                elif [[ "$i" = 'nrsysmond' ]]; then
+                    service newrelic-sysmond status;
+                    service newrelic-sysmond restart;
                 else
                     service $i status;
                     service $i restart;
