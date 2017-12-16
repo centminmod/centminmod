@@ -99,9 +99,11 @@ nginxzlib_install() {
                     sleep 10s
                     service mysql status;
                     service mysql restart;
-                elif [[ "$i" = 'pickup' ]]; then
+                elif [[ "$i" = 'pickup' || "$i" = 'qmgr' ]]; then
                     service postfix status;
                     service postfix restart;
+                elif [[ "$i" = 'memcached' ]]; then
+                    memcachedrestart
                 elif [[ "$i" = 'rsyslogd' ]]; then
                     service rsyslog status;
                     service rsyslog restart;
@@ -170,9 +172,11 @@ nginxzlib_install() {
                     sleep 10s
                     service mysql status;
                     service mysql restart;
-                elif [[ "$i" = 'pickup' ]]; then
+                elif [[ "$i" = 'pickup' || "$i" = 'qmgr' ]]; then
                     service postfix status;
                     service postfix restart;
+                elif [[ "$i" = 'memcached' ]]; then
+                    memcachedrestart
                 elif [[ "$i" = 'rsyslogd' ]]; then
                     service rsyslog status;
                     service rsyslog restart;
