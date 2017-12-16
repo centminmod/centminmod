@@ -107,6 +107,9 @@ nginxzlib_install() {
                 elif [[ "$i" = 'rsyslogd' ]]; then
                     service rsyslog status;
                     service rsyslog restart;
+                elif [[ "$i" = 'lvmetad' ]]; then
+                    service lvm2-lvmetad status
+                    service lvm2-lvmetad restart
                 else
                     service $i status;
                     service $i restart;
@@ -193,6 +196,9 @@ nginxzlib_install() {
                 elif [[ "$i" = 'rsyslogd' ]]; then
                     service rsyslog status;
                     service rsyslog restart;
+                elif [[ "$i" = 'lvmetad' ]]; then
+                    service lvm2-lvmetad status
+                    service lvm2-lvmetad restart
                 else
                     service $i status;
                     service $i restart;
