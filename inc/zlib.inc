@@ -1,5 +1,5 @@
 zlibsymlink_fix() {
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
         echo
         # fix symlink
         rm -rf /usr/local/lib/libz.so
