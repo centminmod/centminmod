@@ -119,6 +119,13 @@ nginxzlib_install() {
             else
               servicepath='/etc/init.d/'
             fi
+            if [ "$(ps -C pickup | grep -o pickup)" ]; then
+                service postfix status;
+                service postfix restart;
+            fi
+            if [ "$(ps -C memcached | grep -o memcached)" ]; then
+                memcachedrestart
+            fi
             if [[ "$systemd_yes" = 'y' ]]; then
                 if [ -f /usr/lib/systemd/system/php56-php-fpm.service ]; then
                     systemctl restart php56-php-fpm.service
@@ -197,6 +204,13 @@ nginxzlib_install() {
               systemd_yes=y
             else
               servicepath='/etc/init.d/'
+            fi
+            if [ "$(ps -C pickup | grep -o pickup)" ]; then
+                service postfix status;
+                service postfix restart;
+            fi
+            if [ "$(ps -C memcached | grep -o memcached)" ]; then
+                memcachedrestart
             fi
             if [[ "$systemd_yes" = 'y' ]]; then
                 if [ -f /usr/lib/systemd/system/php56-php-fpm.service ]; then
