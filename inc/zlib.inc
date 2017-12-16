@@ -94,6 +94,9 @@ nginxzlib_install() {
                 echo
                 echo "restarting service due to zlib changes"
                 if [[ "$systemd_yes" = 'y' && "$i" = 'mysqld' ]]; then
+                    echo "mysqladmin flush-tables"
+                    mysqladmin flush-tables
+                    sleep 10s
                     service mysql status;
                     service mysql restart;
                 elif [[ "$i" = 'pickup' ]]; then
@@ -150,6 +153,9 @@ nginxzlib_install() {
                 echo
                 echo "restarting service due to zlib changes"
                 if [[ "$systemd_yes" != 'y' && "$i" = 'mysqld' ]]; then
+                    echo "mysqladmin flush-tables"
+                    mysqladmin flush-tables
+                    sleep 10s
                     service mysql status;
                     service mysql restart;
                 elif [[ "$i" = 'pickup' ]]; then
