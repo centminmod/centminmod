@@ -110,6 +110,18 @@ nginxzlib_install() {
                     service $i restart;
                 fi
                 if [[ "$systemd_yes" = 'y' ]]; then
+                    if [ -f /usr/lib/systemd/system/php56-php-fpm.service ]; then
+                        systemctl restart php56-php-fpm.service
+                    fi
+                    if [ -f /usr/lib/systemd/system/php70-php-fpm.service ]; then
+                        systemctl restart php70-php-fpm.service
+                    fi
+                    if [ -f /usr/lib/systemd/system/php71-php-fpm.service ]; then
+                        systemctl restart php71-php-fpm.service
+                    fi
+                    if [ -f /usr/lib/systemd/system/php72-php-fpm.service ]; then
+                        systemctl restart php72-php-fpm.service
+                    fi
                     systemctl restart polkit
                     systemctl restart systemd-udevd
                     systemctl daemon-reload
@@ -169,6 +181,18 @@ nginxzlib_install() {
                     service $i restart;
                 fi
                 if [[ "$systemd_yes" = 'y' ]]; then
+                    if [ -f /usr/lib/systemd/system/php56-php-fpm.service ]; then
+                        systemctl restart php56-php-fpm.service
+                    fi
+                    if [ -f /usr/lib/systemd/system/php70-php-fpm.service ]; then
+                        systemctl restart php70-php-fpm.service
+                    fi
+                    if [ -f /usr/lib/systemd/system/php71-php-fpm.service ]; then
+                        systemctl restart php71-php-fpm.service
+                    fi
+                    if [ -f /usr/lib/systemd/system/php72-php-fpm.service ]; then
+                        systemctl restart php72-php-fpm.service
+                    fi
                     systemctl restart polkit
                     systemctl restart systemd-udevd
                     systemctl daemon-reload
