@@ -78,10 +78,11 @@ nginxzlib_install() {
             git pull
             popd
         fi
-        # cd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+        pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
-        # make -f Makefile.in distclean
+        make -f Makefile.in distclean
+        popd
         # # ./configure --prefix=/usr/local/zlib-cf
         # ./configure
         # make${MAKETHREADS}
