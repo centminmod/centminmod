@@ -1,3 +1,16 @@
+zlib_ccache() {
+    if [[ -d "${DIR_TMP}/ccache-${CCACHE_VER}/" ]]; then
+        export CC="gcc"
+        export CXX="g++"
+        pushd "${DIR_TMP}/ccache-${CCACHE_VER}/"
+        make clean
+        ./configure
+        make${MAKETHREADS}
+        make install
+        popd
+    fi
+}
+
 zlibsymlink_fix() {
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
         echo
@@ -255,6 +268,9 @@ nginxzlib_install() {
                 systemctl daemon-reexec
             fi
             popd
+        fi
+        if [[ "$(ldd $(which ccache) | grep '/usr/local/lib/libz.so.1')" ]]; then
+            zlib_ccache
         fi
 
         popd
