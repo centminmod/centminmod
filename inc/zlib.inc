@@ -93,6 +93,9 @@ nginxzlib_install() {
         #     make install
         # fi
         if [ -f /usr/local/lib/libz.so ]; then
+            echo
+            ps aufxw
+            echo
             pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
             make -d uninstall
             listservices=$(lsof | grep 'libz.so' | grep 'DEL.*lib' | cut -f 1 -d ' ' | sort -u)
@@ -191,6 +194,9 @@ nginxzlib_install() {
         # make${MAKETHREADS}
         # make install
         if [ -f /usr/local/lib/libz.so ]; then
+            echo
+            ps aufxw
+            echo
             pushd "zlib-${NGINX_ZLIBVER}"
             make -d uninstall
             listservices=$(lsof | grep 'libz.so' | grep 'DEL.*lib' | cut -f 1 -d ' ' | sort -u)
