@@ -3,7 +3,7 @@
 #######################################################################################
 ENABLE_MARIADBTENUPGRADE='y'
 ENABLE_MARIADBTENTWOUPGRADE='n'
-SKIP_INNODBFASTSHUTDOWNDISABLE='n'
+SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
 mariadbsubmenu() {
 
