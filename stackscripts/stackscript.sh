@@ -49,7 +49,7 @@
 #<UDF name="compiler" Label="Build Nginx with GCC or Clang Compiler ?" oneOf="clang,gcc" default="clang" />
 # COMPILER=
 # 
-#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.5.5+ or OpenSSL 1.1.0+ ?" oneOf="libressl,openssl" default="libressl" />
+#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.6.3+ or OpenSSL 1.1.0+ ?" oneOf="libressl,openssl" default="libressl" />
 # OPENSSL=
 # 
 #<UDF name="hpack" Label="Enable Cloudflare HTTP/2 HPACK Full Encoding Patch (community.centminmod.com/posts/51082/) ?" oneOf="yes,no" default="no" />
