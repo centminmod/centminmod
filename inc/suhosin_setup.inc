@@ -10,15 +10,10 @@ suhosin_no() {
     exit
 }
 
-suhosinsetup() {
-  PHPVERCHECK=$(cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}')
+suhosinfive_install() {
 
-  if [[ "$PHPVERCHECK" > 5.6 ]]; then
-    suhosin_no
-  fi # PHPVERCHECK
+  pushd "$DIR_TMP"
 
-  cd $DIR_TMP
-  
   if [ -s suhosin-${SUHOSINVER}.tar.gz ]; then
     echo "suhosin-${SUHOSINVER}.tar.gz [found]"
     else
@@ -30,9 +25,37 @@ suhosinsetup() {
   cd suhosin-${SUHOSINVER}
   make clean
   phpize
-  ./configure
+  ./configure --with-php-config=/usr/local/bin/php-config
   make${MAKETHREADS}
   make install
+  popd
+}
+
+suhosinseven_install() {
+  pushd "$DIR_TMP"
+  rm -rf suhosin7
+  git clone https://github.com/sektioneins/suhosin7
+  cd suhosin7
+  make clean
+  phpize
+  ./configure --with-php-config=/usr/local/bin/php-config
+  make${MAKETHREADS}
+  make install
+  popd
+}
+
+suhosinsetup() {
+  PHPVERCHECK=$(cat /usr/local/bin/php-config | awk '/^version/ {phpver=$1} END {gsub(/"|version|=|)/,"",phpver); print phpver}' | awk -F "." '{print $1"."$2}')
+
+  if [[ "$PHPVERCHECK" = 5.[456] ]]; then
+    suhosinfive_install
+    suhosin_name=suhosin
+  elif [[ "$PHPVERCHECK" = 7.[01] ]]; then
+    suhosinseven_install
+    suhosin_name=suhosin7
+  else
+    suhosin_no
+  fi # PHPVERCHECK
   
   if [ ! -f ${CONFIGSCANDIR}/suhosin.ini ]; then
 	 touch ${CONFIGSCANDIR}/suhosin.ini
@@ -42,22 +65,22 @@ suhosinsetup() {
   if [[ "$SUHOSINCHECK" = '1' ]]; then
 
 cat > "${CONFIGSCANDIR}/suhosin.ini" <<EOF
-extension=suhosin.so
+extension=${suhosin_name}.so
 suhosin.executor.include.whitelist = phar
 suhosin.simulation = 0
 suhosin.log.file.name = /var/log/suhosin.log
 suhosin.cookie.encrypt = 0
 suhosin.executor.disable_eval = 0
-suhosin.get.max_value_length = 2048
-suhosin.get.max_vars = 1000
+suhosin.get.max_value_length = 5120
+suhosin.get.max_vars = 5120
 suhosin.memory_limit = 512M
 suhosin.post.max_value_length = 1000000
-suhosin.post.max_vars = 4096
+suhosin.post.max_vars = 5120
 suhosin.post.max_array_index_length = 256
 suhosin.post.max_totalname_length = 8192
 suhosin.request.max_value_length = 1000000
-suhosin.request.max_vars = 4096
-suhosin.request.max_varname_length =  384
+suhosin.request.max_vars = 5120
+suhosin.request.max_varname_length =  5120
 suhosin.request.max_array_index_length = 256
 suhosin.request.max_totalname_length = 8192
 suhosin.upload.disallow_binary = 0
