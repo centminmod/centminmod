@@ -38,6 +38,40 @@ fi
 			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
 				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
 			fi
+			# extra workaround to ensure centos 7 systems boot redis server after rc.local
+			# and that /sys/kernel/mm/transparent_hugepage/enabled is set to never as it seems
+			# centos 7.4 at least restores value of always when rebooted 
+			# https://community.centminmod.com/posts/57637/
+		  if [ -d /etc/systemd/system ]; then
+		  	if [ -d /etc/systemd/system/redis.service.d ]; then
+		  		echo -e "[Unit]\nAfter=network.target rc.local" > /etc/systemd/system/redis.service.d/after-rc-local.conf
+		  	fi
+cat > "/etc/systemd/system/disable-thp.service" <<EOF
+[Unit]
+Description=Disable Transparent Huge Pages (THP)
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/bin/sh -c "/usr/bin/echo 'never' > /sys/kernel/mm/transparent_hugepage/enabled"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+    		if [ -f /etc/systemd/system/disable-thp.service ]; then
+      		chmod a+x /etc/systemd/system/disable-thp.service
+      		systemctl daemon-reload
+      		systemctl restart disable-thp
+      		systemctl enable disable-thp
+      		# echo
+      		# echo "cat /sys/kernel/mm/transparent_hugepage/enabled"
+      		# cat /sys/kernel/mm/transparent_hugepage/enabled
+      		# echo
+      		# echo "transparent_hugepage disabled"
+      		# echo
+    		fi
+		  fi
 		fi
 	else
 		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
@@ -109,6 +143,7 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 		fi
 	else
 		echo "NRHUGEPAGES_COUNT = $NRHUGEPAGES_COUNT"
+		echo "transparent huge pages not enabled"
 		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
 			echo never > /sys/kernel/mm/transparent_hugepage/enabled
 			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
