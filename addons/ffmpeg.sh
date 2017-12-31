@@ -425,6 +425,22 @@ phpext() {
 	echo ""
 
 	php --ri ffmpeg
+
+	ffmpeg_err=$?
+	if [[ "$ffmpeg_err" -ne '0' ]]; then
+		rm -rf /etc/centminmod/php.d/ffmpeg.ini
+		service php-fpm restart
+		echo
+		echo "----------------------------------------------------------------"
+		echo "FAILED..."
+		echo "failed to install FFMPEG PHP Extension"
+		echo "FFMPEG PHP Extension has a high change of install failure"
+		echo "due to developer abandoning the project so if failed"
+		echo "the FFMPEG PHP Extension is not installable"
+		echo "----------------------------------------------------------------"
+		echo
+	fi
+
 	else
 		echo ""
 		echo "FFMPEG php extension does not support PHP 7.x"
