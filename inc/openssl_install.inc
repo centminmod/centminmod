@@ -13,8 +13,10 @@ if [[ "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VE
     echo  "######################################################################"
     pushd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
     rm -rf OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch
-    wget https://gitlab.com/buik/openssl/raw/openssl-patch/openssl-1.1/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch
-    patch -p1 < OpenSSL1.1g-improve-ECDSA-sign-30-40%.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch"
+    fi
     popd
     echo
 fi
