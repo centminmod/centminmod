@@ -12,10 +12,10 @@ if [[ "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VE
     echo "https://community.centminmod.com/posts/57725/"
     echo  "######################################################################"
     pushd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
-    rm -rf OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch
-    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch" ]; then
-        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch" $boldyellow
-        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch"
+    rm -rf OpenSSL1.1g-improve-ECDSA-sign-30-40.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch"
     fi
     popd
     echo
