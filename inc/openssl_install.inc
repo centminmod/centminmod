@@ -11,11 +11,19 @@ if [[ "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VE
     echo "30-40% performance improvement patch for ECDSA"
     echo "https://community.centminmod.com/posts/57725/"
     echo  "######################################################################"
-    pushd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
     rm -rf OpenSSL1.1g-improve-ECDSA-sign-30-40.patch
     if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch" ]; then
         cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch" $boldyellow
         patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch"
+        ecdsapatch_err=$?
+        if [[ "$ecdsapatch_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.1g-improve-ECDSA-sign-30-40.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
     fi
     popd
     echo
@@ -361,7 +369,7 @@ installopenssl() {
         else
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
             tar xzf ${OPENSSL_LINKFILE}
-            cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+            cd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
         fi
         rm -rf "$STATICLIBSSL"
         mkdir -p "$STATICLIBSSL"
