@@ -29,6 +29,34 @@ if [[ "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VE
     echo
 fi
 
+# ECDHX25519 performance patch for 64bit systems only
+# OpenSSL1.1g-double-performance-ecdhx-25519.patch
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
+    echo
+    echo  "######################################################################"
+    echo "Patching OpenSSL 1.1.0g"
+    echo  "######################################################################"
+    echo "ECDHX 25519 performance patch"
+    echo "https://community.centminmod.com/posts/57726/"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL1.1g-double-performance-ecdhx-25519.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1g-double-performance-ecdhx-25519.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1g-double-performance-ecdhx-25519.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1g-double-performance-ecdhx-25519.patch"
+        ecdhxapatch_err=$?
+        if [[ "$ecdhxapatch_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.1g-double-performance-ecdhx-25519.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
 # release buffer patch CVE-2010-5298
 if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
