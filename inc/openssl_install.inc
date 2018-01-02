@@ -1,6 +1,24 @@
 
 opensslpatches() {
   {
+
+# ECDSA performance patch https://community.centminmod.com/posts/57725/
+if [[ "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
+    echo
+    echo  "######################################################################"
+    echo "Patching OpenSSL 1.1.0g"
+    echo  "######################################################################"
+    echo "30-40% performance improvement patch for ECDSA"
+    echo "https://community.centminmod.com/posts/57725/"
+    echo  "######################################################################"
+    pushd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
+    rm -rf OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch
+    wget https://gitlab.com/buik/openssl/raw/openssl-patch/openssl-1.1/OpenSSL1.1g-improve-ECDSA-sign-30-40%25.patch
+    patch -p1 < OpenSSL1.1g-improve-ECDSA-sign-30-40%.patch
+    popd
+    echo
+fi
+
 # release buffer patch CVE-2010-5298
 if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
