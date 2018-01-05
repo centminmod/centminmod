@@ -1,6 +1,7 @@
 From cfc32a1e540e4f542e5e88415f45657hbbd3008 Mon Sep 17 00:00:00 2001
 From: Buik / Bassie <bassie@buik.locale>
-Date: Fri, 5 Jan 2018 20:45:22 +0100
+Date: Sat, 6 Jan 2018 08:21:45 +0100
+
 Subject: OpenSSL1.1g - 30-40% ECDSA performance improvement
 
 The purpose of this patch is backward compatibility on OpenSSL 1.1g.
@@ -14,7 +15,7 @@ Ec/ecp_nistz256.c: improve ECDSA sign by 30-40% is based on RT#3810,
 which added dedicated modular inversion.
 ECDSA verify results improves as well, but not as much.
 ---
- ECDSA-PATCH-CHANGELOG                |    6 +
+ ECDSA-PATCH-CHANGELOG                |    9 +
  crypto/ec/asm/ecp_nistz256-armv8.pl  |  309 +++-
  crypto/ec/asm/ecp_nistz256-x86_64.pl | 1968 ++++++++++++++++++++++---
  crypto/ec/ec_err.c                   |    2 +
@@ -24,21 +25,24 @@ ECDSA verify results improves as well, but not as much.
  crypto/ec/ecp_nistz256.c             |  190 ++-
  crypto/perlasm/x86_64-xlate.pl       |  389 ++++-
  include/openssl/ec.h                 |    1 +
- 10 files changed, 2665 insertions(+), 280 deletions(-)
+ 10 files changed, 2668 insertions(+), 280 deletions(-)
  new file mode 100644 ECDSA-PATCH-CHANGELOG
 
 diff --git a/ECDSA-PATCH-CHANGELOG b/ECDSA-PATCH-CHANGELOG
 new file mode 100644
-index 0000000..521782a
+index 0000000..f5799bf
 --- /dev/null
-+++ b/b/ECDSA-PATCH-CHANGELOG
-@@ -0,0 +1,6 @@
++++ b/ECDSA-PATCH-CHANGELOG
+@@ -0,0 +1,9 @@
 +Changelog [PATCH] OpenSSL1.1g - 30-40% ECDSA performance improvement
++* Sat, 6 Jan 2018 08:21:45 +0100
++- Rebuilt to host the new upstream code (6 Jan 2018).
 +* Fri, 5 Jan 2018 20:45:22 +0100
 +- Rebuilt to host the new upstream code (5 Jan 2018).
 +* Wed, 1 Jan 2018 21:39:19 +0100
 +- Inital packaging.
 +- Based on OpenSSL 1.1.1dev pull 5001. 
++
 diff --git a/crypto/ec/asm/ecp_nistz256-armv8.pl b/crypto/ec/asm/ecp_nistz256-armv8.pl
 index cdc9161..5ac2282 100644
 --- a/crypto/ec/asm/ecp_nistz256-armv8.pl
@@ -2904,7 +2908,7 @@ index 72e2f0f..8f07b16 100644
      /* digest -> m */
      i = BN_num_bits(order);
 diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
-index 2461898..fca5709 100644
+index 2461898..cecc6f0 100644
 --- a/crypto/ec/ecp_nistz256.c
 +++ b/crypto/ec/ecp_nistz256.c
 @@ -1,5 +1,6 @@
@@ -3127,7 +3131,7 @@ index 2461898..fca5709 100644
          0, /* keyfinish */
 -        ecdh_simple_compute_key
 +        ecdh_simple_compute_key,
-+        ecp_nistz256_inv_mod_ord                    /* can be #defined-ed NULL */
++        ecp_nistz256_inv_mod_ord                    /* can be #define-d NULL */
      };
  
      return &ret;
