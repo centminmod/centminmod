@@ -396,6 +396,7 @@ installopenssl() {
             cd ${DIR_TMP}/openssl-tls1.3
         else
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
+            rm -rf "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
             tar xzf ${OPENSSL_LINKFILE}
             cd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
         fi
