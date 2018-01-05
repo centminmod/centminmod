@@ -1,13 +1,13 @@
-From cfc32a1e540e4f542e5e88415f533f4f6bd3008 Mon Sep 17 00:00:00 2001
+From cfc32a1e540e44546h5e88415f533f4f6bd3008 Mon Sep 17 00:00:00 2001
 From: Buik / Bassie <bassie@buik.locale>
-Date: Wed, 1 Jan 2018 21:34:15 +0100
+Date: Sat, 6 Jan 2018 12:21:45 +0100
+
 Subject: [PATCH] OpenSSL1.1g ec/curve25519.c: "double" ecdhx25519 performance on 64-bit platforms.
 
 The purpose of this patch is backward compatibility on OpenSSL 1.1g.
-Based on OpenSSL 1.1.1dev commit cfc32a1efb464205885e18e503bcb7051c307008.
+Based on OpenSSL 1.1.1dev.
 
--
-
+//
 "Double" is in quotes because improvement coefficient varies
 significantly depending on platform and compiler. You're likely
 to measure ~2x improvement on popular desktop and server processors,
@@ -16,8 +16,12 @@ Cortex series. Latter is because they have rather "weak" umulh
 instruction. On low-end x86_64 problem is that contemporary gcc
 and clang tend to opt for double-precision shift for >>51, which
 can be devastatingly slow on some processors.
+---
+ crypto/ec/curve25519.c | 489 +++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 483 insertions(+), 6 deletions(-)
 
 diff --git a/crypto/ec/curve25519.c b/crypto/ec/curve25519.c
+index c8aa9aa..c606a9b 100644
 --- a/crypto/ec/curve25519.c
 +++ b/crypto/ec/curve25519.c
 @@ -1,5 +1,5 @@
@@ -46,7 +50,7 @@ diff --git a/crypto/ec/curve25519.c b/crypto/ec/curve25519.c
 + * Base 2^51 implementation.
 + */
 +# define BASE_2_51_IMPLEMENTED
- 
++
 +typedef uint64_t fe51[5];
 +typedef unsigned __int128 u128;
 +
@@ -341,7 +345,7 @@ diff --git a/crypto/ec/curve25519.c b/crypto/ec/curve25519.c
 +    fe51 t2;
 +    fe51 t3;
 +    int i;
-+
+ 
 +    /*
 +     * Compute z ** -1 = z ** (2 ** 255 - 19 - 2) with the exponent as
 +     * 2 ** 255 - 21 = (2 ** 5) * (2 ** 250 - 1) + 11.
@@ -522,7 +526,7 @@ diff --git a/crypto/ec/curve25519.c b/crypto/ec/curve25519.c
  
  /* fe means field element. Here the field is \Z/(2^255-19). An element t,
   * entries t[0]...t[9], represents the integer t[0]+2^26 t[1]+2^51 t[2]+2^77
-@@ -3230,6 +3705,7 @@
+@@ -3230,6 +3705,7 @@ static void ge_scalarmult_base(ge_p3 *h, const uint8_t *a) {
    OPENSSL_cleanse(e, sizeof(e));
  }
  
@@ -530,7 +534,7 @@ diff --git a/crypto/ec/curve25519.c b/crypto/ec/curve25519.c
  /* Replace (f,g) with (g,f) if b == 1;
   * replace (f,g) with (f,g) if b == 0.
   *
-@@ -3366,6 +3842,7 @@
+@@ -3366,6 +3842,7 @@ static void x25519_scalar_mult(uint8_t out[32], const uint8_t scalar[32],
                                 const uint8_t point[32]) {
    x25519_scalar_mult_generic(out, scalar, point);
  }
