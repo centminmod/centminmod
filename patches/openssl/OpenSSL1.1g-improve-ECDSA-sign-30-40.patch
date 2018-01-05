@@ -1,22 +1,380 @@
-From cfc32a1e540e4f542e5e88415f5354nf6bd3008 Mon Sep 17 00:00:00 2001
+From cfc32a1e540e4f542e5e88415f45657hbbd3008 Mon Sep 17 00:00:00 2001
 From: Buik / Bassie <bassie@buik.locale>
-Date: Wed, 1 Jan 2018 21:39:19 +0100
-Subject: OpenSSL1.1g ec/ecp_nistz256.c: improve ECDSA sign by 30-40%.
+Date: Fri, 5 Jan 2018 20:45:22 +0100
+Subject: OpenSSL1.1g - 30-40% ECDSA performance improvement
 
 The purpose of this patch is backward compatibility on OpenSSL 1.1g.
-Based on OpenSSL 1.1.1dev pull 5001 with patch 1/4, 2/4, 3/4 and 4/4 merged into one single patch.
 
-Please note tat the x86_64-xlate.pl assambler is patched because the assambler's, 
+Please note that the x86_64-xlate.pl assambler is patched because the assambler's, 
 new cfi_directive is needed by the the optimized ecp_nistz256-x86_64.pl Perl script.
-The cfi_directive is not available at OpenSSL 1.1g GA.
+Cfi_directive is not available at OpenSSL 1.1g GA.
 
--
-
+//
 Ec/ecp_nistz256.c: improve ECDSA sign by 30-40% is based on RT#3810, 
 which added dedicated modular inversion.
 ECDSA verify results improves as well, but not as much.
+---
+ ECDSA-PATCH-CHANGELOG                |    6 +
+ crypto/ec/asm/ecp_nistz256-armv8.pl  |  309 +++-
+ crypto/ec/asm/ecp_nistz256-x86_64.pl | 1968 ++++++++++++++++++++++---
+ crypto/ec/ec_err.c                   |    2 +
+ crypto/ec/ec_lcl.h                   |    7 +-
+ crypto/ec/ec_lib.c                   |   13 +-
+ crypto/ec/ecdsa_ossl.c               |   60 +-
+ crypto/ec/ecp_nistz256.c             |  190 ++-
+ crypto/perlasm/x86_64-xlate.pl       |  389 ++++-
+ include/openssl/ec.h                 |    1 +
+ 10 files changed, 2665 insertions(+), 280 deletions(-)
+ new file mode 100644 ECDSA-PATCH-CHANGELOG
 
+diff --git a/ECDSA-PATCH-CHANGELOG b/ECDSA-PATCH-CHANGELOG
+new file mode 100644
+index 0000000..521782a
+--- /dev/null
++++ b/b/ECDSA-PATCH-CHANGELOG
+@@ -0,0 +1,6 @@
++Changelog [PATCH] OpenSSL1.1g - 30-40% ECDSA performance improvement
++* Fri, 5 Jan 2018 20:45:22 +0100
++- Rebuilt to host the new upstream code (5 Jan 2018).
++* Wed, 1 Jan 2018 21:39:19 +0100
++- Inital packaging.
++- Based on OpenSSL 1.1.1dev pull 5001. 
+diff --git a/crypto/ec/asm/ecp_nistz256-armv8.pl b/crypto/ec/asm/ecp_nistz256-armv8.pl
+index cdc9161..5ac2282 100644
+--- a/crypto/ec/asm/ecp_nistz256-armv8.pl
++++ b/crypto/ec/asm/ecp_nistz256-armv8.pl
+@@ -22,11 +22,10 @@
+ # http://eprint.iacr.org/2013/816.
+ #
+ #			with/without -DECP_NISTZ256_ASM
+-# Apple A7		+120-360%
+-# Cortex-A53		+120-400%
+-# Cortex-A57		+120-350%
+-# X-Gene		+200-330%
+-# Denver		+140-400%
++# Apple A7		+190-360%
++# Cortex-A53		+190-400%
++# Cortex-A57		+190-350%
++# Denver		+230-400%
+ #
+ # Ranges denote minimum and maximum improvement coefficients depending
+ # on benchmark. Lower coefficients are for ECDSA sign, server-side
+@@ -109,6 +108,10 @@ $code.=<<___;
+ .quad	0x0000000000000001,0xffffffff00000000,0xffffffffffffffff,0x00000000fffffffe
+ .Lone:
+ .quad	1,0,0,0
++.Lord:
++.quad	0xf3b9cac2fc632551,0xbce6faada7179e84,0xffffffffffffffff,0xffffffff00000000
++.LordK:
++.quad	0xccd1c8aaee00bc4f
+ .asciz	"ECP_NISTZ256 for ARMv8, CRYPTOGAMS by <appro\@openssl.org>"
+ 
+ // void	ecp_nistz256_to_mont(BN_ULONG x0[4],const BN_ULONG x1[4]);
+@@ -1309,6 +1312,302 @@ $code.=<<___;
+ 	ret
+ .size	ecp_nistz256_point_add_affine,.-ecp_nistz256_point_add_affine
+ ___
++}
++if (1) {
++my ($ord0,$ord1) = ($poly1,$poly3);
++my ($ord2,$ord3,$ordk,$t4) = map("x$_",(21..24));
++my $acc7 = $bi;
++
++$code.=<<___;
++////////////////////////////////////////////////////////////////////////
++// void ecp_nistz256_ord_mul_mont(uint64_t res[4], uint64_t a[4],
++//                                uint64_t b[4]);
++.globl	ecp_nistz256_ord_mul_mont
++.type	ecp_nistz256_ord_mul_mont,%function
++.align	4
++ecp_nistz256_ord_mul_mont:
++	stp	x29,x30,[sp,#-64]!
++	add	x29,sp,#0
++	stp	x19,x20,[sp,#16]
++	stp	x21,x22,[sp,#32]
++	stp	x23,x24,[sp,#48]
++
++	adr	$ordk,.Lord
++	ldr	$bi,[$bp]		// bp[0]
++	ldp	$a0,$a1,[$ap]
++	ldp	$a2,$a3,[$ap,#16]
++
++	ldp	$ord0,$ord1,[$ordk,#0]
++	ldp	$ord2,$ord3,[$ordk,#16]
++	ldr	$ordk,[$ordk,#32]
++
++	mul	$acc0,$a0,$bi		// a[0]*b[0]
++	umulh	$t0,$a0,$bi
++
++	mul	$acc1,$a1,$bi		// a[1]*b[0]
++	umulh	$t1,$a1,$bi
++
++	mul	$acc2,$a2,$bi		// a[2]*b[0]
++	umulh	$t2,$a2,$bi
++
++	mul	$acc3,$a3,$bi		// a[3]*b[0]
++	umulh	$acc4,$a3,$bi
++
++	mul	$t4,$acc0,$ordk
++
++	adds	$acc1,$acc1,$t0		// accumulate high parts of multiplication
++	adcs	$acc2,$acc2,$t1
++	adcs	$acc3,$acc3,$t2
++	adc	$acc4,$acc4,xzr
++	mov	$acc5,xzr
++___
++for ($i=1;$i<4;$i++) {
++	################################################################
++	#            ffff0000.ffffffff.yyyyyyyy.zzzzzzzz
++	# *                                     abcdefgh
++	# + xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx
++	#
++	# Now observing that ff..ff*x = (2^n-1)*x = 2^n*x-x, we
++	# rewrite above as:
++	#
++	#   xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx
++	# - 0000abcd.efgh0000.abcdefgh.00000000.00000000
++	# + abcdefgh.abcdefgh.yzayzbyz.cyzdyzey.zfyzgyzh
++$code.=<<___;
++	ldr	$bi,[$bp,#8*$i]		// b[i]
++
++	lsl	$t0,$t4,#32
++	subs	$acc2,$acc2,$t4
++	lsr	$t1,$t4,#32
++	sbcs	$acc3,$acc3,$t0
++	sbcs	$acc4,$acc4,$t1
++	sbc	$acc5,$acc5,xzr
++
++	subs	xzr,$acc0,#1
++	umulh	$t1,$ord0,$t4
++	mul	$t2,$ord1,$t4
++	umulh	$t3,$ord1,$t4
++
++	adcs	$t2,$t2,$t1
++	 mul	$t0,$a0,$bi
++	adc	$t3,$t3,xzr
++	 mul	$t1,$a1,$bi
++
++	adds	$acc0,$acc1,$t2
++	 mul	$t2,$a2,$bi
++	adcs	$acc1,$acc2,$t3
++	 mul	$t3,$a3,$bi
++	adcs	$acc2,$acc3,$t4
++	adcs	$acc3,$acc4,$t4
++	adc	$acc4,$acc5,xzr
++
++	adds	$acc0,$acc0,$t0		// accumulate low parts
++	umulh	$t0,$a0,$bi
++	adcs	$acc1,$acc1,$t1
++	umulh	$t1,$a1,$bi
++	adcs	$acc2,$acc2,$t2
++	umulh	$t2,$a2,$bi
++	adcs	$acc3,$acc3,$t3
++	umulh	$t3,$a3,$bi
++	adc	$acc4,$acc4,xzr
++	mul	$t4,$acc0,$ordk
++	adds	$acc1,$acc1,$t0		// accumulate high parts
++	adcs	$acc2,$acc2,$t1
++	adcs	$acc3,$acc3,$t2
++	adcs	$acc4,$acc4,$t3
++	adc	$acc5,xzr,xzr
++___
++}
++$code.=<<___;
++	lsl	$t0,$t4,#32		// last reduction
++	subs	$acc2,$acc2,$t4
++	lsr	$t1,$t4,#32
++	sbcs	$acc3,$acc3,$t0
++	sbcs	$acc4,$acc4,$t1
++	sbc	$acc5,$acc5,xzr
++
++	subs	xzr,$acc0,#1
++	umulh	$t1,$ord0,$t4
++	mul	$t2,$ord1,$t4
++	umulh	$t3,$ord1,$t4
++
++	adcs	$t2,$t2,$t1
++	adc	$t3,$t3,xzr
++
++	adds	$acc0,$acc1,$t2
++	adcs	$acc1,$acc2,$t3
++	adcs	$acc2,$acc3,$t4
++	adcs	$acc3,$acc4,$t4
++	adc	$acc4,$acc5,xzr
++
++	subs	$t0,$acc0,$ord0		// ret -= modulus
++	sbcs	$t1,$acc1,$ord1
++	sbcs	$t2,$acc2,$ord2
++	sbcs	$t3,$acc3,$ord3
++	sbcs	xzr,$acc4,xzr
++
++	csel	$acc0,$acc0,$t0,lo	// ret = borrow ? ret : ret-modulus
++	csel	$acc1,$acc1,$t1,lo
++	csel	$acc2,$acc2,$t2,lo
++	stp	$acc0,$acc1,[$rp]
++	csel	$acc3,$acc3,$t3,lo
++	stp	$acc2,$acc3,[$rp,#16]
++
++	ldp	x19,x20,[sp,#16]
++	ldp	x21,x22,[sp,#32]
++	ldp	x23,x24,[sp,#48]
++	ldr	x29,[sp],#64
++	ret
++.size	ecp_nistz256_ord_mul_mont,.-ecp_nistz256_ord_mul_mont
++
++////////////////////////////////////////////////////////////////////////
++// void ecp_nistz256_ord_sqr_mont(uint64_t res[4], uint64_t a[4],
++//                                int rep);
++.globl	ecp_nistz256_ord_sqr_mont
++.type	ecp_nistz256_ord_sqr_mont,%function
++.align	4
++ecp_nistz256_ord_sqr_mont:
++	stp	x29,x30,[sp,#-64]!
++	add	x29,sp,#0
++	stp	x19,x20,[sp,#16]
++	stp	x21,x22,[sp,#32]
++	stp	x23,x24,[sp,#48]
++
++	adr	$ordk,.Lord
++	ldp	$a0,$a1,[$ap]
++	ldp	$a2,$a3,[$ap,#16]
++
++	ldp	$ord0,$ord1,[$ordk,#0]
++	ldp	$ord2,$ord3,[$ordk,#16]
++	ldr	$ordk,[$ordk,#32]
++	b	.Loop_ord_sqr
++
++.align	4
++.Loop_ord_sqr:
++	sub	$bp,$bp,#1
++	////////////////////////////////////////////////////////////////
++	//  |  |  |  |  |  |a1*a0|  |
++	//  |  |  |  |  |a2*a0|  |  |
++	//  |  |a3*a2|a3*a0|  |  |  |
++	//  |  |  |  |a2*a1|  |  |  |
++	//  |  |  |a3*a1|  |  |  |  |
++	// *|  |  |  |  |  |  |  | 2|
++	// +|a3*a3|a2*a2|a1*a1|a0*a0|
++	//  |--+--+--+--+--+--+--+--|
++	//  |A7|A6|A5|A4|A3|A2|A1|A0|, where Ax is $accx, i.e. follow $accx
++	//
++	//  "can't overflow" below mark carrying into high part of
++	//  multiplication result, which can't overflow, because it
++	//  can never be all ones.
++
++	mul	$acc1,$a1,$a0		// a[1]*a[0]
++	umulh	$t1,$a1,$a0
++	mul	$acc2,$a2,$a0		// a[2]*a[0]
++	umulh	$t2,$a2,$a0
++	mul	$acc3,$a3,$a0		// a[3]*a[0]
++	umulh	$acc4,$a3,$a0
++
++	adds	$acc2,$acc2,$t1		// accumulate high parts of multiplication
++	 mul	$t0,$a2,$a1		// a[2]*a[1]
++	 umulh	$t1,$a2,$a1
++	adcs	$acc3,$acc3,$t2
++	 mul	$t2,$a3,$a1		// a[3]*a[1]
++	 umulh	$t3,$a3,$a1
++	adc	$acc4,$acc4,xzr		// can't overflow
++
++	mul	$acc5,$a3,$a2		// a[3]*a[2]
++	umulh	$acc6,$a3,$a2
++
++	adds	$t1,$t1,$t2		// accumulate high parts of multiplication
++	 mul	$acc0,$a0,$a0		// a[0]*a[0]
++	adc	$t2,$t3,xzr		// can't overflow
++
++	adds	$acc3,$acc3,$t0		// accumulate low parts of multiplication
++	 umulh	$a0,$a0,$a0
++	adcs	$acc4,$acc4,$t1
++	 mul	$t1,$a1,$a1		// a[1]*a[1]
++	adcs	$acc5,$acc5,$t2
++	 umulh	$a1,$a1,$a1
++	adc	$acc6,$acc6,xzr		// can't overflow
++
++	adds	$acc1,$acc1,$acc1	// acc[1-6]*=2
++	 mul	$t2,$a2,$a2		// a[2]*a[2]
++	adcs	$acc2,$acc2,$acc2
++	 umulh	$a2,$a2,$a2
++	adcs	$acc3,$acc3,$acc3
++	 mul	$t3,$a3,$a3		// a[3]*a[3]
++	adcs	$acc4,$acc4,$acc4
++	 umulh	$a3,$a3,$a3
++	adcs	$acc5,$acc5,$acc5
++	adcs	$acc6,$acc6,$acc6
++	adc	$acc7,xzr,xzr
++
++	adds	$acc1,$acc1,$a0		// +a[i]*a[i]
++	 mul	$t4,$acc0,$ordk
++	adcs	$acc2,$acc2,$t1
++	adcs	$acc3,$acc3,$a1
++	adcs	$acc4,$acc4,$t2
++	adcs	$acc5,$acc5,$a2
++	adcs	$acc6,$acc6,$t3
++	adc	$acc7,$acc7,$a3
++___
++for($i=0; $i<4; $i++) {			# reductions
++$code.=<<___;
++	subs	xzr,$acc0,#1
++	umulh	$t1,$ord0,$t4
++	mul	$t2,$ord1,$t4
++	umulh	$t3,$ord1,$t4
++
++	adcs	$t2,$t2,$t1
++	adc	$t3,$t3,xzr
++
++	adds	$acc0,$acc1,$t2
++	adcs	$acc1,$acc2,$t3
++	adcs	$acc2,$acc3,$t4
++	adc	$acc3,xzr,$t4		// can't overflow
++___
++$code.=<<___	if ($i<3);
++	mul	$t3,$acc0,$ordk
++___
++$code.=<<___;
++	lsl	$t0,$t4,#32
++	subs	$acc1,$acc1,$t4
++	lsr	$t1,$t4,#32
++	sbcs	$acc2,$acc2,$t0
++	sbc	$acc3,$acc3,$t1		// can't borrow
++___
++	($t3,$t4) = ($t4,$t3);
++}
++$code.=<<___;
++	adds	$acc0,$acc0,$acc4	// accumulate upper half
++	adcs	$acc1,$acc1,$acc5
++	adcs	$acc2,$acc2,$acc6
++	adcs	$acc3,$acc3,$acc7
++	adc	$acc4,xzr,xzr
++
++	subs	$t0,$acc0,$ord0		// ret -= modulus
++	sbcs	$t1,$acc1,$ord1
++	sbcs	$t2,$acc2,$ord2
++	sbcs	$t3,$acc3,$ord3
++	sbcs	xzr,$acc4,xzr
++
++	csel	$a0,$acc0,$t0,lo	// ret = borrow ? ret : ret-modulus
++	csel	$a1,$acc1,$t1,lo
++	csel	$a2,$acc2,$t2,lo
++	csel	$a3,$acc3,$t3,lo
++
++	cbnz	$bp,.Loop_ord_sqr
++
++	stp	$a0,$a1,[$rp]
++	stp	$a2,$a3,[$rp,#16]
++
++	ldp	x19,x20,[sp,#16]
++	ldp	x21,x22,[sp,#32]
++	ldp	x23,x24,[sp,#48]
++	ldr	x29,[sp],#64
++	ret
++.size	ecp_nistz256_ord_sqr_mont,.-ecp_nistz256_ord_sqr_mont
++___
+ }	}
+ 
+ ########################################################################
 diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x86_64.pl
+index 714e852..e65e829 100755
 --- a/crypto/ec/asm/ecp_nistz256-x86_64.pl
 +++ b/crypto/ec/asm/ecp_nistz256-x86_64.pl
 @@ -1,60 +1,42 @@
@@ -103,7 +461,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  $flavour = shift;
  $output  = shift;
-@@ -115,6 +97,12 @@
+@@ -115,6 +97,12 @@ $code.=<<___;
  .long 3,3,3,3,3,3,3,3
  .LONE_mont:
  .quad 0x0000000000000001, 0xffffffff00000000, 0xffffffffffffffff, 0x00000000fffffffe
@@ -116,7 +474,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  
  {
-@@ -131,8 +119,12 @@
+@@ -131,8 +119,12 @@ $code.=<<___;
  .type	ecp_nistz256_mul_by_2,\@function,2
  .align	64
  ecp_nistz256_mul_by_2:
@@ -129,7 +487,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	mov	8*0($a_ptr), $a0
  	xor	$t4,$t4
-@@ -165,9 +157,15 @@
+@@ -165,9 +157,15 @@ ecp_nistz256_mul_by_2:
  	mov	$a2, 8*2($r_ptr)
  	mov	$a3, 8*3($r_ptr)
  
@@ -147,7 +505,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_mul_by_2,.-ecp_nistz256_mul_by_2
  
  ################################################################################
-@@ -176,8 +174,12 @@
+@@ -176,8 +174,12 @@ ecp_nistz256_mul_by_2:
  .type	ecp_nistz256_div_by_2,\@function,2
  .align	32
  ecp_nistz256_div_by_2:
@@ -160,7 +518,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	mov	8*0($a_ptr), $a0
  	mov	8*1($a_ptr), $a1
-@@ -225,9 +227,15 @@
+@@ -225,9 +227,15 @@ ecp_nistz256_div_by_2:
  	mov	$a2, 8*2($r_ptr)
  	mov	$a3, 8*3($r_ptr)
  
@@ -178,7 +536,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_div_by_2,.-ecp_nistz256_div_by_2
  
  ################################################################################
-@@ -236,8 +244,12 @@
+@@ -236,8 +244,12 @@ ecp_nistz256_div_by_2:
  .type	ecp_nistz256_mul_by_3,\@function,2
  .align	32
  ecp_nistz256_mul_by_3:
@@ -191,7 +549,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	mov	8*0($a_ptr), $a0
  	xor	$t4, $t4
-@@ -291,9 +303,15 @@
+@@ -291,9 +303,15 @@ ecp_nistz256_mul_by_3:
  	mov	$a2, 8*2($r_ptr)
  	mov	$a3, 8*3($r_ptr)
  
@@ -209,7 +567,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_mul_by_3,.-ecp_nistz256_mul_by_3
  
  ################################################################################
-@@ -302,8 +320,12 @@
+@@ -302,8 +320,12 @@ ecp_nistz256_mul_by_3:
  .type	ecp_nistz256_add,\@function,3
  .align	32
  ecp_nistz256_add:
@@ -222,34 +580,12 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	mov	8*0($a_ptr), $a0
  	xor	$t4, $t4
-@@ -320,126 +342,1231 @@
- 	 mov	$a1, $t1
- 	adc	\$0, $t4
+@@ -337,9 +359,15 @@ ecp_nistz256_add:
+ 	mov	$a2, 8*2($r_ptr)
+ 	mov	$a3, 8*3($r_ptr)
  
--	sub	8*0($a_ptr), $a0
--	 mov	$a2, $t2
--	sbb	8*1($a_ptr), $a1
--	sbb	8*2($a_ptr), $a2
--	 mov	$a3, $t3
--	sbb	8*3($a_ptr), $a3
--	sbb	\$0, $t4
-+	sub	8*0($a_ptr), $a0
-+	 mov	$a2, $t2
-+	sbb	8*1($a_ptr), $a1
-+	sbb	8*2($a_ptr), $a2
-+	 mov	$a3, $t3
-+	sbb	8*3($a_ptr), $a3
-+	sbb	\$0, $t4
-+
-+	cmovc	$t0, $a0
-+	cmovc	$t1, $a1
-+	mov	$a0, 8*0($r_ptr)
-+	cmovc	$t2, $a2
-+	mov	$a1, 8*1($r_ptr)
-+	cmovc	$t3, $a3
-+	mov	$a2, 8*2($r_ptr)
-+	mov	$a3, 8*3($r_ptr)
-+
+-	pop %r13
+-	pop %r12
 +	mov	0(%rsp),%r13
 +.cfi_restore	%r13
 +	mov	8(%rsp),%r12
@@ -257,46 +593,36 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	lea	16(%rsp),%rsp
 +.cfi_adjust_cfa_offset	-16
 +.Ladd_epilogue:
-+	ret
+ 	ret
 +.cfi_endproc
-+.size	ecp_nistz256_add,.-ecp_nistz256_add
-+
-+################################################################################
-+# void ecp_nistz256_sub(uint64_t res[4], uint64_t a[4], uint64_t b[4]);
-+.globl	ecp_nistz256_sub
-+.type	ecp_nistz256_sub,\@function,3
-+.align	32
-+ecp_nistz256_sub:
+ .size	ecp_nistz256_add,.-ecp_nistz256_add
+ 
+ ################################################################################
+@@ -348,8 +376,12 @@ ecp_nistz256_add:
+ .type	ecp_nistz256_sub,\@function,3
+ .align	32
+ ecp_nistz256_sub:
 +.cfi_startproc
-+	push	%r12
+ 	push	%r12
 +.cfi_push	%r12
-+	push	%r13
+ 	push	%r13
 +.cfi_push	%r13
 +.Lsub_body:
-+
-+	mov	8*0($a_ptr), $a0
-+	xor	$t4, $t4
-+	mov	8*1($a_ptr), $a1
-+	mov	8*2($a_ptr), $a2
-+	mov	8*3($a_ptr), $a3
-+	lea	.Lpoly(%rip), $a_ptr
-+
-+	sub	8*0($b_ptr), $a0
-+	sbb	8*1($b_ptr), $a1
-+	 mov	$a0, $t0
-+	sbb	8*2($b_ptr), $a2
-+	sbb	8*3($b_ptr), $a3
-+	 mov	$a1, $t1
-+	sbb	\$0, $t4
-+
-+	add	8*0($a_ptr), $a0
-+	 mov	$a2, $t2
-+	adc	8*1($a_ptr), $a1
-+	adc	8*2($a_ptr), $a2
-+	 mov	$a3, $t3
-+	adc	8*3($a_ptr), $a3
-+	test	$t4, $t4
-+
+ 
+ 	mov	8*0($a_ptr), $a0
+ 	xor	$t4, $t4
+@@ -374,72 +406,1167 @@ ecp_nistz256_sub:
+ 	adc	8*3($a_ptr), $a3
+ 	test	$t4, $t4
+ 
+-	cmovz	$t0, $a0
+-	cmovz	$t1, $a1
+-	mov	$a0, 8*0($r_ptr)
+-	cmovz	$t2, $a2
+-	mov	$a1, 8*1($r_ptr)
+-	cmovz	$t3, $a3
+-	mov	$a2, 8*2($r_ptr)
+-	mov	$a3, 8*3($r_ptr)
 +	cmovz	$t0, $a0
 +	cmovz	$t1, $a1
 +	mov	$a0, 8*0($r_ptr)
@@ -1225,15 +1551,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	cmovc	$t3, $acc5
 +	cmovc	$t0, $acc0
 +	cmovc	$t1, $acc1
- 
--	cmovc	$t0, $a0
--	cmovc	$t1, $a1
--	mov	$a0, 8*0($r_ptr)
--	cmovc	$t2, $a2
--	mov	$a1, 8*1($r_ptr)
--	cmovc	$t3, $a3
--	mov	$a2, 8*2($r_ptr)
--	mov	$a3, 8*3($r_ptr)
++
 +	mov	$acc4, 8*0($r_ptr)
 +	mov	$acc5, 8*1($r_ptr)
 +	mov	$acc0, 8*2($r_ptr)
@@ -1257,17 +1575,17 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +.cfi_adjust_cfa_offset	-48
 +.Lord_mulx_epilogue:
  	ret
--.size	ecp_nistz256_add,.-ecp_nistz256_add
+-.size	ecp_nistz256_sub,.-ecp_nistz256_sub
 +.cfi_endproc
 +.size	ecp_nistz256_ord_mul_montx,.-ecp_nistz256_ord_mul_montx
  
 -################################################################################
--# void ecp_nistz256_sub(uint64_t res[4], uint64_t a[4], uint64_t b[4]);
--.globl	ecp_nistz256_sub
--.type	ecp_nistz256_sub,\@function,3
+-# void ecp_nistz256_neg(uint64_t res[4], uint64_t a[4]);
+-.globl	ecp_nistz256_neg
+-.type	ecp_nistz256_neg,\@function,2
 +.type	ecp_nistz256_ord_sqr_montx,\@function,3
  .align	32
--ecp_nistz256_sub:
+-ecp_nistz256_neg:
 +ecp_nistz256_ord_sqr_montx:
 +.cfi_startproc
 +.Lecp_nistz256_ord_sqr_montx:
@@ -1285,12 +1603,11 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +.cfi_push	%r15
 +.Lord_sqrx_body:
  
--	mov	8*0($a_ptr), $a0
+-	xor	$a0, $a0
+-	xor	$a1, $a1
+-	xor	$a2, $a2
+-	xor	$a3, $a3
 -	xor	$t4, $t4
--	mov	8*1($a_ptr), $a1
--	mov	8*2($a_ptr), $a2
--	mov	8*3($a_ptr), $a3
--	lea	.Lpoly(%rip), $a_ptr
 +	mov	$b_org, $b_ptr
 +	mov	8*0($a_ptr), %rdx
 +	mov	8*1($a_ptr), $acc6
@@ -1299,11 +1616,12 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	lea	.Lord(%rip), $a_ptr
 +	jmp	.Loop_ord_sqrx
  
--	sub	8*0($b_ptr), $a0
--	sbb	8*1($b_ptr), $a1
+-	sub	8*0($a_ptr), $a0
+-	sbb	8*1($a_ptr), $a1
+-	sbb	8*2($a_ptr), $a2
 -	 mov	$a0, $t0
--	sbb	8*2($b_ptr), $a2
--	sbb	8*3($b_ptr), $a3
+-	sbb	8*3($a_ptr), $a3
+-	lea	.Lpoly(%rip), $a_ptr
 -	 mov	$a1, $t1
 -	sbb	\$0, $t4
 +.align	32
@@ -1375,11 +1693,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	mulx	%rdx, $t0, $t4
 +	adox	$t0, $acc6
 +	adox	$t4, $acc7
- 
--	pop %r13
--	pop %r12
--	ret
--.size	ecp_nistz256_sub,.-ecp_nistz256_sub
++
 +	################################# reduction
 +	mov	$acc0, %rdx
 +	mulx	8*4($a_ptr), %rdx, $t0
@@ -1398,24 +1712,11 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	adcx	$t0, $acc3
 +	adox	$t1, $acc0		# of=0
 +	adcx	%rax, $acc0		# cf=0
- 
--################################################################################
--# void ecp_nistz256_neg(uint64_t res[4], uint64_t a[4]);
--.globl	ecp_nistz256_neg
--.type	ecp_nistz256_neg,\@function,2
--.align	32
--ecp_nistz256_neg:
--	push	%r12
--	push	%r13
++
 +	#################################
 +	mov	$acc1, %rdx
 +	mulx	8*4($a_ptr), %rdx, $t0
- 
--	xor	$a0, $a0
--	xor	$a1, $a1
--	xor	$a2, $a2
--	xor	$a3, $a3
--	xor	$t4, $t4
++
 +	mulx	8*0($a_ptr), $t0, $t1
 +	adox	$t0, $acc1		# guaranteed to be zero
 +	adcx	$t1, $acc2
@@ -1429,26 +1730,11 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	adox	$t0, $acc0
 +	adcx	$t1, $acc1		# cf=0
 +	adox	%rax, $acc1		# of=0
- 
--	sub	8*0($a_ptr), $a0
--	sbb	8*1($a_ptr), $a1
--	sbb	8*2($a_ptr), $a2
--	 mov	$a0, $t0
--	sbb	8*3($a_ptr), $a3
--	lea	.Lpoly(%rip), $a_ptr
--	 mov	$a1, $t1
--	sbb	\$0, $t4
++
 +	#################################
 +	mov	$acc2, %rdx
 +	mulx	8*4($a_ptr), %rdx, $t0
- 
--	add	8*0($a_ptr), $a0
--	 mov	$a2, $t2
--	adc	8*1($a_ptr), $a1
--	adc	8*2($a_ptr), $a2
--	 mov	$a3, $t3
--	adc	8*3($a_ptr), $a3
--	test	$t4, $t4
++
 +	mulx	8*0($a_ptr), $t0, $t1
 +	adcx	$t0, $acc2		# guaranteed to be zero
 +	adox	$t1, $acc3
@@ -1462,15 +1748,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	adcx	$t0, $acc1
 +	adox	$t1, $acc2		# of=0
 +	adcx	%rax, $acc2		# cf=0
- 
--	cmovz	$t0, $a0
--	cmovz	$t1, $a1
--	mov	$a0, 8*0($r_ptr)
--	cmovz	$t2, $a2
--	mov	$a1, 8*1($r_ptr)
--	cmovz	$t3, $a3
--	mov	$a2, 8*2($r_ptr)
--	mov	$a3, 8*3($r_ptr)
++
 +	#################################
 +	mov	$acc3, %rdx
 +	mulx	8*4($a_ptr), %rdx, $t0
@@ -1488,9 +1766,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	adox	$t0, $acc2
 +	adcx	$t1, $acc3
 +	adox	%rax, $acc3
- 
--	pop %r13
--	pop %r12
++
 +	################################# accumulate upper half
 +	add	$acc0, $acc4		# add	$acc4, $acc0
 +	adc	$acc5, $acc1
@@ -1524,7 +1800,9 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
 +	pxor	%xmm2, %xmm2
 +	mov	$acc0, 8*3($r_ptr)
 +	pxor	%xmm3, %xmm3
-+
+ 
+-	pop %r13
+-	pop %r12
 +	mov	0(%rsp),%r15
 +.cfi_restore	%r15
 +	mov	8(%rsp),%r14
@@ -1554,7 +1832,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  $code.=<<___;
  ################################################################################
-@@ -470,6 +1597,7 @@
+@@ -470,6 +1597,7 @@ $code.=<<___;
  .type	ecp_nistz256_mul_mont,\@function,3
  .align	32
  ecp_nistz256_mul_mont:
@@ -1562,7 +1840,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	mov	\$0x80100, %ecx
-@@ -478,11 +1606,18 @@
+@@ -478,11 +1606,18 @@ ___
  $code.=<<___;
  .Lmul_mont:
  	push	%rbp
@@ -1581,7 +1859,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	cmp	\$0x80100, %ecx
-@@ -515,13 +1650,23 @@
+@@ -515,13 +1650,23 @@ $code.=<<___	if ($addx);
  ___
  $code.=<<___;
  .Lmul_mont_done:
@@ -1611,7 +1889,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_mul_mont,.-ecp_nistz256_mul_mont
  
  .type	__ecp_nistz256_mul_montq,\@abi-omnipotent
-@@ -611,7 +1756,7 @@
+@@ -611,7 +1756,7 @@ __ecp_nistz256_mul_montq:
  	adc	\$0, $acc0
  
  	########################################################################
@@ -1620,7 +1898,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  	mov	$acc1, $t1
  	shl	\$32, $acc1
  	mulq	$poly3
-@@ -658,7 +1803,7 @@
+@@ -658,7 +1803,7 @@ __ecp_nistz256_mul_montq:
  	adc	\$0, $acc1
  
  	########################################################################
@@ -1629,7 +1907,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  	mov	$acc2, $t1
  	shl	\$32, $acc2
  	mulq	$poly3
-@@ -705,7 +1850,7 @@
+@@ -705,7 +1850,7 @@ __ecp_nistz256_mul_montq:
  	adc	\$0, $acc2
  
  	########################################################################
@@ -1638,7 +1916,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  	mov	$acc3, $t1
  	shl	\$32, $acc3
  	mulq	$poly3
-@@ -718,7 +1863,7 @@
+@@ -718,7 +1863,7 @@ __ecp_nistz256_mul_montq:
  	 mov	$acc5, $t1
  	adc	\$0, $acc2
  
@@ -1647,7 +1925,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  	# Branch-less conditional subtraction of P
  	sub	\$-1, $acc4		# .Lpoly[0]
  	 mov	$acc0, $t2
-@@ -751,6 +1896,7 @@
+@@ -751,6 +1896,7 @@ __ecp_nistz256_mul_montq:
  .type	ecp_nistz256_sqr_mont,\@function,2
  .align	32
  ecp_nistz256_sqr_mont:
@@ -1655,7 +1933,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	mov	\$0x80100, %ecx
-@@ -758,11 +1904,18 @@
+@@ -758,11 +1904,18 @@ $code.=<<___	if ($addx);
  ___
  $code.=<<___;
  	push	%rbp
@@ -1674,7 +1952,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	cmp	\$0x80100, %ecx
-@@ -791,13 +1944,23 @@
+@@ -791,13 +1944,23 @@ $code.=<<___	if ($addx);
  ___
  $code.=<<___;
  .Lsqr_mont_done:
@@ -1704,7 +1982,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_sqr_mont,.-ecp_nistz256_sqr_mont
  
  .type	__ecp_nistz256_sqr_montq,\@abi-omnipotent
-@@ -1278,8 +2441,12 @@
+@@ -1278,8 +2441,12 @@ $code.=<<___;
  .type	ecp_nistz256_from_mont,\@function,2
  .align	32
  ecp_nistz256_from_mont:
@@ -1717,7 +1995,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	mov	8*0($in_ptr), %rax
  	mov	.Lpoly+8*3(%rip), $t2
-@@ -1360,9 +2527,15 @@
+@@ -1360,9 +2527,15 @@ ecp_nistz256_from_mont:
  	mov	$acc2, 8*2($r_ptr)
  	mov	$acc3, 8*3($r_ptr)
  
@@ -1735,7 +2013,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_from_mont,.-ecp_nistz256_from_mont
  ___
  }
-@@ -1488,10 +2661,10 @@
+@@ -1488,10 +2661,10 @@ $code.=<<___	if ($win64);
  	movaps	0x80(%rsp), %xmm14
  	movaps	0x90(%rsp), %xmm15
  	lea	0xa8(%rsp), %rsp
@@ -1747,7 +2025,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_gather_w5,.-ecp_nistz256_gather_w5
  
  ################################################################################
-@@ -1593,10 +2766,10 @@
+@@ -1593,10 +2766,10 @@ $code.=<<___	if ($win64);
  	movaps	0x80(%rsp), %xmm14
  	movaps	0x90(%rsp), %xmm15
  	lea	0xa8(%rsp), %rsp
@@ -1759,7 +2037,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_gather_w7,.-ecp_nistz256_gather_w7
  ___
  }
-@@ -1617,18 +2790,19 @@
+@@ -1617,18 +2790,19 @@ ecp_nistz256_avx2_gather_w5:
  ___
  $code.=<<___	if ($win64);
  	lea	-0x88(%rsp), %rax
@@ -1790,7 +2068,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___;
  	vmovdqa	.LTwo(%rip), $TWO
-@@ -1694,11 +2868,11 @@
+@@ -1694,11 +2868,11 @@ $code.=<<___	if ($win64);
  	movaps	0x70(%rsp), %xmm13
  	movaps	0x80(%rsp), %xmm14
  	movaps	0x90(%rsp), %xmm15
@@ -1804,7 +2082,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_avx2_gather_w5,.-ecp_nistz256_avx2_gather_w5
  ___
  }
-@@ -1721,19 +2895,20 @@
+@@ -1721,19 +2895,20 @@ ecp_nistz256_avx2_gather_w7:
  	vzeroupper
  ___
  $code.=<<___	if ($win64);
@@ -1836,7 +2114,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___;
  	vmovdqa	.LThree(%rip), $THREE
-@@ -1814,11 +2989,11 @@
+@@ -1814,11 +2989,11 @@ $code.=<<___	if ($win64);
  	movaps	0x70(%rsp), %xmm13
  	movaps	0x80(%rsp), %xmm14
  	movaps	0x90(%rsp), %xmm15
@@ -1850,7 +2128,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_avx2_gather_w7,.-ecp_nistz256_avx2_gather_w7
  ___
  } else {
-@@ -2022,6 +3197,7 @@
+@@ -2022,6 +3197,7 @@ $code.=<<___;
  .type	ecp_nistz256_point_double,\@function,2
  .align	32
  ecp_nistz256_point_double:
@@ -1858,7 +2136,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	mov	\$0x80100, %ecx
-@@ -2038,17 +3214,26 @@
+@@ -2038,17 +3214,26 @@ $code.=<<___;
  .type	ecp_nistz256_point_doublex,\@function,2
  .align	32
  ecp_nistz256_point_doublex:
@@ -1885,7 +2163,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  .Lpoint_double_shortcut$x:
  	movdqu	0x00($a_ptr), %xmm0		# copy	*(P256_POINT *)$a_ptr.x
-@@ -2114,7 +3299,7 @@
+@@ -2114,7 +3299,7 @@ $code.=<<___;
  	movq	%xmm1, $r_ptr
  	call	__ecp_nistz256_sqr_mont$x	# p256_sqr_mont(res_y, S);
  ___
@@ -1894,7 +2172,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ######## ecp_nistz256_div_by_2(res_y, res_y); ##########################
  # operate in 4-5-6-7 "name space" that matches squaring output
  #
-@@ -2203,7 +3388,7 @@
+@@ -2203,7 +3388,7 @@ $code.=<<___;
  	lea	$M(%rsp), $b_ptr
  	mov	$acc4, $acc6			# harmonize sub output and mul input
  	xor	%ecx, %ecx
@@ -1903,7 +2181,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  	mov	$acc5, $acc2
  	mov	$acc5, $S+8*1(%rsp)
  	cmovz	$acc0, $acc3
-@@ -2219,14 +3404,25 @@
+@@ -2219,14 +3404,25 @@ $code.=<<___;
  	movq	%xmm1, $r_ptr
  	call	__ecp_nistz256_sub_from$x	# p256_sub(res_y, S, res_y);
  
@@ -1936,7 +2214,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_point_double$sfx,.-ecp_nistz256_point_double$sfx
  ___
  }
-@@ -2252,6 +3448,7 @@
+@@ -2252,6 +3448,7 @@ $code.=<<___;
  .type	ecp_nistz256_point_add,\@function,3
  .align	32
  ecp_nistz256_point_add:
@@ -1944,7 +2222,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	mov	\$0x80100, %ecx
-@@ -2268,17 +3465,26 @@
+@@ -2268,17 +3465,26 @@ $code.=<<___;
  .type	ecp_nistz256_point_addx,\@function,3
  .align	32
  ecp_nistz256_point_addx:
@@ -1971,7 +2249,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	movdqu	0x00($a_ptr), %xmm0		# copy	*(P256_POINT *)$a_ptr
  	movdqu	0x10($a_ptr), %xmm1
-@@ -2587,14 +3793,25 @@
+@@ -2587,14 +3793,25 @@ $code.=<<___;
  	movdqu	%xmm3, 0x30($r_ptr)
  
  .Ladd_done$x:
@@ -2004,7 +2282,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_point_add$sfx,.-ecp_nistz256_point_add$sfx
  ___
  }
-@@ -2619,6 +3836,7 @@
+@@ -2619,6 +3836,7 @@ $code.=<<___;
  .type	ecp_nistz256_point_add_affine,\@function,3
  .align	32
  ecp_nistz256_point_add_affine:
@@ -2012,7 +2290,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  ___
  $code.=<<___	if ($addx);
  	mov	\$0x80100, %ecx
-@@ -2635,17 +3853,26 @@
+@@ -2635,17 +3853,26 @@ $code.=<<___;
  .type	ecp_nistz256_point_add_affinex,\@function,3
  .align	32
  ecp_nistz256_point_add_affinex:
@@ -2039,7 +2317,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  	movdqu	0x00($a_ptr), %xmm0	# copy	*(P256_POINT *)$a_ptr
  	mov	$b_org, $b_ptr		# reassign
-@@ -2890,14 +4117,25 @@
+@@ -2890,14 +4117,25 @@ $code.=<<___;
  	movdqu	%xmm2, 0x20($r_ptr)
  	movdqu	%xmm3, 0x30($r_ptr)
  
@@ -2072,7 +2350,7 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  .size	ecp_nistz256_point_add_affine$sfx,.-ecp_nistz256_point_add_affine$sfx
  ___
  }
-@@ -3048,11 +4286,395 @@
+@@ -3048,11 +4286,395 @@ ___
  }
  }}}
  
@@ -2471,9 +2749,10 @@ diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x
  
  use integer;
 diff --git a/crypto/ec/ec_err.c b/crypto/ec/ec_err.c
+index e4c2c1c..cb78bd5 100644
 --- a/crypto/ec/ec_err.c
 +++ b/crypto/ec/ec_err.c
-@@ -46,6 +46,8 @@
+@@ -46,6 +46,8 @@ static ERR_STRING_DATA EC_str_functs[] = {
      {ERR_FUNC(EC_F_ECPKPARAMETERS_PRINT), "ECPKParameters_print"},
      {ERR_FUNC(EC_F_ECPKPARAMETERS_PRINT_FP), "ECPKParameters_print_fp"},
      {ERR_FUNC(EC_F_ECP_NISTZ256_GET_AFFINE), "ecp_nistz256_get_affine"},
@@ -2483,9 +2762,10 @@ diff --git a/crypto/ec/ec_err.c b/crypto/ec/ec_err.c
       "ecp_nistz256_mult_precompute"},
      {ERR_FUNC(EC_F_ECP_NISTZ256_POINTS_MUL), "ecp_nistz256_points_mul"},
 diff --git a/crypto/ec/ec_lcl.h b/crypto/ec/ec_lcl.h
+index ded35a7..53db327 100644
 --- a/crypto/ec/ec_lcl.h
 +++ b/crypto/ec/ec_lcl.h
-@@ -155,6 +155,9 @@ struct ec_method_st {
+@@ -169,6 +169,9 @@ struct ec_method_st {
      /* custom ECDH operation */
      int (*ecdh_compute_key)(unsigned char **pout, size_t *poutlen,
                              const EC_POINT *pub_key, const EC_KEY *ecdh);
@@ -2495,7 +2775,7 @@ diff --git a/crypto/ec/ec_lcl.h b/crypto/ec/ec_lcl.h
  };
  
  /*
-@@ -520,7 +523,6 @@ void ec_GFp_nistp_points_make_affine_internal(size_t num, void *point_array,
+@@ -534,7 +537,6 @@ void ec_GFp_nistp_points_make_affine_internal(size_t num, void *point_array,
  void ec_GFp_nistp_recode_scalar_bits(unsigned char *sign,
                                       unsigned char *digit, unsigned char in);
  #endif
@@ -2503,7 +2783,7 @@ diff --git a/crypto/ec/ec_lcl.h b/crypto/ec/ec_lcl.h
  int ec_group_simple_order_bits(const EC_GROUP *group);
  
  #ifdef ECP_NISTZ256_ASM
-@@ -604,3 +606,6 @@ int X25519(uint8_t out_shared_key[32], const uint8_t private_key[32],
+@@ -611,3 +613,6 @@ int X25519(uint8_t out_shared_key[32], const uint8_t private_key[32],
             const uint8_t peer_public_value[32]);
  void X25519_public_from_private(uint8_t out_public_value[32],
                                  const uint8_t private_key[32]);
@@ -2511,9 +2791,10 @@ diff --git a/crypto/ec/ec_lcl.h b/crypto/ec/ec_lcl.h
 +int EC_GROUP_do_inverse_ord(const EC_GROUP *group, BIGNUM *res,
 +                            BIGNUM *x, BN_CTX *ctx);
 diff --git a/crypto/ec/ec_lib.c b/crypto/ec/ec_lib.c
+index 7cb4bfe..a74a96c 100644
 --- a/crypto/ec/ec_lib.c
 +++ b/crypto/ec/ec_lib.c
-@@ -261,6 +261,8 @@ int EC_METHOD_get_field_type(const EC_METHOD *meth)
+@@ -256,6 +256,8 @@ int EC_METHOD_get_field_type(const EC_METHOD *meth)
      return meth->field_type;
  }
  
@@ -2522,7 +2803,7 @@ diff --git a/crypto/ec/ec_lib.c b/crypto/ec/ec_lib.c
  int EC_GROUP_set_generator(EC_GROUP *group, const EC_POINT *generator,
                             const BIGNUM *order, const BIGNUM *cofactor)
  {
-@@ -961,7 +963,7 @@ int EC_GROUP_have_precompute_mult(const EC_GROUP *group)
+@@ -957,7 +959,7 @@ int EC_GROUP_have_precompute_mult(const EC_GROUP *group)
   * ec_precompute_mont_data sets |group->mont_data| from |group->order| and
   * returns one on success. On error it returns zero.
   */
@@ -2531,7 +2812,7 @@ diff --git a/crypto/ec/ec_lib.c b/crypto/ec/ec_lib.c
  {
      BN_CTX *ctx = BN_CTX_new();
      int ret = 0;
-@@ -1006,3 +1008,12 @@ int ec_group_simple_order_bits(const EC_GROUP *group)
+@@ -1002,3 +1004,12 @@ int ec_group_simple_order_bits(const EC_GROUP *group)
          return 0;
      return BN_num_bits(group->order);
  }
@@ -2545,9 +2826,10 @@ diff --git a/crypto/ec/ec_lib.c b/crypto/ec/ec_lib.c
 +        return 0;
 +}
 diff --git a/crypto/ec/ecdsa_ossl.c b/crypto/ec/ecdsa_ossl.c
+index 72e2f0f..8f07b16 100644
 --- a/crypto/ec/ecdsa_ossl.c
 +++ b/crypto/ec/ecdsa_ossl.c
-@@ -153,30 +153,33 @@
+@@ -153,30 +153,33 @@ static int ecdsa_sign_setup(EC_KEY *eckey, BN_CTX *ctx_in,
      }
      while (BN_is_zero(r));
  
@@ -2622,6 +2904,7 @@ diff --git a/crypto/ec/ecdsa_ossl.c b/crypto/ec/ecdsa_ossl.c
      /* digest -> m */
      i = BN_num_bits(order);
 diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
+index 2461898..fca5709 100644
 --- a/crypto/ec/ecp_nistz256.c
 +++ b/crypto/ec/ecp_nistz256.c
 @@ -1,5 +1,6 @@
@@ -2631,17 +2914,15 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
   *
   * Licensed under the OpenSSL license (the "License").  You may not use
   * this file except in compliance with the License.  You can obtain a copy
-@@ -28,7 +29,8 @@
-  * Developers and authors:                                                    *
+@@ -29,6 +30,7 @@
   * Shay Gueron (1, 2), and Vlad Krasnov (1)                                   *
   * (1) Intel Corporation, Israel Development Center                           *
-- * (2) University of Haifa                                                    *
-+ * (2) University of Haifa                                                    *
+  * (2) University of Haifa                                                    *
 + * (3) CloudFlare, Inc.                                                       *
   * Reference:                                                                 *
   * S.Gueron and V.Krasnov, "Fast Prime Field Elliptic Curve Cryptography with *
   *                          256 Bit Primes"                                   *
-@@ -908,7 +910,7 @@ __owur static int ecp_nistz256_mult_precompute(EC_GROUP *group, BN_CTX *ctx)
+@@ -916,7 +918,7 @@ __owur static int ecp_nistz256_mult_precompute(EC_GROUP *group, BN_CTX *ctx)
   */
  #if defined(ECP_NISTZ256_AVX2)
  # if !(defined(__x86_64) || defined(__x86_64__) || \
@@ -2650,13 +2931,14 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
       !(defined(__GNUC__) || defined(_MSC_VER)) /* this is for ALIGN32 */
  #  undef ECP_NISTZ256_AVX2
  # else
-@@ -1495,6 +1497,117 @@ static int ecp_nistz256_window_have_precompute_mult(const EC_GROUP *group)
+@@ -1503,6 +1505,189 @@ static int ecp_nistz256_window_have_precompute_mult(const EC_GROUP *group)
      return HAVEPRECOMP(group, nistz256);
  }
  
 +#if defined(__x86_64) || defined(__x86_64__) || \
 +    defined(_M_AMD64) || defined(_M_X64) || \
-+    defined(__powerpc64__) || defined(_ARCH_PP64)
++    defined(__powerpc64__) || defined(_ARCH_PP64) || \
++    defined(__aarch64__)
 +/*
 + * Montgomery mul modulo Order(P): res = a*b*2^-256 mod Order(P)
 + */
@@ -2671,19 +2953,14 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
 +                                    BIGNUM *x, BN_CTX *ctx)
 +{
 +    /* RR = 2^512 mod ord(p256) */
-+    static const BN_ULONG RR[P256_LIMBS]  = { TOBN(0x83244c95,0xbe79eea2),
-+                                              TOBN(0x4699799c,0x49bd6fa6),
-+                                              TOBN(0x2845b239,0x2b6bec59),
-+                                              TOBN(0x66e12d94,0xf3d95620) };
++    static const BN_ULONG RR[P256_LIMBS]  = {
++        TOBN(0x83244c95,0xbe79eea2), TOBN(0x4699799c,0x49bd6fa6),
++        TOBN(0x2845b239,0x2b6bec59), TOBN(0x66e12d94,0xf3d95620)
++    };
 +    /* The constant 1 (unlike ONE that is one in Montgomery representation) */
-+    static const BN_ULONG one[P256_LIMBS] = { TOBN(0,1),TOBN(0,0),
-+                                              TOBN(0,0),TOBN(0,0) };
-+    /* expLo - the low 128bit of the exponent we use (ord(p256) - 2),
-+     * split into 4bit windows */
-+    static const unsigned char expLo[32]  = { 0xb,0xc,0xe,0x6,0xf,0xa,0xa,0xd,
-+                                              0xa,0x7,0x1,0x7,0x9,0xe,0x8,0x4,
-+                                              0xf,0x3,0xb,0x9,0xc,0xa,0xc,0x2,
-+                                              0xf,0xc,0x6,0x3,0x2,0x5,0x4,0xf };
++    static const BN_ULONG one[P256_LIMBS] = {
++        TOBN(0,1), TOBN(0,0), TOBN(0,0), TOBN(0,0)
++    };
 +    /*
 +     * We don't use entry 0 in the table, so we omit it and address
 +     * with -1 offset.
@@ -2717,6 +2994,10 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
 +    }
 +
 +    ecp_nistz256_ord_mul_mont(table[0], t, RR);
++#if 0
++    /*
++     * Original sparse-then-fixed-window algorithm, retained for reference.
++     */
 +    for (i = 2; i < 16; i += 2) {
 +        ecp_nistz256_ord_sqr_mont(table[i-1], table[i/2-1], 1);
 +        ecp_nistz256_ord_mul_mont(table[i], table[i-1], table[0]);
@@ -2742,443 +3023,20 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
 +    ecp_nistz256_ord_mul_mont(out, out, t);         /* ffffffff00000000ffffffffffffffff */
 +
 +    /*
-+     * The bottom 128 bit of the exponent are easier done with a table
++     * The bottom 128 bit of the exponent are processed with fixed 4-bit window
 +     */
 +    for(i = 0; i < 32; i++) {
-+        ecp_nistz256_ord_sqr_mont(out, out, 4);
-+        /* The exponent is public, no need in constant-time access */
-+        ecp_nistz256_ord_mul_mont(out, out, table[expLo[i]-1]);
-+    }
-+    ecp_nistz256_ord_mul_mont(out, out, one);
-+
-+    /*
-+     * Can't fail, but check return code to be consistent anyway.
-+     */
-+    if (!bn_set_words(r, out, P256_LIMBS))
-+        goto err;
-+
-+    ret = 1;
-+err:
-+    return ret;
-+}
-+#else
-+# define ecp_nistz256_inv_mod_ord NULL
-+#endif
-+
- const EC_METHOD *EC_GFp_nistz256_method(void)
- {
-     static const EC_METHOD ret = {
-@@ -1544,7 +1657,8 @@ const EC_METHOD *EC_GFp_nistz256_method(void)
-         ec_key_simple_generate_public_key,
-         0, /* keycopy */
-         0, /* keyfinish */
--        ecdh_simple_compute_key
-+        ecdh_simple_compute_key,
-+        ecp_nistz256_inv_mod_ord                    /* can be #defined-ed NULL */
-     };
- 
-     return &ret;
-diff --git a/include/openssl/ec.h b/include/openssl/ec.h
---- a/include/openssl/ec.h
-+++ b/include/openssl/ec.h
-@@ -50,6 +50,7 @@ int ERR_load_EC_strings(void);
- # define EC_F_ECPKPARAMETERS_PRINT                        149
- # define EC_F_ECPKPARAMETERS_PRINT_FP                     150
- # define EC_F_ECP_NISTZ256_GET_AFFINE                     240
-+# define EC_F_ECP_NISTZ256_INV_MOD_ORD                    275
- # define EC_F_ECP_NISTZ256_MULT_PRECOMPUTE                243
- # define EC_F_ECP_NISTZ256_POINTS_MUL                     241
- # define EC_F_ECP_NISTZ256_PRE_COMP_NEW                   244
-
-diff --git a/crypto/ec/asm/ecp_nistz256-armv8.pl b/crypto/ec/asm/ecp_nistz256-armv8.pl
---- a/crypto/ec/asm/ecp_nistz256-armv8.pl
-+++ b/crypto/ec/asm/ecp_nistz256-armv8.pl
-@@ -22,11 +22,10 @@
- # http://eprint.iacr.org/2013/816.
- #
- #			with/without -DECP_NISTZ256_ASM
--# Apple A7		+120-360%
--# Cortex-A53		+120-400%
--# Cortex-A57		+120-350%
--# X-Gene		+200-330%
--# Denver		+140-400%
-+# Apple A7		+190-360%
-+# Cortex-A53		+190-400%
-+# Cortex-A57		+190-350%
-+# Denver		+230-400%
- #
- # Ranges denote minimum and maximum improvement coefficients depending
- # on benchmark. Lower coefficients are for ECDSA sign, server-side
-@@ -109,6 +108,10 @@
- .quad	0x0000000000000001,0xffffffff00000000,0xffffffffffffffff,0x00000000fffffffe
- .Lone:
- .quad	1,0,0,0
-+.Lord:
-+.quad	0xf3b9cac2fc632551,0xbce6faada7179e84,0xffffffffffffffff,0xffffffff00000000
-+.LordK:
-+.quad	0xccd1c8aaee00bc4f
- .asciz	"ECP_NISTZ256 for ARMv8, CRYPTOGAMS by <appro\@openssl.org>"
- 
- // void	ecp_nistz256_to_mont(BN_ULONG x0[4],const BN_ULONG x1[4]);
-@@ -1309,6 +1312,302 @@
- 	ret
- .size	ecp_nistz256_point_add_affine,.-ecp_nistz256_point_add_affine
- ___
-+}
-+if (1) {
-+my ($ord0,$ord1) = ($poly1,$poly3);
-+my ($ord2,$ord3,$ordk,$t4) = map("x$_",(21..24));
-+my $acc7 = $bi;
-+
-+$code.=<<___;
-+////////////////////////////////////////////////////////////////////////
-+// void ecp_nistz256_ord_mul_mont(uint64_t res[4], uint64_t a[4],
-+//                                uint64_t b[4]);
-+.globl	ecp_nistz256_ord_mul_mont
-+.type	ecp_nistz256_ord_mul_mont,%function
-+.align	4
-+ecp_nistz256_ord_mul_mont:
-+	stp	x29,x30,[sp,#-64]!
-+	add	x29,sp,#0
-+	stp	x19,x20,[sp,#16]
-+	stp	x21,x22,[sp,#32]
-+	stp	x23,x24,[sp,#48]
-+
-+	adr	$ordk,.Lord
-+	ldr	$bi,[$bp]		// bp[0]
-+	ldp	$a0,$a1,[$ap]
-+	ldp	$a2,$a3,[$ap,#16]
-+
-+	ldp	$ord0,$ord1,[$ordk,#0]
-+	ldp	$ord2,$ord3,[$ordk,#16]
-+	ldr	$ordk,[$ordk,#32]
-+
-+	mul	$acc0,$a0,$bi		// a[0]*b[0]
-+	umulh	$t0,$a0,$bi
-+
-+	mul	$acc1,$a1,$bi		// a[1]*b[0]
-+	umulh	$t1,$a1,$bi
-+
-+	mul	$acc2,$a2,$bi		// a[2]*b[0]
-+	umulh	$t2,$a2,$bi
-+
-+	mul	$acc3,$a3,$bi		// a[3]*b[0]
-+	umulh	$acc4,$a3,$bi
-+
-+	mul	$t4,$acc0,$ordk
-+
-+	adds	$acc1,$acc1,$t0		// accumulate high parts of multiplication
-+	adcs	$acc2,$acc2,$t1
-+	adcs	$acc3,$acc3,$t2
-+	adc	$acc4,$acc4,xzr
-+	mov	$acc5,xzr
-+___
-+for ($i=1;$i<4;$i++) {
-+	################################################################
-+	#            ffff0000.ffffffff.yyyyyyyy.zzzzzzzz
-+	# *                                     abcdefgh
-+	# + xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx
-+	#
-+	# Now observing that ff..ff*x = (2^n-1)*x = 2^n*x-x, we
-+	# rewrite above as:
-+	#
-+	#   xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx
-+	# - 0000abcd.efgh0000.abcdefgh.00000000.00000000
-+	# + abcdefgh.abcdefgh.yzayzbyz.cyzdyzey.zfyzgyzh
-+$code.=<<___;
-+	ldr	$bi,[$bp,#8*$i]		// b[i]
-+
-+	lsl	$t0,$t4,#32
-+	subs	$acc2,$acc2,$t4
-+	lsr	$t1,$t4,#32
-+	sbcs	$acc3,$acc3,$t0
-+	sbcs	$acc4,$acc4,$t1
-+	sbc	$acc5,$acc5,xzr
-+
-+	subs	xzr,$acc0,#1
-+	umulh	$t1,$ord0,$t4
-+	mul	$t2,$ord1,$t4
-+	umulh	$t3,$ord1,$t4
-+
-+	adcs	$t2,$t2,$t1
-+	 mul	$t0,$a0,$bi
-+	adc	$t3,$t3,xzr
-+	 mul	$t1,$a1,$bi
-+
-+	adds	$acc0,$acc1,$t2
-+	 mul	$t2,$a2,$bi
-+	adcs	$acc1,$acc2,$t3
-+	 mul	$t3,$a3,$bi
-+	adcs	$acc2,$acc3,$t4
-+	adcs	$acc3,$acc4,$t4
-+	adc	$acc4,$acc5,xzr
-+
-+	adds	$acc0,$acc0,$t0		// accumulate low parts
-+	umulh	$t0,$a0,$bi
-+	adcs	$acc1,$acc1,$t1
-+	umulh	$t1,$a1,$bi
-+	adcs	$acc2,$acc2,$t2
-+	umulh	$t2,$a2,$bi
-+	adcs	$acc3,$acc3,$t3
-+	umulh	$t3,$a3,$bi
-+	adc	$acc4,$acc4,xzr
-+	mul	$t4,$acc0,$ordk
-+	adds	$acc1,$acc1,$t0		// accumulate high parts
-+	adcs	$acc2,$acc2,$t1
-+	adcs	$acc3,$acc3,$t2
-+	adcs	$acc4,$acc4,$t3
-+	adc	$acc5,xzr,xzr
-+___
-+}
-+$code.=<<___;
-+	lsl	$t0,$t4,#32		// last reduction
-+	subs	$acc2,$acc2,$t4
-+	lsr	$t1,$t4,#32
-+	sbcs	$acc3,$acc3,$t0
-+	sbcs	$acc4,$acc4,$t1
-+	sbc	$acc5,$acc5,xzr
-+
-+	subs	xzr,$acc0,#1
-+	umulh	$t1,$ord0,$t4
-+	mul	$t2,$ord1,$t4
-+	umulh	$t3,$ord1,$t4
-+
-+	adcs	$t2,$t2,$t1
-+	adc	$t3,$t3,xzr
-+
-+	adds	$acc0,$acc1,$t2
-+	adcs	$acc1,$acc2,$t3
-+	adcs	$acc2,$acc3,$t4
-+	adcs	$acc3,$acc4,$t4
-+	adc	$acc4,$acc5,xzr
-+
-+	subs	$t0,$acc0,$ord0		// ret -= modulus
-+	sbcs	$t1,$acc1,$ord1
-+	sbcs	$t2,$acc2,$ord2
-+	sbcs	$t3,$acc3,$ord3
-+	sbcs	xzr,$acc4,xzr
-+
-+	csel	$acc0,$acc0,$t0,lo	// ret = borrow ? ret : ret-modulus
-+	csel	$acc1,$acc1,$t1,lo
-+	csel	$acc2,$acc2,$t2,lo
-+	stp	$acc0,$acc1,[$rp]
-+	csel	$acc3,$acc3,$t3,lo
-+	stp	$acc2,$acc3,[$rp,#16]
-+
-+	ldp	x19,x20,[sp,#16]
-+	ldp	x21,x22,[sp,#32]
-+	ldp	x23,x24,[sp,#48]
-+	ldr	x29,[sp],#64
-+	ret
-+.size	ecp_nistz256_ord_mul_mont,.-ecp_nistz256_ord_mul_mont
-+
-+////////////////////////////////////////////////////////////////////////
-+// void ecp_nistz256_ord_sqr_mont(uint64_t res[4], uint64_t a[4],
-+//                                int rep);
-+.globl	ecp_nistz256_ord_sqr_mont
-+.type	ecp_nistz256_ord_sqr_mont,%function
-+.align	4
-+ecp_nistz256_ord_sqr_mont:
-+	stp	x29,x30,[sp,#-64]!
-+	add	x29,sp,#0
-+	stp	x19,x20,[sp,#16]
-+	stp	x21,x22,[sp,#32]
-+	stp	x23,x24,[sp,#48]
-+
-+	adr	$ordk,.Lord
-+	ldp	$a0,$a1,[$ap]
-+	ldp	$a2,$a3,[$ap,#16]
-+
-+	ldp	$ord0,$ord1,[$ordk,#0]
-+	ldp	$ord2,$ord3,[$ordk,#16]
-+	ldr	$ordk,[$ordk,#32]
-+	b	.Loop_ord_sqr
-+
-+.align	4
-+.Loop_ord_sqr:
-+	sub	$bp,$bp,#1
-+	////////////////////////////////////////////////////////////////
-+	//  |  |  |  |  |  |a1*a0|  |
-+	//  |  |  |  |  |a2*a0|  |  |
-+	//  |  |a3*a2|a3*a0|  |  |  |
-+	//  |  |  |  |a2*a1|  |  |  |
-+	//  |  |  |a3*a1|  |  |  |  |
-+	// *|  |  |  |  |  |  |  | 2|
-+	// +|a3*a3|a2*a2|a1*a1|a0*a0|
-+	//  |--+--+--+--+--+--+--+--|
-+	//  |A7|A6|A5|A4|A3|A2|A1|A0|, where Ax is $accx, i.e. follow $accx
-+	//
-+	//  "can't overflow" below mark carrying into high part of
-+	//  multiplication result, which can't overflow, because it
-+	//  can never be all ones.
-+
-+	mul	$acc1,$a1,$a0		// a[1]*a[0]
-+	umulh	$t1,$a1,$a0
-+	mul	$acc2,$a2,$a0		// a[2]*a[0]
-+	umulh	$t2,$a2,$a0
-+	mul	$acc3,$a3,$a0		// a[3]*a[0]
-+	umulh	$acc4,$a3,$a0
-+
-+	adds	$acc2,$acc2,$t1		// accumulate high parts of multiplication
-+	 mul	$t0,$a2,$a1		// a[2]*a[1]
-+	 umulh	$t1,$a2,$a1
-+	adcs	$acc3,$acc3,$t2
-+	 mul	$t2,$a3,$a1		// a[3]*a[1]
-+	 umulh	$t3,$a3,$a1
-+	adc	$acc4,$acc4,xzr		// can't overflow
-+
-+	mul	$acc5,$a3,$a2		// a[3]*a[2]
-+	umulh	$acc6,$a3,$a2
-+
-+	adds	$t1,$t1,$t2		// accumulate high parts of multiplication
-+	 mul	$acc0,$a0,$a0		// a[0]*a[0]
-+	adc	$t2,$t3,xzr		// can't overflow
-+
-+	adds	$acc3,$acc3,$t0		// accumulate low parts of multiplication
-+	 umulh	$a0,$a0,$a0
-+	adcs	$acc4,$acc4,$t1
-+	 mul	$t1,$a1,$a1		// a[1]*a[1]
-+	adcs	$acc5,$acc5,$t2
-+	 umulh	$a1,$a1,$a1
-+	adc	$acc6,$acc6,xzr		// can't overflow
-+
-+	adds	$acc1,$acc1,$acc1	// acc[1-6]*=2
-+	 mul	$t2,$a2,$a2		// a[2]*a[2]
-+	adcs	$acc2,$acc2,$acc2
-+	 umulh	$a2,$a2,$a2
-+	adcs	$acc3,$acc3,$acc3
-+	 mul	$t3,$a3,$a3		// a[3]*a[3]
-+	adcs	$acc4,$acc4,$acc4
-+	 umulh	$a3,$a3,$a3
-+	adcs	$acc5,$acc5,$acc5
-+	adcs	$acc6,$acc6,$acc6
-+	adc	$acc7,xzr,xzr
-+
-+	adds	$acc1,$acc1,$a0		// +a[i]*a[i]
-+	 mul	$t4,$acc0,$ordk
-+	adcs	$acc2,$acc2,$t1
-+	adcs	$acc3,$acc3,$a1
-+	adcs	$acc4,$acc4,$t2
-+	adcs	$acc5,$acc5,$a2
-+	adcs	$acc6,$acc6,$t3
-+	adc	$acc7,$acc7,$a3
-+___
-+for($i=0; $i<4; $i++) {			# reductions
-+$code.=<<___;
-+	subs	xzr,$acc0,#1
-+	umulh	$t1,$ord0,$t4
-+	mul	$t2,$ord1,$t4
-+	umulh	$t3,$ord1,$t4
-+
-+	adcs	$t2,$t2,$t1
-+	adc	$t3,$t3,xzr
-+
-+	adds	$acc0,$acc1,$t2
-+	adcs	$acc1,$acc2,$t3
-+	adcs	$acc2,$acc3,$t4
-+	adc	$acc3,xzr,$t4		// can't overflow
-+___
-+$code.=<<___	if ($i<3);
-+	mul	$t3,$acc0,$ordk
-+___
-+$code.=<<___;
-+	lsl	$t0,$t4,#32
-+	subs	$acc1,$acc1,$t4
-+	lsr	$t1,$t4,#32
-+	sbcs	$acc2,$acc2,$t0
-+	sbc	$acc3,$acc3,$t1		// can't borrow
-+___
-+	($t3,$t4) = ($t4,$t3);
-+}
-+$code.=<<___;
-+	adds	$acc0,$acc0,$acc4	// accumulate upper half
-+	adcs	$acc1,$acc1,$acc5
-+	adcs	$acc2,$acc2,$acc6
-+	adcs	$acc3,$acc3,$acc7
-+	adc	$acc4,xzr,xzr
-+
-+	subs	$t0,$acc0,$ord0		// ret -= modulus
-+	sbcs	$t1,$acc1,$ord1
-+	sbcs	$t2,$acc2,$ord2
-+	sbcs	$t3,$acc3,$ord3
-+	sbcs	xzr,$acc4,xzr
-+
-+	csel	$a0,$acc0,$t0,lo	// ret = borrow ? ret : ret-modulus
-+	csel	$a1,$acc1,$t1,lo
-+	csel	$a2,$acc2,$t2,lo
-+	csel	$a3,$acc3,$t3,lo
-+
-+	cbnz	$bp,.Loop_ord_sqr
-+
-+	stp	$a0,$a1,[$rp]
-+	stp	$a2,$a3,[$rp,#16]
-+
-+	ldp	x19,x20,[sp,#16]
-+	ldp	x21,x22,[sp,#32]
-+	ldp	x23,x24,[sp,#48]
-+	ldr	x29,[sp],#64
-+	ret
-+.size	ecp_nistz256_ord_sqr_mont,.-ecp_nistz256_ord_sqr_mont
-+___
- }	}
- 
- ########################################################################
-diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.
---- a/crypto/ec/ecp_nistz256.c
-+++ b/crypto/ec/ecp_nistz256.c
-@@ -1499,7 +1499,8 @@ static int ecp_nistz256_window_have_precompute_mult(const EC_GROUP *group)
- 
- #if defined(__x86_64) || defined(__x86_64__) || \
-     defined(_M_AMD64) || defined(_M_X64) || \
--    defined(__powerpc64__) || defined(_ARCH_PP64)
-+    defined(__powerpc64__) || defined(_ARCH_PP64) || \
-+    defined(__aarch64__)
- /*
-  * Montgomery mul modulo Order(P): res = a*b*2^-256 mod Order(P)
-  */
-
-diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
---- a/crypto/ec/ecp_nistz256.c
-+++ b/crypto/ec/ecp_nistz256.c
-@@ -1522,12 +1522,6 @@ static int ecp_nistz256_inv_mod_ord(const EC_GROUP *group, BIGNUM *r,
-     /* The constant 1 (unlike ONE that is one in Montgomery representation) */
-     static const BN_ULONG one[P256_LIMBS] = { TOBN(0,1),TOBN(0,0),
-                                               TOBN(0,0),TOBN(0,0) };
--    /* expLo - the low 128bit of the exponent we use (ord(p256) - 2),
--     * split into 4bit windows */
--    static const unsigned char expLo[32]  = { 0xb,0xc,0xe,0x6,0xf,0xa,0xa,0xd,
--                                              0xa,0x7,0x1,0x7,0x9,0xe,0x8,0x4,
--                                              0xf,0x3,0xb,0x9,0xc,0xa,0xc,0x2,
--                                              0xf,0xc,0x6,0x3,0x2,0x5,0x4,0xf };
-     /*
-      * We don't use entry 0 in the table, so we omit it and address
-      * with -1 offset.
-@@ -1561,6 +1555,7 @@ static int ecp_nistz256_inv_mod_ord(const EC_GROUP *group, BIGNUM *r,
-     }
- 
-     ecp_nistz256_ord_mul_mont(table[0], t, RR);
-+#if 0
-     for (i = 2; i < 16; i += 2) {
-         ecp_nistz256_ord_sqr_mont(table[i-1], table[i/2-1], 1);
-         ecp_nistz256_ord_mul_mont(table[i], table[i-1], table[0]);
-@@ -1586,13 +1581,82 @@ static int ecp_nistz256_inv_mod_ord(const EC_GROUP *group, BIGNUM *r,
-     ecp_nistz256_ord_mul_mont(out, out, t);         /* ffffffff00000000ffffffffffffffff */
- 
-     /*
--     * The bottom 128 bit of the exponent are easier done with a table
-+     * The bottom 128 bit of the exponent are processed with fixed 4-bit window
-      */
-     for(i = 0; i < 32; i++) {
 +        /* expLo - the low 128 bits of the exponent we use (ord(p256) - 2),
 +         * split into nibbles */
 +        static const unsigned char expLo[32]  = {
 +            0xb,0xc,0xe,0x6,0xf,0xa,0xa,0xd,0xa,0x7,0x1,0x7,0x9,0xe,0x8,0x4,
-+            0xf,0x3,0xb,0x9,0xc,0xa,0xc,0x2,0xf,0xc,0x6,0x3,0x2,0x5,0x4,0xf };
++            0xf,0x3,0xb,0x9,0xc,0xa,0xc,0x2,0xf,0xc,0x6,0x3,0x2,0x5,0x4,0xf
++        };
 +
-         ecp_nistz256_ord_sqr_mont(out, out, 4);
-         /* The exponent is public, no need in constant-time access */
-         ecp_nistz256_ord_mul_mont(out, out, table[expLo[i]-1]);
-     }
++        ecp_nistz256_ord_sqr_mont(out, out, 4);
++        /* The exponent is public, no need in constant-time access */
++        ecp_nistz256_ord_mul_mont(out, out, table[expLo[i]-1]);
++    }
 +#else
 +    /*
 +     * https://briansmith.org/ecc-inversion-addition-chains-01#p256_scalar_inversion
@@ -3189,7 +3047,8 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
 +     */
 +    enum {
 +        i_1 = 0, i_10,     i_11,     i_101, i_111, i_1010, i_1111,
-+        i_10101, i_101010, i_101111, i_x6,  i_x8,  i_x16,  i_x32 };
++        i_10101, i_101010, i_101111, i_x6,  i_x8,  i_x16,  i_x32
++    };
 +
 +    /* pre-calculate powers */
 +    ecp_nistz256_ord_sqr_mont(table[i_10], table[i_1], 1);
@@ -3236,17 +3095,44 @@ diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
 +            { 5,  i_111 }, { 4,  i_111    }, { 5,  i_111    },
 +            { 5,  i_101 }, { 3,  i_11     }, { 10, i_101111 },
 +            { 2,  i_11  }, { 5,  i_11     }, { 5,  i_11     },
-+            { 3,  i_1   }, { 7,  i_10101  }, { 6,  i_1111   } };
++            { 3,  i_1   }, { 7,  i_10101  }, { 6,  i_1111   }
++        };
 +
 +        ecp_nistz256_ord_sqr_mont(out, out, chain[i].p);
 +        ecp_nistz256_ord_mul_mont(out, out, table[chain[i].i]);
 +    }
 +#endif
-     ecp_nistz256_ord_mul_mont(out, out, one);
++    ecp_nistz256_ord_mul_mont(out, out, one);
++
++    /*
++     * Can't fail, but check return code to be consistent anyway.
++     */
++    if (!bn_set_words(r, out, P256_LIMBS))
++        goto err;
++
++    ret = 1;
++err:
++    return ret;
++}
++#else
++# define ecp_nistz256_inv_mod_ord NULL
++#endif
++
+ const EC_METHOD *EC_GFp_nistz256_method(void)
+ {
+     static const EC_METHOD ret = {
+@@ -1552,7 +1737,8 @@ const EC_METHOD *EC_GFp_nistz256_method(void)
+         ec_key_simple_generate_public_key,
+         0, /* keycopy */
+         0, /* keyfinish */
+-        ecdh_simple_compute_key
++        ecdh_simple_compute_key,
++        ecp_nistz256_inv_mod_ord                    /* can be #defined-ed NULL */
+     };
  
-     /*
-
-diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
+     return &ret;
+diff --git a/crypto/perlasm/x86_64-xlate.pl b/crypto/perlasm/x86_64-xlate.pl
+index 6eaefcf..c4607dd 100755
 --- a/crypto/perlasm/x86_64-xlate.pl
 +++ b/crypto/perlasm/x86_64-xlate.pl
 @@ -51,12 +51,7 @@
@@ -3263,7 +3149,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  #
  # 8. In order to provide for structured exception handling unified
  #    Win64 prologue copies %rsp value to %rax. For further details
-@@ -100,7 +95,7 @@
+@@ -100,7 +95,7 @@ elsif (!$gas)
      {	$nasm = $1 + $2*0.01; $PTR="";  }
      elsif (`ml64 2>&1` =~ m/Version ([0-9]+)\.([0-9]+)(\.([0-9]+))?/)
      {	$masm = $1 + $2*2**-16 + $4*2**-32;   }
@@ -3272,7 +3158,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
      $win64=1;
      $elf=0;
      $decor="\$L\$";
-@@ -130,7 +125,7 @@
+@@ -130,7 +125,7 @@ my %globals;
  		$self->{sz} = "";
  	    } elsif ($self->{op} =~ /^p/ && $' !~ /^(ush|op|insrw)/) { # SSEn
  		$self->{sz} = "";
@@ -3281,7 +3167,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  		$self->{sz} = "";
  	    } elsif ($self->{op} =~ /mov[dq]/ && $$line =~ /%xmm/) {
  		$self->{sz} = "";
-@@ -151,7 +146,7 @@
+@@ -151,7 +146,7 @@ my %globals;
  	if ($gas) {
  	    if ($self->{op} eq "movz") {	# movz is pain...
  		sprintf "%s%s%s",$self->{op},$self->{sz},shift;
@@ -3290,7 +3176,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  		"$self->{op}";
  	    } elsif ($self->{op} eq "ret") {
  		my $epilogue = "";
-@@ -178,7 +173,7 @@
+@@ -178,7 +173,7 @@ my %globals;
  		$self->{op} .= $self->{sz};
  	    } elsif ($self->{op} eq "call" && $current_segment eq ".CRT\$XCU") {
  		$self->{op} = "\tDQ";
@@ -3299,7 +3185,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	    $self->{op};
  	}
      }
-@@ -224,18 +219,26 @@
+@@ -224,18 +219,26 @@ my %globals;
      }
  }
  { package ea;		# pick up effective addresses: expr(%reg,%reg,scale)
@@ -3327,7 +3213,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	    $ret = $self;
  	    $$line = substr($$line,@+[0]); $$line =~ s/^\s+//;
  
-@@ -276,6 +279,8 @@
+@@ -276,6 +279,8 @@ my %globals;
  	    $self->{label} =~ s/\b([0-9]+)\b/$1>>0/eg;
  	}
  
@@ -3336,7 +3222,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	if (!$self->{label} && $self->{index} && $self->{scale}==1 &&
  	    $self->{base} =~ /(rbp|r13)/) {
  		$self->{base} = $self->{index}; $self->{index} = $1;
-@@ -285,19 +290,16 @@
+@@ -285,19 +290,16 @@ my %globals;
  	    $self->{label} =~ s/^___imp_/__imp__/   if ($flavour eq "mingw64");
  
  	    if (defined($self->{index})) {
@@ -3362,7 +3248,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	    $self->{label} =~ s/\./\$/g;
  	    $self->{label} =~ s/(?<![\w\$\.])0x([0-9a-f]+)/0$1h/ig;
  	    $self->{label} = "($self->{label})" if ($self->{label} =~ /[\*\+\-\/]/);
-@@ -309,17 +311,20 @@
+@@ -309,17 +311,20 @@ my %globals;
  	    ($mnemonic =~ /^vpbroadcast([qdwb])$/)	&& ($sz=$1)  ||
  	    ($mnemonic =~ /^v(?!perm)[a-z]+[fi]128$/)	&& ($sz="x");
  
@@ -3387,7 +3273,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	    }
  	}
      }
-@@ -331,10 +336,11 @@
+@@ -331,10 +336,11 @@ my %globals;
  	my	$ret;
  
  	# optional * ----vvv--- appears in indirect jmp/call
@@ -3400,7 +3286,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	    $opcode->size($self->size());
  	    $ret = $self;
  	    $$line = substr($$line,@+[0]); $$line =~ s/^\s+//;
-@@ -358,8 +364,11 @@
+@@ -358,8 +364,11 @@ my %globals;
      }
      sub out {
      	my $self = shift;
@@ -3414,7 +3300,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
      }
  }
  { package label;	# pick up labels, which end with :
-@@ -383,9 +392,8 @@
+@@ -383,9 +392,8 @@ my %globals;
  
  	if ($gas) {
  	    my $func = ($globals{$self->{value}} or $self->{value}) . ":";
@@ -3426,7 +3312,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  		$func .= "\n";
  		$func .= "	movq	%rdi,8(%rsp)\n";
  		$func .= "	movq	%rsi,16(%rsp)\n";
-@@ -458,21 +466,251 @@
+@@ -458,21 +466,251 @@ my %globals;
  	}
      }
  }
@@ -3687,7 +3573,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  
  	if ($$line =~ /^\s*(\.\w+)/) {
  	    bless $self,$class;
-@@ -482,12 +720,6 @@
+@@ -482,12 +720,6 @@ my %globals;
  	    $$line = substr($$line,@+[0]); $$line =~ s/^\s+//;
  
  	    SWITCH: for ($dir) {
@@ -3700,7 +3586,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  		/\.global|\.globl|\.extern/
  			    && do { $globals{$$line} = $prefix . $$line;
  				    $$line = $globals{$$line} if ($prefix);
-@@ -647,7 +879,7 @@
+@@ -647,7 +879,7 @@ my %globals;
  							if ($sz eq "D" && ($current_segment=~/.[px]data/ || $dir eq ".rva"))
  							{ $var=~s/([_a-z\$\@][_a-z0-9\$\@]*)/$nasm?"$1 wrt ..imagebase":"imagerel $1"/egi; }
  							$var;
@@ -3709,7 +3595,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  
  				    $sz =~ tr/bvlrq/BWDDQ/;
  				    $self->{value} = "\tD$sz\t";
-@@ -657,7 +889,7 @@
+@@ -657,7 +889,7 @@ my %globals;
  				  };
  		/\.byte/    && do { my @str=split(/,\s*/,$$line);
  				    map(s/(0b[0-1]+)/oct($1)/eig,@str);
@@ -3718,7 +3604,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  				    while ($#str>15) {
  					$self->{value}.="DB\t"
  						.join(",",@str[0..15])."\n";
-@@ -692,15 +924,6 @@
+@@ -692,15 +924,6 @@ my %globals;
      }
  }
  
@@ -3734,7 +3620,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  # Upon initial x86_64 introduction SSE>2 extensions were not introduced
  # yet. In order not to be bothered by tracing exact assembler versions,
  # but at the same time to provide a bare security minimum of AES-NI, we
-@@ -711,6 +934,15 @@
+@@ -711,6 +934,15 @@ sub rex {
  my %regrm = (	"%eax"=>0, "%ecx"=>1, "%edx"=>2, "%ebx"=>3,
  		"%esp"=>4, "%ebp"=>5, "%esi"=>6, "%edi"=>7	);
  
@@ -3750,7 +3636,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  my $movq = sub {	# elderly gas can't handle inter-register movq
    my $arg = shift;
    my @opcode=(0x66);
-@@ -834,6 +1066,10 @@
+@@ -834,6 +1066,10 @@ my $rdseed = sub {
      }
  };
  
@@ -3761,7 +3647,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  sub rxb {
   my $opcode=shift;
   my ($dst,$src1,$src2,$rxb)=@_;
-@@ -873,10 +1109,15 @@
+@@ -873,10 +1109,15 @@ my $vprotq = sub {
      }
  };
  
@@ -3777,7 +3663,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  if ($nasm) {
      print <<___;
  default	rel
-@@ -904,7 +1145,7 @@
+@@ -904,7 +1145,7 @@ while(defined(my $line=<>)) {
  	printf "%s",$directive->out();
      } elsif (my $opcode=opcode->re(\$line)) {
  	my $asm = eval("\$".$opcode->mnemonic());
@@ -3786,7 +3672,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  	if ((ref($asm) eq 'CODE') && scalar(my @bytes=&$asm($line))) {
  	    print $gas?".byte\t":"DB\t",join(',',@bytes),"\n";
  	    next;
-@@ -982,7 +1223,7 @@
+@@ -982,7 +1223,7 @@ close STDOUT;
  # %r13		-		-
  # %r14		-		-
  # %r15		-		-
@@ -3795,7 +3681,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  # (*)	volatile register
  # (-)	preserved by callee
  # (#)	Nth argument, volatile
-@@ -1063,6 +1304,7 @@
+@@ -1063,6 +1304,7 @@ close STDOUT;
  #	movq	-16(%rcx),%rbx
  #	movq	-8(%rcx),%r15
  #	movq	%rcx,%rsp	# restore original rsp
@@ -3803,7 +3689,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  #	ret
  # .size function,.-function
  #
-@@ -1075,11 +1317,16 @@
+@@ -1075,11 +1317,16 @@ close STDOUT;
  # EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
  #		CONTEXT *context,DISPATCHER_CONTEXT *disp)
  # {	ULONG64 *rsp = (ULONG64 *)context->Rax;
@@ -3825,7 +3711,7 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  #	}
  #	context->Rsp = (ULONG64)rsp;
  #	context->Rdi = rsp[1];
-@@ -1171,16 +1418,16 @@
+@@ -1171,16 +1418,16 @@ close STDOUT;
  # instruction and reflecting it in finer grade unwind logic in handler.
  # After all, isn't it why it's called *language-specific* handler...
  #
@@ -3850,3 +3736,15 @@ diff -ruN a/x86_64-xlate.pl b/x86_64-xlate.pl
  #	will always be invoked, core dumped and appropriate exit code
  #	returned to parent (for user notification).
 +
+diff --git a/include/openssl/ec.h b/include/openssl/ec.h
+index f06680a..5b0ee4e 100644
+--- a/include/openssl/ec.h
++++ b/include/openssl/ec.h
+@@ -1389,6 +1389,7 @@ int ERR_load_EC_strings(void);
+ # define EC_F_ECPKPARAMETERS_PRINT                        149
+ # define EC_F_ECPKPARAMETERS_PRINT_FP                     150
+ # define EC_F_ECP_NISTZ256_GET_AFFINE                     240
++# define EC_F_ECP_NISTZ256_INV_MOD_ORD                    275
+ # define EC_F_ECP_NISTZ256_MULT_PRECOMPUTE                243
+ # define EC_F_ECP_NISTZ256_POINTS_MUL                     241
+ # define EC_F_ECP_NISTZ256_PRE_COMP_NEW                   244
