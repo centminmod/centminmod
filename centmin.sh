@@ -555,8 +555,9 @@ CLOUDFLARE_ZLIB='n'        # use Cloudflare optimised zlib fork https://blog.clo
 CLOUDFLARE_ZLIBDEBUG='n'   # make install debug verbose mode
 CLOUDFLARE_ZLIBVER='1.3.0'
 NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
-OPENSSLECDSA_PATCH='n'     # https://community.centminmod.com/posts/57725/
-OPENSSLECDHX_PATCH='n'     # https://community.centminmod.com/posts/57726/
+OPENSSLECDSA_PATCH='n'       # https://community.centminmod.com/posts/57725/
+OPENSSLECDHX_PATCH='n'       # https://community.centminmod.com/posts/57726/
+OPENSSLEQUALCIPHER_PATCH='n' # https://community.centminmod.com/posts/57916/
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server

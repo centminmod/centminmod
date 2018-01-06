@@ -2,8 +2,42 @@
 opensslpatches() {
   {
 
+# Equal Cipher Preference Group patch for 64bit systems only
+# OpenSSL1.1g-equal-preference-cipher-groups.patch
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLEQUALCIPHER_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
+    echo
+    echo  "######################################################################"
+    echo "Patching OpenSSL 1.1.0g"
+    echo  "######################################################################"
+    echo "OpenSSL 1.1.0g Equal Cipher Preference Group patch"
+    echo "https://community.centminmod.com/posts/57916/"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL1.1g-equal-preference-cipher-groups.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1g-equal-preference-cipher-groups.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1g-equal-preference-cipher-groups.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1g-equal-preference-cipher-groups.patch"
+        equalcipherprefpatch_err=$?
+        if [[ "$equalcipherprefpatch_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.1g-equal-preference-cipher-groups.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        else
+            echo
+            cecho "patch success, need to change your ssl_cipher config for HTTPS vhost to the following:" $boldyellow
+            echo
+            echo "ssl_ciphers '[ECDHE-ECDSA-AES128-GCM-SHA256|ECDHE-ECDSA-CHACHA20-POLY1305|ECDHE-RSA-AES128-GCM-SHA256|ECDHE-RSA-CHACHA20-POLY1305]:ECDHE+AES128:RSA+AES128:ECDHE+AES256:RSA+AES256:ECDHE+3DES:RSA+3DES';"
+            echo
+        fi
+    fi
+    popd
+    echo
+fi
+
 # ECDSA performance patch https://community.centminmod.com/posts/57725/
-if [[ "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
     echo
     echo  "######################################################################"
     echo "Patching OpenSSL 1.1.0g"
