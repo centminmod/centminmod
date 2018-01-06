@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.34'
+ACMEVER='1.0.35'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -13,6 +13,8 @@ ACMEGITURL='https://github.com/Neilpang/acme.sh.git'
 ACMEBACKUPDIR='/usr/local/nginx/conf/acmevhostbackup'
 ACMESH_BACKUPDIR='/home/acmesh-backups'
 ACMECERTHOME='/root/.acme.sh/'
+ACMETWO_API='n'
+ACMETWOAPI_BRANCH='2'
 ACME_MUSTSTAPLE='n'
 # options for KEYLENGTH
 # 2048, 3072, 4096, 8192, ec-256, ec-384
@@ -20,6 +22,16 @@ KEYLENGTH='2048'
 # every 60 days for auto renewal of SSL certificate
 RENEWDAYS='60'
 
+# if set to yes, will issue and setup both RSA 2048bit +
+# ECDSA 256bit SSL certificates as outlined at
+# https://community.centminmod.com/posts/39989/
+DUALCERTS='n'
+KEYLENGTH_DUAL='ec-256'
+ECC_ACMEHOMESUFFIXDUAL='_ecc'
+ECC_SUFFIXDUAL='-ecc'
+ECCFLAG_DUAL=' --ecc'
+
+STAGING_OPT=' --staging'
 CENTMINLOGDIR='/root/centminlogs'
 USE_NGINXMAINEXTLOGFORMAT='n'
 DIR_TMP='/svr-setup'
@@ -205,6 +217,16 @@ if [[ "$ACMEDEBUG_LOG" = [yY] && "$ACMEDEBUG" = [nN] ]] || [[ "$ACMEDEBUG_LOG" =
   ACMEDEBUG_OPT="--log ${CENTMINLOGDIR}/acmetool.sh-debug-log-$DT.log --log-level 2"
 else
   ACMEDEBUG_OPT=""
+fi
+
+if [[ "$ACMETWO_API" = [yY] ]]; then
+  ACME_APIENDPOINTTEST=' --server https://acme-staging-v02.api.letsencrypt.org/directory'
+  ACME_APIENDPOINT=""
+  STAGING_OPT=' --server https://acme-staging-v02.api.letsencrypt.org/directory'
+else
+  ACME_APIENDPOINTTEST=""
+  ACME_APIENDPOINT=""
+  STAGING_OPT=' --staging'
 fi
 
 if [[ "$ACME_MUSTSTAPLE" = [yY] ]]; then
@@ -472,11 +494,20 @@ install_acme() {
   mkdir -p /root/tools
   cd /root/tools
   if [ ! -d acme.sh ]; then
-    git clone "$ACMEGITURL"
+    if [[ "$ACMETWO_API" = [yY] ]]; then
+      git clone -b "$ACMETWOAPI_BRANCH" "$ACMEGITURL"
+    else
+      git clone "$ACMEGITURL"
+    fi
     cd acme.sh
   elif [ -d acme.sh/.git ]; then
+      rm -rf acme.sh
+    if [[ "$ACMETWO_API" = [yY] ]]; then
+      git clone -b "$ACMETWOAPI_BRANCH" "$ACMEGITURL"
+    else
+      git clone "$ACMEGITURL"
+    fi
     cd acme.sh
-    git pull -q
   fi
   if [[ "$EMAIL" ]]; then
   ./acme.sh --install --days $RENEWDAYS --accountemail "$EMAIL"
@@ -507,11 +538,20 @@ update_acme() {
   mkdir -p /root/tools
   cd /root/tools
   if [ ! -d acme.sh ]; then
-    git clone "$ACMEGITURL"
+    if [[ "$ACMETWO_API" = [yY] ]]; then
+      git clone -b "$ACMETWOAPI_BRANCH" "$ACMEGITURL"
+    else
+      git clone "$ACMEGITURL"
+    fi
     cd acme.sh
   elif [ -d acme.sh/.git ]; then
+      rm -rf acme.sh
+    if [[ "$ACMETWO_API" = [yY] ]]; then
+      git clone -b "$ACMETWOAPI_BRANCH" "$ACMEGITURL"
+    else
+      git clone "$ACMEGITURL"
+    fi
     cd acme.sh
-    git pull -q
   fi
   if [[ "$EMAIL" ]]; then
   ./acme.sh --install --days $RENEWDAYS --accountemail "$EMAIL"
@@ -950,6 +990,38 @@ cat /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf
 sed -i "s|^[ \t]* ssl_dhparam .*|  include \/usr\/local\/nginx\/conf\/ssl\/${vhostname}\/${vhostname}.crt.key.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
 sed -i '/ssl_certificate/d' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
 sed -i '/ssl_trusted_certificate/d' /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+}
+
+#####################
+convert_dualcrtkeyinclive() {
+cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" <<EOF
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.key;
+
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.key;
+  
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer;
+  ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer;
+EOF
+}
+
+#####################
+convert_dualcrtkeyinctest() {
+cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" <<EOF
+  ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.key;
+
+  ssl_certificate      /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer;
+  ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.key;
+  
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer;
+  #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer;
+EOF
 }
 
 #####################
@@ -1454,8 +1526,8 @@ issue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1467,6 +1539,25 @@ issue_acme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1476,7 +1567,7 @@ issue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
       "$ACMEBINARY"  --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
@@ -1489,6 +1580,25 @@ issue_acme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"  --force --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1497,10 +1607,30 @@ issue_acme() {
         fi
       fi
     else
-     echo ""$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     testcert_dual=y
+     echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1537,6 +1667,20 @@ issue_acme() {
     if [ -f "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log" ]; then
       echo "rm -rf ${ACMECERTHOME}/${vhostname}" >> "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
     fi
+    # dual cert routine start
+    if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' && "$DUAL_LECHECK" -eq '0' ]]; then
+            echo
+            echo "install 2nd SSL cert issued for dual ssl cert config"
+            echo
+      echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}"
+      "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}
+      if [[ "$testcert_dual" = [yY] ]]; then
+        convert_dualcrtkeyinctest
+      else
+        convert_dualcrtkeyinclive
+      fi
+    fi
+    # dual cert routine end
     # allow it to be repopulated each time with $vhostname
     # rm -rf /root/.acme.sh/reload.sh
     echo
@@ -1693,8 +1837,8 @@ reissue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1706,6 +1850,25 @@ reissue_acme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1715,8 +1878,8 @@ reissue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
-     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1728,6 +1891,25 @@ reissue_acme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1736,10 +1918,30 @@ reissue_acme() {
         fi
       fi
     else
-     echo ""$ACMEBINARY" --force --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     testcert_dual=y
+     echo ""$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1773,6 +1975,20 @@ reissue_acme() {
     fi
     echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}"
     "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}
+    # dual cert routine start
+    if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' && "$DUAL_LECHECK" -eq '0' ]]; then
+            echo
+            echo "install 2nd SSL cert issued for dual ssl cert config"
+            echo
+      echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}"
+      "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}
+      if [[ "$testcert_dual" = [yY] ]]; then
+        convert_dualcrtkeyinctest
+      else
+        convert_dualcrtkeyinclive
+      fi
+    fi
+    # dual cert routine end
     # allow it to be repopulated each time with $vhostname
     # rm -rf /root/.acme.sh/reload.sh
     echo
@@ -1926,8 +2142,8 @@ renew_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1939,6 +2155,25 @@ renew_acme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1948,8 +2183,8 @@ renew_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1961,6 +2196,25 @@ renew_acme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -1969,10 +2223,30 @@ renew_acme() {
         fi
       fi
     else
-     echo ""$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     testcert_dual=y
+     echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2006,6 +2280,20 @@ renew_acme() {
     fi
     echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}"
     "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}
+    # dual cert routine start
+    if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' && "$DUAL_LECHECK" -eq '0' ]]; then
+            echo
+            echo "install 2nd SSL cert issued for dual ssl cert config"
+            echo
+      echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}"
+      "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}
+      if [[ "$testcert_dual" = [yY] ]]; then
+        convert_dualcrtkeyinctest
+      else
+        convert_dualcrtkeyinclive
+      fi
+    fi
+    # dual cert routine end
     # allow it to be repopulated each time with $vhostname
     # rm -rf /root/.acme.sh/reload.sh
     echo
@@ -2211,8 +2499,8 @@ webroot_issueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2224,6 +2512,25 @@ webroot_issueacme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2233,8 +2540,8 @@ webroot_issueacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2246,6 +2553,25 @@ webroot_issueacme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2254,10 +2580,30 @@ webroot_issueacme() {
         fi
       fi
     else
-      echo ""$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      testcert_dual=y
+      echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2294,6 +2640,20 @@ webroot_issueacme() {
     if [ -f "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log" ]; then
       echo "rm -rf ${ACMECERTHOME}/${vhostname}" >> "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
     fi
+    # dual cert routine start
+    if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' && "$DUAL_LECHECK" -eq '0' ]]; then
+            echo
+            echo "install 2nd SSL cert issued for dual ssl cert config"
+            echo
+      echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}"
+      "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}
+      if [[ "$testcert_dual" = [yY] ]]; then
+        convert_dualcrtkeyinctest
+      else
+        convert_dualcrtkeyinclive
+      fi
+    fi
+    # dual cert routine end
     # allow it to be repopulated each time with $vhostname
     # rm -rf /root/.acme.sh/reload.sh
     echo
@@ -2498,8 +2858,8 @@ webroot_reissueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2511,6 +2871,25 @@ webroot_reissueacme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2519,10 +2898,30 @@ webroot_reissueacme() {
         fi
       fi
     else
-      echo ""$ACMEBINARY" --force --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      testcert_dual=y
+      echo ""$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY" --force${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2556,6 +2955,20 @@ webroot_reissueacme() {
     fi
     echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}"
     "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}
+    # dual cert routine start
+    if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' && "$DUAL_LECHECK" -eq '0' ]]; then
+            echo
+            echo "install 2nd SSL cert issued for dual ssl cert config"
+            echo
+      echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}"
+      "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}
+      if [[ "$testcert_dual" = [yY] ]]; then
+        convert_dualcrtkeyinctest
+      else
+        convert_dualcrtkeyinclive
+      fi
+    fi
+    # dual cert routine end
     # allow it to be repopulated each time with $vhostname
     # rm -rf /root/.acme.sh/reload.sh
     echo
@@ -2757,8 +3170,8 @@ webroot_renewacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2770,6 +3183,25 @@ webroot_renewacme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2779,8 +3211,8 @@ webroot_renewacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2792,6 +3224,25 @@ webroot_renewacme() {
         if [ -f "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" ]; then
           sed -i "s|#ssl_trusted_certificate|ssl_trusted_certificate|" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf"
         fi
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'lived' || "$testcert" = 'wplived' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2800,10 +3251,30 @@ webroot_renewacme() {
         fi
       fi
     else
-      echo ""$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --staging --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      testcert_dual=y
+      echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+      "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
+        # dual cert routine start
+        if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' ]]; then
+            echo
+            echo "get 2nd SSL cert issued for dual ssl cert config"
+            echo
+          echo ""$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+          "$ACMEBINARY"${STAGING_OPT} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          DUAL_LECHECK=$?
+          if [[ "$DUAL_LECHECK" = '0' ]]; then
+            echo
+            echo "success: 2nd SSL cert issued for dual ssl cert config"
+            echo
+          else
+            echo
+            echo "failed: 2nd SSL cert issuance failed for dual ssl cert config"
+            echo
+          fi
+        fi
+        # dual cert routine end
         if [[ "$testcert" = 'wptestd' || "$testcert" = 'd' ]]; then
           echo
           echo "switch to HTTPS default after verification"
@@ -2837,6 +3308,20 @@ webroot_renewacme() {
     fi
     echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}"
     "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}.key"${ECCFLAG}
+    # dual cert routine start
+    if [[ "$DUALCERTS" = [yY] && "$KEYLENGTH" = '2048' && "$DUAL_LECHECK" -eq '0' ]]; then
+            echo
+            echo "install 2nd SSL cert issued for dual ssl cert config"
+            echo
+      echo ""$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}"
+      "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIXDUAL}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIXDUAL}.key"${ECCFLAG_DUAL}
+      if [[ "$testcert_dual" = [yY] ]]; then
+        convert_dualcrtkeyinctest
+      else
+        convert_dualcrtkeyinclive
+      fi
+    fi
+    # dual cert routine end
     # allow it to be repopulated each time with $vhostname
     # rm -rf /root/.acme.sh/reload.sh
     echo
