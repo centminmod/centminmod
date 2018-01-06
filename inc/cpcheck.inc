@@ -10,6 +10,8 @@ march_hostcheck() {
       touch /etc/centminmod/custom_config.inc
       echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
     elif [[ ! -f /etc/centminmod/custom_config.inc && "$INITIALINSTALL" != [yY] ]]; then
+      touch /etc/centminmod/custom_config.inc
+      echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
     fi
   fi
 }
