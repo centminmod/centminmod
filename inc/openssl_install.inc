@@ -5,6 +5,9 @@ opensslpatches() {
 # Equal Cipher Preference Group patch for 64bit systems only
 # OpenSSL1.1g-equal-preference-cipher-groups.patch
 if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLEQUALCIPHER_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
+    # disable CLOUDFLARE_PATCHSSL for smart chacha20 due to conflicts and not being needed
+    # https://community.centminmod.com/posts/57919/
+    CLOUDFLARE_PATCHSSL='n'
     echo
     echo  "######################################################################"
     echo "Patching OpenSSL 1.1.0g"
