@@ -1,3 +1,19 @@
+march_hostcheck() {
+  # if linode kernel/host detected set disable GCC march=native
+  # as linode vps can switch host nodes with differing cpu models
+  # causing seg faults for nginx and php-fpm
+  if [[ "$(uname -r | grep -o 'linode')" ]]; then
+    MARCH_TARGETNATIVE='n'
+    if [[ -f /etc/centminmod/custom_config.inc && ! "$(grep 'MARCH_TARGETNATIVE' /etc/centminmod/custom_config.inc)" ]]; then
+      echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
+    elif [[ ! -f /etc/centminmod/custom_config.inc && "$INITIALINSTALL" = [yY] ]]; then
+      touch /etc/centminmod/custom_config.inc
+      echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
+    elif [[ ! -f /etc/centminmod/custom_config.inc && "$INITIALINSTALL" != [yY] ]]; then
+    fi
+  fi
+}
+
 nginxlargefile_fix() {
   if [[ -f /usr/local/nginx/conf/nginx.conf ]]; then
     nginxfix_count=0
@@ -2052,6 +2068,7 @@ else
   YUMDNFBIN='yum'
 fi
 
+march_hostcheck
 yumfastmirror_check
 ovhkernelcheck
 fileperm_fixes
@@ -2065,6 +2082,7 @@ setup_pwdh
 cmupdatecheck
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
+  march_hostcheck
   expand_cmdprompt
   setup_pwdh
   c7mariadb_tmpdir
