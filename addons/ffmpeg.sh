@@ -364,7 +364,7 @@ phpext() {
 
 	cd $DIR_TMP
 	rm -rf ffmpeg-php-git
-	git clone https://github.com/tony2001/ffmpeg-php.git ffmpeg-php-git
+	git clone https://github.com/centminmod/ffmpeg-php ffmpeg-php-git
 	cd ffmpeg-php-git
 	# cd ffmpeg-php-${FFMPEGVER}
 	
