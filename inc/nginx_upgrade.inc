@@ -989,6 +989,8 @@ find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -pr
 find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -print
 find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" \) -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -print
 find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -print
