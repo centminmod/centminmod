@@ -1,3 +1,9 @@
+fix_phperrorlogperm() {
+  if [[ -f /var/log/php-fpm/www-php.error.log && "$(stat -c %a /var/log/php-fpm/www-php.error.log | grep -qo '666'; echo $?)" -ne '0' ]]; then
+    chmod 666 /var/log/php-fpm/www-php.error.log
+  fi
+}
+
 march_hostcheck() {
   # if linode kernel/host detected set disable GCC march=native
   # as linode vps can switch host nodes with differing cpu models
@@ -2155,6 +2161,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   varnishfour_setup
   disablelogs
   nginxlargefile_fix
+  fix_phperrorlogperm
 fi
 
 }

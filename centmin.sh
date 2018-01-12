@@ -1706,8 +1706,8 @@ fi
     mkdir /var/log/php-fpm/
     touch /var/log/php-fpm/www-error.log
     touch /var/log/php-fpm/www-php.error.log
-    chmod 0660 /var/log/php-fpm/www-error.log
-    chmod 0660 /var/log/php-fpm/www-php.error.log
+    chmod 0666 /var/log/php-fpm/www-error.log
+    chmod 0666 /var/log/php-fpm/www-php.error.log
     fpmconfdir
 
     #chown -R root:nginx /var/lib/php/session/
