@@ -5,7 +5,11 @@ scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
-    if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      if [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+        source /opt/gcc8/enable
+      fi
+    elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
       if [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-7/enable
       fi
@@ -31,7 +35,11 @@ scl_install() {
         fi
         sar_call
       fi
-      if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+        echo
+        /opt/gcc8/bin/gcc --version
+        /opt/gcc8/bin/g++ --version
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
       # llbm-toolset-7 for clang 4 isn't ready for centos 6.x yet
       # if [[ "$DEVTOOLSETSEVEN" = [yY] || "$CLANG_FOUR" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
@@ -101,7 +109,11 @@ scl_install() {
         fi
         sar_call
       fi
-      if [[ "$DEVTOOLSETSEVEN" = [yY] || "$CLANG_FOUR" = [yY] ]]; then
+      if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+        echo
+        /opt/gcc8/bin/gcc --version
+        /opt/gcc8/bin/g++ --version
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] || "$CLANG_FOUR" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-7-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-7-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-7-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
             time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
@@ -198,6 +210,16 @@ libbroti_install() {
       fi
     fi # centos 6 only needed
 
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/gcc8/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi        
+
 		echo "install libbrotli"
 		cd $DIR_TMP
 
@@ -242,6 +264,11 @@ libbroti_install() {
       unset CXX	
     fi		
 		fi # centos 6 only needed
+
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      unset CC
+      unset CXX 
+    fi        
 	fi
 }
 
