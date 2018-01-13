@@ -227,14 +227,18 @@ postfixsetup() {
 
 # tweak mailbox_size_limit from default 50MB to 1000MB
 
-MBOXSIZE=$(du -sh /var/mail/root | head -n1 | awk '{print $1}' | sed 's/M//')
+if [ ! -d /var/mail/root ]; then
+    MBOXSIZE='0'
+else    
+    MBOXSIZE=$(du -sh /var/mail/root | head -n1 | awk '{print $1}' | sed 's/M//')
+fi
 MBOXSIZEBYTES=$(echo "$MBOXSIZE*1024*1024" | bc)
 MBOXSIZELIMIT=$(postconf -d | grep mailbox_size_limit | head -n1 | awk '{print $3}')
 INCLIMIT=$(echo "$MBOXSIZELIMIT*20" | bc)
 CHECKMBOXSIZELIMIT=$(grep mailbox_size_limit /etc/postfix/main.cf)
 
 # check if /var/spool/postfix/public/pickup exists
-if [[ ! -f /var/spool/postfix/public/pickup ]]; then
+if [[ ! -S /var/spool/postfix/public/pickup ]]; then
 	mkfifo /var/spool/postfix/public/pickup
 	chown postfix:postfix /var/spool/postfix/public/pickup
 fi
