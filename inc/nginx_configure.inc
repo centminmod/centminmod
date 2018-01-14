@@ -2323,7 +2323,8 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
       if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting'
+        DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+        NGX_GSPLITDWARF='n'
       elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
         source /opt/rh/devtoolset-7/enable
         DEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -2343,7 +2344,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
       if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting'
+        DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
       elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
         source /opt/rh/devtoolset-7/enable
         DEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -2450,6 +2451,8 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
       if [[ "$INITIALINSTALL" != [yY] ]]; then
         source /opt/gcc8/enable
         which gcc
@@ -2458,6 +2461,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         unset CXX
         export CC="ccache gcc"
         export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
       else
         source /opt/gcc8/enable
         which gcc
@@ -2466,6 +2470,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         unset CXX
         export CC="gcc"
         export CXX="g++"
+        NGX_GSPLITDWARF='n'
       fi
     elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
       if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -2525,7 +2530,8 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
   elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/gcc8/bin/gcc"
     DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-    DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting'
+    DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+    NGX_GSPLITDWARF='n'
     # PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
     PS_FLAGS=""
     if [[ "$INITIALINSTALL" != [yY] ]]; then
