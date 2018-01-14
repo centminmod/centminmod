@@ -2449,7 +2449,25 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
 		fi
 		# PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
 		PS_FLAGS=""
-    if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/gcc8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+      else
+        source /opt/gcc8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+      fi
+    elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
       if [[ "$INITIALINSTALL" != [yY] ]]; then
         source /opt/rh/devtoolset-7/enable
         which gcc
