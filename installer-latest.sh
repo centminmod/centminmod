@@ -657,11 +657,11 @@ libc_fix() {
 opt_tcp() {
 #######################################################
 # check if custom open file descriptor limits already exist
-    LIMITSCONFCHECK=`grep '* hard nofile 262144' /etc/security/limits.conf`
+    LIMITSCONFCHECK=`grep '* hard nofile 524288' /etc/security/limits.conf`
     if [[ -z $LIMITSCONFCHECK ]]; then
         # Set VPS hard/soft limits
-        echo "* soft nofile 262144" >>/etc/security/limits.conf
-        echo "* hard nofile 262144" >>/etc/security/limits.conf
+        echo "* soft nofile 524288" >>/etc/security/limits.conf
+        echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
 if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
 
@@ -714,8 +714,8 @@ fi
   systemctl start rc-local.service
   systemctl status rc-local.service
 fi
-        ulimit -n 262144
-        echo "ulimit -n 262144" >> /etc/rc.local
+        ulimit -n 524288
+        echo "ulimit -n 524288" >> /etc/rc.local
     fi # check if custom open file descriptor limits already exist
 
     if [[ "$CENTOS_SEVEN" = '7' ]]; then

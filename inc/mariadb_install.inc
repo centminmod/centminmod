@@ -346,10 +346,10 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
 fi # CENTOS_SEVEN != 7
 
 if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
-    echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=262144"
+    echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
-LimitNOFILE=262144
+LimitNOFILE=524288
 TDG
   systemctl daemon-reload
 fi

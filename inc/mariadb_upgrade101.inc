@@ -375,7 +375,7 @@ ProtectHome=false
 TDF
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
-LimitNOFILE=262144
+LimitNOFILE=524288
 TDG
 systemctl daemon-reload
 fi
@@ -603,7 +603,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]] ; then
 cat > "/etc/systemd/system/mariadb.service.d/mdb101.conf" <<EFF
 [Service]
 OOMScoreAdjust=-600
-LimitNOFILE=262144
+LimitNOFILE=524288
 LimitNPROC=16384
 Nice=-5
 EFF

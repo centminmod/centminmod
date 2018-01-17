@@ -637,7 +637,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]] ; then
 cat > "/etc/systemd/system/mariadb.service.d/mdb101.conf" <<EFF
 [Service]
 OOMScoreAdjust=-600
-LimitNOFILE=262144
+LimitNOFILE=524288
 LimitNPROC=16384
 Nice=-5
 EFF

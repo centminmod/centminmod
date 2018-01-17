@@ -287,14 +287,14 @@ fi
 #######################################################
 # Set user nginx hard/soft limits
 # check if custom open file descriptor limits already exist
-if [[ "$(grep 'nginx hard nofile 262144' /etc/security/limits.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    echo "nginx soft nofile 262144" >> /etc/security/limits.conf
-    echo "nginx hard nofile 262144" >> /etc/security/limits.conf
-    echo "nobody soft nofile 262144" >> /etc/security/limits.conf
-    echo "nobody hard nofile 262144" >> /etc/security/limits.conf
-    echo "root soft nofile 262144" >> /etc/security/limits.conf
-    echo "root hard nofile 262144" >> /etc/security/limits.conf
-    ulimit -n 262144
+if [[ "$(grep 'nginx hard nofile 524288' /etc/security/limits.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    echo "nginx soft nofile 524288" >> /etc/security/limits.conf
+    echo "nginx hard nofile 524288" >> /etc/security/limits.conf
+    echo "nobody soft nofile 524288" >> /etc/security/limits.conf
+    echo "nobody hard nofile 524288" >> /etc/security/limits.conf
+    echo "root soft nofile 524288" >> /etc/security/limits.conf
+    echo "root hard nofile 524288" >> /etc/security/limits.conf
+    ulimit -n 524288
 fi
 
     umask 027
