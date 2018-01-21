@@ -1,7 +1,10 @@
 pip_updates() {
   # for glances and psutil as glances is installed via outdated EPEL
   # yum repo but there's a new version available
-  if [ -f /usr/bin/pip ]; then
+  if [[ ! -f /usr/bin/python-config ]]; then
+    time $YUMDNFBIN -q -y install python-devel
+  fi
+  if [[ -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
     # CHECK_PSUTILVER=$(pip show psutil | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
     # CHECK_GLANCESVER=$(pip show glances | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
     CHECK_PIPUPDATE=$(pip list -o --format legacy | grep -o pip)
