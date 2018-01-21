@@ -7,13 +7,22 @@ pip_updates() {
   if [ ! -f /usr/bin/pip ]; then
     if [[ "CENTOS_SEVEN" -eq '7' ]]; then
       $YUMDNFBIN -q -y install python2-pip
+      export CC='gcc'
+      pip install -qqq --upgrade pip
     else
       $YUMDNFBIN -q -y install python-pip
+      export CC='gcc'
+      pip install -qqq --upgrade pip
+    fi
+  elif [ -f /usr/bin/pip ]; then
+    CHECK_PIPVER=$(pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.||g')
+    if [[ "CHECK_PIPVER" -lt '901' ]]; then
+      pip install -qqq --upgrade pip
     fi
   fi
   if [[ -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
-    # CHECK_PSUTILVER=$(pip show psutil | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
-    # CHECK_GLANCESVER=$(pip show glances | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
+    # CHECK_PSUTILVER=$(pip show psutil 2>&1  | awk '/^Version:/ {print $2}' | sed -e 's|\.||g')
+    # CHECK_GLANCESVER=$(pip show glances 2>&1  | awk '/^Version:/ {print $2}' | sed -e 's|\.||g')
     CHECK_PIPUPDATE=$(pip list -o --format legacy | grep -o pip)
     CHECK_PSUTILUPDATE=$(pip list -o --format legacy | grep -o psutil)
     CHECK_GLANCESUPDATE=$(pip list -o --format legacy | grep -o glances)
