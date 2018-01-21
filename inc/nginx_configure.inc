@@ -2248,9 +2248,11 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
   fi
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] ]]; then
+  CLANG_NEWBIN='/opt/sbin/llvm-release_60/bin/clang'
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
 	# if [ -f /opt/sbin/llvm/lib/LLVMgold.so ]; then
 	# 	LLVMLTO_OPT=' -flto'
 	# 	# export AR="$BUILD_DIR/llvmgold.binutils/binutils/ar"
@@ -2709,9 +2711,15 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
     NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   elif [[ "$CLANG_FIVE" = [Yy] ]]; then
     NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+  elif [[ "$CLANG_SIX" = [Yy] ]]; then
+    NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   else
     if [[ "$CLANG" = [yY] ]]; then
-      NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -fuse-ld=gold"
+      if [[ "$CLANG_SIX" = [Yy] ]]; then
+        NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+      else
+        NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -fuse-ld=gold"
+      fi
     else
       NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -flto -fuse-ld=gold"
     fi
