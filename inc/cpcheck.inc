@@ -25,7 +25,7 @@ pip_updates() {
     # CHECK_GLANCESVER=$(pip show glances 2>&1  | awk '/^Version:/ {print $2}' | sed -e 's|\.||g')
     CHECK_PIPUPDATE=$(pip list -o --format legacy | grep -o pip)
     CHECK_PSUTILUPDATE=$(pip list -o --format legacy | grep -o psutil)
-    CHECK_GLANCESUPDATE=$(pip list -o --format legacy | grep -o glances)
+    CHECK_GLANCESUPDATE=$(pip list -o --format legacy | grep -io glances)
     if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
       export CC='gcc'
       pip install -qqq --upgrade pip
@@ -34,7 +34,7 @@ pip_updates() {
       export CC='gcc'
       pip install -qqq --upgrade psutil
     fi
-    if [[ "$CHECK_GLANCESUPDATE" = 'glances' ]]; then
+    if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
       export CC='gcc'
       pip install -qqq --upgrade glances
     fi
