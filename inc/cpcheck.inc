@@ -2,7 +2,14 @@ pip_updates() {
   # for glances and psutil as glances is installed via outdated EPEL
   # yum repo but there's a new version available
   if [[ ! -f /usr/bin/python-config ]]; then
-    time $YUMDNFBIN -q -y install python-devel
+    $YUMDNFBIN -q -y install python-devel
+  fi
+  if [ ! -f /usr/bin/pip ]; then
+    if [[ "CENTOS_SEVEN" -eq '7' ]]; then
+      $YUMDNFBIN -q -y install python2-pip
+    else
+      $YUMDNFBIN -q -y install python-pip
+    fi
   fi
   if [[ -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
     # CHECK_PSUTILVER=$(pip show psutil | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
