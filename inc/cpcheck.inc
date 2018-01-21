@@ -16,7 +16,7 @@ pip_updates() {
     fi
   elif [ -f /usr/bin/pip ]; then
     CHECK_PIPVER=$(pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.||g')
-    if [[ "CHECK_PIPVER" -lt '901' ]]; then
+    if [[ "$CHECK_PIPVER" -lt '901' ]]; then
       pip install -qqq --upgrade pip
     fi
   fi
