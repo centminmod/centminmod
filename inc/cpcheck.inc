@@ -1,3 +1,27 @@
+pip_updates() {
+  # for glances and psutil as glances is installed via outdated EPEL
+  # yum repo but there's a new version available
+  if [ -f /usr/bin/pip ]; then
+    # CHECK_PSUTILVER=$(pip show psutil | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
+    # CHECK_GLANCESVER=$(pip show glances | awk '/Version:/ {print $2}' | sed -e 's|\.||g')
+    CHECK_PIPUPDATE=$(pip list -o --format legacy | grep -o pip)
+    CHECK_PSUTILUPDATE=$(pip list -o --format legacy | grep -o psutil)
+    CHECK_GLANCESUPDATE=$(pip list -o --format legacy | grep -o glances)
+    if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
+      export CC='gcc'
+      pip install -qqq --upgrade pip
+    fi
+    if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
+      export CC='gcc'
+      pip install -qqq --upgrade psutil
+    fi
+    if [[ "$CHECK_GLANCESUPDATE" = 'glances' ]]; then
+      export CC='gcc'
+      pip install -qqq --upgrade glances
+    fi
+  fi
+}
+
 fix_phperrorlogperm() {
   if [[ -f /var/log/php-fpm/www-php.error.log && "$(stat -c %a /var/log/php-fpm/www-php.error.log | grep -qo '666'; echo $?)" -ne '0' ]]; then
     chmod 666 /var/log/php-fpm/www-php.error.log
@@ -2162,6 +2186,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   disablelogs
   nginxlargefile_fix
   fix_phperrorlogperm
+  pip_updates
 fi
 
 }
