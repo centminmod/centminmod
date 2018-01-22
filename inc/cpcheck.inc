@@ -2205,7 +2205,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   disablelogs
   nginxlargefile_fix
   fix_phperrorlogperm
-  pip_updates
+  # pip_updates
 fi
 
 }
