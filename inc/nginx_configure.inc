@@ -653,6 +653,14 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
     #ZLIBCF_OPT='-L/usr/local/zlib-cf/lib '
     #ZLIBCFINC_OPT='-I/usr/local/zlib-cf/include '
+    # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
+    # cloudflare zlib
+    if [[ "$CLANG" = [yY] ]]; then
+      CLANG='y'
+      CLANG_FOUR='y'
+    else
+      CLANG='n'
+    fi
   fi
 
 	if [[ "$NGINX_OPENRESTY" = [yY] ]]; then

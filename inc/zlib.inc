@@ -66,6 +66,14 @@ zlibng_install() {
 nginxzlib_install() {
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+        # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
+        # cloudflare zlib
+        if [[ "$CLANG" = [yY] ]]; then
+        CLANG='y'
+        CLANG_FOUR='y'
+        else
+        CLANG='n'
+        fi
         echo
         echo "install zlib cloudflare..."
         echo
