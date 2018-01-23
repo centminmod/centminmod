@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 #####################################################
 EMAIL=''          # Server notification email address enter only 1 address
