@@ -81,14 +81,20 @@ install_cfzlib() {
         # ldconfig
         make -f Makefile.in distclean
         popd
-        ./configure --prefix=/usr/local/zlib-cf --static
-        # ./configure
+        ./configure --prefix=/usr/local/zlib-cf
+        # ./configure --prefix=/usr/local/zlib-cf --static
         make${MAKETHREADS}
         # ps aufxwww > zlib-process.log
         if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
             make -d install
+            if [[ "$(uname -m)" = 'x86_64' && ! -L lib64 ]]; then
+                ln -s lib lib64
+            fi
         else
             make install
+            if [[ "$(uname -m)" = 'x86_64' && ! -L lib64 ]]; then
+                ln -s lib lib64
+            fi
         fi
 }
 

@@ -30,6 +30,10 @@ if [[ "$CLOUDFLARE_ZLIBPHP" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | 
   if [ ! -f /usr/local/zlib-cf/lib/libz.a ]; then
     install_cfzlib
     ZLIBPHP_OPT='--with-zlib-dir=/usr/local/zlib-cf'
+    # export CFLAGS="-I/usr/local/zlib-cf/include";
+    # export LDFLAGS="-L/usr/local/zlib-cf/lib" 
+    # export LD_LIBRARY_PATH="/usr/local/zlib-cf/lib";
+    # export PHP_RPATH="/usr/local/zlib-cf/lib"; 
   elif [ -f /usr/local/zlib-cf/lib/libz.a ]; then
     ZLIBPHP_OPT='--with-zlib-dir=/usr/local/zlib-cf'
   fi
