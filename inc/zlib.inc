@@ -63,21 +63,7 @@ zlibng_install() {
   fi
 }
 
-nginxzlib_install() {
-  if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
-        # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
-        # cloudflare zlib
-        if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
-            CLANG='y'
-            CLANG_FOUR='y'
-        elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
-            CLANG='n'
-            DEVTOOLSETSIX='y'
-        else
-            CLANG='n'
-            DEVTOOLSETSIX='y'
-        fi
+install_cfzlib() {
         echo
         echo "install zlib cloudflare..."
         echo
@@ -95,15 +81,33 @@ nginxzlib_install() {
         # ldconfig
         make -f Makefile.in distclean
         popd
-        # # ./configure --prefix=/usr/local/zlib-cf
+        ./configure --prefix=/usr/local/zlib-cf --static
         # ./configure
-        # make${MAKETHREADS}
+        make${MAKETHREADS}
         # ps aufxwww > zlib-process.log
-        # if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
-        #     make -d install
-        # else
-        #     make install
-        # fi
+        if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
+            make -d install
+        else
+            make install
+        fi
+}
+
+nginxzlib_install() {
+  if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+        # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
+        # cloudflare zlib
+        if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+            CLANG='y'
+            CLANG_FOUR='y'
+        elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
+            CLANG='n'
+            DEVTOOLSETSIX='y'
+        else
+            CLANG='n'
+            DEVTOOLSETSIX='y'
+        fi
+        install_cfzlib
         if [ -f /usr/local/lib/libz.so ]; then
             echo
             ps aufxw
