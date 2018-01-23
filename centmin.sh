@@ -307,7 +307,7 @@ DISABLE_IPVSIX='n'
 PARALLEL_MODE=y
 # compiler related
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
-CLANG='n'                     # Nginx and LibreSSL
+CLANG='y'                     # Nginx and LibreSSL
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_SIX='n'                 # Clang 6.0+ optional support https://community.centminmod.com/threads/13729/
