@@ -17,7 +17,7 @@ ALTPCRE_VERSION='8.41'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
-WGET_VERSION='1.19.2'
+WGET_VERSION='1.19.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -355,6 +355,8 @@ source_pcreinstall() {
 
 source_wgetinstall() {
   if [[ "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
   cd "$DIR_TMP"
   cecho "Download $WGET_FILENAME ..." $boldyellow
   if [ -s "$WGET_FILENAME" ]; then
