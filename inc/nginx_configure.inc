@@ -660,8 +660,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       CLANG_FOUR='y'
     elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
+      DEVTOOLSETSIX='y'
     else
       CLANG='n'
+      DEVTOOLSETSIX='y'
     fi
   fi
 
