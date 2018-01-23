@@ -655,9 +655,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     #ZLIBCFINC_OPT='-I/usr/local/zlib-cf/include '
     # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
     # cloudflare zlib
-    if [[ "$CLANG" = [yY] ]]; then
+    if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
       CLANG='y'
       CLANG_FOUR='y'
+    elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
+      CLANG='n'
     else
       CLANG='n'
     fi
@@ -2300,22 +2302,22 @@ else
 		export CC="ccache /usr/bin/clang -ferror-limit=0${CCTOOLSET}"
 		export CXX="ccache /usr/bin/clang++ -ferror-limit=0"
 		export CCACHE_CPP2=yes
-		CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
+		CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-incompatible-library-redeclaration -Wno-format -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
 echo "
 export CC=\"ccache /usr/bin/clang -ferror-limit=0${CCTOOLSET}\"
 export CXX=\"ccache /usr/bin/clang++ -ferror-limit=0\"
 export CCACHE_CPP2=yes
-CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
+CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-incompatible-library-redeclaration -Wno-format -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
 	else
 		export CC="/usr/bin/clang -ferror-limit=0${CCTOOLSET}"
 		export CXX="/usr/bin/clang++ -ferror-limit=0"
 		# export CCACHE_CPP2=yes
-		CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
+		CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-incompatible-library-redeclaration -Wno-format -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'
 echo "	
 export CC=\"/usr/bin/clang -ferror-limit=0${CCTOOLSET}\"
 export CXX=\"/usr/bin/clang++ -ferror-limit=0\"
 # export CCACHE_CPP2=yes
-CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
+CLANG_CCOPT=' -Wno-sign-compare -Wno-int-conversion -Wno-implicit-function-declaration -Wno-incompatible-library-redeclaration -Wno-format -Wno-string-plus-int -Wno-deprecated-declarations -Wno-unused-parameter -Wno-unused-const-variable -Wno-conditional-uninitialized -Wno-mismatched-tags -Wno-sometimes-uninitialized -Wno-parentheses-equality -Wno-tautological-compare -Wno-self-assign -Wno-deprecated-register -Wno-deprecated -Wno-invalid-source-encoding -Wno-pointer-sign -Wno-parentheses -Wno-enum-conversion -Wno-c++11-compat-deprecated-writable-strings -Wno-write-strings'"
 	fi
 	############################
 fi # clang 4.0
