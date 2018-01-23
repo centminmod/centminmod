@@ -999,8 +999,11 @@ find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \
 find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -exec rm -rf {} \;
 
 # nginx upgrade logs older than 90 days will be gzip compressed to save space 
-if [ -d /root/centminlogs ]; then
-    find /root/centminlogs -type f -mtime +90 -name "*_nginx_upgrade.log" -exec gzip -9 {} \;
+# & older logs than 120 days deleted
+if [ -d "${CENTMINLOGDIR}" ]; then
+    find "${CENTMINLOGDIR}" -type f -mtime +90 -name "*_nginx_upgrade.log" -exec gzip -9 {} \;
+    # find "${CENTMINLOGDIR}" -type f -mtime +120 \( -name 'patch_opensslpatches_*' -o -name 'patch_patchnginx_*' -o -name "nginx-configure-*" -o -name "centminmod_opensslinstalltime_*" -o -name "nginx_autoconf.err*" \) -print
+    find "${CENTMINLOGDIR}" -type f -mtime +120 \( -name 'patch_opensslpatches_*' -o -name 'patch_patchnginx_*' -o -name "nginx-configure-*" -o -name "centminmod_opensslinstalltime_*" -o -name "nginx_autoconf.err*" \) -delete
 fi
 
         if [ -f /usr/local/sbin/nginx ]; then

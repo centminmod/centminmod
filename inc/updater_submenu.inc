@@ -475,6 +475,14 @@ else
 fi
 }
 
+tidy_menulogs() {
+# & older logs than 7 days deleted
+if [ -d "${CENTMINLOGDIR}" ]; then
+		# find "${CENTMINLOGDIR}" -type f -mtime +7 \( -name '*_git_envsetup.log' -o -name '*_git_updatecur_branch.log' -o -name "*_git_updatenew_branch.log" \) -print
+    find "${CENTMINLOGDIR}" -type f -mtime +7 \( -name '*_git_envsetup.log' -o -name '*_git_updatecur_branch.log' -o -name "*_git_updatenew_branch.log" \) -delete
+fi
+}
+
 updatersubmenu() {
 	CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
 
@@ -506,22 +514,25 @@ centminlog
 	# re_sourcefiles
 	# break
 	break 2
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log
+} 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_envsetup.log"
 
+	tidy_menulogs
 ;;
 2)
 UPDATE_MENU=2
 centminlog
 {
   gitenv_update
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log
+} 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatecur_branch.log"
+	tidy_menulogs
 ;;
 3)
 UPDATE_MENU=3
 centminlog
 {
   gitenv_change
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatenew_branch.log
+} 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_git_updatenew_branch.log"
+	tidy_menulogs
 ;;
 4)
 	UPDATE_MENU=4

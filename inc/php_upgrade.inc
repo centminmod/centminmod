@@ -823,8 +823,10 @@ find "$DIR_TMP" -maxdepth 1 \( -name 'libmemcached*' ! -name "libmemcached-${LIB
 find "$DIR_TMP" -maxdepth 1 \( -name 'libmemcached*' ! -name "libmemcached-${LIBMEMCACHED_VER}*" \)  -exec rm -rf {} \;
 
 # php upgrade logs older than 90 days will be gzip compressed to save space 
-if [ -d /root/centminlogs ]; then
-    find /root/centminlogs -type f -mtime +90 -name "*_php_upgrade.log" -exec gzip -9 {} \;
+# & older logs than 120 days deleted
+if [ -d "${CENTMINLOGDIR}" ]; then
+    find "${CENTMINLOGDIR}" -type f -mtime +90 -name "*_php_upgrade.log" -exec gzip -9 {} \;
+    find "${CENTMINLOGDIR}" -type f -mtime +120 -name "*_php_upgrade.log" -delete
 fi
 
 sar_call

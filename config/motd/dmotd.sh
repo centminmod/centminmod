@@ -228,4 +228,10 @@ INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
+  # logs older than 5 days will be removed
+  if [ -d "${CENTMINLOGDIR}" ]; then
+    # find "${CENTMINLOGDIR}" -type f -mtime +5 -name 'cmm-login-git-checks_*.log' -print
+    find "${CENTMINLOGDIR}" -type f -mtime +5 -name 'cmm-login-git-checks_*.log' -delete
+  fi
+
 fi
