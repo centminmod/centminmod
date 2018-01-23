@@ -998,6 +998,11 @@ find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSI
 find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -print
 find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -exec rm -rf {} \;
 
+# nginx upgrade logs older than 90 days will be gzip compressed to save space 
+if [ -d /root/centminlogs ]; then
+    find /root/centminlogs -type f -mtime +90 -name "*_nginx_upgrade.log" -exec gzip -9 {} \;
+fi
+
         if [ -f /usr/local/sbin/nginx ]; then
             echo
             echo "nginx -V"
