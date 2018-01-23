@@ -27,15 +27,25 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 if [[ "$CLOUDFLARE_ZLIBPHP" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
   # check if static libz.a installed usually as result of compiling nginx with
   # CLOUDFLARE_ZLIB='y' set but if not installed run install function from inc/zlib.inc
-  if [ ! -f /usr/local/zlib-cf/lib/libz.a ]; then
+   if [[ "$(uname -m)" = 'x86_64' ]]; then
+      ZLIBLIBDIR='lib64'
+  else
+      ZLIBLIBDIR='lib'
+   fi
+  if [ ! -f "/usr/local/zlib-cf/${ZLIBLIBDIR}/libz.a" ]; then
+    install_cfzlibstartdir=$(pwd)
     install_cfzlib
+    cd $install_cfzlibstartdir
     ZLIBPHP_OPT='--with-zlib-dir=/usr/local/zlib-cf'
     # export CFLAGS="-I/usr/local/zlib-cf/include";
     # export LDFLAGS="-L/usr/local/zlib-cf/lib" 
     # export LD_LIBRARY_PATH="/usr/local/zlib-cf/lib";
     # export PHP_RPATH="/usr/local/zlib-cf/lib"; 
-  elif [ -f /usr/local/zlib-cf/lib/libz.a ]; then
+  elif [ -f "/usr/local/zlib-cf/${ZLIBLIBDIR}/libz.a" ]; then
     ZLIBPHP_OPT='--with-zlib-dir=/usr/local/zlib-cf'
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
+        ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
+    fi
   fi
 else
   ZLIBPHP_OPT='--with-zlib'

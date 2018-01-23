@@ -67,6 +67,8 @@ install_cfzlib() {
         echo
         echo "install zlib cloudflare..."
         echo
+        echo "pwd"
+        pwd
         pushd "$DIR_TMP"
         if [ ! -d "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}" ]; then
             git clone https://github.com/cloudflare/zlib "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
@@ -80,22 +82,22 @@ install_cfzlib() {
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
-        popd
         ./configure --prefix=/usr/local/zlib-cf
         # ./configure --prefix=/usr/local/zlib-cf --static
         make${MAKETHREADS}
         # ps aufxwww > zlib-process.log
         if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
             make -d install
-            if [[ "$(uname -m)" = 'x86_64' && ! -L lib64 ]]; then
-                ln -s lib lib64
+            if [[ "$(uname -m)" = 'x86_64' ]]; then
+                ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
             fi
         else
             make install
-            if [[ "$(uname -m)" = 'x86_64' && ! -L lib64 ]]; then
-                ln -s lib lib64
+            if [[ "$(uname -m)" = 'x86_64' ]]; then
+                ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
             fi
         fi
+        popd
 }
 
 nginxzlib_install() {
@@ -113,7 +115,9 @@ nginxzlib_install() {
             CLANG='n'
             DEVTOOLSETSIX='y'
         fi
+        install_cfzlibstartdir=$(pwd)
         install_cfzlib
+        cd install_cfzlibstartdir
         if [ -f /usr/local/lib/libz.so ]; then
             echo
             ps aufxw
