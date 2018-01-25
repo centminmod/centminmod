@@ -7,6 +7,32 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 
+# debugging
+# echo "CM_INSTALLDIR=${CM_INSTALLDIR}"
+# exit
+
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "inc/custom_config.inc"
+    if [ -d "${CENTMINLOGDIR}" ]; then
+        cat "inc/custom_config.inc" > "${CENTMINLOGDIR}/inc-custom-config-settings_${DT}.log"
+    fi
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${CONFIGSCANBASE}/custom_config.inc"
+    if [ -d "${CENTMINLOGDIR}" ]; then
+        cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
+    fi
+fi
+
+if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/z_custom.inc"
+    if [ -d "${CENTMINLOGDIR}" ]; then
+        cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"
+    fi
+fi
+
 fpmconfdir
 
 #############################################################
@@ -21,6 +47,190 @@ CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
 PLIBDIR='/usr'
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
+
+# compiling PHP with LTO support takes 2-4x times the memory
+# and cpu resources to do and takes 2-4x times longer to compile
+# so only do it for servers with enough cpu cores and memory
+if [[ "$CPUS" -lt '16' && "$TOTALMEMMB" -lt '31000' ]]; then
+  PHP_LTO='n'
+elif [[ "$CPUS" -lt '16' && "$TOTALMEMMB" -gt '31000' ]]; then
+  PHP_LTO='n'
+fi
+
+# Disabled by default as currently PHP seems to fail to 
+# compile some of the PHP extensions with GCC 8
+if [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+  DEVTOOLSETEIGHT='n'
+fi
+
+# separate make threads for PHP compiles
+if [ -f /proc/user_beancounters ]; then
+    # CPUS='1'
+    # MAKETHREADS_PHP=" -j$CPUS"
+    # speed up make
+    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/4" | bc)
+          if [[ "$(echo "$CPUS_MAKEPHP/2" | bc)" -lt '2' ]]; then
+            CPUS_MAKEPHPLTO='2'
+          elif [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/4" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
+        fi
+    else
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/4" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    fi
+    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
+else
+    # speed up make
+    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
+    if [[ "$CPUS_MAKEPHP" -eq '64' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/32" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '56' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/28" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '48' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/24" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '40' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/20" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '32' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/16" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '24' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/12" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '16' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/8" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '12' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/6" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi    
+    elif [[ "$CPUS_MAKEPHP" -eq '10' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/5" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/4" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
+        fi
+    elif [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/4" | bc)
+          if [[ "$(echo "$CPUS_MAKEPHP/2" | bc)" -lt '2' ]]; then
+            CPUS_MAKEPHPLTO='2'
+          elif [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
+        fi
+    else
+        if [[ "$PHP_LTO" = [yY] ]]; then
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+          CPUS_MAKEPHPLTO=$(echo "$CPUS_MAKEPHP/4" | bc)
+          if [[ "$CPUS_MAKEPHPLTO" -lt '1' ]]; then
+            CPUS_MAKEPHPLTO='1'
+          fi
+        else
+          CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
+        fi
+    fi
+    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
+fi
 
 # whether to switch from system used zlib to cloudflare zlib performance
 # fork for php conmpilations for cpus supporting SSE4.2 at least
@@ -474,6 +684,17 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         unset CXX
         export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-7/enable
+        scl_install
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
         scl_install
@@ -507,6 +728,17 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         unset CXX
         export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-7/enable
+        scl_install
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
         scl_install
@@ -532,7 +764,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # initial php install
   if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      source /opt/gcc8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-7/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-7"
+        echo $CC
+        echo $CXX
+    elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
         which gcc
         which g++
@@ -559,7 +814,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # php upgrades
   if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      source /opt/gcc8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-7/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-7"
+        echo $CC
+        echo $CXX
+    elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
         which gcc
         which g++
@@ -584,6 +862,43 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
 
+  if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
+    DEVTOOLSETEIGHT='y'
+    DEVTOOLSETSEVEN='y'
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      source /opt/gcc8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
+      source /opt/rh/devtoolset-7/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+      export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+    elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      source /opt/rh/devtoolset-6/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
+      export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+      echo "centos 7 set devtoolset-6"
+      echo $CC
+      echo $CXX
+    fi
+  fi
+
 	# intel specific
   CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
   SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
@@ -595,12 +910,17 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
 
 
+  # for PHP_LTO='y'
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
-    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf -flto -flto-partition=max"
+    # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
+    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
+    PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [nN] ]]; then
     PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf"
+    PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -flto-partition=max"
+    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
+    PHPLTOOPT=' --disable-gcc-global-regs'
   fi
 
 	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
@@ -612,6 +932,12 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=silvermont"
     elif [[ "$CPU_MARCH" = 'bonnell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=bonnell"
+    elif [[ "$CPU_MARCH" = 'cannonlake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=cannonlake"
+    elif [[ "$CPU_MARCH" = 'skylake-avx512' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=skylake-avx512"
+    elif [[ "$CPU_MARCH" = 'skylake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=skylake"
     elif [[ "$CPU_MARCH" = 'broadwell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=broadwell"
     elif [[ "$CPU_MARCH" = 'haswell' ]]; then
@@ -714,44 +1040,17 @@ else
   PHP_OPENSSLOPT='--with-openssl'
 fi
 
-# separate make threads for PHP compiles
-if [ -f /proc/user_beancounters ]; then
-    # CPUS='1'
-    # MAKETHREADS_PHP=" -j$CPUS"
-    # speed up make
-    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
-    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
-        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
-    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
-        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
-    else
-        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
-    fi
-    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
-else
-    # speed up make
-    CPUS_MAKEPHP=$(grep -c "processor" /proc/cpuinfo)
-    if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
-        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+2" | bc)
-    elif [[ "$CPUS_MAKEPHP" -eq '8' ]]; then
-        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP+1" | bc)
-    else
-        CPUS_MAKEPHP=$(echo "$CPUS_MAKEPHP" | bc)
-    fi
-    MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
-fi
-
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
-	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
+	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
 
-../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
+../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
 else
 
-	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
+	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
 
-../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
+../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
 fi
 sar_call
