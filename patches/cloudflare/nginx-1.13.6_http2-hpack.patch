@@ -271,7 +271,7 @@ index 42e0eb1..685a7e3 100644
 +
  #endif /* _NGX_HTTP_V2_H_INCLUDED_ */
 diff --git a/src/http/v2/ngx_http_v2_filter_module.c b/src/http/v2/ngx_http_v2_filter_module.c
-index 9070785..fb1b2a1 100644
+index 9070785..ec2a656 100644
 --- a/src/http/v2/ngx_http_v2_filter_module.c
 +++ b/src/http/v2/ngx_http_v2_filter_module.c
 @@ -25,11 +25,6 @@
@@ -318,10 +318,15 @@ index 9070785..fb1b2a1 100644
  
      if (pos == NULL || tmp == NULL) {
          return NGX_ERROR;
-@@ -435,6 +424,18 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
-         h2c->table_update = 0;
-     }
+@@ -428,11 +417,16 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
  
+     start = pos;
+ 
+-    if (h2c->table_update) {
+-        ngx_log_debug0(NGX_LOG_DEBUG_HTTP, fc->log, 0,
+-                       "http2 table size update: 0");
+-        *pos++ = (1 << 5) | 0;
+-        h2c->table_update = 0;
 +    h2c = r->stream->connection;
 +
 +    if (h2c->indicate_resize) {
@@ -332,12 +337,10 @@ index 9070785..fb1b2a1 100644
 +#if (NGX_HTTP_V2_HPACK_ENC)
 +        ngx_http_v2_table_resize(h2c);
 +#endif
-+    }
-+
+     }
+ 
      ngx_log_debug1(NGX_LOG_DEBUG_HTTP, fc->log, 0,
-                    "http2 output header: \":status: %03ui\"",
-                    r->headers_out.status);
-@@ -443,67 +444,28 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
+@@ -443,67 +437,28 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
          *pos++ = status;
  
      } else {
@@ -351,24 +354,26 @@ index 9070785..fb1b2a1 100644
  
      if (r->headers_out.server == NULL) {
 -
--        if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_ON) {
+         if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_ON) {
 -            ngx_log_debug1(NGX_LOG_DEBUG_HTTP, fc->log, 0,
 -                           "http2 output header: \"server: %s\"",
 -                           NGINX_VER);
--
--        } else if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_BUILD) {
++            pos = ngx_http_v2_write_header_str("server", NGINX_VER);
+ 
+         } else if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_BUILD) {
 -            ngx_log_debug1(NGX_LOG_DEBUG_HTTP, fc->log, 0,
 -                           "http2 output header: \"server: %s\"",
 -                           NGINX_VER_BUILD);
--
--        } else {
++            pos = ngx_http_v2_write_header_str("server", NGINX_VER_BUILD);
+ 
+         } else {
 -            ngx_log_debug0(NGX_LOG_DEBUG_HTTP, fc->log, 0,
 -                           "http2 output header: \"server: nginx\"");
 -        }
 -
 -        *pos++ = ngx_http_v2_inc_indexed(NGX_HTTP_V2_SERVER_INDEX);
 -
-         if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_ON) {
+-        if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_ON) {
 -            if (nginx_ver[0] == '\0') {
 -                p = ngx_http_v2_write_value(nginx_ver, (u_char *) NGINX_VER,
 -                                            sizeof(NGINX_VER) - 1, tmp);
@@ -376,9 +381,8 @@ index 9070785..fb1b2a1 100644
 -            }
 -
 -            pos = ngx_cpymem(pos, nginx_ver, nginx_ver_len);
-+            pos = ngx_http_v2_write_header_str("server", NGINX_VER);
- 
-         } else if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_BUILD) {
+-
+-        } else if (clcf->server_tokens == NGX_HTTP_SERVER_TOKENS_BUILD) {
 -            if (nginx_ver_build[0] == '\0') {
 -                p = ngx_http_v2_write_value(nginx_ver_build,
 -                                            (u_char *) NGINX_VER_BUILD,
@@ -387,9 +391,8 @@ index 9070785..fb1b2a1 100644
 -            }
 -
 -            pos = ngx_cpymem(pos, nginx_ver_build, nginx_ver_build_len);
-+            pos = ngx_http_v2_write_header_str("server", NGINX_VER_BUILD);
- 
-         } else {
+-
+-        } else {
 -            pos = ngx_cpymem(pos, nginx, sizeof(nginx));
 +            pos = ngx_http_v2_write_header_str("server", "nginx");
          }
@@ -412,7 +415,7 @@ index 9070785..fb1b2a1 100644
          if (r->headers_out.content_type_len == r->headers_out.content_type.len
              && r->headers_out.charset.len)
          {
-@@ -529,64 +491,36 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
+@@ -529,64 +484,36 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
              r->headers_out.content_type.data = p - len;
          }
  
@@ -489,7 +492,7 @@ index 9070785..fb1b2a1 100644
      }
  #endif
  
-@@ -609,23 +543,10 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
+@@ -609,23 +536,10 @@ ngx_http_v2_header_filter(ngx_http_request_t *r)
              continue;
          }
  
@@ -504,19 +507,19 @@ index 9070785..fb1b2a1 100644
 -#endif
 -
 -        *pos++ = 0;
+-
+-        pos = ngx_http_v2_write_name(pos, header[i].key.data,
+-                                     header[i].key.len, tmp);
 +        pos = ngx_http_v2_write_header(h2c, pos, header[i].key.data,
 +                                       header[i].key.len, header[i].value.data,
 +                                       header[i].value.len, tmp);
  
--        pos = ngx_http_v2_write_name(pos, header[i].key.data,
--                                     header[i].key.len, tmp);
--
 -        pos = ngx_http_v2_write_value(pos, header[i].value.data,
 -                                      header[i].value.len, tmp);
      }
  
      frame = ngx_http_v2_create_headers_frame(r, start, pos, r->header_only);
-@@ -764,7 +685,7 @@ ngx_http_v2_create_trailers_frame(ngx_http_request_t *r)
+@@ -764,7 +678,7 @@ ngx_http_v2_create_trailers_frame(ngx_http_request_t *r)
  }
  
  
@@ -525,7 +528,7 @@ index 9070785..fb1b2a1 100644
  ngx_http_v2_string_encode(u_char *dst, u_char *src, size_t len, u_char *tmp,
      ngx_uint_t lower)
  {
-@@ -790,7 +711,7 @@ ngx_http_v2_string_encode(u_char *dst, u_char *src, size_t len, u_char *tmp,
+@@ -790,7 +704,7 @@ ngx_http_v2_string_encode(u_char *dst, u_char *src, size_t len, u_char *tmp,
  }
  
  
@@ -973,4 +976,3 @@ index 62025c4..4ccaa4a 100644
 +}
 +
 +#endif
-
