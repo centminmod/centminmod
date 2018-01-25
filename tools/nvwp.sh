@@ -1481,6 +1481,20 @@ fi # wp install if web root exists
 
 cat > "/root/tools/wp_uninstall_${vhostname}.sh" <<END
 #/bin/bash
+echo "-------------------------------------------------------------------------"
+echo "Do you want to uninstall/delete WP install for ${vhostname}"
+echo "This will delete all data from /home/nginx/domains/${vhostname}"
+echo "including any non-wordpress data installed at /home/nginx/domains/${vhostname}"
+echo "This script will NOT delete the database, you will have to manually remove the"
+echo "database named: $DB"
+echo "Please backup your MySQL database called $DB before deleting"
+echo "-------------------------------------------------------------------------"
+read -ep "Uninstall WP Install For ${vhostname} [y/n]: " uninstall
+echo
+if [[ "\$uninstall" != [yY] ]]; then
+  exit
+fi
+
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.conf
 rm -rf /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
 rm -rf /home/nginx/domains/${vhostname}
@@ -1491,11 +1505,16 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
+rm -rf /root/.acme.sh/${vhostname}
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
+sed -i "/$vhostname cacheenabler cron/d" cronjoblist
 crontab cronjoblist
 rm -rf cronjoblist
+pure-pw userdel $ftpuser >/dev/null 2>&1
 service nginx restart
 END
 
