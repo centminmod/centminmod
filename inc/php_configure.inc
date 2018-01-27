@@ -1065,6 +1065,7 @@ sar_call
     sar_call
 	fi
 
+    echo "php_configure.inc make install"
     time make install
     sar_call
 
