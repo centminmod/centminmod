@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.35'
+ACMEVER='1.0.36'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -39,6 +39,7 @@ MAIN_HOSTNAMEVHOSTFILE='/usr/local/nginx/conf/conf.d/virtual.conf'
 MAIN_HOSTNAMEVHOSTSSLFILE='/usr/local/nginx/conf/conf.d/virtual.ssl.conf'
 MAIN_HOSTNAME=$(awk '/server_name / {print $2}' "$MAIN_HOSTNAMEVHOSTFILE" | awk 'gsub(";$"," ")')
 OPENSSL_VERSION=$(ls -rt "$DIR_TMP" | awk '/openssl-1/' | grep -v 'tar.gz' | tail -1 | sed -e 's|openssl-||')
+CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/201243967/origin-pull-ca.pem'
 ###############################################################
 # pushover API
 # to ensure these settings persist DO NOT change them in this
@@ -725,6 +726,13 @@ gen_selfsigned() {
     mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
   fi
 
+  # cloudflare authenticated origin pull cert
+  # setup https://community.centminmod.com/threads/13847/
+  if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
+    mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
+    wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
+  fi
+
   if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
 cat > "/usr/local/nginx/conf/ssl_include.conf"<<EVS
 ssl_session_cache      shared:SSL:10m;
@@ -812,6 +820,13 @@ if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 
+# cloudflare authenticated origin pull cert
+# setup https://community.centminmod.com/threads/13847/
+if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
+  mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
+fi
+
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
 cat > "/usr/local/nginx/conf/ssl_include.conf"<<EVS
 ssl_session_cache      shared:SSL:10m;
@@ -890,6 +905,7 @@ server {
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
@@ -1218,6 +1234,7 @@ server {
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
@@ -1324,6 +1341,7 @@ server {
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended

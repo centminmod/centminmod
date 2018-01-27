@@ -184,6 +184,13 @@ if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
 fi
 
+# cloudflare authenticated origin pull cert
+# setup https://community.centminmod.com/threads/13847/
+if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
+  mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
+fi
+
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
 cat > "/usr/local/nginx/conf/ssl_include.conf"<<EVS
 ssl_session_cache      shared:SSL:10m;
@@ -661,6 +668,14 @@ else
   PRESTATIC_INCLUDES=""
 fi
 
+if [[ "$VHOST_CFAUTHORIGINPULL" = [yY] ]]; then
+  CFAUTHORIGINPULL_INCLUDES="# cloudflare authenticated origin pull cert community.centminmod.com/threads/13847/
+  #ssl_client_certificate /usr/local/nginx/conf/ssl/cloudflare/$vhostname/origin.crt;
+  #ssl_verify_client on;"
+else
+  CFAUTHORIGINPULL_INCLUDES=""
+fi
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -758,6 +773,7 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended

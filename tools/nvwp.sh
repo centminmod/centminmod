@@ -19,6 +19,7 @@ OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 USE_NGINXMAINEXTLOGFORMAT='n'
+CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/201243967/origin-pull-ca.pem'
 ################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -335,6 +336,13 @@ fi
 
 if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
+fi
+
+# cloudflare authenticated origin pull cert
+# setup https://community.centminmod.com/threads/13847/
+if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
+  mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -728,6 +736,7 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended

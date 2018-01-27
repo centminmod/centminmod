@@ -663,6 +663,11 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 # wget source compile version
 WGET_VERSION='1.19.4'
 ###############################################################
+# cloudflare authenticated origin pull cert
+# setup https://community.centminmod.com/threads/13847/
+CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/201243967/origin-pull-ca.pem'
+VHOST_CFAUTHORIGINPULL='y'
+###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
 # the details of the self-signed SSL certificate that is auto 
 # generated. The default values where vhostname variable is 

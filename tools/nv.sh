@@ -20,6 +20,8 @@ SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log"
 USE_NGINXMAINEXTLOGFORMAT='n'
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
+CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/201243967/origin-pull-ca.pem'
+VHOST_CFAUTHORIGINPULL='y'
 ###############################################################
 # Letsencrypt integration via addons/acmetool.sh auto detection
 # in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
@@ -364,6 +366,13 @@ fi
 
 if [ ! -d /usr/local/nginx/conf/ssl/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/${vhostname}
+fi
+
+# cloudflare authenticated origin pull cert
+# setup https://community.centminmod.com/threads/13847/
+if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
+  mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -757,6 +766,14 @@ else
   PRESTATIC_INCLUDES=""
 fi
 
+if [[ "$VHOST_CFAUTHORIGINPULL" = [yY] ]]; then
+  CFAUTHORIGINPULL_INCLUDES="# cloudflare authenticated origin pull cert community.centminmod.com/threads/13847/
+  #ssl_client_certificate /usr/local/nginx/conf/ssl/cloudflare/$vhostname/origin.crt;
+  #ssl_verify_client on;"
+else
+  CFAUTHORIGINPULL_INCLUDES=""
+fi
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -861,6 +878,7 @@ server {
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
@@ -956,6 +974,7 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
@@ -1049,6 +1068,7 @@ server {
   ssl_certificate_key  /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.key;
   include /usr/local/nginx/conf/ssl_include.conf;
 
+  $CFAUTHORIGINPULL_INCLUDES
   $HTTPTWO_MAXFIELDSIZE
   $HTTPTWO_MAXHEADERSIZE
   # mozilla recommended
