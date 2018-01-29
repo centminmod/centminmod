@@ -287,7 +287,7 @@ MARIADB_JEMALLOC='n'
 #####################################################
 # CCACHE Configuration
 CCACHEINSTALL='y'
-CCACHE_VER="3.3.5"
+CCACHE_VER="3.3.6"
 CCACHESIZE='2.5G'
 
 #####################################################
