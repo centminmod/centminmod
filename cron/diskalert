@@ -1,47 +1,53 @@
 #!/bin/sh
+############################################################################################
 # set -x
 # Shell script to monitor or watch the disk space
 # modified version
 # http://www.cyberciti.biz/tips/shell-script-to-watch-the-disk-space.html
-# It will send an email to $ADMIN, if the (free available) percentage of space is >= 90%.
-# -------------------------------------------------------------------------
+# It will send an email to $DISKALERT_ADMINEMAIL, if the (free available) percentage of space is >= 90%.
+############################################################################################
 # Set admin email so that you can get email.
 EMAIL=''
-if [ -z "$EMAIL" ]; then
-ADMIN="root"
-else
-ADMIN="$EMAIL"
-fi
 # set alert level 90% is default
-ALERT='90'
+DISKSPACE_ALERTPERCENTAGE='80'
 # Exclude list of unwanted monitoring, if several partions then use "|" to separate the partitions.
-# An example: EXCLUDE_LIST="/dev/hdd1|/dev/hdc5"
-EXCLUDE_LIST="/auto/ripper"
-#
-#::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-#
+# An example: DISKALERTEXCLUDE_LIST="/dev/hdd1|/dev/hdc5"
+DISKALERTEXCLUDE_LIST="/auto/ripper"
+############################################################################################
 
-  if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
-    SERVERHOSTNAME=$(hostname)
-  else
-    SERVERHOSTNAME=$(hostname -f)
-  fi
+if [ -f "/etc/centminmod/custom_config.inc" ]; then
+  # default is at /etc/centminmod/custom_config.inc
+  . "/etc/centminmod/custom_config.inc"
+fi
+
+if [ -z "$EMAIL" ]; then
+  DISKALERT_ADMINEMAIL="root"
+else
+  DISKALERT_ADMINEMAIL="$EMAIL"
+fi
+
+if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+  DISKALERT_SERVERHOSTNAME=$(hostname)
+else
+  DISKALERT_SERVERHOSTNAME=$(hostname -f)
+fi
 
 function main_prog() {
-while read output;
-do
-#echo $output
-  usep=$(echo $output | awk '{ print $1}' | cut -d'%' -f1)
-  partition=$(echo $output | awk '{print $2}')
-if [ ! "$usep" == "" ] ; then
-  if [[ "$usep" -ge "$ALERT" ]]; then
-     echo "Running out of space \"$partition ($usep%)\" on server $SERVERHOSTNAME, $(date)" | mail -s "$SERVERHOSTNAME Disk Alert: Almost out of disk space $usep%" $ADMIN
+  while read output;
+  do
+  #echo $output
+    diskalert_usep=$(echo $output | awk '{ print $1}' | cut -d'%' -f1)
+    diskalert_partition=$(echo $output | awk '{print $2}')
+  if [ ! "$diskalert_usep" == "" ] ; then
+    if [[ "$diskalert_usep" -ge "$DISKSPACE_ALERTPERCENTAGE" ]]; then
+      echo "Running out of space \"$diskalert_partition ($diskalert_usep%)\" on server $DISKALERT_SERVERHOSTNAME, $(date)" | mail -s "$DISKALERT_SERVERHOSTNAME Disk Alert: Almost out of disk space $diskalert_usep%" $DISKALERT_ADMINEMAIL
+    fi
   fi
-fi
-done
+  done
 }
-if [ "$EXCLUDE_LIST" != "" ] ; then
-  df -HP | grep -vE "^Filesystem|tmpfs|cdrom|${EXCLUDE_LIST}" | awk '{print $5 " " $6}' | main_prog 
+
+if [ "$DISKALERTEXCLUDE_LIST" != "" ] ; then
+  df -HP | grep -vE "^Filesystem|tmpfs|cdrom|${DISKALERTEXCLUDE_LIST}" | awk '{print $5 " " $6}' | main_prog 
 else
   df -HP | grep -vE "^Filesystem|tmpfs|cdrom" | awk '{print $5 " " $6}' | main_prog 
 fi

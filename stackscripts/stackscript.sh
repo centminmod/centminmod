@@ -4,7 +4,7 @@
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # stackscript installer for latest Centmin Mod LEMP 
-# beta + redis installation for both remi 4.0.6
+# beta + redis installation for both remi 4.0.7
 ######################################################
 # variables
 #############
@@ -161,11 +161,9 @@ echo
 echo "Set ORESTY_LUANGINX='y'"
 echo "Set NGXDYNAMIC_LUA='y'"
 echo "Set NGXDYNAMIC_DEVELKIT='y'"
-echo "Set OPENSSL_VERSION='1.0.2l'"
 echo "ORESTY_LUANGINX='y'" >> /etc/centminmod/custom_config.inc
 echo "NGXDYNAMIC_LUA='y'" >> /etc/centminmod/custom_config.inc
 echo "NGXDYNAMIC_DEVELKIT='y'" >> /etc/centminmod/custom_config.inc
-echo "OPENSSL_VERSION='1.0.2l'" >> /etc/centminmod/custom_config.inc
 echo
 fi
 
