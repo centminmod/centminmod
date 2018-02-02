@@ -110,13 +110,13 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 	if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
 	#############################
 	# el6 32bit
-	curl -4Is --connect-timeout 5 --max-time 5 http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel6/i386/city-fan.org-release-1-13.rhel6.noarch.rpm
+	curl -4Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
 	CURL_NOARCHRPMCHECK=$?
 	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
-		rpm -Uvh http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel6/i386/city-fan.org-release-1-13.rhel6.noarch.rpm
+		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
 	else
-		if [ -f "$DIR_TMP/city-fan.org-release-1-13.rhel6.noarch.rpm" ]; then
-			rpm -Uvh "$DIR_TMP/city-fan.org-release-1-13.rhel6.noarch.rpm"
+		if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm" ]; then
+			rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm"
 		fi
 	fi
 	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
@@ -140,13 +140,13 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 	elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
 	###############################################################
 	# el6 64bit
-	curl -4Is --connect-timeout 5 --max-time 5 http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel6/x86_64/city-fan.org-release-1-13.rhel6.noarch.rpm
+	curl -4Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
 	CURL_NOARCHRPMCHECK=$?
 	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
-		rpm -Uvh http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel6/x86_64/city-fan.org-release-1-13.rhel6.noarch.rpm
+		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
 	else
-		if [ -f "$DIR_TMP/city-fan.org-release-1-13.rhel6.noarch.rpm" ]; then
-			rpm -Uvh "$DIR_TMP/city-fan.org-release-1-13.rhel6.noarch.rpm"
+		if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm" ]; then
+			rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm"
 		fi
 	fi
 	
@@ -171,13 +171,13 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 	elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	###############################################################
 	# el7 64bit
-	curl -4Is --connect-timeout 5 --max-time 5 http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel7/x86_64/city-fan.org-release-1-13.rhel7.noarch.rpm
+	curl -4Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel7.noarch.rpm
 	CURL_NOARCHRPMCHECK=$?
 	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
-		rpm -Uvh http://mirror.city-fan.org/ftp/contrib/yum-repo/rhel7/x86_64/city-fan.org-release-1-13.rhel7.noarch.rpm
+		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel7.noarch.rpm
 	else
-		if [ -f "$DIR_TMP/city-fan.org-release-1-13.rhel7.noarch.rpm" ]; then
-			rpm -Uvh "$DIR_TMP/city-fan.org-release-1-13.rhel7.noarch.rpm"
+		if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel7.noarch.rpm" ]; then
+			rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel7.noarch.rpm"
 		fi
 	fi
 	
