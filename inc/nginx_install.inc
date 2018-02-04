@@ -168,9 +168,9 @@ then
     #tar xvzf ${GPERFTOOL_LINKFILE}
     cd ${GPERFTOOL_LINKDIR}
     if [[ "$(uname -m)" = 'x86_64' ]]; then
-        ./configure
+        ./configure --with-tcmalloc-pagesize=$TCMALLOC_PAGESIZE
     else
-        ./configure --enable-frame-pointers
+        ./configure --enable-frame-pointers --with-tcmalloc-pagesize=$TCMALLOC_PAGESIZE
     fi
     make$MAKETHREADS
     make install
