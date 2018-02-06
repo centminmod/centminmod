@@ -1094,7 +1094,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       NEWURI="/vhost_status"
       if [ -f /usr/local/nginx/html/vhost_status.html ]; then
           sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
-          sed -i 's|<option value=8>8</option>|<option value=8>8</option><option value=15>15</option><option value=69>60</option>|' /usr/local/nginx/html/vhost_status.html
+          if [[ ! "$(grep '<option value=60>60</option>' /usr/local/nginx/html/vhost_status.html)" ]]; then
+            sed -i 's|<option value=8>8</option>|<option value=8>8</option><option value=15>15</option><option value=60>60</option>|' /usr/local/nginx/html/vhost_status.html
+          fi
         fi
       elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
         rm -rf "${DIR_TMP}/nginx-module-vts"
@@ -1114,7 +1116,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         NEWURI="/vhost_status"
         if [ -f /usr/local/nginx/html/vhost_status.html ]; then
           sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
-          sed -i 's|<option value=8>8</option>|<option value=8>8</option><option value=15>15</option><option value=69>60</option>|' /usr/local/nginx/html/vhost_status.html
+          if [[ ! "$(grep '<option value=60>60</option>' /usr/local/nginx/html/vhost_status.html)" ]]; then
+            sed -i 's|<option value=8>8</option>|<option value=8>8</option><option value=15>15</option><option value=60>60</option>|' /usr/local/nginx/html/vhost_status.html
+          fi
         fi
       fi
     else
