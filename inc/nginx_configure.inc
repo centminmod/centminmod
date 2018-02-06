@@ -1063,64 +1063,66 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       fi
   fi
 
-	if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
+  if [[ "$NGINX_VHOSTSTATS" = [yY] ]]; then
     if [ ! -f /var/log/nginx/vts.db ]; then
       touch /var/log/nginx/vts.db
       chown nginx /var/log/nginx/vts.db
     fi
-		if [ -f /usr/bin/git ]; then
+    if [ -f /usr/bin/git ]; then
       if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_VHOSTSTATS" = [yY] ]]; then
         VTSOPT=" --add-dynamic-module=../nginx-module-vts"
         if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
           echo "load_module \"modules/ngx_http_vhost_traffic_status_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
         fi
       else
-			  VTSOPT=" --add-module=../nginx-module-vts"
+        VTSOPT=" --add-module=../nginx-module-vts"
       fi
-			if [[ ! -d "${DIR_TMP}/nginx-module-vts" ]]; then
-				cd "$DIR_TMP"
-				time git clone "$NGX_VTSLINK" nginx-module-vts
-				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
-				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
-				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
-				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
-				cd nginx-module-vts/util
-				./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
-				# ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
-				cd ../
-				# setup /vhost_status.html
-				cp -a "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
-				MAINURIHOST=$HN
-				NEWURI="//${MAINURIHOST}/vhost_status"
-				if [ -f /usr/local/nginx/html/vhost_status.html ]; then
-					sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
-				fi
-			elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
-				rm -rf "${DIR_TMP}/nginx-module-vts"
-				cd "$DIR_TMP"
-				time git clone "$NGX_VTSLINK" nginx-module-vts
-				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
-				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
-				# sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
-				sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
-				cd nginx-module-vts/util
-				./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
-				# ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
-				cd ../
-				# setup /vhost_status.html
-				cp -a "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
-				MAINURIHOST=$HN
-				NEWURI="//${MAINURIHOST}/vhost_status"
-				if [ -f /usr/local/nginx/html/vhost_status.html ]; then
-					sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
-				fi
-			fi
-		else
-			VTSOPT=""
-		fi
-	else
-		VTSOPT=""
-	fi	
+      if [[ ! -d "${DIR_TMP}/nginx-module-vts" ]]; then
+      cd "$DIR_TMP"
+      time git clone "$NGX_VTSLINK" nginx-module-vts
+      # sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+      sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+      # sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
+      sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
+      cd nginx-module-vts/util
+      ./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
+      # ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
+      cd ../
+      # setup /vhost_status.html
+      cp -a "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
+      MAINURIHOST=$(curl -s ipinfo.io/ip)
+      NEWURI="/vhost_status"
+      if [ -f /usr/local/nginx/html/vhost_status.html ]; then
+          sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
+          sed -i 's|<option value=8>8</option>|<option value=8>8</option><option value=15>15</option><option value=69>60</option>|' /usr/local/nginx/html/vhost_status.html
+        fi
+      elif [[ -d "${DIR_TMP}/nginx-module-vts" && -d "${DIR_TMP}/nginx-module-vts/.git" ]]; then
+        rm -rf "${DIR_TMP}/nginx-module-vts"
+        cd "$DIR_TMP"
+        time git clone "$NGX_VTSLINK" nginx-module-vts
+        # sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+        sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.template.html"
+        # sed -i 's|color:       black;|color:       white;|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
+        sed -i 's|#DED|#43a6df|g' "${DIR_TMP}/nginx-module-vts/share/status.compress.html"
+        cd nginx-module-vts/util
+        ./tplToDefine.sh ../share/status.template.html > ../src/ngx_http_vhost_traffic_status_module_html.h
+        # ./tplToDefine.sh ../share/status.compress.html > ../src/ngx_http_vhost_traffic_status_module_html.h
+        cd ../
+        # setup /vhost_status.html
+        cp -a "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
+        MAINURIHOST=$(curl -s ipinfo.io/ip)
+        NEWURI="/vhost_status"
+        if [ -f /usr/local/nginx/html/vhost_status.html ]; then
+          sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
+          sed -i 's|<option value=8>8</option>|<option value=8>8</option><option value=15>15</option><option value=69>60</option>|' /usr/local/nginx/html/vhost_status.html
+        fi
+      fi
+    else
+      VTSOPT=""
+    fi
+  else
+    VTSOPT=""
+  fi
 
 	if [[ "$NGINX_STICKY" = [yY] ]]; then
 		if [[ "$NGINX_STICKYVER" = 'master' ]]; then
