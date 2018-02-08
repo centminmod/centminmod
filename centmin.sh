@@ -268,6 +268,11 @@ LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 #####################################################
 # Timestamp Install
 TS_INSTALL='y'
+TIME_NGINX='n'
+TIME_PHPCONFIGURE='n'
+TIME_MEMCACHED='n'
+TIME_IMAGEMAGICK='n'
+TIME_REDIS='n'
 
 #####################################################
 # Enable or disable menu mode
@@ -2589,7 +2594,11 @@ EOF
         ccacheinstall
         fi
         
-        funct_memcachedreinstall
+        if [[ "$TIME_MEMCACHED" = [yY] ]]; then
+            funct_memcachedreinstall 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+        else
+            funct_memcachedreinstall
+        fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_memcached_reinstall.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
@@ -2646,7 +2655,11 @@ EOF
         ccacheinstall
         fi
         
-        imagickinstall
+        if [[ "$TIME_IMAGEMAGICK" = [yY] ]]; then
+            imagickinstall 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+        else
+            imagickinstall
+        fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php-imagick-install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then

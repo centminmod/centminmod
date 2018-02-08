@@ -17,6 +17,12 @@ ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
 ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 
 #####################################################
+TIME_NGINX='n'
+TIME_PHPCONFIGURE='n'
+TIME_MEMCACHED='n'
+TIME_IMAGEMAGICK='n'
+TIME_REDIS='n'
+#####################################################
 # Networking
 # do not edit below variables but instead set them in
 # /etc/centminmod/custom_config.inc as outlined on 

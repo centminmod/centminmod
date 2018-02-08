@@ -27,7 +27,11 @@ case "$phpredisoption" in
 PHPREDIS='y'
 centminlog
 {
-redisinstall submenu
+if [[ "$TIME_REDIS" = [yY] ]]; then
+	redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+else
+	redisinstall submenu
+fi
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-install.log"
 
@@ -37,7 +41,11 @@ redisinstall submenu
 centminlog
 {
 PHPREDIS='y'
-redisinstall submenu
+if [[ "$TIME_REDIS" = [yY] ]]; then
+	redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+else
+	redisinstall submenu
+fi
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-reinstall.log"
 

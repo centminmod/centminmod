@@ -678,7 +678,11 @@ fi
         figlet -ckf standard "Nginx Configure"
     fi
 
-funct_nginxconfigure
+if [[ "$TIME_NGINX" = [yY] ]]; then
+    funct_nginxconfigure 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+else
+    funct_nginxconfigure
+fi
 
 ################
 # error check

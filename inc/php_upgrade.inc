@@ -411,7 +411,11 @@ fi # PHPDIFF
         figlet -ckf standard "PHP: Configure"
     fi
 
-funct_phpconfigure
+if [[ "$TIME_PHPCONFIGURE" [yY] ]]; then
+    funct_phpconfigure 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+else
+    funct_phpconfigure
+fi
 
 ################
 # error check
