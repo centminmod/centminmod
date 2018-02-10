@@ -605,7 +605,7 @@ REDISPHP_VER='3.1.6'        # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='3.1.6'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.3.2'      # MongoDB PHP version
+MONGODBPHP_VER='1.4.0'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='9.6'       # pdo-pgsql PHP extension version for postgresql
 LIBSODIUM_VER='1.0.15'      # https://github.com/jedisct1/libsodium/releases
