@@ -1023,6 +1023,22 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
+location ~* ${WPSUBDIR}/wp-admin/(load-scripts\.php) {
+    limit_req zone=xwprpc burst=5 nodelay;
+    #limit_conn xwpconlimit 30;
+    include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
+}
+
+location ~* ${WPSUBDIR}/wp-admin/(load-styles\.php) {
+    limit_req zone=xwprpc burst=5 nodelay;
+    #limit_conn xwpconlimit 30;
+    include /usr/local/nginx/conf/php-wpsc.conf;
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
+}
+
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
   ${MULTIPHP_INCLUDES}
