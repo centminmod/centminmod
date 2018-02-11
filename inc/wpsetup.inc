@@ -1153,6 +1153,24 @@ location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     #include /usr/local/nginx/conf/php-rediscache.conf;
 }
 
+location ~* ${WPSUBDIR}/wp-admin/(load-scripts\.php) {
+    limit_req zone=xwprpc burst=5 nodelay;
+    #limit_conn xwpconlimit 30;
+    include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
+}
+
+location ~* ${WPSUBDIR}/wp-admin/(load-styles\.php) {
+    limit_req zone=xwprpc burst=5 nodelay;
+    #limit_conn xwpconlimit 30;
+    include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
+}
+
   $NONSUBDIR_INCLUDE
   include /usr/local/nginx/conf/php-wpsc.conf;
   ${MULTIPHP_INCLUDES}
@@ -1247,6 +1265,24 @@ location ~* ${WPSUBDIR}/(wp-login\.php) {
 
 location ~* ${WPSUBDIR}/(xmlrpc\.php) {
     limit_req zone=xwprpc burst=45 nodelay;
+    #limit_conn xwpconlimit 30;
+    include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
+}
+
+location ~* ${WPSUBDIR}/wp-admin/(load-scripts\.php) {
+    limit_req zone=xwprpc burst=5 nodelay;
+    #limit_conn xwpconlimit 30;
+    include /usr/local/nginx/conf/php-wpsc.conf;
+    ${MULTIPHP_INCLUDES}
+    # https://community.centminmod.com/posts/18828/
+    #include /usr/local/nginx/conf/php-rediscache.conf;
+}
+
+location ~* ${WPSUBDIR}/wp-admin/(load-styles\.php) {
+    limit_req zone=xwprpc burst=5 nodelay;
     #limit_conn xwpconlimit 30;
     include /usr/local/nginx/conf/php-wpsc.conf;
     ${MULTIPHP_INCLUDES}
@@ -1970,7 +2006,7 @@ NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
 sed -i "/define('DB_COLLATE', '');/ a\
-/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\
+/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\ndefine('CONCATENATE_SCRIPTS', false);\
 " wp-config.php
 
 if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
