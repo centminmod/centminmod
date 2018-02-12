@@ -252,7 +252,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
 		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
-		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
+		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]] || [[ "$NGX_VEREVAL" = 'master' ]]; then
 			if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
 				NGINX_SPDY=y
 				HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
@@ -1268,7 +1268,7 @@ else
 
 	if [[ "$NGINX_HTTP2" = [yY] ]]; then	
 		# only apply Nginx HTTP/2 if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
-		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
+		if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]] || [[ "$NGX_VEREVAL" = 'master' ]]; then
 			if [[ "$NGINX_SPDYPATCHED" = [yY] ]]; then
 				NGINX_SPDY=y
 				HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
@@ -2197,7 +2197,7 @@ else
 fi
 
 if [[ "$NGINX_THREADS" = [yY] ]]; then
-	if [[ "$NGX_VEREVAL" -ge '10800' ]]; then
+	if [[ "$NGX_VEREVAL" -ge '10800' ]] || [[ "$NGX_VEREVAL" = 'master' ]]; then
 		THREADS=' --with-threads'
 	else
 		THREADS=""

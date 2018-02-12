@@ -585,8 +585,13 @@ fi
     fi
 
     echo "Compiling nginx..."
-    if [ -s "nginx-${ngver}.tar.gz" ]; then
-        cecho "nginx ${ngver} Archive found, skipping download..." $boldgreen
+    if [[ "$ngver" = 'master' ]]; then
+        rm -rf nginx-${ngver}*
+        git clone --depth=1 https://github.com/nginx/nginx nginx-master
+        mv nginx-master/auto/configure nginx-master/configure
+    fi
+    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' ]]; then
+        cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
         download_cmd "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
         NGINXDOWNLOAD_CHECK=$?
@@ -627,37 +632,39 @@ fi
         fi
     fi
 
-    tar xvfz "nginx-${ngver}.tar.gz"
-    NGINXTAREXTRACT_CHECK=$?
-    if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
-        if [ -f "$(which figlet)" ]; then
-            figlet -ckf standard "Nginx Tarball Extraction Failed"
-        fi
-        echo
-        echo "!! Nginx Tarball Extraction Failed !!"
-        echo "try again by running centmin.sh menu option 4"
-        echo "make sure you type the correct nginx version"
-        echo "report errors on the forums at community.centminmod.com/forums/8/"
-        echo
-        free -m
-        echo
-        df -hT
-        echo
-        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
-        echo
-        echo
-        echo "version increment history"
-        tail -5 /etc/centminmod-versionlog
-        if [ -d "${SCRIPT_DIR}/.git" ]; then
+    if [[ "$ngver" != 'master' ]]; then
+        tar xvfz "nginx-${ngver}.tar.gz"
+        NGINXTAREXTRACT_CHECK=$?
+        if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
+            if [ -f "$(which figlet)" ]; then
+                figlet -ckf standard "Nginx Tarball Extraction Failed"
+            fi
             echo
-            echo "last Centmin Mod local git commit entry"
-            pushd "${SCRIPT_DIR}"
-            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
-            popd
+            echo "!! Nginx Tarball Extraction Failed !!"
+            echo "try again by running centmin.sh menu option 4"
+            echo "make sure you type the correct nginx version"
+            echo "report errors on the forums at community.centminmod.com/forums/8/"
+            echo
+            free -m
+            echo
+            df -hT
+            echo
+            echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+            echo
+            echo
+            echo "version increment history"
+            tail -5 /etc/centminmod-versionlog
+            if [ -d "${SCRIPT_DIR}/.git" ]; then
+                echo
+                echo "last Centmin Mod local git commit entry"
+                pushd "${SCRIPT_DIR}"
+                git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+                popd
+            fi
+    
+            rm -rf "$DIR_TMP/nginx-*.tar.gz"
+            exit
         fi
-
-        rm -rf "$DIR_TMP/nginx-*.tar.gz"
-        exit
     fi
     cd "nginx-${ngver}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
