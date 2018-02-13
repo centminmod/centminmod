@@ -145,8 +145,9 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
 fi
 
 	# adjustments for OpenSSL 1.1.0
-  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
-  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+  DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
   	echo "detected $OPENSSL_VERSION"
   	WITHOPENSSL_OPT=""
   	WITHOPENSSL_OPTECHO=""
@@ -611,6 +612,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         fi
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
+        fi
 			else
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
@@ -630,6 +637,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
+        fi
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
         fi
 			else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
@@ -1507,6 +1520,12 @@ else
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         fi
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
+        fi
 			else
         if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
           if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -1534,6 +1553,12 @@ else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
         else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3 --with-openssl-opt='enable-tls1_3'"
+        fi
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
+        else
+          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-tls1_3'"
         fi
 			else
 				export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"

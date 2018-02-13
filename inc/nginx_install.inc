@@ -239,11 +239,12 @@ funct_nginxconfigure
     fi
 
     # detect OpenSSL 1.1.0 for make -jXX support
-    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+    DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
     else
-        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
             time make${MAKETHREADS}
         else
             time make

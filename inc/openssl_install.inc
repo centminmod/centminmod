@@ -125,7 +125,8 @@ if [[ "$(uname -m)" != 'x86_64' ]]; then
     CLOUDFLARE_PATCHSSL='n'
 fi
 
-DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
@@ -326,7 +327,8 @@ installopenssl() {
         # so fall back to 1.0.2 branch if lua nginx module is enabled
         OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
     fi
-    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+    DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+    DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
     if [ ! -f /usr/local/go/bin/go ]; then
         # if golang is not detected BoringSSL switch will be disabled
         # and default to using OpenSSL 1.0.2+
@@ -424,7 +426,7 @@ installopenssl() {
         fi
     
         #-- Build static openssl
-        if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
+        if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] && [[ "$DETECTOPENSSL_ONEONE" != '1.1.1' ]] ; then
             OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
             cd "$DIR_TMP"
@@ -451,7 +453,7 @@ installopenssl() {
             else
                 ECNISTP_OPT=""
             fi
-            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
                 if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
@@ -469,12 +471,14 @@ installopenssl() {
                 elif [[ ! "${OPENSSL_THREADS}" ]]; then
                     OPENSSL_THREADSOPT=""
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}
+                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}
             else
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext${ECNISTP_OPT}
             fi
         else
-            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
                 if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
@@ -483,12 +487,14 @@ installopenssl() {
                     TLSONETHREEOPT=""
                     TLSONETHREE_DETECT='n'
                 fi
-                ./config -Wl,--enable-new-dtags,-rpath,'$(LIBRPATH)' --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}
+                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}
             else
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared enable-tlsext
             fi
         fi
-        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
             make${MAKETHREADS}
         else
             make depend

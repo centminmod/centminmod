@@ -8,7 +8,7 @@ ngx_hpack_patch() {
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
-  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
   if [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013006' ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
@@ -186,7 +186,7 @@ patchnginx() {
   sleep "$NGINXPATCH_DELAY"
 
   # unofficial OpenSSL 1.1.0 beta Nginx patches
-  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1,2)
+  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
   # detect nginx <=1.11.3 or => 1.11.0 as 1.11.4+ has fix for openssl 1.1 so no patching needed
   # http://hg.nginx.org/nginx/rev/1891b2892b68
   if [ "$ngver" ]; then
