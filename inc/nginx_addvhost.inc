@@ -702,6 +702,7 @@ server {
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
   #add_header X-Content-Type-Options "nosniff" always;
+  #add_header Referrer-Policy "strict-origin-when-cross-origin";
 
   # limit_conn limit_per_ip 16;
   # ssi  on;
@@ -786,6 +787,7 @@ server {
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
   #add_header X-Content-Type-Options "nosniff" always;
+  #add_header Referrer-Policy "strict-origin-when-cross-origin";
   $COMP_HEADER;
   ssl_buffer_size 1369;
   ssl_session_tickets on;
@@ -869,6 +871,7 @@ server {
   #add_header X-Frame-Options SAMEORIGIN;
   #add_header X-Xss-Protection "1; mode=block" always;
   #add_header X-Content-Type-Options "nosniff" always;
+  #add_header Referrer-Policy "strict-origin-when-cross-origin";
 
   # limit_conn limit_per_ip 16;
   # ssi  on;
