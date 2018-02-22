@@ -6,7 +6,8 @@ VER='0.0.7'
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.8.2'
+# specify version branch so set NODEJSVER to 4, 5, 6, 7 or 8
+NODEJSVER='8'
 NODEJS_SOURCEINSTALL='y'
 REINSTALL='y'
 
@@ -158,9 +159,9 @@ scl_install() {
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
-      curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
+      curl --silent -4 --location https://rpm.nodesource.com/setup_${NODEJSVER}.x | bash -
       yum -y install nodejs --disableplugin=priorities --disablerepo=epel
-      npm install npm@latest -g
+      time npm install npm@latest -g
   
     echo
     cecho "---------------------------" $boldyellow
@@ -186,7 +187,7 @@ installnodejs() {
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
     	cd $DIR_TMP
-    	curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
+    	curl --silent -4 --location https://rpm.nodesource.com/setup_8.x | bash -
     	yum -y install nodejs --disableplugin=priorities --disablerepo=epel
     	npm install npm@latest -g
 	
