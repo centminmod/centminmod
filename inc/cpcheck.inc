@@ -1536,6 +1536,13 @@ cronpathadjust() {
 	# fi
 }
 
+crontabdisable_r() {
+  if [[ ! "$(grep -w 'crontab \(\)' /root/.bashrc)" ]]; then
+    # disable crontab -r commmand https://community.centminmod.com/threads/strange-cancellation-of-the-cron.14059/#post-59929
+    echo 'crontab () { [[ $@ =~ -[iel]*r ]] && echo '"r" not allowed' || command crontab "$@" ;}' >> /root/.bashrc
+  fi
+}
+
 xpowerby() {
 	# add x-powered-by header check
 	if [ -f /usr/local/nginx/conf/nginx.conf ]; then
@@ -2124,6 +2131,7 @@ yumfastmirror_check
 ovhkernelcheck
 fileperm_fixes
 cronpathadjust
+crontabdisable_r
 rclocalchecks
 checkovzkernels
 kernelchecks
@@ -2205,6 +2213,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   disablelogs
   nginxlargefile_fix
   fix_phperrorlogperm
+  crontabdisable_r
   # pip_updates
 fi
 
