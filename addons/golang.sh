@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.7'
+VER='0.0.8'
 ######################################################
 # golang binary installer
 # for Centminmod.com
@@ -110,7 +110,8 @@ go_install() {
 		fi
   fi
 		
-	tar -C /usr/local -xzf go${GO_VERSION}.linux-${GOARCH}.tar.gz
+  rm -rf /usr/local/go
+  tar -C /usr/local -xzf go${GO_VERSION}.linux-${GOARCH}.tar.gz
 	ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 		cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz extraction failed." $boldgreen
