@@ -37,7 +37,7 @@ done
 echo
 echo "copy ngx_pagespeed + psol"
 cd /svr-setup
-\cp -a $(ls -t | grep ngx_pagespeed-release | head -n1) $PKGDIR
+\cp -a $(ls -t | grep incubator-pagespeed-ngx | head -n1) $PKGDIR
 
 echo
 du -sh $PKGDIR
