@@ -64,6 +64,20 @@ zlibng_install() {
 }
 
 install_cfzlib() {
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+        # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
+        # cloudflare zlib
+        if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+            CLANG='y'
+            CLANG_FOUR='y'
+        elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
+            CLANG='n'
+            DEVTOOLSETSIX='y'
+        else
+            CLANG='n'
+            DEVTOOLSETSIX='y'
+        fi
+        install_cfzlibstartdir=$(pwd)
         echo
         echo "install zlib cloudflare..."
         echo
@@ -88,35 +102,18 @@ install_cfzlib() {
         # ps aufxwww > zlib-process.log
         if [[ "$CLOUDFLARE_ZLIBDEBUG" = [Yy] ]]; then
             make -d install
+            cfzlib_check=$?
             if [[ "$(uname -m)" = 'x86_64' ]]; then
                 ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
             fi
         else
             make install
+            cfzlib_check=$?
             if [[ "$(uname -m)" = 'x86_64' ]]; then
                 ln -sf /usr/local/zlib-cf/lib /usr/local/zlib-cf/lib64
             fi
         fi
         popd
-}
-
-nginxzlib_install() {
-  if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
-        # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
-        # cloudflare zlib
-        if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
-            CLANG='y'
-            CLANG_FOUR='y'
-        elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
-            CLANG='n'
-            DEVTOOLSETSIX='y'
-        else
-            CLANG='n'
-            DEVTOOLSETSIX='y'
-        fi
-        install_cfzlibstartdir=$(pwd)
-        install_cfzlib
         cd install_cfzlibstartdir
         if [ -f /usr/local/lib/libz.so ]; then
             echo
@@ -206,7 +203,10 @@ nginxzlib_install() {
         echo
         echo "zlib cloudflare installed"
         echo
-    else
+    fi
+}
+
+install_stdzlib() {
         echo
         echo "install zlib ${NGINX_ZLIBVER}..."
         echo
@@ -310,6 +310,18 @@ nginxzlib_install() {
         echo
         echo "zlib ${NGINX_ZLIBVER} installed"
         echo
+}
+
+nginxzlib_install() {
+  if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+        install_cfzlib
+        if [[ "$cfzlib_check" -ne '0' ]]; then
+            CLOUDFLARE_ZLIB='n'
+            install_stdzlib
+        fi
+    else
+        install_stdzlib
     fi
   fi
 }
