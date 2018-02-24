@@ -25,6 +25,10 @@ done
 
 mkdir -p $PKGDIR
 
+if [ ! -f /usr/bin/zip ]; then
+  yum -y -q install zip
+fi
+
 cd /svr-setup
 for f in $(ls /svr-setup)
  do 
@@ -34,10 +38,13 @@ for f in $(ls /svr-setup)
 	fi
 done
 
-echo
-echo "copy ngx_pagespeed + psol"
-cd /svr-setup
-\cp -a $(ls -t | grep incubator-pagespeed-ngx | head -n1) $PKGDIR
+NGXPAGESPEED_NAME=$(ls -t | grep incubator-pagespeed-ngx | head -n1)
+if [[ ! -z "$NGXPAGESPEED_NAME" ]]; then
+  echo
+  echo "copy ngx_pagespeed + psol"
+  cd /svr-setup
+  \cp -a $NGXPAGESPEED_NAME $PKGDIR
+fi
 
 echo
 du -sh $PKGDIR
