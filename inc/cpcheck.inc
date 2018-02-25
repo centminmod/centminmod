@@ -1795,13 +1795,13 @@ if [[ ! -f /proc/user_beancounters ]]; then
 		# create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
     if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
         if [ -d /etc/sysctl.d ]; then
-          if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
-            # raise hashsize for conntrack entries
-            echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
-            if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-            	echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
+              echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
             fi
-          fi
+            if [[ ! -z "$NF_CTHASHSIZE" && "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+                echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            fi
+
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
@@ -1861,10 +1861,10 @@ EOF
 		else
         # centos 6 check for missing new tcp settings backported to existing installs
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" = '0' ]]; then
-            if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
+            if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
               # raise hashsize for conntrack entries
               echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
-              if [[ "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+              if [[ ! -z "$NF_CTHASHSIZE" && "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
             	  echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
           	  fi
             fi

@@ -11,7 +11,7 @@ siegeinstall() {
 SIEGEINSTALL='y'
 
 #ASK "Install Siege Benchmark script ? [y/n] "
-if [[ "$SIEGEINSTALL" = [yY] || "$UALL" = 'y' ]];
+if [[ "$SIEGEINSTALL" = [yY] || "$UALL" = 'y' ]] && [[ "$(uname -m)" != 'aarch64' ]];
 then
     echo "*************************************************"
     cecho "* Installing Siege Benchmark... " $boldgreen

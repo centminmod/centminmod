@@ -215,6 +215,39 @@ else
                 else
                         echo "setting yum priorities for CentOS-Base.repo"
 if [[ "$REDHAT_SEVEN" != [yY] ]]; then
+    # check for ARM architecture
+    if [[ "$(uname -m)" = 'aarch64' ]]; then
+                ex -s /etc/yum.repos.d/CentOS-Base.repo << EOF
+:/\[base/ , /gpgcheck=1/
+:a
+priority=1
+.
+:w
+:/\[updates/ , /gpgcheck=1/
+:a
+priority=1
+.
+:w
+:/\[addons/ , /gpgcheck=1/
+:a
+priority=1
+.
+:/\[extras/ , /gpgcheck=1/
+:a
+priority=1
+.
+:/\[centosplus/ , /gpgcheck=1/
+:a
+priority=2
+.
+:/\[contrib/ , /gpgcheck=1/
+:a
+priority=2
+.
+:w
+:q
+EOF
+    else
                 ex -s /etc/yum.repos.d/CentOS-Base.repo << EOF
 :/\[base/ , /gpgkey/
 :a
@@ -245,6 +278,7 @@ priority=2
 :w
 :q
 EOF
+    fi
 fi # check for redhat 7
         
         cecho "*************************************************" $boldgreen

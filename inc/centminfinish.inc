@@ -136,12 +136,15 @@ echo ""
 $(which csf) -v
 letswait
 
+if [[ "$(uname -m)" != 'aarch64' ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Check Siege Benchmark Version:" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
 $(which siege) -V
 letswait
+fi
+
 if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
 	cecho "--------------------------------------------------------" $boldyellow

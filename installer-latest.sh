@@ -207,7 +207,7 @@ fi
 
 if [ ! -f /usr/bin/sar ]; then
   time $YUMDNFBIN -y -q install sysstat${DISABLEREPO_DNF}
-  if [[ "$(uname -m)" = 'x86_64' ]]; then
+  if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
   else
     SARCALL='/usr/lib/sa/sa1'
@@ -228,7 +228,7 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl enable sysstat.service
   fi
 elif [ -f /usr/bin/sar ]; then
-  if [[ "$(uname -m)" = 'x86_64' ]]; then
+  if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
   else
     SARCALL='/usr/lib/sa/sa1'
