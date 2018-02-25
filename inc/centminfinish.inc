@@ -20,11 +20,6 @@ echo ""
 		$(which yum) -y -q install sysstat cronie
 	fi
 
-  if [[ "$INITIALINSTALL" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
-    # disable for install stage to speed up install
-    yum-config-manager --enable varnishcache_varnish41 varnishcache_varnish41-source >/dev/null 2>&1
-  fi
-
 	cecho "--------------------------------------------------------" $boldyellow
 	cecho "Ensure crond & sysstat service are running" $boldyellow
 	cecho "--------------------------------------------------------" $boldyellow
@@ -42,6 +37,11 @@ echo ""
 			systemctl enable sysstat.service
 		fi
 	fi
+
+  if [[ "$INITIALINSTALL" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+    # disable for install stage to speed up install
+    yum-config-manager --enable varnishcache_varnish41 varnishcache_varnish41-source >/dev/null 2>&1
+  fi
 
  grub_efi_fix
 
