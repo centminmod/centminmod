@@ -974,6 +974,18 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     fi
 		export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver1' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
+    # if only 1 cpu thread use -O2 to keep compile times sane
+    if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    else
+      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    fi
+    export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'core-avx-i')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -mtune=native"

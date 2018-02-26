@@ -2700,6 +2700,9 @@ elif [[ -f "${CLANG_NEWBIN}" && "$CLANG" = [yY] ]] && [[ "$(gcc --version | head
 elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=64
 	MTUNEOPT="-m${CCM} -mtune=native${NGX_FOPENOPT} "
+elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' ]]; then
+  CCM=64
+  MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${NGX_FOPENOPT} "
 elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 	CCM=32
 	MTUNEOPT="-m${CCM} -mtune=generic${NGX_FOPENOPT} "
