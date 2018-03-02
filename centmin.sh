@@ -1526,8 +1526,12 @@ then
     echo "*************************************************"
     cecho "* Setting preferred localtime for VPS" $boldgreen
     echo "*************************************************"
-    rm -f /etc/localtime
-    ln -s "/usr/share/zoneinfo/$ZONEINFO" /etc/localtime
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+        rm -f /etc/localtime
+        ln -s "/usr/share/zoneinfo/$ZONEINFO" /etc/localtime
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+        timedatectl set-timezone "$ZONEINFO"
+    fi
     echo "Current date & time for the zone you selected is:"
     date
 fi
