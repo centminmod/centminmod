@@ -12,8 +12,7 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
-OPUSER=$(echo "opadmin${OPSALT}")
+OPUSER=$(echo "opadmin")
 OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
 
 	echo ""
@@ -165,8 +164,8 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
-OPUSER=$(echo "opadmin${OPSALT}")
+
+OPUSER=$(echo "opadmin")
 OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
 
 N=$(od -vAn -N8 -tx < /dev/urandom | sed -e 's/\s//g')

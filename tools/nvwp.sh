@@ -226,14 +226,9 @@ cmservice() {
 
 dbsetup() {
   SALT=$(openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
-  DBN=$RANDOM
-  DBNB=$RANDOM
-  DBNC=$RANDOM
-  DBND=$RANDOM
-  DBNE=$RANDOM
-  DB="wp${DBNE}${DBN}db_${DBND}"
-  DBUSER="wpdb${DBND}u${DBNB}"
-  DBPASS="wpdb${SALT}p${DBNC}"
+  DB="wpdb-${dbname}"
+  DBUSER="wpuser-${dbname}"
+  DBPASS="${SALT}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
   mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
