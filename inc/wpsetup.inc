@@ -54,8 +54,8 @@ installredisserver() {
 
 dbsetup() {
   SALT=$(openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
-  DB="wpdb-${dbname}"
-  DBUSER="wpuser-${dbname}"
+  DB="wpdb_${dbname}"
+  DBUSER="wpuser_${dbname}"
   DBPASS="${SALT}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
