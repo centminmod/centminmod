@@ -881,6 +881,7 @@ source "inc/mysqlsecure.inc"
 source "inc/pcre.inc"
 source "inc/jemalloc.inc"
 source "inc/zlib.inc"
+source "inc/google_perftools.inc"
 source "inc/updater_submenu.inc"
 source "inc/centminfinish.inc"
 
