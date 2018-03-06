@@ -69,6 +69,7 @@ fi
 
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
+  dos2unix "/etc/centminmod/custom_config.inc"
   . "/etc/centminmod/custom_config.inc"
 fi
 

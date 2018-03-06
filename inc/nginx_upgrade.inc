@@ -142,10 +142,12 @@ fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
+    dos2unix "${CONFIGSCANBASE}/custom_config.inc"
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 
 if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    dos2unix "${CM_INSTALLDIR}/inc/z_custom.inc"
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 

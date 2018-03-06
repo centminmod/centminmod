@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.36'
+ACMEVER='1.0.37'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -164,11 +164,13 @@ if [ ! -d "$ACMESH_BACKUPDIR" ]; then
 fi
 
 if [ -f "/etc/centminmod/acmetool-config.ini" ]; then
+  dos2unix "/etc/centminmod/acmetool-config.ini"
   . "/etc/centminmod/acmetool-config.ini"
 fi
 
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
+  dos2unix "/etc/centminmod/custom_config.inc"
   . "/etc/centminmod/custom_config.inc"
 fi
 

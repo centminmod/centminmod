@@ -78,11 +78,13 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 fi
 
 if [ -f "${CUR_DIR}/inc/custom_config.inc" ]; then
+    dos2unix "inc/custom_config.inc"
     source "inc/custom_config.inc"
 fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
+    dos2unix "${CONFIGSCANBASE}/custom_config.inc"
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 

@@ -956,6 +956,7 @@ CM_INSTALLDIR=$CUR_DIR
     # echo ${CM_INSTALLDIR}    
 
 if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    dos2unix "inc/custom_config.inc"
     source "inc/custom_config.inc"
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "inc/custom_config.inc" > "${CENTMINLOGDIR}/inc-custom-config-settings_${DT}.log"
@@ -964,6 +965,7 @@ fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
+    dos2unix "${CONFIGSCANBASE}/custom_config.inc"
     source "${CONFIGSCANBASE}/custom_config.inc"
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CONFIGSCANBASE}/custom_config.inc" > "${CENTMINLOGDIR}/etc-centminmod-custom-config-settings_${DT}.log"
@@ -971,6 +973,7 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
 fi
 
 if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    dos2unix "${CM_INSTALLDIR}/inc/z_custom.inc"
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
     if [ -d "${CENTMINLOGDIR}" ]; then
         cat "${CM_INSTALLDIR}/inc/z_custom.inc" > "${CENTMINLOGDIR}/inc-zcustom-config-settings_${DT}.log"

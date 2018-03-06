@@ -12,16 +12,19 @@
     fi
 
     if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
-        source "inc/custom_config.inc"
+        dos2unix "inc/custom_config.inc"
+    source "inc/custom_config.inc"
     fi
     
     if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
         # default is at /etc/centminmod/custom_config.inc
-        source "${CONFIGSCANBASE}/custom_config.inc"
+        dos2unix "${CONFIGSCANBASE}/custom_config.inc"
+    source "${CONFIGSCANBASE}/custom_config.inc"
     fi
     
     if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
-        source "${CM_INSTALLDIR}/inc/z_custom.inc"
+        dos2unix "${CM_INSTALLDIR}/inc/z_custom.inc"
+    source "${CM_INSTALLDIR}/inc/z_custom.inc"
     fi
 
 VARNISH_REPOFILE='/etc/yum.repos.d/varnishcache_varnish41.repo'
