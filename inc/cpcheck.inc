@@ -431,15 +431,15 @@ ROF
       echo 'net.ipv6.conf.all.disable_ipv6 = 0' >> /etc/sysctl.conf
       sysctl -w net.ipv6.conf.all.disable_ipv6=0 >/dev/null 2>&1
     elif [[ "$DETECH_CHANGES" = [yY] && "$(grep -w 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf)" ]]; then
-      sed -i 's|net.ipv6.conf.all.disable_ipv6 = .*|net.ipv6.conf.all.disable_ipv6 = 0|' /etc/sysctl.conf
-      sysctl -w net.ipv6.conf.all.disable_ipv6=0 >/dev/null 2>&1
+      sed -i 's|net.ipv6.conf.all.disable_ipv6 = .*|net.ipv6.conf.all.disable_ipv6 = 1|' /etc/sysctl.conf
+      sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null 2>&1
     fi
     if [[ "$DETECH_CHANGES" = [nN] && ! "$(grep -w 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf)" ]]; then
       echo 'net.ipv6.conf.default.disable_ipv6 = 0' >> /etc/sysctl.conf
       sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null 2>&1
     elif [[ "$DETECH_CHANGES" = [yY] && "$(grep -w 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf)" ]]; then
-      sed -i 's|net.ipv6.conf.default.disable_ipv6 = .*|net.ipv6.conf.default.disable_ipv6 = 0|' /etc/sysctl.conf
-      sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null 2>&1
+      sed -i 's|net.ipv6.conf.default.disable_ipv6 = .*|net.ipv6.conf.default.disable_ipv6 = 1|' /etc/sysctl.conf
+      sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
     fi
   fi
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then

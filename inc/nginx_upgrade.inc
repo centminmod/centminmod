@@ -455,60 +455,7 @@ pagespeeduptasks
 
 checknginxmodules
 nginxzlib_install
-
-if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; 
-then
-    echo "*************************************************"
-    cecho "* Source Upgrade Google Perftools" $boldgreen
-    echo "*************************************************"
-
-    if [[ "$(uname -m)" = 'x86_64' ]]; then
-    # Install libunwind
-    echo "Compiling libunwind..."
-    if [ -s "${LIBUNWIND_LINKFILE}" ]; then
-        cecho "libunwind ${LIBUNWIND_VERSION} Archive found, skipping download..." $boldgreen 
-    else
-        download_cmd "${LIBUNWIND_LINK}" $WGETRETRY
-    fi
-
-    tar xvzf "${LIBUNWIND_LINKFILE}"
-    cd "libunwind-${LIBUNWIND_VERSION}"
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-        make clean
-    fi
-    ./configure
-    make${MAKETHREADS}
-    make install
-    fi
-
-    # Install google-perftools
-    cd "$DIR_TMP"
-
-    echo "Compiling google-perftools..."
-    if [ -s "${GPERFTOOL_LINKFILE}" ]; then
-        cecho "google-perftools ${GPERFTOOLS_VERSION} Archive found, skipping download..." $boldgreen
-    else
-        download_cmd "${GPERFTOOL_LINK}" $WGETRETRY
-    fi
-
-    tar xvzf "${GPERFTOOL_LINKFILE}"
-    cd "${GPERFTOOL_LINKDIR}"
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-        make clean
-    fi
-    if [[ "$(uname -m)" = 'x86_64' ]]; then
-        ./configure --with-tcmalloc-pagesize=$TCMALLOC_PAGESIZE
-    else
-        ./configure --enable-frame-pointers --with-tcmalloc-pagesize=$TCMALLOC_PAGESIZE
-    fi
-    make${MAKETHREADS}
-    make install
-    if [ ! -f /etc/ld.so.conf.d/wget.conf ]; then
-        echo "/usr/local/lib" > /etc/ld.so.conf.d/usr_local_lib.conf
-        /sbin/ldconfig
-    fi
-
-fi # GPERFTOOL_SOURCEINSTALL
+install_gperftools
 
 # echo ""
 # read -ep "Do you want to recompile OpenSSL ? Only needed if you updated OpenSSL version in centmin.sh [y/n]: " recompileopenssl 
