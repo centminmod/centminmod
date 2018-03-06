@@ -348,7 +348,7 @@ CLANG_PHP='n'                 # PHP
 CLANG_APC='n'                 # APC Cache
 CLANG_MEMCACHED='n'           # Memcached menu option 10 routine
 GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optimizations
-PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
+PHP_PGO='y'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.3
 DEVTOOLSETSIX='n'             # Enable or disable devtoolset-6 GCC 6.2 support instead of devtoolset-4 GCC 5.3 support
 DEVTOOLSETSEVEN='y'           # Enable or disable devtoolset-7 GCC 7.1 support instead of devtoolset-6 GCC 6.2 support
@@ -390,7 +390,7 @@ NGXDYNAMIC_SRCCACHE='n'
 NGXDYNAMIC_DEVELKIT='n'     #
 NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
-NGXDYNAMIC_NGXPAGESPEED='n'
+NGXDYNAMIC_NGXPAGESPEED='y'
 NGXDYNAMIC_BROTLI='y'
 NGXDYNAMIC_FANCYINDEX='y'
 NGXDYNAMIC_HIDELENGTH='y'
@@ -457,9 +457,9 @@ NGINX_SECURELINK='y'         # http://nginx.org/en/docs/http/ngx_http_secure_lin
 NGINX_FANCYINDEX='y'         # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_FANCYINDEXVER='0.4.2'  # https://github.com/aperezdc/ngx-fancyindex/releases
 NGINX_VHOSTSTATS='n'         # https://github.com/vozlt/nginx-module-vts
-NGINX_LIBBROTLI='n'          # https://github.com/eustas/ngx_brotli
+NGINX_LIBBROTLI='y'          # https://github.com/eustas/ngx_brotli
 NGINX_LIBBROTLISTATIC='n'
-NGINX_PAGESPEED='n'          # Install ngx_pagespeed
+NGINX_PAGESPEED='y'          # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
 NGXPGSPEED_VER='1.13.35.2-stable'
 NGINX_PAGESPEEDPSOL_VER='1.13.35.2'
@@ -648,7 +648,7 @@ PHP_MEMCACHED='y'           # memcached PHP extension
 FFMPEGVER='0.6.0'
 SUHOSINVER='0.9.38'
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
-PHP_VERSION='5.6.34'        # Use this version of PHP
+PHP_VERSION='7.2.3'        # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
@@ -735,7 +735,7 @@ PHP_MYSQLSOCKPATH='/var/lib/mysql'
 # in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
 # generators. You can control whether or not to enable or disable
 # integration detection in these menu options
-LETSENCRYPT_DETECT='n'
+LETSENCRYPT_DETECT='y'
 ###############################################################
 
 MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
@@ -1527,12 +1527,8 @@ then
     echo "*************************************************"
     cecho "* Setting preferred localtime for VPS" $boldgreen
     echo "*************************************************"
-    if [[ "$CENTOS_SIX" = '6' ]]; then
-        rm -f /etc/localtime
-        ln -s "/usr/share/zoneinfo/$ZONEINFO" /etc/localtime
-    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-        timedatectl set-timezone "$ZONEINFO"
-    fi
+    rm -f /etc/localtime
+    ln -s "/usr/share/zoneinfo/$ZONEINFO" /etc/localtime
     echo "Current date & time for the zone you selected is:"
     date
 fi

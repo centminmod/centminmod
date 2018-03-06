@@ -21,7 +21,7 @@ DIR_TMP='/svr-setup'
 # Centmin Mod Git Repo URL - primary repo
 # https://github.com/centminmod/centminmod
 GITINSTALLED='y'
-CMGIT='https://github.com/centminmod/centminmod.git'
+CMGIT='https://github.com/The-Syndicate/centminmod.git'
 # Gitlab backup repo 
 # https://gitlab.com/centminmod/centminmod
 #CMGIT='https://gitlab.com/centminmod/centminmod.git'
@@ -1085,9 +1085,9 @@ cd $INSTALLDIR
     getcmstarttime=$(TZ=UTC date +%s.%N)
     echo "downloading Centmin Mod..."
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
-      /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
+      /usr/bin/axel https://github.com/The-Syndicate/centminmod/archive/${DOWNLOAD}
     else
-      wget -c4 --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+      wget -c4 --no-check-certificate https://github.com/The-Syndicate/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*

@@ -2,7 +2,7 @@
 opprotectinstall() {
 
 ######################################################
-# Randomize ${N}_opcache.php filename
+# Rename opcache.php filename
 
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
@@ -12,8 +12,8 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
-OPUSER=$(echo "opadmin${OPSALT}")
+
+OPUSER=$(echo "opadmin")
 OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
 
 	echo ""
@@ -26,16 +26,16 @@ OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
 	OPDETAILS=$(cat /usr/local/nginx/conf/htpasswd_opcache)
 
 	echo ""
-	cecho "Insert Username/Password into /usr/local/nginx/html/${N}_opcache.php file itself" $boldyellow
-	sed -i "s|OPCACHEUSERNAME|$OPUSER|" /usr/local/nginx/html/${N}_opcache.php
-	sed -i "s|OPCACHEPASSWORD|$OPPASS|" /usr/local/nginx/html/${N}_opcache.php
+	cecho "Insert Username/Password into /usr/local/nginx/html/${N}-opcache.php file itself" $boldyellow
+	sed -i "s|OPCACHEUSERNAME|$OPUSER|" /usr/local/nginx/html/${N}-opcache.php
+	sed -i "s|OPCACHEPASSWORD|$OPPASS|" /usr/local/nginx/html/${N}-opcache.php
 
 	echo ""
 	cecho "Create include file /usr/local/nginx/conf/include_opcache.conf" $boldyellow
 	echo ""
 
 cat > "/usr/local/nginx/conf/include_opcache.conf" <<EOF
-            location ~ ^/(${N}_opcache.php) {
+            location ~ ^/(${N}-opcache.php) {
     include /usr/local/nginx/conf/php.conf;
 	auth_basic "Password Protected";
 	auth_basic_user_file /usr/local/nginx/conf/htpasswd_opcache;
@@ -67,8 +67,8 @@ cmservice nginx reload
 
   echo "" > ${CENTMINLOGDIR}/zendopcache_passfile.txt
   cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-  cecho "File Location: /usr/local/nginx/html/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
-  cecho "Password protected ${hname}/${N}_opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "File Location: /usr/local/nginx/html/${N}-opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
+  cecho "Password protected ${hname}/${N}-opcache.php" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
   cecho "-------------------------------------------------------" $boldyellow >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
   cecho "Username: $OPUSER" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
   cecho "Password: $OPPASS" $boldgreen >> ${CENTMINLOGDIR}/zendopcache_passfile.txt
@@ -130,20 +130,20 @@ if [[ -f ${CONFIGSCANDIR}/zendopcache.ini ]]; then
 fi
 
 ######################################################
-# Randomize ${N}_opcache.php filename
-N=$(od -vAn -N8 -tx < /dev/urandom | sed -e 's/\s//g')
+# Rename opcache.php filename
+N="gateway"
 echo
 echo "setup initial /usr/local/nginx/html/opcache.php"
 echo
 if [[ ! -f /usr/local/nginx/html/opcache.php ]]; then
-	echo "cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php"
-	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
-	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	echo "cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}-opcache.php"
+	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}-opcache.php
+	chown nginx:nginx /usr/local/nginx/html/${N}-opcache.php
 	opprotectinstall
 elif [[ "$(ls /usr/local/nginx/html | grep opcache >/dev/null 2>&1; echo $?)" != '0' ]]; then
-	echo "cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php"
-	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}_opcache.php
-	chown nginx:nginx /usr/local/nginx/html/${N}_opcache.php
+	echo "cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}-opcache.php"
+	cp $CUR_DIR/config/zendopcache/opcache.php /usr/local/nginx/html/${N}-opcache.php
+	chown nginx:nginx /usr/local/nginx/html/${N}-opcache.php
 	opprotectinstall
 fi
 

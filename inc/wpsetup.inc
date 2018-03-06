@@ -54,14 +54,9 @@ installredisserver() {
 
 dbsetup() {
   SALT=$(openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
-  DBN=$RANDOM
-  DBNB=$RANDOM
-  DBNC=$RANDOM
-  DBND=$RANDOM
-  DBNE=$RANDOM
-  DB="wp${DBNE}${DBN}db_${DBND}"
-  DBUSER="wpdb${DBND}u${DBNB}"
-  DBPASS="wpdb${SALT}p${DBNC}"
+  DB="wpdb_${dbname}"
+  DBUSER="wpuser_${dbname}"
+  DBPASS="${SALT}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
   mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
@@ -269,13 +264,10 @@ elif [[ "$SECOND_IP" ]]; then
 fi
 
 wpinstall
-  WPSALT=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
-  WPSALTB=$(openssl rand 11 -base64 | tr -dc 'a-zA-Z0-9')
-  WPN=$RANDOM
-  WPNB=$RANDOM
-  WPADMINUSER="z${WPSALT}wp${WPNB}"
+  WPSALT=$(openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
+  WPADMINUSER="shadowadmin"
   WPADMINUSER=$(echo $WPADMINUSER | sed -e 's|\/||g' -e 's|\+||g')
-  WPADMINPASS="z${WPSALTB}wps${WPN}"
+  WPADMINPASS="${WPSALT}"
   WPADMINPASS=$(echo $WPADMINPASS | sed -e 's|\/||g' -e 's|\+||g')
  
 if [ ! -d /root/tools ]; then
@@ -291,6 +283,7 @@ echo
 wpinfo_notice
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
+read -ep "Enter wordpress database name to create (wihout wpdb prefix):  " dbname
 
 # check to make sure you don't add a domain name vhost that matches
 # your server main hostname setup in server_name within main hostname
@@ -2050,7 +2043,7 @@ fi
 
 # change admin userid from 1 to a random 6 digit number
 # WP_PREFIX=$(wp eval 'echo $GLOBALS["table_prefix"];')
-WUID=$(echo $RANDOM$RANDOM |cut -c1-6)
+WUID="999999"
 # \wp db query "UPDATE ${WP_PREFIX}wp_users SET ID=${WUID} WHERE ID=1; UPDATE ${WP_PREFIX}wp_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
 \wp db query "UPDATE ${NEWPREFIX}_users SET ID=${WUID} WHERE ID=1; UPDATE ${NEWPREFIX}_usermeta SET user_id=${WUID} WHERE user_id=1" --allow-root
 
