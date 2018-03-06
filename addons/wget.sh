@@ -39,7 +39,7 @@ CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
-  dos2unix "/etc/centminmod/custom_config.inc"
+  dos2unix -q "/etc/centminmod/custom_config.inc"
   . "/etc/centminmod/custom_config.inc"
 fi
 

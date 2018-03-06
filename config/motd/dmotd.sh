@@ -54,7 +54,7 @@ return
 ###########################################################
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
-    dos2unix "${CONFIGSCANBASE}/custom_config.inc"
+    dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 
