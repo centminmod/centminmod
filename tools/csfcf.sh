@@ -45,7 +45,7 @@ ipv4get() {
 	
 	for ip in $CFIPS; 
 	do
-		if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+		if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
 			echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
 			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
 		fi
@@ -90,7 +90,7 @@ ipv6get() {
 	
 	for ip in $CFIPS; 
 	do
-		if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+		if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
 			echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
 			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
 		fi
@@ -139,7 +139,7 @@ csfadd() {
 	for ip in $CFIPS; 
 	do
 		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
-			if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+			if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
 				csf -a "$ip" cloudflare
 				echo "$ip" >> /etc/csf/csf.ignore
 			fi
@@ -150,7 +150,7 @@ csfadd() {
 	for ip in $CFIP6S; 
 	do
 		if [[ "$(grep "$ip" /etc/csf/csf.allow >/dev/null 2>&1; echo $?)" = '1' ]] || [[ "$(grep "$ip" /etc/csf/csf.ignore >/dev/null 2>&1; echo $?)" = '1' ]]; then
-			if [[ "$(ipcalc -c "$ip" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+			if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
 				csf -a "$ip" cloudflare
 				echo "$ip" >> /etc/csf/csf.ignore
 			fi
@@ -178,25 +178,25 @@ nginxsetup() {
 	fi
 	echo "include /usr/local/nginx/conf/cloudflare_customips.conf;" >> $CFINCLUDEFILE
 	for i in $cflista; do
-      if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+      if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         	echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
       fi
 	done
 	if [[ -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
 		for i in $cflistb; do
-      if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+      if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         		echo "set_real_ip_from $i;" >> $CFINCLUDEFILE
       fi
 		done
 	else
 		for i in $cflistb; do
-      if [[ "$(ipcalc -c "$i" >/dev/vull 2>&1; echo $?)" -eq '0' ]]; then
+      if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         		echo "#set_real_ip_from $i;" >> $CFINCLUDEFILE
       fi
 		done
 	fi
 	echo "real_ip_header CF-Connecting-IP;" >> $CFINCLUDEFILE
-	if [[ "$(diff -u "${CFINCLUDEFILE}.bak" "$CFINCLUDEFILE" >/dev/vull 2>&1; echo $?)" -ne '0' ]]; then
+	if [[ "$(diff -u "${CFINCLUDEFILE}.bak" "$CFINCLUDEFILE" >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
 		service nginx reload >/dev/null 2>&1
 	fi
 	rm -rf "${CFINCLUDEFILE}.bak"
