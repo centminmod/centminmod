@@ -471,3 +471,6 @@ GPERFTOOL_LINKFILE="gperftools-${GPERFTOOLS_VERSION}.tar.gz"
 GPERFTOOL_LINKDIR="gperftools-${GPERFTOOLS_VERSION}"
 GPERFTOOL_LINK="https://github.com/gperftools/gperftools/releases/download/gperftools-${GPERFTOOLS_VERSION}/${GPERFTOOL_LINKFILE}"
 GPERFTOOL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/gperf/${GPERFTOOL_LINKFILE}"
+
+LIBZIP_LINKFILE="libzip-${LIBZIP_VER}.tar.gz"
+LIBZIP_LINK="https://libzip.org/download/${LIBZIP_LINKFILE}"
