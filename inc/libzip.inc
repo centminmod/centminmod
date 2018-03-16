@@ -15,7 +15,8 @@ libzip_install() {
     fi
     tar xvzf ${LIBZIP_LINKFILE}
     cd libzip-${LIBZIP_VER}
-    mkdir build
+    rm -rf build
+    mkdir -p build
     cd build/
     cmake3 ..
     make${MAKETHREADS}
