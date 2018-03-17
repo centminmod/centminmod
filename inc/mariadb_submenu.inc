@@ -7,6 +7,7 @@ SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 htt
 
 mariadbsubmenu() {
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-autobackup-$DT"
   fi
 
@@ -129,6 +130,7 @@ fi
 ;;
 1)
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu1-autobackup-$DT"
   fi
 centminlog
@@ -155,6 +157,7 @@ fi
 ;;
 2)
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu2-autobackup-$DT"
   fi
 centminlog
@@ -184,6 +187,7 @@ fi
 ;;
 3)
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu3-autobackup-$DT"
   fi
 centminlog
@@ -207,6 +211,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 ;;
 4)
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu4-autobackup-$DT"
   fi
 centminlog
@@ -230,6 +235,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 ;;
 5)
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu5-autobackup-$DT"
   fi
 centminlog
@@ -254,6 +260,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 ;;
 6)
   if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
     cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu6-autobackup-$DT"
   fi
 centminlog
