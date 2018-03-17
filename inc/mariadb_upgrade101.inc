@@ -400,7 +400,7 @@ cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-de
 echo ""
 time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
-\cp -f /etc/my.cnf /etc/my.cnf-newold
+\cp -af /etc/my.cnf /etc/my.cnf-newold-mariadb10-1
 echo ""
     echo "*************************************************"
     cecho "* Adjust old MariaDB 10.x /etc/my.cnf " $boldyellow
