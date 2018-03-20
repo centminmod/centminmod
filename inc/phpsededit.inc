@@ -208,6 +208,8 @@ phpsededit() {
     echo "max_input_nesting_level = 128" >> ${CUSTOMPHPINIFILE}
     echo "max_input_vars = 10000" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.net_cmd_buffer_size = 16384" >> ${CUSTOMPHPINIFILE}
+    echo "mysqlnd.collect_memory_statistics = Off" >> ${CUSTOMPHPINIFILE}
+    echo "mysqlnd.mempool_default_size = 16000" >> ${CUSTOMPHPINIFILE}
     if [[ "$PHPMUVER" > 5.5 || "$PHPMVER" > 5.5 ]]; then
         echo "always_populate_raw_post_data=-1" >> ${CUSTOMPHPINIFILE}
     else
