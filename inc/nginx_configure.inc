@@ -227,8 +227,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   fi
 
   # if [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013006' && "$DETECT_NGXVER" -lt '1013009' ]]; then
-  if [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013006' ]]; then
+  if [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013006' && "$DETECT_NGXVER" -lt '1013010' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013010' ]]; then
+    NGX_HPACK_OPT=""
   else
     NGX_HPACK_OPT=""
   fi
