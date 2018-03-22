@@ -27,6 +27,8 @@
         source "${CM_INSTALLDIR}/inc/z_custom.inc"
     fi
 
+VARNISH_REPOFILE='/etc/yum.repos.d/varnishcache_varnish41.repo'
+
 CURL_CACERTURL='https://curl.haxx.se/ca/cacert.pem'
 # CURL_CACERTURL='https://centminmod.com/centminmodparts/curl/cacert.pem'
 
