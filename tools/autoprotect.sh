@@ -75,27 +75,15 @@ location $PROTECTDIR_PATH/ {
   }
 }
 "
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'library' )" && -d "${PROTECTDIR}/XenForo" ]]; then
-echo -e "# Xenforo bypass $PROTECTDIR\n
-# location $PROTECTDIR_PATH/ {
-#   internal;
-#   allow 127.0.0.1;
-#   deny all;
-# }
-"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'internal_data' )" && -d "$(echo "$(dirname $PROTECTDIR)/library/XenForo")" ]]; then
-echo -e "# Xenforo bypass $PROTECTDIR\n
-# location $PROTECTDIR_PATH/ {
-#   internal;
-#   allow 127.0.0.1;
-#   deny all;
-# }
-"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/templates' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/library/XenForo")" ]]; then
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'library' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/data' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/library/XenForo")" ]]; then
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'internal_data' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
-            elif [[ "$(echo $PROTECTDIR_PATH | grep 'src' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/library/XenForo")" ]]; then
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/templates' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/styles/default/xenforo")" ]]; then
+echo -e "# Xenforo bypass $PROTECTDIR\n"
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'install\/data' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/styles/default/xenforo")" ]]; then
+echo -e "# Xenforo bypass $PROTECTDIR\n"
+            elif [[ "$(echo $PROTECTDIR_PATH | grep 'src' )" && -d "$(echo "$(dirname $PROTECTDIR)/styles/default/xenforo")" ]]; then
 echo -e "# Xenforo bypass $PROTECTDIR\n"
             elif [[ "$(echo $PROTECTDIR_PATH | grep 'wp-content\/uploads' )" && -d "$(echo "$(dirname $(dirname $PROTECTDIR))/wp-content/uploads")" && -f "/usr/local/nginx/conf/wpincludes/${domain}/wpsecure_${domain}.conf" ]]; then
 echo -e "# centmin.sh menu option 22 installed WP bypass $PROTECTDIR\n"
