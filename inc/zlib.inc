@@ -114,7 +114,7 @@ install_cfzlib() {
             fi
         fi
         popd
-        cd install_cfzlibstartdir
+        cd $install_cfzlibstartdir
         if [ -f /usr/local/lib/libz.so ]; then
             echo
             ps aufxw

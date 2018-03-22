@@ -1,5 +1,11 @@
 ngx_hpack_patch() {
-  if [ "$ngver" ]; then
+  if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+    NGX_HPACK_OPT=""
+    NGINX_HPACK='n'
+  elif [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGINX_PUSHBASE=$ngver
     echo "$DETECT_NGXVER"
