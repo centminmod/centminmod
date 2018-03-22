@@ -11,6 +11,22 @@
         RPMFARCH='i386'
     fi
 
+    if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+        dos2unix "inc/custom_config.inc"
+        source "inc/custom_config.inc"
+    fi
+    
+    if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+        # default is at /etc/centminmod/custom_config.inc
+        dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+        source "${CONFIGSCANBASE}/custom_config.inc"
+    fi
+    
+    if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+        dos2unix -q "${CM_INSTALLDIR}/inc/z_custom.inc"
+        source "${CM_INSTALLDIR}/inc/z_custom.inc"
+    fi
+
 CURL_CACERTURL='https://curl.haxx.se/ca/cacert.pem'
 # CURL_CACERTURL='https://centminmod.com/centminmodparts/curl/cacert.pem'
 

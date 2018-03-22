@@ -126,6 +126,21 @@ fi
 
 checknginxmodules() {
 
+if [ -f "${CM_INSTALLDIR}/inc/custom_config.inc" ]; then
+    source "${CM_INSTALLDIR}/inc/custom_config.inc"
+fi
+
+if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+    source "${CONFIGSCANBASE}/custom_config.inc"
+fi
+
+if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
+    dos2unix -q "${CM_INSTALLDIR}/inc/z_custom.inc"
+    source "${CM_INSTALLDIR}/inc/z_custom.inc"
+fi
+
     if [[ "$NGINX_RTMP" = [yY] ]]; then
         if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
             echo
@@ -156,6 +171,13 @@ if [[ ! -f "${DIR_TMP}/${NGX_FANCYINDEXLINKFILE}" || ! -f "${DIR_TMP}/${NGX_CACH
 ngxmoduletarball
 openssldownload
 libressldownload
+fi
+
+LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
+if [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" || ! -d "${DIR_TMP}/${LIBRESSLDIR}" ]]; then
+    libressldownload
+elif [[ ! -f "${DIR_TMP}/${LIBRESSL_LINKFILE}" ]]; then
+    libressldownload
 fi
 
 cecho "Check for pagespeed nginx module download file" $boldyellow
