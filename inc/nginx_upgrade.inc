@@ -996,6 +996,7 @@ fi
             ls -lah /usr/local/nginx/modules.copy
         fi
 
+        echo
         echo "log files saved at ${CENTMINLOGDIR}"
         ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
         echo
