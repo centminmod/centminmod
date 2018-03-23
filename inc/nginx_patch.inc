@@ -311,6 +311,9 @@ patchnginx() {
       rm -rf "${NGINXSPDYPATCHED_NAME}"
      fi
   fi
+  if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
+    NGINX_DYNAMICTLS='n'
+  fi
 	if [[ "$NGINX_DYNAMICTLS" = [yY] ]]; then
      if [ -f "$(which figlet)" ]; then
          figlet -ckf standard "Cloudflare Nginx Dynamic TLS Patch"
