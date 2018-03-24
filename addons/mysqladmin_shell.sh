@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.0.9
+VER=0.1.0
 ###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
