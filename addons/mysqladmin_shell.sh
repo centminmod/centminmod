@@ -139,6 +139,12 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 				# mysql username
 				mysql ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
 				USERCHECK=$?
+			elif [[ "$PREV_USER" != "$u" && "$PREV_PASS" = "$p" ]]; then
+				# if PREV_USER not equal to $u AND PREV_PASS equal to $p
+				# then it's not the same mysql username and pass so create the
+				# mysql username
+				mysql ${MYSQLOPTS} -e "CREATE USER '$u'@'$MYSQLHOSTNAME' IDENTIFIED BY '$p';" >/dev/null 2>&1
+				USERCHECK=$?
 			elif [[ "$PREV_USER" = "$u" && "$PREV_PASS" = "$p" ]]; then
 				# if PREV_USER equal to $u AND PREV_PASS equal to $p
 				# then it's same mysql username and pass so skip
@@ -163,6 +169,10 @@ if [[ "$rootset" = [yY] && -f "$dbfile" ]]; then
 				# then it's same mysql username and pass so add database
 				# to existing mysql user and pass
 				echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+			elif [[ "$PREV_USER" != "$u" && "$PREV_PASS" = "$p" ]]; then
+				# if PREV_USER not equal to $u AND PREV_PASS equal to $p
+				echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS} >/dev/null 2>&1
+				echo "$u $p" > /tmp/mysqladminshell_userpass.txt
 			else
 				# if PREV_USER not equal to $u AND PREV_PASS not equal to $p
 				echo "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$db\`.* TO '$u'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$u'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS} >/dev/null 2>&1
