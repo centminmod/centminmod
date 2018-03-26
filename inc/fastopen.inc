@@ -1,6 +1,6 @@
 fastopenconfig() {
 # tcp_fastopen autodetect
-FASTOPEN_VAL=$(cat /proc/sys/net/ipv4/tcp_fastopen; echo $?)
+FASTOPEN_VAL=$(cat /proc/sys/net/ipv4/tcp_fastopen >/dev/null 2>&1; echo $?)
 FASTOPEN_VAL=$(echo $FASTOPEN_VAL | awk '{print $NF}')
 FASTOPEN_STATSVAL=$(grep '^TcpExt:' /proc/net/netstat | cut -d ' ' -f 87-92  | column -t | grep 'TCPFast'; echo $?)
 FASTOPEN_STATSVAL=$(echo $FASTOPEN_STATSVAL | awk '{print $NF}')
