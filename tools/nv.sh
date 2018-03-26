@@ -1352,6 +1352,7 @@ cecho " rm -rf /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
 cecho " rm -rf /home/nginx/domains/$vhostname" $boldwhite
 cecho " rm -rf /root/.acme.sh/$vhostname" $boldwhite
 cecho " rm -rf /root/.acme.sh/${vhostname}_ecc" $boldwhite
+cecho " rm -rf /usr/local/nginx/conf/pre-staticfiles-local-${vhostname}.conf" $boldwhite
 cecho " service nginx restart" $boldwhite
 echo ""
 cecho "-------------------------------------------------------------" $boldyellow
