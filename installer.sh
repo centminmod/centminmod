@@ -1170,7 +1170,8 @@ rm -rf /etc/centminmod/email-secondary.ini
 }
 
 if [[ "$DEF" = 'novalue' ]]; then
-  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+  # devtoolset SCL repo only supports 64bit OSes
+  if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
     source_pcreinstall
     source_wgetinstall
   fi
@@ -1235,7 +1236,7 @@ fi
 
 case "$1" in
   install)
-    if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+    if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
       source_pcreinstall
       source_wgetinstall
     fi

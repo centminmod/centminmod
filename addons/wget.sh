@@ -479,7 +479,8 @@ case $1 in
   install)
 starttime=$(TZ=UTC date +%s.%N)
 {
-  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+  # devtoolset SCL repo only supports 64bit OSes
+  if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
     source_pcreinstall
     source_wgetinstall
   fi
@@ -495,7 +496,8 @@ tail -1 "${CENTMINLOGDIR}/wget_source_install_${DT}.log"
   pcre)
 starttime=$(TZ=UTC date +%s.%N)
 {
-  if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
+  # devtoolset SCL repo only supports 64bit OSes
+  if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
     source_pcreinstall
   fi
 } 2>&1 | tee "${CENTMINLOGDIR}/wget_source_install_pcre_${DT}.log"
