@@ -492,7 +492,7 @@ if [[ "$NGINX_PAGESPEED" = [nN] ]]; then
   fi
 fi # NGINX_PAGESPEED=n
 
-if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+if [[ "$NGINX_PAGESPEED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   PSADMINCHECK=$(grep '^#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
 
   # re-enable pagespeedadmin.conf if commented out
@@ -586,7 +586,7 @@ if [[ -z "$ADMINPSSWITCHCHECK" || ! -f /usr/local/nginx/conf/pagespeedadmin.conf
   makepshandler
 fi
 
-if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+if [[ "$NGINX_PAGESPEED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   # 1.13.35.1 deprecated pagespeed off > pagespeed unplugged
   if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '13' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f3)" -ge '35' ]]; then
     CHECKNGXPS_UNPLUG=$(grep 'pagespeed off;' /usr/local/nginx/conf/pagespeed.conf)

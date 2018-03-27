@@ -3,7 +3,7 @@
 
 scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
-  if [[ "$CENTOS_SIX" = '6' ]]; then
+  if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
     # if devtoolset exists, enable it first before checking gcc versions
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       if [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
@@ -172,7 +172,7 @@ scl_install() {
 }
 
 libbroti_install() {
-	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+	if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
 		# if devtoolset-4 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
@@ -273,7 +273,7 @@ libbroti_install() {
 }
 
 ngxbrotli_download() {
-	if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+	if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     # only if GCC used to compile nginx with ngx_brotli
     # set BROTLI_CFLAG https://community.centminmod.com/posts/38284/
     if [[ "$CLANG" = [nN] ]]; then

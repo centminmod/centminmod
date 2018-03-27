@@ -1176,7 +1176,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 		UPSTREAMOPT=""
 	fi
 
-	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+	if [[ "$NGINX_PAGESPEED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     # ngxpagespeed_patched
     ngxpagespeed_setpipepatch
     
@@ -1831,7 +1831,7 @@ elif [[ "$NGINX_PAGESPEED" = [yY] ]]; then
   CLANG='n'
 fi
 
-if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
 	#libbroti_install
 	ngxbrotli_download
 	if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
@@ -2390,7 +2390,7 @@ fi
 
 # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
 # centos 6 based gcc 4.4.7
-if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] ]]; then
+if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; then
 	if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
 		scl_install
 		export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-4/root/usr/bin/gcc"
