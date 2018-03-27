@@ -2007,14 +2007,19 @@ imagick_fixes() {
 }
 
 apache_protect() {
-	if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/autoprotect.sh')" && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
-    	crontab -l > cronjoblist
+  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/autoprotect.sh')" && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
+      crontab -l > cronjoblist
       sed -i '/autoprotect.sh/d' cronjoblist
-    	echo "11 */23 * * * /usr/local/src/centminmod/tools/autoprotect.sh 2>/dev/null" >> cronjoblist
-    	crontab cronjoblist
-    	rm -rf cronjoblist
-    	crontab -l
-	fi
+      echo "13 23 * * * /usr/local/src/centminmod/tools/autoprotect.sh >/dev/null 2>&1" >> cronjoblist
+      crontab cronjoblist
+      rm -rf cronjoblist
+  elif [[ "$(crontab -l | grep -q '11 \*\/23'; echo $?)" -eq '0' && -f "/usr/local/src/centminmod/tools/autoprotect.sh" ]]; then
+      crontab -l > cronjoblist
+      sed -i '/autoprotect.sh/d' cronjoblist
+      echo "13 23 * * * /usr/local/src/centminmod/tools/autoprotect.sh >/dev/null 2>&1" >> cronjoblist
+      crontab cronjoblist
+      rm -rf cronjoblist 
+  fi
 }
 
 centossix_crsetup() {
