@@ -1,5 +1,5 @@
 #!/bin/sh
-
+ulimit -n 524288
 # => /etc/init.d/nginx
 # => sudo chmod +x /etc/init.d/nginx
 # => make it start when the server run: /sbin/chkconfig nginx on

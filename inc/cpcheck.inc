@@ -1,3 +1,14 @@
+ngxmaster_openfiles() {
+  # raise nginx process' open files limit from 1024
+  if [[ -f /etc/init.d/nginx && ! "$(grep -w 'ulimit -n 524288' /etc/init.d/nginx)" ]]; then
+    sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nulimit -n 524288\n/' /etc/init.d/nginx
+    if [ "$CENTOS_SEVEN" -eq '7' ]; then
+      systemctl daemon-reload -q
+    fi
+    service nginx restart >/dev/null 2>&1
+  fi
+}
+
 ngx_gzipbuffersfix() {
   # raising default gzip_buffers setting to accommodate very very
   # large javascript js file libraries that can be as large as 5+ MB
@@ -2240,6 +2251,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   # pip_updates
   ngx_gzipbuffersfix
   ngx_brotlibuffersfix
+  ngxmaster_openfiles
 fi
 
 }
