@@ -40,7 +40,7 @@ if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLEQUALCIP
 fi
 
 # ECDSA performance patch https://community.centminmod.com/posts/57725/
-if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0xx' ]]; then
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0h' ]]; then
     echo
     echo  "######################################################################"
     echo "Patching OpenSSL 1.1.0g"
@@ -68,7 +68,7 @@ fi
 
 # ECDHX25519 performance patch for 64bit systems only
 # OpenSSL1.1g-double-performance-ecdhx-25519.patch
-if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0xx' ]]; then
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0h' ]]; then
     echo
     echo  "######################################################################"
     echo "Patching OpenSSL 1.1.0g"
@@ -112,7 +112,7 @@ if [[ "${OPENSSL_VERSION}" = '1.0.1g' ]]; then
     echo  "######################################################################"
 fi
 
-if [[ "${OPENSSL_VERSION}" = '1.1.0h' || "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2m' ]] || [[ "$TLSONETHREE" = [yY] ]] || [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+if [[ "${OPENSSL_VERSION}" = '1.1.0xx' || "${OPENSSL_VERSION}" = '1.0.2i' || "${OPENSSL_VERSION}" = '1.0.2m' ]] || [[ "$TLSONETHREE" = [yY] ]] || [[ "$(grep -w 'tls1_3' Configure)" ]]; then
     # cloudflare patch chacha20 support does not seem to
     # work with openssl 1.0.2i
     # https://community.centminmod.com/posts/36691/
