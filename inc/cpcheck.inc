@@ -2,7 +2,7 @@ ngxmaster_openfiles() {
   # raise nginx process' open files limit from 1024
   if [[ -f /etc/init.d/nginx && ! "$(grep -w 'ulimit -n 524288' /etc/init.d/nginx)" ]]; then
     sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nulimit -n 524288\n/' /etc/init.d/nginx
-    if [ "$CENTOS_SEVEN" -eq '7' ]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       systemctl daemon-reload -q
     fi
     service nginx restart >/dev/null 2>&1
