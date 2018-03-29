@@ -145,13 +145,17 @@ else
 fi
 
 if [ -f "${SCRIPT_DIR}/inc/custom_config.inc" ]; then
-    dos2unix "inc/custom_config.inc"
+  if [ -f /usr/bin/dos2unix ]; then
+    dos2unix -q "inc/custom_config.inc"
+  fi
     source "inc/custom_config.inc"
 fi
 
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
+  if [ -f /usr/bin/dos2unix ]; then
     dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
+  fi
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
 
