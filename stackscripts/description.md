@@ -1,6 +1,6 @@
 CentOS 7 StackScript installer for latest Centmin Mod LEMP beta running Nginx 1.13.x + PHP-FPM + MariaDB 10.1.x + CSF Firewall. Follow official development thread for this StackScript at https://community.centminmod.com/threads/official-centmin-mod-linode-stackscript.12513/
 
-Optional Docker Support via official Docker YUM repo and Redis 4.0.1 installation via Remi YUM repo. Stackscript log including Centmin Mod install logged data are located at /root/stackscript.log. Centmin Mod related logs are located at /root/centminlogs.
+Optional Docker Support via official Docker YUM repo and Redis 4.0.9 installation via Remi YUM repo. Stackscript log including Centmin Mod install logged data are located at /root/stackscript.log. Centmin Mod related logs are located at /root/centminlogs.
 
 StackScript question for hostname and FQDN is the Centmin Mod main hostname (not your site's domain name), referred to in Getting Started Guide Step 1 https://centminmod.com/getstarted.html
 
@@ -10,7 +10,7 @@ Nginx & PHP-FPM can be optimised further via compiling with march=native which i
 
 Nginx can be compiled/installed with GCC compiler or Clang. Clang installs faster but GCC may results in faster Nginx performance at expense of install speed.
 
-Nginx's HTTP/2 based HTTPS utilises either LibreSSL 2.5.x or OpenSSL 1.1.x crypto libraries. OpenSSL generally performs better but installs slower than LibreSSL.
+Nginx's HTTP/2 based HTTPS utilises either LibreSSL 2.7.x or OpenSSL 1.1.x crypto libraries. OpenSSL generally performs better but installs slower than LibreSSL.
 
 You can switch between LibreSSL vs OpenSSL or GCC vs Clang compilers for Nginx after initial install too https://community.centminmod.com/threads/centmin-mod-nginx-libressl-openssl-support-in-123-09beta01.11122/
 

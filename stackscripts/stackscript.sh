@@ -4,7 +4,7 @@
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # stackscript installer for latest Centmin Mod LEMP 
-# beta + redis installation for both remi 4.0.7
+# beta + redis installation for both remi 4.0.9
 ######################################################
 # variables
 #############
@@ -46,16 +46,16 @@
 #<UDF name="targetnative" Label="Build Nginx & PHP-FPM with march native ?" oneOf="yes,no" default="no" />
 # TARGETNATIVE=
 # 
-#<UDF name="compiler" Label="Build Nginx with GCC or Clang Compiler ?" oneOf="clang,gcc" default="clang" />
+#<UDF name="compiler" Label="Build Nginx with GCC or Clang Compiler ?" oneOf="clang,gcc" default="gcc" />
 # COMPILER=
 # 
-#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.6.3+ or OpenSSL 1.1.0+ ?" oneOf="libressl,openssl" default="libressl" />
+#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.7+ or OpenSSL 1.1.0+ ?" oneOf="libressl,openssl" default="openssl" />
 # OPENSSL=
 # 
 #<UDF name="hpack" Label="Enable Cloudflare HTTP/2 HPACK Full Encoding Patch (community.centminmod.com/posts/51082/) ?" oneOf="yes,no" default="no" />
 # HPACK=
 # 
-#<UDF name="cloudflarezlib" Label="Enable Nginx install with Cloudflare Zlib Performance Fork (https://github.com/cloudflare/zlib) ?" oneOf="yes,no" default="no" />
+#<UDF name="cloudflarezlib" Label="Enable Nginx install with Cloudflare Zlib Performance Fork (https://github.com/cloudflare/zlib) ?" oneOf="yes,no" default="yes" />
 # CLOUDFLAREZLIB=
 # 
 #<UDF name="brotli" Label="Enable ngx_brotli nginx module (community.centminmod.com/posts/45818/) ?" oneOf="yes,no" default="no" />
@@ -146,10 +146,10 @@ touch /etc/centminmod/custom_config.inc
 if [[ "$COMPILER" = 'gcc' ]]; then
 echo
 echo "Set CLANG='n'"
-echo "Set DEVTOOLSETSIX='y'"
+echo "Set DEVTOOLSETSEVEN='y'"
 echo "Set NGINX_DEVTOOLSETGCC='y'"
 echo "CLANG='n'" >> /etc/centminmod/custom_config.inc
-echo "DEVTOOLSETSIX='y'" >> /etc/centminmod/custom_config.inc
+echo "DEVTOOLSETSEVEN='y'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo
 fi
