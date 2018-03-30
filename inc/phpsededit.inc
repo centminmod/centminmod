@@ -204,7 +204,7 @@ phpsededit() {
     echo "memory_limit = $PHP_MEMORYLIMIT" >> ${CUSTOMPHPINIFILE}
     echo "post_max_size = $PHP_UPLOADLIMIT" >> ${CUSTOMPHPINIFILE}
     echo "expose_php = Off" >> ${CUSTOMPHPINIFILE}
-    echo "mail.add_x_header = Off" >> ${CUSTOMPHPINIFILE}
+    echo "mail.add_x_header = 0" >> ${CUSTOMPHPINIFILE}
     echo "max_input_nesting_level = 128" >> ${CUSTOMPHPINIFILE}
     echo "max_input_vars = 10000" >> ${CUSTOMPHPINIFILE}
     echo "mysqlnd.net_cmd_buffer_size = 16384" >> ${CUSTOMPHPINIFILE}
