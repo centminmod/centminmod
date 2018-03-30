@@ -1,3 +1,9 @@
+check_memcachedflush() {
+  if [[ -f /usr/bin/memflush && ! -f /usr/bin/memcachedflush ]]; then
+    echo "memflush --quiet --servers=localhost:11211" >/usr/bin/memcachedflush ; chmod 700 /usr/bin/memcachedflush
+  fi
+}
+
 ngxmaster_openfiles() {
   # raise nginx process' open files limit from 1024
   if [[ -f /etc/init.d/nginx && ! "$(grep -w 'ulimit -n 524288' /etc/init.d/nginx)" ]]; then
@@ -2252,6 +2258,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   ngx_gzipbuffersfix
   ngx_brotlibuffersfix
   ngxmaster_openfiles
+  check_memcachedflush
 fi
 
 }
