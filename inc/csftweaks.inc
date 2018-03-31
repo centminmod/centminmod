@@ -171,6 +171,8 @@ if [ -f /etc/csf/csf.conf ]; then
     fi
 
     cp -a /etc/csf/csf.conf /etc/csf/csf.conf-tweakbak
+    csf --profile backup cmm-default-tweaked
+    csf --profile list
 
 fi
 }

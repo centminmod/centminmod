@@ -46,6 +46,8 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 
     # perl /etc/csf/csftest.pl
     cp -a /etc/csf/csf.conf /etc/csf/csf.conf-bak
+    csf --profile backup initial-default
+    csf --profile list
 
     echo "CSF adding memcached, varnish ports to csf.allow list..."
     sed -i 's/20,21,22,25,53,80,110,143,443,465,587,993,995/20,21,22,25,53,80,110,111,143,161,443,465,587,993,995,1110,1186,1194,2049,81,9418,30001:50011/g' /etc/csf/csf.conf
