@@ -1942,6 +1942,11 @@ if [[ ! -f /proc/user_beancounters ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
     fi
+    # raise centos 7 default net.unix.max_dgram_qlen from 512 to 4096
+    if [[ -z "$(grep 'net.unix.max_dgram_qlen' /etc/sysctl.d/101-sysctl.conf)" ]]; then
+      echo "net.unix.max_dgram_qlen = 4096" >> /etc/sysctl.d/101-sysctl.conf
+      /sbin/sysctl --system >/dev/null 2>&1
+    fi
   fi
   if [[ "$CENTOS_SIX" = '6' && -f /etc/sysctl.conf ]]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.conf)" ]]; then
