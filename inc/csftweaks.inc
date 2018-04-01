@@ -9,7 +9,7 @@ reduceports() {
             # sed -e "s|,$p,|,|g" /etc/csf/csf.conf |egrep --color '^TCP_|^TCP6_|^UDP_|^UDP6_'
         fi
     done
-    # csf -r >/dev/null 2>&1
+    # csf -ra >/dev/null 2>&1
 }
 
 rpcnfsports() {

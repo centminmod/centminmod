@@ -1,3 +1,11 @@
+csf_smtpports() {
+  if [[ "$(egrep '^TCP_OUT|^TCP6_OUT' /etc/csf/csf.conf | grep -wq '2525'; echo $?)" -ne '0' ]]; then
+    sed -i "s/TCP_OUT = \"/TCP_OUT = \"2525,/g" /etc/csf/csf.conf
+    sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"2525,/g" /etc/csf/csf.conf
+    csf -ra > /dev/null 2>&1
+  fi
+}
+
 check_memcachedflush() {
   if [[ -f /usr/bin/memflush && ! -f /usr/bin/memcachedflush ]]; then
     echo "memflush --quiet --servers=localhost:11211" >/usr/bin/memcachedflush ; chmod 700 /usr/bin/memcachedflush
@@ -471,19 +479,19 @@ ROF
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -r  > /dev/null 2>&1
+    csf -ra > /dev/null 2>&1
     NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
   elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -r  > /dev/null 2>&1
+    csf -ra > /dev/null 2>&1
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -r  > /dev/null 2>&1
+    csf -ra > /dev/null 2>&1
     NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -r  > /dev/null 2>&1
+    csf -ra > /dev/null 2>&1
   fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
@@ -1406,7 +1414,7 @@ csf_distftp() {
     fi
     if [[ ! "$(grep 'LF_DISTFTP_UNIQ = \"40\"' /etc/csf/csf.conf)" ]]; then
       sed -i 's/LF_DISTFTP_UNIQ = .*/LF_DISTFTP_UNIQ = \"40\"/g' /etc/csf/csf.conf
-      csf -r >/dev/null 2>&1
+      csf -ra >/dev/null 2>&1
     fi
   fi
 }
@@ -1444,7 +1452,7 @@ pureftpdupdates() {
 		CHECKCSF_PASSIVEPORTS=$(grep '3000:3050' /etc/csf/csf.conf)
 		if [ "$CHECKCSF_PASSIVEPORTS" ]; then
 			sed -i 's/3000:3050/30001:50011/' /etc/csf/csf.conf
-			csf -r >/dev/null 2>&1
+			csf -ra >/dev/null 2>&1
 			echo
 			echo "adjusting pure-ftpd passive port range for CSF Firewall"
 			echo
@@ -2259,6 +2267,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   ngx_brotlibuffersfix
   ngxmaster_openfiles
   check_memcachedflush
+  csf_smtpports
 fi
 
 }

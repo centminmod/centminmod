@@ -50,7 +50,7 @@ if [[ ! "$(grep -w '43' /etc/csf/csf.conf)" ]]; then
     sed -i "s/TCP_OUT = \"/TCP_OUT = \"43,/g" /etc/csf/csf.conf
     sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"43,/g" /etc/csf/csf.conf
   fi
-  csf -r >/dev/null 2>&1
+  csf -ra >/dev/null 2>&1
 fi
 
 if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then

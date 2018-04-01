@@ -40,7 +40,7 @@ if [[ ! -f /proc/user_beancounters && -f /usr/sbin/ipset ]] && [[ "$(uname -r | 
     sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"1000\"/' /etc/csf/csf.conf
     sed -i 's/^DENY_TEMP_IP_LIMIT = .*/DENY_TEMP_IP_LIMIT = \"2000\"/' /etc/csf/csf.conf
   fi
-  csf -r  > /dev/null 2>&1
+  csf -ra > /dev/null 2>&1
   echo
   echo "CSF Firewall Tweaks Completed"
   echo
