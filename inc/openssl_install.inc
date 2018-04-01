@@ -192,7 +192,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # fi
 fi # CLOUDFLARE_PATCHSSL
 
-if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]]; then
+if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[ "$DETECTOPENSSL_ONEONE" != '1.1.1' ]] ; then
     if [[ "$TLSONETHREE" != [yY] ]]; then
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Cloudflare OpenSSL 1.1 Smarter Chacha20 Patch"
