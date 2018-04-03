@@ -170,9 +170,11 @@ if [ -f /etc/csf/csf.conf ]; then
         echo "$CMUSER_SSHCLIENTIP" >> /etc/csf/csf.ignore
     fi
 
-    cp -a /etc/csf/csf.conf /etc/csf/csf.conf-tweakbak
-    csf --profile backup cmm-default-tweaked
-    csf --profile list
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+        cp -a /etc/csf/csf.conf /etc/csf/csf.conf-tweakbak
+        csf --profile backup cmm-default-tweaked
+        csf --profile list
+    fi
 
 fi
 }
