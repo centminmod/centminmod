@@ -86,14 +86,14 @@ auditd_customrules() {
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
-sed -i 's|-b 320|-b 16384|' "$AUDITRULE_PERMFILE"
+sed -i 's|-b 320|-b 65536|' "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
 echo "#-c" >> "$AUDITRULE_PERMFILE"
 echo "#-i" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
-echo "# Generate at most 200 audit messages per second" >> "$AUDITRULE_PERMFILE"
-echo "-r 200" >> "$AUDITRULE_PERMFILE"
+echo "# Generate at most 1000 audit messages per second" >> "$AUDITRULE_PERMFILE"
+echo "-r 1000" >> "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# custom auditd rules for centmin mod centos environments - DO NOT DELETE THIS LINE" >> "$AUDITRULE_PERMFILE"
 echo "-w /var/log/wtmp -k sessiontmp" >> "$AUDITRULE_PERMFILE"
