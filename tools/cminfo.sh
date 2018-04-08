@@ -165,6 +165,12 @@ netstat_info() {
     echo "Port 443:  ${wconn_https:-0}"
     echo -e "\nTop IP Address Connections:"
     echo "$netstat_ipstopf"
+
+    if [ -f /etc/csf/csf.deny ]; then
+        echo -e "\nTop CSF Firewall Denied Country Codes:"
+        csfdeny_country=$(grep -oP '(?<=\()[^\)]+' /etc/csf/csf.deny | awk -F "/" 'length($1)<=2 {print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_country"
+    fi
 }
 
 list_logs() {
