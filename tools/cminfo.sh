@@ -170,6 +170,10 @@ netstat_info() {
         echo -e "\nTop CSF Firewall Denied Country Codes:"
         csfdeny_country=$(grep -oP '(?<=\()[^\)]+' /etc/csf/csf.deny | awk -F "/" 'length($1)<=2 {print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_country"
+
+        echo -e "\nTop CSF Firewall Denied IPs:"
+        csfdeny_ips=$(awk '{print $1}' /etc/csf/csf.deny | grep -v '\#' | sort | uniq -c | sort -rn | head -n10 | awk '{"getent hosts " $2 | getline getent_hosts_str; split(getent_hosts_str, getent_hosts_arr, " "); print $1, $2, getent_hosts_arr[2], $3}' | column -t)
+        echo "$csfdeny_ips"
     fi
 }
 
