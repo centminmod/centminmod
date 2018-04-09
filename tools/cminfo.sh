@@ -182,6 +182,22 @@ netstat_info() {
         echo -e "\nTop CSF Firewall Failed SSH Logins:"
         csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_sshlogins"
+
+        echo -e "\nLast 24hrs Top CSF Firewall Denied Country Codes:"
+        csfdeny_country=$(grep "$(date -d "1 day ago"  +"%a %b  %-d")" /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_country"
+
+        echo -e "\nLast 24hrs Top CSF Firewall Denied Country Codes + Reverse Lookups:"
+        csfdeny_iplookups=$(grep "$(date -d "1 day ago"  +"%a %b  %-d")" /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | grep -wv sshd | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_iplookups"
+
+        echo -e "\nLast 24hrs Top CSF Firewall Denied Distributed sshd Attacks:"
+        csfdeny_sshdlookups=$(grep 'distributed sshd attacks' /etc/csf/csf.deny | grep "$(date -d "1 day ago"  +"%a %b  %-d")" | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_sshdlookups"
+
+        echo -e "\nLast 24hrs Top CSF Firewall Failed SSH Logins:"
+        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep "$(date -d "1 day ago"  +"%a %b  %-d")" | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_sshlogins"
     fi
 }
 
