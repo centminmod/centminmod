@@ -129,7 +129,7 @@ netstat_info() {
     packets_inout=$(echo "$nic" | while read i; do echo "$bandwidth_avg" | grep 'Average:' | awk -v tnic="$i" '$0~tnic{print tnic, "In: ",$3,"Out:",$3}'; done | column -t)
     netstat_http=$(netstat -an | fgrep ':80 ')
     netstat_https=$(netstat -an | fgrep ':443 ')
-    netstat_outbound=$(netstat -plant | egrep -v 'and|servers|Address' | awk '{print $5,$6,$7}' | grep -v ':\*' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
+    netstat_outbound=$(netstat -plant | egrep -v 'and|servers|Address' | awk '{print $5,$6,$7}' | grep -v ':\*' | grep -v '127.0.0.1' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
     netstat_ips=$(netstat -tn)
     netstat_ipstop=$(echo "$netstat_ips" | egrep -v 'servers|Address' | awk '{print $5}' | awk -F ":" '{print $1}' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10)
     netstat_ipstopf=$(echo "$netstat_ipstop" | awk '{"getent hosts " $2 | getline getent_hosts_str; split(getent_hosts_str, getent_hosts_arr, " "); print $1, $2, getent_hosts_arr[2], $3}' | column -t)
