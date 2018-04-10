@@ -538,6 +538,17 @@ fixwp_updater() {
   fi
 }
 
+fixlshw_rpmforge() {
+  # prefer lshw from centos repo instead of rpmforge
+  if [[ -f /etc/yum.repos.d/rpmforge.repo && "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo | grep lshw > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_LSHWEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) lshw")
+    sed -i "s|^exclude=.*|$NEW_LSHWEXCLUDES|" /etc/yum.repos.d/rpmforge.repo
+    # yum -y swap -- remove lshw -- install lshw --disablerepo=rpmforge
+    fi
+  fi
+}
+
 fixnodejs_epel() {
   # prevent node.js 6.x install by epel in favour of nodesource
   # repo via addons/nodejs.sh
@@ -2252,6 +2263,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixnodejs_epel
   fixnginx_epel
   fixsclutils_epel
+  fixlshw_rpmforge
   #fixclamav_epel
   nano_highlight
   checkwoff

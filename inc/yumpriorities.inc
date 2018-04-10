@@ -367,7 +367,7 @@ PRIOREXISTS=1
 :/\[rpmforge\]/ , /gpgcheck/
 :a
 priority=5
-exclude=pure-ftpd optipng clamav* clamd
+exclude=pure-ftpd optipng clamav* clamd lshw
 .
 :w
 :q
