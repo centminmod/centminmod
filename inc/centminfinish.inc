@@ -38,7 +38,7 @@ echo ""
 		fi
 	fi
 
-  if [[ "$INITIALINSTALL" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+  if [[ "$INITIALINSTALL" = [yY] && "$(uname -m)" = 'x86_64' && -f "$VARNISH_REPOFILE" ]]; then
     # disable for install stage to speed up install
     yum-config-manager --enable varnishcache_varnish41 varnishcache_varnish41-source >/dev/null 2>&1
   fi
