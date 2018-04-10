@@ -310,7 +310,7 @@ cmservice postfix restart
 postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
 
 	cd $DIR_TMP
-	wget -4 -cnv http://linxnet.com/downloads/pflogsumm-1.1.5.tar.gz --tries=3
+	wget -4 -cnv https://centminmod.com/centminmodparts/pflogsumm/pflogsumm-1.1.5.tar.gz --tries=3
 	tar -xzf pflogsumm-1.1.5.tar.gz
 	cd pflogsumm-1.1.5
 	cp pflogsumm.pl /usr/bin/pflogsumm

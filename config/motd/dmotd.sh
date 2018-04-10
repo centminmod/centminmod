@@ -109,9 +109,9 @@ fi
 if [[ "$ENABLEMOTD_LINKSMSG" != [nN] ]]; then
 echo "
 ===============================================================================
-* Getting Started Guide - http://centminmod.com/getstarted.html
-* Centmin Mod FAQ - http://centminmod.com/faq.html
-* Change Log - http://centminmod.com/changelog.html
+* Getting Started Guide - https://centminmod.com/getstarted.html
+* Centmin Mod FAQ - https://centminmod.com/faq.html
+* Change Log - https://centminmod.com/changelog.html
 * Community Forums https://community.centminmod.com  [ << Register ]
 ===============================================================================
 "
