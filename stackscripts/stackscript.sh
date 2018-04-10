@@ -376,7 +376,7 @@ if [[ "$LOGINALERT" = 'yes' ]]; then
   if [[ "$LOGINALERTEMAIL" != 'none' ]]; then
     echo "SSH_ALERTEMAIL=$LOGINALERTEMAIL" >> /root/.bashrc
     echo "SSH_ALERTIP=\$(echo \$SSH_CLIENT | awk '{print \$1}')" >> /root/.bashrc
-    echo "SSH_ALERTGEO=\$(curl -sL ipinfo.io/\$SSH_ALERTIP/geo | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||')" >> /root/.bashrc
+    echo "SSH_ALERTGEO=\$(curl -sL https://ipinfo.io/\$SSH_ALERTIP/geo | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||')" >> /root/.bashrc
     echo "echo -e \"ALERT: \$(whoami) Shell Access \$(hostname): \$(date)\n\$SSH_ALERTGEO\" | mail -s \"Alert: \$(whoami) Shell Access \$(hostname) from \$SSH_ALERTIP\" \$SSH_ALERTEMAIL" >> /root/.bashrc
   fi
 fi

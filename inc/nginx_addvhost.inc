@@ -290,7 +290,7 @@ PUREGROUP=nginx
       CNIP=$(ip route get 8.8.8.8 | awk 'NR==1 {print $NF}')
     fi
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
-# CURRENTCOUNTRY=$(curl -s ipinfo.io/$CURRENTIP/country)
+# CURRENTCOUNTRY=$(curl -s https://ipinfo.io/$CURRENTIP/country)
 pureftpinstall
 
 # Support secondary dedicated IP configuration for centmin mod

@@ -1744,7 +1744,7 @@ ovhkernelcheck() {
 		# Intel Xeon D-15xx Broadwell-DE processors which need
 		# OVH custom kernel for the newer Intel network NIC support
 		# Intel Corporation Ethernet Connection X552/X557-AT 10GBASE-T
-		OVHASNCHECK=$(curl -4s${CURL_TIMEOUTS} ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+		OVHASNCHECK=$(curl -4s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
 		OVHKERNEL_CHECK=$(uname -r | grep '\-grs' >/dev/null 2>&1; echo $?)
 		BROADWELLDE_CHECK=$(grep 'Xeon(R) CPU D-15' /proc/cpuinfo >/dev/null 2>&1; echo $?)
 		# more sure way to check for OVH custom kernel if /root/.ovhrc file exists
