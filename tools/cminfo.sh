@@ -93,7 +93,7 @@ netstat_info() {
     netstat_https=$(netstat -an | fgrep ':443 ')
     netstat_outbound=$(netstat -plant | egrep -v 'and|servers|Address' | awk '{print $5,$6,$7}' | grep -v ':\*' | grep -v '127.0.0.1' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
     netstat_ips=$(netstat -tn)
-    netstat_ipstop=$(echo "$netstat_ips" | egrep -v 'servers|Address' | awk '{print $5}' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10)
+    netstat_ipstop=$(echo "$netstat_ips" | egrep -v 'servers|Address' | awk '{print $5}' | sed -e "s|$sshclient|ssh-client-ip|g" | sort | uniq -c | sort -rn | head -n10 | column -t)
     netstat_ipstopf=$(echo "$netstat_ipstop" | awk '{"getent hosts " $2 | getline getent_hosts_str; split(getent_hosts_str, getent_hosts_arr, " "); print $1, $2, getent_hosts_arr[2], $3}' | column -t)
     tt_states_http=$(echo "$netstat_http" | awk '{print $6}' | sort | uniq -c | sort -n)
     tt_states_https=$(echo "$netstat_https" | awk '{print $6}' | sort | uniq -c | sort -n)
@@ -128,7 +128,7 @@ netstat_info() {
     echo "Port 80:   ${wconn_http:-0}"
     echo "Port 443:  ${wconn_https:-0}"
     echo -e "\nTop IP Address Connections:"
-    echo "$netstat_ipstopf"
+    echo "$netstat_ipstop"
     echo -e "\nTop Outbound Connections:"
     echo "$netstat_outbound"
 
