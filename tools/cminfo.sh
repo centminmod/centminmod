@@ -145,6 +145,10 @@ netstat_info() {
         csfdeny_sshdlookups=$(grep 'distributed sshd attacks' /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_sshdlookups"
 
+        echo -e "\nTop CSF Firewall Denied Distributed sshd Attacks Target Usernames:"
+        csfdeny_attackusernames=$(grep 'distributed sshd attacks' /etc/csf/csf.deny | grep -oP '(?<=\[)[^\]]+' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_attackusernames"
+
         echo -e "\nTop CSF Firewall Failed SSH Logins:"
         csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_sshlogins"
