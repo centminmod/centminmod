@@ -18,9 +18,6 @@ CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c)
 CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c)
 CPUCACHE=$(awk -F: '/cache size/{print $2}' /proc/cpuinfo | sort | uniq -c)
 
-VHOSTS=$(ls /home/nginx/domains | egrep -v 'demodomain.com.conf')
-VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | egrep -vw '^ssl.conf' | uniq)
-
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -61,41 +58,6 @@ else
     MYSQLADMINOPT="-u$USER -p$PASS -h $MYSQLHOST"
 fi
 
-#####################################################
-SYSTYPE=$(virt-what | tail -1)
-CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
-CCACHE_INFOVER=$(ccache -V | head -n1)
-NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
-PHP_INFOVER=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')
-MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
-MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
-CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
-SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
-APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
-OPCACHE_INFOVER=$(php -v 2>&1 | grep OPcache | awk '{print $4}' | sed 's/,//')
-
-if [[ "$(which nsd >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-  NSD_INFOVER=$(nsd -v 2>&1 | head -n1 | awk '{print $3}')
-else
-  NSD_INFOVER=" - "
-fi
-
-# only assign variables if mysql is running
-if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
-DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
-MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
-fi
-PAGESPEEDSTATUS=$(grep 'pagespeed off' /usr/local/nginx/conf/pagespeed.conf)
-
-if [ -f /usr/local/sbin/maldet ]; then
-    MALDET_INFOVER=$(/usr/local/sbin/maldet -v | head -n1 | awk '{print $4}')
-fi
-
-if [ -f /usr/bin/clamscan ]; then
-    CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
-fi
 #####################################################
 if [[ -z "$SYSTYPE" ]]; then
     SYSTYPE='not virtualized'
@@ -260,6 +222,45 @@ if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
 fi
 
 infooutput() {
+VHOSTS=$(ls /home/nginx/domains | egrep -v 'demodomain.com.conf')
+VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | egrep -vw '^ssl.conf' | uniq)
+
+#####################################################
+SYSTYPE=$(virt-what | tail -1)
+CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
+CCACHE_INFOVER=$(ccache -V | head -n1)
+NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
+PHP_INFOVER=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')
+MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
+MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
+CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
+SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
+APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
+OPCACHE_INFOVER=$(php -v 2>&1 | grep OPcache | awk '{print $4}' | sed 's/,//')
+
+if [[ "$(which nsd >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  NSD_INFOVER=$(nsd -v 2>&1 | head -n1 | awk '{print $3}')
+else
+  NSD_INFOVER=" - "
+fi
+
+# only assign variables if mysql is running
+if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
+MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+fi
+PAGESPEEDSTATUS=$(grep 'pagespeed off' /usr/local/nginx/conf/pagespeed.conf)
+
+if [ -f /usr/local/sbin/maldet ]; then
+    MALDET_INFOVER=$(/usr/local/sbin/maldet -v | head -n1 | awk '{print $4}')
+fi
+
+if [ -f /usr/bin/clamscan ]; then
+    CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
+fi
+
 echo "------------------------------------------------------------------"
 echo " Centmin Mod Quick Info:"
 echo "------------------------------------------------------------------"
