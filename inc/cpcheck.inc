@@ -246,6 +246,8 @@ varnishfour_setup() {
           fi
           if [[ "$(rpm -ql varnish-release | grep -o 'not installed' >/dev/null 2>&1; echo $?)" -eq '1' ]]; then
             yum -q -y update varnish-release
+          else
+            yum repolist varnishcache_varnish41
           fi
           echo
           echo "updated varnish cache 4.1 yum repo config"
