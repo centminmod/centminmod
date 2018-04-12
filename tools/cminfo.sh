@@ -177,7 +177,7 @@ netstat_info() {
 list_logs() {
     echo
     echo "List all /root/centminlogs in data ascending order"
-    ls -lahrt /root/centminlogs
+    ls -lhrt /root/centminlogs
 }
 
 setupdate() {
@@ -433,7 +433,36 @@ php -m
 
 echo
 }
+
+debug_menuexit() {
+    echo
+    echo "------------------------------------------------------------------"
+    echo "Debugging centmin.sh menu option 24 exit routine starting"
+    echo "Please wait until complete..."
+    echo "------------------------------------------------------------------"
+    cd /usr/local/src/centminmod
+    echo 24 | bash -x centmin.sh 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }' 2>&1 > /root/centminlogs/debug-menuexit.txt && echo "Full debug log saved at /root/centminlogs/debug-menuexit.txt"
+    sed -i "s|$(hostname)|hostname|g" /root/centminlogs/debug-menuexit.txt
+    echo
+    echo "Inspect Yum Check Times In debug-menuexit.txt log"
+    echo
+    grep -A5 'checking for YUM updates' /root/centminlogs/debug-menuexit.txt
+    yumstart_time="$(date -d "$(awk '/+ echo \x27 checking for YUM updates/ {print $1,$2}' /root/centminlogs/debug-menuexit.txt)" +%s)"
+    yumend_time="$(date -d "$(awk '/ UPDATE_CHECK=/ {print $1,$2}' /root/centminlogs/debug-menuexit.txt)" +%s)"
+    yumcheck_time=$(echo "$yumend_time - $yumstart_time" | bc)
+    yumcheck_time=$(printf "%0.2f\n" $yumcheck_time)
+    echo
+    echo "Yum Check Duration: $yumcheck_time seconds"
+    echo
+    echo "------------------------------------------------------------------"
+    echo "Debugging centmin.sh menu option 24 exit routine completed"
+    echo "------------------------------------------------------------------"
+}
 #########
+if [[ -z "$1" ]]; then
+    infooutput
+fi
+
 case "$1" in
     info)
     infooutput
@@ -447,7 +476,10 @@ case "$1" in
     listlogs)
     list_logs
         ;;
+    debug-menuexit)
+    debug_menuexit
+        ;;
     *)
-    infooutput
+    echo "$0 {info|update|netstat|listlogs|debug-menuexit}"
         ;;
 esac
