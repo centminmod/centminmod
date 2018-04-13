@@ -332,7 +332,7 @@ fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     varnishfour_setup
     yumpriorvarnish
-    if [[ "$INITIALINSTALL" = [yY] && -f "$VARNISH_REPOFILE" ]]; then
+    if [[ "$VARNISHREPO_DISABLE" = [nN] && "$INITIALINSTALL" = [yY] && -f "$VARNISH_REPOFILE" ]]; then
       # disable for install stage to speed up install
       yum-config-manager --disable varnishcache_varnish41 varnishcache_varnish41-source
     fi

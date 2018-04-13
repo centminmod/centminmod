@@ -215,46 +215,48 @@ disablelogs() {
 }
 
 varnishfour_setup() {
-  if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
-      rm -rf /etc/yum.repos.d/varnish-4.1.repo
-      # yum -q clean all
-  fi
-  if [ -f /etc/yum.repos.d/varnish-4.1.OLD ]; then
-      rm -rf /etc/yum.repos.d/varnish-4.1.OLD
-  fi
-  if [ ! -f "$VARNISH_REPOFILE" ]; then
-    os=centos
-    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-        dist=7
-    else
-        dist=6
+  if [[ "$VARNISHREPO_DISABLE" = [nN] ]]; then
+    if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
+        rm -rf /etc/yum.repos.d/varnish-4.1.repo
+        # yum -q clean all
     fi
-    yum_repo_path=$VARNISH_REPOFILE
-    yum_repo_config_url="https://packagecloud.io/install/repositories/varnishcache/varnish41/config_file.repo?os=${os}&dist=${dist}&source=script"
-    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]]; then
-        curl -4Is --connect-timeout 5 --max-time 5 "${yum_repo_config_url}" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
-        VARNISHFOUR_CURLCHECK=$?
-        if [[ "$VARNISHFOUR_CURLCHECK" = '0' ]]; then
-          echo "update varnish cache 4.1 yum repo config"
-          curl -4sSf "${yum_repo_config_url}" > $yum_repo_path
-          # yum -q makecache -y --disablerepo='*' --enablerepo='varnishcache_varnish41'
-          if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
-              rm -rf /etc/yum.repos.d/varnish-4.1.repo
-          fi
-          if [ -f /etc/yum.repos.d/varnish-4.1.OLD ]; then
-              rm -rf /etc/yum.repos.d/varnish-4.1.OLD
-          fi
-          if [[ "$(rpm -ql varnish-release | grep -o 'not installed' >/dev/null 2>&1; echo $?)" -eq '1' ]]; then
-            yum -q -y update varnish-release
+    if [ -f /etc/yum.repos.d/varnish-4.1.OLD ]; then
+        rm -rf /etc/yum.repos.d/varnish-4.1.OLD
+    fi
+    if [ ! -f "$VARNISH_REPOFILE" ]; then
+      os=centos
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+          dist=7
+      else
+          dist=6
+      fi
+      yum_repo_path=$VARNISH_REPOFILE
+      yum_repo_config_url="https://packagecloud.io/install/repositories/varnishcache/varnish41/config_file.repo?os=${os}&dist=${dist}&source=script"
+      if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]]; then
+          curl -4Is --connect-timeout 5 --max-time 5 "${yum_repo_config_url}" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+          VARNISHFOUR_CURLCHECK=$?
+          if [[ "$VARNISHFOUR_CURLCHECK" = '0' ]]; then
+            echo "update varnish cache 4.1 yum repo config"
+            curl -4sSf "${yum_repo_config_url}" > $yum_repo_path
+            # yum -q makecache -y --disablerepo='*' --enablerepo='varnishcache_varnish41'
+            if [ -f /etc/yum.repos.d/varnish-4.1.repo ]; then
+                rm -rf /etc/yum.repos.d/varnish-4.1.repo
+            fi
+            if [ -f /etc/yum.repos.d/varnish-4.1.OLD ]; then
+                rm -rf /etc/yum.repos.d/varnish-4.1.OLD
+            fi
+            if [[ "$(rpm -ql varnish-release | grep -o 'not installed' >/dev/null 2>&1; echo $?)" -eq '1' ]]; then
+              yum -q -y update varnish-release
+            else
+              yum repolist varnishcache_varnish41
+            fi
+            echo
+            echo "updated varnish cache 4.1 yum repo config"
           else
-            yum repolist varnishcache_varnish41
+            echo
+            echo "curl error: skip varnish cache 4.1 yum repo config"
           fi
-          echo
-          echo "updated varnish cache 4.1 yum repo config"
-        else
-          echo
-          echo "curl error: skip varnish cache 4.1 yum repo config"
-        fi
+      fi
     fi
   fi
 }
