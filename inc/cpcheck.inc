@@ -1,3 +1,11 @@
+disable_varnishrepo() {
+  if [[ "$(rpm -ql varnish | grep -o 'not installed' >/dev/null 2>&1; echo $?)" -eq '0' && -f "$VARNISH_REPOFILE" ]]; then
+    # disable varnish cache packagecloud.io yum repo
+    # https://community.centminmod.com/threads/add-varnishrepo_disable-variable.14556/
+    yum-config-manager --disable varnishcache_varnish41 varnishcache_varnish41-source >/dev/null 2>&1
+  fi
+}
+
 csf_smtpports() {
   if [[ "$(egrep '^TCP_OUT|^TCP6_OUT' /etc/csf/csf.conf | grep -wq '2525'; echo $?)" -ne '0' ]]; then
     sed -i "s/TCP_OUT = \"/TCP_OUT = \"2525,/g" /etc/csf/csf.conf
@@ -2299,6 +2307,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   ngxmaster_openfiles
   check_memcachedflush
   csf_smtpports
+  disable_varnishrepo
 fi
 
 }
