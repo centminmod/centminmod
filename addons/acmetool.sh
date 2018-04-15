@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.37'
+ACMEVER='1.0.38'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -266,6 +266,38 @@ listlogs() {
   echo "log files saved at ${CENTMINLOGDIR}"
   ls -lAhrt "${CENTMINLOGDIR}" | grep "${DT%??}"
   echo
+}
+
+#####################
+check_domains() {
+  if [ -d /root/.acme.sh ]; then
+   echo "----------------------------------------------"
+   echo "check domain DNS"
+   echo "----------------------------------------------"
+   for c in $(find /usr/local/nginx/conf/ssl/ -name '*-acme.cer' -o -name '*-acme-ecc.cer'); do 
+     domain_tocheck=$(basename $c | sed -e 's|-acme.cer||' -e 's|-acme-ecc.cer||')
+     echo "$domain_tocheck"
+   done | uniq | while read d; do
+                  domain_arecord=$(dig @8.8.8.8 A $d +short)
+                  domain_aaaarecord=$(dig @8.8.8.8 AAAA $d +short)
+                  echo "--------------------------------------------------------------------"
+                  echo "Checking:    $d"
+                  echo "A record:    ${domain_arecord:-not found}"
+                  echo "AAAA record: ${domain_aaaarecord:-not found}"
+                  if [[ "$domain_arecord" ]]; then
+                      echo
+                      echo "curl -4Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:'"
+                      curl -4Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
+                  fi
+                  if [[ "$domain_aaaarecord" ]]; then
+                      echo
+                      echo "curl -6Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:'"
+                      curl -6Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
+                  fi
+                  echo "--------------------------------------------------------------------"
+                  echo
+                done
+  fi
 }
 
 #####################
@@ -4608,6 +4640,9 @@ acme-menu )
 checkdates )
   checkdate
 ;;
+checkdomains )
+  check_domains
+;;
   certonly-issue )
 { 
 nvcheck
@@ -4624,7 +4659,7 @@ fi
 ;;
   * )
   echo
-  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|manual|issue|reissue|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates}"
+  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|manual|issue|reissue|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates|checkdomains}"
   echo "
  Usage Commands: 
  $0 acme-menu
@@ -4674,6 +4709,7 @@ fi
  $0 renewall live
  $0 renewall lived
  $0 checkdates
+ $0 checkdomains
   "
     ;;
 esac
