@@ -40,7 +40,7 @@ ngx_hpack_patch() {
     echo "patching nginx http/2 full HPACK encoding for nginx 1.13.9+"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013010' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013010' ]] || [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -eq '1014000' ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.13.10_http2-hpack.patch" $boldyellow

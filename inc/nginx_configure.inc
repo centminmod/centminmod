@@ -235,6 +235,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013010' && "$DETECT_NGXVER" -lt '1013011' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -eq '1014000' ]]; then
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -eq '1015000' ]]; then
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
     NGX_HPACK_OPT=""
   fi
@@ -1951,7 +1955,7 @@ fi
 # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGXINSTALL_VER=$(echo "$NGINX_VERSION" | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo "$ngver" | cut -d . -f1,2)
-if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master-google' ]]; then
+if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.14' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.15' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = 'master-google' ]]; then
 # if [[ "$ngver" && "$NGXUPGRADE_VER" > '1.9' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
@@ -1996,7 +2000,7 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VE
 	# workaround for nginx 1.9 compatibility
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_initworkerby.c
 	# sed -i.bak 's|ngx_http_set_connection_log|ngx_set_connection_log|g' ${DIR_TMP}/lua-nginx-module-${ORESTY_LUANGINXVER}/src/ngx_http_lua_timer.c
-elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.10' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.11' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.12' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.13' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'master' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'master-google' ]]; then
+elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.10' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.11' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.12' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.13' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.14' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.15' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'master' ]] || [[ -z "$ngver" && "$NGXINSTALL_VER" = 'master-google' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
 		if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_STREAM" = [yY] ]]; then
 			STREAM=' --with-stream=dynamic --with-stream_ssl_module'
