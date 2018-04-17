@@ -257,7 +257,7 @@ geoipinstall
 customrpms
 
 # use Remi's ImageMagicK 6.9.* package
-if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
+if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
     if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
       echo

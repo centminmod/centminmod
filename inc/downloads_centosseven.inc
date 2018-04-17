@@ -342,8 +342,10 @@ fi
 # axivo centos 6.x 64bit only
 # axivoseven
 ####
-remisevenyum
-atrpmssevenyum
+if [[ "$(uname -m)" != 'aarch64' ]]; then
+  remisevenyum
+  atrpmssevenyum
+fi
 
 # CentOS 7 repo mirrors aren't fully updated so need to specify actual kernel-headers version
 PACKAGEEXTRA='figlet moreutils libzip5 libzip5-devel nghttp2 libnghttp2 libnghttp2-devel clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel glances bash-completion bash-completion-extras mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
