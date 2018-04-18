@@ -217,8 +217,8 @@ top_info() {
     fi
     echo
     echo "------------------------------------------------------------------"
-    echo "iotop -b -n1"
-    iotop -b -n1
+    echo "iotop -bton1 -P"
+    iotop -bton1 -P
     echo
     echo "------------------------------------------------------------------"
     echo "pidstat -durh 1 5 | sed -e \"s|\$(hostname)|hostname|g\""
