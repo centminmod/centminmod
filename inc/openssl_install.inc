@@ -2,6 +2,62 @@
 opensslpatches() {
   {
 
+# Cache timing vulnerability in RSA Key Generation (CVE-2018-0737) patch
+# https://community.centminmod.com/threads/14584/
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.0.2o' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.0.2o"
+    echo "######################################################################"
+    echo "Cache timing vulnerability in RSA Key Generation (CVE-2018-0737) patch"
+    echo "https://community.centminmod.com/threads/14584/"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL1.0.2o-cache-timing-rsa-key-gen.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.0.2o-cache-timing-rsa-key-gen.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.0.2o-cache-timing-rsa-key-gen.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.0.2o-cache-timing-rsa-key-gen.patch"
+        cachersapatch_err=$?
+        if [[ "$cachersapatch_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.0.2o-cache-timing-rsa-key-gen.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
+# Cache timing vulnerability in RSA Key Generation (CVE-2018-0737) patch
+# https://community.centminmod.com/threads/14584/
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.0h' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.0h"
+    echo "######################################################################"
+    echo "Cache timing vulnerability in RSA Key Generation (CVE-2018-0737) patch"
+    echo "https://community.centminmod.com/threads/14584/"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL1.1h-cache-timing-rsa-key-gen.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1h-cache-timing-rsa-key-gen.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1h-cache-timing-rsa-key-gen.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1h-cache-timing-rsa-key-gen.patch"
+        cachersapatch_err=$?
+        if [[ "$cachersapatch_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.1h-cache-timing-rsa-key-gen.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi 
+
 # Equal Cipher Preference Group patch for 64bit systems only
 # OpenSSL1.1g-equal-preference-cipher-groups.patch
 if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLEQUALCIPHER_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]]; then
