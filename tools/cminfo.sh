@@ -193,11 +193,18 @@ top_info() {
     df -hT
     echo
     echo "------------------------------------------------------------------"
-    echo "Filter sar -q for times cpu load avg hit or exceeded cpu threads max"
+    echo "Filter sar -q for times cpu load avg (1min) hit/exceeded cpu threads max"
     loadavg=$(printf "%0.2f" $(nproc))
-    sarfiltered=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | grep -v Linux)
+    sarfilteredone=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($4>=lvg) print $0}' | grep -v Linux)
     echo
-    echo "${sarfiltered:-no times found that >= $loadavg}"
+    echo "${sarfilteredone:-no times found that >= $loadavg}"
+    echo
+    echo "------------------------------------------------------------------"
+    echo "Filter sar -q for times cpu load avg (5min) hit/exceeded cpu threads max"
+    loadavg=$(printf "%0.2f" $(nproc))
+    sarfilteredfive=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | grep -v Linux)
+    echo
+    echo "${sarfilteredfive:-no times found that >= $loadavg}"
     echo
     echo "------------------------------------------------------------------"
     echo "sar -q | sed -e \"s|\$(hostname)|hostname|g\""
