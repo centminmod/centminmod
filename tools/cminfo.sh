@@ -2,7 +2,8 @@
 #####################################################
 # quick info overview for centminmod.com installs
 #####################################################
-#
+DT=$(date +"%d%m%y-%H%M%S")
+CENTMINLOGDIR='/root/centminlogs'
 #####################################################
 MYCNF='/etc/my.cnf'
 USER='root'
@@ -83,6 +84,151 @@ CPUCORES=$((${CPUCORES} * ${PHYSICALCPUS}));
     else HT=no; 
 fi
 #####################################################
+top_info() {
+    SYSTYPE=$(virt-what | tail -1)
+    CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
+    CCACHE_INFOVER=$(ccache -V | head -n1)
+    NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
+    PHP_INFOVER=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')
+    MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
+    MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
+    CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
+    SIEGE_INFOVER=$(siege -V 2>&1 | head -n1 | awk '{print $2}')
+    APC_INFOVER=$(php --ri apc | awk '/Version/ {print $3}' | head -n1)
+    OPCACHE_INFOVER=$(php -v 2>&1 | grep OPcache | awk '{print $4}' | sed 's/,//')
+    
+    if [[ "$(which nsd >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    NSD_INFOVER=$(nsd -v 2>&1 | head -n1 | awk '{print $3}')
+    else
+    NSD_INFOVER=" - "
+    fi
+    
+    # only assign variables if mysql is running
+    if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
+    MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+    MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+    MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+    fi
+    PAGESPEEDSTATUS=$(grep 'pagespeed off' /usr/local/nginx/conf/pagespeed.conf)
+    
+    if [ -f /usr/local/sbin/maldet ]; then
+        MALDET_INFOVER=$(/usr/local/sbin/maldet -v | head -n1 | awk '{print $4}')
+    fi
+    
+    if [ -f /usr/bin/clamscan ]; then
+        CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
+    fi
+
+    echo "------------------------------------------------------------------"
+    echo " Centmin Mod Top Info:"
+    echo "------------------------------------------------------------------"
+
+    echo " Server Location Info"
+    # echo
+    curl -4s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'ip:|phone|postal|loc'
+    echo "  ASN: $(curl -4s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1)"
+    
+    echo
+    echo " Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"
+    echo
+    echo "$CPUSPEED"
+    echo "$CPUMODEL"
+    echo "$CPUCACHE"
+    echo ""
+    
+    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        echo -ne " System Up Since: \t"; uptime -s
+        echo -ne " System Uptime: \t"; uptime -p
+    else
+        echo -ne " System Uptime: \t"; uptime | awk '{print $2, $3, $4, $5}'
+    fi
+    if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        echo -e " MySQL Server Started \t$MYSQLSTART"
+        echo -e " MySQL Uptime: \t\t$MYSQLUPTIMEFORMAT"
+        echo -e " MySQL Uptime (secs): \t$MYSQLUPTIME"
+    else
+        echo -e " MySQL Server Started \tnot running"
+        echo -e " MySQL Uptime: \t\tnot running"
+        echo -e " MySQL Uptime (secs): \tnot running"    
+    fi
+    echo -e " Server Type: \t\t$SYSTYPE"
+    echo -e " CentOS Version: \t$CENTOSVER"
+    echo -e " Centmin Mod: \t\t$CENTMINMOD_INFOVER"
+    echo -e " Nginx PageSpeed: \t$PS"
+    echo -e " Nginx Version: \t$NGINX_INFOVER"
+    echo -e " PHP-FPM Version: \t$PHP_INFOVER"
+    echo -e " MariaDB Version: \t$MARIADB_INFOVER"
+    echo -e " CSF Firewall: \t\t$CSF_INFOVER"
+    echo -e " Memcached Server: \t$MEMCACHEDSERVER_INFOVER"
+    echo -e " NSD Version: \t\t$NSD_INFOVER"
+    echo -e " Siege Version: \t$SIEGE_INFOVER"
+    if [ -f /usr/local/sbin/maldet ]; then
+        echo -e " Maldet Version: \t$MALDET_INFOVER"
+    else
+        echo -e " Maldet Version: \tnot installed"
+    fi
+    
+    if [ -f /usr/bin/clamscan ]; then
+        echo -e " ClamAV Version: \t$CLAMAV_INFOVER"
+    else
+        echo -e " ClamAV Version: \tnot installed"
+    fi
+    
+    if [[ "$(rpm -qa elasticsearch)" ]]; then
+        ESEXIST=y
+        ELASTICSEARCH_INFOVER=$(rpm -qa elasticsearch | awk -F "-" '{print $2}')
+        echo -e " ElasticSearch: \t$ELASTICSEARCH_INFOVER"
+    else
+        echo -e " ElasticSearch: \tnot installed"
+    fi
+
+    echo
+    echo "------------------------------------------------------------------"
+    echo "free -mtl"
+    free -mtl
+    echo
+    echo "------------------------------------------------------------------"
+    echo "df -hT"
+    df -hT
+    echo
+    echo "------------------------------------------------------------------"
+    echo "Filter sar -q for times cpu load avg hit or exceeded cpu threads max"
+    loadavg=$(printf "%0.2f" $(nproc))
+    sarfiltered=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | grep -v Linux)
+    echo
+    echo "${sarfiltered:-no times found that >= $loadavg}"
+    echo
+    echo "------------------------------------------------------------------"
+    echo "sar -q | sed -e \"s|\$(hostname)|hostname|g\""
+    sar -q | sed -e "s|$(hostname)|hostname|g"
+    echo
+    echo "------------------------------------------------------------------"
+    echo "sar -r | sed -e \"s|\$(hostname)|hostname|g\""
+    sar -r | sed -e "s|$(hostname)|hostname|g"
+    echo
+    echo "------------------------------------------------------------------"
+    if [ -d /usr/lib/systemd ]; then
+        echo "top -bcn1 -w200"
+        top -bcn1 -w200
+    else
+        echo "top -bcn1"
+        top -bcn1
+    fi
+    echo
+    echo "------------------------------------------------------------------"
+    echo "iotop -b -n1"
+    iotop -b -n1
+    echo
+    echo "------------------------------------------------------------------"
+    echo "pidstat -durh 1 5 | sed -e \"s|\$(hostname)|hostname|g\""
+    pidstat -durh 1 5 | sed -e "s|$(hostname)|hostname|g"
+    echo "------------------------------------------------------------------"
+    echo "Stats saved at: ${CENTMINLOGDIR}/cminfo-top-${DT}.log"
+    echo "------------------------------------------------------------------"
+    echo
+}
+
 netstat_info() {
     sshclient=$(echo $SSH_CLIENT | awk '{print $1}')
     nic=$(ifconfig -s 2>&1 | egrep -v '^Iface|^lo|^gre' | awk '{print $1}')
@@ -473,6 +619,11 @@ case "$1" in
     netstat)
     netstat_info
         ;;
+    top)
+    {
+    top_info
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-${DT}.log"
+        ;;
     listlogs)
     list_logs
         ;;
@@ -480,6 +631,6 @@ case "$1" in
     debug_menuexit
         ;;
     *)
-    echo "$0 {info|update|netstat|listlogs|debug-menuexit}"
+    echo "$0 {info|update|netstat|top|listlogs|debug-menuexit}"
         ;;
 esac
