@@ -1,7 +1,7 @@
 csf_loadalert() {
     # custom high cpu load trigger email stats
-    if [[ ! -f /etc/csf/load.sh && -f "${SCRIPT_DIR}/conf/csf/load.sh" ]]; then
-        \cp -fa "${SCRIPT_DIR}/conf/csf/load.sh" /etc/csf/load.sh
+    if [[ ! -f /etc/csf/load.sh && -f "${SCRIPT_DIR}/config/csf/load.sh" ]]; then
+        \cp -fa "${SCRIPT_DIR}/config/csf/load.sh" /etc/csf/load.sh
         csf --profile backup cmm-before-ptload-action >/dev/null 2>&1
         sed -i "s|^PT_LOAD_ACTION = \"\"|PT_LOAD_ACTION = \"\/etc\/csf\/load.sh\"|" /etc/csf/csf.conf
         sed -i "s/^PT_LOAD_LEVEL .*/PT_LOAD_LEVEL = \"$(nproc)\"/g" /etc/csf/csf.conf
