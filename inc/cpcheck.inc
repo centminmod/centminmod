@@ -1,3 +1,13 @@
+csf_loadalert() {
+    # custom high cpu load trigger email stats
+    if [[ ! -f /etc/csf/load.sh && -f "${SCRIPT_DIR}/conf/csf/load.sh" ]]; then
+        \cp -fa "${SCRIPT_DIR}/conf/csf/load.sh" /etc/csf/load.sh
+        csf --profile backup cmm-before-ptload-action >/dev/null 2>&1
+        sed -i "s|^PT_LOAD_ACTION = \"\"|PT_LOAD_ACTION = \"\/etc\/csf\/load.sh\"|" /etc/csf/csf.conf
+        sed -i "s/^PT_LOAD_LEVEL .*/PT_LOAD_LEVEL = \"$(nproc)\"/g" /etc/csf/csf.conf
+    fi
+}
+
 disable_varnishrepo() {
   if [[ "$(rpm -ql varnish | grep -o 'not installed' >/dev/null 2>&1; echo $?)" -eq '0' && -f "$VARNISH_REPOFILE" ]]; then
     # disable varnish cache packagecloud.io yum repo
@@ -10,7 +20,7 @@ csf_smtpports() {
   if [[ "$(egrep '^TCP_OUT|^TCP6_OUT' /etc/csf/csf.conf | grep -wq '2525'; echo $?)" -ne '0' ]]; then
     sed -i "s/TCP_OUT = \"/TCP_OUT = \"2525,/g" /etc/csf/csf.conf
     sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"2525,/g" /etc/csf/csf.conf
-    csf -ra > /dev/null 2>&1
+    csf -ra >/dev/null 2>&1
   fi
 }
 
@@ -500,19 +510,19 @@ ROF
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -ra > /dev/null 2>&1
+    csf -ra >/dev/null 2>&1
     NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
   elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -ra > /dev/null 2>&1
+    csf -ra >/dev/null 2>&1
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
     sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -ra > /dev/null 2>&1
+    csf -ra >/dev/null 2>&1
     NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -ra > /dev/null 2>&1
+    csf -ra >/dev/null 2>&1
   fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
@@ -2307,6 +2317,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   ngxmaster_openfiles
   check_memcachedflush
   csf_smtpports
+  csf_loadalert
   disable_varnishrepo
 fi
 
