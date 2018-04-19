@@ -42,8 +42,8 @@ WGET_VERSION='1.19.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
-CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c | sed -e s'|      ||g'); 
-CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c);
+CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq -c | sed -e s'|      ||g' | xargs); 
+CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs);
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -1234,7 +1234,7 @@ fi
 echo "---------------------------------------------------------------------------"
   echo "Total Install Time (curl yum + cm install + zip download): $TT seconds"    
 echo "---------------------------------------------------------------------------"
-  echo "$CPUMODEL ($CPUSPEED Mhz)"
+  echo "$CPUMODEL"; echo "$CPUSPEED"
 echo "---------------------------------------------------------------------------"
 } 2>&1 | tee "/root/centminlogs/install_time_stats_${DT}.log"
   systemstats
