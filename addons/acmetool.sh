@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.38'
+ACMEVER='1.0.39'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -1058,6 +1058,11 @@ cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" <<EOF
   #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer;
   ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer;
 EOF
+cat "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer" > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer"
+echo
+echo "setup ssl_trusted_certificate dual cert version:"
+echo "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer"
+echo
 }
 
 #####################
@@ -1074,6 +1079,11 @@ cat > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf" <<EOF
   #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer;
   #ssl_trusted_certificate /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer;
 EOF
+cat "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme.cer" "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme-ecc.cer" > "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer"
+echo
+echo "setup ssl_trusted_certificate dual cert version:"
+echo "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-dualcert-rsa-ecc.cer"
+echo
 }
 
 #####################
