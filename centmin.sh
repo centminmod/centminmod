@@ -19,10 +19,10 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='018'
+SCRIPT_INCREMENTVER='019'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='31/03/2018'
+SCRIPT_DATE='31/05/2018'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -577,6 +577,11 @@ NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
 
+# control variables post vhost creation
+# whether cloudflare.conf include file is uncommented (enabled) or commented out (disabled)
+VHOSTCTRL_CLOUDFLAREINC='n'
+# whether autoprotect-$vhostname.conf include file is uncommented (enabled) or commented out (disabled)
+VHOSTCTRL_AUTOPROTECTINC='y'
 ##################################
 ## Nginx SSL options
 # OpenSSL

@@ -232,6 +232,13 @@ SHORTCUTS='y'                # shortcuts
 
 ##################################
 ## Nginx SSL options
+
+# control variables post vhost creation
+# whether cloudflare.conf include file is uncommented (enabled) or commented out (disabled)
+VHOSTCTRL_CLOUDFLAREINC='n'
+# whether autoprotect-$vhostname.conf include file is uncommented (enabled) or commented out (disabled)
+VHOSTCTRL_AUTOPROTECTINC='y'
+
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
 OPENSSL_VERSION='1.1.0h'   # Use this version of OpenSSL http://openssl.org/

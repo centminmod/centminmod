@@ -1678,6 +1678,28 @@ cecho "$LOGPATH" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
 
+  # control variables after vhost creation
+  # whether cloudflare.conf include file is uncommented (enabled) or commented out (disabled)
+  if [[ "$VHOSTCTRL_CLOUDFLAREINC" = [yY] ]]; then
+    if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
+      sed -i "s|^  #include \/usr\/local\/nginx\/conf\/cloudflare.conf;|  include \/usr\/local\/nginx\/conf\/cloudflare.conf;|g" "/usr/local/nginx/conf/conf.d/$vhostname.conf"
+    fi
+    if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+      sed -i "s|^  #include \/usr\/local\/nginx\/conf\/cloudflare.conf;|  include \/usr\/local\/nginx\/conf\/cloudflare.conf;|g" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+    fi
+  fi
+  # whether autoprotect-$vhostname.conf include file is uncommented (enabled) or commented out (disabled)
+  if [[ "$VHOSTCTRL_AUTOPROTECTINC" = [nN] ]]; then
+    if [ -f "/usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf" ]; then
+      if [ -f "/usr/local/nginx/conf/conf.d/$vhostname.conf" ]; then
+        sed -i "s|^  include \/usr\/local\/nginx\/conf\/autoprotect\/$vhostname\/autoprotect-$vhostname.conf;|  #include \/usr\/local\/nginx\/conf\/autoprotect\/$vhostname\/autoprotect-$vhostname.conf;|g" "/usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf"
+      fi
+      if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
+        sed -i "s|^  include \/usr\/local\/nginx\/conf\/autoprotect\/$vhostname\/autoprotect-$vhostname.conf;|  #include \/usr\/local\/nginx\/conf\/autoprotect\/$vhostname\/autoprotect-$vhostname.conf;|g" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+      fi
+    fi
+  fi
+
 else
 
 echo ""
