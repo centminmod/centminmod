@@ -2363,11 +2363,23 @@ chmod 0700 /root/tools/wp_uninstall_${vhostname}.sh
   cecho "/root/tools/wp_updater_${vhostname}.sh" $boldyellow
   cecho "------------------------------------------------------------" $boldgreen
 
+
+if [ -f "/usr/local/nginx/conf/wpincludes/$vhostname/emailfrom.ini" ]; then
+  # SETWPADMINEMAIL_FROM=yourcustom-from-emailaddress
+  . "/usr/local/nginx/conf/wpincludes/$vhostname/emailfrom.ini"
+fi
+
+if [[ "$SETWPADMINEMAIL_FROM" ]]; then
+  WPADMINEMAIL_FROM="$SETWPADMINEMAIL_FROM"
+else
+  WPADMINEMAIL_FROM="$WPADMINEMAIL"
+fi
+
 cat > "/root/tools/wp_updater_${vhostname}.sh" <<ENDA
 #!/bin/bash
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin:/bin
 EMAIL=$WPADMINEMAIL
-EMAILFROM=$WPADMINEMAIL
+EMAILFROM=$WPADMINEMAIL_FROM
 DT=\$(date +"%d%m%y-%H%M%S")
 
 {
@@ -2693,7 +2705,7 @@ elif [[ "$wpscache" = 'redis' ]]; then
   cecho "------------------------------------------------------------" $boldgreen
 fi
 } 2>&1 | tee /tmp/setupwp.log
-cat -v /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+cat -v /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL_FROM -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
 cp -a /tmp/setupwp.log "${CENTMINLOGDIR}/setupwp-$(date +"%d%m%y-%H%M%S").log"
 rm -rf /tmp/setupwp.log
 
