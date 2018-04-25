@@ -12,7 +12,7 @@ zlib_ccache() {
 }
 
 zlibsymlink_fix() {
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
         echo
         # fix symlink
         rm -rf /usr/local/lib/libz.so
@@ -64,7 +64,7 @@ zlibng_install() {
 }
 
 install_cfzlib() {
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
         # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
         # cloudflare zlib
         if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
@@ -314,7 +314,8 @@ install_stdzlib() {
 
 nginxzlib_install() {
   if [[ "$NGINX_ZLIBCUSTOM" = [yY] ]]; then
-    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' ]]; then
+    CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
         install_cfzlib
         if [[ "$cfzlib_check" -ne '0' ]]; then
             CLOUDFLARE_ZLIB='n'
