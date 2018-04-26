@@ -656,10 +656,16 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 fi
 
 # set_intelflags
-
 if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
   CLANG_PHP='y'
+
+  # Disable PGO if less than 2 cpu threads
+  PHP_PGO='n'
+
+  # Disable php intel optimisation flags if less than 2 cpu threads
+  # detected due to being very very slow for php compile times
+  GCCINTEL_PHP='n'
 fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
@@ -709,12 +715,6 @@ else
     	# PLACEHOLDER FOR CLAGS FOR PHP
     	# CFLAGS=
     fi
-fi
-
-if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
-  # Disable php intel optimisation flags if less than 2 cpu threads
-  # detected due to being very very slow for php compile times
-  GCCINTEL_PHP='n'
 fi
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then

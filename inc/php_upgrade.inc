@@ -476,6 +476,11 @@ else
     MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
 fi
 
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
+  # Disable PGO if less than 2 cpu threads
+  PHP_PGO='n'
+fi
+
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Make"
     fi
