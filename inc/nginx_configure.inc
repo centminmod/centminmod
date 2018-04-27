@@ -251,6 +251,26 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     HTTP_PUSHOPT=""
   fi
 
+  if [[ "$NGINX_RTMP" = [yY] ]]; then
+    if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
+      echo
+      echo "download nginx-rtmp-module from github"
+      pushd "$DIR_TMP"
+      time git clone git://github.com/arut/nginx-rtmp-module.git
+      echo
+      popd
+    elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then
+      echo
+      echo "get latest updates nginx-rtmp-module from github"
+      pushd "${DIR_TMP}/nginx-rtmp-module"
+      git stash
+      git pull
+      git log -1
+      echo
+      popd
+    fi
+  fi
+
 	if [[ "$NGINX_DEBUG" = [yY] ]]; then
 		NGINX_DEBUGOPT=' --with-debug'
 		STRIPNGINX=n

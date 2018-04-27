@@ -186,22 +186,6 @@ fi
         rm -rf "${DIR_TMP}/${NGX_LUANGINXLINKFILE}"
     fi
 
-    if [[ "$NGINX_RTMP" = [yY] ]]; then
-        if [[ ! -d "${DIR_TMP}/nginx-rtmp-module" ]]; then
-            echo
-            echo "download nginx-rtmp-module from github"
-            cd "$DIR_TMP"
-            time git clone git://github.com/arut/nginx-rtmp-module.git
-        elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then
-            echo
-            echo "get latest updates nginx-rtmp-module from github"
-            cd "$DIR_TMP"
-            git stash
-            git pull
-            git log -3
-        fi
-    fi
-
 cecho "Check for old ngx_pagespeed master branch existence" $boldyellow
 if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-master" ]]; then
     # rm -rf ${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}
