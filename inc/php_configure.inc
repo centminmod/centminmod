@@ -658,7 +658,7 @@ fi
 # set_intelflags
 if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
-  CLANG_PHP='y'
+  # CLANG_PHP='y'
 
   # Disable PGO if less than 2 cpu threads
   PHP_PGO='n'
