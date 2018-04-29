@@ -1,3 +1,10 @@
+pzcat_install() {
+  if [[ "$(nproc)" -ge '2' && ! -f /usr/bin/pzcat && -f /usr/bin/zcat && -f /usr/bin/pigz ]]; then 
+    \cp -af /usr/bin/zcat /usr/bin/pzcat
+    sed -i 's|exec gzip -cd|exec pigz -cd|' /usr/bin/pzcat
+  fi
+}
+
 csf_loadalert() {
     # custom high cpu load trigger email stats
     if [[ ! -f /etc/csf/load.sh && -f "${SCRIPT_DIR}/config/csf/load.sh" ]]; then
@@ -2235,6 +2242,7 @@ pathfixes
 apache_protect
 setup_pwdh
 cmupdatecheck
+pzcat_install
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -2319,6 +2327,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   csf_smtpports
   csf_loadalert
   disable_varnishrepo
+  pzcat_install
 fi
 
 }
