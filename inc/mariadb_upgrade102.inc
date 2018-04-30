@@ -449,6 +449,7 @@ cat >>/etc/my.cnf<<FFF
 
 [mariadb-10.2]
 #innodb_file_format = Barracuda
+innodb_default_row_format = dynamic
 innodb_file_per_table = 1
 
 ## wsrep specific
