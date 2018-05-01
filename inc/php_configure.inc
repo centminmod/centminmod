@@ -376,9 +376,9 @@ else
 fi
 
 if [[ "$PHPDEBUGMODE" = [yY] ]]; then
-	PHPDEBUGOPT=' --enable-debug'
+  PHPDEBUGOPT=' --enable-debug'
 else
-	PHPDEBUGOPT=''
+  PHPDEBUGOPT=''
 fi
 
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.x's inbuilt included Zend Opcache version with one available from pecl site
@@ -391,13 +391,13 @@ else
 fi
 
 if [[ ! -f /usr/include/readline/readline.h || ! -f /usr/include/editline/readline.h ]]; then
-	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-		time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=rpmforge,epel
     sar_call
-	else
-		time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
+  else
+    time yum${CACHESKIP} -q -y install readline-devel libedit-devel --disablerepo=epel
     sar_call
-	fi
+  fi
 fi
 
 # Microsoft SQL Server PHP driver support
@@ -413,13 +413,13 @@ elif [[ ! -f /usr/include/sqldb.h && "$PHPMSSQL" = [yY] ]] && [[ -f /usr/include
 fi
 
 if [[ ! -f /usr/bin/xslt-config ]]; then
-	yum -q -y install libxslt libxslt-devel
+  yum -q -y install libxslt libxslt-devel
   sar_call
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	 yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+   yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
    sar_call
   else
     yum -q -y install libicu libicu-devel --disablerepo=epel
@@ -429,7 +429,7 @@ fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	 yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
+   yum -q -y install aspell aspell-devel --disablerepo=rpmforge,epel
    sar_call
   else
     yum -q -y install aspell aspell-devel --disablerepo=epel
@@ -439,7 +439,7 @@ fi
 
 if [[ ! -f /usr/include/recode.h ]]; then
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-	 yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
+   yum -q -y install recode recode-devel --disablerepo=rpmforge,epel
    sar_call
   else
     yum -q -y install recode recode-devel --disablerepo=epel
@@ -448,7 +448,7 @@ if [[ ! -f /usr/include/recode.h ]]; then
 fi
 
 if [[ ! -f /usr/include/tidy.h ]]; then
-	yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge
+  yum -q -y install libtidy libtidy-devel --disablerepo=rpmforge
   sar_call
 fi
 
@@ -495,9 +495,9 @@ else
 fi
 
 if [[ -f /usr/include/ldap.h ]]; then
-	LDAPOPT=' --with-ldap --with-ldap-sasl'
+  LDAPOPT=' --with-ldap --with-ldap-sasl'
 else
-	LDAPOPT=""
+  LDAPOPT=""
 fi
 
 if [[ "$PHPMVER" > 7 || "$PHPMUVER" > 7 ]]; then
@@ -509,62 +509,62 @@ if [[ "$PHPMVER" > 7 || "$PHPMUVER" > 7 ]]; then
   fi
 elif [[ "$PHPMVER" = 5.[56] || "$PHPMUVER" = 5.[56] ]] && [[ "$PHPMVER" < 7 || "$PHPMUVER" < 7 ]]; then
   if [[ -d /usr/include/vpx ]]; then
-	 LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+   LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
   else
-	 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
       time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=rpmforge,epel
       sar_call
     else
       time yum${CACHESKIP} -y install libvpx libvpx-devel --disablerepo=epel
       sar_call
     fi
-	 LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
+   LIBVPXOPT=" --with-vpx-dir=${PLIBDIR}"
   fi
 else
   LIBVPXOPT=''
 fi
 
 if [[ -f /usr/include/t1lib.h ]]; then
-	TLIBOPT=" --with-t1lib=${PLIBDIR}"
+  TLIBOPT=" --with-t1lib=${PLIBDIR}"
 else
-	if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     time yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=rpmforge,epel
     sar_call
   else
     time yum${CACHESKIP} -y install t1lib t1lib-devel --disablerepo=epel
     sar_call
   fi
-	TLIBOPT=" --with-t1lib=${PLIBDIR}"
+  TLIBOPT=" --with-t1lib=${PLIBDIR}"
 fi
  
 if [ "$PHPPCNTL" == 'y' ]; then
-	PCNTLOPT=" --enable-pcntl"
+  PCNTLOPT=" --enable-pcntl"
 else
-	PCNTLOPT=""
+  PCNTLOPT=""
 fi
 
 if [ "$PHPINTL" == 'y' ]; then
-	PHPINTLOPT=" --enable-intl"
+  PHPINTLOPT=" --enable-intl"
 else
-	PHPINTLOPT=""
+  PHPINTLOPT=""
 fi
 
 if [ "$PHPRECODE" == 'y' ]; then
-	RECODEOPT=" --with-recode"
+  RECODEOPT=" --with-recode"
 else
-	RECODEOPT=""
+  RECODEOPT=""
 fi
 
 if [ "$PHPSNMP" == 'y' ]; then
-	SNMPOPT=" --with-snmp"
+  SNMPOPT=" --with-snmp"
 else
-	SNMPOPT=""
+  SNMPOPT=""
 fi
 
 if [ "$PHP_FTPEXT" == 'y' ]; then
-	FTPEXTOPT="  --enable-ftp"
+  FTPEXTOPT="  --enable-ftp"
 else
-	FTPEXTOPT=""
+  FTPEXTOPT=""
 fi
 
 # let centmin.sh set PHPFINFO variable override the
@@ -594,64 +594,64 @@ phpimap_install
 
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
-	if [[ "$POSTGRESQL" = [yY] ]]; then
-		# to allow to persist on centmin mod code updates
-		# create persistent config file at /etc/centminmod/custom_config.inc
-		# and add to it the line:
-		# POSTGRESQL=y
- 		postgresqlinstall
-		PDOPGSQL_OPT=" --with-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER} --with-pdo-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER}"
-	else
-		PDOPGSQL_OPT=""
-	fi
+  if [[ "$POSTGRESQL" = [yY] ]]; then
+    # to allow to persist on centmin mod code updates
+    # create persistent config file at /etc/centminmod/custom_config.inc
+    # and add to it the line:
+    # POSTGRESQL=y
+    postgresqlinstall
+    PDOPGSQL_OPT=" --with-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER} --with-pdo-pgsql=/usr/pgsql-${PDOPGSQL_PHPVER}"
+  else
+    PDOPGSQL_OPT=""
+  fi
 
-	if [[ ! -f /usr/bin/libmcrypt-config ]]; then
+  if [[ ! -f /usr/bin/libmcrypt-config ]]; then
 
-		# double check mcrypt has been installed
-		CHECKMCRYPT='libmcrypt libmcrypt-devel'
-		
-		declare -a arraysm
-		arraysm=(${CHECKMCRYPT})
-		
-		for pkg in ${arraysm[@]}
-		do
-		echo Processing package: $pkg
-		MCRYPTRPMCHECKS=`yum${CACHESKIP} -q list installed $pkg | awk '/Installed/ {print $1}' &>/dev/null`
-		#echo $MCRYPTRPMCHECKS
-        		if [ "$MCRYPTRPMCHECKS" != 'Installed' ]; then
-		echo "----------------------------------------------------------------------------------"
-		cecho "Installing $pkg" $boldyellow
-		echo "----------------------------------------------------------------------------------"
-        		time $YUMDNFBIN${CACHESKIP} -q -y install $pkg${DISABLEREPO_DNF}
-        		# time $YUMDNFBIN${CACHESKIP} -q list $pkg
-		echo "----------------------------------------------------------------------------------"
-        		fi
-		done
-	fi
+    # double check mcrypt has been installed
+    CHECKMCRYPT='libmcrypt libmcrypt-devel'
+    
+    declare -a arraysm
+    arraysm=(${CHECKMCRYPT})
+    
+    for pkg in ${arraysm[@]}
+    do
+    echo Processing package: $pkg
+    MCRYPTRPMCHECKS=`yum${CACHESKIP} -q list installed $pkg | awk '/Installed/ {print $1}' &>/dev/null`
+    #echo $MCRYPTRPMCHECKS
+            if [ "$MCRYPTRPMCHECKS" != 'Installed' ]; then
+    echo "----------------------------------------------------------------------------------"
+    cecho "Installing $pkg" $boldyellow
+    echo "----------------------------------------------------------------------------------"
+            time $YUMDNFBIN${CACHESKIP} -q -y install $pkg${DISABLEREPO_DNF}
+            # time $YUMDNFBIN${CACHESKIP} -q list $pkg
+    echo "----------------------------------------------------------------------------------"
+            fi
+    done
+  fi
 
-	if [[ ! -f /usr/bin/xml2-config ]]; then
+  if [[ ! -f /usr/bin/xml2-config ]]; then
 
-		# double check libxml2 has been installed
-		CHECKXML='libxml2-devel'
-		
-		declare -a arraysxml
-		arraysxml=(${CHECKXML})
-		
-		for pkgx in ${arraysxml[@]}
-		do
-		echo Processing package: $pkgx
-		XMLRPMCHECKS=`yum${CACHESKIP} -q list installed $pkgx | awk '/Installed/ {print $1}' &>/dev/null`
-		#echo $XMLRPMCHECKS
-        		if [ "$XMLRPMCHECKS" != 'Installed' ]; then
-		echo "----------------------------------------------------------------------------------"
-		cecho "Installing $pkgx" $boldyellow
-		echo "----------------------------------------------------------------------------------"
-        		time $YUMDNFBIN${CACHESKIP} -q -y install $pkgx${DISABLEREPO_DNF}
-        		# time $YUMDNFBIN${CACHESKIP} -q list $pkgx
-		echo "----------------------------------------------------------------------------------"
-        		fi
-		done
-	fi	
+    # double check libxml2 has been installed
+    CHECKXML='libxml2-devel'
+    
+    declare -a arraysxml
+    arraysxml=(${CHECKXML})
+    
+    for pkgx in ${arraysxml[@]}
+    do
+    echo Processing package: $pkgx
+    XMLRPMCHECKS=`yum${CACHESKIP} -q list installed $pkgx | awk '/Installed/ {print $1}' &>/dev/null`
+    #echo $XMLRPMCHECKS
+            if [ "$XMLRPMCHECKS" != 'Installed' ]; then
+    echo "----------------------------------------------------------------------------------"
+    cecho "Installing $pkgx" $boldyellow
+    echo "----------------------------------------------------------------------------------"
+            time $YUMDNFBIN${CACHESKIP} -q -y install $pkgx${DISABLEREPO_DNF}
+            # time $YUMDNFBIN${CACHESKIP} -q list $pkgx
+    echo "----------------------------------------------------------------------------------"
+            fi
+    done
+  fi  
 
 fi
 
@@ -682,38 +682,38 @@ if [[ "$CLANG_PHP" = [yY] ]]; then
         PHP_MTUNEOPT=""
       fi
     fi
-	# ccache compiler has some initial overhead for compiles but speeds up subsequent
-	# recompiles. however on initial install ccache has no benefits, so for initial
-	# centmin mod install disabling ccache will in theory speed up first time installs
-	if [[ "$INITIALINSTALL" != [yY] ]]; then    
-    	export CC="ccache /usr/bin/clang ${PHP_MTUNEOPT}"
-    	export CXX="ccache /usr/bin/clang++ ${PHP_MTUNEOPT}"
-    	export CCACHE_CPP2=yes
-    	# PLACEHOLDER FOR CLAGS FOR PHP
-    	# CFLAGS=
+  # ccache compiler has some initial overhead for compiles but speeds up subsequent
+  # recompiles. however on initial install ccache has no benefits, so for initial
+  # centmin mod install disabling ccache will in theory speed up first time installs
+  if [[ "$INITIALINSTALL" != [yY] ]]; then    
+      export CC="ccache /usr/bin/clang ${PHP_MTUNEOPT}"
+      export CXX="ccache /usr/bin/clang++ ${PHP_MTUNEOPT}"
+      export CCACHE_CPP2=yes
+      # PLACEHOLDER FOR CLAGS FOR PHP
+      # CFLAGS=
     else
-    	export CC="/usr/bin/clang ${PHP_MTUNEOPT}"
-    	export CXX="/usr/bin/clang++ ${PHP_MTUNEOPT}"
-    	# export CCACHE_CPP2=yes
-    	# PLACEHOLDER FOR CLAGS FOR PHP
-    	# CFLAGS=
-    fi    	
+      export CC="/usr/bin/clang ${PHP_MTUNEOPT}"
+      export CXX="/usr/bin/clang++ ${PHP_MTUNEOPT}"
+      # export CCACHE_CPP2=yes
+      # PLACEHOLDER FOR CLAGS FOR PHP
+      # CFLAGS=
+    fi      
 else
-	# ccache compiler has some initial overhead for compiles but speeds up subsequent
-	# recompiles. however on initial install ccache has no benefits, so for initial
-	# centmin mod install disabling ccache will in theory speed up first time installs
-	if [[ "$INITIALINSTALL" != [yY] ]]; then
-    	export CC="ccache /usr/bin/gcc"
-    	export CXX="ccache /usr/bin/g++"
-    	export CCACHE_CPP2=yes
-    	# PLACEHOLDER FOR CLAGS FOR PHP
-    	# CFLAGS=
-	else
-    	export CC="/usr/bin/gcc"
-    	export CXX="/usr/bin/g++"
-    	# export CCACHE_CPP2=yes
-    	# PLACEHOLDER FOR CLAGS FOR PHP
-    	# CFLAGS=
+  # ccache compiler has some initial overhead for compiles but speeds up subsequent
+  # recompiles. however on initial install ccache has no benefits, so for initial
+  # centmin mod install disabling ccache will in theory speed up first time installs
+  if [[ "$INITIALINSTALL" != [yY] ]]; then
+      export CC="ccache /usr/bin/gcc"
+      export CXX="ccache /usr/bin/g++"
+      export CCACHE_CPP2=yes
+      # PLACEHOLDER FOR CLAGS FOR PHP
+      # CFLAGS=
+  else
+      export CC="/usr/bin/gcc"
+      export CXX="/usr/bin/g++"
+      # export CCACHE_CPP2=yes
+      # PLACEHOLDER FOR CLAGS FOR PHP
+      # CFLAGS=
     fi
 fi
 
@@ -947,7 +947,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
 
-	# intel specific
+  # intel specific
   CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
   SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
   CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
@@ -971,8 +971,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     PHPLTOOPT=' --disable-gcc-global-regs'
   fi
 
-	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		CCM=64
+  if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
     
     if [[ "$MARCH_TARGETNATIVE" = [nN] ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
@@ -1021,7 +1021,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     else
       export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     fi
-		export CXXFLAGS="$CFLAGS"
+    export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver1' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
@@ -1049,43 +1049,43 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     PHP_MTUNEOPT="-m${CCM} -mtune=native"
     export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
     export CXXFLAGS="$CFLAGS"
-	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		CCM=64
-		PHP_MTUNEOPT="-m${CCM} -mtune=native"
-		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
-		export CXXFLAGS="$CFLAGS"
-	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[disabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		CCM=64
-		PHP_MTUNEOPT="-m${CCM} -mtune=native"
-		export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
-		export CXXFLAGS="$CFLAGS"
-	elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && -z "$SSECHECK" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		CCM=64
-		PHP_MTUNEOPT="-m${CCM} -mtune=generic"
-		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
-		export CXXFLAGS="$CFLAGS"
-	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		CCM=32
-		PHP_MTUNEOPT="-m${CCM} -mtune=generic"
-		export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
-		export CXXFLAGS="$CFLAGS"
-	else
-		PHP_MTUNEOPT=""
-	fi
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && ! -z "$(echo $MARCHCHECK | grep 'pentium')" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[disabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -mtune=native"
+    export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && -z "$SSECHECK" ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -mtune=generic"
+    export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=32
+    PHP_MTUNEOPT="-m${CCM} -mtune=generic"
+    export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${PHPEXTRA_CFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  else
+    PHP_MTUNEOPT=""
+  fi
 fi
 
 # zend opcache hugepages
 if [[ "$PHPMUVER" > 7 ]]; then
-	opcachehugepages
+  opcachehugepages
 else
-	if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
-		if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
-			sed -i 's|^opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
-			sed -i 's|^;opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
-			sed -i 's|^opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
-			sed -i 's|^;opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini			
-		fi		
-	fi	
+  if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
+    if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+      sed -i 's|^opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+      sed -i 's|^;opcache.huge_code_pages=1|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+      sed -i 's|^opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+      sed -i 's|^;opcache.huge_code_pages=0|;opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini     
+    fi    
+  fi  
 fi
 
 if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
@@ -1102,13 +1102,13 @@ fi
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
-	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
+  echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
 
 ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
 else
 
-	echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
+  echo "../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}"
 
 ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif --enable-zip${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl --with-gd --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf --with-freetype-dir=${PLIBDIR} --with-jpeg-dir=${PLIBDIR} --with-png-dir=${PLIBDIR} --with-xpm-dir=${PLIBDIR}${LIBVPXOPT}${TLIBOPT} --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${PHP_EXTRAOPTS}
 
@@ -1120,10 +1120,10 @@ sar_call
     sar_call
     echo
 
-	if [[ "$PHPMAKETEST" = [yY] ]]; then
-		time make test
+  if [[ "$PHPMAKETEST" = [yY] ]]; then
+    time make test
     sar_call
-	fi
+  fi
 
     echo "php_configure.inc make install"
     time make install
@@ -1153,13 +1153,13 @@ if [[ "$CLANG_PHP" = [yY] ]]; then
 fi
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
-	if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		unset CFLAGS
-		unset CXXFLAGS
-	elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
-		unset CFLAGS
-		unset CXXFLAGS
-	fi
+  if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    unset CFLAGS
+    unset CXXFLAGS
+  elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    unset CFLAGS
+    unset CXXFLAGS
+  fi
 fi
 
 # unset_intelflags
@@ -1167,11 +1167,11 @@ fi
 # check if php was in fact installed
 
 if [[ ! -s /usr/local/bin/phpize ]]; then
-	cecho "----------------------------------------------------------------------------------" $boldyellow
-	echo "PHP was not installed properly"
-	cecho "----------------------------------------------------------------------------------" $boldyellow
-	#checklogdetails
-	#exit
+  cecho "----------------------------------------------------------------------------------" $boldyellow
+  echo "PHP was not installed properly"
+  cecho "----------------------------------------------------------------------------------" $boldyellow
+  #checklogdetails
+  #exit
 fi
 
 }

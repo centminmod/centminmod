@@ -42,13 +42,13 @@ ls -lh /etc | grep 'nsd'
     echo ""
 fi
 
-	if [ ! -d /etc/nsd/master ]; then
-	    mkdir /etc/nsd/master
-	fi
+  if [ ! -d /etc/nsd/master ]; then
+      mkdir /etc/nsd/master
+  fi
 
-	if [ ! -d /etc/nsd/slave ]; then
-	    mkdir /etc/nsd/slave
-	fi
+  if [ ! -d /etc/nsd/slave ]; then
+      mkdir /etc/nsd/slave
+  fi
 
 if [ ! -d /etc/nsd ]; then
     mkdir /etc/nsd

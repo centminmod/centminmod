@@ -101,31 +101,31 @@ disable_devtoolset() {
 }
 
 set_intelflags() {
-	if [[ "$INTELOPT" = [yY] ]]; then
-    	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	CFLAGS='-O2 -m64 -march=${MARCH_TARGET} -pipe -g'
-        	CXXFLAGS='-O2 -m64 -march=${MARCH_TARGET} -pipe -g' 
-        	export CFLAGS
-        	export CXXFLAGS
-    	elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	CFLAGS='-O2 -m32 -march=native -pipe -g'
-        	CXXFLAGS='-O2 -m32 -march=native -pipe -g' 
-        	export CFLAGS
-        	export CXXFLAGS
-    	fi
-	fi
+  if [[ "$INTELOPT" = [yY] ]]; then
+      if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+          CFLAGS='-O2 -m64 -march=${MARCH_TARGET} -pipe -g'
+          CXXFLAGS='-O2 -m64 -march=${MARCH_TARGET} -pipe -g' 
+          export CFLAGS
+          export CXXFLAGS
+      elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+          CFLAGS='-O2 -m32 -march=native -pipe -g'
+          CXXFLAGS='-O2 -m32 -march=native -pipe -g' 
+          export CFLAGS
+          export CXXFLAGS
+      fi
+  fi
 }
 
 unset_intelflags() {
-	if [[ "$INTELOPT" = [yY] ]]; then
-    	if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	unset CFLAGS
-        	unset CXXFLAGS
-    	elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
-        	unset CFLAGS
-        	unset CXXFLAGS
-    	fi
-	fi
+  if [[ "$INTELOPT" = [yY] ]]; then
+      if [[ "$(uname -m)" == 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+          unset CFLAGS
+          unset CXXFLAGS
+      elif [[ "$(uname -m)" != 'x86_64' && $(grep Intel /proc/cpuinfo) ]]; then
+          unset CFLAGS
+          unset CXXFLAGS
+      fi
+  fi
 }
 
 
@@ -133,9 +133,9 @@ unset_intelflags() {
 checkgcc() {
 
 if [[ "$INTELOPT" = [yY] ]]; then
-	NGINX_GCCOPT='y'
+  NGINX_GCCOPT='y'
 else
-	NGINX_GCCOPT='n'
+  NGINX_GCCOPT='n'
 fi
 
 if [[ "$NGINX_GCCOPT" = [yY] ]]; then

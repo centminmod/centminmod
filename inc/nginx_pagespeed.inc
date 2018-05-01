@@ -502,20 +502,20 @@ if [[ "$NGINX_PAGESPEED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
 fi
 #####################################################
 
-	if [ -d /var/ngx_pagespeed_cache ]; then
-	chmod 1777 /var/ngx_pagespeed_cache
+  if [ -d /var/ngx_pagespeed_cache ]; then
+  chmod 1777 /var/ngx_pagespeed_cache
     if [ -d /var/ngx_pagespeed_cache/http ]; then
-	   chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+     chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
     fi
-	chown -R nginx:nginx /var/ngx_pagespeed_cache/
-	ls -lah /var | grep ngx_pagespeed_cache
-	fi
+  chown -R nginx:nginx /var/ngx_pagespeed_cache/
+  ls -lah /var | grep ngx_pagespeed_cache
+  fi
 
-	if [ ! -d /var/log/pagespeed ]; then
-	mkdir -p /var/log/pagespeed
-	chown nginx:nginx /var/log/pagespeed
-	ls -lah /var/log/ | grep pagespeed
-	fi
+  if [ ! -d /var/log/pagespeed ]; then
+  mkdir -p /var/log/pagespeed
+  chown nginx:nginx /var/log/pagespeed
+  ls -lah /var/log/ | grep pagespeed
+  fi
 
 if [[ ! -f /usr/local/nginx/conf/pagespeedstatslog.conf ]]; then
 echo ""
@@ -533,14 +533,14 @@ fi
 # for 1.6.29.3 beta added pagespeed console setting
 if [ -f /usr/local/nginx/conf/pagespeedhandler.conf ]; then
 
-	CONSOLECHECK=$(grep '/pagespeed_console' /usr/local/nginx/conf/pagespeedhandler.conf)
-	
-	if [ -z "$CONSOLECHECK" ] ; then
+  CONSOLECHECK=$(grep '/pagespeed_console' /usr/local/nginx/conf/pagespeedhandler.conf)
+  
+  if [ -z "$CONSOLECHECK" ] ; then
 
-	echo "" >> /usr/local/nginx/conf/pagespeedhandler.conf
-	echo "location /pagespeed_console { allow 127.0.0.1; deny all; }" >> /usr/local/nginx/conf/pagespeedhandler.conf
+  echo "" >> /usr/local/nginx/conf/pagespeedhandler.conf
+  echo "location /pagespeed_console { allow 127.0.0.1; deny all; }" >> /usr/local/nginx/conf/pagespeedhandler.conf
 
-	fi
+  fi
 
 fi
 
@@ -641,22 +641,22 @@ echo ""
 echo "setup pagespeed.conf at /usr/local/nginx/conf/pagespeed.conf"
 echo "create cache directory at /var/ngx_pagespeed"
 
-	if [ ! -d /var/ngx_pagespeed_cache ]; then
-	mkdir -p /var/ngx_pagespeed_cache
-	mkdir -p /var/ngx_pagespeed_cache/http,3A
-	ls -lah /var | grep ngx_pagespeed_cache
-	fi
+  if [ ! -d /var/ngx_pagespeed_cache ]; then
+  mkdir -p /var/ngx_pagespeed_cache
+  mkdir -p /var/ngx_pagespeed_cache/http,3A
+  ls -lah /var | grep ngx_pagespeed_cache
+  fi
 
-	if [ ! -d /var/log/pagespeed ]; then
-	mkdir -p /var/log/pagespeed
-	chown nginx:nginx /var/log/pagespeed
-	ls -lah /var/log/ | grep pagespeed
-	fi
+  if [ ! -d /var/log/pagespeed ]; then
+  mkdir -p /var/log/pagespeed
+  chown nginx:nginx /var/log/pagespeed
+  ls -lah /var/log/ | grep pagespeed
+  fi
 
-	chmod 1777 /var/ngx_pagespeed_cache
-	chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
-	chown -R nginx:nginx /var/ngx_pagespeed_cache/
-	ls -lah /var | grep ngx_pagespeed_cache
+  chmod 1777 /var/ngx_pagespeed_cache
+  chmod -R 1777 /var/ngx_pagespeed_cache/http,3A
+  chown -R nginx:nginx /var/ngx_pagespeed_cache/
+  ls -lah /var | grep ngx_pagespeed_cache
 
   makepsconf
 

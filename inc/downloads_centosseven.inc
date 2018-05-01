@@ -186,26 +186,26 @@ elif [ ! -f /etc/yum.repos.d/epel.repo ]; then
     wget ${WGETOPT} ${CENTOSSEVENEPEL} --tries=3
     # wget ${WGETOPT} ${CENTOSSEVENEPELLOCAL} --tries=3
   ERROR=$?
-	 if [[ "$ERROR" != '0' ]]; then
-	 cecho "Error: ${CENTOSSEVENEPELFILE} download failed." $boldgreen
+   if [[ "$ERROR" != '0' ]]; then
+   cecho "Error: ${CENTOSSEVENEPELFILE} download failed." $boldgreen
   FAILEPEL='y'
   checklogdetails
-	 # exit #$ERROR
+   # exit #$ERROR
   else 
-	 cecho "Download done." $boldyellow
+   cecho "Download done." $boldyellow
     rpm --import http://epel.mirror.constant.com/RPM-GPG-KEY-EPEL-7
     rpm -Uvh ${CENTOSSEVENEPELFILE}
-	 #${YUMDNFBIN}${CACHESKIP} -q list ccache 2>&1 >/dev/null
-	 ERR=$?
-	 CCEPELCHECK="$ERR"
-		  if [ "$CCEPELCHECK" == '0' ]; then
-			 yumpriorepel
-			 echo ""
-		  else
-			 cecho "Error: problem with ${CENTOSSEVENEPELFILE} install." $boldgreen
-			 # exit $ERR
-		  fi
-	 fi
+   #${YUMDNFBIN}${CACHESKIP} -q list ccache 2>&1 >/dev/null
+   ERR=$?
+   CCEPELCHECK="$ERR"
+      if [ "$CCEPELCHECK" == '0' ]; then
+       yumpriorepel
+       echo ""
+      else
+       cecho "Error: problem with ${CENTOSSEVENEPELFILE} install." $boldgreen
+       # exit $ERR
+      fi
+   fi
   fi
 fi
 

@@ -6,11 +6,11 @@ seven_function() {
 CMSDEBUG=n
 
 if [[ "$CMSDEBUG" = [yY] ]]; then
-	if [[ "$CENTOS_SEVEN" != '7' ]]; then
-        		echo "Detected 6.5"
-	else
-        		echo "Detected 7.0"
-	fi
+  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+            echo "Detected 6.5"
+  else
+            echo "Detected 7.0"
+  fi
 fi
 
 }

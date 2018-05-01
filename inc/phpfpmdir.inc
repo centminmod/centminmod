@@ -1,7 +1,7 @@
 fpmconfdir() {
 
 if [[ ! -d "$PHPFPMCONFDIR" ]]; then
-	mkdir -p $PHPFPMCONFDIR
+  mkdir -p $PHPFPMCONFDIR
 fi
 
 }

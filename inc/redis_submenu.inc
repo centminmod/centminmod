@@ -6,19 +6,19 @@ phpredis_submenu() {
 
 while :
 do
-	# clear
+  # clear
         # display menu
-	echo
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "         Redis PHP Extension Sub-Menu              " $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "1). Install Redis PHP Extension" $boldgreen
-	cecho "2). Reinstall Redis PHP Extension" $boldgreen
-	cecho "3). Back to Main menu" $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
+  echo
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "         Redis PHP Extension Sub-Menu              " $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "1). Install Redis PHP Extension" $boldgreen
+  cecho "2). Reinstall Redis PHP Extension" $boldgreen
+  cecho "3). Back to Main menu" $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
 
-	read -ep "Enter option [ 1 - 3 ] " phpredisoption
-	cecho "--------------------------------------------------------" $boldyellow
+  read -ep "Enter option [ 1 - 3 ] " phpredisoption
+  cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
 
@@ -28,9 +28,9 @@ PHPREDIS='y'
 centminlog
 {
 if [[ "$TIME_REDIS" = [yY] ]]; then
-	redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+  redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
 else
-	redisinstall submenu
+  redisinstall submenu
 fi
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-install.log"
@@ -42,16 +42,16 @@ centminlog
 {
 PHPREDIS='y'
 if [[ "$TIME_REDIS" = [yY] ]]; then
-	redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
+  redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
 else
-	redisinstall submenu
+  redisinstall submenu
 fi
 /usr/bin/nprestart >/dev/null 2>&1
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_redis-php-reinstall.log"
 
 ;;
 3)
-	break
+  break
 ;;
 esac
 done

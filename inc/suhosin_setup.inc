@@ -58,7 +58,7 @@ suhosinsetup() {
   fi # PHPVERCHECK
   
   if [ ! -f ${CONFIGSCANDIR}/suhosin.ini ]; then
-	 touch ${CONFIGSCANDIR}/suhosin.ini
+   touch ${CONFIGSCANDIR}/suhosin.ini
   fi
 
   SUHOSINCHECK=$(grep 'extension=suhosin.so' "${CONFIGSCANDIR}/suhosin.ini" >/dev/null 2>&1; echo $?)

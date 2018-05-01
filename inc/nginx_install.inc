@@ -138,7 +138,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 
     # nginx Modules / Prerequisites
-	cecho "Installing nginx Modules / Prerequisites..." $boldgreen
+  cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
 install_gperftools
 
@@ -337,8 +337,8 @@ gethtpasswdsh
 
 funct_logrotate
 
-	if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-		ngxpagespeedinstall
+  if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
+    ngxpagespeedinstall
     elif [[ "$NGINX_PAGESPEED" = [nN] ]]; then
         PSADMINCHECK=$(grep '^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;' /usr/local/nginx/conf/nginx.conf)
         
@@ -346,7 +346,7 @@ funct_logrotate
         if [[ ! -z "$PSADMINCHECK" ]]; then
             sed -i 's/^include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/#include \/usr\/local\/nginx\/conf\/pagespeedadmin.conf;/g' /usr/local/nginx/conf/nginx.conf
         fi
-	fi
+  fi
 
 geoinccheck
 geoipphp

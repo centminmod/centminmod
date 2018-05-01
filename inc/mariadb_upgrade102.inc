@@ -187,7 +187,7 @@ mariadb102install() {
     fi
 
     echo "*************************************************"
-	cecho "MariaDB 10.2.x Repo setup..." $boldgreen
+    cecho "MariaDB 10.2.x Repo setup..." $boldgreen
    echo "*************************************************"
 echo ""
 

@@ -6,19 +6,19 @@ zendoptcachesubmenu() {
 
 while :
 do
-	# clear
+  # clear
         # display menu
-	echo
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "        Zend OpCache Sub-Menu              " $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "1). Install Zend OpCache" $boldgreen
-	cecho "2). Reinstall Zend OpCache" $boldgreen
-	cecho "3). Back to Main menu" $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
+  echo
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "        Zend OpCache Sub-Menu              " $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "1). Install Zend OpCache" $boldgreen
+  cecho "2). Reinstall Zend OpCache" $boldgreen
+  cecho "3). Back to Main menu" $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
 
-	read -ep "Enter option [ 1 - 3 ] " zopoption
-	cecho "--------------------------------------------------------" $boldyellow
+  read -ep "Enter option [ 1 - 3 ] " zopoption
+  cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
 
@@ -40,7 +40,7 @@ zopcachereinstall
 
 ;;
 3)
-	break
+  break
 ;;
 esac
 done

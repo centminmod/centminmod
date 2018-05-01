@@ -26,70 +26,70 @@ read downloadpath
         cecho "MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
         download_cmd http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY && status=ok || status=fail
-	if [ "$status" == 'fail' ]; then
-	cecho "Error: MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
+    if [ "$status" == 'fail' ]; then
+    cecho "Error: MariaDB-client-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-	exit
+    exit
 else 
          cecho "Download done." $boldyellow
 #echo ""
-	fi
+    fi
     fi
 
     if [ -s MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
         cecho "MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
         download_cmd http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY && status=ok || status=fail
-	if [ "$status" == 'fail' ]; then
-	cecho "Error: MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
+    if [ "$status" == 'fail' ]; then
+    cecho "Error: MariaDB-devel-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-	exit
+    exit
 else 
          cecho "Download done." $boldyellow
 #echo ""
-	fi
+    fi
     fi
 
     if [ -s MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
         cecho "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
         download_cmd http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY && status=ok || status=fail
-	if [ "$status" == 'fail' ]; then
-	cecho "Error: MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
+    if [ "$status" == 'fail' ]; then
+    cecho "Error: MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-	exit
+    exit
 else 
          cecho "Download done." $boldyellow
 #echo ""
-	fi
+    fi
     fi
 
     if [ -s MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
         cecho "MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
         download_cmd http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY && status=ok || status=fail
-	if [ "$status" == 'fail' ]; then
-	cecho "Error: MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
+    if [ "$status" == 'fail' ]; then
+    cecho "Error: MariaDB-shared-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-	exit
+    exit
 else 
          cecho "Download done." $boldyellow
 #echo ""
-	fi
+    fi
     fi
 
     if [ -s MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm ]; then
         cecho "MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm found, skipping download..." $boldgreen
     else
         download_cmd http://ftp.osuosl.org/pub/mariadb/mariadb-${MDB_VERONLY}/centos5-${MDB_ARCH}/rpms/MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm $WGETRETRY && status=ok || status=fail
-	if [ "$status" == 'fail' ]; then
-	cecho "Error: MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
+    if [ "$status" == 'fail' ]; then
+    cecho "Error: MariaDB-test-${MDB_VERSION}.el5.${ARCH}.rpm download failed." $boldgreen
 checklogdetails
-	exit
+    exit
 else 
          cecho "Download done." $boldyellow
 #echo ""
-	fi
+    fi
     fi
 
 yum -y remove mysql mysql-libs

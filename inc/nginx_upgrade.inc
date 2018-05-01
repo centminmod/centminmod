@@ -121,15 +121,15 @@ fi
 MAPCHECK=$(grep '/usr/local/nginx/conf/fastcgi_param_https_map.conf' /usr/local/nginx/conf/nginx.conf)
 
 if [[ -z "$MAPCHECK" ]]; then
-	sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;/g' /usr/local/nginx/conf/nginx.conf
+  sed -i 's/http {/http { \ninclude \/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;/g' /usr/local/nginx/conf/nginx.conf
 fi
 
 if [[ ! -f /usr/local/nginx/conf/fastcgi_param_https_map.conf ]]; then
-	\cp "$CUR_DIR/config/nginx/fastcgi_param_https_map.conf" /usr/local/nginx/conf/fastcgi_param_https_map.conf
+  \cp "$CUR_DIR/config/nginx/fastcgi_param_https_map.conf" /usr/local/nginx/conf/fastcgi_param_https_map.conf
 fi
 
 if [[ -z "$(grep 'fastcgi_param HTTPS $server_https;' /usr/local/nginx/conf/php.conf)" ]]; then
-	replace -s '#fastcgi_param HTTPS on;' 'fastcgi_param HTTPS $server_https;' -- /usr/local/nginx/conf/php.conf
+  replace -s '#fastcgi_param HTTPS on;' 'fastcgi_param HTTPS $server_https;' -- /usr/local/nginx/conf/php.conf
 fi
 }
 
@@ -417,14 +417,14 @@ gethtpasswdsh
 
 # Backup Nginx CONF
 if [ "$NGINXBACKUP" == 'y' ]; then
-	nginxbackup
+  nginxbackup
 fi
 
 # Backup ngx_pagespeed pagespeed.conf
 if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-	if [[ -f /usr/local/nginx/conf/pagespeed.conf ]]; then
-		pagespeedbackup
-	fi
+  if [[ -f /usr/local/nginx/conf/pagespeed.conf ]]; then
+    pagespeedbackup
+  fi
 fi
 
 # tasks for updated ngx_pagespeed module parity
@@ -437,7 +437,7 @@ pagespeeduptasks
     cd "$DIR_TMP"
 
     # nginx Modules / Prerequisites
-	cecho "Installing nginx Modules / Prerequisites..." $boldgreen
+  cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
 checknginxmodules
 nginxzlib_install
@@ -632,9 +632,9 @@ fi
 ################
 # error check
 
-	ERR=$?
-	if [ $ERR != 0 ]; then
-    	echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
+  ERR=$?
+  if [ $ERR != 0 ]; then
+      echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         free -m
@@ -653,9 +653,9 @@ fi
             popd
         fi
         exit
-	else
-    	echo -e "\n`date`\nSuccess: Nginx configure ok\n"
-	fi
+  else
+      echo -e "\n`date`\nSuccess: Nginx configure ok\n"
+  fi
 
 # error check
 ################
@@ -694,8 +694,8 @@ fi
 ################
 # error check
 
-	if [ $ERR != 0 ]; then
-    	echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
+  if [ $ERR != 0 ]; then
+      echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         free -m
@@ -713,10 +713,10 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
-    	exit
-	else
-	   echo -e "\n`date`\nSuccess: Nginx make ok\n"
-	fi
+      exit
+  else
+     echo -e "\n`date`\nSuccess: Nginx make ok\n"
+  fi
 
 # error check
 ################
@@ -783,8 +783,8 @@ fi
     if [ $ERR = 0 ]; then
         detect_tlsonethree
     fi
-	if [ $ERR != 0 ]; then
-    	echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
+  if [ $ERR != 0 ]; then
+      echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         free -m
@@ -806,12 +806,12 @@ fi
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
-    	exit
-	else
+      exit
+  else
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
-    	echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
+      echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
 
     if [[ "$NGINX_HTTP2" = [yY] && "$NGINX_SPDYPATCHED" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10907' ]]; then
         # only apply auto vhost changes forNginx HTTP/2 
@@ -1016,7 +1016,7 @@ fi
         figlet -ckf standard "Nginx Updated"
     fi
 
-	fi
+  fi
 
 # error check
 ################

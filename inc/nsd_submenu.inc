@@ -6,19 +6,19 @@ nsdsubmenu() {
 
 while :
 do
-	# clear
+  # clear
         # display menu
-	echo
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "            NSD Sub-Menu              " $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "1). Install NSD (DNS server)" $boldgreen
-	cecho "2). Reinstall NSD (DNS server)" $boldgreen
-	cecho "3). Back to Main menu" $boldgreen
-	cecho "--------------------------------------------------------" $boldyellow
+  echo
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "            NSD Sub-Menu              " $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "1). Install NSD (DNS server)" $boldgreen
+  cecho "2). Reinstall NSD (DNS server)" $boldgreen
+  cecho "3). Back to Main menu" $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
 
-	read -ep "Enter option [ 1 - 3 ] " nsdoption
-	cecho "--------------------------------------------------------" $boldyellow
+  read -ep "Enter option [ 1 - 3 ] " nsdoption
+  cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
 
@@ -40,7 +40,7 @@ nsdreinstall
 
 ;;
 3)
-	break
+  break
 ;;
 esac
 done

@@ -74,16 +74,16 @@ cat protectapc.txt
 echo ""
 cecho "Important instructions above to protect your apc.php page" $boldgreen
 
-	if [ "$UNATTENDED" == 'n' ]; then
-	cecho "install will continue in 80 seconds..." $boldgreen
-	else
-	cecho "install will continue in 10 seconds..." $boldgreen
-	fi #unattended
+  if [ "$UNATTENDED" == 'n' ]; then
+  cecho "install will continue in 80 seconds..." $boldgreen
+  else
+  cecho "install will continue in 10 seconds..." $boldgreen
+  fi #unattended
 
-	if [ "$UNATTENDED" == 'n' ]; then
-	sleep 20
-	else
-	sleep 2
-	fi #unattended
+  if [ "$UNATTENDED" == 'n' ]; then
+  sleep 20
+  else
+  sleep 2
+  fi #unattended
 
 }

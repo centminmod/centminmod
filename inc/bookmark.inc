@@ -1,9 +1,9 @@
 bookmark() {
 
 echo ""
-	cecho "--------------------------------------------------------" $boldyellow
-	cecho "Please bookmark:" $boldyellow
-	cecho "--------------------------------------------------------" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Please bookmark:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
 cat <<EOF
 ###############################################################
 * Getting Started Guide - http://centminmod.com/getstarted.html

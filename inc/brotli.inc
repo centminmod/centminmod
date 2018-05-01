@@ -172,11 +172,11 @@ scl_install() {
 }
 
 libbroti_install() {
-	if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
-		# if devtoolset-4 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
+  if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+    # if devtoolset-4 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-      	scl_install
+        scl_install
         unset CC
         unset CXX
         export CC="ccache gcc"
@@ -220,39 +220,39 @@ libbroti_install() {
         g++ --version
     fi        
 
-		echo "install libbrotli"
-		cd $DIR_TMP
+    echo "install libbrotli"
+    cd $DIR_TMP
 
-		LIBBROTLI_LINK='https://github.com/bagder/libbrotli'
-		# fallback mirror if official github is down, use gitlab mirror
-		curl -4Is --connect-timeout 5 --max-time 5 $LIBBROTLI_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
-		LIBBROTLI_CURLCHECK=$?
-		if [[ "$LIBBROTLI_CURLCHECK" != '0' ]]; then
-			LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
-		fi
+    LIBBROTLI_LINK='https://github.com/bagder/libbrotli'
+    # fallback mirror if official github is down, use gitlab mirror
+    curl -4Is --connect-timeout 5 --max-time 5 $LIBBROTLI_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    LIBBROTLI_CURLCHECK=$?
+    if [[ "$LIBBROTLI_CURLCHECK" != '0' ]]; then
+      LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
+    fi
     if [ ! -d libbrotli ]; then
       time git clone "$LIBBROTLI_LINK"
     elif [ -d libbrotli ]; then
       rm -rf libbrotli
       time git clone "$LIBBROTLI_LINK"
     fi
-		cd libbrotli
-		# if [[ "$INITIALINSTALL" != [yY] ]]; then
-  #   		make clean
-  #   		git stash
-  #   		git pull
-		# fi
-		./autogen.sh
-		./configure
-		make${MAKETHREADS}
-		make install
-		echo
+    cd libbrotli
+    # if [[ "$INITIALINSTALL" != [yY] ]]; then
+  #       make clean
+  #       git stash
+  #       git pull
+    # fi
+    ./autogen.sh
+    ./configure
+    make${MAKETHREADS}
+    make install
+    echo
 
     if [[ "$CENTOS_SIX" = '6' ]]; then
     if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
       scl_install
       unset CC
-      unset CXX		
+      unset CXX   
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       unset CC
       unset CXX
@@ -261,19 +261,19 @@ libbroti_install() {
       unset CXX
     elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       unset CC
-      unset CXX	
-    fi		
-		fi # centos 6 only needed
+      unset CXX 
+    fi    
+    fi # centos 6 only needed
 
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       unset CC
       unset CXX 
     fi        
-	fi
+  fi
 }
 
 ngxbrotli_download() {
-	if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+  if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     # only if GCC used to compile nginx with ngx_brotli
     # set BROTLI_CFLAG https://community.centminmod.com/posts/38284/
     if [[ "$CLANG" = [nN] ]]; then
@@ -283,15 +283,15 @@ ngxbrotli_download() {
     fi
     echo "BROTLI_CFLAG=$BROTLI_CFLAG"
     echo "download ngx_brotli module"
-		cd $DIR_TMP
+    cd $DIR_TMP
 
-		NGXBROTLILINK='https://github.com/eustas/ngx_brotli'
-		# fallback mirror if official github is down, use gitlab mirror
-		curl -4Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
-		NGXBROTLICURLCHECK=$?
-		if [[ "$NGXBROTLICURLCHECK" != '0' ]]; then
-			NGXBROTLILINK='https://gitlab.com/centminmod-github-mirror/ngx_brotli.git'
-		fi
+    NGXBROTLILINK='https://github.com/eustas/ngx_brotli'
+    # fallback mirror if official github is down, use gitlab mirror
+    curl -4Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    NGXBROTLICURLCHECK=$?
+    if [[ "$NGXBROTLICURLCHECK" != '0' ]]; then
+      NGXBROTLILINK='https://gitlab.com/centminmod-github-mirror/ngx_brotli.git'
+    fi
 
     if [ ! -d ngx_brotli ]; then
       time git clone --recursive "$NGXBROTLILINK"
@@ -304,7 +304,7 @@ ngxbrotli_download() {
       cd ../../
       cd ../
     fi
-		if [[ "$INITIALINSTALL" != [yY] ]]; then
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
         cd ngx_brotli
         # git stash
         git fetch origin
@@ -317,8 +317,8 @@ ngxbrotli_download() {
         make install
         cd ../../
         cd ../
-		fi
-		echo
+    fi
+    echo
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
 brotli on;
 brotli_static on;
@@ -330,11 +330,11 @@ EIF
 
 BROTLI_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/brotli_inc.conf' /usr/local/nginx/conf/nginx.conf)
 
-		if [[ -z "$BROTLI_INCLUDECHECK" && -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
-       		sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/brotli_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
-    	fi
-    	sed -i 's|^ #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+    if [[ -z "$BROTLI_INCLUDECHECK" && -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
+          sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/brotli_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
+      fi
+      sed -i 's|^ #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
     else
-    	sed -i 's|^ include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
-	fi
+      sed -i 's|^ include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+  fi
 }

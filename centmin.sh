@@ -252,21 +252,21 @@ CONFIGSCANBASE='/etc/centminmod'
 CONFIGSCANDIR="${CONFIGSCANBASE}/php.d"
 
 if [ ! -d "$CONFIGSCANBASE" ]; then
-	mkdir -p "$CONFIGSCANBASE"
+  mkdir -p "$CONFIGSCANBASE"
 fi
 
 if [ ! -d "$CONFIGSCANDIR" ]; then
-	mkdir -p "$CONFIGSCANDIR"
-	if [ -d /root/centminmod/php.d/ ]; then
-    	cp -a /root/centminmod/php.d/* "${CONFIGSCANDIR}/"
+  mkdir -p "$CONFIGSCANDIR"
+  if [ -d /root/centminmod/php.d/ ]; then
+      cp -a /root/centminmod/php.d/* "${CONFIGSCANDIR}/"
     fi
 fi
 
 # MySQL non-tmpfs based tmpdir for MySQL temp files
 if [ ! -d "/home/mysqltmp" ]; then
-	mkdir -p /home/mysqltmp
-	chmod 1777 /home/mysqltmp
-	CHOWNMYSQL=y
+  mkdir -p /home/mysqltmp
+  chmod 1777 /home/mysqltmp
+  CHOWNMYSQL=y
 fi
 
 #####################################################
@@ -549,7 +549,7 @@ POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel
 # YUM Repo will install whatever is latest MariaDB 5.2.x version available via the YUM REPO
 
 MDB_INSTALL='n'               # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
-MDB_YUMREPOINSTALL='y'		  # Install MariaDB 5.5 via CentOS YUM Repo
+MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -909,17 +909,17 @@ fi
 if [ ! -f /etc/centminmod-release ];then
 echo "$SCRIPT_VERSION" > /etc/centminmod-release
 else
-	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release)" ]]; then
-	echo "$SCRIPT_VERSION" > /etc/centminmod-release
-	fi
+  if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release)" ]]; then
+  echo "$SCRIPT_VERSION" > /etc/centminmod-release
+  fi
 fi
 
 if [ -f /etc/centminmod-versionlog ];then
-	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-versionlog)" ]]; then
-	echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
-	fi
+  if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-versionlog)" ]]; then
+  echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
+  fi
 else
-	echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
+  echo "$SCRIPT_VERSION #`date`" >> /etc/centminmod-versionlog
 fi
 
 if [ ! -f /usr/bin/cminfo_updater ]; then
@@ -951,9 +951,9 @@ fi
 #
 ###############################################################
 KEYPRESS_PARAM='-s -n1 -p'   # Read a keypress without hitting ENTER.
-		# -s means do not echo input.
-		# -n means accept only N characters of input.
-		# -p means echo the following prompt before reading input
+    # -s means do not echo input.
+    # -n means accept only N characters of input.
+    # -p means echo the following prompt before reading input
 ASKCMD="read $KEYPRESS_PARAM "
 # MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
 
@@ -1240,11 +1240,11 @@ fi
 
 if [ ${ARCH} == 'x86_64' ];
 then
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
         ASK "Would you like to exclude installation of 32bit Yum packages? (Recommended for 64bit CentOS) [y/n] "
-	else
-	   key='y'
-	fi #unattended
+  else
+     key='y'
+  fi #unattended
     if [[ "$key" = [yY] ]];
     then
         \cp -f /etc/yum.conf /etc/yum.bak
@@ -1268,17 +1268,17 @@ fi
     fi
 fi
 
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
 ASK "Would you like to secure /tmp and /var/tmp? (Highly recommended) [y/n] "   
-	else
-	key='y'
-	fi #unattended
+  else
+  key='y'
+  fi #unattended
 {
 if [[ "$key" = [yY] ]]; then
 echo "Centmin Mod secure /tmp # `date`"
-	echo "*************************************************"
-	cecho "* Secured /tmp and /var/tmp" $boldgreen
-	echo "*************************************************"
+  echo "*************************************************"
+  cecho "* Secured /tmp and /var/tmp" $boldgreen
+  echo "*************************************************"
 
 # account for /home free disk space as well
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -1445,15 +1445,15 @@ elif [[ ! -f /proc/user_beancounters ]]; then
     # total memory size is greater than ~7.72GB
     # will give /tmp a size equal to 1/2 total memory
     if [[ "$TOTALMEM" -ge '8100001' ]]; then
-	   cp -ar /tmp /tmp_backup
+     cp -ar /tmp /tmp_backup
        rm -rf /tmp
-	   mkdir -p /tmp
-	   mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
-	   chmod 1777 /tmp
+     mkdir -p /tmp
+     mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
+     chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-	   echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+     echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
        cp -ar /var/tmp /var/tmp_backup
-	   ln -s /tmp /var/tmp
+     ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
        rm -rf /tmp_backup
        rm -rf /var/tmp_backup
@@ -1535,11 +1535,11 @@ fi
 
 #yuminstall
 
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
 ASK "Would you like to set the server localtime? [y/n] "  
-	else
-	key='y'
-	fi #unattended 
+  else
+  key='y'
+  fi #unattended 
 if [[ "$key" = [yY] ]];
 then
     echo "*************************************************"
@@ -1572,13 +1572,13 @@ cecho "it for both personal and commercial use as licensed under the GPL." $bold
 echo " "
 cecho "Please read the included readme.txt before using this script." $boldmagenta
 echo " "
-	if [ "$UNATTENDED" == 'n' ]; then
+  if [ "$UNATTENDED" == 'n' ]; then
 ASK "Would you like to continue? [y/n] "   
 if [[ "$key" = [nN] ]];
 then
     exit 0
 fi
-	fi #unattended 
+  fi #unattended 
 
 # Set LIBDIR
 if [ ${ARCH} == 'x86_64' ];
@@ -1591,14 +1591,14 @@ fi
 #DIR_TMP="/svr-setup"
 #if [ -a "$DIR_TMP" ];
 #then
-#	ASK "It seems that you have run this script before, would you like to start from after setting the timezone? [y/n] "
-#	if [[ "$key" = [nN] ]];
-#	then
-#		run_once
-#	fi
+# ASK "It seems that you have run this script before, would you like to start from after setting the timezone? [y/n] "
+# if [[ "$key" = [nN] ]];
+# then
+#   run_once
+# fi
 #else
-#	mkdir $DIR_TMP
-#	run_once
+# mkdir $DIR_TMP
+# run_once
 #fi
 
 if [ ! -f "${DIR_TMP}/securedtmp.log" ]; then
@@ -1833,7 +1833,7 @@ xcacheinstall_ask
 #ASK "Install APC? (By default uses 32MB RAM) [y/n] "
 # if ZOPCACHEDFT override enabled = yY then skip APC Cache install
 if [[ "$APCINSTALL" = [yY] && "$ZOPCACHEDFT" = [nN] ]]; then
-	funct_apcsourceinstall
+  funct_apcsourceinstall
 fi
 
 # if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5, 5.6 or 5.7
@@ -1845,12 +1845,12 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 # Zend Opcache version with one available from pecl site
 if [[ "$ZOPCACHEDFT" = [yY] ]] && [[ "$PHPMVER" = 5.[234] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
-	zopcacheinstall
+  zopcacheinstall
 fi
 
 # if PHP_VERSION = 5.5 or newer will need to setup a zendopcache.ini settings file
 if [[ "$PHPMVER" > 5.4 && "$ZOPCACHE_OVERRIDE" != [yY] ]] && [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]]; then
-	zopcache_initialini
+  zopcache_initialini
 fi
 
 phpsededit
@@ -1858,7 +1858,7 @@ phpsededit
 # igbinary still needed for libmemcached PHP extension if ZOPCACHE=yY
 # or for redis php extension
 if [[ "$APCINSTALL" = [nN] || "$ZOPCACHEDFT" = [yY] ]]; then
-	funct_igbinaryinstall
+  funct_igbinaryinstall
 fi
 
 postfix_presetup
@@ -2013,9 +2013,9 @@ phpiadmin
     echo "*************************************************"
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] || "$UNATTENDED" == [yY] ]]; then
-	securemysql
+  securemysql
 else
-	securemysql
+  securemysql
 fi
 
     echo "*************************************************"
@@ -2095,48 +2095,48 @@ funct_selinux() {
         SELINUXCHECK=$(grep '^SELINUX=' /etc/selinux/config | cut -d '=' -f2)
         
         if [[ "$SELINUXCHECK" == 'enforcing' ]]; then
-	       echo ""
+         echo ""
             cecho "---------------------------------------------" $boldyellow
-	       echo "Checking SELinux status...."
-	       echo "SELinux enabled"
-	       echo ""
-	       read -ep "Do you want to disable SELinux ? [y/n]: " disableselinux
+         echo "Checking SELinux status...."
+         echo "SELinux enabled"
+         echo ""
+         read -ep "Do you want to disable SELinux ? [y/n]: " disableselinux
             cecho "---------------------------------------------" $boldyellow
-	       echo ""
+         echo ""
         
-	       if [[ "$disableselinux" == [yY] ]]; then
+         if [[ "$disableselinux" == [yY] ]]; then
         
-	       echo ""
+         echo ""
             cecho "---------------------------------------------" $boldyellow
-	       echo "Disabling SELinux..."
+         echo "Disabling SELinux..."
         
-	       sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
+         sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' $SELINUXCONFIGFILE
             sed -i 's/SELINUX=permissive/SELINUX=disabled/g' $SELINUXCONFIGFILE
-	       setenforce 0
+         setenforce 0
         
-	       echo ""
+         echo ""
             cecho "---------------------------------------------" $boldyellow
-	       echo "checking $SELINUXCONFIGFILE"
+         echo "checking $SELINUXCONFIGFILE"
         
-	       cat "$SELINUXCONFIGFILE" | grep '^SELINUX='
+         cat "$SELINUXCONFIGFILE" | grep '^SELINUX='
         
             cecho "---------------------------------------------" $boldyellow
-	       echo ""
+         echo ""
         
-	       exit
+         exit
         
-	       else
+         else
                 exit
-	       fi
+         fi
         else
-	       echo ""
+         echo ""
             cecho "---------------------------------------------" $boldyellow
-	       echo "checking $SELINUXCONFIGFILE"
-	       echo "SELinux already disabled"
-	       echo "SELINUX=$SELINUXCHECK"
+         echo "checking $SELINUXCONFIGFILE"
+         echo "SELinux already disabled"
+         echo "SELINUX=$SELINUXCHECK"
             cecho "---------------------------------------------" $boldyellow
-	       echo ""
-	       exit      
+         echo ""
+         exit      
         fi
     else
         echo ""
@@ -2151,7 +2151,7 @@ funct_selinux() {
 funct_showtempfile() {
 
     echo "*************************************************"
-	cat "$TMP_MSGFILE"
+  cat "$TMP_MSGFILE"
     echo "*************************************************"
 
 }
@@ -2169,8 +2169,8 @@ TMP_MSGFILE="$DIR_TMP/msglogs/$RANDOM.msg"
 }
 
 function cleanup_msg {
-	rm -f "$TMP_MSGFILE"
-	exit 1
+  rm -f "$TMP_MSGFILE"
+  exit 1
 }
 
 # http://linuxcommand.org/wss0160.php

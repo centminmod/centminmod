@@ -1,9 +1,9 @@
 apcdevfix() {
     cd $DIR_TMP
-	rm -rf APC-3.1.13*
-	wget -c https://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
-	tar xfz APC-3.1.13.tgz
-	cd APC-3.1.13
+  rm -rf APC-3.1.13*
+  wget -c https://centminmod.com/centminmodparts/apc/php550/APC-3.1.13.tgz
+  tar xfz APC-3.1.13.tgz
+  cd APC-3.1.13
 }
 
 function funct_apcsourceinstall {
@@ -75,11 +75,11 @@ make install
         fi   
 
 if [ -f ${CONFIGSCANDIR}/xcache.ini ]; then
-	rm -rf ${CONFIGSCANDIR}/xcache.ini
+  rm -rf ${CONFIGSCANDIR}/xcache.ini
 fi
 
 if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
-	rm -rf ${CONFIGSCANDIR}/zendopcache.ini
+  rm -rf ${CONFIGSCANDIR}/zendopcache.ini
 fi
 
 # Randomize myapc.php filename
@@ -139,11 +139,11 @@ echo
 
 echo ""
 cecho "Important instructions next to protect your apc.php page" $boldgreen
-	if [ "$UNATTENDED" == 'n' ]; then
-	sleep 20
-	else
-	sleep 2
-	fi #unattended
+  if [ "$UNATTENDED" == 'n' ]; then
+  sleep 20
+  else
+  sleep 2
+  fi #unattended
 
 apcprotect
 

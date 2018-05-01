@@ -402,7 +402,7 @@ cmservice mysql restart
     echo "mysql -t -e \"SHOW ENGINES;\""
     mysql -t -e "SHOW ENGINES;"
 
-	if [ "$UNATTENDED" == 'nn' ]; then
+    if [ "$UNATTENDED" == 'nn' ]; then
 echo ""
 echo "------------------------------------------------"
 echo "Updating MySQL database tables"
@@ -462,7 +462,7 @@ else
     mysql -t -e "SHOW ENGINES;"
 
 fi
-	fi #unattended
+    fi #unattended
 echo ""
 
 perdbiinstall
@@ -572,12 +572,12 @@ echo "rpm -Uvh MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm"
 cmservice mysql status
 
 ERROR=$?
-	if [[ "$ERROR" != '0' ]]; then
-	echo ""
-	echo "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm not installed properly"
-	exit
-	echo ""
-	fi
+    if [[ "$ERROR" != '0' ]]; then
+    echo ""
+    echo "MariaDB-server-${MDB_VERSION}.el5.${ARCH}.rpm not installed properly"
+    exit
+    echo ""
+    fi
 
 cecho "Ensure mysql system directory has correct permissions" $boldgreen
 cecho " chown -R mysql:mysql /var/lib/mysql/mysql/" $boldgreen

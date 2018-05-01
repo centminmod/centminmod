@@ -103,7 +103,7 @@ echo "#####################################################"
 mariadb10install() {
 
     echo "*************************************************"
-	cecho "MariaDB 10.x Repo setup..." $boldgreen
+    cecho "MariaDB 10.x Repo setup..." $boldgreen
    echo "*************************************************"
 echo ""
 

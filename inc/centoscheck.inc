@@ -22,11 +22,11 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     
     if [[ "$VERCOMPARE" = "1"  ]]; then
     
-	   echo "-----------------------------------------------------"
+     echo "-----------------------------------------------------"
             echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
             echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
             echo "No guarantee 100% working install with your CentOS $CENTOSVER"
-	   echo "-----------------------------------------------------"
+     echo "-----------------------------------------------------"
             echo ""
             read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
     
@@ -107,12 +107,12 @@ fi
 
 if [ -f /usr/${LIBDIR}/sa/sa2 ]; then
 
-	# SAR extend log from 7 to 21 days
-	SARDAYCHECK=`awk -F "=" '/^HISTORY/ { print $2 }' /usr/${LIBDIR}/sa/sa2`
+  # SAR extend log from 7 to 21 days
+  SARDAYCHECK=`awk -F "=" '/^HISTORY/ { print $2 }' /usr/${LIBDIR}/sa/sa2`
 
-	if [ "$SARDAYCHECK" == '7' ]; then
-	sed -i 's/HISTORY=7/HISTORY=21/g' /usr/${LIBDIR}/sa/sa2
-	fi
+  if [ "$SARDAYCHECK" == '7' ]; then
+  sed -i 's/HISTORY=7/HISTORY=21/g' /usr/${LIBDIR}/sa/sa2
+  fi
 fi
 
 if [[ -f /root/.bash_profile ]]; then
@@ -142,12 +142,12 @@ EOF
 fi
 
 if [ -f /root/.screenrc ]; then
-	DEFSCROLLCHECK=`grep defscrollback /root/.screenrc`
-	if [ -z "$DEFSCROLLCHECK" ]; then
-	echo "defscrollback 200000" >> /root/.screenrc
-	fi
+  DEFSCROLLCHECK=`grep defscrollback /root/.screenrc`
+  if [ -z "$DEFSCROLLCHECK" ]; then
+  echo "defscrollback 200000" >> /root/.screenrc
+  fi
 else
-	echo "defscrollback 200000" >> /root/.screenrc
+  echo "defscrollback 200000" >> /root/.screenrc
 fi
 
 if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then
@@ -159,11 +159,11 @@ if [[ -f /usr/local/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]] || [[ -f /u
 fi
 
 if [ -f /etc/centminmod-release ];then
-	if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release >/dev/null)" ]]; then
-	setupmotd
-	fi
+  if [[ "$SCRIPT_VERSION" != "$(cat /etc/centminmod-release >/dev/null)" ]]; then
+  setupmotd
+  fi
 else
-	setupmotd
+  setupmotd
 fi
 
 countcpus

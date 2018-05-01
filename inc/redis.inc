@@ -29,8 +29,8 @@ checkigbinary() {
     cecho "Check if ${PHPEXTDIRD}/igbinary.so or ${CONFIGSCANDIR}/igbinary.ini exists" $boldyellow
 
     if [[ ! -f ${CONFIGSCANDIR}/igbinary.ini || ! -f "${PHPEXTDIRD}/igbinary.so" ]]; then
-	   funct_igbinaryinstall
-	   #echo "will need to reinstall memcached extensions if needed"
+     funct_igbinaryinstall
+     #echo "will need to reinstall memcached extensions if needed"
     fi
     
     # check for different igbinary versions

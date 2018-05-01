@@ -149,12 +149,12 @@ if [[ "$DETECTMONGODB" = [yY] ]] || [[ "$DETECTMONGODB" = [yY] && ! -f "$PHPEXTD
 fi
 
 if [[ "$DETECTOPCACHE" = [yY] ]]; then
-	# ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.x's inbuilt included
-	# Zend Opcache version with one available from pecl site
-	if [[ "$PHPMUVER" = 5.[234] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
-		cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
-		zopcachereinstall
-	fi
+  # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.x's inbuilt included
+  # Zend Opcache version with one available from pecl site
+  if [[ "$PHPMUVER" = 5.[234] || "$ZOPCACHE_OVERRIDE" = [yY] ]]; then
+    cecho "Auto reinstalling previously detected Zend Opcache" $boldyellow
+    zopcachereinstall
+  fi
 fi
 
 if [[ "$DETECTMAILPARSE" = [yY] ]] || [[ "$DETECTMAILPARSE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mailparse.so" ]]; then
@@ -420,9 +420,9 @@ fi
 ################
 # error check
 
-	ERR=$?
-	if [ $ERR != 0 ]; then
-    	echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
+  ERR=$?
+  if [ $ERR != 0 ]; then
+      echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         free -m
@@ -440,11 +440,11 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
-    	exit
-	else
-    	echo -e "\n`date`\nSuccess: PHP configure ok\n"
+      exit
+  else
+      echo -e "\n`date`\nSuccess: PHP configure ok\n"
         cmservice php-fpm restart
-	fi
+  fi
 
 # error check
 ################
@@ -541,10 +541,10 @@ fi
 ################
 # error check
 
-	ERR=$?
+  ERR=$?
     sar_call
-	if [ $ERR != 0 ]; then
-		echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
+  if [ $ERR != 0 ]; then
+    echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
         free -m
         echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
@@ -564,11 +564,11 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
-    	exit
-	else
-    	echo -e "\n`date`\nSuccess: PHP make ok\n"
+      exit
+  else
+      echo -e "\n`date`\nSuccess: PHP make ok\n"
         cmservice php-fpm restart
-	fi
+  fi
 
 # error check
 ################
@@ -595,10 +595,10 @@ fi
 ################
 # error check
 
-	ERR=$?
+  ERR=$?
     sar_call
-	if [ $ERR != 0 ]; then
-		echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
+  if [ $ERR != 0 ]; then
+    echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo
         free -m
@@ -616,9 +616,9 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
-    	exit
-	else
-    	echo -e "\n`date`\nSuccess: PHP was installed properly\n"
+      exit
+  else
+      echo -e "\n`date`\nSuccess: PHP was installed properly\n"
         echo
         echo
 
@@ -907,7 +907,7 @@ fi
         figlet -ckf standard "PHP Upgraded"
     fi
 
-	fi
+  fi
 
 # error check
 ################
