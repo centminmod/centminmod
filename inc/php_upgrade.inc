@@ -11,15 +11,7 @@ autodetectextensions() {
 # to enable these php extensions and php extension is detected as not
 # loaded into php. So that even on mionor PHP version updates the
 # extensions are recompiled.
-if [[ "$PHPMSSQL" = [yY] && "$(php --ri mssql | grep -o 'not present')" = 'not present' ]]; then
-    AUTODETECPHP_OVERRIDE='y'
-fi
-
-if [[ "$PHPMONGODB" = [yY] && "$(php --ri mongodb | grep -o 'not present')" = 'not present' ]]; then
-    AUTODETECPHP_OVERRIDE='y'
-fi
-
-if [[ "$PHPMAILPARSE" = [yY] && "$(php --ri mailparse | grep -o 'not present')" = 'not present' ]]; then
+if [[ "$PHPMSSQL" = [yY] && "$(php --ri mssql | grep -o 'not present')" = 'not present' ]] || [[ "$PHPMONGODB" = [yY] && "$(php --ri mongodb | grep -o 'not present')" = 'not present' ]] || [[ "$PHPMAILPARSE" = [yY] && "$(php --ri mailparse | grep -o 'not present')" = 'not present' ]]; then
     AUTODETECPHP_OVERRIDE='y'
 fi
 
