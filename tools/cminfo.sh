@@ -611,6 +611,17 @@ debug_menuexit() {
     echo "Debugging centmin.sh menu option 24 exit routine completed"
     echo "------------------------------------------------------------------"
 }
+
+version_log() {
+    if [ -f /etc/centminmod-versionlog ]; then
+        echo
+        echo -e "1st:\n$(head -n1 /etc/centminmod-versionlog)"; echo ".."; echo -e "last 10:\n$(tail -10 /etc/centminmod-versionlog)"
+        echo
+    else
+        echo
+        echo "error: /etc/centminmod-versionlog is missing"
+    fi
+}
 #########
 if [[ -z "$1" ]]; then
     infooutput
@@ -637,7 +648,10 @@ case "$1" in
     debug-menuexit)
     debug_menuexit
         ;;
+    versions)
+    version_log
+    ;;
     *)
-    echo "$0 {info|update|netstat|top|listlogs|debug-menuexit}"
+    echo "$0 {info|update|netstat|top|listlogs|debug-menuexit|versions}"
         ;;
 esac
