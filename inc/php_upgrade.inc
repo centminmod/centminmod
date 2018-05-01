@@ -1,6 +1,28 @@
 ########################################################################
 autodetectextensions() {
 
+# on minor PHP version updates, auto detect is skipped for these
+# extensions recompilation to speed up php recompiles. However, if php
+# extension fails to compile, there is currently no menu option to
+# recompile mssql, mongodb and mailparse php extensions unless you
+# switch PHP major versions i.e. go from PHP 5.6 to 7.0 or 7.0 to 7.1
+# or 7.0 to 5.6. This quick workaround sets AUTODETECPHP_OVERRIDE='y'
+# when PHPMYYSQL='y' or # PHPMONGODB='y' or PHPMAILPARSE='y' is set
+# to enable these php extensions and php extension is detected as not
+# loaded into php. So that even on mionor PHP version updates the
+# extensions are recompiled.
+if [[ "$PHPMSSQL" = [yY] && "$(php --ri mssql | grep -o 'not present')" = 'not present' ]]; then
+    AUTODETECPHP_OVERRIDE='y'
+fi
+
+if [[ "$PHPMONGODB" = [yY] && "$(php --ri mongodb | grep -o 'not present')" = 'not present' ]]; then
+    AUTODETECPHP_OVERRIDE='y'
+fi
+
+if [[ "$PHPMAILPARSE" = [yY] && "$(php --ri mailparse | grep -o 'not present')" = 'not present' ]]; then
+    AUTODETECPHP_OVERRIDE='y'
+fi
+
 if [[ -f "${CONFIGSCANDIR}/mssql.ini" && "$PHPMSSQL" = [yY] ]]; then
     DETECTMSSQL=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
