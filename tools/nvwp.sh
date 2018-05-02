@@ -218,7 +218,7 @@ cmservice() {
       service "${servicename}" "$action"
     fi
   else
-    if [ "${servicename}" = 'mysql' ]; then
+    if [[ "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' ]]; then
       echo "service ${servicename} $action"
       if [[ "$CMSDEBUG" = [nN] ]]; then
         service "${servicename}" "$action"
@@ -241,7 +241,7 @@ cmchkconfig() {
       chkconfig "${servicename}" "$status"
     fi
   else
-    if [ "${servicename}" = 'mysql' ]; then
+    if [[ "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' ]]; then
       echo "chkconfig ${servicename} $status"
       if [[ "$CMSDEBUG" = [nN] ]]; then
         chkconfig "${servicename}" "$status"
