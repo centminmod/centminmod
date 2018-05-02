@@ -13,13 +13,14 @@ PHPFPMCONFDIR='/usr/local/nginx/conf/phpfpmd'
 
 UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 CMVERSION_CHECK='n'
+CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='019'
+SCRIPT_INCREMENTVER='020'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/05/2018'
@@ -380,7 +381,6 @@ NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -
 # by default. The service is still installed but disabled 
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
-CMSDEBUG='n'                  # leave as CMSDEBUG='n' so the below 5 services actually get disabled
 NSD_DISABLED='n'              # when set to =y, NSD disabled by default with chkconfig off
 MEMCACHED_DISABLED='n'        # when set to =y,  Memcached server disabled by default via chkconfig off
 PHP_DISABLED='n'              # when set to =y,  PHP-FPM disabled by default with chkconfig off
