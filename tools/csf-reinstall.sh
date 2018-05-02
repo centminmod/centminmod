@@ -25,7 +25,7 @@ DIR_TMP='/svr-setup'
 RESTORE_DENYIPS='y'
 RESTORE_ALLOWIPS='y'
 FIREWALLD_DISABLE='y'
-
+CMSDEBUG='n'
 ###############################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -194,41 +194,55 @@ else
 fi
 
 cmservice() {
-        servicename=$1
-        action=$2
-        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
-        echo "service ${servicename} $action"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                service "${servicename}" "$action"
-        fi
-        else
-        echo "systemctl $action ${servicename}.service"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl "$action" "${servicename}.service"
-        fi
-        fi
+  servicename=$1
+  action=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "service ${servicename} $action"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      service "${servicename}" "$action"
+    fi
+  else
+    if [ "${servicename}" = 'mysql' ]; then
+      echo "service ${servicename} $action"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        service "${servicename}" "$action"
+      fi
+    else
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    fi
+  fi
 }
 
 cmchkconfig() {
-        servicename=$1
-        status=$2
-        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
-        echo "chkconfig ${servicename} $status"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                chkconfig "${servicename}" "$status"
-        fi
-        else
-                if [ "$status" = 'on' ]; then
-                        status=enable
-                fi
-                if [ "$status" = 'off' ]; then
-                        status=disable
-                fi
-        echo "systemctl $status ${servicename}.service"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl "$status" "${servicename}.service"
-        fi
-        fi
+  servicename=$1
+  status=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "chkconfig ${servicename} $status"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      chkconfig "${servicename}" "$status"
+    fi
+  else
+    if [ "${servicename}" = 'mysql' ]; then
+      echo "chkconfig ${servicename} $status"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        chkconfig "${servicename}" "$status"
+      fi
+    else
+      if [ "$status" = 'on' ]; then
+        status=enable
+      fi
+      if [ "$status" = 'off' ]; then
+        status=disable
+      fi
+      echo "systemctl $status ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$status" "${servicename}.service"
+      fi
+    fi
+  fi
 }
 
 backupdata() {

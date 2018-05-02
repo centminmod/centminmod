@@ -8,6 +8,7 @@ ngver=$1
 NGINX_IPV='n' #NGINX IPV6 compile support for unattended mode only
 UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 CMVERSION_CHECK='n'
+CMSDEBUG='n'
 ###################################################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
@@ -78,41 +79,55 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 fi
 
 cmservice() {
-        servicename=$1
-        action=$2
-        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
-        echo "service ${servicename} $action"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                service "${servicename}" "$action"
-        fi
-        else
-        echo "systemctl $action ${servicename}.service"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl "$action" "${servicename}.service"
-        fi
-        fi
+  servicename=$1
+  action=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "service ${servicename} $action"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      service "${servicename}" "$action"
+    fi
+  else
+    if [ "${servicename}" = 'mysql' ]; then
+      echo "service ${servicename} $action"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        service "${servicename}" "$action"
+      fi
+    else
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    fi
+  fi
 }
 
 cmchkconfig() {
-        servicename=$1
-        status=$2
-        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
-        echo "chkconfig ${servicename} $status"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                chkconfig "${servicename}" "$status"
-        fi
-        else
-                if [ "$status" = 'on' ]; then
-                        status=enable
-                fi
-                if [ "$status" = 'off' ]; then
-                        status=disable
-                fi
-        echo "systemctl $status ${servicename}.service"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl "$status" "${servicename}.service"
-        fi
-        fi
+  servicename=$1
+  status=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "chkconfig ${servicename} $status"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      chkconfig "${servicename}" "$status"
+    fi
+  else
+    if [ "${servicename}" = 'mysql' ]; then
+      echo "chkconfig ${servicename} $status"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        chkconfig "${servicename}" "$status"
+      fi
+    else
+      if [ "$status" = 'on' ]; then
+        status=enable
+      fi
+      if [ "$status" = 'off' ]; then
+        status=disable
+      fi
+      echo "systemctl $status ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$status" "${servicename}.service"
+      fi
+    fi
+  fi
 }
 
 if [ -f /proc/user_beancounters ]; then

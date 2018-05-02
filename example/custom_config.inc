@@ -358,6 +358,7 @@ LETSENCRYPT_DETECT='n'
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
 # From http://centminmod.com/faq.html Question #25
+CMSDEBUG='n'                  # leave as CMSDEBUG='n' so the below 5 services actually get disabled
 NSD_DISABLED='n'              # when set to ='y'NSD disabled by default with chkconfig off
 MEMCACHED_DISABLED='n'        # when set to ='y' Memcached server disabled by default via chkconfig off
 PHP_DISABLED='n'              # when set to ='y' PHP-FPM disabled by default with chkconfig off

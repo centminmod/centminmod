@@ -9,6 +9,7 @@ branchname='123.09beta01'
 CUR_DIR="/usr/local/src/centminmod"
 
 DEBUG='n'
+CMSDEBUG='n'
 CENTMINLOGDIR='/root/centminlogs'
 DT=$(date +"%d%m%y-%H%M%S")
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
@@ -209,19 +210,55 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
 fi
 
 cmservice() {
-        servicename=$1
-        action=$2
-        if [[ "$CENTOS_SEVEN" != '7' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
-        echo "service ${servicename} $action"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                service ${servicename} $action
-        fi
-        else
-        echo "systemctl $action ${servicename}.service"
-        if [[ "$CMSDEBUG" = [nN] ]]; then
-                systemctl $action ${servicename}.service
-        fi
-        fi
+  servicename=$1
+  action=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "service ${servicename} $action"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      service "${servicename}" "$action"
+    fi
+  else
+    if [ "${servicename}" = 'mysql' ]; then
+      echo "service ${servicename} $action"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        service "${servicename}" "$action"
+      fi
+    else
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    fi
+  fi
+}
+
+cmchkconfig() {
+  servicename=$1
+  status=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "chkconfig ${servicename} $status"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      chkconfig "${servicename}" "$status"
+    fi
+  else
+    if [ "${servicename}" = 'mysql' ]; then
+      echo "chkconfig ${servicename} $status"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        chkconfig "${servicename}" "$status"
+      fi
+    else
+      if [ "$status" = 'on' ]; then
+        status=enable
+      fi
+      if [ "$status" = 'off' ]; then
+        status=disable
+      fi
+      echo "systemctl $status ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$status" "${servicename}.service"
+      fi
+    fi
+  fi
 }
 
 dbsetup() {
