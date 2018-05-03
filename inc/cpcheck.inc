@@ -5,6 +5,21 @@ pzcat_install() {
   fi
 }
 
+csf_portflood() {
+  # override default CSF Firewall PORTFLOOD values
+  # PORTFLOOD_COUNT=20
+  # PORTFLOOD_INTERVAL=300
+  if [[ "$CSFPORTFLOOD_OVERRIDE" = [yY] && -f /etc/csf/csf.conf ]]; then
+    # ensure only overriding PORTFLOOD Centmin Mod setup defaults
+    # if end user made custom changes to PORTFLOOD, DO NOT override those
+    if [[ "$(grep 'PORTFLOOD = "21;tcp;20;300"' /etc/csf/csf.conf)" ]]; then
+      csf --profile backup portflood_adjustment >/dev/null 2>&1
+      sed -i "s|PORTFLOOD = .*|PORTFLOOD = \"21;tcp;${PORTFLOOD_COUNT};${PORTFLOOD_INTERVAL}\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+    fi
+  fi
+}
+
 csf_loadalert() {
     # custom high cpu load trigger email stats
     if [[ ! -f /etc/csf/load.sh && -f "${SCRIPT_DIR}/config/csf/load.sh" ]]; then
@@ -2243,6 +2258,7 @@ apache_protect
 setup_pwdh
 cmupdatecheck
 pzcat_install
+csf_portflood
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -2261,6 +2277,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   kernelchecks
   centaltoff
   csfipsetcheck
+  csf_portflood
   checkaliases
   checkcmdircmd
   # dmotdcheck

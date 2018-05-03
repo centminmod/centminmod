@@ -363,4 +363,22 @@ NSD_DISABLED='n'              # when set to ='y'NSD disabled by default with chk
 MEMCACHED_DISABLED='n'        # when set to ='y' Memcached server disabled by default via chkconfig off
 PHP_DISABLED='n'              # when set to ='y' PHP-FPM disabled by default with chkconfig off
 MYSQLSERVICE_DISABLED='n'     # when set to ='y' MariaDB MySQL service disabled by default with chkconfig off
-PUREFTPD_DISABLED='n'         # when set to ='y'Pure-ftpd service disabled by default with chkconfig off  
+PUREFTPD_DISABLED='n'         # when set to ='y'Pure-ftpd service disabled by default with chkconfig off
+
+#####################################################
+# CSF FIREWALL
+# PORTFLOOD Configuration
+# https://community.centminmod.com/threads/14708/
+# Setting CSFPORTFLOOD_OVERRIDE='y' allows you to 
+# override default CSF Firewall PORTFLOOD values set
+# by Centmin Mod initial install. If end user made
+# custom changes to PORTFLOOD values, the override 
+# will not work. Override only works if end user has
+# not made custom changes to PORTFLOOD values to ensure
+# end users customisations do not get overwritten
+CSFPORTFLOOD_OVERRIDE='n'
+# max hit count value allowed is 20
+PORTFLOOD_COUNT=20
+# lowering interval in seconds allows for more
+# port flood hits against default TCP port 21
+PORTFLOOD_INTERVAL=300

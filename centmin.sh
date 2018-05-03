@@ -328,6 +328,24 @@ DNF_ENABLE='n'
 DNF_COPR='y'
 
 #####################################################
+# CSF FIREWALL
+# PORTFLOOD Configuration
+# https://community.centminmod.com/threads/14708/
+# Setting CSFPORTFLOOD_OVERRIDE='y' allows you to 
+# override default CSF Firewall PORTFLOOD values set
+# by Centmin Mod initial install. If end user made
+# custom changes to PORTFLOOD values, the override 
+# will not work. Override only works if end user has
+# not made custom changes to PORTFLOOD values to ensure
+# end users customisations do not get overwritten
+CSFPORTFLOOD_OVERRIDE='n'
+# max hit count value allowed is 20
+PORTFLOOD_COUNT=20
+# lowering interval in seconds allows for more
+# port flood hits against default TCP port 21
+PORTFLOOD_INTERVAL=300
+
+#####################################################
 # MariaDB Jemalloc
 # doh forgot MariaDB already uses jemalloc by default
 MARIADB_JEMALLOC='n'
