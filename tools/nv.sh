@@ -711,6 +711,9 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
                 </li>
               </ul>
               <p>For Centmin Mod LEMP stack hosting check out <a href="https://www.digitalocean.com/?refcode=c1cb367108e8" target="_blank">Digitalocean</a></p>
+
+              <p><b>Disclaimer</b></p>
+              <p><a href="https://centminmod.com/">Centmin Mod</a> is a free open source software for CentOS Linux that can be downloaded and installed by anybody and was installed on this server by a 3rd party end user with no relation to Centmin Mod. Centmin Mod has no control over and is not responsible for the content contained on this site.</p>
             </div>
           </section>
         </div>
