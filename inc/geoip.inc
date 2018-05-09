@@ -175,10 +175,10 @@ geotwoinccheck() {
 if [[ ! -f /usr/local/nginx/conf/geoip2.conf ]]; then
 cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
 # GeoIP2 Lite databases
-  geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {
-    \$geoip2_data_country_code country iso_code;
-    \$geoip2_data_country_name country names en;
-  }
+  # geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {
+  #   \$geoip2_data_country_code country iso_code;
+  #   \$geoip2_data_country_name country names en;
+  # }
 
   geoip2 /usr/share/GeoIP/GeoLite2-City.mmdb {
     \$geoip2_data_city_name city names en;
