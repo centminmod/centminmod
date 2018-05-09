@@ -2096,7 +2096,7 @@ fi
 
 if [[ "$NGINX_STREAMGEOIP" = [yY] ]]; then
   NGINX_GEOIP='y'
-  NGINX_GEOIPTWOLITE='y'
+  #NGINX_GEOIPTWOLITE='y'
   NGX_STREAMGEOIPCHECK=$(grep 'STREAM_GEOIP=' "$NGINX_DIRINSTALL/auto/options")
   if [[ ! -d /usr/share/GeoIP ]]; then
     geoipinstall
