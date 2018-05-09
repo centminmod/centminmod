@@ -66,35 +66,107 @@ fi
 }
 
 geoipinstall() {
-
-cecho "GeoIP database and library install..." $boldyellow
-if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+  cecho "GeoIP database and library install..." $boldyellow
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     # GEOIPYUMCHECK=$(rpm -qa GeoIP)
     # GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
     if [[ $(rpm -q GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
-        yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
-        sar_call
-        rpm -ql GeoIP-devel GeoIP
+      yum -y -q install GeoIP GeoIP-devel --disablerepo=rpmforge
+      sar_call
+      rpm -ql GeoIP-devel GeoIP
     fi
-else
+  else
     # GEOIPYUMCHECK=$(rpm -qa GeoIP)
     # GEOIPYUMCHECKB=$(rpm -qa GeoIP-devel)
     if [[ $(rpm -q GeoIP >/dev/null 2>&1; echo $?) != '0' ]] || [[ $(rpm -q GeoIP-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
-        yum -y -q install GeoIP GeoIP-devel
-        sar_call
-        rpm -ql GeoIP-devel GeoIP
+      yum -y -q install GeoIP GeoIP-devel
+      sar_call
+      rpm -ql GeoIP-devel GeoIP
     fi
-fi
-
+  fi
   cd $DIR_TMP
-
-cecho "GeoLiteCity database download ..." $boldyellow
-  wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+  cecho "GeoLiteCity database download ..." $boldyellow
+  if [ -f /usr/share/GeoIP/GeoLiteCity.dat.gz ]; then
+    # backup existing database in case maxmind end downloads
+    \cp -af /usr/share/GeoIP/GeoLiteCity.dat.gz /usr/share/GeoIP/GeoLiteCity.dat-backup.gz
+  fi
+  if [ -f /usr/share/GeoIP/GeoIP.dat.gz ]; then
+    # backup existing database in case maxmind end downloads
+    \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
+  fi
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  GEOIPCOUNTRYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnf http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+  fi
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | grep 'HTTP\/' | grep '200'
+  GEOIPCITYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+  fi
   gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
-  
-  # wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
-  # gzip -df /usr/share/GeoIP/GeoIP.dat.gz
+}
+
+geoiptwolite_install() {
+  cecho "GeoIP2 Lite database and library install..." $boldyellow
+  pushd $DIR_TMP
+  #wget -4 -cnv https://github.com/maxmind/libmaxminddb/releases/download/1.3.2/libmaxminddb-1.3.2.tar.gz
+  #tar xvzf libmaxminddb-1.3.2.tar.gz
+  #cd libmaxminddb-1.3.2
+  rm -rf libmaxminddb
+  git clone --recursive https://github.com/maxmind/libmaxminddb
+  cd libmaxminddb
+  ./bootstrap
+  make clean && make distclean
+  pushd t/libtap
+  make clean
+  make$MAKETHREADS
+  make install
+  popd
+  ./configure
+  make$MAKETHREADS
+  make install
+  ldconfig
+
+  mkdir -p /usr/share/GeoIP
+  pushd /usr/share/GeoIP
+  cecho "GeoLite2 City database download ..." $boldyellow
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
+  GEOIPTWOCITYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+  fi
+  tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
+  cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
+  rm -rf GeoLite2-City_*
+
+  cecho "GeoLite2 Country database download ..." $boldyellow
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
+  GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+  fi
+  tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
+  cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
+  rm -rf GeoLite2-Country_*
+
+  cecho "Check GeoIP2 Lite Databases" $boldyellow
+  echo
+  /usr/local/bin/mmdblookup --help
+  echo
+  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
+  echo
+  popd
+  popd
 }
 
 ######################################################
@@ -122,6 +194,9 @@ echo "fastcgi_param GEOIP_POSTAL_CODE \$geoip_postal_code;" >> /usr/local/nginx/
 echo "fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;" >> /usr/local/nginx/conf/php.conf
 echo "fastcgi_param GEOIP_LATITUDE \$geoip_latitude;" >> /usr/local/nginx/conf/php.conf
 echo "fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP_COUNTRY_CODE \$geoip2_data_country_code;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP_COUNTRY_NAME \$geoip2_data_country_name;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP_CITY    \$geoip2_data_city_name;" >> /usr/local/nginx/conf/php.conf
 echo "}" >> /usr/local/nginx/conf/php.conf
 
 cat > "/usr/local/nginx/conf/geoip.conf" <<EOF
@@ -130,12 +205,22 @@ geoip_country /usr/share/GeoIP/GeoIP.dat;
 
 # SET the path to the .dat file used for determining the visitors country from the IP-address ###
 geoip_city /usr/share/GeoIP/GeoIPCity.dat;
-EOF
 
-#echo
-#echo "cat /usr/local/nginx/conf/geoip.conf"
-#cat /usr/local/nginx/conf/geoip.conf
-#echo
+# GeoIP2 Lite databases
+  # geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {
+  #   \$geoip2_data_country_code country iso_code;
+  #   \$geoip2_data_country_name country names en;
+  # }
+
+  # geoip2 /usr/share/GeoIP/GeoLite2-City.mmdb {
+  #   \$geoip2_data_city_name city names en;
+  #   \$geoip2_data_postal_code postal code;
+  #   \$geoip2_data_latitude location latitude;
+  #   \$geoip2_data_longitude location longitude;
+  #   \$geoip2_data_state_name subdivisions 0 names en;
+  #   \$geoip2_data_state_code subdivisions 0 iso_code;
+  # }
+EOF
 
   fi
 
