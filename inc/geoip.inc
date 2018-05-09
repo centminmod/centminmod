@@ -171,6 +171,26 @@ geoiptwolite_install() {
 }
 
 ######################################################
+geotwoinccheck() {
+if [[ ! -f /usr/local/nginx/conf/geoip2.conf ]]; then
+cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
+# GeoIP2 Lite databases
+  geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {
+    \$geoip2_data_country_code country iso_code;
+    \$geoip2_data_country_name country names en;
+  }
+
+  geoip2 /usr/share/GeoIP/GeoLite2-City.mmdb {
+    \$geoip2_data_city_name city names en;
+    \$geoip2_data_postal_code postal code;
+    \$geoip2_data_latitude location latitude;
+    \$geoip2_data_longitude location longitude;
+    \$geoip2_data_state_name subdivisions 0 names en;
+    \$geoip2_data_state_code subdivisions 0 iso_code;
+  }
+EOF
+  fi
+}
 
 geoinccheck() {
 
@@ -211,25 +231,6 @@ geoip_city /usr/share/GeoIP/GeoIPCity.dat;
 #include /usr/local/nginx/conf/geoip2.conf;
 EOF
 
-  fi
-
-if [[ ! -f /usr/local/nginx/conf/geoip2.conf ]]; then
-cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
-# GeoIP2 Lite databases
-  geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {
-    \$geoip2_data_country_code country iso_code;
-    \$geoip2_data_country_name country names en;
-  }
-
-  geoip2 /usr/share/GeoIP/GeoLite2-City.mmdb {
-    \$geoip2_data_city_name city names en;
-    \$geoip2_data_postal_code postal code;
-    \$geoip2_data_latitude location latitude;
-    \$geoip2_data_longitude location longitude;
-    \$geoip2_data_state_name subdivisions 0 names en;
-    \$geoip2_data_state_code subdivisions 0 iso_code;
-  }
-EOF
   fi
 
   # check if include file /usr/local/nginx/conf/geoip.conf exists in
