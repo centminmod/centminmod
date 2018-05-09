@@ -511,11 +511,12 @@ installopenssl() {
             fi
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+                if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
                     TLSONETHREE_DETECT='y'
                 else
-                    TLSONETHREEOPT=""
+                    # https://wiki.openssl.org/index.php/TLS1.3
+                    TLSONETHREEOPT=" no-tls1_3"
                     TLSONETHREE_DETECT='n'
                 fi
                 # openssl 1.1. use new native threading API
@@ -536,11 +537,12 @@ installopenssl() {
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
                 # openssl 1.1.0 unsupported flag enable-tlsext
-                if [[ "$(grep -w 'tls1_3' Configure)" ]]; then
+                if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'tls1_3' Configure)" ]]; then
                     TLSONETHREEOPT=' enable-tls1_3'
                     TLSONETHREE_DETECT='y'
                 else
-                    TLSONETHREEOPT=""
+                    # https://wiki.openssl.org/index.php/TLS1.3
+                    TLSONETHREEOPT=" no-tls1_3"
                     TLSONETHREE_DETECT='n'
                 fi
                 echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}"
