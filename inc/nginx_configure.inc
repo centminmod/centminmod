@@ -2278,6 +2278,7 @@ else
 fi
 
 if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+  sed -i 's|^#include /usr/local/nginx/conf/geoip2.conf;|include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
   if [[ ! -f /usr/local/bin/mmdblookup || ! -f /usr/share/GeoIP/GeoLite2-Country.mmdb ]]; then
     geoiptwolite_install
   fi
@@ -2304,6 +2305,7 @@ if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
   fi
 else
   GEOIPTWOLITEOPT=''
+  sed -i 's|^include /usr/local/nginx/conf/geoip2.conf;|#include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
 fi
 
 if [[ "$NGINX_THREADS" = [yY] ]]; then
