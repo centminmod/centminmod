@@ -99,8 +99,9 @@ geoipinstall() {
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -4 -cnf http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
+  gzip -df /usr/share/GeoIP/GeoIP.dat.gz
   curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working

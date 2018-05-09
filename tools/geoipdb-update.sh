@@ -52,15 +52,68 @@ done
 echo
 cecho "Updating GeoIP databases..." $boldyellow
 
-\cp -f /usr/share/GeoIP/GeoIP.dat /usr/share/GeoIP/GeoIP.dat-backup
-rm -rf /usr/share/GeoIP/GeoIP.dat
-wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
-gzip -df /usr/share/GeoIP/GeoIP.dat.gz
+  \cp -f /usr/share/GeoIP/GeoIP.dat /usr/share/GeoIP/GeoIP.dat-backup
+  if [ -f /usr/share/GeoIP/GeoLiteCity.dat.gz ]; then
+    # backup existing database in case maxmind end downloads
+    \cp -af /usr/share/GeoIP/GeoLiteCity.dat.gz /usr/share/GeoIP/GeoLiteCity.dat-backup.gz
+  fi
+  if [ -f /usr/share/GeoIP/GeoIP.dat.gz ]; then
+    # backup existing database in case maxmind end downloads
+    \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
+  fi
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  GEOIPCOUNTRYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+  fi
+  gzip -df /usr/share/GeoIP/GeoIP.dat.gz
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | grep 'HTTP\/' | grep '200'
+  GEOIPCITYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+  fi
+  gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
+  cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 
-rm -rf /usr/share/GeoIP/GeoIPCity.dat
-wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
-gzip -df /usr/share/GeoIP/GeoLiteCity.dat.gz
-\cp -af /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
+if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Country.mmdb ]]; then
+  mkdir -p /usr/share/GeoIP
+  pushd /usr/share/GeoIP
+  cecho "GeoLite2 City database download ..." $boldyellow
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
+  GEOIPTWOCITYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+  fi
+  tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
+  cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
+  rm -rf GeoLite2-City_*
+
+  cecho "GeoLite2 Country database download ..." $boldyellow
+  curl -4Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
+  GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
+    wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+  fi
+  tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
+  cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
+  rm -rf GeoLite2-Country_*
+
+  cecho "Check GeoIP2 Lite Databases" $boldyellow
+  echo
+  /usr/local/bin/mmdblookup --help
+  echo
+  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
+  echo
+  popd
+fi
 
 nprestart
 
