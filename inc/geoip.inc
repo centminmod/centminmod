@@ -182,11 +182,25 @@ cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
 
   geoip2 /usr/share/GeoIP/GeoLite2-City.mmdb {
     \$geoip2_data_city_name city names en;
+    \$geoip2_data_city_geonameid city geoname_id;
+    \$geoip2_data_continent_code continent code;
+    \$geoip2_data_continent_geonameid continent geoname_id;
+    \$geoip2_data_continent_name continent names en;
+    \$geoip2_data_country_geonameid country geoname_id;
+    \$geoip2_data_country_iso country iso_code;
+    \$geoip2_data_country_name country names en;
+    \$geoip2_data_location_accuracyradius location accuracy_radius;
+    \$geoip2_data_location_latitude location latitude;
+    \$geoip2_data_location_longitude location longitude;
+    \$geoip2_data_location_metrocode location metro_code;
+    \$geoip2_data_location_timezone location time_zone;
     \$geoip2_data_postal_code postal code;
-    \$geoip2_data_latitude location latitude;
-    \$geoip2_data_longitude location longitude;
-    \$geoip2_data_state_name subdivisions 0 names en;
-    \$geoip2_data_state_code subdivisions 0 iso_code;
+    \$geoip2_data_rcountry_geonameid registered_country geoname_id;
+    \$geoip2_data_rcountry_iso registered_country iso_code;
+    \$geoip2_data_rcountry_name registered_country names en;
+    \$geoip2_data_region_geonameid subdivisions 0 geoname_id;
+    \$geoip2_data_region_iso subdivisions 0 iso_code;
+    \$geoip2_data_region_name subdivisions 0 names en;
   }
 EOF
   fi
