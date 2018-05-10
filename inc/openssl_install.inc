@@ -378,6 +378,24 @@ fi
 }
 
 installopenssl() {
+    # clean up recent no-tls1_3 bug
+    # https://community.centminmod.com/posts/63295/
+    if [ -d /usr/local/ssl ]; then
+        echo "clean up no-tls1_3 bug /usr/local/ssl"
+        echo "https://community.centminmod.com/posts/63295/"
+        rm -rf /usr/local/ssl
+    fi
+    if [ -d /usr/local/lib/engines-1.1 ]; then
+        echo "clean up no-tls1_3 bug /usr/local/lib/engines-1.1"
+        echo "https://community.centminmod.com/posts/63295/"
+        rm -rf /usr/local/lib/engines-1.1
+    fi
+    if [ -d /usr/local/include/openssl ]; then
+        echo "clean up no-tls1_3 bug /usr/local/include/openssl"
+        echo "https://community.centminmod.com/posts/63295/"
+        rm -rf /usr/local/include/openssl
+    fi
+
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
         # so fall back to 1.0.2 branch if lua nginx module is enabled
@@ -516,7 +534,11 @@ installopenssl() {
                     TLSONETHREE_DETECT='y'
                 else
                     # https://wiki.openssl.org/index.php/TLS1.3
-                    TLSONETHREEOPT=" no-tls1_3"
+                    if [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+                        TLSONETHREEOPT=" no-tls1_3"
+                    else
+                        TLSONETHREEOPT=""
+                    fi
                     TLSONETHREE_DETECT='n'
                 fi
                 # openssl 1.1. use new native threading API
@@ -542,7 +564,11 @@ installopenssl() {
                     TLSONETHREE_DETECT='y'
                 else
                     # https://wiki.openssl.org/index.php/TLS1.3
-                    TLSONETHREEOPT=" no-tls1_3"
+                    if [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+                        TLSONETHREEOPT=" no-tls1_3"
+                    else
+                        TLSONETHREEOPT=""
+                    fi
                     TLSONETHREE_DETECT='n'
                 fi
                 echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL shared${TLSONETHREEOPT}"
