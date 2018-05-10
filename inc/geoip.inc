@@ -198,6 +198,7 @@ cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
     \$geoip2_data_rcountry_geonameid registered_country geoname_id;
     \$geoip2_data_rcountry_iso registered_country iso_code;
     \$geoip2_data_rcountry_name registered_country names en;
+    \$geoip2_data_rcountry_is_eu registered_country is_in_european_union;
     \$geoip2_data_region_geonameid subdivisions 0 geoname_id;
     \$geoip2_data_region_iso subdivisions 0 iso_code;
     \$geoip2_data_region_name subdivisions 0 names en;
