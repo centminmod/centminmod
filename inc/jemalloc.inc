@@ -34,7 +34,9 @@ main(int argc, char **argv)
 }
 JEM
 
-  gcc "$JEMSTATS_CFILE" -o ex_stats_print -I${JEMALLOC_PATH}/include -L${JEMALLOC_PATH}/lib -Wl,-rpath,${JEMALLOC_PATH}/lib -ljemalloc
+  if [ -f "$JEMSTATS_CFILE" ]; then
+    gcc "$JEMSTATS_CFILE" -o ex_stats_print -I${JEMALLOC_PATH}/include -L${JEMALLOC_PATH}/lib -Wl,-rpath,${JEMALLOC_PATH}/lib -ljemalloc
+  fi
   if [ -f "$JEMSTATS_FILE" ]; then
     ln -sf "$JEMSTATS_FILE" /usr/bin/jemalloc-stats
     chmod 0700 /usr/bin/jemalloc-stats
