@@ -121,7 +121,8 @@ fi
 
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    LASTEST_NGINXVERS=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+    LASTEST_NGINXVERS=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
+    LATEST_NGINXSTABLEVER=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
       echo
@@ -129,8 +130,9 @@ ngxver_checker() {
       cecho "* Nginx Update May Be Available via centmin.sh menu option 4" $boldyellow
       cecho "* see https://centminmod.com/nginx.html#nginxupgrade" $boldyellow
       cecho "===============================================================================" $boldgreen
-      cecho "* Current Nginx Version: $CURRENT_NGINXVERS" $boldyellow
-      cecho "* Latest Nginx Available: $LASTEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
+      cecho "* Current Nginx Version:           $CURRENT_NGINXVERS" $boldyellow
+      cecho "* Latest Nginx Mainline Available: $LASTEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
+      cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi
