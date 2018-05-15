@@ -20,7 +20,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='022'
+SCRIPT_INCREMENTVER='021'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/05/2018'
@@ -307,7 +307,7 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 # http://centminmod.com/upgrade.html#persistent
 AUTO_GITUPDATE='n'
 #####################################################
-LOCALCENTMINMOD_MIRROR='https://centminmodparts.centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 #####################################################
 # Timestamp Install
 TS_INSTALL='y'
