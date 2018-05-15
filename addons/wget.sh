@@ -11,16 +11,16 @@ DNF_ENABLE='n'
 DNF_COPR='y'
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://centminmodparts.centminmod.com'
 
 ALTPCRE_VERSION='8.42'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
-ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
+ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.19.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
-WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/wget/${WGET_FILENAME}"
 ###########################################################
 # set locale temporarily to english
 # for wget compile due to some non-english

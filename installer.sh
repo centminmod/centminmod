@@ -10,7 +10,7 @@ DNF_ENABLE='n'
 DNF_COPR='y'
 branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
-LOCALCENTMINMOD_MIRROR='https://centminmod.com'
+LOCALCENTMINMOD_MIRROR='https://centminmodparts.centminmod.com'
 
 INSTALLDIR='/usr/local/src'
 DIR_TMP='/svr-setup'
@@ -30,13 +30,13 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 AXEL='n'
 AXEL_VER='2.6'
 AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
-AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
+AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/axel/v${AXEL_VER}.tar.gz"
 AXEL_LINKLOCAL="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
 
 #######################################################
 ALTPCRE_VERSION='8.42'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
-ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
+ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.19.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
@@ -172,7 +172,7 @@ fi
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
   AXEL_VER='2.14.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
-  AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
+  AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/axel/v${AXEL_VER}.tar.gz"
   AXEL_LINKLOCAL="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
 
 fi
