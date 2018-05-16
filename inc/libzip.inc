@@ -1,4 +1,10 @@
 libzip_install() {
+    if [ ! -f /usr/bin/cmake3 ]; then
+        echo
+        echo "yum -y install cmake3"
+        yum -y install cmake3
+        echo
+    fi
     pushd /svr-setup/
     cecho "Download ${LIBZIP_LINKFILE} ..." $boldyellow
     if [ -s "${LIBZIP_LINKFILE}" ]; then
