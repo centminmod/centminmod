@@ -363,7 +363,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 ]]; th
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
   if [[ ! -f /usr/local/lib/libargon2.so || ! -f /usr/local/lib/libsodium.so || ! -f /usr/local/include/zip.h ]]; then
     echo
-    echo "disbable libzip, libsodium or libargon2 libraries"
+    echo "disable libzip, libsodium or libargon2 libraries"
     echo
     ARGONTWO_OPT=""
     LIBSODIUM_OPT=""
