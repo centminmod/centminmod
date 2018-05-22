@@ -952,6 +952,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   SSECHECK=$(gcc -c -Q -march=native --help=target | awk '/  -msse/ {print $2}' | head -n1)
   CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
   CPUMODELNO=$(grep -v 'model name' /proc/cpuinfo | awk -F ": " '/model/ {print $2}' | uniq)
+  CPUSTEPPING=$(awk -F ": " '/stepping/ {print $2}' /proc/cpuinfo | uniq)
   SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
   MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
   gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
@@ -992,17 +993,17 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=haswell"
     elif [[ "$CPU_MARCH" = 'ivybridge' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=ivybridge"
-    elif [[ "$CPU_MARCH" = 'sandybridge' ]]; then
+    elif [[ "$CPU_MARCH" = 'sandybridge' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=sandybridge"
     elif [[ "$CPU_MARCH" = 'westmere' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=westmere"
     elif [[ "$CPU_MARCH" = 'nehalem' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=nehalem"
-    elif [[ "$CPU_MARCH" = 'core-avx2' ]]; then
+    elif [[ "$CPU_MARCH" = 'core-avx2' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx2"
-    elif [[ "$CPU_MARCH" = 'core-avx-i' ]]; then
+    elif [[ "$CPU_MARCH" = 'core-avx-i' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx-i"
-    elif [[ "$CPU_MARCH" = 'corei7-avx' ]]; then
+    elif [[ "$CPU_MARCH" = 'corei7-avx' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7-avx"
     elif [[ "$CPU_MARCH" = 'corei7' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7"
