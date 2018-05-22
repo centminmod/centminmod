@@ -123,7 +123,7 @@ ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
     LASTEST_NGINXVERS=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
     LATEST_NGINXSTABLEVER=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
-    CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk -F '/' '{print $2}')
+    CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
       echo
       cecho "===============================================================================" $boldgreen
