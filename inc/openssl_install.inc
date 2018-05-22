@@ -395,6 +395,16 @@ installopenssl() {
         echo "https://community.centminmod.com/posts/63295/"
         rm -rf /usr/local/include/openssl
     fi
+    if [ -f /usr/local/bin/openssl ]; then
+        echo "clean up no-tls1_3 bug /usr/local/bin/openssl"
+        echo "https://community.centminmod.com/posts/63295/"
+        rm -rf /usr/local/bin/openssl
+    fi
+    if [ -f /usr/local/bin/c_rehash ]; then
+        echo "clean up no-tls1_3 bug /usr/local/bin/c_rehash"
+        echo "https://community.centminmod.com/posts/63295/"
+        rm -rf /usr/local/bin/c_rehash
+    fi
 
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
