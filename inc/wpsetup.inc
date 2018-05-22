@@ -223,18 +223,21 @@ cecho "for 7 days max-age excluding subdomains" $boldgreen
 echo
 echo "add_header Public-Key-Pins 'pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-primary-pin.txt)\"; pin-sha256=\"$(cat /usr/local/nginx/conf/ssl/${vhostname}/hpkp-info-secondary-pin.txt)\"; max-age=86400';"
 
-
-echo
-cecho "---------------------------------------------------------------" $boldyellow
-cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen
-
-dhparamstarttime=$(TZ=UTC date +%s.%N)
-
-openssl dhparam -out dhparam.pem 2048
-
-dhparamendtime=$(TZ=UTC date +%s.%N)
-DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
-cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
+if [[ ! -f "$(find /usr/local/nginx/conf/ssl -type f -name "dhparam.pem" | head -n1)" ]]; then
+  echo
+  cecho "---------------------------------------------------------------" $boldyellow
+  cecho "Generating dhparam.pem file - can take a few minutes..." $boldgreen 
+  dhparamstarttime=$(TZ=UTC date +%s.%N) 
+  openssl dhparam -out dhparam.pem 2048
+  dhparamendtime=$(TZ=UTC date +%s.%N)
+  DHPARAMTIME=$(echo "$dhparamendtime-$dhparamstarttime"|bc)
+  cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
+else
+  echo
+  cecho "---------------------------------------------------------------" $boldyellow
+  cecho "Copy/setup dhparam.pem file..." $boldgreen
+  cp -a "$(find /usr/local/nginx/conf/ssl -type f -name "dhparam.pem" | head -n1)" .
+fi
 
 }
 
