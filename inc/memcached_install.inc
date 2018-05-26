@@ -252,8 +252,8 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     systemctl kill memcached
 fi
 sleep 2
-cmservice memcached stop
-cmservice memcached start
+service memcached stop
+service memcached start
 
 #############################################
     if [[ "$PHP_INSTALL" = [yY] ]]; then
@@ -517,9 +517,9 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     systemctl kill memcached
 fi
 sleep 2
-cmservice memcached stop
-cmservice memcached start
-cmservice php-fpm restart
+service memcached stop
+service memcached start
+service php-fpm restart
 
 }
 
