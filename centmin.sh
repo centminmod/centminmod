@@ -20,7 +20,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='023'
+SCRIPT_INCREMENTVER='024'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/05/2018'
@@ -899,6 +899,7 @@ source "inc/mariadb_upgrade55.inc"
 source "inc/mariadb_upgrade10.inc"
 source "inc/mariadb_upgrade101.inc"
 source "inc/mariadb_upgrade102.inc"
+source "inc/mariadb_upgrade103.inc"
 source "inc/nginx_errorpage.inc"
 source "inc/sendmail.inc"
 source "inc/postfix.inc"
