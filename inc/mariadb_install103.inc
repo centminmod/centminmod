@@ -269,6 +269,24 @@ fi
 # set /etc/my.cnf templates
 setmycnf
 
+sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
+sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
+sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
+sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
+sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
+# deprecated in 10.3
+# https://mariadb.com/kb/en/library/mariadb-1031-release-notes/
+sed -i '/^innodb_large_prefix/d' /etc/my.cnf
+sed -i '/^innodb_file_format/d' /etc/my.cnf
+sed -i '/^innodb_support_xa/d' /etc/my.cnf
+
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
@@ -356,26 +374,6 @@ innodb_defragment_frequency=40
 #innodb_use_mtflush=0
 #innodb_mtflush_threads=4
 FFF
-
-#cp -a /etc/my.cnf /etc/my.cnf-newold
-#cp -f /etc/my.cnf.rpmorig /etc/my.cnf
-sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
-sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
-sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
-sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
-sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
-sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
-sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
-sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
-sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
-sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
-sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
-sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
-# deprecated in 10.3
-# https://mariadb.com/kb/en/library/mariadb-1031-release-notes/
-sed -i '/^innodb_large_prefix/d' /etc/my.cnf
-sed -i '/^innodb_file_format/d' /etc/my.cnf
-sed -i '/^innodb_support_xa/d' /etc/my.cnf
 
 echo ""
 
