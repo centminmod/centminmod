@@ -13,7 +13,7 @@ fi
 
 }
 
-mariadb103install() {
+mariadb103_yuminstall() {
 
 echo "MariaDB 10.3 Repo setup..."
 echo ""
@@ -667,7 +667,7 @@ if [ -f /etc/my.cnf ]; then
     rm -rf /etc/my.cnf
 fi
 
-mariadb103install
+mariadb103_yuminstall
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "New Initial /etc/my.cnf"
