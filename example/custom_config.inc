@@ -385,3 +385,7 @@ PORTFLOOD_COUNT=20
 # lowering interval in seconds allows for more
 # port flood hits against default TCP port 21
 PORTFLOOD_INTERVAL=300
+
+#####################################################
+# MariaDB overrides
+MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes

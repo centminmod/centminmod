@@ -20,7 +20,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='024'
+SCRIPT_INCREMENTVER='025'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/05/2018'
@@ -583,8 +583,9 @@ POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel
 # number won't have any effect in determining version of MariaDB 5.2.x to install. 
 # YUM Repo will install whatever is latest MariaDB 5.2.x version available via the YUM REPO
 
-MDB_INSTALL='n'               # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
+MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
+MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -872,6 +873,7 @@ source "inc/php_mssql.inc"
 source "inc/mysql_proclimit.inc"
 source "inc/mysqltmp.inc"
 source "inc/setmycnf.inc"
+source "inc/mariadb_install103.inc"
 source "inc/mariadb_install.inc"
 source "inc/mysql_install.inc"
 source "inc/mariadb_submenu.inc"
@@ -1707,7 +1709,12 @@ echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
-mariadbinstallfunct
+if [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
+  mariadbtenthree_installfunct
+else
+  mariadbinstallfunct
+fi
+
 mysqlinstallfunct
 
 if [[ "$PHP_INSTALL" = [yY] ]]; then
