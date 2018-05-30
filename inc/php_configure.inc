@@ -72,6 +72,13 @@ if [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
   DEVTOOLSETEIGHT='n'
 fi
 
+# If PHP 5.3 detected disable PHP EMBED SAPI
+# https://community.centminmod.com/posts/63877/
+if [[ "$PHPMVER" = 5.3 || "$PHPMUVER" = 5.3 ]]; then
+  PHPEMBED='n'
+  GCCINTEL_PHP='n'
+fi
+
 # separate make threads for PHP compiles
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'

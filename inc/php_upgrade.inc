@@ -313,8 +313,16 @@ PHPMU_ALPHAVER=$(echo "$phpver")
 
 funct_centos6check
 
+  if [[ "$PHPMUVER" = 5.3 ]]; then
+    if [ ! -f /usr/bin/autoconf-2.13 ]; then
+        yum -y -q install autoconf213
+    fi
+    export PHP_AUTOCONF=/usr/bin/autoconf-2.13
+    export PHP_AUTOHEADER=/usr/bin/autoheader-2.13
+  else
     export PHP_AUTOCONF=/usr/bin/autoconf
     export PHP_AUTOHEADER=/usr/bin/autoheader
+  fi
 
     cd "$DIR_TMP"
 
@@ -407,6 +415,18 @@ fi # PHPDIFF
 ##############################################
 
     make clean
+
+  if [[ "$PHPMUVER" = 5.3 ]]; then
+    # patch PHP 5.3 source tarballs
+    # https://bugs.php.net/bug.php?id=48795
+    # https://community.centminmod.com/posts/63882/
+    # pushd ../
+    if [ ! -f php53.patch ]; then
+        cp -a $CUR_DIR/patches/php/php53.patch php53.patch
+        patch < php53.patch
+    fi
+    # popd
+  fi
 
     ./buildconf --force
     

@@ -1,0 +1,30 @@
+commit 9fc87ffe4384306abb4454ced58b02a79114038e
+Author: S. Kurt Newman <kurt.newman@cpanel.net>
+Date:   Wed Feb 25 17:45:36 2015 -0600
+
+    add stdc++ to acinclude and aclocal for php 5.3.29
+
+diff --git a/acinclude.m4 b/acinclude.m4
+index 2681b79..6ad028e 100644
+--- a/acinclude.m4
++++ b/acinclude.m4
+@@ -762,6 +762,7 @@ AC_DEFUN([PHP_REQUIRE_CXX],[
+   if test -z "$php_cxx_done"; then
+     AC_PROG_CXX
+     AC_PROG_CXXCPP
++    PHP_ADD_LIBRARY(stdc++)
+     php_cxx_done=yes
+   fi
+ ])
+diff --git a/aclocal.m4 b/aclocal.m4
+index 07b5e61..f3770e2 100644
+--- a/aclocal.m4
++++ b/aclocal.m4
+@@ -762,6 +762,7 @@ AC_DEFUN([PHP_REQUIRE_CXX],[
+   if test -z "$php_cxx_done"; then
+     AC_PROG_CXX
+     AC_PROG_CXXCPP
++    PHP_ADD_LIBRARY(stdc++)
+     php_cxx_done=yes
+   fi
+ ])
