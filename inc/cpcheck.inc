@@ -1237,7 +1237,7 @@ fi
 }
 
 kernelchecks() {
-  if [[ "$(uname -r | cut -d . -f1)" = '4' ]]; then
+  if [[ "$(uname -r | cut -d . -f1)" = '4' && "$CHECK_LXD" != [yY] ]]; then
     if [[ "$(cat /proc/sys/net/netfilter/nf_conntrack_helper)" != '0' ]]; then
       echo "linux 4.x kernel related adjustments"
       echo "cat /proc/sys/net/netfilter/nf_conntrack_helper"
@@ -2232,6 +2232,9 @@ setup_pwdh() {
 }
 
 cpcheck() {
+  if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ -f $(which virt-what) && $(virt-what | head -n1) = 'lxc' ]]; then
+    CHECK_LXD='y'
+  fi
   FIRSTINSTALL=$1
   if [[ "$FIRSTINSTALL" = 'initialinstall' ]]; then
     INITIALINSTALL='y'
