@@ -85,7 +85,7 @@ CPUCORES=$((${CPUCORES} * ${PHYSICALCPUS}));
 fi
 #####################################################
 top_info() {
-    SYSTYPE=$(virt-what | tail -1)
+    SYSTYPE=$(virt-what | head -n1)
     CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
     CCACHE_INFOVER=$(ccache -V | head -n1)
     NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
@@ -383,7 +383,7 @@ VHOSTS=$(ls /home/nginx/domains | egrep -v 'demodomain.com.conf')
 VHOSTSCONF=$(ls /usr/local/nginx/conf/conf.d | egrep -vw '^ssl.conf' | uniq)
 
 #####################################################
-SYSTYPE=$(virt-what | tail -1)
+SYSTYPE=$(virt-what | head -n1)
 CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
 CCACHE_INFOVER=$(ccache -V | head -n1)
 NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)

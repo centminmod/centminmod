@@ -15,7 +15,7 @@ entropyup() {
       YUMDNFBIN='yum'
   fi
 
-if [[ ! -f /proc/user_beancounters ]]; then
+if [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
   if [[ ! -f /etc/rc.d/init.d/haveged ]] && [[ "$CENTOS_SIX" = '6' ]]; then
     echo "*************************************************"
     cecho "* Increase system Entropy pool availability" $boldgreen

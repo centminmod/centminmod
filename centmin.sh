@@ -979,6 +979,10 @@ else
     TCMALLOC_PAGESIZE='8'
 fi
 
+if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ "$INITIALINSTALL" = [yY] && -f $(which virt-what) && $(virt-what | head -n1) = 'lxc' ]]; then
+  CHECK_LXD='y'
+fi
+
 ###############################################################
 # The default is stable, you can change this to development if you wish
 #ARCH_OVERRIDE='i386'
@@ -1361,7 +1365,7 @@ if [[ -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
 # rm -rf /var/tmp
 # ln -s /tmp /var/tmp
 # mount -o remount /tmp
-elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
+elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" != [yY] ]]; then
     echo "CentOS 7 Setup /tmp"
     echo "CentOS 7 + non-OpenVZ virtualisation detected"
     systemctl is-enabled tmp.mount
@@ -1475,7 +1479,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' ]]; then
        rm -rf /tmp_backup
        rm -rf /var/tmp_backup
     fi
-elif [[ ! -f /proc/user_beancounters ]]; then
+elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
 
     # TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
     CURRENT_TMPSIZE=$(df -P /tmp | awk '/tmp/ {print $3}')
@@ -1644,9 +1648,10 @@ if [ ! -f "${DIR_TMP}/securedtmp.log" ]; then
 run_once
 fi
 
-if [ -f /proc/user_beancounters ];
-then
+if [ -f /proc/user_beancounters ]; then
     cecho "OpenVZ system detected, NTP not installed" $boldgreen
+elif [[ "$CHECK_LXD" = [yY] ]]; then
+    cecho "LXC/LXD container system detected, NTP not installed" $boldgreen
 else
     if [[ "$NTP_INSTALL" = [yY] ]]; 
     then
