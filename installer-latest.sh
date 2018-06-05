@@ -123,7 +123,21 @@ if [ -f /proc/user_beancounters ]; then
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
-        CPUS=$(echo $(($CPUS+2)))
+        if [[ "$(grep -o 'AMD EPYC 7601' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7601' ]]; then
+            # 7601 at 12 cpu cores has 3.20hz clock frequency https://en.wikichip.org/wiki/amd/epyc/7601
+            # while greater than 12 cpu cores downclocks to 2.70Ghz
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7551' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7551' ]]; then
+            # 7551P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7551p
+            # while greater than 12 cpu cores downclocks to 2.55Ghz
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7401' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7401' ]]; then
+            # 7401P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7401p
+            # while greater than 12 cpu cores downclocks to 2.8Ghz
+            CPUS=12
+        else
+            CPUS=$(echo $(($CPUS+2)))
+        fi
     else
         CPUS=$(echo $(($CPUS+1)))
     fi
@@ -132,6 +146,22 @@ else
     # speed up make
     CPUS=$(grep -c "processor" /proc/cpuinfo)
     if [[ "$CPUS" -gt '8' ]]; then
+        if [[ "$(grep -o 'AMD EPYC 7601' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7601' ]]; then
+            # 7601 at 12 cpu cores has 3.20hz clock frequency https://en.wikichip.org/wiki/amd/epyc/7601
+            # while greater than 12 cpu cores downclocks to 2.70Ghz
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7551' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7551' ]]; then
+            # 7551P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7551p
+            # while greater than 12 cpu cores downclocks to 2.55Ghz
+            CPUS=12
+        elif [[ "$(grep -o 'AMD EPYC 7401' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7401' ]]; then
+            # 7401P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7401p
+            # while greater than 12 cpu cores downclocks to 2.8Ghz
+            CPUS=12
+        else
+            CPUS=$(echo $(($CPUS+4)))
+        fi
+    elif [[ "$CPUS" -eq '8' ]]; then
         CPUS=$(echo $(($CPUS+2)))
     else
         CPUS=$(echo $(($CPUS+1)))
@@ -149,6 +179,10 @@ fi
 
 if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
+fi
+
+if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ -f $(which virt-what) && $(virt-what | head -n1) = 'lxc' ]]; then
+  CHECK_LXD='y'
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -261,6 +295,8 @@ fi
 
 if [ -f /proc/user_beancounters ]; then
     echo "OpenVZ system detected, NTP not installed"
+elif [[ "$CHECK_LXD" = [yY] ]]; then
+    echo "LXC/LXD container system detected, NTP not installed"
 else
   if [ ! -f /usr/sbin/ntpd ]; then
     echo "*************************************************"
@@ -1039,6 +1075,9 @@ install_axel() {
 
   cd axel-${AXEL_VER}
   if [ -f autogen.sh ]; then
+    if [ ! -f /usr/bin/autoreconf ]; then
+      yum -y -q install autoconf
+    fi
   ./autogen.sh
   fi
   ./configure
@@ -1183,6 +1222,15 @@ rm -rf /etc/centminmod/email-secondary.ini
 if [[ "$DEF" = 'novalue' ]]; then
   # devtoolset SCL repo only supports 64bit OSes
   if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
+    if [[ "$CHECK_LXD" = [yY] ]]; then
+      # lxd containers have minimal default yum packages installed
+      yum -y install yum-utils cmake which e2fsprogs e2fsprogs-devel bc libuuid libuuid-devel openssl openssl-devel zlib zlib-devel gd gd-devel net-tools bzip2-devel libcurl libcurl-devel gmp-devel libXext-devel libidn-devel libtool-ltdl-devel openldap-devel bluez-libs-devel
+      yum -y reinstall bzip2 bzip2-devel
+      yum -y groupinstall "Development tools"
+      if [ -f /etc/yum.repos.d/jsynacek-systemd-centos-7.repo ]; then
+        SYSTEMD_FACEBOOKRPM='y'
+      fi
+    fi
     source_pcreinstall
     source_wgetinstall
   fi

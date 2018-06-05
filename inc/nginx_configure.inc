@@ -2321,7 +2321,9 @@ fi
 
 # Enable TCP Fast Open if system supports it
 # https://en.wikipedia.org/wiki/TCP_Fast_Open
-fastopenconfig
+if [[ "$CHECK_LXD" != [yY] ]]; then
+  fastopenconfig
+fi
 
 # on low memory systems <=768MB or when NGINX_GEOIPMEM=n
 # optimise nginx memory usage when nginx geoip module is 
