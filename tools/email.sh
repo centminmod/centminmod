@@ -57,46 +57,52 @@ for g in "" e f; do
 done
 
 setupemails() {
-	echo
-	cecho "--------------------------------------------------------------------" $boldgreen
-	cecho "Setup Server Administration Email" $boldyellow
-	cecho "Emails will be used for future notification alert features" $boldyellow
-	cecho "--------------------------------------------------------------------" $boldgreen
-	cecho "Hit Enter To Skip..." $boldyellow
-	cecho "Will be prompted everytime run centmin.sh if both emails not entered" $boldyellow
-	cecho "--------------------------------------------------------------------" $boldgreen
-	read -ep "enter primary email: " mainemail
-	read -ep "enter secondary email: " secondemail
-	cecho "--------------------------------------------------------------------" $boldgreen
+  echo
+  cecho "--------------------------------------------------------------------" $boldgreen
+  cecho "Setup Server Administration Email" $boldyellow
+  cecho "Emails will be used for future notification alert features" $boldyellow
+  cecho "--------------------------------------------------------------------" $boldgreen
+  cecho "Hit Enter To Skip..." $boldyellow
+  cecho "Will be prompted everytime run centmin.sh if both emails not entered" $boldyellow
+  cecho "--------------------------------------------------------------------" $boldgreen
+  read -ep "enter primary email: " mainemail
+  read -ep "enter secondary email: " secondemail
+  cecho "--------------------------------------------------------------------" $boldgreen
 
-	if [ -z "$mainemail" ]; then
-		mainemail=""
-		rm -rf /etc/centminmod/email-primary.ini
-		cecho "primary email setup skipped..." $boldyellow
-	else
-		echo
-		cecho "Primary: $mainemail" $boldyellow
-		echo "$mainemail" > /etc/centminmod/email-primary.ini
-		cecho "setup at /etc/centminmod/email-primary.ini" $boldyellow
-		echo
-		echo -n "  "
-		cat /etc/centminmod/email-primary.ini
-		echo
-	fi
-	if [ -z "$secondemail" ]; then
-		secondemail=$mainemail
-		rm -rf /etc/centminmod/email-secondary.ini
-		cecho "secondary email setup skipped..." $boldyellow
-	else
-		cecho "Secondary: $secondemail" $boldyellow
-		echo "$secondemail" > /etc/centminmod/email-secondary.ini
-		cecho "setup at /etc/centminmod/email-secondary.ini" $boldyellow
-		echo
-		echo -n "  "
-		cat /etc/centminmod/email-secondary.ini
-		echo
-	fi
-	echo
+  if [ -z "$mainemail" ]; then
+    mainemail=""
+    rm -rf /etc/centminmod/email-primary.ini
+    cecho "primary email setup skipped..." $boldyellow
+  else
+    echo
+    cecho "Primary: $mainemail" $boldyellow
+    echo "$mainemail" > /etc/centminmod/email-primary.ini
+    cecho "setup at /etc/centminmod/email-primary.ini" $boldyellow
+    echo
+    echo -n "  "
+    cat /etc/centminmod/email-primary.ini
+    echo
+    if [ -f "$(which git)" ]; then
+      git config --global user.email "$mainemail"
+      git config --global user.name "cmm-user"
+      # git config user.email
+      # git config user.name
+    fi
+  fi
+  if [ -z "$secondemail" ]; then
+    secondemail=$mainemail
+    rm -rf /etc/centminmod/email-secondary.ini
+    cecho "secondary email setup skipped..." $boldyellow
+  else
+    cecho "Secondary: $secondemail" $boldyellow
+    echo "$secondemail" > /etc/centminmod/email-secondary.ini
+    cecho "setup at /etc/centminmod/email-secondary.ini" $boldyellow
+    echo
+    echo -n "  "
+    cat /etc/centminmod/email-secondary.ini
+    echo
+  fi
+  echo
 }
 
 ######################################################
