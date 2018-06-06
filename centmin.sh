@@ -981,6 +981,11 @@ fi
 
 if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ "$INITIALINSTALL" = [yY] && -f $(which virt-what) && $(virt-what | head -n1) = 'lxc' ]]; then
   CHECK_LXD='y'
+  if [ -d /etc/profile.d ]; then
+    echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
+    echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
+    source /etc/profile.d/locale.sh
+  fi
 fi
 
 ###############################################################
