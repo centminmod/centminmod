@@ -1221,7 +1221,8 @@ if [[ "$DEF" = 'novalue' ]]; then
   if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
     if [[ "$CHECK_LXD" = [yY] ]]; then
       # lxd containers have minimal default yum packages installed
-      yum -y install yum-utils cmake which e2fsprogs e2fsprogs-devel bc libuuid libuuid-devel openssl openssl-devel zlib zlib-devel gd gd-devel net-tools bzip2-devel libcurl libcurl-devel gmp-devel libXext-devel libidn-devel libtool-ltdl-devel openldap-devel bluez-libs-devel
+      $YUMDNFBIN -y install yum-utils cmake which e2fsprogs e2fsprogs-devel bc libuuid libuuid-devel openssl openssl-devel zlib zlib-devel gd gd-devel net-tools bzip2-devel gmp-devel libXext-devel libidn-devel libtool-ltdl-devel openldap-devel bluez-libs-devel
+      $YUMDNFBIN -y install libcurl libcurl-devel
       yum -y reinstall bzip2 bzip2-devel
       yum -y groupinstall "Development tools"
       if [ -f /etc/yum.repos.d/jsynacek-systemd-centos-7.repo ]; then
