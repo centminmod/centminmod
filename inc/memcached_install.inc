@@ -237,7 +237,7 @@ else
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
-    ./configure --with-libevent="/usr/${LIBDIR} "--enable-sasl --enable-sasl-pwdb
+    ./configure --with-libevent="/usr/${LIBDIR}" --enable-sasl --enable-sasl-pwdb
     # ./configure --with-libevent=/usr/${LIBDIR} --enable-memcached --enable-memcached-igbinary --enable-memcached-json --with-php- config=/usr/local/bin/php-config
     make${MAKETHREADS}
     make install
