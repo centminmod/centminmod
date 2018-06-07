@@ -3586,9 +3586,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2'
+    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"

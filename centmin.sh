@@ -20,7 +20,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='027'
+SCRIPT_INCREMENTVER='028'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2018'
@@ -1952,7 +1952,11 @@ if [[ "$PHPMSSQL" = [yY] ]]; then
   php_mssqlinstall
 fi
 
-if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.2' ]]; then
+if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.3' ]]; then
+  if [ -f /usr/local/src/centminmod/addons/php73-mcrypt.sh ]; then
+    /usr/local/src/centminmod/addons/php73-mcrypt.sh menu
+  fi
+elif [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.2' ]]; then
   if [ -f /usr/local/src/centminmod/addons/php72-mcrypt.sh ]; then
     /usr/local/src/centminmod/addons/php72-mcrypt.sh menu
   fi

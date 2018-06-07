@@ -301,13 +301,18 @@ else
   PDOSQLLITE_OPT=' --with-pdo-sqlite'
 fi
 
-# php 7.2 specific config options
+# php 7.2 & 7.3 specific config options
 # Argon2 passwords https://wiki.php.net/rfc/argon2_password_hash
 # libsodium https://wiki.php.net/rfc/libsodium
 # https://github.com/jedisct1/libsodium
 # disable temporarily for php 7.2.0 due to libzip compile errors
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
-if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 ]]; then
+
+if [[ "$PHPMUVER" = 7.3 ]]; then
+  # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
+  PHP_LIBZIP='y'
+fi
+if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   LIBZIP_OPT=' --with-libzip'
@@ -317,10 +322,12 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 ]]; th
   if [[ ! -f /usr/local/include/zip.h ]]; then
     libzip_install
   fi
-  # if [[ ! -f /usr/bin/zipcmp || ! -f /usr/include/zip.h ]]; then
-  #   time $YUMDNFBIN${CACHESKIP} -q -y install libzip libzip-devel
-  # fi
-  if [ ! -f /usr/local/lib/libsodium.so ]; then
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    LIBDIR_ARGONSODIUM='lib64'
+  else
+    LIBDIR_ARGONSODIUM='lib'
+  fi
+  if [ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]; then
     pushd "$DIR_TMP"
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
         cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
@@ -338,15 +345,15 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 ]]; th
     cd libsodium-${LIBSODIUM_VER}
     make clean
     if [[ "$LIBSODIUM_NATIVE" = [nN] ]]; then
-      ./configure
+      ./configure --prefix=/usr/local --libdir=/usr/local/${LIBDIR_ARGONSODIUM}
     elif [[ "$LIBSODIUM_NATIVE" = [yY] ]]; then
-      ./configure --enable-opt
+      ./configure --prefix=/usr/local --enable-opt --libdir=/usr/local/${LIBDIR_ARGONSODIUM}
     fi
     make${MAKETHREADS}
     make install
     popd
   fi
-  if [ ! -f /usr/local/lib/libargon2.so ]; then
+  if [ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]; then
     pushd "$DIR_TMP"
     if [ -s "${LIBARGON_VER}.tar.gz" ]; then
         cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
@@ -364,11 +371,11 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 ]]; th
     cd phc-winner-argon2-${LIBARGON_VER}
     make clean
     make${MAKETHREADS}
-    make install PREFIX=/usr/local
+    make install PREFIX=/usr/local LIBRARY_REL=${LIBDIR_ARGONSODIUM}
     popd
   fi
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
-  if [[ ! -f /usr/local/lib/libargon2.so || ! -f /usr/local/lib/libsodium.so || ! -f /usr/local/include/zip.h ]]; then
+  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f /usr/local/include/zip.h ]]; then
     echo
     echo "disable libzip, libsodium or libargon2 libraries"
     echo

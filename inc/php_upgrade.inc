@@ -249,7 +249,7 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.26, NGDEBUG)"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.30, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x is GA Stable but still may have broken PHP extensions."
     echo "NGDEBUG is PHP 7.3.0 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
@@ -520,7 +520,7 @@ fi
     fi
     echo "PHPMUVER = $PHPMUVER"
     echo "PHP_PGO = $PHP_PGO"
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' ]]; then
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' ]]; then
         echo "make${MAKETHREADS_PHP} prof-gen"
         time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
@@ -836,7 +836,14 @@ fi
 
 addmysql_legacyinstall
 
-if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.2' ]]; then
+if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.3' ]]; then
+    echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
+    echo "PHPMVER=$PHPMVER"
+    echo "PHPMUVER=$PHPMUVER"
+    if [ -f /usr/local/src/centminmod/addons/php73-mcrypt.sh ]; then
+        /usr/local/src/centminmod/addons/php73-mcrypt.sh menu
+    fi
+elif [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.2' ]]; then
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
@@ -885,13 +892,13 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2'
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
-    cecho "PHP 7.0/7.1/7.2 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "PHP 7.0/7.1/7.2/7.3 detected.. remove unsupported PHP extensions manually" $boldyellow
     cecho "by removing their ini files:" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
@@ -920,7 +927,7 @@ fi
 
     echo "***************************************************"
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' ]]; then
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' ]]; then
         cecho "* PHP_PGO='y' detected. PHP compiled with Profile Guided Optimizations" $boldgreen
         cecho "* https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php" $boldgreen
     fi

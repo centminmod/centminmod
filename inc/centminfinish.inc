@@ -79,6 +79,14 @@ echo ""
   echo "PHP_INSTALL='n' set"
   fi
 
+  if [ -f /usr/bin/php73 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 7.2 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php73 -v
+letswait
+  fi
   if [ -f /usr/bin/php72 ]; then
 echo ""
   cecho "--------------------------------------------------------" $boldyellow

@@ -902,7 +902,13 @@ else
   TLSONETHREE_CIPHERS=""
 fi
 
-if [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+if [[ -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
+  MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php73-remi.conf;
+  #include /usr/local/nginx/conf/php72-remi.conf;
+  #include /usr/local/nginx/conf/php71-remi.conf;
+  #include /usr/local/nginx/conf/php70-remi.conf;
+  #include /usr/local/nginx/conf/php56-remi.conf;'
+elif [[ -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then
   MULTIPHP_INCLUDES='#include /usr/local/nginx/conf/php72-remi.conf;
   #include /usr/local/nginx/conf/php71-remi.conf;
   #include /usr/local/nginx/conf/php70-remi.conf;
