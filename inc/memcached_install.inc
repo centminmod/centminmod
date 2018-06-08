@@ -391,7 +391,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     if [[ "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.3' ]]; then
       pushd "$DIR_TMP"
       rm -rf memcached-php7
-      time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+      time git clone --depth=1 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
       popd
       cd "${DIR_TMP}/memcached-php7"
     else
