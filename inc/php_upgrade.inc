@@ -859,6 +859,12 @@ else
     fi
 fi
 
+if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
+    cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+    cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+    rm -rf "${CONFIGSCANDIR}/mailparse.ini"
+fi
+
 echo
 php --ini
 
@@ -902,23 +908,27 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "by removing their ini files:" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
-    # if [ -f /etc/centminmod/php.d/igbinary.ini ]; then
-    #     cecho "rm -rf /etc/centminmod/php.d/igbinary.ini" $boldyellow
+    # if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
+    #     cecho "rm -rf ${CONFIGSCANDIR}/igbinary.ini" $boldyellow
     # fi
-    # if [ -f /etc/centminmod/php.d/imagick.ini ]; then
-    #     cecho "#rm -rf /etc/centminmod/php.d/imagick.ini" $boldyellow
+    # if [ -f ${CONFIGSCANDIR}/imagick.ini ]; then
+    #     cecho "#rm -rf ${CONFIGSCANDIR}/imagick.ini" $boldyellow
     # fi
-    # if [ -f /etc/centminmod/php.d/memcache.ini ]; then
-    #     cecho "#rm -rf /etc/centminmod/php.d/memcache.ini" $boldyellow
+    # if [ -f ${CONFIGSCANDIR}/memcache.ini ]; then
+    #     cecho "#rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
     # fi
-    if [ -f /etc/centminmod/php.d/mongodb.ini ]; then
-        cecho "#rm -rf /etc/centminmod/php.d/mongodb.ini" $boldyellow
+    if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
+        cecho "#rm -rf ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
     fi
-    # if [ -f /etc/centminmod/php.d/redis.ini ]; then
-    #     cecho "#rm -rf /etc/centminmod/php.d/redis.ini" $boldyellow
+    # if [ -f ${CONFIGSCANDIR}/redis.ini ]; then
+    #     cecho "#rm -rf ${CONFIGSCANDIR}/redis.ini" $boldyellow
     # fi
-    if [ -f /etc/centminmod/php.d/suhosin.ini ]; then
-        cecho "rm -rf /etc/centminmod/php.d/suhosin.ini" $boldyellow
+    if [ -f "${CONFIGSCANDIR}/suhosin.ini" ]; then
+        cecho "rm -rf ${CONFIGSCANDIR}/suhosin.ini" $boldyellow
+    fi
+    if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
+        cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+        cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
     fi
     echo
     cecho "then restart PHP-FPM again..." $boldyellow

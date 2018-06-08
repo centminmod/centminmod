@@ -268,7 +268,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
                 rerpm
             fi
         fi
-    
+        pushd "$DIR_TMP"
         rm -rf memcache-php7
         time git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
         cd memcache-php7
@@ -279,6 +279,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
         make install
+        popd
     else
         cecho "Compiling PHP memcache extension..." $boldgreen
         pwd
@@ -375,7 +376,7 @@ if [ -f /usr/bin/re2c ]; then
     fi
 fi
 
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0|7.1|7.2'
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep '7.0|7.1|7.2|7.3'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
@@ -386,14 +387,20 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     PHPEXT_MEMCACHEDLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
     echo
     echo "compiling memcached PHP extension for PHP 7.x ..."
-    # rm -rf memcached-php7
-    # time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
-    # cd memcached-php7
-    if [ ! -d "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}" ]; then
-        rm -rf "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}*"
-        memcachedphplocaltarball
+    echo "PHPMUVER = $PHPMUVER"
+    if [[ "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.3' ]]; then
+      pushd "$DIR_TMP"
+      rm -rf memcached-php7
+      time git clone -b php7 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+      popd
+      cd "${DIR_TMP}/memcached-php7"
+    else
+      if [ ! -d "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}" ]; then
+          rm -rf "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}*"
+          memcachedphplocaltarball
+      fi
+      cd "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}"
     fi
-    cd "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
