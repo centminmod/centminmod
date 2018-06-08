@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.39'
+ACMEVER='1.0.40'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -739,7 +739,7 @@ sed -i '/^# redirect from www to non-www  forced SSL/d' "/usr/local/nginx/conf/c
 sed -i '/^# uncomment, save file and restart Nginx to enable/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# if unsure use return 302 before using return 301/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# server {/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
-sed -i '/^#   server_name http2ssl.xyz www.http2ssl.xyz;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "/^#   server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^#    return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# }/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
