@@ -64,7 +64,7 @@ dbsetup() {
   DBPASS="wpdb${SALT}p${DBNC}"
   mysqladmin create $DB
   mysql -e "CREATE USER $DBUSER@'localhost' IDENTIFIED BY '$DBPASS';"
-  mysql -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER, LOCK TABLES, CREATE TEMPORARY TABLES ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
+  mysql -e "GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON ${DB}.* TO ${DBUSER}@'localhost'; FLUSH PRIVILEGES;"
 }
 
 wpinfo_notice() {
