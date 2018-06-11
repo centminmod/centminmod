@@ -706,6 +706,15 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
     ZLIBCUSTOM_DIR="zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
     ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+    # if using cloudflare zlib libary set the default gzip compression level higher instead of 5 set to 9 
+    # defaults  benchmarks show performance is still very high even with level 9 with cloudflare zlib library
+    # https://community.centminmod.com/posts/64167/
+    if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+      sed -i 's|gzip_comp_level .*|gzip_comp_level 9;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [ -f /usr/local/src/centminmod/config/nginx/nginx.conf ]; then
+      sed -i 's|gzip_comp_level .*|gzip_comp_level 9;|' /usr/local/src/centminmod/config/nginx/nginx.conf
+    fi
     #ZLIBCF_OPT='-L/usr/local/zlib-cf/lib '
     #ZLIBCFINC_OPT='-I/usr/local/zlib-cf/include '
     # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
@@ -719,6 +728,16 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     else
       CLANG='n'
       DEVTOOLSETSIX='y'
+    fi
+  fi
+
+  if [[ "$CLOUDFLARE_ZLIBRESET" = [yY] && "$CLOUDFLARE_ZLIB" != [yY] ]]; then
+    # if not using Cloudflare zlib library and you previously set gzip compression level to 9, reset it back to level 5
+    if [[ "$(grep 'gzip_comp_level 9' /usr/local/nginx/conf/nginx.conf)" && -f /usr/local/nginx/conf/nginx.conf ]]; then
+      sed -i 's|gzip_comp_level .*|gzip_comp_level 5;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$(grep 'gzip_comp_level 9' /usr/local/src/centminmod/config/nginx/nginx.conf)" && -f /usr/local/src/centminmod/config/nginx/nginx.conf ]]; then
+      sed -i 's|gzip_comp_level .*|gzip_comp_level 5;|' /usr/local/src/centminmod/config/nginx/nginx.conf
     fi
   fi
 
