@@ -709,11 +709,19 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # if using cloudflare zlib libary set the default gzip compression level higher instead of 5 set to 9 
     # defaults  benchmarks show performance is still very high even with level 9 with cloudflare zlib library
     # https://community.centminmod.com/posts/64167/
-    if [ -f /usr/local/nginx/conf/nginx.conf ]; then
+    if [[ "$CLOUDFLARE_ZLIBRAUTOMAX" = [yY] && -f /usr/local/nginx/conf/nginx.conf ]]; then
       sed -i 's|gzip_comp_level .*|gzip_comp_level 9;|' /usr/local/nginx/conf/nginx.conf
+    else
+      if [[ "$(grep 'gzip_comp_level 9' /usr/local/nginx/conf/nginx.conf)" && -f /usr/local/nginx/conf/nginx.conf ]]; then
+        sed -i 's|gzip_comp_level .*|gzip_comp_level 5;|' /usr/local/nginx/conf/nginx.conf
+      fi
     fi
-    if [ -f /usr/local/src/centminmod/config/nginx/nginx.conf ]; then
+    if [[ "$CLOUDFLARE_ZLIBRAUTOMAX" = [yY] && -f /usr/local/src/centminmod/config/nginx/nginx.conf ]]; then
       sed -i 's|gzip_comp_level .*|gzip_comp_level 9;|' /usr/local/src/centminmod/config/nginx/nginx.conf
+    else
+      if [[ "$(grep 'gzip_comp_level 9' /usr/local/src/centminmod/config/nginx/nginx.conf)" && -f /usr/local/src/centminmod/config/nginx/nginx.conf ]]; then
+        sed -i 's|gzip_comp_level .*|gzip_comp_level 5;|' /usr/local/src/centminmod/config/nginx/nginx.conf
+      fi
     fi
     #ZLIBCF_OPT='-L/usr/local/zlib-cf/lib '
     #ZLIBCFINC_OPT='-I/usr/local/zlib-cf/include '
