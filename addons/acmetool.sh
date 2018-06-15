@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.40'
+ACMEVER='1.0.41'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -676,7 +676,18 @@ fi
     HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'  
   elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
     HTTPTWO=y
+    if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/ | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep reuseport | awk -F ':  ' '{print $2}' | grep -o reuseport)" != 'reuseport' ]]; then
+    # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
+    NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
+    if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+      ADD_REUSEPORT=' reuseport'
+    else
+      ADD_REUSEPORT=""
+    fi
+    LISTENOPT="ssl http2${ADD_REUSEPORT}"
+  else
     LISTENOPT='ssl http2'
+  fi
     COMP_HEADER='#spdy_headers_comp 5'
     SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
     HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
