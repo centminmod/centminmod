@@ -280,7 +280,11 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
     else
       # echo "Place holder for now until MariaDB 10.2.x is ready to be added"
       c7tmpsetup
-      mariadbtentotentwoupgrade
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        mariadbtentotentwoupgrade
+      else
+        echo "currently only tested on CentOS 7 systems"
+      fi
     fi
   elif [ "$MARIADBVERCHECK" != '10.1' ]; then
     echo "Need to be on MariaDB 10.1 before updating to MariaDB 10.2"
@@ -308,7 +312,11 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
     else
       # echo "Place holder for now until MariaDB 10.2.x is ready to be added"
       c7tmpsetup
-      mariadbtentwototenthreeupgrade
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        mariadbtentwototenthreeupgrade
+      else
+        echo "currently only tested on CentOS 7 systems"
+      fi
     fi
   elif [ "$MARIADBVERCHECK" != '10.2' ]; then
     echo "Need to be on MariaDB 10.2 before updating to MariaDB 10.3"
