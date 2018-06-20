@@ -729,18 +729,26 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # cloudflare zlib
     if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
       CLANG='y'
-      if [ -f /opt/sbin/llvm-release_60/bin/clang ]; then
+      if [[ "$CLANG_MASTER" = [yY] && -f /opt/sbin/llvm-release_master/bin/clang ]]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='n'
+        CLANG_SIX='n'
+        CLANG_MASTER='y'
+      elif [[ "$CLANG_SIX" = [yY] && -f /opt/sbin/llvm-release_60/bin/clang ]]; then
         CLANG_FOUR='n'
         CLANG_FIVE='n'
         CLANG_SIX='y'
-      elif [ -f /opt/sbin/llvm-release_50/bin/clang ]; then
+        CLANG_MASTER='n'
+      elif [[ "$CLANG_FIVE" = [yY] && -f /opt/sbin/llvm-release_50/bin/clang ]]; then
         CLANG_FOUR='n'
         CLANG_FIVE='y'
         CLANG_SIX='n'
+        CLANG_MASTER='n'
       else
         CLANG_FOUR='y'
         CLANG_FIVE='n'
         CLANG_SIX='n'
+        CLANG_MASTER='n'
       fi
     elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
@@ -2422,6 +2430,8 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_60/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_MASTER" = [yY] ]]; then
+  CLANG_NEWBIN='/opt/sbin/llvm-release_master/bin/clang'
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
