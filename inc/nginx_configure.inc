@@ -729,7 +729,19 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # cloudflare zlib
     if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
       CLANG='y'
-      CLANG_FOUR='y'
+      if [ -f /opt/sbin/llvm-release_60/bin/clang ]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='n'
+        CLANG_SIX='y'
+      elif [ -f /opt/sbin/llvm-release_50/bin/clang ]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='y'
+        CLANG_SIX='n'
+      else
+        CLANG_FOUR='y'
+        CLANG_FIVE='n'
+        CLANG_SIX='n'
+      fi
     elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
       DEVTOOLSETSIX='y'
