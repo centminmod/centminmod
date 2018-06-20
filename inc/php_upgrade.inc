@@ -619,10 +619,20 @@ if [[ "$STRIPPHP" = [yY] ]]; then
     echo "strip PHP binary..."
     ls -lah /usr/local/bin/php
     ls -lah /usr/local/bin/php-cgi
+    ls -lah /usr/local/sbin/php-fpm
+    echo
+    echo "backup before strip PHP binary..."
+    \cp -af /usr/local/bin/php /usr/local/bin/php-b4strip 
+    \cp -af /usr/local/bin/php-cgi /usr/local/bin/php-cgi-b4strip 
+    \cp -af /usr/local/sbin/php-fpm /usr/local/sbin/php-fpm-b4strip 
     strip -s /usr/local/bin/php
     strip -s /usr/local/bin/php-cgi
+    strip -s /usr/local/sbin/php-fpm
+    echo
+    echo "after strip PHP binary..."
     ls -lah /usr/local/bin/php
     ls -lah /usr/local/bin/php-cgi
+    ls -lah /usr/local/sbin/php-fpm
     echo
 fi
 
