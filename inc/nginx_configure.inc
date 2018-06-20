@@ -2898,6 +2898,8 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
     NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   elif [[ "$CLANG_SIX" = [Yy] ]]; then
     NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
+  elif [[ "$CLANG_MASTER" = [Yy] ]]; then
+    NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT"
   else
     if [[ "$CLANG" = [yY] ]]; then
       if [[ "$CLANG_SIX" = [Yy] ]]; then
