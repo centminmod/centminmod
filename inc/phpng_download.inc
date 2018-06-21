@@ -8,7 +8,7 @@ phpng_download() {
     curl -4Is --connect-timeout 5 --max-time 5 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
-      REMIURL='https://downloads.php.net/~stas'
+      REMIURL='https://downloads.php.net/~cmb'
     fi
     cecho "Downloading PHP $PHPNGVER from ${REMIURL}/" $boldyellow
     cd $DIR_TMP
