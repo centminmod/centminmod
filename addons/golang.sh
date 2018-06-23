@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.1.0'
+VER='0.1.1'
 ######################################################
 # golang binary installer
 # for Centminmod.com
@@ -94,12 +94,13 @@ fi
 
 go_install() {
 	cd $DIR_TMP
+  GO_VERSION=$(curl -4s https://golang.org/dl/ | egrep -o "go[0-9.]+\.linux\-amd64\.tar[.a-z]*" | head -n1 | sed -e 's|.linux-amd64.tar.gz||' -e 's|go||')
 		
   cecho "Download go${GO_VERSION}.linux-${GOARCH}.tar.gz ..." $boldyellow
   if [ -s go${GO_VERSION}.linux-${GOARCH}.tar.gz ]; then
   	cecho "go${GO_VERSION}.linux-${GOARCH}.tar.gz Archive found, skipping download..." $boldgreen
   else
-  	wget -c4 --progress=bar https://storage.googleapis.com/golang/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
+  	wget -c4 --progress=bar https://dl.google.com/go/go${GO_VERSION}.linux-${GOARCH}.tar.gz --tries=3 
 	ERROR=$?
 		if [[ "$ERROR" != '0' ]]; then
 			cecho "Error: go${GO_VERSION}.linux-${GOARCH}.tar.gz download failed." $boldgreen
