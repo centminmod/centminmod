@@ -125,7 +125,7 @@ go_install() {
 		echo ""
 	fi
 		
-	if [[ ! -d /root/golang/packages || ! "$(grep 'GOPATH' /root/.bashrc)" ]]; then
+	if [[ ! -d /root/golang/packages || ! "$(grep 'GOPATH' /root/.bashrc)" ]] && [ -f /usr/local/go/bin/go ]; then
 		cecho "---------------------------" $boldyellow
 		cecho "/root/.bashrc before update: " $boldwhite
 		cat /root/.bashrc
