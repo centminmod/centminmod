@@ -2654,7 +2654,7 @@ cecho "------------------------------------------------------------" $boldgreen
 cecho "To complete setup:" $boldyellow
 if [[ "$wpscache" = [nN] ]]; then
   cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
-  2. Settings Menu > Cache Enabler set options and hit Save Changes
+  2. Settings Menu > Cache Enabler set options and hit Save Changes (https://community.centminmod.com/threads/15039/)
   3. Settings Menu > Optimus set options and hit Save Changes
   4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
   if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
