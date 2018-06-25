@@ -100,10 +100,10 @@ $DF
 "
 if [[ "$ENABLEMOTD_CSFMSG" != [nN] ]]; then
 echo "===============================================================================
-! This server maybe running CSF Firewall !  
-  DO NOT run the below command or you  will lock yourself out of the server: 
-
-  iptables -F 
+# ! This server maybe running CSF Firewall !  
+#   DO NOT run the below command or you  will lock yourself out of the server: 
+# 
+#   iptables -F 
 "
 fi
 if [[ "$ENABLEMOTD_LINKSMSG" != [nN] ]]; then
