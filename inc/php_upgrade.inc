@@ -925,7 +925,7 @@ echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
     cecho "PHP 7.0/7.1/7.2/7.3 detected.. remove unsupported PHP extensions manually" $boldyellow
-    cecho "by removing their ini files:" $boldyellow
+    cecho "by removing their ini files listed below (if list is empty = nothing to do):" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
     # if [ -f ${CONFIGSCANDIR}/igbinary.ini ]; then
