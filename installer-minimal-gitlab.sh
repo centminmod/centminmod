@@ -198,11 +198,19 @@ EOF
   fi
 fi
 
+# some centos images don't even install tar by default !
+if [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
+  yum -y -q install tar
+fi
+
 if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
   fi
+
   if [[ "$DNF_COPR" = [yY] ]]; then
 cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
 [dnf-centos]
