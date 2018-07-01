@@ -41,6 +41,13 @@ DEF=${1:-novalue}
 
 yum clean all
 
+# some centos images don't even install tar by default !
+if [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
+  yum -y -q install tar
+fi
+
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
   if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
