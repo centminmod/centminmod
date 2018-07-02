@@ -42,7 +42,7 @@ if [ -z "$WOFFTWOCHECK" ]; then
 	sed -i 's/}//' /usr/local/nginx/conf/mime.types
 
 cat >> "/usr/local/nginx/conf/mime.types" <<EAF
-    application/font-woff2                  woff2;
+    font/woff2                   woff2;
     text/cache.manifest       manifest;
     text/cache.manifest       appcache;
 }
