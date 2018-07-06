@@ -2629,7 +2629,7 @@ elif [[ "$disablepwdprotect" = [yY] ]]; then
     sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
     sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
     if [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
-      sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.conf >/dev/null 2>&1
+      sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
       sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
     fi
     /usr/bin/nprestart
