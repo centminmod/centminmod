@@ -2418,10 +2418,14 @@ chmod 0700 /usr/bin/wp
 #/usr/bin/wp core update-db --allow-root
 #/usr/bin/wp core update --allow-root
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
-if [[ -f .wpcli-status && ! "$(grep -w 'Plugin already updated' .wpcli-status)" ]]; then
+if [[ -f .wpcli-status && ! "\$(grep -w 'Plugin already updated' .wpcli-status)" ]]; then
   exec 99>/tmp/wp_updater_phpfpm.lock
   if flock -n -x 99; then
-  /usr/bin/nprestart
+    # only do nginx + php-fpm restarts when zend opcache caching is enabled and revalidation
+    # frequency is greater than 10 seconds set by opcache.revalidate_freq php setting
+    if [[ "\$(php --ri "Zend Opcache" >/dev/null 2>&1; echo \$?)" -eq '0' && "\$(php --ri "Zend Opcache" | awk '/opcache.revalidate_freq/ {print \$3}')" -gt '10' ]]; then
+      /usr/bin/nprestart
+    fi
   rm -rf /tmp/wp_updater_phpfpm.lock
   else
   echo "already detected running process"
