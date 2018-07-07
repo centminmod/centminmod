@@ -637,6 +637,24 @@ fixwp_updater() {
   if [ -d /root/tools ]; then
     for f in $(find /root/tools/ -type f -name "wp_updater_*"); do grep -w 'pure-pw' $f && sed -i "/pure-pw/d" $f; done
   fi
+
+  # auto fix wp_updater cronjobs code only if 23rd line of file has expected bug
+  # and file has exactly 36 lines of code (to prevent messing up customized files)
+  # part 1 fix outlined at https://community.centminmod.com/threads/15123/
+  if [ -d /root/tools ]; then
+    find /root/tools -type f -name "wp_updater_*.sh" | while read w; do
+      if [[ "$(sed -n '23'p "$w" | grep 'if \[\[ -f .wpcli-status && ! "" \]\]; then')" && "$(wc -l < "$w")" -eq '36' ]]; then
+        echo
+        echo "updating wp updater code for $w"
+        echo "https://community.centminmod.com/threads/15123/"
+        DT=$(date +"%d%m%y-%H%M%S")
+        echo "cp -a "$w" "${w}.backup-$DT""
+        cp -a "$w" "${w}.backup-$DT"
+        sed -i "s| \"\"| \"\$(grep -w 'Plugin already updated' .wpcli-status)\"|" "$w"
+        cat "$w" | grep wpcli-status | grep then
+      fi
+    done
+  fi
 }
 
 fixlshw_rpmforge() {
