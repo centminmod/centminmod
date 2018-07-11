@@ -20,7 +20,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='033'
+SCRIPT_INCREMENTVER='034'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2018'
@@ -801,7 +801,7 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.14.1'
+  AXEL_VER='2.16.1'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS

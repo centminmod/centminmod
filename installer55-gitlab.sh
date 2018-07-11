@@ -170,7 +170,7 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  AXEL_VER='2.14.1'
+  AXEL_VER='2.16.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
   AXEL_LINKLOCAL="https://github.com/axel-download-accelerator/axel/archive/v${AXEL_VER}.tar.gz"
@@ -1200,7 +1200,7 @@ rm -rf /etc/centminmod/email-secondary.ini
 if [[ "$DEF" = 'novalue' ]]; then
   # devtoolset SCL repo only supports 64bit OSes
   if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
-    if [[ "$CHECK_LXD" = [yY] ]]; then
+    if [[ "$CHECK_LXD" = [yY] || ! -f /usr/bin/gcc ]]; then
       # lxd containers have minimal default yum packages installed
       $YUMDNFBIN -y install yum-utils cmake which e2fsprogs e2fsprogs-devel bc libuuid libuuid-devel openssl openssl-devel zlib zlib-devel gd gd-devel net-tools bzip2-devel gmp-devel libXext-devel libidn-devel libtool-ltdl-devel openldap-devel bluez-libs-devel
       $YUMDNFBIN -y install libcurl libcurl-devel
