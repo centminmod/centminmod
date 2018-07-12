@@ -1301,6 +1301,7 @@ echo "--------------------------------------------------------------------------
   echo "$CPUMODEL"; echo "$CPUSPEED"
 echo "---------------------------------------------------------------------------"
 } 2>&1 | tee "/root/centminlogs/install_time_stats_${DT}.log"
+  cat "/root/centminlogs/install_time_stats_${DT}.log" >> "/root/centminlogs/installer_${DT}.log"
   systemstats
 fi
 
