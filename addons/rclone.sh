@@ -24,7 +24,7 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
-  if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+  if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
     HOSTDOMAIN=$(hostname)
   else
     HOSTDOMAIN=$(hostname -f)

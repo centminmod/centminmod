@@ -117,7 +117,7 @@ CSALT=$(openssl rand 6 -base64 | tr -dc 'a-zA-Z0-9')
 CUSER=$(echo "admin${CSALT}")
 CPASS=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
 
-    if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+    if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
       hname=$(hostname)
     else
       hname=$(hostname -f)

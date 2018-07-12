@@ -405,7 +405,7 @@ systemstats() {
     sar -d > /root/centminlogs/sar-d-installstats.log
     fi
     sar -b > /root/centminlogs/sar-b-installstats.log
-    if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+    if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
       SERVERHOSTNAME=$(hostname)
     else
       SERVERHOSTNAME=$(hostname -f)

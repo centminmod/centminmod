@@ -61,7 +61,7 @@ postconf -n smtpd_milters non_smtpd_milters milter_default_action milter_protoco
 fi
 
 # DKIM for main hostname
-  if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+  if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
     h_vhostname=$(hostname)
   else
     h_vhostname=$(hostname -f)

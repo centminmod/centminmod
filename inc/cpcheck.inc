@@ -1039,7 +1039,7 @@ yumupdatechecker() {
     fi
     if [[ "$UPDATE_CHECK" = '100' ]]; then
       echo
-      if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+      if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
         SERVERHOSTNAME=$(hostname)
       else
         SERVERHOSTNAME=$(hostname -f)

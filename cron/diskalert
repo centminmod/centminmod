@@ -27,7 +27,7 @@ else
   DISKALERT_ADMINEMAIL="$EMAIL"
 fi
 
-if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" ]]; then
+if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
   DISKALERT_SERVERHOSTNAME=$(hostname)
 else
   DISKALERT_SERVERHOSTNAME=$(hostname -f)
