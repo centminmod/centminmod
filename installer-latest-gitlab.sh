@@ -1234,6 +1234,7 @@ rm -rf /etc/centminmod/email-secondary.ini
 }
 
 if [[ "$DEF" = 'novalue' ]]; then
+  {
   # devtoolset SCL repo only supports 64bit OSes
   if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
     if [[ "$CHECK_LXD" = [yY] || ! -f /usr/bin/gcc ]]; then
@@ -1252,6 +1253,7 @@ if [[ "$DEF" = 'novalue' ]]; then
   install_axel
   fileperm_fixes
   cminstall
+} 2>&1 | tee "/root/centminlogs/installer_${DT}.log"
   echo
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
   FIRSTYUMINSTALLTIME=$(printf "%0.4f\n" $FIRSTYUMINSTALLTIME)
