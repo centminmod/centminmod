@@ -400,6 +400,41 @@ restoredata() {
     echo
 }
 
+additional_blocks() {
+  csf --profile backup cmm-b4-censys-block
+  # block censys.io scans
+  # https://support.censys.io/getting-started/frequently-asked-questions-faq
+  csf -d 141.212.121.0/24 censys
+  csf -d 141.212.122.0/24 censys
+  csf --profile backup cmm-b4-shodan-block
+  # block shodan scans
+  # https://wiki.ipfire.org/configuration/firewall/blockshodan
+  csf -d 104.131.0.69 hello.data.shodan.io
+  csf -d 104.236.198.48 blog.shodan.io
+  csf -d 188.138.9.50 atlantic.census.shodan.io
+  csf -d 198.20.69.74 census1.shodan.io
+  csf -d 198.20.69.98 census2.shodan.io
+  csf -d 198.20.70.114 census3.shodan.io
+  csf -d 198.20.87.98 border.census.shodan.io
+  csf -d 198.20.99.130 census4.shodan.io
+  csf -d 208.180.20.97 shodan.io
+  csf -d 209.126.110.38 atlantic.dns.shodan.io
+  csf -d 66.240.192.138 census8.shodan.io
+  csf -d 66.240.219.146 burger.census.shodan.io
+  csf -d 66.240.236.119 census6.shodan.io
+  csf -d 71.6.135.131 census7.shodan.io
+  csf -d 71.6.146.185 pirate.census.shodan.io
+  csf -d 71.6.158.166 ninja.census.shodan.io
+  csf -d 71.6.165.200 census12.shodan.io
+  csf -d 71.6.167.142 census9.shodan.io
+  csf -d 82.221.105.6 census10.shodan.io
+  csf -d 82.221.105.7 census11.shodan.io
+  csf -d 85.25.103.50 pacific.census.shodan.io
+  csf -d 85.25.43.94 rim.census.shodan.io
+  csf -d 93.120.27.62 census5.shodan.io
+  csf --profile list
+}
+
 cleanup() {
     echo "cleaning up temp files"
     rm -rf /tmp/csf-tempips.txt
@@ -419,6 +454,7 @@ csfinstalls
     echo "---------------------------------------------------------------------"
     echo
 restoredata
+additional_blocks
 cleanup
 } 2>&1 | tee "${CENTMINLOGDIR}/csf-reinstall_${DT}.log"
 echo
