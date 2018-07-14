@@ -13,6 +13,7 @@ OPT=/opt
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################################
 DISABLE_NETWORKFFMPEG='n'
 ENABLE_FPIC='n'

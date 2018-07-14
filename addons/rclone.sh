@@ -10,7 +10,8 @@ DEBUG='y'
 
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
-BASEURL='http://downloads.rclone.org'
+RCLONE_BASEURL='http://downloads.rclone.org'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -200,7 +201,7 @@ rclone_install() {
       echo "------------------------------------------------"
       cd "$DIR_TMP"
       rm -rf rclone-*
-      wget -4 -cnv -O rclone-current-linux-amd64.zip "${BASEURL}/rclone-current-linux-amd64.zip"
+      wget -${ipv_forceopt}cnv -O rclone-current-linux-amd64.zip "${RCLONE_BASEURL}/rclone-current-linux-amd64.zip"
       unzip rclone-current-linux-amd64.zip
       cd rclone-*-linux-amd64
       \cp -f rclone /usr/sbin/
@@ -222,7 +223,7 @@ rclone_install() {
       echo "------------------------------------------------"
       cd "$DIR_TMP"
       rm -rf rclone-*
-      wget -4 -cnv -O rclone-current-linux-386.zip "${BASEURL}/rclone-current-linux-386.zip"
+      wget -${ipv_forceopt}cnv -O rclone-current-linux-386.zip "${RCLONE_BASEURL}/rclone-current-linux-386.zip"
       unzip rclone-current-linux-386.zip
       cd rclone-*-linux-386
       \cp -f rclone /usr/sbin/

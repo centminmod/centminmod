@@ -9,6 +9,7 @@
 DT=$(date +"%d%m%y-%H%M%S")
 TMP_DIR='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # enter email address you want alerts sent to
 # i.e. your@domain.com
@@ -164,7 +165,7 @@ if [ ! -f /usr/local/sbin/maldet ]; then
     if [ -s maldetect-current.tar.gz ]; then
         cecho "maldetect-current.tar.gz Archive found, skipping download..." $boldgreen
     else
-        wget -4 -cnv http://www.rfxn.com/downloads/maldetect-current.tar.gz --tries=3 
+        wget -${ipv_forceopt}cnv http://www.rfxn.com/downloads/maldetect-current.tar.gz --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: maldetect-current.tar.gz download failed." $boldgreen

@@ -9,6 +9,7 @@ CFIPNGINXLOG='/root/cfnginxlog.log'
 CFIPCSFLOG='/root/csf_log.log'
 CFINCLUDEFILE='/usr/local/nginx/conf/cloudflare.conf'
 CURL_TIMEOUTS='--max-time 20 --connect-timeout 20'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################
 if [ ! -f /usr/bin/curl ]; then
 	echo "Installing curl please wait..."
@@ -27,8 +28,17 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
+
 ipv4get() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
+	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	
@@ -73,7 +83,7 @@ ipv4get() {
 
 ###############################
 ipv6get() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
+	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIP6LOG)
 	
@@ -118,8 +128,8 @@ ipv6get() {
 
 ###############################
 csfadd() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
-	/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
+	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
+	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	CFIP6S=$(cat $CFIP6LOG)
@@ -171,8 +181,8 @@ nginxsetup() {
 		\cp -af "$CFINCLUDEFILE" "${CFINCLUDEFILE}.bak"
 	fi
 	echo > $CFINCLUDEFILE
-	cflista=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/)
-	cflistb=$(/usr/bin/curl -s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/)
+	cflista=$(/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/)
+	cflistb=$(/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/)
 	if [ ! -f /usr/local/nginx/conf/cloudflare_customips.conf ]; then
 		touch /usr/local/nginx/conf/cloudflare_customips.conf
 	fi

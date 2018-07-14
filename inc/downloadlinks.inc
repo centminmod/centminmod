@@ -103,8 +103,8 @@ if [ ! -f /etc/yum.repos.d/epel.repo ]; then
 if [[ "$(uname -m)" = 'x86_64' ]]; then
   if [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [[ "$REDHAT_SEVEN" -eq '7' ]]; then
-      CENTOSSEVENEPEL_MIRRORURL=$(curl -4 -sI https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | awk '/Location: / {print $2}')
-      CENTOSSEVENEPEL_MIRRORURLFILE=$(curl -4 -sL https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | grep -o '<a .*href=.*>' | sed -e 's/<a /\n<a /g' | sed -e 's/<a .*href=['"'"'"]//' -e 's/["'"'"'].*$//' -e '/^$/ d' | grep 'epel-release' | grep 'rpm')
+      CENTOSSEVENEPEL_MIRRORURL=$(curl -${ipv_forceopt}sI https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | awk '/Location: / {print $2}')
+      CENTOSSEVENEPEL_MIRRORURLFILE=$(curl -${ipv_forceopt}sL https://download.fedoraproject.org/pub/epel/7/x86_64/e/ | grep -o '<a .*href=.*>' | sed -e 's/<a /\n<a /g' | sed -e 's/<a .*href=['"'"'"]//' -e 's/["'"'"'].*$//' -e '/^$/ d' | grep 'epel-release' | grep 'rpm')
       CENTOSSEVENEPELFILE="$CENTOSSEVENEPEL_MIRRORURLFILE"
       CENTOSSEVENEPEL="$CENTOSSEVENEPEL_MIRRORFULLURL"
     else

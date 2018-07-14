@@ -9,11 +9,12 @@ VER='0.0.7'
 # specify version branch so set NODEJSVER to 4, 5, 6, 7 or 8
 NODEJSVER='8'
 NODEJS_SOURCEINSTALL='y'
-REINSTALL='y'
+NODEJS_REINSTALL='y'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -88,6 +89,15 @@ fi
 
 if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
     CENTOS_SIX='6'
+fi
+
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
 fi
 
 if [ -f /proc/user_beancounters ]; then
@@ -246,7 +256,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	read -ep "Do you want to continue with node.js source install ? [y/n]: " nodecontinue
 	echo
 	if [[ "$nodecontinue" = [yY] && "$NODEJS_SOURCEINSTALL" = [yY] ]]; then
-		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$REINSTALL" = [yY] ]]; then
+		if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' || "$NODEJS_REINSTALL" = [yY] ]]; then
 	
 			if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
 				scl_install
@@ -276,7 +286,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
     		if [ -s node-v${NODEJSVER}.tar.gz ]; then
         		cecho "node-v${NODEJSVER}.tar.gz Archive found, skipping download..." $boldgreen
     		else
-        		wget -c4 --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
+        		wget -c${ipv_forceopt} --progress=bar http://nodejs.org/dist/v${NODEJSVER}/node-v${NODEJSVER}.tar.gz --tries=3 
 		ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
 			cecho "Error: node-v${NODEJSVER}.tar.gz download failed." $boldgreen

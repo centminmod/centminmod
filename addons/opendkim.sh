@@ -5,7 +5,7 @@
 ###################################################################
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
-
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###################################################################
 # functions
 

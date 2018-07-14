@@ -338,7 +338,7 @@ fi
             figlet -ckf standard "PHP: Download"
         fi
     
-        curl -4Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
+        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${phpver}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
         PHPGEO_CURLCHECK=$?
         if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
             PHP_MIRRORURL="http://php.net"

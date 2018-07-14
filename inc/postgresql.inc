@@ -9,16 +9,20 @@ postgresqlinstall() {
     if [[ ! -f /usr/pgsql-9.6/bin/pg_config || ! -f /usr/pgsql-9.6/lib/libpq.a || ! -f /etc/yum.repos.d/pgdg-96-centos.repo ]]; then
         echo
         echo "install and setup PostgreSQL server and devel packages"
-    
+        if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+            ipv_forceopt_pgsl=""
+        else
+            ipv_forceopt_pgsl=' -4'
+        fi
         # cd $DIR_TMP
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
-            wget -4 https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
-            wget -4 https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-x86_64/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
         elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then        
-            wget -4 https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-i386/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
+            wget${ipv_forceopt_pgsl} https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-6-i386/pgdg-centos96-9.6-3.noarch.rpm -O ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
             rpm -Uvh ${DIR_TMP}/pgdg-centos96-9.6-3.noarch.rpm
         fi
     

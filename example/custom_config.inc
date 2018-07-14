@@ -32,6 +32,7 @@ TIME_REDIS='n'
 # disable system IPv6 support
 # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
 DISABLE_IPVSIX='n'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # Clang & GCC Compilers
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64

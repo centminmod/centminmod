@@ -20,6 +20,7 @@ WPCLI_EXTRAPACKAGES='n'
 CENTMINLOGDIR='/root/centminlogs'
 WPCLIDIR='/root/wpcli'
 WPCLILINK='https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -45,7 +46,7 @@ fi
 
 # fallback mirror if official wp-cli download http status is not 200, use local
 # centminmod.com mirror download instead
-curl -4Is --connect-timeout 5 --max-time 5 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $WPCLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 WPCLI_CURLCHECK=$?
 if [[ "$WPCLI_CURLCHECK" != '0' ]]; then
 	WPCLILINK='https://centminmod.com/centminmodparts/wp-cli/wp-cli.phar'
@@ -80,7 +81,7 @@ updatewpcli() {
 
 		echo "update wp-cli"
 		rm -rf /usr/bin/wp
-		wget -4 -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
+		wget -${ipv_forceopt}cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3
 		chmod 0700 /usr/bin/wp
 		/usr/bin/wp --info --allow-root	
 		echo ""
@@ -107,7 +108,7 @@ if [ -s /usr/bin/wp ]; then
   echo "/usr/bin/wp [found]"
   else
   echo "Error: /usr/bin/wp not found !!! Downloading now......"
-  wget -4 -cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
+  wget -${ipv_forceopt}cnv --no-check-certificate $WPCLILINK -O /usr/bin/wp --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: /usr/bin/wp download failed."
@@ -126,7 +127,7 @@ if [ -s "${WPCLIDIR}/wp-completion.bash" ]; then
   echo "${WPCLIDIR}/wp-completion.bash [found]"
   else
   echo "Error: ${WPCLIDIR}/wp-completion.bash not found !!! Downloading now......"
-  wget -4 -cnv --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
+  wget -${ipv_forceopt}cnv --no-check-certificate https://github.com/wp-cli/wp-cli/raw/master/utils/wp-completion.bash -O ${WPCLIDIR}/wp-completion.bash --tries=3 
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	echo "Error: ${WPCLIDIR}/wp-completion.bash download failed."

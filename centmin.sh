@@ -5,7 +5,8 @@ EMAIL=''          # Server notification email address enter only 1 address
 PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tablets
 ZONEINFO=Etc/UTC  # Set Timezone
 NGINX_IPV='n'     # option deprecated from 1.11.5+ IPV6 support
-USEEDITOR='nano' # choice between nano or vim text editors for cmd shortcuts
+USEEDITOR='nano'  # choice between nano or vim text editors for cmd shortcuts
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 CUSTOMSERVERNAME='y'
 CUSTOMSERVERSTRING='nginx centminmod'
@@ -1170,7 +1171,7 @@ sar_call() {
 
 download_cmd() {
   HTTPS_AXELCHECK=$(echo "$1" |awk -F '://' '{print $1}')
-  if [[ "$(curl -4Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
+  if [[ "$(curl -${ipv_forceopt}Isv $1 2>&1 | egrep 'ECDSA')" ]]; then
     # axel doesn't natively support ECC 256bit ssl certs
     # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
     echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"

@@ -6,7 +6,7 @@ function funct_nginxmodules_openresty {
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
     else
-        wget -c4 --progress=bar http://gitorious.org/ngx-fancyindex/ngx-fancyindex/archive-tarball/v0.3.1 -O ngx-fancyindex-0.3.1.tar.gz --tries=3
+        wget -c${ipv_forceopt} --progress=bar http://gitorious.org/ngx-fancyindex/ngx-fancyindex/archive-tarball/v0.3.1 -O ngx-fancyindex-0.3.1.tar.gz --tries=3
     fi
 
     tar zvxf ngx-fancyindex-0.3.1.tar.gz
@@ -17,7 +17,7 @@ rm -rf ngx-fancyindex-0.3.1.tar.gz
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
     else
-        wget -c4 --progress=bar http://gitorious.org/ngx-fancyindex/ngx-fancyindex/archive-tarball/v0.3.1 -O ngx-fancyindex-0.3.1.tar.gz --tries=3
+        wget -c${ipv_forceopt} --progress=bar http://gitorious.org/ngx-fancyindex/ngx-fancyindex/archive-tarball/v0.3.1 -O ngx-fancyindex-0.3.1.tar.gz --tries=3
     fi
 
     tar zvxf ngx-fancyindex-0.3.1.tar.gz
@@ -44,7 +44,7 @@ if [ -s memc-nginx-module_v0.13rc3.tar.gz ]; then
   cecho "memc-nginx-module_v0.13rc3.tar.gz Archive found, skipping download..." $boldgreen
   else
   cecho "Error: memc-nginx-module_v0.13rc3.tar.gz not found!!! Downloading now......"
-        wget -c4 --progress=bar --no-check-certificate https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3 -O memc-nginx-module_v0.13rc3.tar.gz --tries=3
+        wget -c${ipv_forceopt} --progress=bar --no-check-certificate https://github.com/agentzh/memc-nginx-module/tarball/v0.13rc3 -O memc-nginx-module_v0.13rc3.tar.gz --tries=3
 fi
 
     tar xvzf memc-nginx-module_v0.13rc3.tar.gz
@@ -53,7 +53,7 @@ if [ -s srcache-nginx-module_v0.13rc6.tar.gz ]; then
   cecho "srcache-nginx-module_v0.13rc6.tar.gz Archive found, skipping download..." $boldgreen
   else
   cecho "Error: srcache-nginx-module_v0.13rc6.tar.gz not found!!! Downloading now......"
-        wget -c4 --progress=bar --no-check-certificate https://github.com/agentzh/srcache-nginx-module/tarball/v0.13rc6 -O srcache-nginx-module_v0.13rc6.tar.gz --tries=3
+        wget -c${ipv_forceopt} --progress=bar --no-check-certificate https://github.com/agentzh/srcache-nginx-module/tarball/v0.13rc6 -O srcache-nginx-module_v0.13rc6.tar.gz --tries=3
 fi
 
     tar xvzf srcache-nginx-module_v0.13rc6.tar.gz
@@ -62,7 +62,7 @@ fi
 #   cecho "ngx_auto_lib.tar.gz Archive found, skipping download..." $boldgreen
 #   else
 #   cecho "Error: ngx_auto_lib.tar.gz not found!!! Downloading now......"
-#         wget -c4 --progress=bar --no-check-certificate https://github.com/simpl/ngx_auto_lib/tarball/master -O ngx_auto_lib.tar.gz --tries=3
+#         wget -c${ipv_forceopt} --progress=bar --no-check-certificate https://github.com/simpl/ngx_auto_lib/tarball/master -O ngx_auto_lib.tar.gz --tries=3
 # fi
 
 #     tar xvzf ngx_auto_lib.tar.gz

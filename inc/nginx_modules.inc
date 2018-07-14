@@ -6,7 +6,7 @@ function funct_nginxmodules {
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
     else
-        wget -c4 --progress=bar https://centminmod.com/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3
+        wget -c${ipv_forceopt} --progress=bar https://centminmod.com/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3
     fi
 
     tar zvxf ngx-fancyindex-0.3.1.tar.gz
@@ -17,7 +17,7 @@ rm -rf ngx-fancyindex-0.3.1.tar.gz
     if [ -s ngx-fancyindex-0.3.1.tar.gz ]; then
         cecho "ngx-fancyindex 0.3.1 Archive found, skipping download..." $boldgreen
     else
-        wget -c4 --progress=bar https://centminmod.com/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3
+        wget -c${ipv_forceopt} --progress=bar https://centminmod.com/centminmodparts/nginx/modules/ngx-fancyindex-0.3.1.tar.gz --tries=3
     fi
 
     tar zvxf ngx-fancyindex-0.3.1.tar.gz

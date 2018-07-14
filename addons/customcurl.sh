@@ -17,6 +17,7 @@ DIR_TMP='/svr-setup'
 # info at http://nervion.us.es/city-fan/yum-repo/
 CUSTOM_CURLRPM=y
 
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -54,6 +55,15 @@ fi
 
 if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
     CENTOS_SIX='6'
+fi
+
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
 fi
 
 if [ ! -d "$DIR_TMP" ]; then
@@ -110,7 +120,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 	if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
 	#############################
 	# el6 32bit
-	curl -4Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
+	curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
 	CURL_NOARCHRPMCHECK=$?
 	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
 		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
@@ -140,7 +150,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 	elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
 	###############################################################
 	# el6 64bit
-	curl -4Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
+	curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
 	CURL_NOARCHRPMCHECK=$?
 	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
 		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
@@ -171,7 +181,7 @@ if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
 	elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
 	###############################################################
 	# el7 64bit
-	curl -4Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel7.noarch.rpm
+	curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel7.noarch.rpm
 	CURL_NOARCHRPMCHECK=$?
 	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
 		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel7.noarch.rpm

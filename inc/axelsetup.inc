@@ -147,7 +147,7 @@ axelsetup() {
         echo "rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm [found]"
         else
         echo "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm not found !!! Downloading now......"
-        wget -4 -cnv https://centminmod.com/centminmodparts/v123/04rpms/${ARCH}/rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm --tries=3 
+        wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/v123/04rpms/${ARCH}/rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm --tries=3 
       ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
         cecho "Error: rpmforge-release-0.5.3-1.el5.rf.${ARCH}.rpm download failed." $boldgreen
@@ -177,7 +177,7 @@ axelsetup() {
       echo "axel-2.4-1.el5.rf.${ARCH}.rpm [found]"
       else
       echo "Error: axel-2.4-1.el5.rf.${ARCH}.rpm not found !!! Downloading now......"
-      wget -4 -cnv https://centminmod.com/centminmodparts/v123/04rpms/${ARCH}/axel-2.4-1.el5.rf.${ARCH}.rpm --tries=3 
+      wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/v123/04rpms/${ARCH}/axel-2.4-1.el5.rf.${ARCH}.rpm --tries=3 
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
       cecho "Error: axel-2.4-1.el5.rf.${ARCH}.rpm download failed." $boldgreen

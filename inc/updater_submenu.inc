@@ -150,7 +150,7 @@ gitenv_setup() {
   # get Centmin Mod Git url remotely so to allow for Git repo renaming in future where
   # user can just use centmin.sh menu option 23 submenus to switch to a newly renamed
   # Git repo name if needed
-  REMOTE_CMGIT=$(curl -s4 https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
   echo
   cecho "setup Centmin Mod git sourced install..." $boldyellow
   cd /usr/local/src
@@ -209,7 +209,7 @@ gitenv_setup() {
 
 gitenv_update() {
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-  REMOTE_CMGIT=$(curl -s4 https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   if [[ "$(curl -sL https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
     echo
@@ -346,7 +346,7 @@ gitenv_change() {
     exit 1
   fi
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-  REMOTE_CMGIT=$(curl -s4 https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   echo
   echo "fetching latest branch list..."
@@ -362,13 +362,13 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   if [[ "$(echo $CMGIT | grep github)" ]]; then
     GITCURLSTATUS=$(curl -sI https://github.com/centminmod/centminmod/branches/active | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
-      CMBRANCHLIST=$(curl -s4 https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
+      CMBRANCHLIST=$(curl -s${ipv_forceopt} https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
       echo "$CMBRANCHLIST"
     fi
   else
     GITCURLSTATUS=$(curl -sI https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
-    CMBRANCHLIST=$(curl -s4 https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
+    CMBRANCHLIST=$(curl -s${ipv_forceopt} https://gitlab.com/centminmod/centminmod/branches?sort=recently_updated | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan')
     echo "$CMBRANCHLIST"
     fi
   fi

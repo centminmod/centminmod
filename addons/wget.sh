@@ -21,6 +21,7 @@ WGET_VERSION='1.19.4'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 # set locale temporarily to english
 # for wget compile due to some non-english
@@ -351,7 +352,7 @@ source_pcreinstall() {
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c4 --progress=bar "$ALTPCRELINK" --tries=3 
+    wget -c${ipv_forceopt} --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -392,14 +393,14 @@ source_wgetinstall() {
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
 
-    curl -4Is --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
     WGET_CURLCHECK=$?
     if [[ "$WGET_CURLCHECK" = '0' ]]; then
-      wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+      wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
     else
       WGET_LINK="$WGET_LINKLOCAL"
-      echo "wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
-      wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+      echo "wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
+      wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
     fi
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then

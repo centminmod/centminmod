@@ -16,6 +16,7 @@ CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
 CONFIGSCANBASE='/etc/centminmod'
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ######################################################
 # Setup Colours
 black='\E[30;40m'

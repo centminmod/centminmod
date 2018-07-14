@@ -4,7 +4,7 @@
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.42'
+ACMEVER='1.0.43'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -40,6 +40,7 @@ MAIN_HOSTNAMEVHOSTSSLFILE='/usr/local/nginx/conf/conf.d/virtual.ssl.conf'
 MAIN_HOSTNAME=$(awk '/server_name / {print $2}' "$MAIN_HOSTNAMEVHOSTFILE" | awk 'gsub(";$"," ")')
 OPENSSL_VERSION=$(ls -rt "$DIR_TMP" | awk '/openssl-1/' | grep -v 'tar.gz' | tail -1 | sed -e 's|openssl-||')
 CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/201243967/origin-pull-ca.pem'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################
 # pushover API
 # to ensure these settings persist DO NOT change them in this
@@ -174,6 +175,12 @@ if [ -f "/etc/centminmod/custom_config.inc" ]; then
   . "/etc/centminmod/custom_config.inc"
 fi
 
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
+
 ###############################################################
 # Setup Colours
 black='\E[30;40m'
@@ -286,8 +293,8 @@ check_domains() {
                   echo "AAAA record: ${domain_aaaarecord:-not found}"
                   if [[ "$domain_arecord" ]]; then
                       echo
-                      echo "curl -4Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:'"
-                      curl -4Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
+                      echo "curl -${ipv_forceopt}Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:'"
+                      curl -${ipv_forceopt}Ivs https://${d} 2>&1 | egrep 'Connected to|SSL connection using|subject:|start date:|expire date:' | sed -e 's|\*\s\s||g' -e 's|\*\s||g'
                   fi
                   if [[ "$domain_aaaarecord" ]]; then
                       echo

@@ -9,15 +9,16 @@
 # 
 ###########################################################
 DT=$(date +"%d%m%y-%H%M%S")
-USER=$(whoami)
-HOSTNAME=$(uname -n)
-RELEASE=$(cat /etc/redhat-release | sed -e 's| (Core)||' -e 's| release||')
+DMOTD_USER=$(whoami)
+DMOTD_HOSTNAME=$(uname -n)
+DMOTD_RELEASE=$(cat /etc/redhat-release | sed -e 's| (Core)||' -e 's| release||')
 PSA=$(ps -Afl | wc -l)
-CURRENTUSER=$(users | wc -w)
+DMOTD_DMOTD_CURRENTUSER=$(users | wc -w)
 CMSCRIPT_GITDIR='/usr/local/src/centminmod'
 CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 SSHLOGIN_KERNELCHECK='n'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -87,8 +88,8 @@ DF=$(df -hT)
 motd_output() {
 echo "
 ===============================================================================
- - Hostname......: $HOSTNAME on $RELEASE
- - Users.........: Currently $CURRENTUSER user(s) logged on (includes: $USER)
+ - Hostname......: $DMOTD_HOSTNAME on $DMOTD_RELEASE
+ - Users.........: Currently $DMOTD_CURRENTUSER user(s) logged on (includes: $DMOTD_USER)
 ===============================================================================
  - CPU usage.....: $LOAD1, $LOAD5, $LOAD15 (1, 5, 15 min)
  - Processes.....: $PSA running
@@ -121,8 +122,8 @@ fi
 
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    LASTEST_NGINXVERS=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
-    LATEST_NGINXSTABLEVER=$(curl -4sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+    LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
+    LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
       echo
@@ -145,7 +146,7 @@ gitenv_askupdate() {
       # if git remote repo url is not same as one defined in giturl.txt then pull a new copy of
       # centmin mod code locally using giturl.txt defined git repo name
       GET_GITVER=$(git --version | awk '{print $3}' | sed -e 's|\.||g' | cut -c1,2)
-      CURL_GITURL=$(curl -s4 https://raw.githubusercontent.com/centminmod/centminmod/$(awk -F "=" '/branchname=/ {print $2}' ${CMSCRIPT_GITDIR}/centmin.sh | sed -e "s|'||g" )/giturl.txt)
+      CURL_GITURL=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/$(awk -F "=" '/branchname=/ {print $2}' ${CMSCRIPT_GITDIR}/centmin.sh | sed -e "s|'||g" )/giturl.txt)
       # if git version >1.8 use supported ls-remote --get-url flag otherwise use alternative
       if [[ -d "${CMSCRIPT_GITDIR}" ]]; then
         if [[ "$GET_GITVER" -ge '18' ]]; then

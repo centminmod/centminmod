@@ -25,7 +25,7 @@
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
-
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 # set locale temporarily to english
 # due to some non-english locale issues

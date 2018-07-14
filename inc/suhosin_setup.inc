@@ -18,7 +18,7 @@ suhosinfive_install() {
     echo "suhosin-${SUHOSINVER}.tar.gz [found]"
     else
     echo "Error: suhosin-${SUHOSINVER}.tar.gz not found!!! Downloading now......"
-    wget -c4 --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tar.gz --tries=3
+    wget -c${ipv_forceopt} --progress=bar http://download.suhosin.org/suhosin-${SUHOSINVER}.tar.gz --tries=3
   fi
   
   tar xvzf suhosin-${SUHOSINVER}.tar.gz

@@ -14,6 +14,7 @@ DIR='/svr-setup'
 # To enable GeoIP Update client requires an active 
 # GeoIP subscription http://dev.maxmind.com/geoip/geoipupdate/
 GEOIPUPDATE='n'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -66,6 +67,15 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 	mkdir -p "$CENTMINLOGDIR"
 fi
 
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
+
 geoipinstall() {
 
 cecho "GeoIP database and library install..." $boldyellow
@@ -116,13 +126,13 @@ rpm -ql GeoIP-devel GeoIP
 # 	ldconfig -v | grep GeoIP
 
 cecho "GeoLiteCity database download ..." $boldyellow
-	wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+	wget -${ipv_forceopt}cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
 	# gzip -d /usr/local/share/GeoIP/GeoLiteCity.dat.gz
 	gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
 	cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 	
 	# cp -a /usr/share/GeoIP/GeoIP.dat /usr/share/GeoIP/GeoIP.dat-backup
-	# wget -4 -cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+	# wget -${ipv_forceopt}cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
 	# gzip -df /usr/share/GeoIP/GeoIP.dat.gz
 	
 # if [[ "$GEOIPUPDATE" == [yY] ]]; then

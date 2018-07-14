@@ -225,7 +225,7 @@ libbroti_install() {
 
     LIBBROTLI_LINK='https://github.com/bagder/libbrotli'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -4Is --connect-timeout 5 --max-time 5 $LIBBROTLI_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $LIBBROTLI_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
     LIBBROTLI_CURLCHECK=$?
     if [[ "$LIBBROTLI_CURLCHECK" != '0' ]]; then
       LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
@@ -287,7 +287,7 @@ ngxbrotli_download() {
 
     NGXBROTLILINK='https://github.com/eustas/ngx_brotli'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -4Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
     NGXBROTLICURLCHECK=$?
     if [[ "$NGXBROTLICURLCHECK" != '0' ]]; then
       NGXBROTLILINK='https://gitlab.com/centminmod-github-mirror/ngx_brotli.git'

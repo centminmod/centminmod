@@ -4,7 +4,7 @@ ngxpagespeed_setpipepatch() {
     # only patch for 1.13.35.1 and lower
     if [[ "$(echo "$NGINX_PAGESPEEDPSOL_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGINX_PAGESPEEDPSOL_VER | cut -d . -f2)" -le '13' ]] && [[ "$(echo $NGINX_PAGESPEEDPSOL_VER | cut -d . -f3)" -le '35' ]] && [[ "$(echo $NGINX_PAGESPEEDPSOL_VER | cut -d . -f4)" -le '1' ]]; then
         pushd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}/src"
-        wget -c4 --progress=bar https://gist.github.com/centminmod/72ac71f446a1ee169b3fb35cc65da0fa/raw/pagespeed-centos6.patch --tries=3
+        wget -c${ipv_forceopt} --progress=bar https://gist.github.com/centminmod/72ac71f446a1ee169b3fb35cc65da0fa/raw/pagespeed-centos6.patch --tries=3
         patch < pagespeed-centos6.patch 
         popd
     fi

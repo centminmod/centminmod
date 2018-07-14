@@ -5,6 +5,7 @@
 ################################################################
 CHECK='n'
 CHECKURL='http://newdomain1.com'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ################################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -17,6 +18,15 @@ shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
+
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
 
 vhostsetup() {
      # include file for /usr/local/nginx/conf/php.conf and 
@@ -90,7 +100,7 @@ FFF
 
 checkstatus() {
      if [[ "$CHECK" = [yY] ]]; then
-          curl -4I $CHECKURL
+          curl -${ipv_forceopt}I $CHECKURL
      fi
 }
 

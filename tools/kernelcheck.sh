@@ -9,11 +9,12 @@
 # csf -a 69.175.106.203 kernelcare
 #################################################################
 DT=$(date +"%d%m%y-%H%M%S")
-VERBOSE='y'
-DEBUG='n'
+KERNEL_VERBOSE='y'
+KERNEL_DEBUG='n'
 KERNEL_CHECKLOG='/tmp/kernel_check.log'
-WGET_LINK='https://raw.githubusercontent.com/iseletsk/kernelchecker/master/py/kernelchecker.py'
+KERNELWGET_LINK='https://raw.githubusercontent.com/iseletsk/kernelchecker/master/py/kernelchecker.py'
 KC_LINK='https://centminmod.com/kernelcare.html'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 #################################################################
 # Setup Colours
 black='\E[30;40m'
@@ -59,13 +60,22 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
+
 kernelchecker_get() {
   mkdir -p /root/tools
-  curl -4Is --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$KERNELWGET_LINK" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
   WGET_CURLCHECK=$?
   if [[ "$WGET_CURLCHECK" = '0' ]]; then
     rm -rf /root/tools/kernelchecker.py
-    wget -4 -cnv -O /root/tools/kernelchecker.py "$WGET_LINK" >/dev/null 2>&1
+    wget -${ipv_forceopt}cnv -O /root/tools/kernelchecker.py "$KERNELWGET_LINK" >/dev/null 2>&1
   fi
 }
 
@@ -73,7 +83,7 @@ kernelchecker_get() {
 kernelchecker_run() {
   if [ -f /root/tools/kernelchecker.py ]; then
     python /root/tools/kernelchecker.py | awk '{print $1 $2, $3}' | grep -v 'kernelcare:' > "$KERNEL_CHECKLOG"
-    if [[ "$DEBUG" = [yY] ]]; then
+    if [[ "$KERNEL_DEBUG" = [yY] ]]; then
       cat "$KERNEL_CHECKLOG"
     fi
     kc_latest=$(awk '/^latest:/ {print $2}' "$KERNEL_CHECKLOG")
@@ -87,7 +97,7 @@ kernelchecker_run() {
     kc_installed=$(awk '/^installed:/ {print $2}' "$KERNEL_CHECKLOG")
     kc_up2date=$(awk '/^up2date:/ {print $2}' "$KERNEL_CHECKLOG")
     kc_supported=$(awk '/^supported:/ {print $2}' "$KERNEL_CHECKLOG")
-    if [[ "$DEBUG" = [yY] ]]; then
+    if [[ "$KERNEL_DEBUG" = [yY] ]]; then
       echo "DEBUG Mode Output:"
       echo "kc_latest = $kc_latest"
       echo "kc_current = $kc_current"
@@ -112,21 +122,21 @@ kernelchecker_eval() {
 if [[ "$kc_inside_container" = 'False' ]]; then
   if [[ "$kc_needs_update" = 'False' ]]; then
     # latest kernel is installed and properly rebooted afterwards
-    if [[ "$VERBOSE" = [yY] ]]; then
+    if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       echo " system kernel is up to date, nothing to do"
       cecho "===============================================================================" $boldgreen 
     fi
   elif [[ "$kc_up2date" = 'True' ]]; then
-    if [[ "$VERBOSE" = [yY] ]]; then
+    if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       echo " kernelcare kernel is up to date, nothing to do"
       cecho "===============================================================================" $boldgreen 
     fi
   elif [[ "$kc_needs_update" = 'True' ]]; then
-    if [[ "$VERBOSE" = [yY] ]]; then
+    if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       echo " newer kernel is available or recently updated"
@@ -139,7 +149,7 @@ if [[ "$kc_inside_container" = 'False' ]]; then
       cecho "===============================================================================" $boldgreen 
     fi
     if [[ "$kc_installed" = 'True' ]]; then
-      if [[ "$VERBOSE" = [yY] ]]; then
+      if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
         echo
         cecho "===============================================================================" $boldgreen 
         echo " please update your kernelcare kernel with command below:"
@@ -148,7 +158,7 @@ if [[ "$kc_inside_container" = 'False' ]]; then
         cecho "===============================================================================" $boldgreen 
       fi
     elif [[ "$kc_supported" = 'True' ]]; then
-      if [[ "$VERBOSE" = [yY] ]]; then
+      if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
         echo
         cecho "===============================================================================" $boldgreen 
         echo " kernel updates tradiitionally require server reboots"
@@ -166,13 +176,13 @@ if [[ "$kc_inside_container" = 'False' ]]; then
         echo
       fi
     elif [[ "$kc_latest_installed" = 'False' ]]; then
-      if [[ "$VERBOSE" = [yY] ]]; then
+      if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
         echo
         cecho "===============================================================================" $boldgreen 
         echo " system kernel is latest installed, but requires a system reboot"
       fi
     # else
-    #   if [[ "$VERBOSE" = [yY] ]]; then
+    #   if [[ "$KERNEL_VERBOSE" = [yY] ]]; then
     #   echo
     #   cecho "===============================================================================" $boldgreen
     #   echo " newer kernel is available, system reboot needed"

@@ -12,6 +12,7 @@ branchname=123.09beta01
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 INSTALLDIR='/usr/local/src'
 DIR_TMP='/svr-setup'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
@@ -183,6 +184,11 @@ fi
 
 if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
 fi
 
 if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ -f $(which virt-what) && $(virt-what | head -n1) = 'lxc' ]]; then
@@ -554,7 +560,7 @@ source_pcreinstall() {
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c4 --progress=bar "$ALTPCRELINK" --tries=3 
+    wget -c${ipv_forceopt} --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -591,7 +597,7 @@ source_wgetinstall() {
   if [ -s "$WGET_FILENAME" ]; then
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
-    wget -c4 --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
+    wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $WGET_FILENAME download failed." $boldgreen
@@ -1116,7 +1122,7 @@ cd $INSTALLDIR
     if [[ -f /usr/local/bin/axel && $AXEL = [yY] ]]; then
       /usr/bin/axel https://github.com/centminmod/centminmod/archive/${DOWNLOAD}
     else
-      wget -c4 --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
+      wget -c${ipv_forceopt} --no-check-certificate https://github.com/centminmod/centminmod/archive/${DOWNLOAD} --tries=3
     fi
     getcmendtime=$(TZ=UTC date +%s.%N)
     rm -rf centminmod-*
@@ -1158,7 +1164,7 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-PHPVERLATEST=$(curl -s http://php.net/downloads.php | egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '5.6' | head -n1)
+PHPVERLATEST=$(curl -${ipv_forceopt}s http://php.net/downloads.php | egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '5.6' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 

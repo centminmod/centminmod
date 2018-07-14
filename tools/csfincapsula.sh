@@ -8,14 +8,24 @@ CFIPNGINXLOG='/root/incapsula-nginxlog.log'
 CFIPCSFLOG='/root/incapsula_log.log'
 CFINCLUDEFILE='/usr/local/nginx/conf/incapsula.conf'
 CURL_TIMEOUTS='--max-time 20 --connect-timeout 20'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################
 if [ ! -f /usr/bin/curl ]; then
 	echo "Installing curl please wait..."
 	yum -y -q install curl
 fi
+
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
 ###############################
 ipv4get() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} --data "resp_format=text" https://my.incapsula.com/api/integration/v1/ips  > $CFIPLOG
+	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} --data "resp_format=text" https://my.incapsula.com/api/integration/v1/ips  > $CFIPLOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	
@@ -72,7 +82,7 @@ ipv4get() {
 
 ###############################
 csfadd() {
-	/usr/bin/curl -s ${CURL_TIMEOUTS} --data "resp_format=text" https://my.incapsula.com/api/integration/v1/ips  > $CFIPLOG
+	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} --data "resp_format=text" https://my.incapsula.com/api/integration/v1/ips  > $CFIPLOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	
@@ -118,7 +128,7 @@ nginxsetup() {
 		\cp -af "$CFINCLUDEFILE" "${CFINCLUDEFILE}.bak"
 	fi
 	echo > $CFINCLUDEFILE
-	cflista=$(/usr/bin/curl -s ${CURL_TIMEOUTS} --data "resp_format=text" https://my.incapsula.com/api/integration/v1/ips)
+	cflista=$(/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} --data "resp_format=text" https://my.incapsula.com/api/integration/v1/ips)
 	if [ ! -f /usr/local/nginx/conf/incapsula_customips.conf ]; then
 		touch /usr/local/nginx/conf/incapsula_customips.conf
 	fi

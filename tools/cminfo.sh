@@ -10,6 +10,7 @@ USER='root'
 PASS=''
 MYSQLHOST='localhost'
 #####################################################
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 VIRTUALCORES=$(grep -c ^processor /proc/cpuinfo)
@@ -83,6 +84,16 @@ CPUCORES=$((${CPUCORES} * ${PHYSICALCPUS}));
     HT=yes; 
     else HT=no; 
 fi
+
+if [ -f /etc/centminmod/custom_config.inc ]; then
+  source /etc/centminmod/custom_config.inc
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
+fi
+
 #####################################################
 top_info() {
     SYSTYPE=$(virt-what | head -n1)
@@ -126,8 +137,8 @@ top_info() {
 
     echo " Server Location Info"
     # echo
-    curl -4s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'ip:|phone|postal|loc'
-    echo "  ASN: $(curl -4s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1)"
+    curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'ip:|phone|postal|loc'
+    echo "  ASN: $(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1)"
     
     echo
     echo " Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"
@@ -340,7 +351,7 @@ rm -rf /usr/bin/cminfo
 CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
 
 # fallback mirror
-curl -4Is --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 CMINFO_CURLCHECK=\$?
 if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
     CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'
@@ -424,7 +435,7 @@ echo "------------------------------------------------------------------"
 
 echo "Server Location Info"
 # echo
-curl -4s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
+curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc'
 
 echo
 echo "Processors" "physical = ${PHYSICALCPUS}, cores = ${CPUCORES}, virtual = ${VIRTUALCORES}, hyperthreading = ${HT}"

@@ -31,6 +31,7 @@
 # /usr/bin/pip3.4
 # 
 # https://docs.python.org/3/library/venv.html
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 # set locale temporarily to english
 # due to some non-english locale issues

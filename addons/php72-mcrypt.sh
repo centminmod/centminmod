@@ -9,6 +9,7 @@ CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
 DIR_TMP='/svr-setup'
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 #############################################################
 # set locale temporarily to english
 # due to some non-english locale issues

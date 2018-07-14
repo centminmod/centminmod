@@ -332,8 +332,8 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
         cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
     else
-        echo "wget -c4 "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
-        wget -c4 "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
+        echo "wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
+        wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
             cecho "Error: libsodium-${LIBSODIUM_VER}.tar.gz download failed." $boldgreen
@@ -358,8 +358,8 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
     if [ -s "${LIBARGON_VER}.tar.gz" ]; then
         cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
     else
-        echo "wget -c4 "https://github.com/P-H-C/phc-winner-argon2/archive/${LIBARGON_VER}.tar.gz" --tries=3"
-        wget -c4 "https://github.com/P-H-C/phc-winner-argon2/archive/${LIBARGON_VER}.tar.gz" --tries=3
+        echo "wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/${LIBARGON_VER}.tar.gz" --tries=3"
+        wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/${LIBARGON_VER}.tar.gz" --tries=3
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
             cecho "Error: ${LIBARGON_VER}.tar.gz download failed." $boldgreen
