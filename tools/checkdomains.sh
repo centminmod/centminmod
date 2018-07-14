@@ -22,11 +22,17 @@ CHECKDOMAINS_DEBUG='n'
 DELETE_TMPLOGS='y'
 CTMPDIR=/home/checkdomainstmp
 CENTMINLOGDIR='/root/centminlogs'
+FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ##########################################################################
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
   dos2unix -q "/etc/centminmod/custom_config.inc"
   . "/etc/centminmod/custom_config.inc"
+fi
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+else
+  ipv_forceopt='4'
 fi
 if [[ "$WHOIS_SHOWREGISTRANT" = [yY] ]]; then
   WHOISOPT=''
