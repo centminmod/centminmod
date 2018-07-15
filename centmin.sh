@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='035'
+SCRIPT_INCREMENTVER='036'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2018'
@@ -158,8 +158,10 @@ fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
+  ipv_forceopt_wget=""
 else
   ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
 fi
 
 source "inc/centos_seven.inc"
@@ -719,7 +721,7 @@ PYTHON_VERSION='2.7.10'       # Use this version of Python
 SIEGE_VERSION='4.0.4'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
-WGETOPT='-cnv --no-dns-cache -4'
+WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
 ###############################################################
 # experimental Intel compiled optimisations 
