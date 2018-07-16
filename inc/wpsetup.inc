@@ -2127,7 +2127,20 @@ if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install cache-enabler --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen 
-  \wp plugin install optimus --activate --allow-root
+  # \wp plugin install optimus --activate --allow-root
+  echo "configure cache-enabler"
+  \wp option update cache-enabler '{"expires":6,"new_post":1,"new_comment":1,"webp":0,"compress":1,"excl_ids":"","minify_html":0}' --format=json --allow-root
+  \wp option get cache-enabler --format=json --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install autoptimize --activate --allow-root
+  echo "configure autoptimize"
+  \wp option update autoptimize_css on --allow-root
+  \wp option update autoptimize_extra_settings '{"autoptimize_extra_checkbox_field_1":"1","autoptimize_extra_checkbox_field_0":"1","autoptimize_extra_radio_field_4":"4","autoptimize_extra_text_field_2":"https:\/\/ajax.googleapis.com, https:\/\/fonts.googleapis.com, https:\/\/fonts.gstatic.com, https:\/\/maps.googleapis.com","autoptimize_extra_text_field_3":""}' --format=json --allow-root
+  \wp option update autoptimize_html on --allow-root
+  \wp option update autoptimize_js on --allow-root
+  # \wp option update autoptimize_optimize_logged on --allow-root
+  \wp option update autoptimize_show_adv 1 --allow-root
+  \wp option list --search=autoptimize_* --allow-root
   cecho "------------------------------------------------------------" $boldgreen
 fi
 
@@ -2150,8 +2163,6 @@ cecho "------------------------------------------------------------" $boldgreen
 cecho "------------------------------------------------------------" $boldgreen
 
 if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
-  \wp plugin install autoptimize --activate --allow-root
-  cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install rocket-lazy-load --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install wp-security-scan --activate --allow-root
