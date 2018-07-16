@@ -310,6 +310,8 @@ LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between dif
 LIBARGON_VER='20171227'     # https://github.com/P-H-C/phc-winner-argon2
 PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
 PHP_MCRYPTPECLVER='1.0.1'   # https://pecl.php.net/package/mcrypt
+PHPZOPFLI='y'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
+PHPZOPFLI_ALWAYS='y'        # zopfli php extension always install on php recompiles
 
 PHP_FTPEXT='y'              # ftp PHP extension
 PHP_MEMCACHE='y'            # memcache PHP extension 

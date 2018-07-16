@@ -73,6 +73,12 @@ elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMONGODB=y
 fi
 
+if [[ -f "${CONFIGSCANDIR}/zopfli.ini" || "$PHPZOPFLI" = [yY] ]]; then
+    DETECTZOPFLI=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTZOPFLI=y
+fi
+
 if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
     DETECTOPCACHE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
@@ -160,6 +166,11 @@ fi
 if [[ "$DETECTMONGODB" = [yY] ]] || [[ "$DETECTMONGODB" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mongodb.so" ]]; then
     cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
     mongodbinstall
+fi
+
+if [[ "$DETECTZOPFLI" = [yY] ]] || [[ "$DETECTZOPFLI" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/zopfli.so" ]]; then
+    cecho "Auto reinstalling previously detected Zopfli PHP extension" $boldyellow
+    zopfliinstall
 fi
 
 if [[ "$DETECTOPCACHE" = [yY] ]]; then
@@ -790,6 +801,19 @@ fi
 if [[ "$PHPMONGODB" = [nN] ]]; then
     if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
         rm -rf "${CONFIGSCANDIR}/mongodb.ini"
+    fi
+fi
+
+if [ ! -f "${CONFIGSCANDIR}/zopfli.ini" ]; then
+    # always install zopfli module
+    if [[ "$PHPZOPFLI_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
+        zopfliinstall
+    fi
+elif [ -f "${CONFIGSCANDIR}/zopfli.ini" ]; then
+    if [[ "$PHPZOPFLI_ALWAYS" = [nN] ]]; then
+        rm -rf "${CONFIGSCANDIR}/zopfli.ini"
+    elif [[ "$PHPZOPFLI_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
+        zopfliinstall  
     fi
 fi
 

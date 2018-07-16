@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='036'
+SCRIPT_INCREMENTVER='037'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2018'
@@ -585,6 +585,31 @@ PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncu
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
+
+PHP_FTPEXT='y'              # ftp PHP extension
+PHP_MEMCACHE='y'            # memcache PHP extension 
+PHP_MEMCACHED='y'           # memcached PHP extension
+FFMPEGVER='0.6.0'
+SUHOSINVER='0.9.38'
+
+PHPREDIS='y'                # redis PHP extension install
+REDISPHP_VER='3.1.6'        # redis PHP version for PHP <7.x
+REDISPHPSEVEN_VER='4.1.0'   # redis PHP version for PHP =>7.x
+REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
+PHPMONGODB='n'              # MongoDB PHP extension install
+MONGODBPHP_VER='1.5.1'      # MongoDB PHP version
+MONGODB_SASL='n'            # SASL not working yet leave = n
+PDOPGSQL_PHPVER='9.6'       # pdo-pgsql PHP extension version for postgresql
+PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
+LIBZIP_VER='1.5.0'          # required for PHP 7.2 + with libsodium & argon2
+LIBSODIUM_VER='1.0.16'      # https://github.com/jedisct1/libsodium/releases
+LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
+LIBARGON_VER='20171227'     # https://github.com/P-H-C/phc-winner-argon2
+PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
+PHP_MCRYPTPECLVER='1.0.1'   # https://pecl.php.net/package/mcrypt
+PHPZOPFLI='y'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
+PHPZOPFLI_ALWAYS='y'        # zopfli php extension always install on php recompiles
+
 SHORTCUTS='y'                # shortcuts
 
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
@@ -683,27 +708,7 @@ MEMCACHEDPHP_SEVENVER='3.0.4' # Memcached PHP 7 only extension version
 LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
-PHPREDIS='y'                # redis PHP extension install
-REDISPHP_VER='3.1.6'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='4.1.0'   # redis PHP version for PHP =>7.x
-REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
-PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.5.1'      # MongoDB PHP version
-MONGODB_SASL='n'            # SASL not working yet leave = n
-PDOPGSQL_PHPVER='9.6'       # pdo-pgsql PHP extension version for postgresql
-PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
-LIBZIP_VER='1.5.0'          # required for PHP 7.2 + with libsodium & argon2
-LIBSODIUM_VER='1.0.16'      # https://github.com/jedisct1/libsodium/releases
-LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
-LIBARGON_VER='20171227'     # https://github.com/P-H-C/phc-winner-argon2
-PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
-PHP_MCRYPTPECLVER='1.0.1'   # https://pecl.php.net/package/mcrypt
 
-PHP_FTPEXT='y'              # ftp PHP extension
-PHP_MEMCACHE='y'            # memcache PHP extension 
-PHP_MEMCACHED='y'           # memcached PHP extension
-FFMPEGVER='0.6.0'
-SUHOSINVER='0.9.38'
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
 PHP_VERSION='5.6.36'        # Use this version of PHP
 PHP_MIRRORURL='http://php.net'
@@ -882,6 +887,7 @@ source "inc/memcached_install.inc"
 source "inc/redis_submenu.inc"
 source "inc/redis.inc"
 source "inc/mongodb.inc"
+source "inc/zopfli.inc"
 source "inc/php_mssql.inc"
 source "inc/mysql_proclimit.inc"
 source "inc/mysqltmp.inc"
@@ -1959,6 +1965,8 @@ fi
 echo "mongodbinstall"
 mongodbinstall
 
+echo "zopfliinstall"
+zopfliinstall
 
 if [[ "$PHPMSSQL" = [yY] ]]; then
   echo "php_mssqlinstall"
