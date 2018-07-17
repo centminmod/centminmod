@@ -191,7 +191,7 @@ gitenv_askupdate() {
           if [[ "$GET_GITREMOTEURL" != "$CURL_GITURL" ]]; then
             cecho " to update re-run centmin.sh menu option 23 submenu option 1" $boldyellow
           else
-            cecho " to update re-run centmin.sh menu option 23 submenu option 2" $boldyellow
+            cecho " to update, run cmupdate command in SSH & re-run centmin.sh once & exit" $boldyellow
           fi
           cecho "===============================================================================" $boldgreen
         else
