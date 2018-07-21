@@ -238,7 +238,12 @@ echo "Total Git & Nginx Check Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/c
   # logs older than 5 days will be removed
   if [ -d "${CENTMINLOGDIR}" ]; then
     # find "${CENTMINLOGDIR}" -type f -mtime +5 -name 'cmm-login-git-checks_*.log' -print
-    find "${CENTMINLOGDIR}" -type f -mtime +5 -name 'cmm-login-git-checks_*.log' -delete
+    find "${CENTMINLOGDIR}" -type f -mtime +5 -name 'cmm-login-git-checks_*.log' | while read f; do
+      if [ -f "$f" ]; then
+        # echo "removing $f"
+        rm -rf $f
+      fi
+    done
   fi
 
 fi
