@@ -30,22 +30,24 @@ if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]];
     CENTOS_SIX='6'
 fi
 
-	# check if redis installed as redis server requires huge pages disabled
-	if [[ -f /usr/bin/redis-cli ]]; then
-		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-			echo never > /sys/kernel/mm/transparent_hugepage/enabled
-			sed -i '/transparent_hugepage/d' /etc/rc.local
-			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
-				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
-			fi
-			# extra workaround to ensure centos 7 systems boot redis server after rc.local
-			# and that /sys/kernel/mm/transparent_hugepage/enabled is set to never as it seems
-			# centos 7.4 at least restores value of always when rebooted 
-			# https://community.centminmod.com/posts/57637/
-		  if [ -d /etc/systemd/system ]; then
-		  	if [ -d /etc/systemd/system/redis.service.d ]; then
-		  		echo -e "[Unit]\nAfter=network.target rc.local" > /etc/systemd/system/redis.service.d/after-rc-local.conf
-		  	fi
+  # check if redis installed as redis server requires huge pages disabled
+  if [[ -f /usr/bin/redis-cli ]]; then
+    if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
+      echo never > /sys/kernel/mm/transparent_hugepage/enabled
+      sed -i '/transparent_hugepage/d' /etc/rc.local
+      if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
+        echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+      fi
+      # extra workaround to ensure centos 7 systems boot redis server after rc.local
+      # and that /sys/kernel/mm/transparent_hugepage/enabled is set to never as it seems
+      # centos 7.4 at least restores value of always when rebooted 
+      # https://community.centminmod.com/posts/57637/
+      if [ -d /etc/systemd/system ]; then
+        if [ -d /etc/systemd/system/redis.service.d ]; then
+          echo -e "[Unit]\nAfter=network.target rc.local" > /etc/systemd/system/redis.service.d/after-rc-local.conf
+          systemctl daemon-reload
+          systemctl restart redis
+        fi
 cat > "/etc/systemd/system/disable-thp.service" <<EOF
 [Unit]
 Description=Disable Transparent Huge Pages (THP)
@@ -59,106 +61,106 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'never' > /sys/kernel/mm/transparent_hugepag
 WantedBy=multi-user.target
 EOF
 
-    		if [ -f /etc/systemd/system/disable-thp.service ]; then
-      		chmod a+x /etc/systemd/system/disable-thp.service
-      		systemctl daemon-reload
-      		systemctl restart disable-thp
-      		systemctl enable disable-thp
-      		# echo
-      		# echo "cat /sys/kernel/mm/transparent_hugepage/enabled"
-      		# cat /sys/kernel/mm/transparent_hugepage/enabled
-      		# echo
-      		# echo "transparent_hugepage disabled"
-      		# echo
-    		fi
-		  fi
-		fi
-	else
-		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-			echo always > /sys/kernel/mm/transparent_hugepage/enabled
-			sed -i '/transparent_hugepage/d' /etc/rc.local
-			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
-				echo "echo always > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
-			fi
-		fi
-	fi
+        if [ -f /etc/systemd/system/disable-thp.service ]; then
+          chmod a+x /etc/systemd/system/disable-thp.service
+          systemctl daemon-reload
+          systemctl restart disable-thp
+          systemctl enable disable-thp
+          # echo
+          # echo "cat /sys/kernel/mm/transparent_hugepage/enabled"
+          # cat /sys/kernel/mm/transparent_hugepage/enabled
+          # echo
+          # echo "transparent_hugepage disabled"
+          # echo
+        fi
+      fi
+    fi
+  else
+    if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
+      echo always > /sys/kernel/mm/transparent_hugepage/enabled
+      sed -i '/transparent_hugepage/d' /etc/rc.local
+      if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
+        echo "echo always > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+      fi
+    fi
+  fi
 
 if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-	HP_CHECK=$(cat /sys/kernel/mm/transparent_hugepage/enabled | grep -o '\[.*\]')
+  HP_CHECK=$(cat /sys/kernel/mm/transparent_hugepage/enabled | grep -o '\[.*\]')
 fi
 
 if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-	if [[ "$CENTOS_SIX" = '6' && "$HP_CHECK" = '[always]' ]]; then
-		if [ -f /usr/bin/numactl ]; then
-  		# account for multiple cpu socket numa based memory
-  		# https://community.centminmod.com/posts/48189/
-  		FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
-		else
-  		FREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
-		fi
-		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
-		MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
-		MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
-	elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
-		if [ -f /usr/bin/numactl ]; then
-  		# account for multiple cpu socket numa based memory
-  		# https://community.centminmod.com/posts/48189/
-  		FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
-		else
-  		FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
-		fi
-		NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
-		MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
-		MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
-	fi
-	
-	if [[ "$NRHUGEPAGES_COUNT" -ge '1' ]]; then
-		if [[ "$HP_CHECK" = '[always]' ]]; then
-			echo
-			echo "set vm.nr.hugepages in /etc/sysctl.conf"
-			if [[ -z "$(grep '^vm.nr_hugepages' /etc/sysctl.conf)" ]]; then
-				echo "vm.nr_hugepages=$NRHUGEPAGES_COUNT" >> /etc/sysctl.conf
-				sysctl -p
-			else
-				sed -i "s|vm.nr_hugepages=.*|vm.nr_hugepages=$NRHUGEPAGES_COUNT|" /etc/sysctl.conf
-				sysctl -p
-			fi
-			echo
-			echo "set system max locked memory limit"
-			echo
-			echo "/etc/security/limits.conf"
-			echo "* soft memlock $MAXLOCKEDMEM_SIZE"
-			echo "* hard memlock $MAXLOCKEDMEM_SIZE"
-			sed -i '/hard memlock/d' /etc/security/limits.conf
-			sed -i '/soft memlock/d' /etc/security/limits.conf
-			if [[ -z "$(grep 'soft memlock' /etc/security/limits.conf)" ]]; then
-				echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
-				echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
-				echo
-			else
-				sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
-			fi
-			cat /etc/security/limits.conf
-			echo
-		fi
-	else
-		echo "NRHUGEPAGES_COUNT = $NRHUGEPAGES_COUNT"
-		echo "transparent huge pages not enabled"
-		if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
-			echo never > /sys/kernel/mm/transparent_hugepage/enabled
-			if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
-				echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
-			fi
-		fi
-	fi # end NRHUGEPAGES_COUNT > 0 check
+  if [[ "$CENTOS_SIX" = '6' && "$HP_CHECK" = '[always]' ]]; then
+    if [ -f /usr/bin/numactl ]; then
+      # account for multiple cpu socket numa based memory
+      # https://community.centminmod.com/posts/48189/
+      FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
+    else
+      FREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
+    fi
+    NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
+    MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
+    MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
+  elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
+    if [ -f /usr/bin/numactl ]; then
+      # account for multiple cpu socket numa based memory
+      # https://community.centminmod.com/posts/48189/
+      FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
+    else
+      FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+    fi
+    NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
+    MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
+    MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
+  fi
+  
+  if [[ "$NRHUGEPAGES_COUNT" -ge '1' ]]; then
+    if [[ "$HP_CHECK" = '[always]' ]]; then
+      echo
+      echo "set vm.nr.hugepages in /etc/sysctl.conf"
+      if [[ -z "$(grep '^vm.nr_hugepages' /etc/sysctl.conf)" ]]; then
+        echo "vm.nr_hugepages=$NRHUGEPAGES_COUNT" >> /etc/sysctl.conf
+        sysctl -p
+      else
+        sed -i "s|vm.nr_hugepages=.*|vm.nr_hugepages=$NRHUGEPAGES_COUNT|" /etc/sysctl.conf
+        sysctl -p
+      fi
+      echo
+      echo "set system max locked memory limit"
+      echo
+      echo "/etc/security/limits.conf"
+      echo "* soft memlock $MAXLOCKEDMEM_SIZE"
+      echo "* hard memlock $MAXLOCKEDMEM_SIZE"
+      sed -i '/hard memlock/d' /etc/security/limits.conf
+      sed -i '/soft memlock/d' /etc/security/limits.conf
+      if [[ -z "$(grep 'soft memlock' /etc/security/limits.conf)" ]]; then
+        echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+        echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+        echo
+      else
+        sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+      fi
+      cat /etc/security/limits.conf
+      echo
+    fi
+  else
+    echo "NRHUGEPAGES_COUNT = $NRHUGEPAGES_COUNT"
+    echo "transparent huge pages not enabled"
+    if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
+      echo never > /sys/kernel/mm/transparent_hugepage/enabled
+      if [[ -z "$(grep transparent_hugepage /etc/rc.local)" ]]; then
+        echo "echo never > /sys/kernel/mm/transparent_hugepage/enabled" >> /etc/rc.local
+      fi
+    fi
+  fi # end NRHUGEPAGES_COUNT > 0 check
 elif [[ "$HP_CHECK" = '[never]' ]]; then
-	echo
-	echo "transparent huge pages not enabled"
-	echo "no tweaks needed"
-	echo	
+  echo
+  echo "transparent huge pages not enabled"
+  echo "no tweaks needed"
+  echo  
 else
-	echo
-	echo "transparent huge pages not supported"
-	echo "no tweaks needed"
-	echo
+  echo
+  echo "transparent huge pages not supported"
+  echo "no tweaks needed"
+  echo
 fi
