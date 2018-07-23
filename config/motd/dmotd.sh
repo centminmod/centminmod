@@ -58,7 +58,7 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     dos2unix -q "${CONFIGSCANBASE}/custom_config.inc"
     source "${CONFIGSCANBASE}/custom_config.inc"
 fi
-if [ ! -d "$CENTMINLOGDIR" ]; then
+if [[ "$(id -u)" -eq '0' && ! -d "$CENTMINLOGDIR" ]]; then
   mkdir -p $CENTMINLOGDIR
 fi
 
