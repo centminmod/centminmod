@@ -534,32 +534,36 @@ fi
         download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
         NGINXDOWNLOAD_CHECK=$?
         if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
-            if [ -f "$(which figlet)" ]; then
-                figlet -ckf standard "Nginx Failed Download"
+            wget -c${ipv_forceopt} "https://nginx.org/download/nginx-${ngver}.tar.gz" --tries=3
+            NGINXDOWNLOAD_CHECK=$?
+            if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
+                if [ -f "$(which figlet)" ]; then
+                    figlet -ckf standard "Nginx Failed Download"
+                fi
+                echo
+                echo "!! Nginx Failed Download !!"
+                echo "try again by running centmin.sh menu option 4"
+                echo "make sure you type the correct nginx version"
+                echo "report errors on the forums at community.centminmod.com/forums/8/"
+            echo
+            free -m
+            echo
+            df -hT
+            echo
+            echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+            echo
+            echo "version increment history"
+            tail -5 /etc/centminmod-versionlog
+            if [ -d "${SCRIPT_DIR}/.git" ]; then
+                echo
+                echo "last Centmin Mod local git commit entry"
+                pushd "${SCRIPT_DIR}"
+                git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
+                popd
             fi
-            echo
-            echo "!! Nginx Failed Download !!"
-            echo "try again by running centmin.sh menu option 4"
-            echo "make sure you type the correct nginx version"
-            echo "report errors on the forums at community.centminmod.com/forums/8/"
-        echo
-        free -m
-        echo
-        df -hT
-        echo
-        echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
-        echo
-        echo "version increment history"
-        tail -5 /etc/centminmod-versionlog
-        if [ -d "${SCRIPT_DIR}/.git" ]; then
-            echo
-            echo "last Centmin Mod local git commit entry"
-            pushd "${SCRIPT_DIR}"
-            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
-            popd
-        fi
-            echo
-            exit
+                echo
+                exit
+            fi
         fi
     fi
 
