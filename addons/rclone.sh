@@ -10,7 +10,7 @@ DEBUG='y'
 
 CENTMINLOGDIR='/root/centminlogs'
 DIR_TMP='/svr-setup'
-RCLONE_BASEURL='http://downloads.rclone.org'
+RCLONE_BASEURL='https://downloads.rclone.org'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 # set locale temporarily to english

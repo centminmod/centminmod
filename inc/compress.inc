@@ -19,7 +19,7 @@ function funct_pigzinstall {
       echo "pigz-${PIGZ_VER}.tar.gz [found]"
       else
       echo "Error: pigz-${PIGZ_VER}.tar.gz not found!!!  Downloading now......"
-      wget -c${ipv_forceopt} --no-check-certificate http://zlib.net/pigz/pigz-${PIGZ_VER}.tar.gz --tries=3
+      wget -c${ipv_forceopt} --no-check-certificate https://zlib.net/pigz/pigz-${PIGZ_VER}.tar.gz --tries=3
     fi
     
     tar xzf pigz-${PIGZ_VER}.tar.gz

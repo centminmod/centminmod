@@ -94,20 +94,20 @@ geoipinstall() {
     # backup existing database in case maxmind end downloads
     \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
   fi
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLiteCountry/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv http://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
   fi
   gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
@@ -137,24 +137,24 @@ geoiptwolite_install() {
   mkdir -p /usr/share/GeoIP
   pushd /usr/share/GeoIP
   cecho "GeoLite2 City database download ..." $boldyellow
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv http://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
   rm -rf GeoLite2-City_*
 
   cecho "GeoLite2 Country database download ..." $boldyellow
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv http://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb

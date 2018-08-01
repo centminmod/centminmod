@@ -35,8 +35,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
     echo "rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB"
     rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 else
-    echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
-    rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
+    rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 fi
 
 ###############################################################################

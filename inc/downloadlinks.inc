@@ -54,7 +54,7 @@ CENTOSFIVECENTALTFILE="centalt-release-5-3.noarch.rpm"
 CENTOSFIVECENTALT="http://centos.alt.ru/repository/centos/5/${RPMFARCH}/${CENTOSFIVECENTALTFILE}"
 
 CENTOSFIVEPERCONARELEASEFILE="percona-release-0.1-4.noarch.rpm"
-CENTOSFIVEPERCONARELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSFIVEPERCONARELEASEFILE}"
+CENTOSFIVEPERCONARELEASE="https://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSFIVEPERCONARELEASEFILE}"
 
 CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
@@ -72,7 +72,7 @@ CENTOSSIXCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSS
 CENTOSSIXCENTALTLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXCENTALTFILE}"
 
 CENTOSSIXPERCONALRELEASEFILE="percona-release-0.1-4.noarch.rpm"
-CENTOSSIXPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSIXPERCONALRELEASEFILE}"
+CENTOSSIXPERCONALRELEASE="https://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSIXPERCONALRELEASEFILE}"
 
 CENTOSSIXVARNISHFILE="varnish-4.1.el6.rpm"
 CENTOSSIXVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSIXVARNISHFILE}"
@@ -83,7 +83,7 @@ CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 CENTOSSIXREMIFILE="remi-release-6.rpm"
-CENTOSSIXREMI="http://rpms.remirepo.net/enterprise/${CENTOSSIXREMIFILE}"
+CENTOSSIXREMI="https://rpms.remirepo.net/enterprise//${CENTOSSIXREMIFILE}"
 CENTOSSIXREMILOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXREMIFILE}"
 
 CENTOSSIXATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
@@ -158,7 +158,7 @@ CENTOSSEVENCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTO
 CENTOSSEVENCENTALTLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENCENTALTFILE}"
 
 CENTOSSEVENPERCONALRELEASEFILE="percona-release-0.1-4.noarch.rpm"
-CENTOSSEVENPERCONALRELEASE="http://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSEVENPERCONALRELEASEFILE}"
+CENTOSSEVENPERCONALRELEASE="https://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSEVENPERCONALRELEASEFILE}"
 
 CENTOSSEVENVARNISHFILE="varnish-4.1.el7.rpm"
 CENTOSSEVENVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSEVENVARNISHFILE}"
@@ -169,7 +169,7 @@ CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
 CENTOSSEVENAXIVOLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
 
 CENTOSSEVENREMIFILE="remi-release-7.rpm"
-CENTOSSEVENREMI="http://rpms.remirepo.net/enterprise/${CENTOSSEVENREMIFILE}"
+CENTOSSEVENREMI="https://rpms.remirepo.net/enterprise//${CENTOSSEVENREMIFILE}"
 CENTOSSEVENREMILOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
 
 CENTOSSEVENATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
@@ -186,7 +186,7 @@ PCRE_SOURCELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOURCELIN
 PCRE_SOURCELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${PCRE_SOURCELINKFILE}"
 
 NGX_ZLIBLINKFILE="zlib-${NGINX_ZLIBVER}.tar.gz"
-NGX_ZLIBLINK="http://zlib.net/${NGX_ZLIBLINKFILE}"
+NGX_ZLIBLINK="https://zlib.net/${NGX_ZLIBLINKFILE}"
 NGX_ZLIBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zlib/${NGX_ZLIBLINKFILE}"
 
 # wget renamed
@@ -280,7 +280,7 @@ NGX_LUANGINXLINK="https://github.com/openresty/lua-nginx-module/archive/v${OREST
 NGX_LUANGINXLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUANGINXVER}"
 
 NGX_LUAGITLINKFILE="luagit-${ORESTY_LUAGITVER}.tar.gz"
-NGX_LUAGITLINK="http://luajit.org/download/LuaJIT-${ORESTY_LUAGITVER}.tar.gz"
+NGX_LUAGITLINK="https://luajit.org/download/LuaJIT-${ORESTY_LUAGITVER}.tar.gz"
 
 NGX_LUAMEMCACHEDLINKFILE="lua-resty-memcached_v${ORESTY_LUAMEMCACHEDVER}.tar.gz"
 NGX_LUAMEMCACHEDLINK="https://github.com/openresty/lua-resty-memcached/archive/v${ORESTY_LUAMEMCACHEDVER}.tar.gz"
@@ -392,7 +392,7 @@ TWEMPERF_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/twemperf/reposi
 # TWEMPERF_LINK="https://twemperf.googlecode.com/files/${TWEMPERF_LINKFILE}"
 
 MEMCACHEDSERVER_LINKFILE="memcached-${MEMCACHED_VERSION}.tar.gz"
-MEMCACHEDSERVER_LINK="http://www.memcached.org/files/${MEMCACHEDSERVER_LINKFILE}"
+MEMCACHEDSERVER_LINK="https://www.memcached.org/files/${MEMCACHEDSERVER_LINKFILE}"
 MEMCACHEDSERVER_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/memcached/${MEMCACHEDSERVER_LINKFILE}"
 
 MYSQLREPORT_LINKFILE="mysqlreport"
@@ -403,7 +403,7 @@ MYSQLTUNER_LINKFILE="mysqltuner.pl"
 MYSQLTUNER_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mysqltuner/mysqltuner.txt"
 
 NGX_LINKFILE="nginx-${NGINX_VERSION}.tar.gz"
-NGX_LINK="http://nginx.org/download/${NGX_LINKFILE}"
+NGX_LINK="https://nginx.org/download/${NGX_LINKFILE}"
 
 NGX_VTSLINK='https://github.com/vozlt/nginx-module-vts.git'
 NGX_VTSLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-module-vts.git'
@@ -413,7 +413,7 @@ OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
 OPENSSL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/openssl/${OPENSSL_LINKFILE}"
 
 LIBRESSL_LINKFILE="libressl-${LIBRESSL_VERSION}.tar.gz"
-LIBRESSL_LINK="http://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
+LIBRESSL_LINK="https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/libressl-${LIBRESSL_VERSION}.tar.gz"
 LIBRESSL_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/libressl/${LIBRESSL_LINKFILE}"
 
 # wget renamed github
@@ -439,7 +439,7 @@ PYTHON_SETUPTOOLSLINKFILE="setuptools-0.6c11-py2.7.egg"
 PYTHON_SETUPTOOLSLINK="http://pypi.python.org/packages/2.7/s/setuptools/${PYTHON_SETUPTOOLSLINKFILE}"
 
 XCACHE_LINKFILE="xcache-${XCACHE_VERSION}.tar.gz"
-XCACHE_LINK="http://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/${XCACHE_LINKFILE}"
+XCACHE_LINK="https://xcache.lighttpd.net/pub/Releases/${XCACHE_VERSION}/${XCACHE_LINKFILE}"
 
 APCCACHE_LINKFILE="APC-${APCCACHE_VERSION}.tgz"
 APCCACHE_LINK="https://pecl.php.net/get/${APCCACHE_LINKFILE}"
@@ -450,11 +450,11 @@ ZENDOPCACHE_LINK="https://pecl.php.net/get/${ZENDOPCACHE_LINKFILE}"
 ZENDOPCACHE_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/zendopcache/${ZENDOPCACHE_LINKFILE}"
 
 NSD_LINKFILE="nsd-${NSD_VERSION}.tar.gz"
-#NSD_LINK="http://www.nlnetlabs.nl/downloads/nsd/${NSD_LINKFILE}"
+#NSD_LINK="https://www.nlnetlabs.nl/downloads/nsd/${NSD_LINKFILE}"
 NSD_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/nsd/${NSD_LINKFILE}"
 
 CSF_LINKFILE="csf.tgz"
-CSF_LINK="http://download.configserver.com/${CSF_LINKFILE}"
+CSF_LINK="https://download.configserver.com/${CSF_LINKFILE}"
 
 EZSETUPLINKFILE='ez_setup.py'
 EZSETUPLINK="https://bitbucket.org/pypa/setuptools/raw/bootstrap/${EZSETUPLINKFILE}"
@@ -470,7 +470,7 @@ WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
 LIBUNWIND_LINKFILE="libunwind-${LIBUNWIND_VERSION}.tar.gz"
 LIBUNWIND_LINKDIR="libunwind-${LIBUNWIND_VERSION}"
-LIBUNWIND_LINK="http://download.savannah.gnu.org/releases/libunwind/${LIBUNWIND_LINKFILE}"
+LIBUNWIND_LINK="https://download.savannah.gnu.org/releases/libunwind/${LIBUNWIND_LINKFILE}"
 LIBUNWIND_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/gperf/${LIBUNWIND_LINKFILE}"
 
 GPERFTOOL_LINKFILE="gperftools-${GPERFTOOLS_VERSION}.tar.gz"

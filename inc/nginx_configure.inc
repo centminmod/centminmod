@@ -2226,7 +2226,7 @@ fi
       fi
       if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
         pushd "$DIR_TMP"
-        hg clone http://hg.nginx.org/njs/
+        hg clone https://hg.nginx.org/njs/
         popd
       elif [ -f /usr/bin/hg ]; then
         pushd "${DIR_TMP}/njs"
@@ -2250,7 +2250,7 @@ fi
       fi
       if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
         pushd "$DIR_TMP"
-        hg clone http://hg.nginx.org/njs/
+        hg clone https://hg.nginx.org/njs/
         popd
       elif [ -f /usr/bin/hg ]; then
         pushd "${DIR_TMP}/njs"

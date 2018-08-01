@@ -128,7 +128,7 @@ cat >> "/etc/csf/csf.blocklists" <<EOF
 
 # Emerging Threats - Russian Business Networks List
 # Details: http://doc.emergingthreats.net/bin/view/Main/RussianBusinessNetwork
-#RBN|86400|0|http://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
+#RBN|86400|0|https://rules.emergingthreats.net/fwrules/emerging-Block-IPs.txt
 EOF
   fi
 }

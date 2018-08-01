@@ -531,7 +531,7 @@ fi
     if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
-        download_cmd "http://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
+        download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
         NGINXDOWNLOAD_CHECK=$?
         if [[ "$NGINXDOWNLOAD_CHECK" != '0' ]]; then
             if [ -f "$(which figlet)" ]; then
@@ -552,13 +552,6 @@ fi
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
         if [ -d "${SCRIPT_DIR}/.git" ]; then
-            echo
-            echo "last Centmin Mod local git commit entry"
-            pushd "${SCRIPT_DIR}"
-            git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
-            popd
-        fi
-        if [[ -d "${SCRIPT_DIR}/.git" ]]; then
             echo
             echo "last Centmin Mod local git commit entry"
             pushd "${SCRIPT_DIR}"

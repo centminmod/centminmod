@@ -114,7 +114,7 @@ checklogdetails
 	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
-rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
+rpm --import https://www.percona.com/downloads/RPM-GPG-KEY-percona
 rpm -Uvh ${CENTOSFIVEPERCONARELEASEFILE}
 	#yum -q list axel 2>&1 >/dev/null
 	ERR=$?

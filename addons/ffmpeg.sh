@@ -135,7 +135,7 @@ install_nasm() {
 			hash -r
 		fi
 		cd ${OPT}/ffmpeg_sources
-		curl -O -L "http://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.gz"
+		curl -O -L "https://www.nasm.us/pub/nasm/releasebuilds/${NASM_VER}/nasm-${NASM_VER}.tar.gz"
 		tar xvf "nasm-${NASM_VER}.tar.gz"
 		cd "nasm-${NASM_VER}"
 		make clean
@@ -156,7 +156,7 @@ install_nasm() {
 
 install_yasm() {
 	cd ${OPT}/ffmpeg_sources
-	curl -O -L "http://www.tortall.net/projects/yasm/releases/yasm-${YASM_VER}.tar.gz"
+	curl -O -L "https://www.tortall.net/projects/yasm/releases/yasm-${YASM_VER}.tar.gz"
 	tar xzvf "yasm-${YASM_VER}.tar.gz"
 	cd "yasm-${YASM_VER}"
 	make clean

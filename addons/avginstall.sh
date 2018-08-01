@@ -5,7 +5,7 @@
 # in response to http://www.webhostingtalk.com/showpost.php?p=8569541&postcount=1171
 # Summary at http://www.webhostingtalk.com/showthread.php?t=1235797
 # written by George Liu vbtechsupport.com
-# http://centminmod.com/avg_antivirus_free.html
+# https://centminmod.com/avg_antivirus_free.html
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 #########################################################
 

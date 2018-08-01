@@ -35,8 +35,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
     echo "rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB"
     rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 else
-    echo "rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
-    rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
+    rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 fi
 
 ###############################################################################
@@ -121,7 +121,7 @@ gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
@@ -145,7 +145,7 @@ gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
@@ -165,7 +165,7 @@ if [[ "$CENTOSVER" > 5 && "$CENTOSVER" < 6 ]]; then
     if [ "$MARIADB55ARCH" == 'x86_64' ]; then
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/
@@ -180,7 +180,7 @@ EOF
     else
 
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
-# rpm --import http://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # /etc/yum.repos.d/mariadb.repo
 # yum install MariaDB-server MariaDB-client
 # http://downloads.mariadb.org/mariadb/repositories/

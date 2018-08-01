@@ -8,7 +8,7 @@ nsdreinstall() {
     if [ -s nsd-${NSD_VERSION}.tar.gz ]; then
         cecho "NSD ${NSD_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        download_cmd http://www.nlnetlabs.nl/downloads/nsd/nsd-${NSD_VERSION}.tar.gz $WGETRETRY
+        download_cmd https://www.nlnetlabs.nl/downloads/nsd/nsd-${NSD_VERSION}.tar.gz $WGETRETRY
     fi
     # check if NSD is v3 or v4
     NSD_VERCHECK=$(echo $NSD_VERSION | cut -d . -f1)

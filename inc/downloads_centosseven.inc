@@ -291,7 +291,7 @@ fi # CENTALTREPO_DISABLE
 
 if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
   echo "${CENTOSSEVENPERCONALRELEASEFILE} [found]"
-  rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
+  rpm --import https://www.percona.com/downloads/RPM-GPG-KEY-percona
   rpm -Uvh ${CENTOSSEVENPERCONALRELEASEFILE}  
   ERR=$?
   CCPERCONACHECK="$ERR"
@@ -313,7 +313,7 @@ checklogdetails
   # exit #$ERROR
 else 
          cecho "Download done." $boldyellow
-rpm --import http://www.percona.com/downloads/RPM-GPG-KEY-percona
+rpm --import https://www.percona.com/downloads/RPM-GPG-KEY-percona
 rpm -Uvh ${CENTOSSEVENPERCONALRELEASEFILE}
   #yum -q list axel 2>&1 >/dev/null
   ERR=$?

@@ -22,7 +22,7 @@ NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     if [ -s nsd-${NSD_VERSION}.tar.gz ]; then
         cecho "NSD ${NSD_VERSION} Archive found, skipping download..." $boldgreen 
     else
-        download_cmd http://www.nlnetlabs.nl/downloads/nsd/nsd-${NSD_VERSION}.tar.gz $WGETRETRY
+        download_cmd https://www.nlnetlabs.nl/downloads/nsd/nsd-${NSD_VERSION}.tar.gz $WGETRETRY
     fi
     tar xzvf nsd-${NSD_VERSION}.tar.gz
 

@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='040'
+SCRIPT_INCREMENTVER='041'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2018'
@@ -313,7 +313,7 @@ CMGIT='https://github.com/centminmod/centminmod.git'
 # in centmin.sh, use persistent config file you create
 # or append to at /etc/centminmod/custom_config.inc as
 # outlined on official site at 
-# http://centminmod.com/upgrade.html#persistent
+# https://centminmod.com/upgrade.html#persistent
 AUTO_GITUPDATE='n'
 #####################################################
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
@@ -370,7 +370,7 @@ CCACHESIZE='2.5G'
 # do not edit below variables but instead set them in
 # /etc/centminmod/custom_config.inc as outlined on 
 # official site at 
-# http://centminmod.com/upgrade.html#persistent to
+# https://centminmod.com/upgrade.html#persistent to
 # override defaults
 # disable system IPv6 support
 # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
