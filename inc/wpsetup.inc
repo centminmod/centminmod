@@ -2430,12 +2430,12 @@ if [[ -f .wpcli-status && ! "\$(grep -w 'Plugin already updated' .wpcli-status)"
     # only do nginx + php-fpm restarts when zend opcache caching is enabled and revalidation
     # frequency is greater than 10 seconds set by opcache.revalidate_freq php setting
     if [[ "\$(php --ri "Zend Opcache" >/dev/null 2>&1; echo \$?)" -eq '0' && "\$(php --ri "Zend Opcache" | awk '/opcache.revalidate_freq/ {print \$3}')" -gt '10' ]]; then
-      /usr/bin/nprestart
+      service nginx reload
     fi
   rm -rf /tmp/wp_updater_phpfpm.lock
   else
   echo "already detected running process"
-  echo "skipping nprestart"
+  echo "skipping nginx reload"
   fi
 fi
 rm -rf .wpcli-status
@@ -2642,7 +2642,7 @@ elif [[ "$disablepwdprotect" = [yY] ]]; then
       sed -i "s|auth_basic \"Private\"|#auth_basic \"Private\"|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
       sed -i "s|auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|#auth_basic_user_file \/home\/nginx\/domains\/$vhostname\/htpasswd_wplogin|" /usr/local/nginx/conf/conf.d/$vhostname.ssl.conf >/dev/null 2>&1
     fi
-    /usr/bin/nprestart
+    service nginx reload
 fi
 
 echo
