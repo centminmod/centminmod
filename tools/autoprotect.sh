@@ -160,12 +160,12 @@ else
   if [[ "$DIFFCHECK" != '0' ]]; then
     echo "autoprotect.sh run completed..."
   else
-    echo "autoprotect.sh run completed skipped nginx restart..."
+    echo "autoprotect.sh run completed skipped nginx reload..."
   fi
   echo
 fi
 
-# only trigger nginx restart service when there are new differences detected
+# only trigger nginx reload service when there are new differences detected
 # in current and previous autoprotect include conf files
 NGX_RESTARTCMD=$(grep y /tmp/diffcheck.txt >/dev/null 2>&1; echo $?)
 if [[ -f /etc/init.d/nginx && "$NGX_RESTARTCMD" = '0' ]]; then
