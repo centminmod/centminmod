@@ -2426,9 +2426,11 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
   else
     CLANG_NEWBIN='/opt/sbin/llvm-release_40/bin/clang'
   fi
-elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] ]]; then
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+  CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f /opt/sbin/llvm-release_50/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
-elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] ]]; then
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f /opt/sbin/llvm-release_60/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_60/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_MASTER" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_master/bin/clang'
