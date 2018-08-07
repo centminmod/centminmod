@@ -18,8 +18,8 @@ scl_install() {
         source /opt/rh/devtoolset-6/enable
       fi
     else
-      if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-4/enable
+      if [[ -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-6/enable
       fi
     fi
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
@@ -84,19 +84,19 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          if [[ "$(rpm -ql devtoolset-6-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           fi
           sar_call
         else
-          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          if [[ "$(rpm -ql devtoolset-6-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
           fi
           sar_call
         fi
         echo
-        /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-        /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+        /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       fi
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -157,28 +157,28 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          if [[ "$(rpm -ql devtoolset-6-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           fi
           sar_call
         else
-          if [[ "$(rpm -ql devtoolset-4-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-4-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
-            time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          if [[ "$(rpm -ql devtoolset-6-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-6-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
           fi
           sar_call
         fi
         echo
-        /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-        /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+        /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       fi
   fi # centos 6 only needed
 }
 
 libbroti_install() {
   if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
-    # if devtoolset-4 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
+    # if devtoolset-6 doesn't exist install it otherwise check if gcc & g++ versions are less than 4.7 (407)
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
@@ -202,8 +202,8 @@ libbroti_install() {
         export CXX="ccache g++"
         gcc --version
         g++ --version
-      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
-        source /opt/rh/devtoolset-4/enable
+      elif [[ -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/rh/devtoolset-6/enable
         unset CC
         unset CXX
         export CC="ccache gcc"

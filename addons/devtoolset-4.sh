@@ -1,6 +1,6 @@
 #!/bin/bash
 ########################################################################
-# install devtoolset-4 package for centos 6 or 7
+# install devtoolset-4 package EOL so now devtoolset-6 for centos 6 or 7
 # 64bit only
 # https://www.softwarecollections.org/en/scls/rhscl/devtoolset-4/
 # written by George Liu (eva2000) centminmod.com
@@ -93,7 +93,7 @@ fi
 ########################################################################
 install() {
   if [[ "$(uname -m)" = 'x86_64' ]]; then
-    echo "installing devtoolset-4 from softwarecollections.org"
+    echo "installing devtoolset-4-now-6 from softwarecollections.org"
     if [[ "$CENTOS_SIX" = '6' && ! -f /etc/yum.repos.d/CentOS-SCLo-scl.repo ]]; then
       cd $DIR_TMP
       yum clean all
@@ -103,13 +103,13 @@ install() {
         yum -y -q install centos-release-scl --disablerepo=rpmforge
       fi
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
       echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-6/root/usr/bin/g++ --version
     elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo ]]; then
       if [ -f /etc/yum.repos.d/rhscl-devtoolset-3-epel-6.repo ]; then
         yum -y remove rhscl-devtoolset-3
@@ -122,13 +122,13 @@ install() {
         yum -y -q install centos-release-scl --disablerepo=rpmforge
       fi
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
       echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-6/root/usr/bin/g++ --version
 		elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/slc6-scl.repo ]]; then
       yum -y remove $(yum -q list installed --disableplugin=priorities | awk '/slc6-scl/ {print $1}')
       rm -rf /etc/yum.repos.d/slc6-scl.repo
@@ -139,13 +139,13 @@ install() {
         yum -y -q install centos-release-scl --disablerepo=rpmforge
       fi
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
       echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-6/root/usr/bin/g++ --version
     elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo ]]; then
       if [ -f /etc/yum.repos.d/rhscl-devtoolset-3-el7-epel-7.repo ]; then
         yum -y remove rhscl-devtoolset-3-el7
@@ -158,13 +158,13 @@ install() {
         yum -y -q install centos-release-scl --disablerepo=rpmforge
       fi
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
       echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-6/root/usr/bin/g++ --version
 		elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       cd $DIR_TMP
       yum clean all
@@ -174,13 +174,13 @@ install() {
         yum -y -q install centos-release-scl --disablerepo=rpmforge
       fi
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
       echo
-      /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-      /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+      /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+      /opt/rh/devtoolset-6/root/usr/bin/g++ --version
 		fi
   else
     echo "64bit install only, detected 32bit OS aborting..."
@@ -194,11 +194,11 @@ starttime=$(TZ=UTC date +%s.%N)
 install
 
 echo
-cecho "devtoolset-4 installed..." $boldyellow
-} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_devtoolset-4_install_${DT}.log
+cecho "devtoolset-4-now-6 installed..." $boldyellow
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_devtoolset-4-now-6_install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/centminmod_devtoolset-4_install_${DT}.log
-echo "Total devtoolset-4 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_devtoolset-4_install_${DT}.log
+echo "" >> ${CENTMINLOGDIR}/centminmod_devtoolset-4-now-6_install_${DT}.log
+echo "Total devtoolset-4-now-6 Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_devtoolset-4-now-6_install_${DT}.log

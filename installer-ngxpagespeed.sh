@@ -449,8 +449,8 @@ scl_install() {
         source /opt/rh/devtoolset-6/enable
       fi
     else
-      if [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-4/enable
+      if [[ -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-6/enable
       fi
     fi
     if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
@@ -479,15 +479,15 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           sar_call
         else
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
           sar_call
         fi
         echo
-        /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-        /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+        /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       fi
     fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -515,15 +515,15 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       else
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           sar_call
         else
-          time $YUMDNFBIN -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
           sar_call
         fi
         echo
-        /opt/rh/devtoolset-4/root/usr/bin/gcc --version
-        /opt/rh/devtoolset-4/root/usr/bin/g++ --version
+        /opt/rh/devtoolset-6/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       fi
   fi # centos 6 only needed
 }
@@ -537,8 +537,8 @@ gccdevtools() {
       export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
       export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++" 
     else
-      export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
-      export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++" 
+      export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
+      export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++" 
     fi
   elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
     unset CC
