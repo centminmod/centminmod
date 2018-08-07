@@ -140,7 +140,7 @@ fi
 fi # repo file check
 
 cecho "*************************************************" $boldgreen
-cecho "Installing Git 2.8.*" $boldgreen
+cecho "Installing Git 2.x" $boldgreen
 cecho "*************************************************" $boldgreen
 
 # install Git 2.8 package to replace Git 1.8 package
