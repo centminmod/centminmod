@@ -15,15 +15,20 @@ CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################################
+# GCC options
+GCC_SEVEN='n'
+OPT_LEVEL='-O3'
+MARCH_TARGETNATIVE='y' # for intel 64bit only set march=native, if no set to x86-64
+###############################################################################
 DISABLE_NETWORKFFMPEG='n'
 ENABLE_FPIC='n'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.3'
 # http://downloads.xiph.org/releases/vorbis/
-LIBVORBIS_VER='1.3.5'
+LIBVORBIS_VER='1.3.6'
 GD_ENABLE='n'
 NASM_SOURCEINSTALL='n'
-NASM_VER='2.13.02'
+NASM_VER='2.14rc15'
 YASM_VER='1.3.0'
 ###############################################################################
 # set locale temporarily to english
@@ -102,6 +107,18 @@ if [[ "$ENABLE_FPIC" = [yY] ]]; then
 	ENABLE_FPICOPT=' --enable-pic'
 else
 	ENABLE_FPICOPT=""
+fi
+
+if [[ "$MARCH_TARGETNATIVE" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+  MARCH_TARGET='native'
+else
+  MARCH_TARGET='x86-64'
+fi
+
+if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+  source /opt/rh/devtoolset-7/enable
+  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0"
+  export CXXFLAGS="${CFLAGS}"
 fi
 
 do_continue() {
