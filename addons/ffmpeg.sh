@@ -18,7 +18,7 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 # GCC options
 GCC_SEVEN='n'
 OPT_LEVEL='-O3'
-MARCH_TARGETNATIVE='y' # for intel 64bit only set march=native, if no set to x86-64
+MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
 DISABLE_NETWORKFFMPEG='n'
 ENABLE_FPIC='n'
