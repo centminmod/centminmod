@@ -413,11 +413,6 @@ installopenssl() {
     fi
     DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
     DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
-    if [ ! -f /usr/local/go/bin/go ]; then
-        # if golang is not detected BoringSSL switch will be disabled
-        # and default to using OpenSSL 1.0.2+
-        BORINGSSL_SWITCH='n'
-    fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(TZ=UTC date +%s.%N)
 
@@ -615,16 +610,27 @@ installopenssl() {
             figlet -ckf standard "Compiling BoringSSL"
         fi
 
+        if [ ! -f /usr/local/go/bin/go ]; then
+            # if golang is not detected BoringSSL switch will be disabled
+            # and default to using OpenSSL 1.0.2+
+            # BORINGSSL_SWITCH='n'
+            if [ -f /usr/local/src/centminmod/addons/golang.sh ]; then
+                /usr/local/src/centminmod/addons/golang.sh install
+                . /root/.bashrc
+            fi
+        fi
+
         echo "Compiling BoringSSL..."
         cd $DIR_TMP
+        rm -rf boringssl
         time git clone https://boringssl.googlesource.com/boringssl
+        # time git clone https://github.com/google/boringssl.git
         cd boringssl
         mkdir -p build
         cd build
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             rm -rf CMakeCache.txt
         fi
-        cmake -DCMAKE_BUILD_TYPE=Release ..
         unset CC
         unset CXX
         unset CFLAGS
@@ -632,6 +638,10 @@ installopenssl() {
         export CMAKE_CXX_COMPILER="g++"
         export CC="gcc"
         export CXX="g++"
+        export GO_EXECUTABLE="/usr/local/go/bin/go"
+        # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' /svr-setup/boringssl/CMakeLists.txt
+        ln -s /usr/local/go/bin/go /usr/local/bin/go
+        cmake -DCMAKE_BUILD_TYPE=Release ..
         make${MAKETHREADS}
         mkdir -p /svr-setup/boringssl/.openssl/lib
         cd /svr-setup/boringssl/.openssl
