@@ -275,7 +275,7 @@ if [[ "$NGINX_OPENRESTY" = [yY] ]]; then
 
     cecho "Check for openresty modules" $boldyellow    
     # if the tar.gz files don't exist first the tar test directory variables can not be populated
-    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}"|| ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" ]]; then
+    if [[ ! -f "${DIR_TMP}/${NGX_MEMCLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_MEMCLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_SRCACHELINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_SRCACHELINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_REDISLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_REDISLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_ECHOLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_ECHOLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_SETMISCLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_SETMISCLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ ! -f "${DIR_TMP}/${NGX_DEVELKITLINKFILE}" || "$(tar -tzf ${DIR_TMP}/${NGX_DEVELKITLINKFILE} >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
         openrestytarball
     fi 
     
