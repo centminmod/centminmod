@@ -1,8 +1,7 @@
 #!/bin/bash
 #######################################################
 # centminmod.com cli installer
-# To run installer.sh type: 
-# curl -4sL https://gist.github.com/centminmod/dbe765784e03bc4b0d40/raw/installer.sh | bash
+#
 #######################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 DT=$(date +"%d%m%y-%H%M%S")
