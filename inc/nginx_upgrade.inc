@@ -649,6 +649,9 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+        echo
+        echo "log files saved at ${CENTMINLOGDIR}"
+        ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
         exit
   else
       echo -e "\n`date`\nSuccess: Nginx configure ok\n"
@@ -710,6 +713,9 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+        echo
+        echo "log files saved at ${CENTMINLOGDIR}"
+        ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
       exit
   else
      echo -e "\n`date`\nSuccess: Nginx make ok\n"
@@ -803,6 +809,9 @@ fi
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
+        echo
+        echo "log files saved at ${CENTMINLOGDIR}"
+        ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
       exit
   else
         if [ -f objs/autoconf.err ]; then
