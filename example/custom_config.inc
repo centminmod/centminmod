@@ -246,8 +246,8 @@ VHOSTCTRL_AUTOPROTECTINC='y'
 
 # OpenSSL
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.0h'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.0.2o'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION='1.1.0i'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.0.2p'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+

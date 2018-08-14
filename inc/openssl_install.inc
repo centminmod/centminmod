@@ -99,7 +99,7 @@ fi
 if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0h' ]]; then
     echo
     echo  "######################################################################"
-    echo "Patching OpenSSL 1.1.0g"
+    echo "Patching OpenSSL 1.1.0h"
     echo  "######################################################################"
     echo "30-40% performance improvement patch for ECDSA"
     echo "https://community.centminmod.com/posts/57725/"
@@ -122,9 +122,36 @@ if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PA
     echo
 fi
 
+# ECDSA performance patch https://community.centminmod.com/posts/57725/
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDSA_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0i' ]]; then
+    echo
+    echo  "######################################################################"
+    echo "Patching OpenSSL 1.1.0i"
+    echo  "######################################################################"
+    echo "30-40% performance improvement patch for ECDSA"
+    echo "https://community.centminmod.com/posts/57725/"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL1.1i-improve-ECDSA-sign-30-40.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1i-improve-ECDSA-sign-30-40.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1i-improve-ECDSA-sign-30-40.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1i-improve-ECDSA-sign-30-40.patch"
+        ecdsapatch_err=$?
+        if [[ "$ecdsapatch_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.1i-improve-ECDSA-sign-30-40.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
 # ECDHX25519 performance patch for 64bit systems only
 # OpenSSL1.1g-double-performance-ecdhx-25519.patch
-if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0h' ]]; then
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0g' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0h' ]] || [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "$OPENSSLECDHX_PATCH" = [yY] && "${OPENSSL_VERSION}" = '1.1.0i' ]]; then
     echo
     echo  "######################################################################"
     echo "Patching OpenSSL 1.1.0g"
