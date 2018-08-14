@@ -296,6 +296,7 @@ ngxbrotli_download() {
       NGXBROTLILINK='https://gitlab.com/centminmod-github-mirror/ngx_brotli.git'
     fi
 
+    rm -rf ngx_brotli
     if [ ! -d ngx_brotli ]; then
       time git clone --recursive "$NGXBROTLILINK"
       cd ngx_brotli
