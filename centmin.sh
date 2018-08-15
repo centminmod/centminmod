@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='045'
+SCRIPT_INCREMENTVER='046'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/09/2018'
@@ -429,9 +429,9 @@ NGXDYNAMIC_STREAMREALIP='n' # nginx 1.11.4+ option http://hg.nginx.org/nginx/rev
 NGXDYNAMIC_HEADERSMORE='y'
 NGXDYNAMIC_SETMISC='y'
 NGXDYNAMIC_ECHO='y'
-NGXDYNAMIC_LUA='n'          #
+NGXDYNAMIC_LUA='y'          #
 NGXDYNAMIC_SRCCACHE='n'
-NGXDYNAMIC_DEVELKIT='n'     #
+NGXDYNAMIC_DEVELKIT='y'     #
 NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
@@ -682,6 +682,7 @@ LIBRESSL_VERSION='2.7.4'   # Use this version of LibreSSL http://www.libressl.or
 # BoringSSL
 # not working yet just prep work
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+BORINGSSL_DIR="$DIR_TMP"
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module

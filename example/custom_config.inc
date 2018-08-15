@@ -75,7 +75,7 @@ NGXDYNAMIC_SETMISC='y'
 NGXDYNAMIC_ECHO='y'
 NGXDYNAMIC_LUA='n'          #
 NGXDYNAMIC_SRCCACHE='n'
-NGXDYNAMIC_DEVELKIT='n'     #
+NGXDYNAMIC_DEVELKIT='y'     #
 NGXDYNAMIC_MEMC='n'
 NGXDYNAMIC_REDISTWO='n'
 NGXDYNAMIC_NGXPAGESPEED='n'
@@ -269,6 +269,7 @@ LIBRESSL_VERSION='2.7.2'   # Use this version of LibreSSL http://www.libressl.or
 
 # BoringSSL
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+BORINGSSL_DIR="$DIR_TMP"
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module

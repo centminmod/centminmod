@@ -667,6 +667,12 @@ fi
     # detect OpenSSL 1.1.0 for make -jXX support
     DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
     DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+
+    if [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+      touch ${BORINGSSL_DIR}/boringssl/.openssl/include/openssl/ssl.h
+      ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/include/openssl/ssl.h
+    fi
+
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
         time make${MAKETHREADS}
     else

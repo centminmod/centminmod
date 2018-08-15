@@ -649,7 +649,7 @@ installopenssl() {
 
         echo "Compiling BoringSSL..."
         cd $DIR_TMP
-        rm -rf boringssl
+        rm -rf ${BORINGSSL_DIR}/boringssl
         time git clone https://boringssl.googlesource.com/boringssl
         # time git clone https://github.com/google/boringssl.git
         cd boringssl
@@ -669,16 +669,16 @@ installopenssl() {
         mkdir -p /home/buildtmp
         chmod 1777 /home/buildtmp
         export TMPDIR=/home/buildtmp
-        # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' /svr-setup/boringssl/CMakeLists.txt
+        # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' ${BORINGSSL_DIR}/boringssl/CMakeLists.txt
         ln -s /usr/local/go/bin/go /usr/local/bin/go
         cmake -DCMAKE_BUILD_TYPE=Release ..
         make${MAKETHREADS}
-        mkdir -p /svr-setup/boringssl/.openssl/lib
-        cd /svr-setup/boringssl/.openssl
+        mkdir -p ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        cd ${BORINGSSL_DIR}/boringssl/.openssl
         ln -s ../include
-        cp /svr-setup/boringssl/build/crypto/libcrypto.a /svr-setup/boringssl/build/ssl/libssl.a /svr-setup/boringssl/.openssl/lib
-        ls -lah /svr-setup/boringssl/.openssl/lib
-        ls -lah /svr-setup/boringssl/.openssl
+        cp ${BORINGSSL_DIR}/boringssl/build/crypto/libcrypto.a ${BORINGSSL_DIR}/boringssl/build/ssl/libssl.a ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        ls -lah ${BORINGSSL_DIR}/boringssl/.openssl
         unset TMPDIR
         boringsslinstallendtime=$(TZ=UTC date +%s.%N)
         BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
