@@ -666,6 +666,9 @@ installopenssl() {
         export CC="gcc"
         export CXX="g++"
         export GO_EXECUTABLE="/usr/local/go/bin/go"
+        mkdir -p /home/buildtmp
+        chmod 1777 /home/buildtmp
+        export TMPDIR=/home/buildtmp
         # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' /svr-setup/boringssl/CMakeLists.txt
         ln -s /usr/local/go/bin/go /usr/local/bin/go
         cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -676,7 +679,7 @@ installopenssl() {
         cp /svr-setup/boringssl/build/crypto/libcrypto.a /svr-setup/boringssl/build/ssl/libssl.a /svr-setup/boringssl/.openssl/lib
         ls -lah /svr-setup/boringssl/.openssl/lib
         ls -lah /svr-setup/boringssl/.openssl
-
+        unset TMPDIR
         boringsslinstallendtime=$(TZ=UTC date +%s.%N)
         BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
 
