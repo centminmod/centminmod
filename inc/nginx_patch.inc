@@ -1,4 +1,7 @@
 ngx_hpack_patch() {
+  if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+    NGINX_HPACK='n'
+  fi
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGINX_PUSHBASE=$ngver
