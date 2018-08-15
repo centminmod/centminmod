@@ -1,0 +1,3750 @@
+From cfc32a1e56767jujujuu415f533f4f6bd3008 Mon Sep 17 00:00:00 2001
+From: Buik / Bassie <bassie@buik.locale>
+Date: Wed, 28 Mar 2018 23:59:56 +0100
+
+Subject: OpenSSL1.1i - 30-40% ECDSA performance improvement
+
+The purpose of this patch is backward compatibility on OpenSSL 1.1i.
+
+Please note that the x86_64-xlate.pl assambler is patched because the assambler's, 
+new cfi_directive is needed by the the optimized ecp_nistz256-x86_64.pl Perl script.
+Cfi_directive is not available at OpenSSL 1.1i GA.
+
+//
+Ec/ecp_nistz256.c: improve ECDSA sign by 30-40% is based on RT#3810, 
+which added dedicated modular inversion.
+ECDSA verify results improves as well, but not as much.
+---
+ ECDSA-PATCH-CHANGELOG                |   10 +
+ crypto/ec/asm/ecp_nistz256-armv8.pl  |  309 +++-
+ crypto/ec/asm/ecp_nistz256-x86_64.pl | 1968 ++++++++++++++++++++++---
+ crypto/ec/ec_err.c                   |    2 +
+ crypto/ec/ec_lcl.h                   |    7 +-
+ crypto/ec/ec_lib.c                   |   13 +-
+ crypto/ec/ecdsa_ossl.c               |   60 +-
+ crypto/ec/ecp_nistz256.c             |  190 ++-
+ crypto/perlasm/x86_64-xlate.pl       |  389 ++++-
+ include/openssl/ec.h                 |    1 +
+ 10 files changed, 2668 insertions(+), 280 deletions(-)
+ new file mode 100644 ECDSA-PATCH-CHANGELOG
+
+diff --git a/ECDSA-PATCH-CHANGELOG b/ECDSA-PATCH-CHANGELOG
+new file mode 100644
+index 0000000..f5799bf
+--- /dev/null
++++ b/ECDSA-PATCH-CHANGELOG
+@@ -0,0 +1,9 @@
++Changelog [PATCH] OpenSSL1.1i - 30-40% ECDSA performance improvement
++* Wed, 15 Aug 2018 09:22:45 +0600
++- Rebuilt to host OpenSSL 1.1i.
++* Sat, 6 Jan 2018 08:21:45 +0100
++- Rebuilt to host the new upstream code (6 Jan 2018).
++* Fri, 5 Jan 2018 20:45:22 +0100
++- Rebuilt to host the new upstream code (5 Jan 2018).
++* Wed, 1 Jan 2018 21:39:19 +0100
++- Inital packaging.
++- Based on OpenSSL 1.1.1dev pull 5001. 
++
+diff --git a/crypto/ec/asm/ecp_nistz256-armv8.pl b/crypto/ec/asm/ecp_nistz256-armv8.pl
+index cdc9161..5ac2282 100644
+--- a/crypto/ec/asm/ecp_nistz256-armv8.pl
++++ b/crypto/ec/asm/ecp_nistz256-armv8.pl
+@@ -22,11 +22,10 @@
+ # http://eprint.iacr.org/2013/816.
+ #
+ #			with/without -DECP_NISTZ256_ASM
+-# Apple A7		+120-360%
+-# Cortex-A53		+120-400%
+-# Cortex-A57		+120-350%
+-# X-Gene		+200-330%
+-# Denver		+140-400%
++# Apple A7		+190-360%
++# Cortex-A53		+190-400%
++# Cortex-A57		+190-350%
++# Denver		+230-400%
+ #
+ # Ranges denote minimum and maximum improvement coefficients depending
+ # on benchmark. Lower coefficients are for ECDSA sign, server-side
+@@ -109,6 +108,10 @@ $code.=<<___;
+ .quad	0x0000000000000001,0xffffffff00000000,0xffffffffffffffff,0x00000000fffffffe
+ .Lone:
+ .quad	1,0,0,0
++.Lord:
++.quad	0xf3b9cac2fc632551,0xbce6faada7179e84,0xffffffffffffffff,0xffffffff00000000
++.LordK:
++.quad	0xccd1c8aaee00bc4f
+ .asciz	"ECP_NISTZ256 for ARMv8, CRYPTOGAMS by <appro\@openssl.org>"
+ 
+ // void	ecp_nistz256_to_mont(BN_ULONG x0[4],const BN_ULONG x1[4]);
+@@ -1309,6 +1312,302 @@ $code.=<<___;
+ 	ret
+ .size	ecp_nistz256_point_add_affine,.-ecp_nistz256_point_add_affine
+ ___
++}
++if (1) {
++my ($ord0,$ord1) = ($poly1,$poly3);
++my ($ord2,$ord3,$ordk,$t4) = map("x$_",(21..24));
++my $acc7 = $bi;
++
++$code.=<<___;
++////////////////////////////////////////////////////////////////////////
++// void ecp_nistz256_ord_mul_mont(uint64_t res[4], uint64_t a[4],
++//                                uint64_t b[4]);
++.globl	ecp_nistz256_ord_mul_mont
++.type	ecp_nistz256_ord_mul_mont,%function
++.align	4
++ecp_nistz256_ord_mul_mont:
++	stp	x29,x30,[sp,#-64]!
++	add	x29,sp,#0
++	stp	x19,x20,[sp,#16]
++	stp	x21,x22,[sp,#32]
++	stp	x23,x24,[sp,#48]
++
++	adr	$ordk,.Lord
++	ldr	$bi,[$bp]		// bp[0]
++	ldp	$a0,$a1,[$ap]
++	ldp	$a2,$a3,[$ap,#16]
++
++	ldp	$ord0,$ord1,[$ordk,#0]
++	ldp	$ord2,$ord3,[$ordk,#16]
++	ldr	$ordk,[$ordk,#32]
++
++	mul	$acc0,$a0,$bi		// a[0]*b[0]
++	umulh	$t0,$a0,$bi
++
++	mul	$acc1,$a1,$bi		// a[1]*b[0]
++	umulh	$t1,$a1,$bi
++
++	mul	$acc2,$a2,$bi		// a[2]*b[0]
++	umulh	$t2,$a2,$bi
++
++	mul	$acc3,$a3,$bi		// a[3]*b[0]
++	umulh	$acc4,$a3,$bi
++
++	mul	$t4,$acc0,$ordk
++
++	adds	$acc1,$acc1,$t0		// accumulate high parts of multiplication
++	adcs	$acc2,$acc2,$t1
++	adcs	$acc3,$acc3,$t2
++	adc	$acc4,$acc4,xzr
++	mov	$acc5,xzr
++___
++for ($i=1;$i<4;$i++) {
++	################################################################
++	#            ffff0000.ffffffff.yyyyyyyy.zzzzzzzz
++	# *                                     abcdefgh
++	# + xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx
++	#
++	# Now observing that ff..ff*x = (2^n-1)*x = 2^n*x-x, we
++	# rewrite above as:
++	#
++	#   xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx.xxxxxxxx
++	# - 0000abcd.efgh0000.abcdefgh.00000000.00000000
++	# + abcdefgh.abcdefgh.yzayzbyz.cyzdyzey.zfyzgyzh
++$code.=<<___;
++	ldr	$bi,[$bp,#8*$i]		// b[i]
++
++	lsl	$t0,$t4,#32
++	subs	$acc2,$acc2,$t4
++	lsr	$t1,$t4,#32
++	sbcs	$acc3,$acc3,$t0
++	sbcs	$acc4,$acc4,$t1
++	sbc	$acc5,$acc5,xzr
++
++	subs	xzr,$acc0,#1
++	umulh	$t1,$ord0,$t4
++	mul	$t2,$ord1,$t4
++	umulh	$t3,$ord1,$t4
++
++	adcs	$t2,$t2,$t1
++	 mul	$t0,$a0,$bi
++	adc	$t3,$t3,xzr
++	 mul	$t1,$a1,$bi
++
++	adds	$acc0,$acc1,$t2
++	 mul	$t2,$a2,$bi
++	adcs	$acc1,$acc2,$t3
++	 mul	$t3,$a3,$bi
++	adcs	$acc2,$acc3,$t4
++	adcs	$acc3,$acc4,$t4
++	adc	$acc4,$acc5,xzr
++
++	adds	$acc0,$acc0,$t0		// accumulate low parts
++	umulh	$t0,$a0,$bi
++	adcs	$acc1,$acc1,$t1
++	umulh	$t1,$a1,$bi
++	adcs	$acc2,$acc2,$t2
++	umulh	$t2,$a2,$bi
++	adcs	$acc3,$acc3,$t3
++	umulh	$t3,$a3,$bi
++	adc	$acc4,$acc4,xzr
++	mul	$t4,$acc0,$ordk
++	adds	$acc1,$acc1,$t0		// accumulate high parts
++	adcs	$acc2,$acc2,$t1
++	adcs	$acc3,$acc3,$t2
++	adcs	$acc4,$acc4,$t3
++	adc	$acc5,xzr,xzr
++___
++}
++$code.=<<___;
++	lsl	$t0,$t4,#32		// last reduction
++	subs	$acc2,$acc2,$t4
++	lsr	$t1,$t4,#32
++	sbcs	$acc3,$acc3,$t0
++	sbcs	$acc4,$acc4,$t1
++	sbc	$acc5,$acc5,xzr
++
++	subs	xzr,$acc0,#1
++	umulh	$t1,$ord0,$t4
++	mul	$t2,$ord1,$t4
++	umulh	$t3,$ord1,$t4
++
++	adcs	$t2,$t2,$t1
++	adc	$t3,$t3,xzr
++
++	adds	$acc0,$acc1,$t2
++	adcs	$acc1,$acc2,$t3
++	adcs	$acc2,$acc3,$t4
++	adcs	$acc3,$acc4,$t4
++	adc	$acc4,$acc5,xzr
++
++	subs	$t0,$acc0,$ord0		// ret -= modulus
++	sbcs	$t1,$acc1,$ord1
++	sbcs	$t2,$acc2,$ord2
++	sbcs	$t3,$acc3,$ord3
++	sbcs	xzr,$acc4,xzr
++
++	csel	$acc0,$acc0,$t0,lo	// ret = borrow ? ret : ret-modulus
++	csel	$acc1,$acc1,$t1,lo
++	csel	$acc2,$acc2,$t2,lo
++	stp	$acc0,$acc1,[$rp]
++	csel	$acc3,$acc3,$t3,lo
++	stp	$acc2,$acc3,[$rp,#16]
++
++	ldp	x19,x20,[sp,#16]
++	ldp	x21,x22,[sp,#32]
++	ldp	x23,x24,[sp,#48]
++	ldr	x29,[sp],#64
++	ret
++.size	ecp_nistz256_ord_mul_mont,.-ecp_nistz256_ord_mul_mont
++
++////////////////////////////////////////////////////////////////////////
++// void ecp_nistz256_ord_sqr_mont(uint64_t res[4], uint64_t a[4],
++//                                int rep);
++.globl	ecp_nistz256_ord_sqr_mont
++.type	ecp_nistz256_ord_sqr_mont,%function
++.align	4
++ecp_nistz256_ord_sqr_mont:
++	stp	x29,x30,[sp,#-64]!
++	add	x29,sp,#0
++	stp	x19,x20,[sp,#16]
++	stp	x21,x22,[sp,#32]
++	stp	x23,x24,[sp,#48]
++
++	adr	$ordk,.Lord
++	ldp	$a0,$a1,[$ap]
++	ldp	$a2,$a3,[$ap,#16]
++
++	ldp	$ord0,$ord1,[$ordk,#0]
++	ldp	$ord2,$ord3,[$ordk,#16]
++	ldr	$ordk,[$ordk,#32]
++	b	.Loop_ord_sqr
++
++.align	4
++.Loop_ord_sqr:
++	sub	$bp,$bp,#1
++	////////////////////////////////////////////////////////////////
++	//  |  |  |  |  |  |a1*a0|  |
++	//  |  |  |  |  |a2*a0|  |  |
++	//  |  |a3*a2|a3*a0|  |  |  |
++	//  |  |  |  |a2*a1|  |  |  |
++	//  |  |  |a3*a1|  |  |  |  |
++	// *|  |  |  |  |  |  |  | 2|
++	// +|a3*a3|a2*a2|a1*a1|a0*a0|
++	//  |--+--+--+--+--+--+--+--|
++	//  |A7|A6|A5|A4|A3|A2|A1|A0|, where Ax is $accx, i.e. follow $accx
++	//
++	//  "can't overflow" below mark carrying into high part of
++	//  multiplication result, which can't overflow, because it
++	//  can never be all ones.
++
++	mul	$acc1,$a1,$a0		// a[1]*a[0]
++	umulh	$t1,$a1,$a0
++	mul	$acc2,$a2,$a0		// a[2]*a[0]
++	umulh	$t2,$a2,$a0
++	mul	$acc3,$a3,$a0		// a[3]*a[0]
++	umulh	$acc4,$a3,$a0
++
++	adds	$acc2,$acc2,$t1		// accumulate high parts of multiplication
++	 mul	$t0,$a2,$a1		// a[2]*a[1]
++	 umulh	$t1,$a2,$a1
++	adcs	$acc3,$acc3,$t2
++	 mul	$t2,$a3,$a1		// a[3]*a[1]
++	 umulh	$t3,$a3,$a1
++	adc	$acc4,$acc4,xzr		// can't overflow
++
++	mul	$acc5,$a3,$a2		// a[3]*a[2]
++	umulh	$acc6,$a3,$a2
++
++	adds	$t1,$t1,$t2		// accumulate high parts of multiplication
++	 mul	$acc0,$a0,$a0		// a[0]*a[0]
++	adc	$t2,$t3,xzr		// can't overflow
++
++	adds	$acc3,$acc3,$t0		// accumulate low parts of multiplication
++	 umulh	$a0,$a0,$a0
++	adcs	$acc4,$acc4,$t1
++	 mul	$t1,$a1,$a1		// a[1]*a[1]
++	adcs	$acc5,$acc5,$t2
++	 umulh	$a1,$a1,$a1
++	adc	$acc6,$acc6,xzr		// can't overflow
++
++	adds	$acc1,$acc1,$acc1	// acc[1-6]*=2
++	 mul	$t2,$a2,$a2		// a[2]*a[2]
++	adcs	$acc2,$acc2,$acc2
++	 umulh	$a2,$a2,$a2
++	adcs	$acc3,$acc3,$acc3
++	 mul	$t3,$a3,$a3		// a[3]*a[3]
++	adcs	$acc4,$acc4,$acc4
++	 umulh	$a3,$a3,$a3
++	adcs	$acc5,$acc5,$acc5
++	adcs	$acc6,$acc6,$acc6
++	adc	$acc7,xzr,xzr
++
++	adds	$acc1,$acc1,$a0		// +a[i]*a[i]
++	 mul	$t4,$acc0,$ordk
++	adcs	$acc2,$acc2,$t1
++	adcs	$acc3,$acc3,$a1
++	adcs	$acc4,$acc4,$t2
++	adcs	$acc5,$acc5,$a2
++	adcs	$acc6,$acc6,$t3
++	adc	$acc7,$acc7,$a3
++___
++for($i=0; $i<4; $i++) {			# reductions
++$code.=<<___;
++	subs	xzr,$acc0,#1
++	umulh	$t1,$ord0,$t4
++	mul	$t2,$ord1,$t4
++	umulh	$t3,$ord1,$t4
++
++	adcs	$t2,$t2,$t1
++	adc	$t3,$t3,xzr
++
++	adds	$acc0,$acc1,$t2
++	adcs	$acc1,$acc2,$t3
++	adcs	$acc2,$acc3,$t4
++	adc	$acc3,xzr,$t4		// can't overflow
++___
++$code.=<<___	if ($i<3);
++	mul	$t3,$acc0,$ordk
++___
++$code.=<<___;
++	lsl	$t0,$t4,#32
++	subs	$acc1,$acc1,$t4
++	lsr	$t1,$t4,#32
++	sbcs	$acc2,$acc2,$t0
++	sbc	$acc3,$acc3,$t1		// can't borrow
++___
++	($t3,$t4) = ($t4,$t3);
++}
++$code.=<<___;
++	adds	$acc0,$acc0,$acc4	// accumulate upper half
++	adcs	$acc1,$acc1,$acc5
++	adcs	$acc2,$acc2,$acc6
++	adcs	$acc3,$acc3,$acc7
++	adc	$acc4,xzr,xzr
++
++	subs	$t0,$acc0,$ord0		// ret -= modulus
++	sbcs	$t1,$acc1,$ord1
++	sbcs	$t2,$acc2,$ord2
++	sbcs	$t3,$acc3,$ord3
++	sbcs	xzr,$acc4,xzr
++
++	csel	$a0,$acc0,$t0,lo	// ret = borrow ? ret : ret-modulus
++	csel	$a1,$acc1,$t1,lo
++	csel	$a2,$acc2,$t2,lo
++	csel	$a3,$acc3,$t3,lo
++
++	cbnz	$bp,.Loop_ord_sqr
++
++	stp	$a0,$a1,[$rp]
++	stp	$a2,$a3,[$rp,#16]
++
++	ldp	x19,x20,[sp,#16]
++	ldp	x21,x22,[sp,#32]
++	ldp	x23,x24,[sp,#48]
++	ldr	x29,[sp],#64
++	ret
++.size	ecp_nistz256_ord_sqr_mont,.-ecp_nistz256_ord_sqr_mont
++___
+ }	}
+ 
+ ########################################################################
+diff --git a/crypto/ec/asm/ecp_nistz256-x86_64.pl b/crypto/ec/asm/ecp_nistz256-x86_64.pl
+index 714e852..e65e829 100755
+--- a/crypto/ec/asm/ecp_nistz256-x86_64.pl
++++ b/crypto/ec/asm/ecp_nistz256-x86_64.pl
+@@ -1,60 +1,42 @@
+ #! /usr/bin/env perl
+ # Copyright 2014-2016 The OpenSSL Project Authors. All Rights Reserved.
++# Copyright (c) 2014, Intel Corporation. All Rights Reserved.
+ #
+ # Licensed under the OpenSSL license (the "License").  You may not use
+ # this file except in compliance with the License.  You can obtain a copy
+ # in the file LICENSE in the source distribution or at
+ # https://www.openssl.org/source/license.html
+-
+-
+-##############################################################################
+-#                                                                            #
+-# Copyright 2014 Intel Corporation                                           #
+-#                                                                            #
+-# Licensed under the Apache License, Version 2.0 (the "License");            #
+-# you may not use this file except in compliance with the License.           #
+-# You may obtain a copy of the License at                                    #
+-#                                                                            #
+-#    http://www.apache.org/licenses/LICENSE-2.0                              #
+-#                                                                            #
+-# Unless required by applicable law or agreed to in writing, software        #
+-# distributed under the License is distributed on an "AS IS" BASIS,          #
+-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+-# See the License for the specific language governing permissions and        #
+-# limitations under the License.                                             #
+-#                                                                            #
+-##############################################################################
+-#                                                                            #
+-#  Developers and authors:                                                   #
+-#  Shay Gueron (1, 2), and Vlad Krasnov (1)                                  #
+-#  (1) Intel Corporation, Israel Development Center                          #
+-#  (2) University of Haifa                                                   #
+-#  Reference:                                                                #
+-#  S.Gueron and V.Krasnov, "Fast Prime Field Elliptic Curve Cryptography with#
+-#                           256 Bit Primes"                                  #
+-#                                                                            #
+-##############################################################################
++#
++# Originally written by Shay Gueron (1, 2), and Vlad Krasnov (1)
++# (1) Intel Corporation, Israel Development Center, Haifa, Israel
++# (2) University of Haifa, Israel
++#
++# Reference:
++# S.Gueron and V.Krasnov, "Fast Prime Field Elliptic Curve Cryptography with
++#                          256 Bit Primes"
+ 
+ # Further optimization by <appro@openssl.org>:
+ #
+ #		this/original	with/without -DECP_NISTZ256_ASM(*)
+-# Opteron	+12-49%		+110-150%
+-# Bulldozer	+14-45%		+175-210%
+-# P4		+18-46%		n/a :-(
+-# Westmere	+12-34%		+80-87%
+-# Sandy Bridge	+9-35%		+110-120%
+-# Ivy Bridge	+9-35%		+110-125%
+-# Haswell	+8-37%		+140-160%
+-# Broadwell	+18-58%		+145-210%
+-# Atom		+15-50%		+130-180%
+-# VIA Nano	+43-160%	+300-480%
++# Opteron	+15-49%		+150-195%
++# Bulldozer	+18-45%		+175-240%
++# P4		+24-46%		+100-150%
++# Westmere	+18-34%		+87-160%
++# Sandy Bridge	+14-35%		+120-185%
++# Ivy Bridge	+11-35%		+125-180%
++# Haswell	+10-37%		+160-200%
++# Broadwell	+24-58%		+210-270%
++# Atom		+20-50%		+180-240%
++# VIA Nano	+50-160%	+480-480%
+ #
+ # (*)	"without -DECP_NISTZ256_ASM" refers to build with
+ #	"enable-ec_nistp_64_gcc_128";
+ #
+ # Ranges denote minimum and maximum improvement coefficients depending
+-# on benchmark. Lower coefficients are for ECDSA sign, relatively fastest
+-# server-side operation. Keep in mind that +100% means 2x improvement.
++# on benchmark. In "this/original" column lower coefficient is for
++# ECDSA sign, while in "with/without" - for ECDH key agreement, and
++# higher - for ECDSA sign, relatively fastest server-side operation.
++# Keep in mind that +100% means 2x improvement.
+ 
+ $flavour = shift;
+ $output  = shift;
+@@ -115,6 +97,12 @@ $code.=<<___;
+ .long 3,3,3,3,3,3,3,3
+ .LONE_mont:
+ .quad 0x0000000000000001, 0xffffffff00000000, 0xffffffffffffffff, 0x00000000fffffffe
++
++# Constants for computations modulo ord(p256)
++.Lord:
++.quad 0xf3b9cac2fc632551, 0xbce6faada7179e84, 0xffffffffffffffff, 0xffffffff00000000
++.LordK:
++.quad 0xccd1c8aaee00bc4f
+ ___
+ 
+ {
+@@ -131,8 +119,12 @@ $code.=<<___;
+ .type	ecp_nistz256_mul_by_2,\@function,2
+ .align	64
+ ecp_nistz256_mul_by_2:
++.cfi_startproc
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++.Lmul_by_2_body:
+ 
+ 	mov	8*0($a_ptr), $a0
+ 	xor	$t4,$t4
+@@ -165,9 +157,15 @@ ecp_nistz256_mul_by_2:
+ 	mov	$a2, 8*2($r_ptr)
+ 	mov	$a3, 8*3($r_ptr)
+ 
+-	pop	%r13
+-	pop	%r12
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Lmul_by_2_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_mul_by_2,.-ecp_nistz256_mul_by_2
+ 
+ ################################################################################
+@@ -176,8 +174,12 @@ ecp_nistz256_mul_by_2:
+ .type	ecp_nistz256_div_by_2,\@function,2
+ .align	32
+ ecp_nistz256_div_by_2:
++.cfi_startproc
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++.Ldiv_by_2_body:
+ 
+ 	mov	8*0($a_ptr), $a0
+ 	mov	8*1($a_ptr), $a1
+@@ -225,9 +227,15 @@ ecp_nistz256_div_by_2:
+ 	mov	$a2, 8*2($r_ptr)
+ 	mov	$a3, 8*3($r_ptr)
+ 
+-	pop	%r13
+-	pop	%r12
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Ldiv_by_2_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_div_by_2,.-ecp_nistz256_div_by_2
+ 
+ ################################################################################
+@@ -236,8 +244,12 @@ ecp_nistz256_div_by_2:
+ .type	ecp_nistz256_mul_by_3,\@function,2
+ .align	32
+ ecp_nistz256_mul_by_3:
++.cfi_startproc
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++.Lmul_by_3_body:
+ 
+ 	mov	8*0($a_ptr), $a0
+ 	xor	$t4, $t4
+@@ -291,9 +303,15 @@ ecp_nistz256_mul_by_3:
+ 	mov	$a2, 8*2($r_ptr)
+ 	mov	$a3, 8*3($r_ptr)
+ 
+-	pop %r13
+-	pop %r12
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Lmul_by_3_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_mul_by_3,.-ecp_nistz256_mul_by_3
+ 
+ ################################################################################
+@@ -302,8 +320,12 @@ ecp_nistz256_mul_by_3:
+ .type	ecp_nistz256_add,\@function,3
+ .align	32
+ ecp_nistz256_add:
++.cfi_startproc
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++.Ladd_body:
+ 
+ 	mov	8*0($a_ptr), $a0
+ 	xor	$t4, $t4
+@@ -337,9 +359,15 @@ ecp_nistz256_add:
+ 	mov	$a2, 8*2($r_ptr)
+ 	mov	$a3, 8*3($r_ptr)
+ 
+-	pop %r13
+-	pop %r12
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Ladd_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_add,.-ecp_nistz256_add
+ 
+ ################################################################################
+@@ -348,8 +376,12 @@ ecp_nistz256_add:
+ .type	ecp_nistz256_sub,\@function,3
+ .align	32
+ ecp_nistz256_sub:
++.cfi_startproc
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++.Lsub_body:
+ 
+ 	mov	8*0($a_ptr), $a0
+ 	xor	$t4, $t4
+@@ -374,72 +406,1167 @@ ecp_nistz256_sub:
+ 	adc	8*3($a_ptr), $a3
+ 	test	$t4, $t4
+ 
+-	cmovz	$t0, $a0
+-	cmovz	$t1, $a1
+-	mov	$a0, 8*0($r_ptr)
+-	cmovz	$t2, $a2
+-	mov	$a1, 8*1($r_ptr)
+-	cmovz	$t3, $a3
+-	mov	$a2, 8*2($r_ptr)
+-	mov	$a3, 8*3($r_ptr)
++	cmovz	$t0, $a0
++	cmovz	$t1, $a1
++	mov	$a0, 8*0($r_ptr)
++	cmovz	$t2, $a2
++	mov	$a1, 8*1($r_ptr)
++	cmovz	$t3, $a3
++	mov	$a2, 8*2($r_ptr)
++	mov	$a3, 8*3($r_ptr)
++
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Lsub_epilogue:
++	ret
++.cfi_endproc
++.size	ecp_nistz256_sub,.-ecp_nistz256_sub
++
++################################################################################
++# void ecp_nistz256_neg(uint64_t res[4], uint64_t a[4]);
++.globl	ecp_nistz256_neg
++.type	ecp_nistz256_neg,\@function,2
++.align	32
++ecp_nistz256_neg:
++.cfi_startproc
++	push	%r12
++.cfi_push	%r12
++	push	%r13
++.cfi_push	%r13
++.Lneg_body:
++
++	xor	$a0, $a0
++	xor	$a1, $a1
++	xor	$a2, $a2
++	xor	$a3, $a3
++	xor	$t4, $t4
++
++	sub	8*0($a_ptr), $a0
++	sbb	8*1($a_ptr), $a1
++	sbb	8*2($a_ptr), $a2
++	 mov	$a0, $t0
++	sbb	8*3($a_ptr), $a3
++	lea	.Lpoly(%rip), $a_ptr
++	 mov	$a1, $t1
++	sbb	\$0, $t4
++
++	add	8*0($a_ptr), $a0
++	 mov	$a2, $t2
++	adc	8*1($a_ptr), $a1
++	adc	8*2($a_ptr), $a2
++	 mov	$a3, $t3
++	adc	8*3($a_ptr), $a3
++	test	$t4, $t4
++
++	cmovz	$t0, $a0
++	cmovz	$t1, $a1
++	mov	$a0, 8*0($r_ptr)
++	cmovz	$t2, $a2
++	mov	$a1, 8*1($r_ptr)
++	cmovz	$t3, $a3
++	mov	$a2, 8*2($r_ptr)
++	mov	$a3, 8*3($r_ptr)
++
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Lneg_epilogue:
++	ret
++.cfi_endproc
++.size	ecp_nistz256_neg,.-ecp_nistz256_neg
++___
++}
++{
++my ($r_ptr,$a_ptr,$b_org,$b_ptr)=("%rdi","%rsi","%rdx","%rbx");
++my ($acc0,$acc1,$acc2,$acc3,$acc4,$acc5,$acc6,$acc7)=map("%r$_",(8..15));
++my ($t0,$t1,$t2,$t3,$t4)=("%rcx","%rbp","%rbx","%rdx","%rax");
++my ($poly1,$poly3)=($acc6,$acc7);
++
++$code.=<<___;
++################################################################################
++# void ecp_nistz256_ord_mul_mont(
++#   uint64_t res[4],
++#   uint64_t a[4],
++#   uint64_t b[4]);
++
++.globl	ecp_nistz256_ord_mul_mont
++.type	ecp_nistz256_ord_mul_mont,\@function,3
++.align	32
++ecp_nistz256_ord_mul_mont:
++.cfi_startproc
++___
++$code.=<<___	if ($addx);
++	mov	\$0x80100, %ecx
++	and	OPENSSL_ia32cap_P+8(%rip), %ecx
++	cmp	\$0x80100, %ecx
++	je	.Lecp_nistz256_ord_mul_montx
++___
++$code.=<<___;
++	push	%rbp
++.cfi_push	%rbp
++	push	%rbx
++.cfi_push	%rbx
++	push	%r12
++.cfi_push	%r12
++	push	%r13
++.cfi_push	%r13
++	push	%r14
++.cfi_push	%r14
++	push	%r15
++.cfi_push	%r15
++.Lord_mul_body:
++
++	mov	8*0($b_org), %rax
++	mov	$b_org, $b_ptr
++	lea	.Lord(%rip), %r14
++	mov	.LordK(%rip), %r15
++
++	################################# * b[0]
++	mov	%rax, $t0
++	mulq	8*0($a_ptr)
++	mov	%rax, $acc0
++	mov	$t0, %rax
++	mov	%rdx, $acc1
++
++	mulq	8*1($a_ptr)
++	add	%rax, $acc1
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $acc2
++
++	mulq	8*2($a_ptr)
++	add	%rax, $acc2
++	mov	$t0, %rax
++	adc	\$0, %rdx
++
++	 mov	$acc0, $acc5
++	 imulq	%r15,$acc0
++
++	mov	%rdx, $acc3
++	mulq	8*3($a_ptr)
++	add	%rax, $acc3
++	 mov	$acc0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $acc4
++
++	################################# First reduction step
++	mulq	8*0(%r14)
++	mov	$acc0, $t1
++	add	%rax, $acc5		# guaranteed to be zero
++	mov	$acc0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t0
++
++	sub	$acc0, $acc2
++	sbb	\$0, $acc0		# can't borrow
++
++	mulq	8*1(%r14)
++	add	$t0, $acc1
++	adc	\$0, %rdx
++	add	%rax, $acc1
++	mov	$t1, %rax
++	adc	%rdx, $acc2
++	mov	$t1, %rdx
++	adc	\$0, $acc0		# can't overflow
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc3
++	 mov	8*1($b_ptr), %rax
++	sbb	%rdx, $t1		# can't borrow
++
++	add	$acc0, $acc3
++	adc	$t1, $acc4
++	adc	\$0, $acc5
++
++	################################# * b[1]
++	mov	%rax, $t0
++	mulq	8*0($a_ptr)
++	add	%rax, $acc1
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mulq	8*1($a_ptr)
++	add	$t1, $acc2
++	adc	\$0, %rdx
++	add	%rax, $acc2
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mulq	8*2($a_ptr)
++	add	$t1, $acc3
++	adc	\$0, %rdx
++	add	%rax, $acc3
++	mov	$t0, %rax
++	adc	\$0, %rdx
++
++	 mov	$acc1, $t0
++	 imulq	%r15, $acc1
++
++	mov	%rdx, $t1
++	mulq	8*3($a_ptr)
++	add	$t1, $acc4
++	adc	\$0, %rdx
++	xor	$acc0, $acc0
++	add	%rax, $acc4
++	 mov	$acc1, %rax
++	adc	%rdx, $acc5
++	adc	\$0, $acc0
++
++	################################# Second reduction step
++	mulq	8*0(%r14)
++	mov	$acc1, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	$acc1, %rax
++	adc	%rdx, $t0
++
++	sub	$acc1, $acc3
++	sbb	\$0, $acc1		# can't borrow
++
++	mulq	8*1(%r14)
++	add	$t0, $acc2
++	adc	\$0, %rdx
++	add	%rax, $acc2
++	mov	$t1, %rax
++	adc	%rdx, $acc3
++	mov	$t1, %rdx
++	adc	\$0, $acc1		# can't overflow
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc4
++	 mov	8*2($b_ptr), %rax
++	sbb	%rdx, $t1		# can't borrow
++
++	add	$acc1, $acc4
++	adc	$t1, $acc5
++	adc	\$0, $acc0
++
++	################################## * b[2]
++	mov	%rax, $t0
++	mulq	8*0($a_ptr)
++	add	%rax, $acc2
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mulq	8*1($a_ptr)
++	add	$t1, $acc3
++	adc	\$0, %rdx
++	add	%rax, $acc3
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mulq	8*2($a_ptr)
++	add	$t1, $acc4
++	adc	\$0, %rdx
++	add	%rax, $acc4
++	mov	$t0, %rax
++	adc	\$0, %rdx
++
++	 mov	$acc2, $t0
++	 imulq	%r15, $acc2
++
++	mov	%rdx, $t1
++	mulq	8*3($a_ptr)
++	add	$t1, $acc5
++	adc	\$0, %rdx
++	xor	$acc1, $acc1
++	add	%rax, $acc5
++	 mov	$acc2, %rax
++	adc	%rdx, $acc0
++	adc	\$0, $acc1
++
++	################################# Third reduction step
++	mulq	8*0(%r14)
++	mov	$acc2, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	$acc2, %rax
++	adc	%rdx, $t0
++
++	sub	$acc2, $acc4
++	sbb	\$0, $acc2		# can't borrow
++
++	mulq	8*1(%r14)
++	add	$t0, $acc3
++	adc	\$0, %rdx
++	add	%rax, $acc3
++	mov	$t1, %rax
++	adc	%rdx, $acc4
++	mov	$t1, %rdx
++	adc	\$0, $acc2		# can't overflow
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc5
++	 mov	8*3($b_ptr), %rax
++	sbb	%rdx, $t1		# can't borrow
++
++	add	$acc2, $acc5
++	adc	$t1, $acc0
++	adc	\$0, $acc1
++
++	################################# * b[3]
++	mov	%rax, $t0
++	mulq	8*0($a_ptr)
++	add	%rax, $acc3
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mulq	8*1($a_ptr)
++	add	$t1, $acc4
++	adc	\$0, %rdx
++	add	%rax, $acc4
++	mov	$t0, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mulq	8*2($a_ptr)
++	add	$t1, $acc5
++	adc	\$0, %rdx
++	add	%rax, $acc5
++	mov	$t0, %rax
++	adc	\$0, %rdx
++
++	 mov	$acc3, $t0
++	 imulq	%r15, $acc3
++
++	mov	%rdx, $t1
++	mulq	8*3($a_ptr)
++	add	$t1, $acc0
++	adc	\$0, %rdx
++	xor	$acc2, $acc2
++	add	%rax, $acc0
++	 mov	$acc3, %rax
++	adc	%rdx, $acc1
++	adc	\$0, $acc2
++
++	################################# Last reduction step
++	mulq	8*0(%r14)
++	mov	$acc3, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	$acc3, %rax
++	adc	%rdx, $t0
++
++	sub	$acc3, $acc5
++	sbb	\$0, $acc3		# can't borrow
++
++	mulq	8*1(%r14)
++	add	$t0, $acc4
++	adc	\$0, %rdx
++	add	%rax, $acc4
++	mov	$t1, %rax
++	adc	%rdx, $acc5
++	mov	$t1, %rdx
++	adc	\$0, $acc3		# can't overflow
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc0
++	sbb	%rdx, $t1		# can't borrow
++
++	add	$acc3, $acc0
++	adc	$t1, $acc1
++	adc	\$0, $acc2
++
++	################################# Subtract ord
++	 mov	$acc4, $a_ptr
++	sub	8*0(%r14), $acc4
++	 mov	$acc5, $acc3
++	sbb	8*1(%r14), $acc5
++	 mov	$acc0, $t0
++	sbb	8*2(%r14), $acc0
++	 mov	$acc1, $t1
++	sbb	8*3(%r14), $acc1
++	sbb	\$0, $acc2
++
++	cmovc	$a_ptr, $acc4
++	cmovc	$acc3, $acc5
++	cmovc	$t0, $acc0
++	cmovc	$t1, $acc1
++
++	mov	$acc4, 8*0($r_ptr)
++	mov	$acc5, 8*1($r_ptr)
++	mov	$acc0, 8*2($r_ptr)
++	mov	$acc1, 8*3($r_ptr)
++
++	mov	0(%rsp),%r15
++.cfi_restore	%r15
++	mov	8(%rsp),%r14
++.cfi_restore	%r14
++	mov	16(%rsp),%r13
++.cfi_restore	%r13
++	mov	24(%rsp),%r12
++.cfi_restore	%r12
++	mov	32(%rsp),%rbx
++.cfi_restore	%rbx
++	mov	40(%rsp),%rbp
++.cfi_restore	%rbp
++	lea	48(%rsp),%rsp
++.cfi_adjust_cfa_offset	-48
++.Lord_mul_epilogue:
++	ret
++.cfi_endproc
++.size	ecp_nistz256_ord_mul_mont,.-ecp_nistz256_ord_mul_mont
++
++################################################################################
++# void ecp_nistz256_ord_sqr_mont(
++#   uint64_t res[4],
++#   uint64_t a[4],
++#   int rep);
++
++.globl	ecp_nistz256_ord_sqr_mont
++.type	ecp_nistz256_ord_sqr_mont,\@function,3
++.align	32
++ecp_nistz256_ord_sqr_mont:
++.cfi_startproc
++___
++$code.=<<___	if ($addx);
++	mov	\$0x80100, %ecx
++	and	OPENSSL_ia32cap_P+8(%rip), %ecx
++	cmp	\$0x80100, %ecx
++	je	.Lecp_nistz256_ord_sqr_montx
++___
++$code.=<<___;
++	push	%rbp
++.cfi_push	%rbp
++	push	%rbx
++.cfi_push	%rbx
++	push	%r12
++.cfi_push	%r12
++	push	%r13
++.cfi_push	%r13
++	push	%r14
++.cfi_push	%r14
++	push	%r15
++.cfi_push	%r15
++.Lord_sqr_body:
++
++	mov	8*0($a_ptr), $acc0
++	mov	8*1($a_ptr), %rax
++	mov	8*2($a_ptr), $acc6
++	mov	8*3($a_ptr), $acc7
++	lea	.Lord(%rip), $a_ptr	# pointer to modulus
++	mov	$b_org, $b_ptr
++	jmp	.Loop_ord_sqr
++
++.align	32
++.Loop_ord_sqr:
++	################################# a[1:] * a[0]
++	mov	%rax, $t1		# put aside a[1]
++	mul	$acc0			# a[1] * a[0]
++	mov	%rax, $acc1
++	movq	$t1, %xmm1		# offload a[1]
++	mov	$acc6, %rax
++	mov	%rdx, $acc2
++
++	mul	$acc0			# a[2] * a[0]
++	add	%rax, $acc2
++	mov	$acc7, %rax
++	movq	$acc6, %xmm2		# offload a[2]
++	adc	\$0, %rdx
++	mov	%rdx, $acc3
++
++	mul	$acc0			# a[3] * a[0]
++	add	%rax, $acc3
++	mov	$acc7, %rax
++	movq	$acc7, %xmm3		# offload a[3]
++	adc	\$0, %rdx
++	mov	%rdx, $acc4
++
++	################################# a[3] * a[2]
++	mul	$acc6			# a[3] * a[2]
++	mov	%rax, $acc5
++	mov	$acc6, %rax
++	mov	%rdx, $acc6
++
++	################################# a[2:] * a[1]
++	mul	$t1			# a[2] * a[1]
++	add	%rax, $acc3
++	mov	$acc7, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $acc7
++
++	mul	$t1			# a[3] * a[1]
++	add	%rax, $acc4
++	adc	\$0, %rdx
++
++	add	$acc7, $acc4
++	adc	%rdx, $acc5
++	adc	\$0, $acc6		# can't overflow
++
++	################################# *2
++	xor	$acc7, $acc7
++	mov	$acc0, %rax
++	add	$acc1, $acc1
++	adc	$acc2, $acc2
++	adc	$acc3, $acc3
++	adc	$acc4, $acc4
++	adc	$acc5, $acc5
++	adc	$acc6, $acc6
++	adc	\$0, $acc7
++
++	################################# Missing products
++	mul	%rax			# a[0] * a[0]
++	mov	%rax, $acc0
++	movq	%xmm1, %rax
++	mov	%rdx, $t1
++
++	mul	%rax			# a[1] * a[1]
++	add	$t1, $acc1
++	adc	%rax, $acc2
++	movq	%xmm2, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	mul	%rax			# a[2] * a[2]
++	add	$t1, $acc3
++	adc	%rax, $acc4
++	movq	%xmm3, %rax
++	adc	\$0, %rdx
++	mov	%rdx, $t1
++
++	 mov	$acc0, $t0
++	 imulq	8*4($a_ptr), $acc0	# *= .LordK
++
++	mul	%rax			# a[3] * a[3]
++	add	$t1, $acc5
++	adc	%rax, $acc6
++	 mov	8*0($a_ptr), %rax	# modulus[0]
++	adc	%rdx, $acc7		# can't overflow
++
++	################################# First reduction step
++	mul	$acc0
++	mov	$acc0, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	8*1($a_ptr), %rax	# modulus[1]
++	adc	%rdx, $t0
++
++	sub	$acc0, $acc2
++	sbb	\$0, $t1		# can't borrow
++
++	mul	$acc0
++	add	$t0, $acc1
++	adc	\$0, %rdx
++	add	%rax, $acc1
++	mov	$acc0, %rax
++	adc	%rdx, $acc2
++	mov	$acc0, %rdx
++	adc	\$0, $t1		# can't overflow
++
++	 mov	$acc1, $t0
++	 imulq	8*4($a_ptr), $acc1	# *= .LordK
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc3
++	 mov	8*0($a_ptr), %rax
++	sbb	%rdx, $acc0		# can't borrow
++
++	add	$t1, $acc3
++	adc	\$0, $acc0		# can't overflow
++
++	################################# Second reduction step
++	mul	$acc1
++	mov	$acc1, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	8*1($a_ptr), %rax
++	adc	%rdx, $t0
++
++	sub	$acc1, $acc3
++	sbb	\$0, $t1		# can't borrow
++
++	mul	$acc1
++	add	$t0, $acc2
++	adc	\$0, %rdx
++	add	%rax, $acc2
++	mov	$acc1, %rax
++	adc	%rdx, $acc3
++	mov	$acc1, %rdx
++	adc	\$0, $t1		# can't overflow
++
++	 mov	$acc2, $t0
++	 imulq	8*4($a_ptr), $acc2	# *= .LordK
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc0
++	 mov	8*0($a_ptr), %rax
++	sbb	%rdx, $acc1		# can't borrow
++
++	add	$t1, $acc0
++	adc	\$0, $acc1		# can't overflow
++
++	################################# Third reduction step
++	mul	$acc2
++	mov	$acc2, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	8*1($a_ptr), %rax
++	adc	%rdx, $t0
++
++	sub	$acc2, $acc0
++	sbb	\$0, $t1		# can't borrow
++
++	mul	$acc2
++	add	$t0, $acc3
++	adc	\$0, %rdx
++	add	%rax, $acc3
++	mov	$acc2, %rax
++	adc	%rdx, $acc0
++	mov	$acc2, %rdx
++	adc	\$0, $t1		# can't overflow
++
++	 mov	$acc3, $t0
++	 imulq	8*4($a_ptr), $acc3	# *= .LordK
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc1
++	 mov	8*0($a_ptr), %rax
++	sbb	%rdx, $acc2		# can't borrow
++
++	add	$t1, $acc1
++	adc	\$0, $acc2		# can't overflow
++
++	################################# Last reduction step
++	mul	$acc3
++	mov	$acc3, $t1
++	add	%rax, $t0		# guaranteed to be zero
++	mov	8*1($a_ptr), %rax
++	adc	%rdx, $t0
++
++	sub	$acc3, $acc1
++	sbb	\$0, $t1		# can't borrow
++
++	mul	$acc3
++	add	$t0, $acc0
++	adc	\$0, %rdx
++	add	%rax, $acc0
++	mov	$acc3, %rax
++	adc	%rdx, $acc1
++	mov	$acc3, %rdx
++	adc	\$0, $t1		# can't overflow
++
++	shl	\$32, %rax
++	shr	\$32, %rdx
++	sub	%rax, $acc2
++	sbb	%rdx, $acc3		# can't borrow
++
++	add	$t1, $acc2
++	adc	\$0, $acc3		# can't overflow
++
++	################################# Add bits [511:256] of the sqr result
++	xor	%rdx, %rdx
++	add	$acc4, $acc0
++	adc	$acc5, $acc1
++	 mov	$acc0, $acc4
++	adc	$acc6, $acc2
++	adc	$acc7, $acc3
++	 mov	$acc1, %rax
++	adc	\$0, %rdx
++
++	################################# Compare to modulus
++	sub	8*0($a_ptr), $acc0
++	 mov	$acc2, $acc6
++	sbb	8*1($a_ptr), $acc1
++	sbb	8*2($a_ptr), $acc2
++	 mov	$acc3, $acc7
++	sbb	8*3($a_ptr), $acc3
++	sbb	\$0, %rdx
++
++	cmovc	$acc4, $acc0
++	cmovnc	$acc1, %rax
++	cmovnc	$acc2, $acc6
++	cmovnc	$acc3, $acc7
++
++	dec	$b_ptr
++	jnz	.Loop_ord_sqr
++
++	mov	$acc0, 8*0($r_ptr)
++	mov	%rax,  8*1($r_ptr)
++	pxor	%xmm1, %xmm1
++	mov	$acc6, 8*2($r_ptr)
++	pxor	%xmm2, %xmm2
++	mov	$acc7, 8*3($r_ptr)
++	pxor	%xmm3, %xmm3
++
++	mov	0(%rsp),%r15
++.cfi_restore	%r15
++	mov	8(%rsp),%r14
++.cfi_restore	%r14
++	mov	16(%rsp),%r13
++.cfi_restore	%r13
++	mov	24(%rsp),%r12
++.cfi_restore	%r12
++	mov	32(%rsp),%rbx
++.cfi_restore	%rbx
++	mov	40(%rsp),%rbp
++.cfi_restore	%rbp
++	lea	48(%rsp),%rsp
++.cfi_adjust_cfa_offset	-48
++.Lord_sqr_epilogue:
++	ret
++.cfi_endproc
++.size	ecp_nistz256_ord_sqr_mont,.-ecp_nistz256_ord_sqr_mont
++___
++
++$code.=<<___	if ($addx);
++################################################################################
++.type	ecp_nistz256_ord_mul_montx,\@function,3
++.align	32
++ecp_nistz256_ord_mul_montx:
++.cfi_startproc
++.Lecp_nistz256_ord_mul_montx:
++	push	%rbp
++.cfi_push	%rbp
++	push	%rbx
++.cfi_push	%rbx
++	push	%r12
++.cfi_push	%r12
++	push	%r13
++.cfi_push	%r13
++	push	%r14
++.cfi_push	%r14
++	push	%r15
++.cfi_push	%r15
++.Lord_mulx_body:
++
++	mov	$b_org, $b_ptr
++	mov	8*0($b_org), %rdx
++	mov	8*0($a_ptr), $acc1
++	mov	8*1($a_ptr), $acc2
++	mov	8*2($a_ptr), $acc3
++	mov	8*3($a_ptr), $acc4
++	lea	-128($a_ptr), $a_ptr	# control u-op density
++	lea	.Lord-128(%rip), %r14
++	mov	.LordK(%rip), %r15
++
++	################################# Multiply by b[0]
++	mulx	$acc1, $acc0, $acc1
++	mulx	$acc2, $t0, $acc2
++	mulx	$acc3, $t1, $acc3
++	add	$t0, $acc1
++	mulx	$acc4, $t0, $acc4
++	 mov	$acc0, %rdx
++	 mulx	%r15, %rdx, %rax
++	adc	$t1, $acc2
++	adc	$t0, $acc3
++	adc	\$0, $acc4
++
++	################################# reduction
++	xor	$acc5, $acc5		# $acc5=0, cf=0, of=0
++	mulx	8*0+128(%r14), $t0, $t1
++	adcx	$t0, $acc0		# guaranteed to be zero
++	adox	$t1, $acc1
++
++	mulx	8*1+128(%r14), $t0, $t1
++	adcx	$t0, $acc1
++	adox	$t1, $acc2
++
++	mulx	8*2+128(%r14), $t0, $t1
++	adcx	$t0, $acc2
++	adox	$t1, $acc3
++
++	mulx	8*3+128(%r14), $t0, $t1
++	 mov	8*1($b_ptr), %rdx
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
++	adcx	$acc0, $acc4
++	adox	$acc0, $acc5
++	adc	\$0, $acc5		# cf=0, of=0
++
++	################################# Multiply by b[1]
++	mulx	8*0+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc1
++	adox	$t1, $acc2
++
++	mulx	8*1+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc2
++	adox	$t1, $acc3
++
++	mulx	8*2+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
++
++	mulx	8*3+128($a_ptr), $t0, $t1
++	 mov	$acc1, %rdx
++	 mulx	%r15, %rdx, %rax
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++
++	adcx	$acc0, $acc5
++	adox	$acc0, $acc0
++	adc	\$0, $acc0		# cf=0, of=0
++
++	################################# reduction
++	mulx	8*0+128(%r14), $t0, $t1
++	adcx	$t0, $acc1		# guaranteed to be zero
++	adox	$t1, $acc2
++
++	mulx	8*1+128(%r14), $t0, $t1
++	adcx	$t0, $acc2
++	adox	$t1, $acc3
++
++	mulx	8*2+128(%r14), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
++
++	mulx	8*3+128(%r14), $t0, $t1
++	 mov	8*2($b_ptr), %rdx
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++	adcx	$acc1, $acc5
++	adox	$acc1, $acc0
++	adc	\$0, $acc0		# cf=0, of=0
++
++	################################# Multiply by b[2]
++	mulx	8*0+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc2
++	adox	$t1, $acc3
++
++	mulx	8*1+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
++
++	mulx	8*2+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++
++	mulx	8*3+128($a_ptr), $t0, $t1
++	 mov	$acc2, %rdx
++	 mulx	%r15, %rdx, %rax
++	adcx	$t0, $acc5
++	adox	$t1, $acc0
++
++	adcx	$acc1, $acc0
++	adox	$acc1, $acc1
++	adc	\$0, $acc1		# cf=0, of=0
++
++	################################# reduction
++	mulx	8*0+128(%r14), $t0, $t1
++	adcx	$t0, $acc2		# guaranteed to be zero
++	adox	$t1, $acc3
++
++	mulx	8*1+128(%r14), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
++
++	mulx	8*2+128(%r14), $t0, $t1
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++
++	mulx	8*3+128(%r14), $t0, $t1
++	 mov	8*3($b_ptr), %rdx
++	adcx	$t0, $acc5
++	adox	$t1, $acc0
++	adcx	$acc2, $acc0
++	adox	$acc2, $acc1
++	adc	\$0, $acc1		# cf=0, of=0
++
++	################################# Multiply by b[3]
++	mulx	8*0+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
++
++	mulx	8*1+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++
++	mulx	8*2+128($a_ptr), $t0, $t1
++	adcx	$t0, $acc5
++	adox	$t1, $acc0
++
++	mulx	8*3+128($a_ptr), $t0, $t1
++	 mov	$acc3, %rdx
++	 mulx	%r15, %rdx, %rax
++	adcx	$t0, $acc0
++	adox	$t1, $acc1
++
++	adcx	$acc2, $acc1
++	adox	$acc2, $acc2
++	adc	\$0, $acc2		# cf=0, of=0
++
++	################################# reduction
++	mulx	8*0+128(%r14), $t0, $t1
++	adcx	$t0, $acc3		# guranteed to be zero
++	adox	$t1, $acc4
++
++	mulx	8*1+128(%r14), $t0, $t1
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++
++	mulx	8*2+128(%r14), $t0, $t1
++	adcx	$t0, $acc5
++	adox	$t1, $acc0
++
++	mulx	8*3+128(%r14), $t0, $t1
++	lea	128(%r14),%r14
++	 mov	$acc4, $t2
++	adcx	$t0, $acc0
++	adox	$t1, $acc1
++	 mov	$acc5, $t3
++	adcx	$acc3, $acc1
++	adox	$acc3, $acc2
++	adc	\$0, $acc2
++
++	#################################
++	# Branch-less conditional subtraction of P
++	 mov	$acc0, $t0
++	sub	8*0(%r14), $acc4
++	sbb	8*1(%r14), $acc5
++	sbb	8*2(%r14), $acc0
++	 mov	$acc1, $t1
++	sbb	8*3(%r14), $acc1
++	sbb	\$0, $acc2
++
++	cmovc	$t2, $acc4
++	cmovc	$t3, $acc5
++	cmovc	$t0, $acc0
++	cmovc	$t1, $acc1
++
++	mov	$acc4, 8*0($r_ptr)
++	mov	$acc5, 8*1($r_ptr)
++	mov	$acc0, 8*2($r_ptr)
++	mov	$acc1, 8*3($r_ptr)
+ 
+-	pop %r13
+-	pop %r12
++	mov	0(%rsp),%r15
++.cfi_restore	%r15
++	mov	8(%rsp),%r14
++.cfi_restore	%r14
++	mov	16(%rsp),%r13
++.cfi_restore	%r13
++	mov	24(%rsp),%r12
++.cfi_restore	%r12
++	mov	32(%rsp),%rbx
++.cfi_restore	%rbx
++	mov	40(%rsp),%rbp
++.cfi_restore	%rbp
++	lea	48(%rsp),%rsp
++.cfi_adjust_cfa_offset	-48
++.Lord_mulx_epilogue:
+ 	ret
+-.size	ecp_nistz256_sub,.-ecp_nistz256_sub
++.cfi_endproc
++.size	ecp_nistz256_ord_mul_montx,.-ecp_nistz256_ord_mul_montx
+ 
+-################################################################################
+-# void ecp_nistz256_neg(uint64_t res[4], uint64_t a[4]);
+-.globl	ecp_nistz256_neg
+-.type	ecp_nistz256_neg,\@function,2
++.type	ecp_nistz256_ord_sqr_montx,\@function,3
+ .align	32
+-ecp_nistz256_neg:
++ecp_nistz256_ord_sqr_montx:
++.cfi_startproc
++.Lecp_nistz256_ord_sqr_montx:
++	push	%rbp
++.cfi_push	%rbp
++	push	%rbx
++.cfi_push	%rbx
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++	push	%r14
++.cfi_push	%r14
++	push	%r15
++.cfi_push	%r15
++.Lord_sqrx_body:
+ 
+-	xor	$a0, $a0
+-	xor	$a1, $a1
+-	xor	$a2, $a2
+-	xor	$a3, $a3
+-	xor	$t4, $t4
++	mov	$b_org, $b_ptr
++	mov	8*0($a_ptr), %rdx
++	mov	8*1($a_ptr), $acc6
++	mov	8*2($a_ptr), $acc7
++	mov	8*3($a_ptr), $acc0
++	lea	.Lord(%rip), $a_ptr
++	jmp	.Loop_ord_sqrx
+ 
+-	sub	8*0($a_ptr), $a0
+-	sbb	8*1($a_ptr), $a1
+-	sbb	8*2($a_ptr), $a2
+-	 mov	$a0, $t0
+-	sbb	8*3($a_ptr), $a3
+-	lea	.Lpoly(%rip), $a_ptr
+-	 mov	$a1, $t1
+-	sbb	\$0, $t4
++.align	32
++.Loop_ord_sqrx:
++	mulx	$acc6, $acc1, $acc2	# a[0]*a[1]
++	mulx	$acc7, $t0, $acc3	# a[0]*a[2]
++	 mov	%rdx, %rax		# offload a[0]
++	 movq	$acc6, %xmm1		# offload a[1]
++	mulx	$acc0, $t1, $acc4	# a[0]*a[3]
++	 mov	$acc6, %rdx
++	add	$t0, $acc2
++	 movq	$acc7, %xmm2		# offload a[2]
++	adc	$t1, $acc3
++	adc	\$0, $acc4
++	xor	$acc5, $acc5		# $acc5=0,cf=0,of=0
++	#################################
++	mulx	$acc7, $t0, $t1		# a[1]*a[2]
++	adcx	$t0, $acc3
++	adox	$t1, $acc4
+ 
+-	add	8*0($a_ptr), $a0
+-	 mov	$a2, $t2
+-	adc	8*1($a_ptr), $a1
+-	adc	8*2($a_ptr), $a2
+-	 mov	$a3, $t3
+-	adc	8*3($a_ptr), $a3
+-	test	$t4, $t4
++	mulx	$acc0, $t0, $t1		# a[1]*a[3]
++	 mov	$acc7, %rdx
++	adcx	$t0, $acc4
++	adox	$t1, $acc5
++	adc	\$0, $acc5
++	#################################
++	mulx	$acc0, $t0, $acc6	# a[2]*a[3]
++	mov	%rax, %rdx
++	 movq	$acc0, %xmm3		# offload a[3]
++	xor	$acc7, $acc7		# $acc7=0,cf=0,of=0
++	 adcx	$acc1, $acc1		# acc1:6<<1
++	adox	$t0, $acc5
++	 adcx	$acc2, $acc2
++	adox	$acc7, $acc6		# of=0
+ 
+-	cmovz	$t0, $a0
+-	cmovz	$t1, $a1
+-	mov	$a0, 8*0($r_ptr)
+-	cmovz	$t2, $a2
+-	mov	$a1, 8*1($r_ptr)
+-	cmovz	$t3, $a3
+-	mov	$a2, 8*2($r_ptr)
+-	mov	$a3, 8*3($r_ptr)
++	################################# a[i]*a[i]
++	mulx	%rdx, $acc0, $t1
++	movq	%xmm1, %rdx
++	 adcx	$acc3, $acc3
++	adox	$t1, $acc1
++	 adcx	$acc4, $acc4
++	mulx	%rdx, $t0, $t4
++	movq	%xmm2, %rdx
++	 adcx	$acc5, $acc5
++	adox	$t0, $acc2
++	 adcx	$acc6, $acc6
++	mulx	%rdx, $t0, $t1
++	.byte	0x67
++	movq	%xmm3, %rdx
++	adox	$t4, $acc3
++	 adcx	$acc7, $acc7
++	adox	$t0, $acc4
++	adox	$t1, $acc5
++	mulx	%rdx, $t0, $t4
++	adox	$t0, $acc6
++	adox	$t4, $acc7
++
++	################################# reduction
++	mov	$acc0, %rdx
++	mulx	8*4($a_ptr), %rdx, $t0
++
++	xor	%rax, %rax		# cf=0, of=0
++	mulx	8*0($a_ptr), $t0, $t1
++	adcx	$t0, $acc0		# guaranteed to be zero
++	adox	$t1, $acc1
++	mulx	8*1($a_ptr), $t0, $t1
++	adcx	$t0, $acc1
++	adox	$t1, $acc2
++	mulx	8*2($a_ptr), $t0, $t1
++	adcx	$t0, $acc2
++	adox	$t1, $acc3
++	mulx	8*3($a_ptr), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc0		# of=0
++	adcx	%rax, $acc0		# cf=0
++
++	#################################
++	mov	$acc1, %rdx
++	mulx	8*4($a_ptr), %rdx, $t0
++
++	mulx	8*0($a_ptr), $t0, $t1
++	adox	$t0, $acc1		# guaranteed to be zero
++	adcx	$t1, $acc2
++	mulx	8*1($a_ptr), $t0, $t1
++	adox	$t0, $acc2
++	adcx	$t1, $acc3
++	mulx	8*2($a_ptr), $t0, $t1
++	adox	$t0, $acc3
++	adcx	$t1, $acc0
++	mulx	8*3($a_ptr), $t0, $t1
++	adox	$t0, $acc0
++	adcx	$t1, $acc1		# cf=0
++	adox	%rax, $acc1		# of=0
++
++	#################################
++	mov	$acc2, %rdx
++	mulx	8*4($a_ptr), %rdx, $t0
++
++	mulx	8*0($a_ptr), $t0, $t1
++	adcx	$t0, $acc2		# guaranteed to be zero
++	adox	$t1, $acc3
++	mulx	8*1($a_ptr), $t0, $t1
++	adcx	$t0, $acc3
++	adox	$t1, $acc0
++	mulx	8*2($a_ptr), $t0, $t1
++	adcx	$t0, $acc0
++	adox	$t1, $acc1
++	mulx	8*3($a_ptr), $t0, $t1
++	adcx	$t0, $acc1
++	adox	$t1, $acc2		# of=0
++	adcx	%rax, $acc2		# cf=0
++
++	#################################
++	mov	$acc3, %rdx
++	mulx	8*4($a_ptr), %rdx, $t0
++
++	mulx	8*0($a_ptr), $t0, $t1
++	adox	$t0, $acc3		# guaranteed to be zero
++	adcx	$t1, $acc0
++	mulx	8*1($a_ptr), $t0, $t1
++	adox	$t0, $acc0
++	adcx	$t1, $acc1
++	mulx	8*2($a_ptr), $t0, $t1
++	adox	$t0, $acc1
++	adcx	$t1, $acc2
++	mulx	8*3($a_ptr), $t0, $t1
++	adox	$t0, $acc2
++	adcx	$t1, $acc3
++	adox	%rax, $acc3
++
++	################################# accumulate upper half
++	add	$acc0, $acc4		# add	$acc4, $acc0
++	adc	$acc5, $acc1
++	 mov	$acc4, %rdx
++	adc	$acc6, $acc2
++	adc	$acc7, $acc3
++	 mov	$acc1, $acc6
++	adc	\$0, %rax
++
++	################################# compare to modulus
++	sub	8*0($a_ptr), $acc4
++	 mov	$acc2, $acc7
++	sbb	8*1($a_ptr), $acc1
++	sbb	8*2($a_ptr), $acc2
++	 mov	$acc3, $acc0
++	sbb	8*3($a_ptr), $acc3
++	sbb	\$0, %rax
++
++	cmovnc	$acc4, %rdx
++	cmovnc	$acc1, $acc6
++	cmovnc	$acc2, $acc7
++	cmovnc	$acc3, $acc0
++
++	dec	$b_ptr
++	jnz	.Loop_ord_sqrx
++
++	mov	%rdx, 8*0($r_ptr)
++	mov	$acc6, 8*1($r_ptr)
++	pxor	%xmm1, %xmm1
++	mov	$acc7, 8*2($r_ptr)
++	pxor	%xmm2, %xmm2
++	mov	$acc0, 8*3($r_ptr)
++	pxor	%xmm3, %xmm3
+ 
+-	pop %r13
+-	pop %r12
++	mov	0(%rsp),%r15
++.cfi_restore	%r15
++	mov	8(%rsp),%r14
++.cfi_restore	%r14
++	mov	16(%rsp),%r13
++.cfi_restore	%r13
++	mov	24(%rsp),%r12
++.cfi_restore	%r12
++	mov	32(%rsp),%rbx
++.cfi_restore	%rbx
++	mov	40(%rsp),%rbp
++.cfi_restore	%rbp
++	lea	48(%rsp),%rsp
++.cfi_adjust_cfa_offset	-48
++.Lord_sqrx_epilogue:
+ 	ret
+-.size	ecp_nistz256_neg,.-ecp_nistz256_neg
++.cfi_endproc
++.size	ecp_nistz256_ord_sqr_montx,.-ecp_nistz256_ord_sqr_montx
+ ___
+-}
+-{
+-my ($r_ptr,$a_ptr,$b_org,$b_ptr)=("%rdi","%rsi","%rdx","%rbx");
+-my ($acc0,$acc1,$acc2,$acc3,$acc4,$acc5,$acc6,$acc7)=map("%r$_",(8..15));
+-my ($t0,$t1,$t2,$t3,$t4)=("%rcx","%rbp","%rbx","%rdx","%rax");
+-my ($poly1,$poly3)=($acc6,$acc7);
+ 
+ $code.=<<___;
+ ################################################################################
+@@ -470,6 +1597,7 @@ $code.=<<___;
+ .type	ecp_nistz256_mul_mont,\@function,3
+ .align	32
+ ecp_nistz256_mul_mont:
++.cfi_startproc
+ ___
+ $code.=<<___	if ($addx);
+ 	mov	\$0x80100, %ecx
+@@ -478,11 +1606,18 @@ ___
+ $code.=<<___;
+ .Lmul_mont:
+ 	push	%rbp
++.cfi_push	%rbp
+ 	push	%rbx
++.cfi_push	%rbx
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
+ 	push	%r14
++.cfi_push	%r14
+ 	push	%r15
++.cfi_push	%r15
++.Lmul_body:
+ ___
+ $code.=<<___	if ($addx);
+ 	cmp	\$0x80100, %ecx
+@@ -515,13 +1650,23 @@ $code.=<<___	if ($addx);
+ ___
+ $code.=<<___;
+ .Lmul_mont_done:
+-	pop	%r15
+-	pop	%r14
+-	pop	%r13
+-	pop	%r12
+-	pop	%rbx
+-	pop	%rbp
++	mov	0(%rsp),%r15
++.cfi_restore	%r15
++	mov	8(%rsp),%r14
++.cfi_restore	%r14
++	mov	16(%rsp),%r13
++.cfi_restore	%r13
++	mov	24(%rsp),%r12
++.cfi_restore	%r12
++	mov	32(%rsp),%rbx
++.cfi_restore	%rbx
++	mov	40(%rsp),%rbp
++.cfi_restore	%rbp
++	lea	48(%rsp),%rsp
++.cfi_adjust_cfa_offset	-48
++.Lmul_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_mul_mont,.-ecp_nistz256_mul_mont
+ 
+ .type	__ecp_nistz256_mul_montq,\@abi-omnipotent
+@@ -611,7 +1756,7 @@ __ecp_nistz256_mul_montq:
+ 	adc	\$0, $acc0
+ 
+ 	########################################################################
+-	# Second reduction step	
++	# Second reduction step
+ 	mov	$acc1, $t1
+ 	shl	\$32, $acc1
+ 	mulq	$poly3
+@@ -658,7 +1803,7 @@ __ecp_nistz256_mul_montq:
+ 	adc	\$0, $acc1
+ 
+ 	########################################################################
+-	# Third reduction step	
++	# Third reduction step
+ 	mov	$acc2, $t1
+ 	shl	\$32, $acc2
+ 	mulq	$poly3
+@@ -705,7 +1850,7 @@ __ecp_nistz256_mul_montq:
+ 	adc	\$0, $acc2
+ 
+ 	########################################################################
+-	# Final reduction step	
++	# Final reduction step
+ 	mov	$acc3, $t1
+ 	shl	\$32, $acc3
+ 	mulq	$poly3
+@@ -718,7 +1863,7 @@ __ecp_nistz256_mul_montq:
+ 	 mov	$acc5, $t1
+ 	adc	\$0, $acc2
+ 
+-	########################################################################	
++	########################################################################
+ 	# Branch-less conditional subtraction of P
+ 	sub	\$-1, $acc4		# .Lpoly[0]
+ 	 mov	$acc0, $t2
+@@ -751,6 +1896,7 @@ __ecp_nistz256_mul_montq:
+ .type	ecp_nistz256_sqr_mont,\@function,2
+ .align	32
+ ecp_nistz256_sqr_mont:
++.cfi_startproc
+ ___
+ $code.=<<___	if ($addx);
+ 	mov	\$0x80100, %ecx
+@@ -758,11 +1904,18 @@ $code.=<<___	if ($addx);
+ ___
+ $code.=<<___;
+ 	push	%rbp
++.cfi_push	%rbp
+ 	push	%rbx
++.cfi_push	%rbx
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
+ 	push	%r14
++.cfi_push	%r14
+ 	push	%r15
++.cfi_push	%r15
++.Lsqr_body:
+ ___
+ $code.=<<___	if ($addx);
+ 	cmp	\$0x80100, %ecx
+@@ -791,13 +1944,23 @@ $code.=<<___	if ($addx);
+ ___
+ $code.=<<___;
+ .Lsqr_mont_done:
+-	pop	%r15
+-	pop	%r14
+-	pop	%r13
+-	pop	%r12
+-	pop	%rbx
+-	pop	%rbp
++	mov	0(%rsp),%r15
++.cfi_restore	%r15
++	mov	8(%rsp),%r14
++.cfi_restore	%r14
++	mov	16(%rsp),%r13
++.cfi_restore	%r13
++	mov	24(%rsp),%r12
++.cfi_restore	%r12
++	mov	32(%rsp),%rbx
++.cfi_restore	%rbx
++	mov	40(%rsp),%rbp
++.cfi_restore	%rbp
++	lea	48(%rsp),%rsp
++.cfi_adjust_cfa_offset	-48
++.Lsqr_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_sqr_mont,.-ecp_nistz256_sqr_mont
+ 
+ .type	__ecp_nistz256_sqr_montq,\@abi-omnipotent
+@@ -1278,8 +2441,12 @@ $code.=<<___;
+ .type	ecp_nistz256_from_mont,\@function,2
+ .align	32
+ ecp_nistz256_from_mont:
++.cfi_startproc
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
++.Lfrom_body:
+ 
+ 	mov	8*0($in_ptr), %rax
+ 	mov	.Lpoly+8*3(%rip), $t2
+@@ -1360,9 +2527,15 @@ ecp_nistz256_from_mont:
+ 	mov	$acc2, 8*2($r_ptr)
+ 	mov	$acc3, 8*3($r_ptr)
+ 
+-	pop	%r13
+-	pop	%r12
++	mov	0(%rsp),%r13
++.cfi_restore	%r13
++	mov	8(%rsp),%r12
++.cfi_restore	%r12
++	lea	16(%rsp),%rsp
++.cfi_adjust_cfa_offset	-16
++.Lfrom_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_from_mont,.-ecp_nistz256_from_mont
+ ___
+ }
+@@ -1488,10 +2661,10 @@ $code.=<<___	if ($win64);
+ 	movaps	0x80(%rsp), %xmm14
+ 	movaps	0x90(%rsp), %xmm15
+ 	lea	0xa8(%rsp), %rsp
+-.LSEH_end_ecp_nistz256_gather_w5:
+ ___
+ $code.=<<___;
+ 	ret
++.LSEH_end_ecp_nistz256_gather_w5:
+ .size	ecp_nistz256_gather_w5,.-ecp_nistz256_gather_w5
+ 
+ ################################################################################
+@@ -1593,10 +2766,10 @@ $code.=<<___	if ($win64);
+ 	movaps	0x80(%rsp), %xmm14
+ 	movaps	0x90(%rsp), %xmm15
+ 	lea	0xa8(%rsp), %rsp
+-.LSEH_end_ecp_nistz256_gather_w7:
+ ___
+ $code.=<<___;
+ 	ret
++.LSEH_end_ecp_nistz256_gather_w7:
+ .size	ecp_nistz256_gather_w7,.-ecp_nistz256_gather_w7
+ ___
+ }
+@@ -1617,18 +2790,19 @@ ecp_nistz256_avx2_gather_w5:
+ ___
+ $code.=<<___	if ($win64);
+ 	lea	-0x88(%rsp), %rax
++	mov	%rsp,%r11
+ .LSEH_begin_ecp_nistz256_avx2_gather_w5:
+-	.byte	0x48,0x8d,0x60,0xe0		#lea	-0x20(%rax), %rsp
+-	.byte	0xc5,0xf8,0x29,0x70,0xe0	#vmovaps %xmm6, -0x20(%rax)
+-	.byte	0xc5,0xf8,0x29,0x78,0xf0	#vmovaps %xmm7, -0x10(%rax)
+-	.byte	0xc5,0x78,0x29,0x40,0x00	#vmovaps %xmm8, 8(%rax)
+-	.byte	0xc5,0x78,0x29,0x48,0x10	#vmovaps %xmm9, 0x10(%rax)
+-	.byte	0xc5,0x78,0x29,0x50,0x20	#vmovaps %xmm10, 0x20(%rax)
+-	.byte	0xc5,0x78,0x29,0x58,0x30	#vmovaps %xmm11, 0x30(%rax)
+-	.byte	0xc5,0x78,0x29,0x60,0x40	#vmovaps %xmm12, 0x40(%rax)
+-	.byte	0xc5,0x78,0x29,0x68,0x50	#vmovaps %xmm13, 0x50(%rax)
+-	.byte	0xc5,0x78,0x29,0x70,0x60	#vmovaps %xmm14, 0x60(%rax)
+-	.byte	0xc5,0x78,0x29,0x78,0x70	#vmovaps %xmm15, 0x70(%rax)
++	.byte	0x48,0x8d,0x60,0xe0		# lea	-0x20(%rax), %rsp
++	.byte	0xc5,0xf8,0x29,0x70,0xe0	# vmovaps %xmm6, -0x20(%rax)
++	.byte	0xc5,0xf8,0x29,0x78,0xf0	# vmovaps %xmm7, -0x10(%rax)
++	.byte	0xc5,0x78,0x29,0x40,0x00	# vmovaps %xmm8, 8(%rax)
++	.byte	0xc5,0x78,0x29,0x48,0x10	# vmovaps %xmm9, 0x10(%rax)
++	.byte	0xc5,0x78,0x29,0x50,0x20	# vmovaps %xmm10, 0x20(%rax)
++	.byte	0xc5,0x78,0x29,0x58,0x30	# vmovaps %xmm11, 0x30(%rax)
++	.byte	0xc5,0x78,0x29,0x60,0x40	# vmovaps %xmm12, 0x40(%rax)
++	.byte	0xc5,0x78,0x29,0x68,0x50	# vmovaps %xmm13, 0x50(%rax)
++	.byte	0xc5,0x78,0x29,0x70,0x60	# vmovaps %xmm14, 0x60(%rax)
++	.byte	0xc5,0x78,0x29,0x78,0x70	# vmovaps %xmm15, 0x70(%rax)
+ ___
+ $code.=<<___;
+ 	vmovdqa	.LTwo(%rip), $TWO
+@@ -1694,11 +2868,11 @@ $code.=<<___	if ($win64);
+ 	movaps	0x70(%rsp), %xmm13
+ 	movaps	0x80(%rsp), %xmm14
+ 	movaps	0x90(%rsp), %xmm15
+-	lea	0xa8(%rsp), %rsp
+-.LSEH_end_ecp_nistz256_avx2_gather_w5:
++	lea	(%r11), %rsp
+ ___
+ $code.=<<___;
+ 	ret
++.LSEH_end_ecp_nistz256_avx2_gather_w5:
+ .size	ecp_nistz256_avx2_gather_w5,.-ecp_nistz256_avx2_gather_w5
+ ___
+ }
+@@ -1721,19 +2895,20 @@ ecp_nistz256_avx2_gather_w7:
+ 	vzeroupper
+ ___
+ $code.=<<___	if ($win64);
++	mov	%rsp,%r11
+ 	lea	-0x88(%rsp), %rax
+ .LSEH_begin_ecp_nistz256_avx2_gather_w7:
+-	.byte	0x48,0x8d,0x60,0xe0		#lea	-0x20(%rax), %rsp
+-	.byte	0xc5,0xf8,0x29,0x70,0xe0	#vmovaps %xmm6, -0x20(%rax)
+-	.byte	0xc5,0xf8,0x29,0x78,0xf0	#vmovaps %xmm7, -0x10(%rax)
+-	.byte	0xc5,0x78,0x29,0x40,0x00	#vmovaps %xmm8, 8(%rax)
+-	.byte	0xc5,0x78,0x29,0x48,0x10	#vmovaps %xmm9, 0x10(%rax)
+-	.byte	0xc5,0x78,0x29,0x50,0x20	#vmovaps %xmm10, 0x20(%rax)
+-	.byte	0xc5,0x78,0x29,0x58,0x30	#vmovaps %xmm11, 0x30(%rax)
+-	.byte	0xc5,0x78,0x29,0x60,0x40	#vmovaps %xmm12, 0x40(%rax)
+-	.byte	0xc5,0x78,0x29,0x68,0x50	#vmovaps %xmm13, 0x50(%rax)
+-	.byte	0xc5,0x78,0x29,0x70,0x60	#vmovaps %xmm14, 0x60(%rax)
+-	.byte	0xc5,0x78,0x29,0x78,0x70	#vmovaps %xmm15, 0x70(%rax)
++	.byte	0x48,0x8d,0x60,0xe0		# lea	-0x20(%rax), %rsp
++	.byte	0xc5,0xf8,0x29,0x70,0xe0	# vmovaps %xmm6, -0x20(%rax)
++	.byte	0xc5,0xf8,0x29,0x78,0xf0	# vmovaps %xmm7, -0x10(%rax)
++	.byte	0xc5,0x78,0x29,0x40,0x00	# vmovaps %xmm8, 8(%rax)
++	.byte	0xc5,0x78,0x29,0x48,0x10	# vmovaps %xmm9, 0x10(%rax)
++	.byte	0xc5,0x78,0x29,0x50,0x20	# vmovaps %xmm10, 0x20(%rax)
++	.byte	0xc5,0x78,0x29,0x58,0x30	# vmovaps %xmm11, 0x30(%rax)
++	.byte	0xc5,0x78,0x29,0x60,0x40	# vmovaps %xmm12, 0x40(%rax)
++	.byte	0xc5,0x78,0x29,0x68,0x50	# vmovaps %xmm13, 0x50(%rax)
++	.byte	0xc5,0x78,0x29,0x70,0x60	# vmovaps %xmm14, 0x60(%rax)
++	.byte	0xc5,0x78,0x29,0x78,0x70	# vmovaps %xmm15, 0x70(%rax)
+ ___
+ $code.=<<___;
+ 	vmovdqa	.LThree(%rip), $THREE
+@@ -1814,11 +2989,11 @@ $code.=<<___	if ($win64);
+ 	movaps	0x70(%rsp), %xmm13
+ 	movaps	0x80(%rsp), %xmm14
+ 	movaps	0x90(%rsp), %xmm15
+-	lea	0xa8(%rsp), %rsp
+-.LSEH_end_ecp_nistz256_avx2_gather_w7:
++	lea	(%r11), %rsp
+ ___
+ $code.=<<___;
+ 	ret
++.LSEH_end_ecp_nistz256_avx2_gather_w7:
+ .size	ecp_nistz256_avx2_gather_w7,.-ecp_nistz256_avx2_gather_w7
+ ___
+ } else {
+@@ -2022,6 +3197,7 @@ $code.=<<___;
+ .type	ecp_nistz256_point_double,\@function,2
+ .align	32
+ ecp_nistz256_point_double:
++.cfi_startproc
+ ___
+ $code.=<<___	if ($addx);
+ 	mov	\$0x80100, %ecx
+@@ -2038,17 +3214,26 @@ $code.=<<___;
+ .type	ecp_nistz256_point_doublex,\@function,2
+ .align	32
+ ecp_nistz256_point_doublex:
++.cfi_startproc
+ .Lpoint_doublex:
+ ___
+     }
+ $code.=<<___;
+ 	push	%rbp
++.cfi_push	%rbp
+ 	push	%rbx
++.cfi_push	%rbx
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
+ 	push	%r14
++.cfi_push	%r14
+ 	push	%r15
++.cfi_push	%r15
+ 	sub	\$32*5+8, %rsp
++.cfi_adjust_cfa_offset	32*5+8
++.Lpoint_double${x}_body:
+ 
+ .Lpoint_double_shortcut$x:
+ 	movdqu	0x00($a_ptr), %xmm0		# copy	*(P256_POINT *)$a_ptr.x
+@@ -2114,7 +3299,7 @@ $code.=<<___;
+ 	movq	%xmm1, $r_ptr
+ 	call	__ecp_nistz256_sqr_mont$x	# p256_sqr_mont(res_y, S);
+ ___
+-{	
++{
+ ######## ecp_nistz256_div_by_2(res_y, res_y); ##########################
+ # operate in 4-5-6-7 "name space" that matches squaring output
+ #
+@@ -2203,7 +3388,7 @@ $code.=<<___;
+ 	lea	$M(%rsp), $b_ptr
+ 	mov	$acc4, $acc6			# harmonize sub output and mul input
+ 	xor	%ecx, %ecx
+-	mov	$acc4, $S+8*0(%rsp)		# have to save:-(	
++	mov	$acc4, $S+8*0(%rsp)		# have to save:-(
+ 	mov	$acc5, $acc2
+ 	mov	$acc5, $S+8*1(%rsp)
+ 	cmovz	$acc0, $acc3
+@@ -2219,14 +3404,25 @@ $code.=<<___;
+ 	movq	%xmm1, $r_ptr
+ 	call	__ecp_nistz256_sub_from$x	# p256_sub(res_y, S, res_y);
+ 
+-	add	\$32*5+8, %rsp
+-	pop	%r15
+-	pop	%r14
+-	pop	%r13
+-	pop	%r12
+-	pop	%rbx
+-	pop	%rbp
++	lea	32*5+56(%rsp), %rsi
++.cfi_def_cfa	%rsi,8
++	mov	-48(%rsi),%r15
++.cfi_restore	%r15
++	mov	-40(%rsi),%r14
++.cfi_restore	%r14
++	mov	-32(%rsi),%r13
++.cfi_restore	%r13
++	mov	-24(%rsi),%r12
++.cfi_restore	%r12
++	mov	-16(%rsi),%rbx
++.cfi_restore	%rbx
++	mov	-8(%rsi),%rbp
++.cfi_restore	%rbp
++	lea	(%rsi),%rsp
++.cfi_def_cfa_register	%rsp
++.Lpoint_double${x}_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_point_double$sfx,.-ecp_nistz256_point_double$sfx
+ ___
+ }
+@@ -2252,6 +3448,7 @@ $code.=<<___;
+ .type	ecp_nistz256_point_add,\@function,3
+ .align	32
+ ecp_nistz256_point_add:
++.cfi_startproc
+ ___
+ $code.=<<___	if ($addx);
+ 	mov	\$0x80100, %ecx
+@@ -2268,17 +3465,26 @@ $code.=<<___;
+ .type	ecp_nistz256_point_addx,\@function,3
+ .align	32
+ ecp_nistz256_point_addx:
++.cfi_startproc
+ .Lpoint_addx:
+ ___
+     }
+ $code.=<<___;
+ 	push	%rbp
++.cfi_push	%rbp
+ 	push	%rbx
++.cfi_push	%rbx
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
+ 	push	%r14
++.cfi_push	%r14
+ 	push	%r15
++.cfi_push	%r15
+ 	sub	\$32*18+8, %rsp
++.cfi_adjust_cfa_offset	32*18+8
++.Lpoint_add${x}_body:
+ 
+ 	movdqu	0x00($a_ptr), %xmm0		# copy	*(P256_POINT *)$a_ptr
+ 	movdqu	0x10($a_ptr), %xmm1
+@@ -2587,14 +3793,25 @@ $code.=<<___;
+ 	movdqu	%xmm3, 0x30($r_ptr)
+ 
+ .Ladd_done$x:
+-	add	\$32*18+8, %rsp
+-	pop	%r15
+-	pop	%r14
+-	pop	%r13
+-	pop	%r12
+-	pop	%rbx
+-	pop	%rbp
++	lea	32*18+56(%rsp), %rsi
++.cfi_def_cfa	%rsi,8
++	mov	-48(%rsi),%r15
++.cfi_restore	%r15
++	mov	-40(%rsi),%r14
++.cfi_restore	%r14
++	mov	-32(%rsi),%r13
++.cfi_restore	%r13
++	mov	-24(%rsi),%r12
++.cfi_restore	%r12
++	mov	-16(%rsi),%rbx
++.cfi_restore	%rbx
++	mov	-8(%rsi),%rbp
++.cfi_restore	%rbp
++	lea	(%rsi),%rsp
++.cfi_def_cfa_register	%rsp
++.Lpoint_add${x}_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_point_add$sfx,.-ecp_nistz256_point_add$sfx
+ ___
+ }
+@@ -2619,6 +3836,7 @@ $code.=<<___;
+ .type	ecp_nistz256_point_add_affine,\@function,3
+ .align	32
+ ecp_nistz256_point_add_affine:
++.cfi_startproc
+ ___
+ $code.=<<___	if ($addx);
+ 	mov	\$0x80100, %ecx
+@@ -2635,17 +3853,26 @@ $code.=<<___;
+ .type	ecp_nistz256_point_add_affinex,\@function,3
+ .align	32
+ ecp_nistz256_point_add_affinex:
++.cfi_startproc
+ .Lpoint_add_affinex:
+ ___
+     }
+ $code.=<<___;
+ 	push	%rbp
++.cfi_push	%rbp
+ 	push	%rbx
++.cfi_push	%rbx
+ 	push	%r12
++.cfi_push	%r12
+ 	push	%r13
++.cfi_push	%r13
+ 	push	%r14
++.cfi_push	%r14
+ 	push	%r15
++.cfi_push	%r15
+ 	sub	\$32*15+8, %rsp
++.cfi_adjust_cfa_offset	32*15+8
++.Ladd_affine${x}_body:
+ 
+ 	movdqu	0x00($a_ptr), %xmm0	# copy	*(P256_POINT *)$a_ptr
+ 	mov	$b_org, $b_ptr		# reassign
+@@ -2890,14 +4117,25 @@ $code.=<<___;
+ 	movdqu	%xmm2, 0x20($r_ptr)
+ 	movdqu	%xmm3, 0x30($r_ptr)
+ 
+-	add	\$32*15+8, %rsp
+-	pop	%r15
+-	pop	%r14
+-	pop	%r13
+-	pop	%r12
+-	pop	%rbx
+-	pop	%rbp
++	lea	32*15+56(%rsp), %rsi
++.cfi_def_cfa	%rsi,8
++	mov	-48(%rsi),%r15
++.cfi_restore	%r15
++	mov	-40(%rsi),%r14
++.cfi_restore	%r14
++	mov	-32(%rsi),%r13
++.cfi_restore	%r13
++	mov	-24(%rsi),%r12
++.cfi_restore	%r12
++	mov	-16(%rsi),%rbx
++.cfi_restore	%rbx
++	mov	-8(%rsi),%rbp
++.cfi_restore	%rbp
++	lea	(%rsi),%rsp
++.cfi_def_cfa_register	%rsp
++.Ladd_affine${x}_epilogue:
+ 	ret
++.cfi_endproc
+ .size	ecp_nistz256_point_add_affine$sfx,.-ecp_nistz256_point_add_affine$sfx
+ ___
+ }
+@@ -3048,11 +4286,395 @@ ___
+ }
+ }}}
+ 
++# EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
++#		CONTEXT *context,DISPATCHER_CONTEXT *disp)
++if ($win64) {
++$rec="%rcx";
++$frame="%rdx";
++$context="%r8";
++$disp="%r9";
++
++$code.=<<___;
++.extern	__imp_RtlVirtualUnwind
++
++.type	short_handler,\@abi-omnipotent
++.align	16
++short_handler:
++	push	%rsi
++	push	%rdi
++	push	%rbx
++	push	%rbp
++	push	%r12
++	push	%r13
++	push	%r14
++	push	%r15
++	pushfq
++	sub	\$64,%rsp
++
++	mov	120($context),%rax	# pull context->Rax
++	mov	248($context),%rbx	# pull context->Rip
++
++	mov	8($disp),%rsi		# disp->ImageBase
++	mov	56($disp),%r11		# disp->HandlerData
++
++	mov	0(%r11),%r10d		# HandlerData[0]
++	lea	(%rsi,%r10),%r10	# end of prologue label
++	cmp	%r10,%rbx		# context->Rip<end of prologue label
++	jb	.Lcommon_seh_tail
++
++	mov	152($context),%rax	# pull context->Rsp
++
++	mov	4(%r11),%r10d		# HandlerData[1]
++	lea	(%rsi,%r10),%r10	# epilogue label
++	cmp	%r10,%rbx		# context->Rip>=epilogue label
++	jae	.Lcommon_seh_tail
++
++	lea	16(%rax),%rax
++
++	mov	-8(%rax),%r12
++	mov	-16(%rax),%r13
++	mov	%r12,216($context)	# restore context->R12
++	mov	%r13,224($context)	# restore context->R13
++
++	jmp	.Lcommon_seh_tail
++.size	short_handler,.-short_handler
++
++.type	full_handler,\@abi-omnipotent
++.align	16
++full_handler:
++	push	%rsi
++	push	%rdi
++	push	%rbx
++	push	%rbp
++	push	%r12
++	push	%r13
++	push	%r14
++	push	%r15
++	pushfq
++	sub	\$64,%rsp
++
++	mov	120($context),%rax	# pull context->Rax
++	mov	248($context),%rbx	# pull context->Rip
++
++	mov	8($disp),%rsi		# disp->ImageBase
++	mov	56($disp),%r11		# disp->HandlerData
++
++	mov	0(%r11),%r10d		# HandlerData[0]
++	lea	(%rsi,%r10),%r10	# end of prologue label
++	cmp	%r10,%rbx		# context->Rip<end of prologue label
++	jb	.Lcommon_seh_tail
++
++	mov	152($context),%rax	# pull context->Rsp
++
++	mov	4(%r11),%r10d		# HandlerData[1]
++	lea	(%rsi,%r10),%r10	# epilogue label
++	cmp	%r10,%rbx		# context->Rip>=epilogue label
++	jae	.Lcommon_seh_tail
++
++	mov	8(%r11),%r10d		# HandlerData[2]
++	lea	(%rax,%r10),%rax
++
++	mov	-8(%rax),%rbp
++	mov	-16(%rax),%rbx
++	mov	-24(%rax),%r12
++	mov	-32(%rax),%r13
++	mov	-40(%rax),%r14
++	mov	-48(%rax),%r15
++	mov	%rbx,144($context)	# restore context->Rbx
++	mov	%rbp,160($context)	# restore context->Rbp
++	mov	%r12,216($context)	# restore context->R12
++	mov	%r13,224($context)	# restore context->R13
++	mov	%r14,232($context)	# restore context->R14
++	mov	%r15,240($context)	# restore context->R15
++
++.Lcommon_seh_tail:
++	mov	8(%rax),%rdi
++	mov	16(%rax),%rsi
++	mov	%rax,152($context)	# restore context->Rsp
++	mov	%rsi,168($context)	# restore context->Rsi
++	mov	%rdi,176($context)	# restore context->Rdi
++
++	mov	40($disp),%rdi		# disp->ContextRecord
++	mov	$context,%rsi		# context
++	mov	\$154,%ecx		# sizeof(CONTEXT)
++	.long	0xa548f3fc		# cld; rep movsq
++
++	mov	$disp,%rsi
++	xor	%rcx,%rcx		# arg1, UNW_FLAG_NHANDLER
++	mov	8(%rsi),%rdx		# arg2, disp->ImageBase
++	mov	0(%rsi),%r8		# arg3, disp->ControlPc
++	mov	16(%rsi),%r9		# arg4, disp->FunctionEntry
++	mov	40(%rsi),%r10		# disp->ContextRecord
++	lea	56(%rsi),%r11		# &disp->HandlerData
++	lea	24(%rsi),%r12		# &disp->EstablisherFrame
++	mov	%r10,32(%rsp)		# arg5
++	mov	%r11,40(%rsp)		# arg6
++	mov	%r12,48(%rsp)		# arg7
++	mov	%rcx,56(%rsp)		# arg8, (NULL)
++	call	*__imp_RtlVirtualUnwind(%rip)
++
++	mov	\$1,%eax		# ExceptionContinueSearch
++	add	\$64,%rsp
++	popfq
++	pop	%r15
++	pop	%r14
++	pop	%r13
++	pop	%r12
++	pop	%rbp
++	pop	%rbx
++	pop	%rdi
++	pop	%rsi
++	ret
++.size	full_handler,.-full_handler
++
++.section	.pdata
++.align	4
++	.rva	.LSEH_begin_ecp_nistz256_mul_by_2
++	.rva	.LSEH_end_ecp_nistz256_mul_by_2
++	.rva	.LSEH_info_ecp_nistz256_mul_by_2
++
++	.rva	.LSEH_begin_ecp_nistz256_div_by_2
++	.rva	.LSEH_end_ecp_nistz256_div_by_2
++	.rva	.LSEH_info_ecp_nistz256_div_by_2
++
++	.rva	.LSEH_begin_ecp_nistz256_mul_by_3
++	.rva	.LSEH_end_ecp_nistz256_mul_by_3
++	.rva	.LSEH_info_ecp_nistz256_mul_by_3
++
++	.rva	.LSEH_begin_ecp_nistz256_add
++	.rva	.LSEH_end_ecp_nistz256_add
++	.rva	.LSEH_info_ecp_nistz256_add
++
++	.rva	.LSEH_begin_ecp_nistz256_sub
++	.rva	.LSEH_end_ecp_nistz256_sub
++	.rva	.LSEH_info_ecp_nistz256_sub
++
++	.rva	.LSEH_begin_ecp_nistz256_neg
++	.rva	.LSEH_end_ecp_nistz256_neg
++	.rva	.LSEH_info_ecp_nistz256_neg
++
++	.rva	.LSEH_begin_ecp_nistz256_ord_mul_mont
++	.rva	.LSEH_end_ecp_nistz256_ord_mul_mont
++	.rva	.LSEH_info_ecp_nistz256_ord_mul_mont
++
++	.rva	.LSEH_begin_ecp_nistz256_ord_sqr_mont
++	.rva	.LSEH_end_ecp_nistz256_ord_sqr_mont
++	.rva	.LSEH_info_ecp_nistz256_ord_sqr_mont
++___
++$code.=<<___	if ($addx);
++	.rva	.LSEH_begin_ecp_nistz256_ord_mul_montx
++	.rva	.LSEH_end_ecp_nistz256_ord_mul_montx
++	.rva	.LSEH_info_ecp_nistz256_ord_mul_montx
++
++	.rva	.LSEH_begin_ecp_nistz256_ord_sqr_montx
++	.rva	.LSEH_end_ecp_nistz256_ord_sqr_montx
++	.rva	.LSEH_info_ecp_nistz256_ord_sqr_montx
++___
++$code.=<<___;
++	.rva	.LSEH_begin_ecp_nistz256_to_mont
++	.rva	.LSEH_end_ecp_nistz256_to_mont
++	.rva	.LSEH_info_ecp_nistz256_to_mont
++
++	.rva	.LSEH_begin_ecp_nistz256_mul_mont
++	.rva	.LSEH_end_ecp_nistz256_mul_mont
++	.rva	.LSEH_info_ecp_nistz256_mul_mont
++
++	.rva	.LSEH_begin_ecp_nistz256_sqr_mont
++	.rva	.LSEH_end_ecp_nistz256_sqr_mont
++	.rva	.LSEH_info_ecp_nistz256_sqr_mont
++
++	.rva	.LSEH_begin_ecp_nistz256_from_mont
++	.rva	.LSEH_end_ecp_nistz256_from_mont
++	.rva	.LSEH_info_ecp_nistz256_from_mont
++
++	.rva	.LSEH_begin_ecp_nistz256_gather_w5
++	.rva	.LSEH_end_ecp_nistz256_gather_w5
++	.rva	.LSEH_info_ecp_nistz256_gather_wX
++
++	.rva	.LSEH_begin_ecp_nistz256_gather_w7
++	.rva	.LSEH_end_ecp_nistz256_gather_w7
++	.rva	.LSEH_info_ecp_nistz256_gather_wX
++___
++$code.=<<___	if ($avx>1);
++	.rva	.LSEH_begin_ecp_nistz256_avx2_gather_w5
++	.rva	.LSEH_end_ecp_nistz256_avx2_gather_w5
++	.rva	.LSEH_info_ecp_nistz256_avx2_gather_wX
++
++	.rva	.LSEH_begin_ecp_nistz256_avx2_gather_w7
++	.rva	.LSEH_end_ecp_nistz256_avx2_gather_w7
++	.rva	.LSEH_info_ecp_nistz256_avx2_gather_wX
++___
++$code.=<<___;
++	.rva	.LSEH_begin_ecp_nistz256_point_double
++	.rva	.LSEH_end_ecp_nistz256_point_double
++	.rva	.LSEH_info_ecp_nistz256_point_double
++
++	.rva	.LSEH_begin_ecp_nistz256_point_add
++	.rva	.LSEH_end_ecp_nistz256_point_add
++	.rva	.LSEH_info_ecp_nistz256_point_add
++
++	.rva	.LSEH_begin_ecp_nistz256_point_add_affine
++	.rva	.LSEH_end_ecp_nistz256_point_add_affine
++	.rva	.LSEH_info_ecp_nistz256_point_add_affine
++___
++$code.=<<___ if ($addx);
++	.rva	.LSEH_begin_ecp_nistz256_point_doublex
++	.rva	.LSEH_end_ecp_nistz256_point_doublex
++	.rva	.LSEH_info_ecp_nistz256_point_doublex
++
++	.rva	.LSEH_begin_ecp_nistz256_point_addx
++	.rva	.LSEH_end_ecp_nistz256_point_addx
++	.rva	.LSEH_info_ecp_nistz256_point_addx
++
++	.rva	.LSEH_begin_ecp_nistz256_point_add_affinex
++	.rva	.LSEH_end_ecp_nistz256_point_add_affinex
++	.rva	.LSEH_info_ecp_nistz256_point_add_affinex
++___
++$code.=<<___;
++
++.section	.xdata
++.align	8
++.LSEH_info_ecp_nistz256_mul_by_2:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Lmul_by_2_body,.Lmul_by_2_epilogue	# HandlerData[]
++.LSEH_info_ecp_nistz256_div_by_2:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Ldiv_by_2_body,.Ldiv_by_2_epilogue	# HandlerData[]
++.LSEH_info_ecp_nistz256_mul_by_3:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Lmul_by_3_body,.Lmul_by_3_epilogue	# HandlerData[]
++.LSEH_info_ecp_nistz256_add:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Ladd_body,.Ladd_epilogue		# HandlerData[]
++.LSEH_info_ecp_nistz256_sub:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Lsub_body,.Lsub_epilogue		# HandlerData[]
++.LSEH_info_ecp_nistz256_neg:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Lneg_body,.Lneg_epilogue		# HandlerData[]
++.LSEH_info_ecp_nistz256_ord_mul_mont:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lord_mul_body,.Lord_mul_epilogue	# HandlerData[]
++	.long	48,0
++.LSEH_info_ecp_nistz256_ord_sqr_mont:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lord_sqr_body,.Lord_sqr_epilogue	# HandlerData[]
++	.long	48,0
++___
++$code.=<<___ if ($addx);
++.LSEH_info_ecp_nistz256_ord_mul_montx:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lord_mulx_body,.Lord_mulx_epilogue	# HandlerData[]
++	.long	48,0
++.LSEH_info_ecp_nistz256_ord_sqr_montx:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lord_sqrx_body,.Lord_sqrx_epilogue	# HandlerData[]
++	.long	48,0
++___
++$code.=<<___;
++.LSEH_info_ecp_nistz256_to_mont:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lmul_body,.Lmul_epilogue		# HandlerData[]
++	.long	48,0
++.LSEH_info_ecp_nistz256_mul_mont:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lmul_body,.Lmul_epilogue		# HandlerData[]
++	.long	48,0
++.LSEH_info_ecp_nistz256_sqr_mont:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lsqr_body,.Lsqr_epilogue		# HandlerData[]
++	.long	48,0
++.LSEH_info_ecp_nistz256_from_mont:
++	.byte	9,0,0,0
++	.rva	short_handler
++	.rva	.Lfrom_body,.Lfrom_epilogue		# HandlerData[]
++.LSEH_info_ecp_nistz256_gather_wX:
++	.byte	0x01,0x33,0x16,0x00
++	.byte	0x33,0xf8,0x09,0x00	#movaps 0x90(rsp),xmm15
++	.byte	0x2e,0xe8,0x08,0x00	#movaps 0x80(rsp),xmm14
++	.byte	0x29,0xd8,0x07,0x00	#movaps 0x70(rsp),xmm13
++	.byte	0x24,0xc8,0x06,0x00	#movaps 0x60(rsp),xmm12
++	.byte	0x1f,0xb8,0x05,0x00	#movaps 0x50(rsp),xmm11
++	.byte	0x1a,0xa8,0x04,0x00	#movaps 0x40(rsp),xmm10
++	.byte	0x15,0x98,0x03,0x00	#movaps 0x30(rsp),xmm9
++	.byte	0x10,0x88,0x02,0x00	#movaps 0x20(rsp),xmm8
++	.byte	0x0c,0x78,0x01,0x00	#movaps 0x10(rsp),xmm7
++	.byte	0x08,0x68,0x00,0x00	#movaps 0x00(rsp),xmm6
++	.byte	0x04,0x01,0x15,0x00	#sub	rsp,0xa8
++	.align	8
++___
++$code.=<<___	if ($avx>1);
++.LSEH_info_ecp_nistz256_avx2_gather_wX:
++	.byte	0x01,0x36,0x17,0x0b
++	.byte	0x36,0xf8,0x09,0x00	# vmovaps 0x90(rsp),xmm15
++	.byte	0x31,0xe8,0x08,0x00	# vmovaps 0x80(rsp),xmm14
++	.byte	0x2c,0xd8,0x07,0x00	# vmovaps 0x70(rsp),xmm13
++	.byte	0x27,0xc8,0x06,0x00	# vmovaps 0x60(rsp),xmm12
++	.byte	0x22,0xb8,0x05,0x00	# vmovaps 0x50(rsp),xmm11
++	.byte	0x1d,0xa8,0x04,0x00	# vmovaps 0x40(rsp),xmm10
++	.byte	0x18,0x98,0x03,0x00	# vmovaps 0x30(rsp),xmm9
++	.byte	0x13,0x88,0x02,0x00	# vmovaps 0x20(rsp),xmm8
++	.byte	0x0e,0x78,0x01,0x00	# vmovaps 0x10(rsp),xmm7
++	.byte	0x09,0x68,0x00,0x00	# vmovaps 0x00(rsp),xmm6
++	.byte	0x04,0x01,0x15,0x00	# sub	  rsp,0xa8
++	.byte	0x00,0xb3,0x00,0x00	# set_frame r11
++	.align	8
++___
++$code.=<<___;
++.LSEH_info_ecp_nistz256_point_double:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lpoint_doubleq_body,.Lpoint_doubleq_epilogue	# HandlerData[]
++	.long	32*5+56,0
++.LSEH_info_ecp_nistz256_point_add:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lpoint_addq_body,.Lpoint_addq_epilogue		# HandlerData[]
++	.long	32*18+56,0
++.LSEH_info_ecp_nistz256_point_add_affine:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Ladd_affineq_body,.Ladd_affineq_epilogue	# HandlerData[]
++	.long	32*15+56,0
++___
++$code.=<<___ if ($addx);
++.align	8
++.LSEH_info_ecp_nistz256_point_doublex:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lpoint_doublex_body,.Lpoint_doublex_epilogue	# HandlerData[]
++	.long	32*5+56,0
++.LSEH_info_ecp_nistz256_point_addx:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Lpoint_addx_body,.Lpoint_addx_epilogue		# HandlerData[]
++	.long	32*18+56,0
++.LSEH_info_ecp_nistz256_point_add_affinex:
++	.byte	9,0,0,0
++	.rva	full_handler
++	.rva	.Ladd_affinex_body,.Ladd_affinex_epilogue	# HandlerData[]
++	.long	32*15+56,0
++___
++}
++
+ ########################################################################
+ # Convert ecp_nistz256_table.c to layout expected by ecp_nistz_gather_w7
+ #
+-open TABLE,"<ecp_nistz256_table.c"		or 
+-open TABLE,"<${dir}../ecp_nistz256_table.c"	or 
++open TABLE,"<ecp_nistz256_table.c"		or
++open TABLE,"<${dir}../ecp_nistz256_table.c"	or
+ die "failed to open ecp_nistz256_table.c:",$!;
+ 
+ use integer;
+diff --git a/crypto/ec/ec_err.c b/crypto/ec/ec_err.c
+index e4c2c1c..cb78bd5 100644
+--- a/crypto/ec/ec_err.c
++++ b/crypto/ec/ec_err.c
+@@ -46,6 +46,8 @@ static ERR_STRING_DATA EC_str_functs[] = {
+     {ERR_FUNC(EC_F_ECPKPARAMETERS_PRINT), "ECPKParameters_print"},
+     {ERR_FUNC(EC_F_ECPKPARAMETERS_PRINT_FP), "ECPKParameters_print_fp"},
+     {ERR_FUNC(EC_F_ECP_NISTZ256_GET_AFFINE), "ecp_nistz256_get_affine"},
++    {ERR_PACK(ERR_LIB_EC, EC_F_ECP_NISTZ256_INV_MOD_ORD, 0),
++     "ecp_nistz256_inv_mod_ord"},
+     {ERR_FUNC(EC_F_ECP_NISTZ256_MULT_PRECOMPUTE),
+      "ecp_nistz256_mult_precompute"},
+     {ERR_FUNC(EC_F_ECP_NISTZ256_POINTS_MUL), "ecp_nistz256_points_mul"},
+diff --git a/crypto/ec/ec_lcl.h b/crypto/ec/ec_lcl.h
+index ded35a7..53db327 100644
+--- a/crypto/ec/ec_lcl.h
++++ b/crypto/ec/ec_lcl.h
+@@ -169,6 +169,9 @@ struct ec_method_st {
+     /* custom ECDH operation */
+     int (*ecdh_compute_key)(unsigned char **pout, size_t *poutlen,
+                             const EC_POINT *pub_key, const EC_KEY *ecdh);
++    /* Inverse modulo order */
++    int (*field_inverse_mod_ord)(const EC_GROUP *, BIGNUM *r, BIGNUM *x,
++                                 BN_CTX *ctx);
+ };
+ 
+ /*
+@@ -534,7 +537,6 @@ void ec_GFp_nistp_points_make_affine_internal(size_t num, void *point_array,
+ void ec_GFp_nistp_recode_scalar_bits(unsigned char *sign,
+                                      unsigned char *digit, unsigned char in);
+ #endif
+-int ec_precompute_mont_data(EC_GROUP *);
+ int ec_group_simple_order_bits(const EC_GROUP *group);
+ 
+ #ifdef ECP_NISTZ256_ASM
+@@ -611,3 +613,6 @@ int X25519(uint8_t out_shared_key[32], const uint8_t private_key[32],
+            const uint8_t peer_public_value[32]);
+ void X25519_public_from_private(uint8_t out_public_value[32],
+                                 const uint8_t private_key[32]);
++
++int EC_GROUP_do_inverse_ord(const EC_GROUP *group, BIGNUM *res,
++                            BIGNUM *x, BN_CTX *ctx);
+diff --git a/crypto/ec/ec_lib.c b/crypto/ec/ec_lib.c
+index 7cb4bfe..a74a96c 100644
+--- a/crypto/ec/ec_lib.c
++++ b/crypto/ec/ec_lib.c
+@@ -256,6 +256,8 @@ int EC_METHOD_get_field_type(const EC_METHOD *meth)
+     return meth->field_type;
+ }
+ 
++static int ec_precompute_mont_data(EC_GROUP *);
++
+ int EC_GROUP_set_generator(EC_GROUP *group, const EC_POINT *generator,
+                            const BIGNUM *order, const BIGNUM *cofactor)
+ {
+@@ -957,7 +959,7 @@ int EC_GROUP_have_precompute_mult(const EC_GROUP *group)
+  * ec_precompute_mont_data sets |group->mont_data| from |group->order| and
+  * returns one on success. On error it returns zero.
+  */
+-int ec_precompute_mont_data(EC_GROUP *group)
++static int ec_precompute_mont_data(EC_GROUP *group)
+ {
+     BN_CTX *ctx = BN_CTX_new();
+     int ret = 0;
+@@ -1002,3 +1004,12 @@ int ec_group_simple_order_bits(const EC_GROUP *group)
+         return 0;
+     return BN_num_bits(group->order);
+ }
++
++int EC_GROUP_do_inverse_ord(const EC_GROUP *group, BIGNUM *res,
++                            BIGNUM *x, BN_CTX *ctx)
++{
++    if (group->meth->field_inverse_mod_ord != NULL)
++        return group->meth->field_inverse_mod_ord(group, res, x, ctx);
++    else
++        return 0;
++}
+diff --git a/crypto/ec/ecdsa_ossl.c b/crypto/ec/ecdsa_ossl.c
+index 72e2f0f..8f07b16 100644
+--- a/crypto/ec/ecdsa_ossl.c
++++ b/crypto/ec/ecdsa_ossl.c
+@@ -153,30 +153,33 @@ static int ecdsa_sign_setup(EC_KEY *eckey, BN_CTX *ctx_in,
+     }
+     while (BN_is_zero(r));
+ 
+-    /* compute the inverse of k */
+-    if (EC_GROUP_get_mont_data(group) != NULL) {
+-        /*
+-         * We want inverse in constant time, therefore we utilize the fact
+-         * order must be prime and use Fermats Little Theorem instead.
+-         */
+-        if (!BN_set_word(X, 2)) {
+-            ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
+-            goto err;
+-        }
+-        if (!BN_mod_sub(X, order, X, order, ctx)) {
+-            ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
+-            goto err;
+-        }
+-        BN_set_flags(X, BN_FLG_CONSTTIME);
+-        if (!BN_mod_exp_mont_consttime
+-            (k, k, X, order, ctx, EC_GROUP_get_mont_data(group))) {
+-            ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
+-            goto err;
+-        }
+-    } else {
+-        if (!BN_mod_inverse(k, k, order, ctx)) {
+-            ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
+-            goto err;
++    /* Check if optimized inverse is implemented */
++    if (EC_GROUP_do_inverse_ord(group, k, k, ctx) == 0) {
++        /* compute the inverse of k */
++        if (group->mont_data != NULL) {
++            /*
++             * We want inverse in constant time, therefore we utilize the fact
++             * order must be prime and use Fermats Little Theorem instead.
++             */
++            if (!BN_set_word(X, 2)) {
++                ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
++                goto err;
++            }
++            if (!BN_mod_sub(X, order, X, order, ctx)) {
++                ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
++                goto err;
++            }
++            BN_set_flags(X, BN_FLG_CONSTTIME);
++            if (!BN_mod_exp_mont_consttime(k, k, X, order, ctx,
++                                           group->mont_data)) {
++                ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
++                goto err;
++            }
++        } else {
++            if (!BN_mod_inverse(k, k, order, ctx)) {
++                ECerr(EC_F_ECDSA_SIGN_SETUP, ERR_R_BN_LIB);
++                goto err;
++            }
+         }
+     }
+ 
+@@ -407,9 +410,12 @@ int ossl_ecdsa_verify_sig(const unsigned char *dgst, int dgst_len,
+         goto err;
+     }
+     /* calculate tmp1 = inv(S) mod order */
+-    if (!BN_mod_inverse(u2, sig->s, order, ctx)) {
+-        ECerr(EC_F_OSSL_ECDSA_VERIFY_SIG, ERR_R_BN_LIB);
+-        goto err;
++    /* Check if optimized inverse is implemented */
++    if (EC_GROUP_do_inverse_ord(group, u2, sig->s, ctx) == 0) {
++        if (!BN_mod_inverse(u2, sig->s, order, ctx)) {
++            ECerr(EC_F_OSSL_ECDSA_VERIFY_SIG, ERR_R_BN_LIB);
++            goto err;
++        }
+     }
+     /* digest -> m */
+     i = BN_num_bits(order);
+diff --git a/crypto/ec/ecp_nistz256.c b/crypto/ec/ecp_nistz256.c
+index 2461898..cecc6f0 100644
+--- a/crypto/ec/ecp_nistz256.c
++++ b/crypto/ec/ecp_nistz256.c
+@@ -29,6 +30,7 @@
+  * Shay Gueron (1, 2), and Vlad Krasnov (1)                                   *
+  * (1) Intel Corporation, Israel Development Center                           *
+  * (2) University of Haifa                                                    *
++ * (3) CloudFlare, Inc.                                                       *
+  * Reference:                                                                 *
+  * S.Gueron and V.Krasnov, "Fast Prime Field Elliptic Curve Cryptography with *
+  *                          256 Bit Primes"                                   *
+@@ -916,7 +918,7 @@ __owur static int ecp_nistz256_mult_precompute(EC_GROUP *group, BN_CTX *ctx)
+  */
+ #if defined(ECP_NISTZ256_AVX2)
+ # if !(defined(__x86_64) || defined(__x86_64__) || \
+-       defined(_M_AMD64) || defined(_MX64)) || \
++       defined(_M_AMD64) || defined(_M_X64)) || \
+      !(defined(__GNUC__) || defined(_MSC_VER)) /* this is for ALIGN32 */
+ #  undef ECP_NISTZ256_AVX2
+ # else
+@@ -1503,6 +1505,189 @@ static int ecp_nistz256_window_have_precompute_mult(const EC_GROUP *group)
+     return HAVEPRECOMP(group, nistz256);
+ }
+ 
++#if defined(__x86_64) || defined(__x86_64__) || \
++    defined(_M_AMD64) || defined(_M_X64) || \
++    defined(__powerpc64__) || defined(_ARCH_PP64) || \
++    defined(__aarch64__)
++/*
++ * Montgomery mul modulo Order(P): res = a*b*2^-256 mod Order(P)
++ */
++void ecp_nistz256_ord_mul_mont(BN_ULONG res[P256_LIMBS],
++                               const BN_ULONG a[P256_LIMBS],
++                               const BN_ULONG b[P256_LIMBS]);
++void ecp_nistz256_ord_sqr_mont(BN_ULONG res[P256_LIMBS],
++                               const BN_ULONG a[P256_LIMBS],
++                               int rep);
++
++static int ecp_nistz256_inv_mod_ord(const EC_GROUP *group, BIGNUM *r,
++                                    BIGNUM *x, BN_CTX *ctx)
++{
++    /* RR = 2^512 mod ord(p256) */
++    static const BN_ULONG RR[P256_LIMBS]  = {
++        TOBN(0x83244c95,0xbe79eea2), TOBN(0x4699799c,0x49bd6fa6),
++        TOBN(0x2845b239,0x2b6bec59), TOBN(0x66e12d94,0xf3d95620)
++    };
++    /* The constant 1 (unlike ONE that is one in Montgomery representation) */
++    static const BN_ULONG one[P256_LIMBS] = {
++        TOBN(0,1), TOBN(0,0), TOBN(0,0), TOBN(0,0)
++    };
++    /*
++     * We don't use entry 0 in the table, so we omit it and address
++     * with -1 offset.
++     */
++    BN_ULONG table[15][P256_LIMBS];
++    BN_ULONG out[P256_LIMBS], t[P256_LIMBS];
++    int i, ret = 0;
++
++    /*
++     * Catch allocation failure early.
++     */
++    if (bn_wexpand(r, P256_LIMBS) == NULL) {
++        ECerr(EC_F_ECP_NISTZ256_INV_MOD_ORD, ERR_R_BN_LIB);
++        goto err;
++    }
++
++    if ((BN_num_bits(x) > 256) || BN_is_negative(x)) {
++        BIGNUM *tmp;
++
++        if ((tmp = BN_CTX_get(ctx)) == NULL
++            || !BN_nnmod(tmp, x, group->order, ctx)) {
++            ECerr(EC_F_ECP_NISTZ256_INV_MOD_ORD, ERR_R_BN_LIB);
++            goto err;
++        }
++        x = tmp;
++    }
++
++    if (!ecp_nistz256_bignum_to_field_elem(t, x)) {
++        ECerr(EC_F_ECP_NISTZ256_INV_MOD_ORD, EC_R_COORDINATES_OUT_OF_RANGE);
++        goto err;
++    }
++
++    ecp_nistz256_ord_mul_mont(table[0], t, RR);
++#if 0
++    /*
++     * Original sparse-then-fixed-window algorithm, retained for reference.
++     */
++    for (i = 2; i < 16; i += 2) {
++        ecp_nistz256_ord_sqr_mont(table[i-1], table[i/2-1], 1);
++        ecp_nistz256_ord_mul_mont(table[i], table[i-1], table[0]);
++    }
++
++    /*
++     * The top 128bit of the exponent are highly redudndant, so we
++     * perform an optimized flow
++     */
++    ecp_nistz256_ord_sqr_mont(t, table[15-1], 4);   /* f0 */
++    ecp_nistz256_ord_mul_mont(t, t, table[15-1]);   /* ff */
++
++    ecp_nistz256_ord_sqr_mont(out, t, 8);           /* ff00 */
++    ecp_nistz256_ord_mul_mont(out, out, t);         /* ffff */
++
++    ecp_nistz256_ord_sqr_mont(t, out, 16);          /* ffff0000 */
++    ecp_nistz256_ord_mul_mont(t, t, out);           /* ffffffff */
++
++    ecp_nistz256_ord_sqr_mont(out, t, 64);          /* ffffffff0000000000000000 */
++    ecp_nistz256_ord_mul_mont(out, out, t);         /* ffffffff00000000ffffffff */
++
++    ecp_nistz256_ord_sqr_mont(out, out, 32);        /* ffffffff00000000ffffffff00000000 */
++    ecp_nistz256_ord_mul_mont(out, out, t);         /* ffffffff00000000ffffffffffffffff */
++
++    /*
++     * The bottom 128 bit of the exponent are processed with fixed 4-bit window
++     */
++    for(i = 0; i < 32; i++) {
++        /* expLo - the low 128 bits of the exponent we use (ord(p256) - 2),
++         * split into nibbles */
++        static const unsigned char expLo[32]  = {
++            0xb,0xc,0xe,0x6,0xf,0xa,0xa,0xd,0xa,0x7,0x1,0x7,0x9,0xe,0x8,0x4,
++            0xf,0x3,0xb,0x9,0xc,0xa,0xc,0x2,0xf,0xc,0x6,0x3,0x2,0x5,0x4,0xf
++        };
++
++        ecp_nistz256_ord_sqr_mont(out, out, 4);
++        /* The exponent is public, no need in constant-time access */
++        ecp_nistz256_ord_mul_mont(out, out, table[expLo[i]-1]);
++    }
++#else
++    /*
++     * https://briansmith.org/ecc-inversion-addition-chains-01#p256_scalar_inversion
++     *
++     * Even though this code path spares 12 squarings, 4.5%, and 13
++     * multiplications, 25%, on grand scale sign operation is not that
++     * much faster, not more that 2%...
++     */
++    enum {
++        i_1 = 0, i_10,     i_11,     i_101, i_111, i_1010, i_1111,
++        i_10101, i_101010, i_101111, i_x6,  i_x8,  i_x16,  i_x32
++    };
++
++    /* pre-calculate powers */
++    ecp_nistz256_ord_sqr_mont(table[i_10], table[i_1], 1);
++
++    ecp_nistz256_ord_mul_mont(table[i_11], table[i_1], table[i_10]);
++
++    ecp_nistz256_ord_mul_mont(table[i_101], table[i_11], table[i_10]);
++
++    ecp_nistz256_ord_mul_mont(table[i_111], table[i_101], table[i_10]);
++
++    ecp_nistz256_ord_sqr_mont(table[i_1010], table[i_101], 1);
++
++    ecp_nistz256_ord_mul_mont(table[i_1111], table[i_1010], table[i_101]);
++
++    ecp_nistz256_ord_sqr_mont(table[i_10101], table[i_1010], 1);
++    ecp_nistz256_ord_mul_mont(table[i_10101], table[i_10101], table[i_1]);
++
++    ecp_nistz256_ord_sqr_mont(table[i_101010], table[i_10101], 1);
++
++    ecp_nistz256_ord_mul_mont(table[i_101111], table[i_101010], table[i_101]);
++
++    ecp_nistz256_ord_mul_mont(table[i_x6], table[i_101010], table[i_10101]);
++
++    ecp_nistz256_ord_sqr_mont(table[i_x8], table[i_x6], 2);
++    ecp_nistz256_ord_mul_mont(table[i_x8], table[i_x8], table[i_11]);
++
++    ecp_nistz256_ord_sqr_mont(table[i_x16], table[i_x8], 8);
++    ecp_nistz256_ord_mul_mont(table[i_x16], table[i_x16], table[i_x8]);
++
++    ecp_nistz256_ord_sqr_mont(table[i_x32], table[i_x16], 16);
++    ecp_nistz256_ord_mul_mont(table[i_x32], table[i_x32], table[i_x16]);
++
++    /* calculations */
++    ecp_nistz256_ord_sqr_mont(out, table[i_x32], 64);
++    ecp_nistz256_ord_mul_mont(out, out, table[i_x32]);
++
++    for (i = 0; i < 27; i++) {
++        static const struct { unsigned char p, i; } chain[27] = {
++            { 32, i_x32 }, { 6,  i_101111 }, { 5,  i_111    },
++            { 4,  i_11  }, { 5,  i_1111   }, { 5,  i_10101  },
++            { 4,  i_101 }, { 3,  i_101    }, { 3,  i_101    },
++            { 5,  i_111 }, { 9,  i_101111 }, { 6,  i_1111   },
++            { 2,  i_1   }, { 5,  i_1      }, { 6,  i_1111   },
++            { 5,  i_111 }, { 4,  i_111    }, { 5,  i_111    },
++            { 5,  i_101 }, { 3,  i_11     }, { 10, i_101111 },
++            { 2,  i_11  }, { 5,  i_11     }, { 5,  i_11     },
++            { 3,  i_1   }, { 7,  i_10101  }, { 6,  i_1111   }
++        };
++
++        ecp_nistz256_ord_sqr_mont(out, out, chain[i].p);
++        ecp_nistz256_ord_mul_mont(out, out, table[chain[i].i]);
++    }
++#endif
++    ecp_nistz256_ord_mul_mont(out, out, one);
++
++    /*
++     * Can't fail, but check return code to be consistent anyway.
++     */
++    if (!bn_set_words(r, out, P256_LIMBS))
++        goto err;
++
++    ret = 1;
++err:
++    return ret;
++}
++#else
++# define ecp_nistz256_inv_mod_ord NULL
++#endif
++
+ const EC_METHOD *EC_GFp_nistz256_method(void)
+ {
+     static const EC_METHOD ret = {
+@@ -1552,7 +1737,8 @@ const EC_METHOD *EC_GFp_nistz256_method(void)
+         ec_key_simple_generate_public_key,
+         0, /* keycopy */
+         0, /* keyfinish */
+-        ecdh_simple_compute_key
++        ecdh_simple_compute_key,
++        ecp_nistz256_inv_mod_ord                    /* can be #define-d NULL */
+     };
+ 
+     return &ret;
+diff --git a/crypto/perlasm/x86_64-xlate.pl b/crypto/perlasm/x86_64-xlate.pl
+index 6eaefcf..c4607dd 100755
+--- a/crypto/perlasm/x86_64-xlate.pl
++++ b/crypto/perlasm/x86_64-xlate.pl
+@@ -51,12 +51,7 @@
+ # 7. Stick to explicit ip-relative addressing. If you have to use
+ #    GOTPCREL addressing, stick to mov symbol@GOTPCREL(%rip),%r??.
+ #    Both are recognized and translated to proper Win64 addressing
+-#    modes. To support legacy code a synthetic directive, .picmeup,
+-#    is implemented. It puts address of the *next* instruction into
+-#    target register, e.g.:
+-#
+-#		.picmeup	%rax
+-#		lea		.Label-.(%rax),%rax
++#    modes.
+ #
+ # 8. In order to provide for structured exception handling unified
+ #    Win64 prologue copies %rsp value to %rax. For further details
+@@ -100,7 +95,7 @@ elsif (!$gas)
+     {	$nasm = $1 + $2*0.01; $PTR="";  }
+     elsif (`ml64 2>&1` =~ m/Version ([0-9]+)\.([0-9]+)(\.([0-9]+))?/)
+     {	$masm = $1 + $2*2**-16 + $4*2**-32;   }
+-    die "no assembler found on %PATH" if (!($nasm || $masm));
++    die "no assembler found on %PATH%" if (!($nasm || $masm));
+     $win64=1;
+     $elf=0;
+     $decor="\$L\$";
+@@ -130,7 +125,7 @@ my %globals;
+ 		$self->{sz} = "";
+ 	    } elsif ($self->{op} =~ /^p/ && $' !~ /^(ush|op|insrw)/) { # SSEn
+ 		$self->{sz} = "";
+-	    } elsif ($self->{op} =~ /^v/) { # VEX
++	    } elsif ($self->{op} =~ /^[vk]/) { # VEX or k* such as kmov
+ 		$self->{sz} = "";
+ 	    } elsif ($self->{op} =~ /mov[dq]/ && $$line =~ /%xmm/) {
+ 		$self->{sz} = "";
+@@ -151,7 +146,7 @@ my %globals;
+ 	if ($gas) {
+ 	    if ($self->{op} eq "movz") {	# movz is pain...
+ 		sprintf "%s%s%s",$self->{op},$self->{sz},shift;
+-	    } elsif ($self->{op} =~ /^set/) { 
++	    } elsif ($self->{op} =~ /^set/) {
+ 		"$self->{op}";
+ 	    } elsif ($self->{op} eq "ret") {
+ 		my $epilogue = "";
+@@ -178,7 +173,7 @@ my %globals;
+ 		$self->{op} .= $self->{sz};
+ 	    } elsif ($self->{op} eq "call" && $current_segment eq ".CRT\$XCU") {
+ 		$self->{op} = "\tDQ";
+-	    } 
++	    }
+ 	    $self->{op};
+ 	}
+     }
+@@ -224,18 +219,26 @@ my %globals;
+     }
+ }
+ { package ea;		# pick up effective addresses: expr(%reg,%reg,scale)
++
++    my %szmap = (	b=>"BYTE$PTR",    w=>"WORD$PTR",
++			l=>"DWORD$PTR",   d=>"DWORD$PTR",
++			q=>"QWORD$PTR",   o=>"OWORD$PTR",
++			x=>"XMMWORD$PTR", y=>"YMMWORD$PTR",
++			z=>"ZMMWORD$PTR" ) if (!$gas);
++
+     sub re {
+ 	my	($class, $line, $opcode) = @_;
+ 	my	$self = {};
+ 	my	$ret;
+ 
+ 	# optional * ----vvv--- appears in indirect jmp/call
+-	if ($$line =~ /^(\*?)([^\(,]*)\(([%\w,]+)\)/) {
++	if ($$line =~ /^(\*?)([^\(,]*)\(([%\w,]+)\)((?:{[^}]+})*)/) {
+ 	    bless $self, $class;
+ 	    $self->{asterisk} = $1;
+ 	    $self->{label} = $2;
+ 	    ($self->{base},$self->{index},$self->{scale})=split(/,/,$3);
+ 	    $self->{scale} = 1 if (!defined($self->{scale}));
++	    $self->{opmask} = $4;
+ 	    $ret = $self;
+ 	    $$line = substr($$line,@+[0]); $$line =~ s/^\s+//;
+ 
+@@ -276,6 +279,8 @@ my %globals;
+ 	    $self->{label} =~ s/\b([0-9]+)\b/$1>>0/eg;
+ 	}
+ 
++	# if base register is %rbp or %r13, see if it's possible to
++	# flip base and index registers [for better performance]
+ 	if (!$self->{label} && $self->{index} && $self->{scale}==1 &&
+ 	    $self->{base} =~ /(rbp|r13)/) {
+ 		$self->{base} = $self->{index}; $self->{index} = $1;
+@@ -285,19 +290,16 @@ my %globals;
+ 	    $self->{label} =~ s/^___imp_/__imp__/   if ($flavour eq "mingw64");
+ 
+ 	    if (defined($self->{index})) {
+-		sprintf "%s%s(%s,%%%s,%d)",$self->{asterisk},
+-					$self->{label},
++		sprintf "%s%s(%s,%%%s,%d)%s",
++					$self->{asterisk},$self->{label},
+ 					$self->{base}?"%$self->{base}":"",
+-					$self->{index},$self->{scale};
++					$self->{index},$self->{scale},
++					$self->{opmask};
+ 	    } else {
+-		sprintf "%s%s(%%%s)",	$self->{asterisk},$self->{label},$self->{base};
++		sprintf "%s%s(%%%s)%s",	$self->{asterisk},$self->{label},
++					$self->{base},$self->{opmask};
+ 	    }
+ 	} else {
+-	    my %szmap = (	b=>"BYTE$PTR",  w=>"WORD$PTR",
+-			l=>"DWORD$PTR", d=>"DWORD$PTR",
+-	    		q=>"QWORD$PTR", o=>"OWORD$PTR",
+-			x=>"XMMWORD$PTR", y=>"YMMWORD$PTR", z=>"ZMMWORD$PTR" );
+-
+ 	    $self->{label} =~ s/\./\$/g;
+ 	    $self->{label} =~ s/(?<![\w\$\.])0x([0-9a-f]+)/0$1h/ig;
+ 	    $self->{label} = "($self->{label})" if ($self->{label} =~ /[\*\+\-\/]/);
+@@ -309,17 +311,20 @@ my %globals;
+ 	    ($mnemonic =~ /^vpbroadcast([qdwb])$/)	&& ($sz=$1)  ||
+ 	    ($mnemonic =~ /^v(?!perm)[a-z]+[fi]128$/)	&& ($sz="x");
+ 
++	    $self->{opmask}  =~ s/%(k[0-7])/$1/;
++
+ 	    if (defined($self->{index})) {
+-		sprintf "%s[%s%s*%d%s]",$szmap{$sz},
++		sprintf "%s[%s%s*%d%s]%s",$szmap{$sz},
+ 					$self->{label}?"$self->{label}+":"",
+ 					$self->{index},$self->{scale},
+-					$self->{base}?"+$self->{base}":"";
++					$self->{base}?"+$self->{base}":"",
++					$self->{opmask};
+ 	    } elsif ($self->{base} eq "rip") {
+ 		sprintf "%s[%s]",$szmap{$sz},$self->{label};
+ 	    } else {
+-		sprintf "%s[%s%s]",$szmap{$sz},
++		sprintf "%s[%s%s]%s",	$szmap{$sz},
+ 					$self->{label}?"$self->{label}+":"",
+-					$self->{base};
++					$self->{base},$self->{opmask};
+ 	    }
+ 	}
+     }
+@@ -331,10 +336,11 @@ my %globals;
+ 	my	$ret;
+ 
+ 	# optional * ----vvv--- appears in indirect jmp/call
+-	if ($$line =~ /^(\*?)%(\w+)/) {
++	if ($$line =~ /^(\*?)%(\w+)((?:{[^}]+})*)/) {
+ 	    bless $self,$class;
+ 	    $self->{asterisk} = $1;
+ 	    $self->{value} = $2;
++	    $self->{opmask} = $3;
+ 	    $opcode->size($self->size());
+ 	    $ret = $self;
+ 	    $$line = substr($$line,@+[0]); $$line =~ s/^\s+//;
+@@ -358,8 +364,11 @@ my %globals;
+     }
+     sub out {
+     	my $self = shift;
+-	if ($gas)	{ sprintf "%s%%%s",$self->{asterisk},$self->{value}; }
+-	else		{ $self->{value}; }
++	if ($gas)	{ sprintf "%s%%%s%s",	$self->{asterisk},
++						$self->{value},
++						$self->{opmask}; }
++	else		{ $self->{opmask} =~ s/%(k[0-7])/$1/;
++			  $self->{value}.$self->{opmask}; }
+     }
+ }
+ { package label;	# pick up labels, which end with :
+@@ -383,9 +392,8 @@ my %globals;
+ 
+ 	if ($gas) {
+ 	    my $func = ($globals{$self->{value}} or $self->{value}) . ":";
+-	    if ($win64	&&
+-			$current_function->{name} eq $self->{value} &&
+-			$current_function->{abi} eq "svr4") {
++	    if ($win64	&& $current_function->{name} eq $self->{value}
++			&& $current_function->{abi} eq "svr4") {
+ 		$func .= "\n";
+ 		$func .= "	movq	%rdi,8(%rsp)\n";
+ 		$func .= "	movq	%rsi,16(%rsp)\n";
+@@ -458,21 +466,251 @@ my %globals;
+ 	}
+     }
+ }
++{ package cfi_directive;
++    # CFI directives annotate instructions that are significant for
++    # stack unwinding procedure compliant with DWARF specification,
++    # see http://dwarfstd.org/. Besides naturally expected for this
++    # script platform-specific filtering function, this module adds
++    # three auxiliary synthetic directives not recognized by [GNU]
++    # assembler:
++    #
++    # - .cfi_push to annotate push instructions in prologue, which
++    #   translates to .cfi_adjust_cfa_offset (if needed) and
++    #   .cfi_offset;
++    # - .cfi_pop to annotate pop instructions in epilogue, which
++    #   translates to .cfi_adjust_cfa_offset (if needed) and
++    #   .cfi_restore;
++    # - [and most notably] .cfi_cfa_expression which encodes
++    #   DW_CFA_def_cfa_expression and passes it to .cfi_escape as
++    #   byte vector;
++    #
++    # CFA expressions were introduced in DWARF specification version
++    # 3 and describe how to deduce CFA, Canonical Frame Address. This
++    # becomes handy if your stack frame is variable and you can't
++    # spare register for [previous] frame pointer. Suggested directive
++    # syntax is made-up mix of DWARF operator suffixes [subset of]
++    # and references to registers with optional bias. Following example
++    # describes offloaded *original* stack pointer at specific offset
++    # from *current* stack pointer:
++    #
++    #   .cfi_cfa_expression     %rsp+40,deref,+8
++    #
++    # Final +8 has everything to do with the fact that CFA is defined
++    # as reference to top of caller's stack, and on x86_64 call to
++    # subroutine pushes 8-byte return address. In other words original
++    # stack pointer upon entry to a subroutine is 8 bytes off from CFA.
++
++    # Below constants are taken from "DWARF Expressions" section of the
++    # DWARF specification, section is numbered 7.7 in versions 3 and 4.
++    my %DW_OP_simple = (	# no-arg operators, mapped directly
++	deref	=> 0x06,	dup	=> 0x12,
++	drop	=> 0x13,	over	=> 0x14,
++	pick	=> 0x15,	swap	=> 0x16,
++	rot	=> 0x17,	xderef	=> 0x18,
++
++	abs	=> 0x19,	and	=> 0x1a,
++	div	=> 0x1b,	minus	=> 0x1c,
++	mod	=> 0x1d,	mul	=> 0x1e,
++	neg	=> 0x1f,	not	=> 0x20,
++	or	=> 0x21,	plus	=> 0x22,
++	shl	=> 0x24,	shr	=> 0x25,
++	shra	=> 0x26,	xor	=> 0x27,
++	);
++
++    my %DW_OP_complex = (	# used in specific subroutines
++	constu		=> 0x10,	# uleb128
++	consts		=> 0x11,	# sleb128
++	plus_uconst	=> 0x23,	# uleb128
++	lit0 		=> 0x30,	# add 0-31 to opcode
++	reg0		=> 0x50,	# add 0-31 to opcode
++	breg0		=> 0x70,	# add 0-31 to opcole, sleb128
++	regx		=> 0x90,	# uleb28
++	fbreg		=> 0x91,	# sleb128
++	bregx		=> 0x92,	# uleb128, sleb128
++	piece		=> 0x93,	# uleb128
++	);
++
++    # Following constants are defined in x86_64 ABI supplement, for
++    # example available at https://www.uclibc.org/docs/psABI-x86_64.pdf,
++    # see section 3.7 "Stack Unwind Algorithm".
++    my %DW_reg_idx = (
++	"%rax"=>0,  "%rdx"=>1,  "%rcx"=>2,  "%rbx"=>3,
++	"%rsi"=>4,  "%rdi"=>5,  "%rbp"=>6,  "%rsp"=>7,
++	"%r8" =>8,  "%r9" =>9,  "%r10"=>10, "%r11"=>11,
++	"%r12"=>12, "%r13"=>13, "%r14"=>14, "%r15"=>15
++	);
++
++    my ($cfa_reg, $cfa_rsp);
++
++    # [us]leb128 format is variable-length integer representation base
++    # 2^128, with most significant bit of each byte being 0 denoting
++    # *last* most significant digit. See "Variable Length Data" in the
++    # DWARF specification, numbered 7.6 at least in versions 3 and 4.
++    sub sleb128 {
++	use integer;	# get right shift extend sign
++
++	my $val = shift;
++	my $sign = ($val < 0) ? -1 : 0;
++	my @ret = ();
++
++	while(1) {
++	    push @ret, $val&0x7f;
++
++	    # see if remaining bits are same and equal to most
++	    # significant bit of the current digit, if so, it's
++	    # last digit...
++	    last if (($val>>6) == $sign);
++
++	    @ret[-1] |= 0x80;
++	    $val >>= 7;
++	}
++
++	return @ret;
++    }
++    sub uleb128 {
++	my $val = shift;
++	my @ret = ();
++
++	while(1) {
++	    push @ret, $val&0x7f;
++
++	    # see if it's last significant digit...
++	    last if (($val >>= 7) == 0);
++
++	    @ret[-1] |= 0x80;
++	}
++
++	return @ret;
++    }
++    sub const {
++	my $val = shift;
++
++	if ($val >= 0 && $val < 32) {
++            return ($DW_OP_complex{lit0}+$val);
++	}
++	return ($DW_OP_complex{consts}, sleb128($val));
++    }
++    sub reg {
++	my $val = shift;
++
++	return if ($val !~ m/^(%r\w+)(?:([\+\-])((?:0x)?[0-9a-f]+))?/);
++
++	my $reg = $DW_reg_idx{$1};
++	my $off = eval ("0 $2 $3");
++
++	return (($DW_OP_complex{breg0} + $reg), sleb128($off));
++	# Yes, we use DW_OP_bregX+0 to push register value and not
++	# DW_OP_regX, because latter would require even DW_OP_piece,
++	# which would be a waste under the circumstances. If you have
++	# to use DWP_OP_reg, use "regx:N"...
++    }
++    sub cfa_expression {
++	my $line = shift;
++	my @ret;
++
++	foreach my $token (split(/,\s*/,$line)) {
++	    if ($token =~ /^%r/) {
++		push @ret,reg($token);
++	    } elsif ($token =~ /((?:0x)?[0-9a-f]+)\((%r\w+)\)/) {
++		push @ret,reg("$2+$1");
++	    } elsif ($token =~ /(\w+):(\-?(?:0x)?[0-9a-f]+)(U?)/i) {
++		my $i = 1*eval($2);
++		push @ret,$DW_OP_complex{$1}, ($3 ? uleb128($i) : sleb128($i));
++	    } elsif (my $i = 1*eval($token) or $token eq "0") {
++		if ($token =~ /^\+/) {
++		    push @ret,$DW_OP_complex{plus_uconst},uleb128($i);
++		} else {
++		    push @ret,const($i);
++		}
++	    } else {
++		push @ret,$DW_OP_simple{$token};
++	    }
++	}
++
++	# Finally we return DW_CFA_def_cfa_expression, 15, followed by
++	# length of the expression and of course the expression itself.
++	return (15,scalar(@ret),@ret);
++    }
++    sub re {
++	my	($class, $line) = @_;
++	my	$self = {};
++	my	$ret;
++
++	if ($$line =~ s/^\s*\.cfi_(\w+)\s*//) {
++	    bless $self,$class;
++	    $ret = $self;
++	    undef $self->{value};
++	    my $dir = $1;
++
++	    SWITCH: for ($dir) {
++	    # What is $cfa_rsp? Effectively it's difference between %rsp
++	    # value and current CFA, Canonical Frame Address, which is
++	    # why it starts with -8. Recall that CFA is top of caller's
++	    # stack...
++	    /startproc/	&& do {	($cfa_reg, $cfa_rsp) = ("%rsp", -8); last; };
++	    /endproc/	&& do {	($cfa_reg, $cfa_rsp) = ("%rsp",  0); last; };
++	    /def_cfa_register/
++			&& do {	$cfa_reg = $$line; last; };
++	    /def_cfa_offset/
++			&& do {	$cfa_rsp = -1*eval($$line) if ($cfa_reg eq "%rsp");
++				last;
++			      };
++	    /adjust_cfa_offset/
++			&& do {	$cfa_rsp -= 1*eval($$line) if ($cfa_reg eq "%rsp");
++				last;
++			      };
++	    /def_cfa/	&& do {	if ($$line =~ /(%r\w+)\s*,\s*(.+)/) {
++				    $cfa_reg = $1;
++				    $cfa_rsp = -1*eval($2) if ($cfa_reg eq "%rsp");
++				}
++				last;
++			      };
++	    /push/	&& do {	$dir = undef;
++				$cfa_rsp -= 8;
++				if ($cfa_reg eq "%rsp") {
++				    $self->{value} = ".cfi_adjust_cfa_offset\t8\n";
++				}
++				$self->{value} .= ".cfi_offset\t$$line,$cfa_rsp";
++				last;
++			      };
++	    /pop/	&& do {	$dir = undef;
++				$cfa_rsp += 8;
++				if ($cfa_reg eq "%rsp") {
++				    $self->{value} = ".cfi_adjust_cfa_offset\t-8\n";
++				}
++				$self->{value} .= ".cfi_restore\t$$line";
++				last;
++			      };
++	    /cfa_expression/
++			&& do {	$dir = undef;
++				$self->{value} = ".cfi_escape\t" .
++					join(",", map(sprintf("0x%02x", $_),
++						      cfa_expression($$line)));
++				last;
++			      };
++	    }
++
++	    $self->{value} = ".cfi_$dir\t$$line" if ($dir);
++
++	    $$line = "";
++	}
++
++	return $ret;
++    }
++    sub out {
++	my $self = shift;
++	return ($elf ? $self->{value} : undef);
++    }
++}
+ { package directive;	# pick up directives, which start with .
+     sub re {
+ 	my	($class, $line) = @_;
+ 	my	$self = {};
+ 	my	$ret;
+ 	my	$dir;
+-	my	%opcode =	# lea 2f-1f(%rip),%dst; 1: nop; 2:
+-		(	"%rax"=>0x01058d48,	"%rcx"=>0x010d8d48,
+-			"%rdx"=>0x01158d48,	"%rbx"=>0x011d8d48,
+-			"%rsp"=>0x01258d48,	"%rbp"=>0x012d8d48,
+-			"%rsi"=>0x01358d48,	"%rdi"=>0x013d8d48,
+-			"%r8" =>0x01058d4c,	"%r9" =>0x010d8d4c,
+-			"%r10"=>0x01158d4c,	"%r11"=>0x011d8d4c,
+-			"%r12"=>0x01258d4c,	"%r13"=>0x012d8d4c,
+-			"%r14"=>0x01358d4c,	"%r15"=>0x013d8d4c	);
++
++	# chain-call to cfi_directive
++	$ret = cfi_directive->re($line) and return $ret;
+ 
+ 	if ($$line =~ /^\s*(\.\w+)/) {
+ 	    bless $self,$class;
+@@ -482,12 +720,6 @@ my %globals;
+ 	    $$line = substr($$line,@+[0]); $$line =~ s/^\s+//;
+ 
+ 	    SWITCH: for ($dir) {
+-		/\.picmeup/ && do { if ($$line =~ /(%r[\w]+)/i) {
+-			    		$dir="\t.long";
+-					$$line=sprintf "0x%x,0x90000000",$opcode{$1};
+-				    }
+-				    last;
+-				  };
+ 		/\.global|\.globl|\.extern/
+ 			    && do { $globals{$$line} = $prefix . $$line;
+ 				    $$line = $globals{$$line} if ($prefix);
+@@ -647,7 +879,7 @@ my %globals;
+ 							if ($sz eq "D" && ($current_segment=~/.[px]data/ || $dir eq ".rva"))
+ 							{ $var=~s/([_a-z\$\@][_a-z0-9\$\@]*)/$nasm?"$1 wrt ..imagebase":"imagerel $1"/egi; }
+ 							$var;
+-						    };  
++						    };
+ 
+ 				    $sz =~ tr/bvlrq/BWDDQ/;
+ 				    $self->{value} = "\tD$sz\t";
+@@ -657,7 +889,7 @@ my %globals;
+ 				  };
+ 		/\.byte/    && do { my @str=split(/,\s*/,$$line);
+ 				    map(s/(0b[0-1]+)/oct($1)/eig,@str);
+-				    map(s/0x([0-9a-f]+)/0$1h/ig,@str) if ($masm);	
++				    map(s/0x([0-9a-f]+)/0$1h/ig,@str) if ($masm);
+ 				    while ($#str>15) {
+ 					$self->{value}.="DB\t"
+ 						.join(",",@str[0..15])."\n";
+@@ -692,15 +924,6 @@ my %globals;
+     }
+ }
+ 
+-sub rex {
+- my $opcode=shift;
+- my ($dst,$src,$rex)=@_;
+-
+-   $rex|=0x04 if($dst>=8);
+-   $rex|=0x01 if($src>=8);
+-   push @$opcode,($rex|0x40) if ($rex);
+-}
+-
+ # Upon initial x86_64 introduction SSE>2 extensions were not introduced
+ # yet. In order not to be bothered by tracing exact assembler versions,
+ # but at the same time to provide a bare security minimum of AES-NI, we
+@@ -711,6 +934,15 @@ sub rex {
+ my %regrm = (	"%eax"=>0, "%ecx"=>1, "%edx"=>2, "%ebx"=>3,
+ 		"%esp"=>4, "%ebp"=>5, "%esi"=>6, "%edi"=>7	);
+ 
++sub rex {
++ my $opcode=shift;
++ my ($dst,$src,$rex)=@_;
++
++   $rex|=0x04 if($dst>=8);
++   $rex|=0x01 if($src>=8);
++   push @$opcode,($rex|0x40) if ($rex);
++}
++
+ my $movq = sub {	# elderly gas can't handle inter-register movq
+   my $arg = shift;
+   my @opcode=(0x66);
+@@ -834,6 +1066,10 @@ my $rdseed = sub {
+     }
+ };
+ 
++# Not all AVX-capable assemblers recognize AMD XOP extension. Since we
++# are using only two instructions hand-code them in order to be excused
++# from chasing assembler versions...
++
+ sub rxb {
+  my $opcode=shift;
+  my ($dst,$src1,$src2,$rxb)=@_;
+@@ -873,10 +1109,15 @@ my $vprotq = sub {
+     }
+ };
+ 
++# Intel Control-flow Enforcement Technology extension. All functions and
++# indirect branch targets will have to start with this instruction...
++
+ my $endbranch = sub {
+     (0xf3,0x0f,0x1e,0xfa);
+ };
+ 
++########################################################################
++
+ if ($nasm) {
+     print <<___;
+ default	rel
+@@ -904,7 +1145,7 @@ while(defined(my $line=<>)) {
+ 	printf "%s",$directive->out();
+     } elsif (my $opcode=opcode->re(\$line)) {
+ 	my $asm = eval("\$".$opcode->mnemonic());
+-	
++
+ 	if ((ref($asm) eq 'CODE') && scalar(my @bytes=&$asm($line))) {
+ 	    print $gas?".byte\t":"DB\t",join(',',@bytes),"\n";
+ 	    next;
+@@ -982,7 +1223,7 @@ close STDOUT;
+ # %r13		-		-
+ # %r14		-		-
+ # %r15		-		-
+-# 
++#
+ # (*)	volatile register
+ # (-)	preserved by callee
+ # (#)	Nth argument, volatile
+@@ -1063,6 +1304,7 @@ close STDOUT;
+ #	movq	-16(%rcx),%rbx
+ #	movq	-8(%rcx),%r15
+ #	movq	%rcx,%rsp	# restore original rsp
++# magic_epilogue:
+ #	ret
+ # .size function,.-function
+ #
+@@ -1075,11 +1317,16 @@ close STDOUT;
+ # EXCEPTION_DISPOSITION handler (EXCEPTION_RECORD *rec,ULONG64 frame,
+ #		CONTEXT *context,DISPATCHER_CONTEXT *disp)
+ # {	ULONG64 *rsp = (ULONG64 *)context->Rax;
+-#	if (context->Rip >= magic_point)
+-#	{   rsp = ((ULONG64 **)context->Rsp)[0];
+-#	    context->Rbp = rsp[-3];
+-#	    context->Rbx = rsp[-2];
+-#	    context->R15 = rsp[-1];
++#	ULONG64  rip = context->Rip;
++#
++#	if (rip >= magic_point)
++#	{   rsp = (ULONG64 *)context->Rsp;
++#	    if (rip < magic_epilogue)
++#	    {	rsp = (ULONG64 *)rsp[0];
++#		context->Rbp = rsp[-3];
++#		context->Rbx = rsp[-2];
++#		context->R15 = rsp[-1];
++#	    }
+ #	}
+ #	context->Rsp = (ULONG64)rsp;
+ #	context->Rdi = rsp[1];
+@@ -1171,16 +1418,16 @@ close STDOUT;
+ # instruction and reflecting it in finer grade unwind logic in handler.
+ # After all, isn't it why it's called *language-specific* handler...
+ #
+-# Attentive reader can notice that exceptions would be mishandled in
+-# auto-generated "gear" epilogue. Well, exception effectively can't
+-# occur there, because if memory area used by it was subject to
+-# segmentation violation, then it would be raised upon call to the
+-# function (and as already mentioned be accounted to caller, which is
+-# not a problem). If you're still not comfortable, then define tail
+-# "magic point" just prior ret instruction and have handler treat it...
++# SE handlers are also involved in unwinding stack when executable is
++# profiled or debugged. Profiling implies additional limitations that
++# are too subtle to discuss here. For now it's sufficient to say that
++# in order to simplify handlers one should either a) offload original
++# %rsp to stack (like discussed above); or b) if you have a register to
++# spare for frame pointer, choose volatile one.
+ #
+ # (*)	Note that we're talking about run-time, not debug-time. Lack of
+ #	unwind information makes debugging hard on both Windows and
+-#	Unix. "Unlike" referes to the fact that on Unix signal handler
++#	Unix. "Unlike" refers to the fact that on Unix signal handler
+ #	will always be invoked, core dumped and appropriate exit code
+ #	returned to parent (for user notification).
++
+diff --git a/include/openssl/ec.h b/include/openssl/ec.h
+index f06680a..5b0ee4e 100644
+--- a/include/openssl/ec.h
++++ b/include/openssl/ec.h
+@@ -1389,6 +1389,7 @@ int ERR_load_EC_strings(void);
+ # define EC_F_ECPKPARAMETERS_PRINT                        149
+ # define EC_F_ECPKPARAMETERS_PRINT_FP                     150
+ # define EC_F_ECP_NISTZ256_GET_AFFINE                     240
++# define EC_F_ECP_NISTZ256_INV_MOD_ORD                    275
+ # define EC_F_ECP_NISTZ256_MULT_PRECOMPUTE                243
+ # define EC_F_ECP_NISTZ256_POINTS_MUL                     241
+ # define EC_F_ECP_NISTZ256_PRE_COMP_NEW                   244
+
