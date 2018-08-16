@@ -1,7 +1,7 @@
 ngx_hpack_patch() {
-  if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
-    NGINX_HPACK='n'
-  fi
+  # if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+  #   NGINX_HPACK='n'
+  # fi
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGINX_PUSHBASE=$ngver
@@ -57,7 +57,7 @@ ngx_hpack_patch() {
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
     # NGX_HPACK_OPT=""
     # NGINX_HPACK='n'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015000' ]] || [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -eq '1015000' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1015002' ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.0_http2-hpack.patch" $boldyellow

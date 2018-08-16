@@ -230,9 +230,16 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     echo "$DETECT_NGXVER"
   fi
 
-  if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
-    NGINX_HPACK='n'
-  fi
+  # if openssl 1.1.1 breaks HPACK patching
+  # if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
+  #   NGINX_HPACK='n'
+  #   NGX_HPACK_OPT=""
+  # fi
+  # DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+  # if [[ "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
+  #   NGINX_HPACK='n'
+  #   NGX_HPACK_OPT=""
+  # fi
 
   # if [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013006' && "$DETECT_NGXVER" -lt '1013009' ]]; then
   if [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1013006' && "$DETECT_NGXVER" -lt '1013010' ]]; then
@@ -241,7 +248,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -eq '1014000' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015000' && "$DETECT_NGXVER" -le '1015003' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015000' && "$DETECT_NGXVER" -le '1015002' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
     NGX_HPACK_OPT=""
