@@ -537,7 +537,7 @@ installopenssl() {
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
             cd "$DIR_TMP"
             rm -rf ${DIR_TMP}/openssl-tls1.3
-            git clone -b tls1.3-draft-18 https://github.com/openssl/openssl/ openssl-tls1.3
+            git clone https://github.com/openssl/openssl/ openssl-tls1.3
             cd ${DIR_TMP}/openssl-tls1.3
         else
             export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
