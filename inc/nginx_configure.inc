@@ -657,6 +657,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # https://community.centminmod.com/threads/15406/
     ORESTY_SETMISC='n'
     NGINX_STREAM='n'
+    SETMISCOPT=""
   else
     if [ "$NOSOURCEOPENSSL" == 'n' ]; then
       OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
@@ -903,7 +904,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       if [ -f /usr/local/nginx/modules/ngx_http_set_misc_module.so.old ]; then
         rm -rf /usr/local/nginx/modules/ngx_http_set_misc_module.so.old
       fi
-    else
+    elif [[ "$ORESTY_SETMISC" = [yY] ]]; then
       if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
         SETMISCOPT=" --add-module=../set-misc-nginx-module-master"
       else
