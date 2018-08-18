@@ -1364,7 +1364,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$NGINX_PCREJIT" = [yY] ]]; then
     PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
-    PCREJITOPT=" --with-pcre=../$PCRELINKDIR --with-pcre-jit"
+    if [[ "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/lib/libpcre.so ]]; then
+      PCREJITOPT=" --with-pcre-jit"
+    else
+      PCREJITOPT=" --with-pcre=../$PCRELINKDIR --with-pcre-jit"
+    fi
   else
     PCREJITOPT=""
   fi
