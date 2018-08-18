@@ -656,7 +656,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     OPENSSLOPT=""
     # LRT=""
     LRT='-lrt '
-    BORINGSSLOPT=" --with-openssl=${BORINGSSL_DIR}/boringssl"
+    # BORINGSSLOPT=" --with-openssl=${BORINGSSL_DIR}/boringssl"
     BORINGSSL_RPATH="${BORINGSSL_DIR}/boringssl/.openssl/lib:"
     BORINGSSL_LIBOPT="-L${BORINGSSL_DIR}/boringssl/.openssl/lib -lcrypto -lssl "
     BORINGSSLINC_OPT="-I${BORINGSSL_DIR}/boringssl/.openssl/include "
