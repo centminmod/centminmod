@@ -275,7 +275,7 @@ LIBRESSL_VERSION='2.7.2'   # Use this version of LibreSSL http://www.libressl.or
 # BoringSSL
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 BORINGSSL_SHARED='y'       # build boringssl as shared library so nginx can dynamically compile boringssl
-BORINGSSL_DIR="$DIR_TMP"
+BORINGSSL_DIR="/opt"
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
