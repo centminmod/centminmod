@@ -691,13 +691,18 @@ installopenssl() {
         export TMPDIR=/home/buildtmp
         # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' ${BORINGSSL_DIR}/boringssl/CMakeLists.txt
         ln -s /usr/local/go/bin/go /usr/local/bin/go
-        # cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..
-        cmake -DCMAKE_BUILD_TYPE=Release ..
+        if [[ "$BORINGSSL_SHARED" = [yY] ]]; then
+            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 ..
+        else
+            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..
+        fi
+        # cmake -DCMAKE_BUILD_TYPE=Release ..
         make${MAKETHREADS}
         mkdir -p ${BORINGSSL_DIR}/boringssl/.openssl/lib
         cd ${BORINGSSL_DIR}/boringssl/.openssl
         ln -s ../include
         cp ${BORINGSSL_DIR}/boringssl/build/crypto/libcrypto.a ${BORINGSSL_DIR}/boringssl/build/ssl/libssl.a ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        cp ${BORINGSSL_DIR}/boringssl/build/crypto/libcrypto.so ${BORINGSSL_DIR}/boringssl/build/ssl/libssl.so ${BORINGSSL_DIR}/boringssl/.openssl/lib
         ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/lib
         ls -lah ${BORINGSSL_DIR}/boringssl/.openssl
         unset TMPDIR

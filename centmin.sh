@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='049'
+SCRIPT_INCREMENTVER='050'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/09/2018'
@@ -687,6 +687,7 @@ LIBRESSL_VERSION='2.7.4'   # Use this version of LibreSSL http://www.libressl.or
 # BoringSSL
 # not working yet just prep work
 BORINGSSL_SWITCH='n'       # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+BORINGSSL_SHARED='y'       # build boringssl as shared library so nginx can dynamically compile boringssl
 BORINGSSL_DIR="$DIR_TMP"
 ##################################
 
