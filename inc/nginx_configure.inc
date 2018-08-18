@@ -887,7 +887,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         time git clone -b master --depth=1 https://github.com/openresty/set-misc-nginx-module.git set-misc-nginx-module-master
         popd
       fi
-    if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_SETMISC" = [yY] ]]; then
+    if [[ "$DYNAMIC_SUPPORT" = [yY] && "$ORESTY_SETMISC" = [yY] && "$NGXDYNAMIC_SETMISC" = [yY] ]]; then
       if [[ "$ORESTY_SETMISCGIT" = [yY] ]]; then
         SETMISCOPT=" --add-dynamic-module=../set-misc-nginx-module-master"
       else
