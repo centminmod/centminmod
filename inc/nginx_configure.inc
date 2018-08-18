@@ -653,6 +653,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # LRT=""
     LRT='-lrt '
     BORINGSSLOPT=" --with-openssl=${BORINGSSL_DIR}/boringssl"
+    # openresty set-misc nginx module not compatible with boringssl
+    # https://community.centminmod.com/threads/15406/
+    ORESTY_SETMISC='n'
+    NGINX_STREAM='n'
   else
     if [ "$NOSOURCEOPENSSL" == 'n' ]; then
       OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")

@@ -643,11 +643,6 @@ installopenssl() {
     elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         
-        # openresty set-misc nginx module not compatible with boringssl
-        # https://community.centminmod.com/threads/15406/
-        ORESTY_SETMISC='n'
-        NGINX_STREAM='n'
-
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling BoringSSL"
         fi
