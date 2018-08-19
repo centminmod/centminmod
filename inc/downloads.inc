@@ -74,7 +74,7 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
     echo "CA server detected"
-    PHP_MIRRORURL="http://ca2.php.net"
+    PHP_MIRRORURL="http://ca1.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'CN' ]]; then
     echo "CN server detected"
