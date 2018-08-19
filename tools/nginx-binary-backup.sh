@@ -47,15 +47,26 @@ bin_backup() {
     echo "--------------------------------------------------------"
     echo "backup current Nginx binary and dynamic modules"
     echo "--------------------------------------------------------"
+    echo "backup started..."
     mkdir -p "${NGINXBIN_BACKUPDIR}/${backup_tag}/bin"
     cp -af "$NGINXBIN_PATH" "${NGINXBIN_BACKUPDIR}/${backup_tag}/bin"
     cp -af "$NGINXBIN_MODULESDIR" "${NGINXBIN_BACKUPDIR}/${backup_tag}"
+    # remove .so.old older dynamic nginx modules from backup
+    # https://community.centminmod.com/posts/66124/
+    if [ -d "${NGINXBIN_BACKUPDIR}/${backup_tag}/modules" ]; then
+      find . "${NGINXBIN_BACKUPDIR}/${backup_tag}/modules" -type f -name "*.so.old" -delete
+    fi
     cp -af "$NGINXMODULE_INCLUDE" "${NGINXBIN_BACKUPDIR}/${backup_tag}"
     cp -af "$NGINXMODULE_INCLUDED_INCLUDE" "${NGINXBIN_BACKUPDIR}/${backup_tag}"
     if [[ "$verbose" != 'quiet' ]]; then
     echo "--------------------------------------------------------"
-      ls -lahR "${NGINXBIN_BACKUPDIR}/${backup_tag}"
+      if [ -f $(which tree) ]; then
+        tree -A "${NGINXBIN_BACKUPDIR}/${backup_tag}"
+      else
+        ls -lahR "${NGINXBIN_BACKUPDIR}/${backup_tag}"
+      fi
     fi
+    echo "backup finished..."
     echo "--------------------------------------------------------"
     echo "backup created at ${NGINXBIN_BACKUPDIR}/${backup_tag}"
     echo "--------------------------------------------------------"
@@ -87,7 +98,14 @@ bin_restore() {
       echo
       echo "You entered $backup_path"
       echo
+      if [ -f $(which tree) ]; then
+        tree -A "$backup_path"
+      else
+        ls -lahR "$backup_path"
+      fi
+      echo
       read -ep "Is this correct ? [y/n] " is_correct
+      echo
     elif [[ -d "$backup_path" ]]; then
       is_correct='y'
     fi # unattended
