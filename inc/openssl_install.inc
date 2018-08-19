@@ -668,7 +668,8 @@ installopenssl() {
         fi
 
         echo "Compiling BoringSSL..."
-        cd $DIR_TMP
+        # cd $DIR_TMP
+        pushd "${BORINGSSL_DIR}"
         rm -rf ${BORINGSSL_DIR}/boringssl
         time git clone https://boringssl.googlesource.com/boringssl
         # time git clone https://github.com/google/boringssl.git
@@ -711,6 +712,7 @@ installopenssl() {
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
         echo "BoringSSL Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
-        ls -lah ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log 
+        ls -lah ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
+        popd 
     fi
 }
