@@ -16,6 +16,7 @@ NGINXBIN_BACKUPDIR='/home/backup-nginxbin'
 NGINXBIN_VER=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
 NGINXBIN_COMPILER=$(nginx -V 2>&1 | awk '/built by/ {print $3}' | awk '{print tolower($0)}')
 NGINXBIN_CRYPTO=$(nginx -V 2>&1 | awk '/built with/ {print $3"-"$4}' | awk '{print tolower($0)}')
+NGINXBIN_CRYPTOBORINGSSL=$(nginx -V 2>&1 | awk '/built with/ {print $9}' | awk '{print tolower($0)}' | sed -e 's|)||g')
 NGINXBIN_PATH='/usr/local/sbin/nginx'
 NGINXTOP_DIR='/usr/local/nginx'
 NGINXBIN_MODULESDIR="$NGINXTOP_DIR/modules"
@@ -32,6 +33,10 @@ if [[ "$NGINXBIN_COMPILER" = 'gcc' ]]; then
   NGINXBIN_COMPILERNAME=$(nginx -V 2>&1 | awk '/built by/ {print $3"-"$4"-"$5}')
 elif [[ "$NGINXBIN_COMPILER" = 'clang' ]]; then
   NGINXBIN_COMPILERNAME=$(nginx -V 2>&1 | awk '/built by/ {print $3"-"$4"-"$5}' | sed -e 's|(||g' -e 's|)||g' -e 's|\/|-|g')
+fi
+
+if [[ "$NGINXBIN_CRYPTOBORINGSSL" = 'boringssl' ]]; then
+  NGINXBIN_CRYPTO='boringssl'
 fi
 
 bin_backup() {
