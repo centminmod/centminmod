@@ -706,6 +706,12 @@ installopenssl() {
         cp ${BORINGSSL_DIR}/boringssl/build/crypto/libcrypto.so ${BORINGSSL_DIR}/boringssl/build/ssl/libssl.so ${BORINGSSL_DIR}/boringssl/.openssl/lib
         ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/lib
         ls -lah ${BORINGSSL_DIR}/boringssl/.openssl
+        # symlink boringssl bssl binary for ease of use
+        if [ -f /opt/boringssl/build/tool/bssl ]; then
+            echo "ln -sf /opt/boringssl/build/tool/bssl /usr/local/bin/bssl"
+            ln -sf /opt/boringssl/build/tool/bssl /usr/local/bin/bssl
+            ls -lah /usr/local/bin/bssl
+        fi
         unset TMPDIR
         boringsslinstallendtime=$(TZ=UTC date +%s.%N)
         BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
