@@ -623,7 +623,7 @@ source_wgetinstall() {
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
   else
-    export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m32 -mtune=generic"
+    export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
     if [ -f /root/.wgetrc ]; then
