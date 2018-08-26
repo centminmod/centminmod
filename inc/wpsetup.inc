@@ -2124,7 +2124,7 @@ if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen 
   # \wp plugin install optimus --activate --allow-root
   echo "configure cache-enabler"
-  \wp option update cache-enabler '{"expires":6,"new_post":1,"new_comment":1,"webp":0,"compress":1,"excl_ids":"","minify_html":0}' --format=json --allow-root
+  \wp option update cache-enabler '{"expires":6,"new_post":1,"new_comment":1,"webp":0,"clear_on_upgrade":1,"compress":1,"excl_ids":"","excl_regexp":"","excl_cookies":"","excl_querystrings":"","minify_html":0}' --format=json --allow-root
   \wp option get cache-enabler --format=json --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install autoptimize --activate --allow-root
