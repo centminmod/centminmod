@@ -248,7 +248,7 @@ VHOSTCTRL_CLOUDFLAREINC='n'
 VHOSTCTRL_AUTOPROTECTINC='y'
 
 # OpenSSL
-DISABLE_TLSONEZERO_PROTOCOL='y' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
+DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
 OPENSSL_VERSION='1.1.0i'   # Use this version of OpenSSL http://openssl.org/
 OPENSSL_VERSIONFALLBACK='1.0.2p'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
