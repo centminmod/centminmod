@@ -5,42 +5,47 @@ redetect_tlsonethree() {
   # OPENSSL_TLSONETHREE='y' enabled
   # OPENSSL_TLSONETHREE='n' disabled
   # https://community.centminmod.com/posts/63238/
+  if [[ "$DISABLE_TLSONEZERO_PROTOCOL" = [yY] ]]; then
+    TLSONEONEPROTOCOL_OPT=""
+  else
+    TLSONEONEPROTOCOL_OPT='TLSv1 '
+  fi
   if [ -f /usr/local/nginx/conf/ssl-include.conf ]; then
     if [[ "$OPENSSL_TLSONETHREE" = [yY] ]]; then
       # Nginx supports TLS 1.3 ssl_protocols directive
-      if [[ "$(grep -w 'ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
+      if [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;" /usr/local/nginx/conf/ssl-include.conf)" ]]; then
+        sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
       fi
     else
-      if [[ "$(grep -w 'ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl-include.conf
+      if [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl-include.conf)" ]]; then
+        sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl-include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2;|' /usr/local/nginx/conf/ssl-include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
       fi
     fi
   elif [ -f /usr/local/nginx/conf/ssl_include.conf ]; then
     if [[ "$OPENSSL_TLSONETHREE" = [yY] ]]; then
       # Nginx supports TLS 1.3 ssl_protocols directive
-      if [[ "$(grep -w 'ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
+      if [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
+        sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
       fi
     else
-      if [[ "$(grep -w 'ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl_include.conf
+      if [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
+        sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl_include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2 TLSv1.3;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
-        sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2;|' /usr/local/nginx/conf/ssl_include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf
       fi
     fi
   fi
