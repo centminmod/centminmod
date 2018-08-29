@@ -1041,7 +1041,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     luanginx_patch
-    LUAJIT_XCFLAGOPT=" --with-luajit-xcflags='-DLUAJIT_NUMMODE=2'"
+    # LUAJIT_XCFLAGOPT=" --with-luajit-xcflags='-DLUAJIT_NUMMODE=2'"
+    LUAJIT_XCFLAGOPT=""
     # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch
     # so fall back to 1.0.2 branch if lua nginx module is enabled
     OPENSSL_VERSION="$OPENSSL_VERSIONFALLBACK"
@@ -1386,6 +1387,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
     if [[ "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/lib/libpcre.so ]]; then
       PCREJITOPT=" --with-pcre-jit"
+      LIBBROTLIENC_OPT='-L/usr/local/lib '
+      LIBBROTLIINC_OPT='-I/usr/local/include '
     else
       PCREJITOPT=" --with-pcre=../$PCRELINKDIR --with-pcre-jit"
     fi
