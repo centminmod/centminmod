@@ -140,6 +140,7 @@ NGINX_CACHEPURGE='y'         # https://github.com/FRiCKLE/ngx_cache_purge/
 NGINX_ACCESSKEY='n'          #
 NGINX_HTTPCONCAT='n'         # https://github.com/alibaba/nginx-http-concat
 NGINX_THREADS='y'            # https://www.nginx.com/blog/thread-pools-boost-performance-9x/
+NGINX_SLICE='n'              # https://nginx.org/en/docs/http/ngx_http_slice_module.html
 NGINX_STREAM='y'             # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGINX_STREAMGEOIP='y'        # nginx 1.11.3+ option http://hg.nginx.org/nginx/rev/558db057adaa
 NGINX_STREAMREALIP='y'       # nginx 1.11.4+ option http://hg.nginx.org/nginx/rev/9cac11efb205
