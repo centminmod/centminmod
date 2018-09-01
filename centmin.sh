@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='056'
+SCRIPT_INCREMENTVER='057'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/09/2018'
@@ -522,6 +522,7 @@ NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static l
 NGINX_PCREVER='8.42'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
+NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
 NGINX_HEADERSMORE='0.33'
@@ -1089,6 +1090,15 @@ if [[ "$NGINX_OPENRESTY" = [nN] ]]; then
   # no longer optional and required for Centmin Mod 
   # nginx functionality i.e. wordpress caching configurations
   NGINX_OPENRESTY='y'
+fi
+
+if [[ "$NGINX_VIDEO" = [yY] ]]; then
+  # variable to control all Nginx video/streaming related nginx
+  # modules
+  NGINX_SLICE='y'
+  NGINX_RTMP='y'
+  NGINX_FLV='y'
+  NGINX_MP4='y'
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
