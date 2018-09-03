@@ -21,6 +21,7 @@ OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
 DISABLE_NETWORKFFMPEG='n'
+ENABLE_AVONE='n'
 ENABLE_FPIC='n'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.3'
@@ -30,6 +31,7 @@ GD_ENABLE='n'
 NASM_SOURCEINSTALL='n'
 NASM_VER='2.14rc15'
 YASM_VER='1.3.0'
+FDKAAC_VER='0.1.6'
 ###############################################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -103,10 +105,21 @@ if [[ "$DISABLE_NETWORKFFMPEG" = [yY] ]]; then
 	DISABLE_FFMPEGNETWORK=' --disable-network'
 fi
 
-if [[ "$ENABLE_FPIC" = [yY] ]]; then
-	ENABLE_FPICOPT=' --enable-pic'
+if [[ "$ENABLE_AVONE" = [yY] ]]; then
+  ENABLE_AVONEOPT=' --enable-libaom'
+  ENABLE_FPIC='y'
 else
-	ENABLE_FPICOPT=""
+  ENABLE_AVONEOPT=""
+fi
+
+if [[ "$ENABLE_FPIC" = [yY] ]]; then
+  ENABLE_FPICOPT=' --enable-pic --extra-ldexeflags=-pie'
+  EXTRACFLAG_FPICOPTS='-fPIC'
+  LDFLAG_FPIC=' -Wl,-Bsymbolic'
+else
+  ENABLE_FPICOPT=""
+  EXTRACFLAG_FPICOPTS=""
+  LDFLAG_FPIC=""
 fi
 
 if [[ "$MARCH_TARGETNATIVE" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
@@ -235,8 +248,9 @@ make install
 
 cd ${OPT}/ffmpeg_sources
 rm -rf fdk-aac
-git clone --depth 1 git://git.code.sf.net/p/opencore-amr/fdk-aac
+git clone https://github.com/mstorsjo/fdk-aac
 cd fdk-aac
+git checkout v${FDKAAC_VER} -b v${FDKAAC_VER}
 autoreconf -fiv
 ./configure --prefix="${OPT}/ffmpeg" --enable-static --enable-shared
 make${MAKETHREADS}
@@ -284,16 +298,29 @@ cd ${OPT}/ffmpeg_sources
 rm -rf libvpx
 git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
 cd libvpx
-./configure --prefix="${OPT}/ffmpeg" --disable-examples --enable-static --enable-shared
+./configure --prefix="${OPT}/ffmpeg" --disable-examples --enable-static --enable-shared --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
 make${MAKETHREADS}
 make install
 make clean
+
+if [[ "$ENABLE_AVONE" = [yY] ]]; then
+cd ${OPT}/ffmpeg_sources
+rm -rf libaom
+rm -rf ${OPT}/ffmpeg_sources/aom_build
+git clone --depth 1 https://aomedia.googlesource.com/aom libaom
+mkdir -p ${OPT}/ffmpeg_sources/aom_build
+cd aom_build
+# build/cmake/aom_config_defaults.cmake
+cmake3 -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DBUILD_SHARED_LIBS=1 -DENABLE_NASM=on -DENABLE_CCACHE=on ../libaom
+make${MAKETHREADS}
+make install
+fi
 
 cd ${OPT}/ffmpeg_sources
 rm -rf ffmpeg
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="-I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm${ENABLE_FPICOPT} --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-swscale --enable-shared${DISABLE_FFMPEGNETWORK}
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT} --enable-swscale${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 make${MAKETHREADS}
 make install
 make distclean
@@ -307,8 +334,11 @@ ldconfig
 
 echo
 echo "Installed FFMPEG binary at ${OPT}/bin/ffmpeg"
-echo
-
+if [[ "$ENABLE_AVONE" = [yY] ]]; then
+  echo
+  echo "ffmpeg -h encoder=libaom-av1"
+  ffmpeg -h encoder=libaom-av1
+fi
 echo
 "${OPT}/bin/ffmpeg" -version
 
@@ -370,15 +400,26 @@ make distclean
 cd ${OPT}/ffmpeg_sources/libvpx
 make clean
 git pull
-./configure --prefix="${OPT}/ffmpeg" --disable-examples --enable-static --enable-shared
+./configure --prefix="${OPT}/ffmpeg" --disable-examples --enable-static --enable-shared --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
 make${MAKETHREADS}
 make install
 make clean
 
+if [[ "$ENABLE_AVONE" = [yY] ]]; then
+cd ${OPT}/ffmpeg_sources/libaom
+rm -rf CMakeCache.txt CMakeFiles
+rm -rf ${OPT}/ffmpeg_sources/aom_build
+mkdir -p ${OPT}/ffmpeg_sources/aom_build
+git pull
+cmake3 -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DBUILD_SHARED_LIBS=1 -DENABLE_NASM=on -DENABLE_CCACHE=on ../libaom
+make${MAKETHREADS}
+make install
+fi
+
 cd ${OPT}/ffmpeg_sources/ffmpeg
 make distclean
 git pull
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="-I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm${ENABLE_FPICOPT} --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265 --enable-swscale --enable-shared
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT} --enable-swscale${ENABLE_FPICOPT} --enable-shared
 make${MAKETHREADS}
 make install
 make distclean
