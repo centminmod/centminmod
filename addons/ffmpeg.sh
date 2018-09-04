@@ -23,6 +23,7 @@ MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86
 DISABLE_NETWORKFFMPEG='n'
 ENABLE_AVONE='n'
 ENABLE_FPIC='n'
+ENABLE_FONTCONFIG='n'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.3'
 # http://downloads.xiph.org/releases/vorbis/
@@ -32,6 +33,8 @@ NASM_SOURCEINSTALL='n'
 NASM_VER='2.14rc15'
 YASM_VER='1.3.0'
 FDKAAC_VER='0.1.6'
+FONTCONFIG_VER='2.13.1'
+FREETYPE_VER='2.9'
 ###############################################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -191,8 +194,19 @@ install_yasm() {
 	cd "yasm-${YASM_VER}"
 	make clean
 	./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin"
-	make
+	make${MAKETHREADS}
 	make install
+}
+
+install_freetype() {
+  cd ${OPT}/ffmpeg_sources
+  curl -L -O "https://download.savannah.gnu.org/releases/freetype/freetype-${FREETYPE_VER}.tar.gz"
+  tar xvzf "freetype-${FREETYPE_VER}.tar.gz"
+  cd "freetype-${FREETYPE_VER}"
+  make clean
+  ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin"
+  make${MAKETHREADS}
+  make install
 }
 
 install() {
@@ -202,9 +216,9 @@ echo "Installing FFMPEG..."
 
 # check if IUS Community git2u packages installed
 if [[ "$(rpm -ql git2u-core | grep '\/usr\/bin\/git$')" = '/usr/bin/git' ]]; then
-	yum -y install autoconf automake cmake freetype-devel gcc gcc-c++ libtool make mercurial pkgconfig zlib-devel numactl-devel
+	yum -y install gperf autoconf automake cmake freetype-devel gcc gcc-c++ libtool make mercurial pkgconfig zlib-devel numactl-devel
 else
-	yum -y install autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial pkgconfig zlib-devel numactl-devel
+	yum -y install gperf autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial pkgconfig zlib-devel numactl-devel
 fi
 
 echo
@@ -227,6 +241,26 @@ mkdir -p ${OPT}/ffmpeg_sources
 
 install_nasm
 install_yasm
+if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
+  ENABLE_FONTCONFIGOPT=' --enable-fontconfig'
+  install_freetype
+else
+  ENABLE_FONTCONFIGOPT=""
+fi
+
+if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
+cd ${OPT}/ffmpeg_sources
+rm -rf fontconfig*
+# git clone --depth 1 https://gitlab.freedesktop.org/fontconfig/fontconfig
+curl -L -O https://www.freedesktop.org/software/fontconfig/release/fontconfig-${FONTCONFIG_VER}.tar.gz
+tar xvzf fontconfig-${FONTCONFIG_VER}.tar.gz
+cd fontconfig-${FONTCONFIG_VER}
+# autoreconf -ivf
+PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin" --enable-static  --enable-shared --with-pic
+make${MAKETHREADS}
+make install
+make distclean
+fi
 
 cd ${OPT}/ffmpeg_sources
 rm -rf x264
@@ -320,7 +354,7 @@ cd ${OPT}/ffmpeg_sources
 rm -rf ffmpeg
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT} --enable-swscale${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 make${MAKETHREADS}
 make install
 make distclean
@@ -340,11 +374,13 @@ if [[ "$ENABLE_AVONE" = [yY] ]]; then
   ffmpeg -h encoder=libaom-av1
 fi
 echo
+"${OPT}/bin/ffmpeg" -formats
+
+echo
 "${OPT}/bin/ffmpeg" -version
 
 echo
-"${OPT}/bin/ffmpeg" -formats
-
+echo "Binaries installed at ${OPT}/bin"
 }
 
 update() {
@@ -371,6 +407,16 @@ install_yasm
 # make${MAKETHREADS}
 # make install
 # make distclean
+
+if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
+cd ${OPT}/ffmpeg_sources/fontconfig-${FONTCONFIG_VER}
+make distclean
+# autoreconf -ivf
+PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin" --enable-static  --enable-shared --with-pic
+make${MAKETHREADS}
+make install
+make distclean
+fi
 
 cd ${OPT}/ffmpeg_sources/x264
 make distclean
@@ -419,7 +465,7 @@ fi
 cd ${OPT}/ffmpeg_sources/ffmpeg
 make distclean
 git pull
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT} --enable-swscale${ENABLE_FPICOPT} --enable-shared
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
 make${MAKETHREADS}
 make install
 make distclean
