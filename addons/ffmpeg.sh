@@ -21,11 +21,13 @@ OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
 DISABLE_NETWORKFFMPEG='n'
+ENABLE_FBTRANSFORM='n'
 ENABLE_AVONE='n'
 ENABLE_FPIC='n'
 ENABLE_FONTCONFIG='n'
 ENABLE_LIBASS='y'
 ENABLE_ZIMG='y'
+ENABLE_OPENCV='n'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.3'
 # http://downloads.xiph.org/releases/vorbis/
@@ -114,6 +116,12 @@ if [[ "$ENABLE_ZIMG" = [yY] ]]; then
   ENABLE_ZIMGOPT=' --enable-libzimg'
 else
   ENABLE_ZIMGOPT=""
+fi
+
+if [[ "$ENABLE_OPENCV" = [yY] ]]; then
+  ENABLE_OPENCVOPT=' --enable-libopencv'
+else
+  ENABLE_OPENCVOPT=""
 fi
 
 if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
@@ -248,9 +256,9 @@ echo "Installing FFMPEG..."
 
 # check if IUS Community git2u packages installed
 if [[ "$(rpm -ql git2u-core | grep '\/usr\/bin\/git$')" = '/usr/bin/git' ]]; then
-	yum -y install gperf autoconf automake cmake freetype-devel gcc gcc-c++ libtool make mercurial pkgconfig zlib-devel numactl-devel libass libass-devel
+	yum -y install gperf autoconf automake cmake freetype-devel gcc gcc-c++ libtool make mercurial pkgconfig zlib-devel numactl-devel libass libass-devel opencv opencv-devel
 else
-	yum -y install gperf autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial pkgconfig zlib-devel numactl-devel libass libass-devel
+	yum -y install gperf autoconf automake cmake freetype-devel gcc gcc-c++ git libtool make mercurial pkgconfig zlib-devel numactl-devel libass libass-devel opencv opencv-devel
 fi
 
 echo
@@ -292,6 +300,16 @@ PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpe
 make${MAKETHREADS}
 make install
 make distclean
+fi
+
+if [[ "$ENABLE_FBTRANSFORM" = [yY] ]]; then
+cd ${OPT}/ffmpeg_sources
+rm -rf transform360
+git clone --depth 1 https://github.com/facebook/transform360
+cd transform360/Transform360
+PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=ON .
+make${MAKETHREADS}
+make install
 fi
 
 cd ${OPT}/ffmpeg_sources
@@ -386,7 +404,7 @@ cd ${OPT}/ffmpeg_sources
 rm -rf ffmpeg
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 make${MAKETHREADS}
 make install
 make distclean
@@ -450,6 +468,14 @@ make install
 make distclean
 fi
 
+if [[ "$ENABLE_FBTRANSFORM" = [yY] ]]; then
+cd ${OPT}/ffmpeg_sources/transform360/Transform360
+rm -rf CMakeCache.txt
+PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" cmake -DCMAKE_BUILD_TYPE=RELEASE -DBUILD_SHARED_LIBS=ON .
+make${MAKETHREADS}
+make install
+fi
+
 cd ${OPT}/ffmpeg_sources/x264
 make distclean
 git pull
@@ -497,7 +523,7 @@ fi
 cd ${OPT}/ffmpeg_sources/ffmpeg
 make distclean
 git pull
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
 make${MAKETHREADS}
 make install
 make distclean
