@@ -41,7 +41,8 @@ elif [[ "$unattended_xcache" = 'silent' ]]; then
         #if [ -f "${CONFIGSCANDIR}/xcache.ini" ]; then
         #    echo "rm -rf ${CONFIGSCANDIR}/xcache.ini"
         #    rm -rf ${CONFIGSCANDIR}/xcache.ini
-        #fi    
+        #fi
+        echo
     fi
 fi
 # DIR_TMP="/svr-setup"
