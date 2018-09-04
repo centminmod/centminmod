@@ -25,7 +25,7 @@ ENABLE_AVONE='n'
 ENABLE_FPIC='n'
 ENABLE_FONTCONFIG='n'
 ENABLE_LIBASS='y'
-ENABLE_ZIMG='n'
+ENABLE_ZIMG='y'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.3'
 # http://downloads.xiph.org/releases/vorbis/
