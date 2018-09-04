@@ -140,7 +140,7 @@ fi
 
 if [[ "$DETECTXCACHE" = [yY] ]] || [[ "$DETECTXCACHE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/xcache.so" ]]; then
     cecho "Auto reinstalling previously detected Xcache" $boldyellow
-    funct_xcachereinstall
+    funct_xcachereinstall silent
 fi
 
 if [[ "$DETECTAPC" = [yY] ]] || [[ "$DETECTAPC" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/apc.so" ]]; then
