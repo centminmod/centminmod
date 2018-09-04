@@ -25,6 +25,7 @@ ENABLE_AVONE='n'
 ENABLE_FPIC='n'
 ENABLE_FONTCONFIG='n'
 ENABLE_LIBASS='y'
+ENABLE_ZIMG='n'
 # http://downloads.xiph.org/releases/ogg/
 LIBOGG_VER='1.3.3'
 # http://downloads.xiph.org/releases/vorbis/
@@ -107,6 +108,18 @@ fi
 
 if [[ "$DISABLE_NETWORKFFMPEG" = [yY] ]]; then
 	DISABLE_FFMPEGNETWORK=' --disable-network'
+fi
+
+if [[ "$ENABLE_ZIMG" = [yY] ]]; then
+  ENABLE_ZIMGOPT=' --enable-libzimg'
+else
+  ENABLE_ZIMGOPT=""
+fi
+
+if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
+  ENABLE_FONTCONFIGOPT=' --enable-fontconfig'
+else
+  ENABLE_FONTCONFIGOPT=""
 fi
 
 if [[ "$ENABLE_LIBASS" = [yY] ]]; then
@@ -216,6 +229,18 @@ install_freetype() {
   make install
 }
 
+install_zimg() {
+  cd ${OPT}/ffmpeg_sources
+  rm -rf zimg
+  git clone --depth=1 https://github.com/sekrit-twc/zimg
+  cd zimg
+  make clean
+  ./autogen.sh
+  ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin" --enable-static  --enable-shared --with-pic
+  make${MAKETHREADS}
+  make install
+}
+
 install() {
 
 echo
@@ -249,10 +274,10 @@ mkdir -p ${OPT}/ffmpeg_sources
 install_nasm
 install_yasm
 if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
-  ENABLE_FONTCONFIGOPT=' --enable-fontconfig'
   install_freetype
-else
-  ENABLE_FONTCONFIGOPT=""
+fi
+if [[ "$ENABLE_ZIMG" = [yY] ]]; then
+  install_zimg
 fi
 
 if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
@@ -361,7 +386,7 @@ cd ${OPT}/ffmpeg_sources
 rm -rf ffmpeg
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 make${MAKETHREADS}
 make install
 make distclean
@@ -472,7 +497,7 @@ fi
 cd ${OPT}/ffmpeg_sources/ffmpeg
 make distclean
 git pull
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
 make${MAKETHREADS}
 make install
 make distclean
