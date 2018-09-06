@@ -878,7 +878,7 @@ fi
   # fi
   # \cp -Rf incubator-pagespeed-ngx-master "$NGXPGSPEED_DIR"
   # rm -rf incubator-pagespeed-ngx-master
-  rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
+  # rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
 #fi
 
         cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} PSOL Library..." $boldyellow

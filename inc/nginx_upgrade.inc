@@ -187,11 +187,12 @@ fi
     fi
 
 cecho "Check for old ngx_pagespeed master branch existence" $boldyellow
-if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-master" ]]; then
+if [[ -d "${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}/ngx_pagespeed-master" || -d "${DIR_TMP}/incubator-pagespeed-ngx-master" ]]; then
     # rm -rf ${DIR_TMP}/ngx_pagespeed-release-${NGXPGSPEED_VER}
     rm -rf ${DIR_TMP}/ngx_pagespeed-release-*
     rm -rf ${DIR_TMP}/ngx_pagespeed-*
     rm -rf ${DIR_TMP}/release-1.9.32*
+    rm -rf ${DIR_TMP}/incubator-pagespeed-ngx-master*
     nginxpgspeedtarball
 fi
 
