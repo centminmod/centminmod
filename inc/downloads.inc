@@ -822,11 +822,21 @@ nginxpgspeedtarball() {
           #echo ""
         fi
     fi
+    tar xzf "${NGX_PAGESPEEDGITLINKFILE}"
 
+    ERROR=$?
+      if [[ "$ERROR" != '0' ]]; then
+      cecho "Error: ${NGX_PAGESPEEDGITLINKFILE} extraction failed." $boldgreen
+    checklogdetails
+      exit #$ERROR
+    else 
+            cecho "${NGX_PAGESPEEDGITLINKFILE} valid file." $boldyellow
+    echo ""
+      fi
   fi # NGINX_PAGESPEEDGITMASTER
 
         cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
-    if [[ -s "${NGX_PAGESPEEDLINKFILE}" && "$(tar -tzf ${NGX_PAGESPEEDLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$NGINX_PAGESPEEDGITMASTER" != [yY] && -s "${NGX_PAGESPEEDLINKFILE}" && "$(tar -tzf ${NGX_PAGESPEEDLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
     else
         echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3"
@@ -855,16 +865,21 @@ echo ""
   fi
 
 # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
-NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
-
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
-  if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
-    rm -rf "$DIR_TMP/$NGXPGSPEED_DIR"
-  fi
-  \cp -Rf ngx_pagespeed-master "$NGXPGSPEED_DIR"
-  rm -rf ngx_pagespeed-master
-  rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
+  # NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDGITLINKFILE}" | head -1 | cut -f1 -d"/")
+  NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+else
+  NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
 fi
+
+#if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
+  # if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then
+  #   rm -rf "$DIR_TMP/$NGXPGSPEED_DIR"
+  # fi
+  # \cp -Rf incubator-pagespeed-ngx-master "$NGXPGSPEED_DIR"
+  # rm -rf incubator-pagespeed-ngx-master
+  rm -rf "${NGX_PAGESPEEDGITLINKFILE}"
+#fi
 
         cecho "Download ${NGX_PAGESPEEDPSOLINKLFILE} PSOL Library..." $boldyellow
         if [ -d "$DIR_TMP/$NGXPGSPEED_DIR" ]; then

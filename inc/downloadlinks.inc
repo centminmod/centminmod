@@ -196,12 +196,12 @@ NGX_WEBDAVLINKGITLAB="https://gitlab.com/centminmod-github-mirror/nginx-dav-ext-
 
 # wget renamed
 NGX_PAGESPEEDGITLINKFILE="release-${NGXPGSPEED_VER}.tar.gz"
-NGX_PAGESPEEDGITLINK="https://github.com/pagespeed/ngx_pagespeed/archive/master.tar.gz"
+NGX_PAGESPEEDGITLINK="https://github.com/apache/incubator-pagespeed-ngx/archive/master.tar.gz"
 NGX_PAGESPEEDGITLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_pagespeed/repository/archive.tar.gz?ref=master"
 
 NGX_PAGESPEEDLINKFILE="release-${NGXPGSPEED_VER}.tar.gz"
 NGX_PAGESPEEDLINKREALFILE="v${NGXPGSPEED_VER}.tar.gz"
-NGX_PAGESPEEDLINK="https://github.com/pagespeed/ngx_pagespeed/archive/${NGX_PAGESPEEDLINKREALFILE}"
+NGX_PAGESPEEDLINK="https://github.com/apache/incubator-pagespeed-ngx/archive/${NGX_PAGESPEEDLINKREALFILE}"
 NGX_PAGESPEEDLINKGITLAB="https://gitlab.com/centminmod-github-mirror/ngx_pagespeed/repository/archive.tar.gz?ref=v${NGXPGSPEED_VER}"
 
 NGX_PAGESPEEDPSOLINKLFILE="${NGINX_PAGESPEEDPSOL_VER}.tar.gz"
