@@ -333,7 +333,7 @@ echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.l
     echo "*************************************************"
 
 if [[ "$TS_INSTALL" = [yY] ]]; then
-  curl -s"${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
+  curl -s "${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
 fi
 
 }
