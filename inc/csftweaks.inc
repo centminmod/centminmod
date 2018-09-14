@@ -185,6 +185,8 @@ if [ -f /etc/csf/csf.conf ]; then
         # https://wiki.ipfire.org/configuration/firewall/blockshodan
         csf -d 104.131.0.69 hello.data.shodan.io
         csf -d 104.236.198.48 blog.shodan.io
+        csf -d 185.163.109.66 goldfish.census.shodan.io
+        csf -d 185.181.102.18 turtle.census.shodan.io
         csf -d 188.138.9.50 atlantic.census.shodan.io
         csf -d 198.20.69.74 census1.shodan.io
         csf -d 198.20.69.98 census2.shodan.io
@@ -193,6 +195,7 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 198.20.99.130 census4.shodan.io
         csf -d 208.180.20.97 shodan.io
         csf -d 209.126.110.38 atlantic.dns.shodan.io
+        csf -d 216.117.2.180 census13.shodan.io
         csf -d 66.240.192.138 census8.shodan.io
         csf -d 66.240.219.146 burger.census.shodan.io
         csf -d 66.240.236.119 census6.shodan.io
@@ -205,7 +208,13 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 82.221.105.7 census11.shodan.io
         csf -d 85.25.103.50 pacific.census.shodan.io
         csf -d 85.25.43.94 rim.census.shodan.io
+        csf -d 89.248.167.131 mason.census.shodan.io
+        csf -d 89.248.172.16 house.census.shodan.io
         csf -d 93.120.27.62 census5.shodan.io
+        csf -d 93.174.95.106 battery.census.shodan.io
+        csf -d 93.174.95.106 battery.census.shodan.io
+        csf -d 94.102.49.190 flower.census.shodan.io
+        csf -d 94.102.49.193 cloud.census.shodan.io
         csf --profile list
     fi
 
