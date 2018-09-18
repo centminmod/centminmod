@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='058'
+SCRIPT_INCREMENTVER='059'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/09/2018'
@@ -1076,6 +1076,13 @@ if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
   MARCH_TARGET='native'
 else
   MARCH_TARGET='x86-64'
+fi
+
+if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then
+  # centos 6 gcc 4.4.7 too low for boringssl compiles so need
+  # devtoolset-7 gcc 7.3.1+ compiler
+  DEVTOOLSETSEVEN='y'
+  CRYPTO_DEVTOOLSETGCC='y'
 fi
 
 # ensure if ORESTY_LUANGINX is enabled, that the other required

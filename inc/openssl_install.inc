@@ -652,7 +652,7 @@ installopenssl() {
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
     elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
-        
+        crypto_gcc
         if [ -f "$(which figlet)" ]; then
             figlet -ckf standard "Compiling BoringSSL"
         fi
