@@ -215,6 +215,16 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 93.174.95.106 battery.census.shodan.io
         csf -d 94.102.49.190 flower.census.shodan.io
         csf -d 94.102.49.193 cloud.census.shodan.io
+        # whitelisting IPs for downloads/services Centmin Mod relies on
+        csf --profile backup cmm-b4-whitelist
+        # whitelist CSF Firewall's download url otherwise unable to download CSF Firewall updates
+        dig +short A download.configserver.com | while read i; do csf -a $i csf-download.configserver.com; done
+        # whitelist centminmod.com IPs which Centmin Mod LEMP stack relies on for some downloaded 
+        # dependencies and file download updates
+        dig +short A centminmod.com | while read i; do csf -a $i centminmod.com; done
+        # whitelist nginx.org download IPs
+        dig +short A nginx.org | while read i; do csf -a $i nginx.org; done
+        csf --profile backup cmm-after-whitelist
         csf --profile list
     fi
 
