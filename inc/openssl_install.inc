@@ -11,13 +11,13 @@ if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSIO
     echo "https://github.com/openssl/openssl/issues/7244"
     echo  "######################################################################"
     pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
-    rm -rf OpenSSL-1.1.1-sni-fix-delay-sig algs.patch
-    if [ -f "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig algs.patch" ]; then
-        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig algs.patch" $boldyellow
-        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig algs.patch"
+    rm -rf OpenSSL-1.1.1-sni-fix-delay-sig-algs.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig-algs.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig-algs.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig-algs.patch"
         openssl_sni_patch_err=$?
         if [[ "$openssl_sni_patch_err" -ne '0' ]]; then
-            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig algs.patch" $boldyellow
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL-1.1.1-sni-fix-delay-sig-algs.patch" $boldyellow
             pushd "$DIR_TMP"
             rm -rf "openssl-${OPENSSL_VERSION}"
             tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
