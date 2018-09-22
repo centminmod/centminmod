@@ -1,0 +1,26 @@
+From 78111d75b38559402800dd7925d8d631c66a8657 Mon Sep 17 00:00:00 2001
+From: Matt Caswell <matt@openssl.org>
+Date: Wed, 19 Sep 2018 10:09:39 +0100
+Subject: [PATCH] Fix the max psk len for TLSv1.3
+
+If using an old style TLSv1.2 PSK callback then the maximum possible PSK
+len is PSK_MAX_PSK_LEN (256) - not 64.
+
+Fixes #7261
+---
+ ssl/ssl_locl.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ssl/ssl_locl.h b/ssl/ssl_locl.h
+index 8afb117372b..440a5d6c19d 100644
+--- a/ssl/ssl_locl.h
++++ b/ssl/ssl_locl.h
+@@ -471,7 +471,7 @@ struct ssl_method_st {
+     long (*ssl_ctx_callback_ctrl) (SSL_CTX *s, int cb_id, void (*fp) (void));
+ };
+ 
+-# define TLS13_MAX_RESUMPTION_PSK_LENGTH      64
++# define TLS13_MAX_RESUMPTION_PSK_LENGTH      PSK_MAX_PSK_LEN
+ 
+ /*-
+  * Lets make this into an ASN.1 type structure as follows

@@ -54,6 +54,32 @@ if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSIO
     echo
 fi
 
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.1"
+    echo "######################################################################"
+    echo "Fix the max psk len for TLSv1.3 patch"
+    echo "https://github.com/openssl/openssl/issues/7261"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL-1.1.1-tls13-fix-max-psk-len.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-tls13-fix-max-psk-len.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL-1.1.1-tls13-fix-max-psk-len.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-tls13-fix-max-psk-len.patch"
+        openssl_maxpsk_err=$?
+        if [[ "$openssl_maxpsk_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL-1.1.1-tls13-fix-max-psk-len.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
 # Cache timing vulnerability in RSA Key Generation (CVE-2018-0737) patch
 # https://community.centminmod.com/threads/14584/
 if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.0.2o' ]]; then
