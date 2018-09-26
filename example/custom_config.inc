@@ -250,6 +250,7 @@ VHOSTCTRL_CLOUDFLAREINC='n'
 VHOSTCTRL_AUTOPROTECTINC='y'
 
 # OpenSSL
+NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
 OPENSSL_VERSION='1.1.0i'   # Use this version of OpenSSL http://openssl.org/

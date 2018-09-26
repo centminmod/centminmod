@@ -1,0 +1,21 @@
+commit 403a3e2323be2109fdda00564953aabdd164bb79
+Author: 李通洲 <carter.li@eoitek.com>
+Date:   Thu Apr 5 15:50:51 2018 +0800
+
+Use SSL_OP_PRIORITIZE_CHACHA when supported
+
+diff --git a/src/event/ngx_event_openssl.c b/src/event/ngx_event_openssl.c
+index 88a6dbe..f79c394 100644
+--- a/src/event/ngx_event_openssl.c
++++ b/src/event/ngx_event_openssl.c
+@@ -330,6 +330,10 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_t protocols, void *data)
+     }
+ #endif
+ 
++#ifdef SSL_OP_PRIORITIZE_CHACHA
++    SSL_CTX_set_options(ssl->ctx, SSL_OP_PRIORITIZE_CHACHA);
++#endif
++
+ #ifdef SSL_OP_NO_COMPRESSION
+     SSL_CTX_set_options(ssl->ctx, SSL_OP_NO_COMPRESSION);
+ #endif

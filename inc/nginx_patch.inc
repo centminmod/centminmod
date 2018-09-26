@@ -1,7 +1,33 @@
+ngx_prioritizechacha_patch() {
+  {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$NGINX_PRIORITIZECHACHA" = [yY] && "$DETECT_NGXVER" -ge '1015004' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+    if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
+      pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+      cecho "patching nginx for prioritizing chacha20 with OpenSSL 1.1.1 https://github.com/kn007/patch/issues/2" $boldyellow
+      cecho "patch -p01 < $CUR_DIR/patches/nginx-prioritize-chacha20/nginx-1.15.4-reprioritize-chacha-openssl-1.1.1.patch" $boldyellow
+      patch -p01 < "$CUR_DIR/patches/nginx-prioritize-chacha20/nginx-1.15.4-reprioritize-chacha-openssl-1.1.1.patch"
+      echo 
+      echo "patching nginx for prioritizing chacha20 with OpenSSL 1.1.1"
+      popd
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
 ngx_hpack_patch() {
   # if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
   #   NGINX_HPACK='n'
   # fi
+  {
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGINX_PUSHBASE=$ngver
@@ -87,9 +113,11 @@ ngx_hpack_patch() {
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
   fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 ngx_httppush_patch() {
+  {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGINX_PUSHBASE=$ngver
@@ -115,9 +143,11 @@ ngx_httppush_patch() {
       popd
     fi
   fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 ngx_cachepurge_patch() {
+  {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     echo "$DETECT_NGXVER"
@@ -143,9 +173,11 @@ ngx_cachepurge_patch() {
       popd
     fi
   fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 luanginx_patch() {
+  {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     echo "$DETECT_NGXVER"
@@ -183,9 +215,11 @@ luanginx_patch() {
       popd
     fi
   fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 echonginx_patch() {
+  {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     echo "$DETECT_NGXVER"
@@ -205,9 +239,11 @@ echonginx_patch() {
       popd
     fi
   fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 ngxopenresty_patch() {
+  {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     echo "$DETECT_NGXVER"
@@ -242,6 +278,7 @@ ngxopenresty_patch() {
     fi
   fi
   # exit
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 patchnginx() {
@@ -389,10 +426,11 @@ patchnginx() {
      fi
   fi
   ngx_hpack_patch
-} 2>&1 | tee "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+} 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 luapatch() {
+  {
   if [ ! -f lua.patch ]; then
     {
     # echo
@@ -409,6 +447,7 @@ luapatch() {
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_luapatch_${DT}.log"
 
   fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
 luaopensslpatch() {
@@ -432,7 +471,8 @@ luaopensslpatch() {
   wget "$OPENRESTYLUAPATCHLINK"
   patch -p1 < nginx-1.9.7-ssl_cert_cb_yield.patch
   popd
-} 2>&1 | tee "${CENTMINLOGDIR}/patch_luaopensslpatch_${DT}.log"
+# } 2>&1 | tee "${CENTMINLOGDIR}/patch_luaopensslpatch_${DT}.log"
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 
 }
 

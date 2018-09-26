@@ -274,6 +274,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     NGX_HPACK_OPT=""
   fi
 
+  if [[ "$NGINX_PRIORITIZECHACHA" = [yY] && "$DETECT_NGXVER" -ge '1015004' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+    ngx_prioritizechacha_patch
+  fi
+
   if [[ "$NGINX_HTTPPUSH" = [yY] ]]; then
     NGINX_HTTP2='y'
     ngx_httppush_patch
