@@ -1,3 +1,26 @@
+ngx_renegotiate_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$DETECT_NGXVER" -ge '1015004' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+    if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
+      pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+      cecho "patching nginx for renegotation bug fix with OpenSSL 1.1.1 https://github.com/hakasenyang/openssl-patch/blob/master/nginx_openssl-1.1.x_renegotiation_bugfix.patch" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx_openssl-1.1.x_renegotiation_fix.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/nginx/nginx_openssl-1.1.x_renegotiation_fix.patch"
+      echo 
+      echo "patching nginx for renegotation bug fix with OpenSSL 1.1.1"
+      popd
+    fi
+  fi
+}
+
 ngx_prioritizechacha_patch() {
   {
   if [ "$ngver" ]; then
@@ -13,8 +36,8 @@ ngx_prioritizechacha_patch() {
     if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
       pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
       cecho "patching nginx for prioritizing chacha20 with OpenSSL 1.1.1 https://github.com/kn007/patch/issues/2" $boldyellow
-      cecho "patch -p01 < $CUR_DIR/patches/nginx-prioritize-chacha20/nginx-1.15.4-reprioritize-chacha-openssl-1.1.1.patch" $boldyellow
-      patch -p01 < "$CUR_DIR/patches/nginx-prioritize-chacha20/nginx-1.15.4-reprioritize-chacha-openssl-1.1.1.patch"
+      cecho "patch -p1 < $CUR_DIR/patches/nginx-prioritize-chacha20/nginx-1.15.4-reprioritize-chacha-openssl-1.1.1.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/nginx-prioritize-chacha20/nginx-1.15.4-reprioritize-chacha-openssl-1.1.1.patch"
       echo 
       echo "patching nginx for prioritizing chacha20 with OpenSSL 1.1.1"
       popd
@@ -284,6 +307,7 @@ ngxopenresty_patch() {
 patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
+  ngx_renegotiate_patch
 
   # unofficial OpenSSL 1.1.0 beta Nginx patches
   DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
