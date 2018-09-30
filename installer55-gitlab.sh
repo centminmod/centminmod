@@ -1109,10 +1109,10 @@ cd $INSTALLDIR
       getcmstarttime=$(TZ=UTC date +%s.%N)
       echo "git clone Centmin Mod repo..."
       time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
+      getcmendtime=$(TZ=UTC date +%s.%N)
       sar_call
       cd centminmod
       chmod +x centmin.sh
-      getcmendtime=$(TZ=UTC date +%s.%N)   
     fi
   else
     if [[ ! -f "${DOWNLOAD}" ]]; then
@@ -1231,9 +1231,9 @@ if [[ "$DEF" = 'novalue' ]]; then
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
   FIRSTYUMINSTALLTIME=$(printf "%0.4f\n" $FIRSTYUMINSTALLTIME)
   GETCMTIME=$(echo "$getcmendtime - $getcmstarttime" | bc)
-  echo $GETCMTIME > "/root/centminlogs/getcmtime_installtime_${DT}.log"
+  echo "$GETCMTIME" > "/root/centminlogs/getcmtime_installtime_${DT}.log"
   GETCMTIME=$(printf "%0.4f\n" $GETCMTIME)
-  echo $GETCMTIME >> "/root/centminlogs/getcmtime_installtime_${DT}.log"
+  echo "$GETCMTIME" >> "/root/centminlogs/getcmtime_installtime_${DT}.log"
   #touch ${CENTMINLOGDIR}/firstyum_installtime_${DT}.log
   echo "" > "/root/centminlogs/firstyum_installtime_${DT}.log"
   {
@@ -1267,7 +1267,7 @@ fi
   echo "Total YUM or DNF + Source Download Time: $(printf "%0.4f\n" $DTIME_SEC)"
   echo "Total Nginx First Time Install Time: $(printf "%0.4f\n" $NTIME_SEC)"
   echo "Total PHP First Time Install Time: $(printf "%0.4f\n" $PTIME_SEC)"
-  echo "Download Zip From Github Time: $GETCMTIME"
+  echo "Download From Github Time: $GETCMTIME"
   echo "Total Time Other eg. source compiles: $ST"
   echo "Total Centmin Mod Install Time: $CMTIME_SEC"
 echo "---------------------------------------------------------------------------"
