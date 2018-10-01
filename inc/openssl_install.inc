@@ -289,6 +289,33 @@ fi
 DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
 DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 
+# if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] ; then
+if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1' ]] ; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.1"
+    echo "######################################################################"
+    echo "bassie OpenSSL 1.1.1 Prioritize Chacha20 patch"
+    echo "https://community.centminmod.com/threads/15708/"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL1.1.1-prioritize-chacha-feature.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL1.1.1-prioritize-chacha-feature.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL1.1.1-prioritize-chacha-feature.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL1.1.1-prioritize-chacha-feature.patch"
+        openssl_prioritize_chacha_err=$?
+        if [[ "$openssl_prioritize_chacha_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL1.1.1-prioritize-chacha-feature.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi # PRIORITIZE_CHACHA_OPENSSL
+
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         if [ -f "$(which figlet)" ]; then

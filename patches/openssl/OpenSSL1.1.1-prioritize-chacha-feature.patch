@@ -1,0 +1,29 @@
+From cfc32agrgethyrtj46455ytrhdhdhd78 Mon Sep 17 00:00:00 2001
+From: Buik / Bassie <bassie@buik.locale>
+Date: Sun, 30 Sep 2018 13:21:32 +0800
+
+Subject: [PATCH] OpenSSL 1.1.1 - Prioritize ChaCha feature
+
+The 'official' prioritize ChaCha feature is available since OpenSSL 1.1.1, however;
+OpenSSL prioritize ChaCha won't be implemented at Nginx in it's current form because: "this "feature" looks more like a hack". 
+As described here: https://trac.nginx.org/nginx/ticket/1445
+
+With this patch you could use the prioritize ChaCha feature. No additional Nginx settings are required.
+
+---
+ ssl/s3_lib.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ssl/s3_lib.c b/ssl/s3_lib.c
+index 7713f76..e8ad162 100644
+--- a/ssl/s3_lib.c
++++ b/ssl/s3_lib.c
+@@ -4159,7 +4159,7 @@ const SSL_CIPHER *ssl3_choose_cipher(SSL *s, STACK_OF(SSL_CIPHER) *clnt,
+         /* If ChaCha20 is at the top of the client preference list,
+            and there are ChaCha20 ciphers in the server list, then
+            temporarily prioritize all ChaCha20 ciphers in the servers list. */
+-        if (s->options & SSL_OP_PRIORITIZE_CHACHA && sk_SSL_CIPHER_num(clnt) > 0) {
++        if (sk_SSL_CIPHER_num(clnt) > 0) {
+             c = sk_SSL_CIPHER_value(clnt, 0);
+             if (c->algorithm_enc == SSL_CHACHA20POLY1305) {
+                 /* ChaCha20 is client preferred, check server... */

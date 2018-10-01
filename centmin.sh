@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='060'
+SCRIPT_INCREMENTVER='061'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/09/2018'
@@ -679,10 +679,11 @@ CLOUDFLARE_ZLIBRAUTOMAX='n' # don't auto raise nginx gzip compression level to 9
 CLOUDFLARE_ZLIBPHP='n'     # use Cloudflare optimised zlib fork for PHP-FPM zlib instead of system zlib
 CLOUDFLARE_ZLIBDEBUG='n'   # make install debug verbose mode
 CLOUDFLARE_ZLIBVER='1.3.0'
-NGINX_DYNAMICTLS='n'       # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
-OPENSSLECDSA_PATCH='n'       # https://community.centminmod.com/posts/57725/
-OPENSSLECDHX_PATCH='n'       # https://community.centminmod.com/posts/57726/
-OPENSSLEQUALCIPHER_PATCH='n' # https://community.centminmod.com/posts/57916/
+NGINX_DYNAMICTLS='n'          # set 'y' and recompile nginx https://blog.cloudflare.com/optimizing-tls-over-tcp-to-reduce-latency/
+OPENSSLECDSA_PATCH='n'        # https://community.centminmod.com/posts/57725/
+OPENSSLECDHX_PATCH='n'        # https://community.centminmod.com/posts/57726/
+OPENSSLEQUALCIPHER_PATCH='n'  # https://community.centminmod.com/posts/57916/
+PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
 LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
