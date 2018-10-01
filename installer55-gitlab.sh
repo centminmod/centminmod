@@ -1133,6 +1133,10 @@ cd $INSTALLDIR
     cd centminmod
     chmod +x centmin.sh
   fi
+  GETCMTIME=$(echo "$getcmendtime - $getcmstarttime" | bc)
+  echo "$GETCMTIME" > "/root/centminlogs/getcmtime_installtime_${DT}.log"
+  GETCMTIME=$(printf "%0.4f\n" $GETCMTIME)
+  echo "$GETCMTIME" >> "/root/centminlogs/getcmtime_installtime_${DT}.log"
 
 # disable nginx lua and luajit by uncommenting these 2 lines
 #sed -i "s|LUAJIT_GITINSTALL='y'|LUAJIT_GITINSTALL='n'|" centmin.sh
@@ -1230,10 +1234,7 @@ if [[ "$DEF" = 'novalue' ]]; then
   echo
   FIRSTYUMINSTALLTIME=$(echo "$firstyuminstallendtime - $firstyuminstallstarttime" | bc)
   FIRSTYUMINSTALLTIME=$(printf "%0.4f\n" $FIRSTYUMINSTALLTIME)
-  GETCMTIME=$(echo "$getcmendtime - $getcmstarttime" | bc)
-  echo "$GETCMTIME" > "/root/centminlogs/getcmtime_installtime_${DT}.log"
-  GETCMTIME=$(printf "%0.4f\n" $GETCMTIME)
-  echo "$GETCMTIME" >> "/root/centminlogs/getcmtime_installtime_${DT}.log"
+
   #touch ${CENTMINLOGDIR}/firstyum_installtime_${DT}.log
   echo "" > "/root/centminlogs/firstyum_installtime_${DT}.log"
   {
@@ -1260,6 +1261,7 @@ else
   CURLT=$(awk '{print $8}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
 fi
   CT=$(awk '{print $6}' /root/centminlogs/*_install.log | tail -1)
+  GETCMTIME=$(tail -1 /root/centminlogs/getcmtime_installtime_${DT}.log)
   TT=$(echo "$CURLT + $CT + $GETCMTIME" | bc)
   TT=$(printf "%0.4f\n" $TT)
   ST=$(echo "$CT - ($DTIME_SEC + $NTIME_SEC + $PTIME_SEC)" | bc)
