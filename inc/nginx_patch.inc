@@ -8,7 +8,7 @@ ngx_renegotiate_patch() {
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
-  if [[ "$DETECT_NGXVER" -ge '1015004' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+  if [[ "$DETECT_NGXVER" -eq '1015004' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
     if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
       pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
       cecho "patching nginx for renegotiation bug fix with OpenSSL 1.1.1 https://github.com/hakasenyang/openssl-patch/blob/master/nginx_openssl-1.1.x_renegotiation_bugfix.patch" $boldyellow
