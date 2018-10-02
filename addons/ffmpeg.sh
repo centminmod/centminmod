@@ -389,7 +389,7 @@ cd ${OPT}/ffmpeg_sources
 rm -rf libvpx
 git clone --depth 1 https://chromium.googlesource.com/webm/libvpx.git
 cd libvpx
-./configure --prefix="${OPT}/ffmpeg" --disable-examples --enable-static --enable-shared --disable-unit-tests --enable-vp9-highbitdepth --as=yasm
+./configure --prefix="${OPT}/ffmpeg" --disable-examples --enable-static --enable-shared --disable-unit-tests
 make${MAKETHREADS}
 make install
 make clean
