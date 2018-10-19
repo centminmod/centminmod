@@ -1,0 +1,75 @@
+From 3924d699655a39d5d886ab3d4f8c467ef2fa0899 Mon Sep 17 00:00:00 2001
+From: Mykola Baibuz <nb@cipher.kiev.ua>
+Date: Thu, 11 Oct 2018 12:07:26 +0800
+Subject: [PATCH] Safer memory cleanup in (crypto/rsa/rsa_lib.c)
+
+We don't need to use secure clean for public key.
+
+CLA: trivial
+
+Reviewed-by: Paul Dale <paul.dale@oracle.com>
+Reviewed-by: Paul Yang <yang.yang@baishancloud.com>
+(Merged from https://github.com/openssl/openssl/pull/7363)
+
+(cherry picked from commit c033101db39c93cf41d80dfee4357f2617ede1a0)
+---
+ crypto/rsa/rsa_lib.c | 16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
+
+diff --git a/crypto/rsa/rsa_lib.c b/crypto/rsa/rsa_lib.c
+index 72d1b5e0715..49c34b7c36c 100644
+--- a/crypto/rsa/rsa_lib.c
++++ b/crypto/rsa/rsa_lib.c
+@@ -125,8 +125,8 @@ void RSA_free(RSA *r)
+ 
+     CRYPTO_THREAD_lock_free(r->lock);
+ 
+-    BN_clear_free(r->n);
+-    BN_clear_free(r->e);
++    BN_free(r->n);
++    BN_free(r->e);
+     BN_clear_free(r->d);
+     BN_clear_free(r->p);
+     BN_clear_free(r->q);
+@@ -196,7 +196,7 @@ int RSA_set0_key(RSA *r, BIGNUM *n, BIGNUM *e, BIGNUM *d)
+         r->e = e;
+     }
+     if (d != NULL) {
+-        BN_free(r->d);
++        BN_clear_free(r->d);
+         r->d = d;
+     }
+ 
+@@ -213,11 +213,11 @@ int RSA_set0_factors(RSA *r, BIGNUM *p, BIGNUM *q)
+         return 0;
+ 
+     if (p != NULL) {
+-        BN_free(r->p);
++        BN_clear_free(r->p);
+         r->p = p;
+     }
+     if (q != NULL) {
+-        BN_free(r->q);
++        BN_clear_free(r->q);
+         r->q = q;
+     }
+ 
+@@ -235,15 +235,15 @@ int RSA_set0_crt_params(RSA *r, BIGNUM *dmp1, BIGNUM *dmq1, BIGNUM *iqmp)
+         return 0;
+ 
+     if (dmp1 != NULL) {
+-        BN_free(r->dmp1);
++        BN_clear_free(r->dmp1);
+         r->dmp1 = dmp1;
+     }
+     if (dmq1 != NULL) {
+-        BN_free(r->dmq1);
++        BN_clear_free(r->dmq1);
+         r->dmq1 = dmq1;
+     }
+     if (iqmp != NULL) {
+-        BN_free(r->iqmp);
++        BN_clear_free(r->iqmp);
+         r->iqmp = iqmp;
+     }
+ 

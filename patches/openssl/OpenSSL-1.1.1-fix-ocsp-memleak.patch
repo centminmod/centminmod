@@ -1,0 +1,38 @@
+From c20a76f695922f409c316399f7290530f7728f19 Mon Sep 17 00:00:00 2001
+From: Matt Caswell <matt@openssl.org>
+Date: Mon, 1 Oct 2018 12:06:06 +0100
+Subject: [PATCH] Fix a mem leak in the ocsp app
+
+Free memory allocated in the parent process that is not needed in the
+child. We also free it in the parent. Technically this isn't really
+required since we end up calling exit() soon afterwards - but to
+prevent false positives we free it anyway.
+
+Fixes a Coverity issue.
+
+Reviewed-by: Tim Hudson <tjh@openssl.org>
+(Merged from https://github.com/openssl/openssl/pull/7335)
+---
+ apps/ocsp.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/apps/ocsp.c b/apps/ocsp.c
+index eb822c2696e..7fd78624bbc 100644
+--- a/apps/ocsp.c
++++ b/apps/ocsp.c
+@@ -950,6 +950,7 @@ static void spawn_loop(void)
+             sleep(30);
+             break;
+         case 0:             /* child */
++            OPENSSL_free(kidpids);
+             signal(SIGINT, SIG_DFL);
+             signal(SIGTERM, SIG_DFL);
+             if (termsig)
+@@ -976,6 +977,7 @@ static void spawn_loop(void)
+     }
+ 
+     /* The loop above can only break on termsig */
++    OPENSSL_free(kidpids);
+     syslog(LOG_INFO, "terminating on signal: %d", termsig);
+     killall(0, kidpids);
+ }
