@@ -367,7 +367,7 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
 fi
 
 echo "Theme Setup: "
-read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme/) [y/n]: " responsivetheme
+read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme/) [y/n]: " -i n responsivetheme
 
 echo
 echo "Wordpress Setup: "
@@ -471,7 +471,7 @@ if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   read -ep "Do you want to auto generate FTP password (recommended) [y/n]: " autogenpass
 
   if [[ "$autogenpass" = [yY] ]]; then
-    ftppass=$(pwgen -1cnys 21)
+    ftppass=$(pwgen -1cnys 27)
   else
     read -ep "Create FTP password for $ftpuser (enter password): " ftppass
   
@@ -2770,7 +2770,7 @@ echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
 cecho "$vhostname setup info log saved at: " $boldwhite
-cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" $boldwhite
+cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${vhostname}_wordpress_addvhost.log" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
 
