@@ -1861,6 +1861,11 @@ location ~* \.(engine|inc|info|install|make|module|profile|test|po|sh|.*sql|them
 return 444;
 }
 
+location ~* \.(tpl)\$
+{
+  deny all; 
+}
+
 #nocgi
 location ~* \.(pl|cgi|py|sh|lua)\$ {
 return 444;
