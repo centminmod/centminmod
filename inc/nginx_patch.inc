@@ -1,3 +1,26 @@
+ngx_maxprotocol_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$DETECT_NGXVER" -ge '1015005' && "$DETECT_NGXVER" -le '1015006' ]] && [[ "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+    if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
+      pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+      cecho "patching nginx for max tls protocol patch https://trac.nginx.org/nginx/ticket/1654" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx-1.15.5-fix-max-protocol-version.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/nginx/nginx-1.15.5-fix-max-protocol-version.patch"
+      echo 
+      echo "patching nginx for max tls protocol patch with OpenSSL 1.1.1"
+      popd
+    fi
+  fi
+}
+
 ngx_renegotiate_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -308,6 +331,7 @@ patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
   ngx_renegotiate_patch
+  ngx_maxprotocol_patch
 
   # unofficial OpenSSL 1.1.0 beta Nginx patches
   DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)

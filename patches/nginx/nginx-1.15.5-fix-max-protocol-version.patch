@@ -1,0 +1,27 @@
+# HG changeset patch
+# User Maxim Dounin <mdounin@mdounin.ru>
+# Date 1539615549 -10800
+#      Mon Oct 15 17:59:09 2018 +0300
+# Node ID 5f998d26af64ae048a12d65d078ea152877c9f35
+# Parent  64721be763b61bf9075e9f4851a46197df9bac51
+SSL: explicitly set max version (ticket #1654).
+
+With maximum version explicitly set, TLSv1.3 will not be unexpectedly
+enabled if nginx compiled with OpenSSL 1.1.0 (without TLSv1.3 support)
+will be run with OpenSSL 1.1.1 (with TLSv1.3 support).
+
+diff --git a/src/event/ngx_event_openssl.c b/src/event/ngx_event_openssl.c
+--- a/src/event/ngx_event_openssl.c
++++ b/src/event/ngx_event_openssl.c
+@@ -345,6 +345,11 @@ ngx_ssl_create(ngx_ssl_t *ssl, ngx_uint_
+     }
+ #endif
+ 
++#ifdef SSL_CTX_set_min_proto_version
++    SSL_CTX_set_min_proto_version(ssl->ctx, 0);
++    SSL_CTX_set_max_proto_version(ssl->ctx, TLS1_2_VERSION);
++#endif
++
+ #ifdef TLS1_3_VERSION
+     SSL_CTX_set_min_proto_version(ssl->ctx, 0);
+     SSL_CTX_set_max_proto_version(ssl->ctx, TLS1_3_VERSION);
