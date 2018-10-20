@@ -1,0 +1,34 @@
+From 2d015189b97c60b67e10aed320230357bf6b200f Mon Sep 17 00:00:00 2001
+From: Matt Caswell <matt@openssl.org>
+Date: Thu, 18 Oct 2018 14:45:59 +0100
+Subject: [PATCH] Don't complain and fail about unknown TLSv1.3 PSK identities
+ in s_server
+
+An unknown PSK identity could be because its actually a session resumption
+attempt. Sessions resumptions and external PSKs are indistinguishable so
+the callbacks need to fail gracefully if they don't recognise the identity.
+
+Fixes #7433
+
+Reviewed-by: Tim Hudson <tjh@openssl.org>
+(Merged from https://github.com/openssl/openssl/pull/7434)
+---
+ apps/s_server.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
+
+diff --git a/apps/s_server.c b/apps/s_server.c
+index 6f2a2ae8e23..ac7dca607ba 100644
+--- a/apps/s_server.c
++++ b/apps/s_server.c
+@@ -193,9 +193,8 @@ static int psk_find_session_cb(SSL *ssl, const unsigned char *identity,
+ 
+     if (strlen(psk_identity) != identity_len
+             || memcmp(psk_identity, identity, identity_len) != 0) {
+-        BIO_printf(bio_s_out,
+-                   "PSK warning: client identity not what we expected"
+-                   " (got '%s' expected '%s')\n", identity, psk_identity);
++        *sess = NULL;
++        return 1;
+     }
+ 
+     if (psksess != NULL) {
