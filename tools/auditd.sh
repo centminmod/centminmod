@@ -86,7 +86,7 @@ auditd_customrules() {
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
-sed -i 's|-b 320|-b 65536|' "$AUDITRULE_PERMFILE"
+sed -i 's|-b 320|-b 131072|' "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
 echo "#-c" >> "$AUDITRULE_PERMFILE"
@@ -304,12 +304,9 @@ cat > "$AUDITRULE_PERMFILE" <<EOF
 
 # Increase the buffers to survive stress events.
 # Make this bigger for busy systems
--b 8192
+-b 131072
 
 # Feel free to add below this line. See auditctl man page
-
-# Generate at most 100 audit messages per second
--r 100
 EOF
         if [ -f /etc/audit/auditd.conf ]; then
             sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
