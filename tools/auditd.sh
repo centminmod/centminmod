@@ -28,6 +28,7 @@ CENTMINLOGDIR='/root/centminlogs'
 
 AUDITD_ENABLE='n'
 AUDIT_MARIADB='n'
+AUDITD_TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -79,6 +80,26 @@ if [[ "$AUDITD_ENABLE" != [yY] ]]; then
     exit
 fi
 
+if [[ "$AUDITD_TOTALMEM" -le '499000' ]]; then
+  AUDITD_BUFFERSIZE='2048'
+elif [[ "$AUDITD_TOTALMEM" -ge '499001' && "$AUDITD_TOTALMEM" -le '1030000' ]]; then
+  AUDITD_BUFFERSIZE='4096'
+elif [[ "$AUDITD_TOTALMEM" -ge '1030001' && "$AUDITD_TOTALMEM" -le '2040000' ]]; then
+  AUDITD_BUFFERSIZE='8192'
+elif [[ "$AUDITD_TOTALMEM" -ge '2040001' && "$AUDITD_TOTALMEM" -le '3040000' ]]; then
+  AUDITD_BUFFERSIZE='16384'
+elif [[ "$AUDITD_TOTALMEM" -ge '3040001' && "$AUDITD_TOTALMEM" -le '4000000' ]]; then
+  AUDITD_BUFFERSIZE='32768'
+elif [[ "$AUDITD_TOTALMEM" -ge '4000001' && "$AUDITD_TOTALMEM" -le '6020000' ]]; then
+  AUDITD_BUFFERSIZE='65536'
+elif [[ "$AUDITD_TOTALMEM" -ge '6020001' && "$AUDITD_TOTALMEM" -le '8060000' ]]; then
+  AUDITD_BUFFERSIZE='131072'
+elif [[ "$AUDITD_TOTALMEM" -ge '8060001' && "$AUDITD_TOTALMEM" -le '16000000' ]]; then
+  AUDITD_BUFFERSIZE='262144'
+elif [[ "$AUDITD_TOTALMEM" -ge '16000001' ]]; then
+  AUDITD_BUFFERSIZE='524288'
+fi
+
 ######################################################
 auditd_customrules() {
     if [[ "$(grep -c 'custom auditd rules' "$AUDITRULE_PERMFILE")" -ne '2' ]]; then
@@ -86,7 +107,7 @@ auditd_customrules() {
             VHOSTS=$(ls /usr/local/nginx/conf/conf.d | egrep 'ssl.conf|.conf' | egrep -v 'virtual.conf|^ssl.conf|demodomain.com.conf' |  sed -e 's/.ssl.conf//' -e 's/.conf//' | uniq)
         fi
 
-sed -i 's|-b 320|-b 131072|' "$AUDITRULE_PERMFILE"
+sed -i "s|-b 320|-b $AUDITD_BUFFERSIZE|" "$AUDITRULE_PERMFILE"
 echo "" >> "$AUDITRULE_PERMFILE"
 echo "# continue loading rules when it runs rule syntax errors" >> "$AUDITRULE_PERMFILE"
 echo "#-c" >> "$AUDITRULE_PERMFILE"
@@ -304,7 +325,7 @@ cat > "$AUDITRULE_PERMFILE" <<EOF
 
 # Increase the buffers to survive stress events.
 # Make this bigger for busy systems
--b 131072
+-b $AUDITD_BUFFERSIZE
 
 # Feel free to add below this line. See auditctl man page
 EOF
