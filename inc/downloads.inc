@@ -38,7 +38,7 @@ phpxz_detect() {
   fi
   
   if [[ "$CENTOS_SEVEN" = 7 || "$CENTOS_SIX" = 6 ]]; then
-    DOWNLOADAPP='axel'
+    DOWNLOADAPP='axel -4'
     WGETRETRY=''
     AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
