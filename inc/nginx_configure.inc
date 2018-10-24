@@ -785,7 +785,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       ZLIBCF_RPATH='/usr/local/zlib-cf/lib:'
       ZLIBCF_OPT='-L/usr/local/zlib-cf/lib '
       ZLIBCFINC_OPT='-I/usr/local/zlib-cf/include '
-      ZLIBCUSTOM_OPT=""
+      ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
     fi
     # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
     # cloudflare zlib
