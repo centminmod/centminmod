@@ -8,7 +8,7 @@ ngx_maxprotocol_patch() {
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
-  if [[ "$DETECT_NGXVER" -ge '1015005' && "$DETECT_NGXVER" -le '1015006' ]] && [[ "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+  if [[ "$DETECT_NGXVER" -eq '1015005' ]] && [[ "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
     if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
       pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
       cecho "patching nginx for max tls protocol patch https://trac.nginx.org/nginx/ticket/1654" $boldyellow
