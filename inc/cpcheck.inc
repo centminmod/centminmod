@@ -501,8 +501,11 @@ update_nginxconf() {
     if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' ]]; then
       sed -i 's|worker_connections .*|worker_connections  50000;|' /usr/local/nginx/conf/nginx.conf
     fi
+    if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
+      NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
+    fi
     if [[ "$NGX_KT" -eq '8' ]]; then
-      sed -i 's|keepalive_timeout .*|keepalive_timeout  5;|' /usr/local/nginx/conf/nginx.conf
+      sed -i 's|keepalive_timeout .*|keepalive_timeout  5s;|' /usr/local/nginx/conf/nginx.conf
     fi
   fi
 }
