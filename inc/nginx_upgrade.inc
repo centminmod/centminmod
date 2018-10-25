@@ -375,6 +375,7 @@ if [[ "$UALL" = 'y' ]]; then
 else
     echo ""
     read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
+    service nginx reload >/dev/null 2>&1
 
     # if user forgets to type in nginx version and hits
     # enter, ngxver will be empty so should fall back to
