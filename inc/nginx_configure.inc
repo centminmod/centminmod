@@ -1976,6 +1976,23 @@ fi
 if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   #libbroti_install
   ngxbrotli_download
+  # initial installs don't have nginx directories setup from inc/brotli.inc routines yet
+  # so need to do it at the stage of initial first time nginx installs
+  if [[ "$INITIALINSTALL" = [yY] && ! -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
+cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
+brotli on;
+brotli_static on;
+brotli_min_length 1000;
+brotli_buffers 1024 8k;
+brotli_comp_level 5;
+brotli_types text/plain text/css text/xml application/javascript application/x-javascript application/xml application/xml+rss application/ecmascript application/json image/svg+xml;
+EIF
+    BROTLI_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/brotli_inc.conf' /usr/local/nginx/conf/nginx.conf)
+    if [[ -z "$BROTLI_INCLUDECHECK" && -f /usr/local/nginx/conf/brotli_inc.conf ]]; then
+          sed -i 's/http {/http { \n include \/usr\/local\/nginx\/conf\/brotli_inc.conf;/g' /usr/local/nginx/conf/nginx.conf
+    fi
+    sed -i 's|^ #include \/usr\/local\/nginx\/conf\/brotli_inc.conf;| include \/usr\/local\/nginx\/conf\/brotli_inc.conf;|g' /usr/local/nginx/conf/nginx.conf
+  fi
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
     BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
     LIBBROTLIENC_OPT='-L/usr/local/lib '
