@@ -688,7 +688,7 @@ fi
     ERR=$?
     sar_call
 
-    if [[ "$STRIPNGINX" = [yY] ]]; then
+    if [[ "$STRIPNGINX" = [yY] && "$NGINX_DEBUG" != [yY] ]]; then
         if [ -f objs/nginx ]; then
             echo
             echo "strip nginx binary..."
