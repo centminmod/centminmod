@@ -39,10 +39,23 @@ if [[ "$NGINXBIN_CRYPTOBORINGSSL" = 'boringssl' ]]; then
   NGINXBIN_CRYPTO='boringssl'
 fi
 
+if [[ ! -f "$(which tree)" ]]; then
+  yum -y -q install tree
+fi
+
 bin_backup() {
   verbose=$1
   DDT=$(date +"%d%m%y-%H%M%S")
-  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}"
+
+  # check if nginx binary built with debug mode and lavel accordingly
+  CHECK_NGINXDEBUG=$(nginx -V 2>&1 | grep -o 'with-debug')
+  if [[ "$CHECK_NGINXDEBUG" = 'with-debug' ]]; then
+    NGXDEBUG_LABEL='-debug'
+  else
+    NGXDEBUG_LABEL=""
+  fi
+
+  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}"
   if [ ! -d "${NGINXBIN_BACKUPDIR}/${backup_tag}" ]; then
     echo "--------------------------------------------------------"
     echo "backup current Nginx binary and dynamic modules"
