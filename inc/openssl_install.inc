@@ -420,6 +420,32 @@ if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1' ]] ;
     echo
 fi # PRIORITIZE_CHACHA_OPENSSL
 
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.1"
+    echo "######################################################################"
+    echo "Timing vulnerability in ECDSA signature generation (CVE-2018-0735) patch"
+    echo "https://www.openssl.org/news/secadv/20181029.txt"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL-1.1.1-ECDSA-signature-gen-CVE-2018-0735.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-ECDSA-signature-gen-CVE-2018-0735.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL-1.1.1-ECDSA-signature-gen-CVE-2018-0735.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL-1.1.1-ECDSA-signature-gen-CVE-2018-0735.patch"
+        openssl_ecdsatiming_err=$?
+        if [[ "$openssl_ecdsatiming_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL-1.1.1-ECDSA-signature-gen-CVE-2018-0735.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         if [ -f "$(which figlet)" ]; then
