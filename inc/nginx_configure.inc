@@ -1051,7 +1051,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
     # auto enable openresty stream lua nginx module when ORESTY_LUANGIN='y' set
-    # NGX_LUASTREAM='y'
+    NGX_LUASTREAM='y'
+    NGXDYNAMIC_STREAM='n'
     luanginx_patch
     # LUAJIT_XCFLAGOPT=" --with-luajit-xcflags='-DLUAJIT_NUMMODE=2'"
     LUAJIT_XCFLAGOPT=""
