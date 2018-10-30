@@ -1433,6 +1433,40 @@ else
 echo ""
     fi
 
+    # ORESTY_LUASTREAM=y|n
+    if [[ "$ORESTY_LUASTREAM" = [yY] ]]; then
+
+        cecho "Download ${NGX_LUASTREAMLINKFILE} ..." $boldyellow
+if [[ -s "${NGX_LUASTREAMLINKFILE}" && "$(tar -tzf ${NGX_LUASTREAMLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  cecho "${NGX_LUASTREAMLINKFILE} Archive found, skipping download..." $boldgreen
+  else
+  cecho "Error: ${NGX_LUASTREAMLINKFILE} not found!!! Downloading now......" $boldgreen
+  rm -rf "${NGX_LUASTREAMLINKFILE}"
+        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_LUASTREAMLINK} -O ${NGX_LUASTREAMLINKFILE} --tries=3"
+        wget -c${ipv_forceopt} --progress=bar "${NGX_LUASTREAMLINK}" -O "${NGX_LUASTREAMLINKFILE}" --tries=3
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUASTREAMLINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+    fi
+
+tar xzf "${NGX_LUASTREAMLINKFILE}"
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_LUASTREAMLINKFILE} extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${NGX_LUASTREAMLINKFILE} valid file." $boldyellow
+echo ""
+    fi
+    fi # ORESTY_LUASTREAM=y|n
+
         cecho "Download ${NGX_LUAGITLINKFILE} ..." $boldyellow
 if [[ -s "${NGX_LUAGITLINKFILE}" && "$(tar -tzf ${NGX_LUAGITLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
   cecho "${NGX_LUAGITLINKFILE} Archive found, skipping download..." $boldgreen

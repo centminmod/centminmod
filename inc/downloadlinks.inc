@@ -279,6 +279,10 @@ NGX_LUANGINXLINKFILE="lua-nginx-module_v${ORESTY_LUANGINXVER}.tar.gz"
 NGX_LUANGINXLINK="https://github.com/openresty/lua-nginx-module/archive/v${ORESTY_LUANGINXVER}.tar.gz"
 NGX_LUANGINXLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUANGINXVER}"
 
+NGX_LUASTREAMLINKFILE="stream-lua-nginx-module_v${ORESTY_LUASTREAMVER}.tar.gz"
+NGX_LUASTREAMLINK="https://github.com/openresty/stream-lua-nginx-module/archive/v${ORESTY_LUASTREAMVER}.tar.gz"
+#NGX_LUASTREAMLINKGITLAB="https://gitlab.com/centminmod-github-mirror/lua-nginx-module/repository/archive.tar.gz?ref=v${ORESTY_LUASTREAMVER}"
+
 NGX_LUAGITLINKFILE="luagit-${ORESTY_LUAGITVER}.tar.gz"
 NGX_LUAGITLINK="https://luajit.org/download/LuaJIT-${ORESTY_LUAGITVER}.tar.gz"
 
