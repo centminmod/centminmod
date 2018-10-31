@@ -2045,7 +2045,7 @@ cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
-sed -i "/define('DB_COLLATE', '');/ a\
+sed -i "/define( 'DB_COLLATE', '' );/ a\
 /** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\ndefine('CONCATENATE_SCRIPTS', false);\
 " wp-config.php
 
@@ -2135,7 +2135,7 @@ if [[ "$wpscache" = [nN] ]]; then
   \wp plugin install autoptimize --activate --allow-root
   echo "configure autoptimize"
   \wp option update autoptimize_css on --allow-root
-  \wp option update autoptimize_extra_settings '{"autoptimize_extra_checkbox_field_1":"1","autoptimize_extra_checkbox_field_0":"1","autoptimize_extra_radio_field_4":"4","autoptimize_extra_text_field_2":"https:\/\/ajax.googleapis.com, https:\/\/fonts.googleapis.com, https:\/\/fonts.gstatic.com, https:\/\/maps.googleapis.com","autoptimize_extra_text_field_3":""}' --format=json --allow-root
+  # \wp option update autoptimize_extra_settings '{"autoptimize_extra_checkbox_field_1":"1","autoptimize_extra_checkbox_field_0":"1","autoptimize_extra_radio_field_4":"4","autoptimize_extra_text_field_2":"https:\/\/ajax.googleapis.com, https:\/\/fonts.googleapis.com, https:\/\/fonts.gstatic.com, https:\/\/maps.googleapis.com","autoptimize_extra_text_field_3":""}' --format=json --allow-root
   \wp option update autoptimize_html on --allow-root
   \wp option update autoptimize_js on --allow-root
   # \wp option update autoptimize_optimize_logged on --allow-root
