@@ -2135,9 +2135,12 @@ if [[ "$wpscache" = [nN] ]]; then
   \wp plugin install autoptimize --activate --allow-root
   echo "configure autoptimize"
   \wp option update autoptimize_css on --allow-root
-  # \wp option update autoptimize_extra_settings '{"autoptimize_extra_checkbox_field_1":"1","autoptimize_extra_checkbox_field_0":"1","autoptimize_extra_radio_field_4":"4","autoptimize_extra_text_field_2":"https:\/\/ajax.googleapis.com, https:\/\/fonts.googleapis.com, https:\/\/fonts.gstatic.com, https:\/\/maps.googleapis.com","autoptimize_extra_text_field_3":""}' --format=json --allow-root
+  \wp option update autoptimize_css_aggregate on --allow-root
   \wp option update autoptimize_html on --allow-root
+  \wp option update autoptimize_html_keepcomments on --allow-root
   \wp option update autoptimize_js on --allow-root
+  \wp option update autoptimize_js_aggregate on --allow-root
+  \wp option update autoptimize_optimize_logged ""  --allow-root
   # \wp option update autoptimize_optimize_logged on --allow-root
   \wp option update autoptimize_show_adv 1 --allow-root
   \wp option list --search=autoptimize_* --allow-root
