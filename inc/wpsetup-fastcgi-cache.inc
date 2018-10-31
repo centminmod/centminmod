@@ -606,27 +606,31 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
 ################################################################################
 # create fastcgi_cache included files
 
+# create separate fastcgi_cache storage directories per nginx vhostname
 fastcgicache_name=$(echo $vhostname | sed -e 's|\.||g' -e 's|\-||g')
+mkdir -p /home/fastcgicache_wp/${fastcgicache_name}
+chown -R nginx: /home/fastcgicache_wp/${fastcgicache_name}
+chmod 1777 /home/fastcgicache_wp/${fastcgicache_name}
 
 cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf"<<FCC
 # fastcgi_cache
-set $no_wpfastcgicache 0;
+set \$no_wpfastcgicache 0;
 
 # POST requests and urls with a query string should always go to PHP
-if ($request_method = POST) {
-        set $no_wpfastcgicache 1;
+if (\$request_method = POST) {
+        set \$no_wpfastcgicache 1;
 }
-if ($query_string != "") {
-        set $no_wpfastcgicache 1;
+if (\$query_string != "") {
+        set \$no_wpfastcgicache 1;
 }
 
 # Add trailing slash to */wp-admin requests.
-rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 
 # Centmin Mod Nginx has nginx_cache_purge module
 # added http://centminmod.com/nginx.html
     location ~ /purge(/.*) {
-    fastcgi_cache_purge fastcgicache_name "$scheme$request_method$host$1";
+    fastcgi_cache_purge $fastcgicache_name "\$scheme\$request_method\$host\$1";
     return 200;
     allow 127.0.0.1;
     deny all;
@@ -634,88 +638,114 @@ rewrite /wp-admin$ $scheme://$host$uri/ permanent;
 FCC
 
 cat >> "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf"<<FCD
-fastcgi_cache_path  /tmp/fastcgicache levels=1:2 keys_zone=$fastcgicache_name:50m inactive=30m max_size=100m loader_files=1000 loader_threshold=2000;
+fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_zone=$fastcgicache_name:30m inactive=1h max_size=60m loader_files=1000 loader_threshold=2000;
 FCD
 
 cat > "/usr/local/nginx/conf/wpfastcgi_cache_map.conf"<<FCD
 map \$http_user_agent \$wpfcgi_cache_mobile {
-    default                                     'desktop';
-    ~*(iPad|iPhone|Android|IEMobile|Blackberry) 'mobile';
-    "~*Firefox.*Mobile"                         'mobile';
-    "~*ipod.*mobile"                            'mobile';
-    "~*Opera\ Mini"                             'mobile';
-    "~*Opera\ Mobile"                           'mobile';
-    "~*Mobile"                                  'mobile';
-    "~*Tablet"                                  'mobile';
-    "~*Kindle"                                  'mobile';
-    "~*Windows\ Phone"                          'mobile';
+    default                                      0;
+    include /usr/local/nginx/conf/wpfastcgi_cache_map_include_mobile.conf;
+    ~*(iPad|iPhone|Android|IEMobile|Blackberry)  1;
+    "~*Firefox.*Mobile"                          1;
+    "~*ipod.*mobile"                             1;
+    "~*Opera\ Mini"                              1;
+    "~*Opera\ Mobile"                            1;
+    "~*Mobile"                                   1;
+    "~*Tablet"                                   1;
+    "~*Kindle"                                   1;
+    "~*Windows\ Phone"                           1;
 }
 
 map \$http_cookie \$wpfcgi_nocachecookie {
-     default                        0;
-    ~xf_fbUid                       1;
-    ~xf_user                        1;
-    ~xf_logged_in                   1;
-    ~xf_style_id                    1;
-    ~xf_tfa_trust                   1;
-    ~xf_fbUid                    1;
-    ~xf_user                     1;
-    ~xf_logged_in                1;
-    ~xf_style_id                 1;
-    ~xf_tfa_trust                1;
-    ~xf_dbtech_security_session 1;
-    ~member_id                      1;
-    ~ips4_member_id                 1;
-    ~ips4_IPSSessionFront           1;
-    ~woocommerce_                   1;
-    ~wp_woocommerce_                1;
-    ~sid_customer_                  1;
-    ~sid_admin_                     1;
-    ~joomla_                        1;
-    ~wordpress_                     1;
-    ~wp-postpass                    1;
+     default                                0;
+     include /usr/local/nginx/conf/wpfastcgi_cache_map_include_nocachecookie.conf;
+    ~*[a-z0-9]+_items_in_cart                1;
+    ~*amazon_Login_state_cache               1;
+    ~*comment_author                         1;
+    ~*ips4_IPSSessionFront                   1;
+    ~*ips4_member_id                         1;
+    ~*joomla_                                1;
+    ~*joomla_[a-zA-Z0-9_]+                   1;
+    ~*member_id                              1;
+    ~*no_cache                               1;
+    ~*nocache                                1;
+    ~*PrestaShop-[a-zA-Z0-9]+                1;
+    ~*sid_admin_                             1;
+    ~*sid_admin_                             1;
+    ~*sid_customer_                          1;
+    ~*sid_customer_                          1;
+    ~*woocommerce_                           1;
+    ~*wordpress_                             1;
+    ~*wp-postpass                            1;
+    ~*wp_woocommerce_                        1;
+    ~*wp_woocommerce_session_[a-zA-Z0-9]+    1;
+    ~*xf_dbtech_security_session             1;
+    ~*xf_fbUid                               1;
+    ~*xf_logged_in                           1;
+    ~*xf_style_id                            1;
+    ~*xf_tfa_trust                           1;
+    ~*xf_user                                1;
 }
 
 map \$request_uri \$wpfcgi_nocacheuri {
-    default                     0;
-    ~^/ngx_pagespeed_beacon     1;
-    ~^/(pstat.php)\$             1;
-    ~^/(admin.php)\$             1;
-    ~^/(cron.php)\$              1;
-    ~^/(deferred.php)\$          1;
-    ~^/register                 1;
-    ~^/login                    1;
-    ~^/validate-field           1;
-    ~^/captcha                  1;
-    ~^/lost-password            1;
-    ~^/two-step                 1;
-    ~^/munin                    1;
-    ~^/customer                 1;
-    ~^/cart/                    1;
-    ~^/checkout/                1;
-    ~^/add-to-cart=             1;
-    ~^/wc-api=                  1;
-    ~^/wp-admin/                1;
-    ~^/wp-login.php             1;
-    ~^/my-account/              1;
-    ~^/component/user           1;
-    ~^/component/contact        1;
-    ~^/component/mailto         1;
-    ~^/component/banners        1;
-    ~^/component/socialconnect  1;
-    ~^/component/users          1;
-    ~^/ucp.php                  1;
-    ~^/signin                   1;
-    ~^/signup                   1;
-    ~^/administrator            1;
-    ~^/addons                   1;
+    default                          0;
+    include /usr/local/nginx/conf/wpfastcgi_cache_map_include_nocacheuri.conf;
+    ~*magento_admin                  1;
+    ~*magento_login                  1;
+    ~^(.*sitemap.*\.xml)             1;
+    ~^/(admin.php)\$                 1;
+    ~^/(cron.php)\$                  1;
+    ~^/(deferred.php)\$              1;
+    ~^/(pstat.php)\$                 1;
+    ~^/add-to-cart=                  1;
+    ~^/addons                        1;
+    ~^/administrator                 1;
+    ~^/captcha                       1;
+    ~^/cart/                         1;
+    ~^/checkout/                     1;
+    ~^/component/banners             1;
+    ~^/component/contact             1;
+    ~^/component/mailto              1;
+    ~^/component/socialconnect       1;
+    ~^/component/user                1;
+    ~^/component/users               1;
+    ~^/customer                      1;
+    ~^/dispatch=checkout.cart        1;
+    ~^/dispatch=checkout.checkout    1;
+    ~^/feed/                         1;
+    ~^/login                         1;
+    ~^/lost-password                 1;
+    ~^/munin                         1;
+    ~^/my-account/                   1;
+    ~^/ngx_pagespeed_beacon          1;
+    ~^/register                      1;
+    ~^/signin                        1;
+    ~^/signup                        1;
+    ~^/two-step                      1;
+    ~^/ucp.php                       1;
+    ~^/validate-field                1;
+    ~^/wc-api=                       1;
+    ~^/wp-admin/                     1;
+    ~^/wp-json                       1;
+    ~^/wp-login.php                  1;
+    ~^/xmlrpc.php                    1;
 }
 
-map $remote_addr $fastcgi_debug {
+map \$remote_addr \$fastcgi_debug {
   default 0;
+  include /usr/local/nginx/conf/wpfastcgi_cache_map_debug.conf;
   # YOUR_ISP_IP_ADDR 1;
 }
 FCD
+
+echo "touch /usr/local/nginx/conf/wpfastcgi_cache_map_debug.conf"
+touch /usr/local/nginx/conf/wpfastcgi_cache_map_debug.conf
+echo "touch /usr/local/nginx/conf/wpfastcgi_cache_map_include_mobile.conf"
+touch /usr/local/nginx/conf/wpfastcgi_cache_map_include_mobile.conf
+echo "touch /usr/local/nginx/conf/wpfastcgi_cache_map_include_nocachecookie.conf"
+touch /usr/local/nginx/conf/wpfastcgi_cache_map_include_nocachecookie.conf
+echo "touch /usr/local/nginx/conf/wpfastcgi_cache_map_include_nocacheuri.conf"
+touch /usr/local/nginx/conf/wpfastcgi_cache_map_include_nocacheuri.conf
 
 WPFASTCGICACHEPATH_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/wpfastcgi_cache_path_includes.conf' /usr/local/nginx/conf/nginx.conf)
   if [[ -z "$WPFASTCGICACHEPATH_INCLUDECHECK" ]]; then
@@ -827,8 +857,7 @@ location ~ [^/]\.php(/|\$) {
 
 ### fastcgi_cache start ###
 fastcgi_cache_methods GET;
-fastcgi_cache_key       $scheme$request_method$host$request_uri;
-#fastcgi_cache_key       $scheme$request_method$host$request_uri;
+fastcgi_cache_key       \$scheme\$request_method\$host\$request_uri;
 fastcgi_cache_lock        on;
 fastcgi_keep_conn         on;
 fastcgi_cache_lock_age    5s;
@@ -836,16 +865,17 @@ fastcgi_cache_lock_timeout 5s;
 fastcgi_cache_use_stale error timeout invalid_header updating http_500;
 fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
 fastcgi_cache           $fastcgicache_name;
-fastcgi_no_cache        $wpfcgi_nocachecookie $wpfcgi_nocacheuri $wpfcgi__mobile $nocachearg;
-fastcgi_cache_bypass    $wpfcgi_nocachecookie $wpfcgi_nocacheuri $wpfcgi__mobile $nocachearg;
+fastcgi_no_cache        \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile ;
+fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile ;
 fastcgi_cache_valid     200 5m;
 fastcgi_cache_valid     301 302 5m;
 fastcgi_cache_valid     303 304 5m;
-fastcgi_cache_valid     404 5m;
-if ($fastcgi_debug) {
- add_header X-Processing-Time $request_time always;
- add_header X-Request-ID      $request_id always;
- add_header X-FPMCache-Status    $upstream_cache_status;
+fastcgi_cache_valid     404 1m;
+#add_header X-Fpm-Cache    \$upstream_cache_status;
+if (\$fastcgi_debug) {
+ add_header X-Processing-Time \$request_time always;
+ add_header X-Request-ID      \$request_id always;
+ add_header X-Fpm-Cache    \$upstream_cache_status;
 }
 ### fastcgi_cache end ###
 
@@ -1277,8 +1307,11 @@ server {
   # for wp cache enabler plugin
   #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;
 
+  # Wordpress fastcgi_cache
+    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
+
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;  
+   #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
 
   # Nginx level redis Wordpress
   # https://community.centminmod.com/posts/18828/
@@ -1418,8 +1451,11 @@ server {
   # for wp cache enabler plugin
   #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;  
 
+  # Wordpress fastcgi_cache
+    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
+
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
+   #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # Nginx level redis Wordpress
   # https://community.centminmod.com/posts/18828/
@@ -1538,8 +1574,11 @@ server {
   # for wp cache enabler plugin
   #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;   
 
+  # Wordpress fastcgi_cache
+    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
+
   # Wordpress Permalinks
-  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args; 
+   #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # Nginx level redis Wordpress
   # https://community.centminmod.com/posts/18828/
@@ -2279,7 +2318,7 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
     fc_installredisserver
   elif [[ "$wpscache" = 'fastcgicache' ]]; then
     cecho "Setup Fastcgi_cache PHP-FPM for $vhostname" $boldyellow
-    fc_install_fastcgicache
+    # fc_install_fastcgicache
   fi
   cecho "------------------------------------------------------------" $boldgreen
 
@@ -2308,9 +2347,15 @@ cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 NEWPREFIX=$(echo $RANDOM)
 sed -i "s/'wp_';/'${NEWPREFIX}_';/g" wp-config.php
 
-sed -i "/define('DB_COLLATE', '');/ a\
+if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+sed -i "/define( 'DB_COLLATE', '' );/ a\
+/** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\ndefine('CONCATENATE_SCRIPTS', false);\ndefine( 'RT_WP_NGINX_HELPER_CACHE_PATH','/home/fastcgicache_wp/${fastcgicache_name}');\
+" wp-config.php
+else
+sed -i "/define( 'DB_COLLATE', '' );/ a\
 /** Enable core updates for minor releases (default) **/\ndefine('DISABLE_WP_CRON', false);\ndefine('WP_AUTO_UPDATE_CORE', 'minor' );\ndefine('WP_POST_REVISIONS', 10 );\ndefine('EMPTY_TRASH_DAYS', 10 );\ndefine('WP_CRON_LOCK_TIMEOUT', 60 );\ndefine('CONCATENATE_SCRIPTS', false);\
 " wp-config.php
+fi
 
 if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     # generate random number of seconds to delay cron start
@@ -2378,9 +2423,24 @@ rm -rf readme.html
 if [[ "$wpscache" = 'fastcgicache' ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install nginx-helper --activate --allow-root
+  \wp option update rt_wp_nginx_helper_options '{"enable_purge":1,"cache_method":"enable_fastcgi","enable_map":0,"enable_log":0,"enable_stamp":1,"purge_homepage_on_edit":1,"purge_homepage_on_del":1,"purge_archive_on_edit":1,"purge_archive_on_del":1,"purge_archive_on_new_comment":1,"purge_archive_on_deleted_comment":1,"purge_page_on_mod":1,"purge_page_on_new_comment":1,"purge_page_on_deleted_comment":1,"purge_method":"unlink_files","purge_url":"","redis_hostname":"127.0.0.1","redis_port":"6379","redis_prefix":"nginx-cache:"}' --format=json --allow-root
+  \wp option get rt_wp_nginx_helper_options --format=json --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   #\wp plugin install snipe-nginx-cache --activate --allow-root
   #cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install autoptimize --activate --allow-root
+  echo "configure autoptimize"
+  \wp option update autoptimize_css on --allow-root
+  \wp option update autoptimize_css_aggregate on --allow-root
+  \wp option update autoptimize_html on --allow-root
+  \wp option update autoptimize_html_keepcomments on --allow-root
+  \wp option update autoptimize_js on --allow-root
+  \wp option update autoptimize_js_aggregate on --allow-root
+  \wp option update autoptimize_optimize_logged ""  --allow-root
+  # \wp option update autoptimize_optimize_logged on --allow-root
+  \wp option update autoptimize_show_adv 1 --allow-root
+  \wp option list --search=autoptimize_* --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
 fi
 
 # installed + activated by default
@@ -2406,9 +2466,12 @@ if [[ "$wpscache" = [nN] ]]; then
   \wp plugin install autoptimize --activate --allow-root
   echo "configure autoptimize"
   \wp option update autoptimize_css on --allow-root
-  \wp option update autoptimize_extra_settings '{"autoptimize_extra_checkbox_field_1":"1","autoptimize_extra_checkbox_field_0":"1","autoptimize_extra_radio_field_4":"4","autoptimize_extra_text_field_2":"https:\/\/ajax.googleapis.com, https:\/\/fonts.googleapis.com, https:\/\/fonts.gstatic.com, https:\/\/maps.googleapis.com","autoptimize_extra_text_field_3":""}' --format=json --allow-root
+  \wp option update autoptimize_css_aggregate on --allow-root
   \wp option update autoptimize_html on --allow-root
+  \wp option update autoptimize_html_keepcomments on --allow-root
   \wp option update autoptimize_js on --allow-root
+  \wp option update autoptimize_js_aggregate on --allow-root
+  \wp option update autoptimize_optimize_logged ""  --allow-root
   # \wp option update autoptimize_optimize_logged on --allow-root
   \wp option update autoptimize_show_adv 1 --allow-root
   \wp option list --search=autoptimize_* --allow-root
@@ -2429,11 +2492,11 @@ cecho "------------------------------------------------------------" $boldgreen
 \wp plugin install sucuri-scanner --activate --allow-root
 cecho "------------------------------------------------------------" $boldgreen
 \wp plugin install disable-xml-rpc --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
-\wp plugin install cdn-enabler --activate --allow-root
-cecho "------------------------------------------------------------" $boldgreen
 
 if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install cdn-enabler --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install rocket-lazy-load --activate --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install wp-security-scan --activate --allow-root
@@ -2552,15 +2615,21 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
-        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  try_files \$cache_enabler_uri|  #try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|    try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|include /usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        # insert /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf include file
+        sed -i "s| #include /usr/local/nginx/conf/wpincludes/wpfc.domain.com/wpcacheenabler_wpfc.domain.com.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf;\n  #include /usr/local/nginx/conf/wpincludes/wpfc.domain.com/wpcacheenabler_wpfc.domain.com.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
     fi
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  try_files \$cache_enabler_uri|  #try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|    try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|include /usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        # insert /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf include file
+        sed -i "s| #include /usr/local/nginx/conf/wpincludes/wpfc.domain.com/wpcacheenabler_wpfc.domain.com.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf;\n  #include /usr/local/nginx/conf/wpincludes/wpfc.domain.com/wpcacheenabler_wpfc.domain.com.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
     fi
 fi
 
@@ -2666,13 +2735,16 @@ rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.con
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf
 rm -rf /root/.acme.sh/${vhostname}
+if [ -f /usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf ]; then
+  rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf
+fi
 if [ -f /usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf ]; then
   echo "adjust /usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf"
   echo "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf before"
   cat /usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf
   echo
   echo "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf after adjustment"
-  sed -i "$fastcgicache_name/d" /usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf
+  sed -i "/$fastcgicache_name/d" /usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf
   cat /usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf
 fi
 crontab -l > cronjoblist

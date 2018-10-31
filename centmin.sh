@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='065'
+SCRIPT_INCREMENTVER='066'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2018'
@@ -928,6 +928,7 @@ source "inc/siegeinstall.inc"
 source "inc/python_install.inc"
 source "inc/nginx_addvhost.inc"
 source "inc/wpsetup.inc"
+source "inc/wpsetup-fastcgi-cache.inc"
 source "inc/mariadb_upgrade.inc"
 source "inc/mariadb_upgrade53.inc"
 source "inc/mariadb_upgrade55.inc"
@@ -3005,7 +3006,11 @@ EOF
         CM_MENUOPT=22
         centminlog
         {
-        wpacctsetup
+        if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+          fc_wpacctsetup
+        else
+          wpacctsetup
+        fi
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log"
         
         ;;        
