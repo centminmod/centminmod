@@ -156,6 +156,9 @@ cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
 fs.nr_open=12000000
 fs.file-max=9000000
+fs.inotify.max_queued_events=32768
+fs.inotify.max_user_instances=256
+fs.inotify.max_user_watches=524288
 net.core.wmem_max=16777216
 net.core.rmem_max=16777216
 net.ipv4.tcp_rmem=8192 87380 16777216                                          
@@ -222,6 +225,9 @@ cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
 fs.nr_open=12000000
 fs.file-max=9000000
+fs.inotify.max_queued_events=32768
+fs.inotify.max_user_instances=256
+fs.inotify.max_user_watches=524288
 net.core.wmem_max=16777216
 net.core.rmem_max=16777216
 net.ipv4.tcp_rmem=8192 87380 16777216                                          
