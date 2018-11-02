@@ -660,6 +660,9 @@ if (\$query_string != "") {
   set \$no_wpfastcgicache 1;
 }
 
+# exclude mobile devices from redis caching
+if (\$wpfcgi_cache_mobile = 1) { set \$no_wpfastcgicache 1; }
+
 # bypass cache for woocommerce
 if (\$arg_add-to-cart != "") { 
   set \$no_wpfastcgicache 1;
@@ -960,8 +963,8 @@ fastcgi_cache_lock_timeout 5s;
 fastcgi_cache_use_stale error timeout invalid_header updating http_500;
 fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
 fastcgi_cache           $fastcgicache_name;
-fastcgi_no_cache        \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile \$wpfcgi_request_nocache;
-fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile \$wpfcgi_request_nocache;
+fastcgi_no_cache        \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
+fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
 fastcgi_cache_valid     200 15m;
 fastcgi_cache_valid     301 302 15m;
 fastcgi_cache_valid     303 304 15m;
@@ -2420,7 +2423,7 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
   fi
   cecho "------------------------------------------------------------" $boldgreen
 
-  if [[ "$wpscache" = [nN] || "$wpscache" = 'redis' ]]; then
+  if [[ "$wpscache" = [nN] || "$wpscache" = 'redis' || "$wpscache" = 'fastcgicache' ]]; then
     echo
     echo "Using full static page caching may cause problems for mobile & tablet device"
     echo "visitors depending on your WP themes used so you may want to exclude those"
@@ -2432,6 +2435,9 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
       fi
       if [ -f "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf" ]; then
         sed -i "s|^if (\$redis_device = mobile) { set \$skip_cache 1; }|#if (\$redis_device = mobile) { set \$skip_cache 1; }|" "/usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf"
+      fi
+      if [ -f "/usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf" ]; then
+        sed -i "s|^if (\$wpfcgi_cache_mobile = 1) { set \$no_wpfastcgicache 1; }|#if (\$wpfcgi_cache_mobile = 1) { set \$no_wpfastcgicache 1; }|" "/usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf"
       fi
     fi
   fi
