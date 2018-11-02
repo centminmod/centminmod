@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='066'
+SCRIPT_INCREMENTVER='067'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2018'
@@ -2866,12 +2866,15 @@ EOF
         ccacheinstall
         fi
         
+        compressmenu_notice
         funct_pigzinstall
         funct_pbzip2install
         funct_lbzip2install
         funct_lzipinstall
         funct_plzipinstall
-        funct_p7zipinstall
+        zstdinstall
+        lzfourinstall
+        #funct_p7zipinstall
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
         
         if [ "$CCACHEINSTALL" == 'y' ]; then
@@ -3143,12 +3146,15 @@ EOF
         ;;
         multithreadcomp)
         
+        compressmenu_notice
         funct_pigzinstall
         funct_pbzip2install
         funct_lbzip2install
         funct_lzipinstall
         funct_plzipinstall
-        funct_p7zipinstall
+        #funct_p7zipinstall
+        zstdinstall
+        lzfourinstall
         
         ;;
         suhosininstall)
