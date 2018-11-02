@@ -695,6 +695,11 @@ upstream wpfcgi_cache_php {
   server 127.0.0.1:9000;
 }
 
+map \$http_x_requested_with \$wpfcgi_request_nocache {
+    default        0;
+    XMLHttpRequest 1;
+}
+
 map \$http_user_agent \$wpfcgi_cache_mobile {
     default                                      0;
     include /usr/local/nginx/conf/wpfastcgi_cache_map_include_mobile.conf;
@@ -715,6 +720,7 @@ map \$http_cookie \$wpfcgi_nocachecookie {
     ~*[a-z0-9]+_items_in_cart                1;
     ~*amazon_Login_state_cache               1;
     ~*comment_author                         1;
+    ~*comment_author_email_                  1;
     ~*edd_items_in_cart                      1;
     ~*ips4_IPSSessionFront                   1;
     ~*ips4_member_id                         1;
@@ -794,6 +800,8 @@ map \$request_uri \$wpfcgi_nocacheuri {
     ~^/wp-links-opml.php             1;
     ~^/wp-locations.php              1;
     ~^/wp-login.php                  1;
+    ~^/wp-mail.php                       1;
+    ~^/wp-register.php               1;
     ~^/xmlrpc.php                    1;
 }
 
@@ -952,12 +960,12 @@ fastcgi_cache_lock_timeout 5s;
 fastcgi_cache_use_stale error timeout invalid_header updating http_500;
 fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
 fastcgi_cache           $fastcgicache_name;
-fastcgi_no_cache        \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile ;
-fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile ;
-fastcgi_cache_valid     200 5m;
-fastcgi_cache_valid     301 302 5m;
-fastcgi_cache_valid     303 304 5m;
-fastcgi_cache_valid     404 1m;
+fastcgi_no_cache        \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile \$wpfcgi_request_nocache;
+fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_cache_mobile \$wpfcgi_request_nocache;
+fastcgi_cache_valid     200 15m;
+fastcgi_cache_valid     301 302 15m;
+fastcgi_cache_valid     303 304 15m;
+fastcgi_cache_valid     404 5m;
 #add_header X-Fpm-Cache    \$upstream_cache_status;
 if (\$fastcgi_debug) {
  add_header X-Processing-Time \$request_time always;
