@@ -38,10 +38,10 @@ zstdinstall() {
     make -j$(nproc)
     make install
     if [ -f /usr/local/bin/zstd ]; then
-      cecho "ztsd installed" $boldyellow
+      cecho "zstd installed" $boldyellow
     fi
   elif [ -f /usr/local/bin/zstd ]; then
-    cecho "ztsd already installed" $boldyellow
+    cecho "zstd already installed" $boldyellow
   fi
 }
 
