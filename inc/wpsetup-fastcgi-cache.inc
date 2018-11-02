@@ -1,3 +1,33 @@
+configure_autoptimize() {
+  echo "configure autoptimize"
+  \wp option update autoptimize_cache_clean 0 --allow-root
+  \wp option update autoptimize_cdn_url "" --allow-root
+  \wp option update autoptimize_css on --allow-root
+  \wp option update autoptimize_css_aggregate on --allow-root
+  \wp option update autoptimize_css_datauris "" --allow-root
+  \wp option update autoptimize_css_defer "" --allow-root
+  \wp option update autoptimize_css_defer_inline "" --allow-root
+  \wp option update autoptimize_css_exclude "wp-content/cache/, wp-content/uploads/, admin-bar.min.css, dashicons.min.css" --allow-root
+  \wp option update autoptimize_css_include_inline  on --allow-root
+  \wp option update autoptimize_css_inline "" --allow-root
+  \wp option update autoptimize_css_justhead "" --allow-root
+  \wp option update autoptimize_html on --allow-root
+  \wp option update autoptimize_html_keepcomments on --allow-root
+  \wp option update autoptimize_imgopt_launched     on --allow-root
+  \wp option update autoptimize_js on --allow-root
+  \wp option update autoptimize_js_aggregate on --allow-root
+  \wp option update autoptimize_js_exclude  "seal.js, js/jquery/jquery.js" --allow-root
+  \wp option update autoptimize_js_forcehead "" --allow-root
+  \wp option update autoptimize_js_include_inline "" --allow-root
+  \wp option update autoptimize_js_justhead "" --allow-root
+  \wp option update autoptimize_js_trycatch "" --allow-root
+  \wp option update autoptimize_optimize_checkout "" --allow-root
+  \wp option update autoptimize_optimize_logged ""  --allow-root
+  # \wp option update autoptimize_optimize_logged on --allow-root
+  \wp option update autoptimize_show_adv 1 --allow-root
+  \wp option list --search=autoptimize_* --allow-root
+}
+
 fc_wpinstall() {
     if [ ! -f /usr/bin/wp ]; then
       cecho "------------------------------------------------------------" $boldgreen
@@ -658,6 +688,13 @@ fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_z
 FCD
 
 cat > "/usr/local/nginx/conf/wpfastcgi_cache_map.conf"<<FCD
+upstream wpfcgi_cache_php {
+  keepalive 16;
+  #least_conn;
+  #server unix:/tmp/php5-fpm.sock;
+  server 127.0.0.1:9000;
+}
+
 map \$http_user_agent \$wpfcgi_cache_mobile {
     default                                      0;
     include /usr/local/nginx/conf/wpfastcgi_cache_map_include_mobile.conf;
@@ -897,7 +934,8 @@ location ~ [^/]\.php(/|\$) {
         return 404;
     }
 
-    fastcgi_pass   127.0.0.1:9000;
+    fastcgi_pass    wpfcgi_cache_php;
+    #fastcgi_pass   127.0.0.1:9000;
     #fastcgi_pass   unix:/tmp/php5-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
@@ -2481,17 +2519,7 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
   #\wp plugin install snipe-nginx-cache --activate --allow-root
   #cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install autoptimize --activate --allow-root
-  echo "configure autoptimize"
-  \wp option update autoptimize_css on --allow-root
-  \wp option update autoptimize_css_aggregate on --allow-root
-  \wp option update autoptimize_html on --allow-root
-  \wp option update autoptimize_html_keepcomments on --allow-root
-  \wp option update autoptimize_js on --allow-root
-  \wp option update autoptimize_js_aggregate on --allow-root
-  \wp option update autoptimize_optimize_logged ""  --allow-root
-  # \wp option update autoptimize_optimize_logged on --allow-root
-  \wp option update autoptimize_show_adv 1 --allow-root
-  \wp option list --search=autoptimize_* --allow-root
+  configure_autoptimize
   if [[ "$WP_AUTOPTIMIZE_GZIP" = [yY] ]]; then
     # https://community.centminmod.com/threads/15314/
     # https://github.com/centminmod/autoptimize-gzip
@@ -2530,17 +2558,7 @@ if [[ "$wpscache" = [nN] ]]; then
   \wp option get cache-enabler --format=json --allow-root
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install autoptimize --activate --allow-root
-  echo "configure autoptimize"
-  \wp option update autoptimize_css on --allow-root
-  \wp option update autoptimize_css_aggregate on --allow-root
-  \wp option update autoptimize_html on --allow-root
-  \wp option update autoptimize_html_keepcomments on --allow-root
-  \wp option update autoptimize_js on --allow-root
-  \wp option update autoptimize_js_aggregate on --allow-root
-  \wp option update autoptimize_optimize_logged ""  --allow-root
-  # \wp option update autoptimize_optimize_logged on --allow-root
-  \wp option update autoptimize_show_adv 1 --allow-root
-  \wp option list --search=autoptimize_* --allow-root
+  configure_autoptimize
   if [[ "$WP_AUTOPTIMIZE_GZIP" = [yY] ]]; then
     # https://community.centminmod.com/threads/15314/
     # https://github.com/centminmod/autoptimize-gzip
