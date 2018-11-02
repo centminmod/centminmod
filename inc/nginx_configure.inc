@@ -1129,7 +1129,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       fi
     fi
 
-    LUALD_OPT="-Wl,-rpath,${ZLIBCF_RPATH}${BORINGSSL_RPATH}$LUAJIT_LIB"
+    export LUAJIT_LIB='/usr/local/lib'
+    export LUAJIT_INC="/usr/local/include/luajit-2.1"
+
+    LUALD_OPT="-Wl,-rpath,${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
     if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
       time $YUMDNFBIN -q -y install lua lua-devel${DISABLEREPO_DNF}
     fi

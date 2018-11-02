@@ -27,11 +27,11 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
             sar_call
         elif [[ -d "LuaJIT-${LUAJIT_GITINSTALLVER}" && ! -d "LuaJIT-${LUAJIT_GITINSTALLVER}/.git" ]]; then
             rm -rf LuaJIT-*
-            time git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
+            time git clone https://github.com/openresty/luajit2 -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
             sar_call
             cd LuaJIT-${LUAJIT_GITINSTALLVER}
         else
-            time git clone http://luajit.org/git/luajit-2.0.git -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
+            time git clone https://github.com/openresty/luajit2 -b v${LUAJIT_GITINSTALLVER} LuaJIT-${LUAJIT_GITINSTALLVER}
             sar_call
             cd LuaJIT-${LUAJIT_GITINSTALLVER}
         fi
@@ -54,7 +54,8 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         ln -sf /usr/local/bin/luajit-${MAJVER}.${MINVER}.${RELVER}${PREREL} /usr/local/bin/luajit
     
         export LUAJIT_LIB='/usr/local/lib'
-        export LUAJIT_INC="/usr/local/include/luajit-${LUAJIT_GITINSTALLVER}"
+        LUAJIT_GITVEREXPORT=$(echo ${LUAJIT_GITINSTALLVER} | sed -e 's|-agentzh||')
+        export LUAJIT_INC="/usr/local/include/luajit-${LUAJIT_GITVEREXPORT}"
     fi
 fi
 
