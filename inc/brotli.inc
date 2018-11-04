@@ -326,7 +326,7 @@ ngxbrotli_download() {
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
 brotli on;
 brotli_static on;
-brotli_min_length 1000;
+brotli_min_length 65536;
 brotli_buffers 1024 8k;
 brotli_comp_level 5;
 brotli_types text/plain text/css text/xml application/javascript application/x-javascript application/xml application/xml+rss application/ecmascript application/json image/svg+xml;
