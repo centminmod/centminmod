@@ -4,7 +4,7 @@
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # stackscript installer for latest Centmin Mod LEMP 
-# beta + redis installation for both remi 4.0.9
+# beta + redis installation for both remi server
 ######################################################
 # variables
 #############
@@ -37,7 +37,7 @@
 #<UDF name="csfblocklist" Label="Enable CSF Firewall Advance Blocklist Support (community.centminmod.com/posts/50058/) ?" oneOf="yes,no" default="no" />
 # CSFBLOCKLIST=
 # 
-#<UDF name="redis" Label="Install & Configure Redis 4.x Server from REMI YUM repo ?" oneOf="yes,no" default="yes" />
+#<UDF name="redis" Label="Install & Configure Redis Server from REMI YUM repo ?" oneOf="yes,no" default="yes" />
 # REDIS=
 # 
 #<UDF name="pureftp" Label="Stop & Disable Pure-FTPD Server ?" oneOf="yes,no" default="no" />
@@ -49,7 +49,7 @@
 #<UDF name="compiler" Label="Build Nginx with GCC or Clang Compiler ?" oneOf="clang,gcc" default="gcc" />
 # COMPILER=
 # 
-#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.7+ or OpenSSL 1.1.0+ ?" oneOf="libressl,openssl" default="openssl" />
+#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.7+ or OpenSSL 1.1.1+ ?" oneOf="libressl,openssl" default="openssl" />
 # OPENSSL=
 # 
 #<UDF name="hpack" Label="Enable Cloudflare HTTP/2 HPACK Full Encoding Patch (community.centminmod.com/posts/51082/) ?" oneOf="yes,no" default="no" />
@@ -311,12 +311,15 @@ chkconfig pure-ftpd off
 fi
 
 # Install docker
+# https://docs.docker.com/install/linux/docker-ce/centos/
 if [[ "$DOCKER" = 'yes' ]]; then
 echo  
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum -y install yum-utils device-mapper-persistent-data lvm2
 yum -y install docker-ce
 mkdir -p /etc/systemd/system/docker.service.d
 touch /etc/systemd/system/docker.service.d/docker.conf
+mkdir -p /etc/docker
 wget -O /etc/docker/daemon.json https://gist.githubusercontent.com/centminmod/e79bca8d3ef56d4d7272663f755e830d/raw/daemon.json
 systemctl daemon-reload
 systemctl start docker
@@ -325,6 +328,8 @@ echo
 systemctl status docker
 echo
 journalctl -u docker --no-pager
+echo
+docker info
 fi
 
 # Install redis
