@@ -1209,8 +1209,11 @@ checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOS_SEVEN" = 7 || "$CENTOS_SIX" = 6 ]]; then
+if [[ "$CENTOS_SEVEN" = 7 ]]; then
     DOWNLOADAPP='axel -4'
+    WGETRETRY=''
+elif [[ "$CENTOS_SIX" = 6 ]]; then
+    DOWNLOADAPP='axel'
     WGETRETRY=''
 else
     DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
