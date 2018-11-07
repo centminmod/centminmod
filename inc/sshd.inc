@@ -1,4 +1,8 @@
 sshdtweaks() {
+  # uncomment sshd default port if there's only one entry #Port in sshd_config
+  if [[ "$(grep '^#Port' /etc/ssh/sshd_config)" && "$(egrep '^#Port|^Port' /etc/ssh/sshd_config | wc -l)" -eq '1' ]]; then
+    sed -i 's/^#Port /Port /g' /etc/ssh/sshd_config
+  fi
 
   CHECKHOSTKEY=$(grep '#HostKey /etc/ssh/ssh_host_rsa_key' /etc/ssh/sshd_config)
   CHECKHOSTKEYB=$(grep '#HostKey /etc/ssh/ssh_host_ecdsa_key' /etc/ssh/sshd_config)
@@ -131,7 +135,7 @@ fi
 # detected sshd existing port
 if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
   if [ "$(grep '#Port' /etc/ssh/sshd_config)" ]; then
-    sed -i 's/#Port 22/Port 22/g' /etc/ssh/sshd_config
+    sed -i 's/#Port /Port /g' /etc/ssh/sshd_config
     sed -i 's/Port.*[0-9]$/Port '$PORTNUM'/gI' /etc/ssh/sshd_config   
   elif [ "$(grep '^Port' /etc/ssh/sshd_config)" ]; then
     #echo "Port $PORTNUM" >> /etc/ssh/sshd_config

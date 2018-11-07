@@ -2850,8 +2850,10 @@ EOF
         16|sshdport)
         # set_logdate
         CM_MENUOPT=16
+        {
         funct_sshd
-        
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_menu-option16-sshdport-change.log"
+
         ;;
         17|multithreadcomp)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log" ]; then
