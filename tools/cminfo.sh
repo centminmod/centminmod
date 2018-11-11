@@ -65,12 +65,6 @@ if [[ -z "$SYSTYPE" ]]; then
     SYSTYPE='not virtualized'
 fi
 
-if [[ -z "$PAGESPEEDSTATUS" ]]; then
-    PS=ON
-else
-    PS=OFF
-fi
-
 if [ -z ${CPUCORES} ]; then
 CPUCORES='1'
 fi
@@ -121,7 +115,13 @@ top_info() {
     MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
     MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
     fi
-    PAGESPEEDSTATUS=$(grep 'pagespeed off' /usr/local/nginx/conf/pagespeed.conf)
+    PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
+
+    if [[ -z "$PAGESPEEDSTATUS" ]]; then
+        PS=ON
+    else
+        PS=OFF
+    fi
     
     if [ -f /usr/local/sbin/maldet ]; then
         MALDET_INFOVER=$(/usr/local/sbin/maldet -v | head -n1 | awk '{print $4}')
@@ -419,7 +419,13 @@ MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_st
 MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
 MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
 fi
-PAGESPEEDSTATUS=$(grep 'pagespeed off' /usr/local/nginx/conf/pagespeed.conf)
+PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
+
+if [[ -z "$PAGESPEEDSTATUS" ]]; then
+    PS=ON
+else
+    PS=OFF
+fi
 
 if [ -f /usr/local/sbin/maldet ]; then
     MALDET_INFOVER=$(/usr/local/sbin/maldet -v | head -n1 | awk '{print $4}')
