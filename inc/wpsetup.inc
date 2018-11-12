@@ -2134,12 +2134,28 @@ if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install autoptimize --activate --allow-root
   echo "configure autoptimize"
+  \wp option update autoptimize_cache_clean 0 --allow-root
+  \wp option update autoptimize_cdn_url "" --allow-root
   \wp option update autoptimize_css on --allow-root
   \wp option update autoptimize_css_aggregate on --allow-root
+  \wp option update autoptimize_css_datauris "" --allow-root
+  \wp option update autoptimize_css_defer "" --allow-root
+  \wp option update autoptimize_css_defer_inline "" --allow-root
+  \wp option update autoptimize_css_exclude "wp-content/cache/, wp-content/uploads/, admin-bar.min.css, dashicons.min.css" --allow-root
+  \wp option update autoptimize_css_include_inline  on --allow-root
+  \wp option update autoptimize_css_inline "" --allow-root
+  \wp option update autoptimize_css_justhead "" --allow-root
   \wp option update autoptimize_html on --allow-root
   \wp option update autoptimize_html_keepcomments on --allow-root
+  \wp option update autoptimize_imgopt_launched     on --allow-root
   \wp option update autoptimize_js on --allow-root
   \wp option update autoptimize_js_aggregate on --allow-root
+  \wp option update autoptimize_js_exclude  "seal.js, js/jquery/jquery.js" --allow-root
+  \wp option update autoptimize_js_forcehead "" --allow-root
+  \wp option update autoptimize_js_include_inline "" --allow-root
+  \wp option update autoptimize_js_justhead "" --allow-root
+  \wp option update autoptimize_js_trycatch "" --allow-root
+  \wp option update autoptimize_optimize_checkout "" --allow-root
   \wp option update autoptimize_optimize_logged ""  --allow-root
   # \wp option update autoptimize_optimize_logged on --allow-root
   \wp option update autoptimize_show_adv 1 --allow-root
