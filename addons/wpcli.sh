@@ -54,6 +54,9 @@ fi
 
 # functions
 updatewpcli() {
+  TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+  TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+  TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 	if [ -f /usr/bin/wp ]; then
 
   WPALIASCHECK=$(grep 'allow-root' /root/.bashrc)
@@ -62,16 +65,17 @@ updatewpcli() {
     echo "alias wp='wp --allow-root'" >> /root/.bashrc
   fi
   
-  if [[ "$WPCLI_EXTRAPACKAGES" = [yY] ]]; then
+  if [[ "$WPCLI_EXTRAPACKAGES" = [yY] && "$TOTALMEM_PHP" -gt '2000000' ]]; then
+    echo "current memory_limit: $(php -r "echo ini_get('memory_limit').PHP_EOL;")"
     if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then
       echo "-------------------------------------------------------------"
       echo "install wp-cli https://github.com/eriktorsner/wp-checksum"
-      /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
+      /usr/local/bin/php -d memory_limit=512M /usr/bin/wp package install eriktorsner/wp-checksum --allow-root
     fi
     if [[ "$(wp package list --allow-root | grep -q 'markri\/wp-sec'; echo $?)" -ne '0' ]]; then
       echo "-------------------------------------------------------------"
       echo "install wp-cli https://github.com/markri/wp-sec"
-      /usr/bin/wp package install markri/wp-sec --allow-root
+      /usr/local/bin/php -d memory_limit=512M /usr/bin/wp package install markri/wp-sec --allow-root
     fi
   fi
   echo "-------------------------------------------------------------"

@@ -127,6 +127,9 @@ phptuning() {
 }
 
 phpsededit() {
+    TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+    TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+    TOTALMEM_PHP=$(($TOTALMEM_T+($TOTALMEM_SWAP/2)))
     PHPINICUSTOM='a_customphp.ini'
     CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
 
@@ -146,49 +149,49 @@ phpsededit() {
     fi
 
     # dynamic PHP memory_limit calculation
-    if [[ "$TOTALMEM" -le '262144' ]]; then
+    if [[ "$TOTALMEM_PHP" -le '262144' ]]; then
         ZOLIMIT='32'
         PHP_MEMORYLIMIT='48M'
         PHP_UPLOADLIMIT='48M'
         PHP_REALPATHLIMIT='512k'
         PHP_REALPATHTTL='14400'
-    elif [[ "$TOTALMEM" -gt '262144' && "$TOTALMEM" -le '393216' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '262144' && "$TOTALMEM_PHP" -le '393216' ]]; then
         ZOLIMIT='80'
         PHP_MEMORYLIMIT='96M'
         PHP_UPLOADLIMIT='96M'
         PHP_REALPATHLIMIT='640k'
         PHP_REALPATHTTL='21600'
-    elif [[ "$TOTALMEM" -gt '393216' && "$TOTALMEM" -le '524288' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '393216' && "$TOTALMEM_PHP" -le '524288' ]]; then
         ZOLIMIT='112'
         PHP_MEMORYLIMIT='128M'
         PHP_UPLOADLIMIT='128M'
         PHP_REALPATHLIMIT='768k'
         PHP_REALPATHTTL='28800'
-    elif [[ "$TOTALMEM" -gt '524288' && "$TOTALMEM" -le '1049576' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '524288' && "$TOTALMEM_PHP" -le '1049576' ]]; then
         ZOLIMIT='144'
         PHP_MEMORYLIMIT='160M'
         PHP_UPLOADLIMIT='160M'
         PHP_REALPATHLIMIT='768k'
         PHP_REALPATHTTL='28800'
-    elif [[ "$TOTALMEM" -gt '1049576' && "$TOTALMEM" -le '2097152' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '1049576' && "$TOTALMEM_PHP" -le '2097152' ]]; then
         ZOLIMIT='240'
         PHP_MEMORYLIMIT='320M'
         PHP_UPLOADLIMIT='320M'
         PHP_REALPATHLIMIT='1536k'
         PHP_REALPATHTTL='28800'
-    elif [[ "$TOTALMEM" -gt '2097152' && "$TOTALMEM" -le '3145728' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '2097152' && "$TOTALMEM_PHP" -le '3145728' ]]; then
         ZOLIMIT='304'
         PHP_MEMORYLIMIT='384M'
         PHP_UPLOADLIMIT='384M'
         PHP_REALPATHLIMIT='2048k'
         PHP_REALPATHTTL='43200'
-    elif [[ "$TOTALMEM" -gt '3145728' && "$TOTALMEM" -le '4194304' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '3145728' && "$TOTALMEM_PHP" -le '4194304' ]]; then
         ZOLIMIT='496'
         PHP_MEMORYLIMIT='512M'
         PHP_UPLOADLIMIT='512M'
         PHP_REALPATHLIMIT='3072k'
         PHP_REALPATHTTL='43200'
-    elif [[ "$TOTALMEM" -gt '4194304' ]]; then
+    elif [[ "$TOTALMEM_PHP" -gt '4194304' ]]; then
         ZOLIMIT='784'
         PHP_MEMORYLIMIT='800M'
         PHP_UPLOADLIMIT='800M'

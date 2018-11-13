@@ -6,6 +6,9 @@
 ABORTINSTALL='y'
 #############################################################
 TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
+TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 ISLOWMEM='262144'
 #############################################################
 # Formulas
