@@ -312,6 +312,13 @@ if [[ "$PHPMUVER" = 7.3 ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
   PHP_LIBZIP='y'
 fi
+if [[ "$PHP_ARGON" = [yY] ]]; then
+  # alias for PHP 7.2 argon support
+  PHP_LIBZIP='y'
+elif [[ "$PHP_ARGON" = [nN] ]]; then
+  # alias for PHP 7.2 argon support
+  PHP_LIBZIP='n'
+fi
 if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
