@@ -91,7 +91,7 @@ bin_list() {
     echo "--------------------------------------------------------"
     echo "Listing of available Nginx binary/module backups"
     echo "--------------------------------------------------------"
-    find "${NGINXBIN_BACKUPDIR}" -mindepth 1 -maxdepth 1 -type d
+    find "${NGINXBIN_BACKUPDIR}" -mindepth 1 -maxdepth 1 -type d -printf "%T@ %Tc %p\n" | sort -n | awk '{print $NF}'
     echo "--------------------------------------------------------"
   fi
 }
