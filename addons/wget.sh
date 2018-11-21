@@ -1,5 +1,13 @@
 #!/bin/bash
 ###########################################################
+# set locale temporarily to english
+# for wget compile due to some non-english
+# locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+###########################################################
 # wget source installer to /usr/local/bin/wget path for
 # centminmod.com LEMP stacks
 # installs newer wget version than available via centos RPM
@@ -23,14 +31,6 @@ WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
-# set locale temporarily to english
-# for wget compile due to some non-english
-# locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
-
 shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep

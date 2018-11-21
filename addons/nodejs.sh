@@ -1,6 +1,13 @@
 #!/bin/bash
 VER='0.0.7'
 ######################################################
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+######################################################
 # node.js installer
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
@@ -49,12 +56,6 @@ return
 }
 
 ###########################################
-# set locale temporarily to english
-# due to some non-english locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
 
 shopt -s expand_aliases
 for g in "" e f; do

@@ -4,6 +4,13 @@
 #
 #######################################################
 export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+#######################################################
 DT=$(date +"%d%m%y-%H%M%S")
 DNF_ENABLE='n'
 DNF_COPR='y'
@@ -78,13 +85,6 @@ return
 }
 
 ###########################################################
-# 
-# set locale temporarily to english
-# due to some non-english locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
 
 shopt -s expand_aliases
 for g in "" e f; do

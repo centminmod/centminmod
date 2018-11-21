@@ -1,4 +1,12 @@
 #!/bin/bash
+########################################################
+# set locale temporarily to english
+# for wget compile due to some non-english
+# locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
 #########################################################
 # Install AVG Anti-Virus Free edition for Linux on CentOS/RHEL systems
 # default scans for /lib and /lib64 directories only

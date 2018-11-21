@@ -1,5 +1,12 @@
 #!/bin/bash
 #############################################################
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+#############################################################
 # mcrypt PECL extension for PHP 7.2+ for
 # Centmin Mod centminmod.com
 # written by George Liu (eva2000)
@@ -11,12 +18,6 @@ DIR_TMP='/svr-setup'
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 #############################################################
-# set locale temporarily to english
-# due to some non-english locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
 
 shopt -s expand_aliases
 for g in "" e f; do

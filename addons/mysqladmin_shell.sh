@@ -1,6 +1,13 @@
 #!/bin/bash
 VER=0.1.0
 ###############################################################
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+###############################################################
 # mysqladmin shell Centmin Mod Addon for centminmod.com users
 # create new mysql username and assign standard
 # permissions to specified database name
@@ -59,12 +66,6 @@ return
 ###############################################################
 # functions
 #############
-# set locale temporarily to english
-# due to some non-english locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
 
 shopt -s expand_aliases
 for g in "" e f; do

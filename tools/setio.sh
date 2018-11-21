@@ -1,5 +1,12 @@
 #!/bin/bash
 ########################################################################################
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+########################################################################################
 # https://community.centminmod.com/threads/help-test-innodbio-sh-for-mysql-tuning.6012/
 # for centminmod.com /etc/my.cnf
 ########################################################################################
@@ -20,12 +27,6 @@ SCRIPT_SOURCEBASE=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 # account for tools directory placement of tools/setio.sh
 SCRIPT_DIR=$(readlink -f $(dirname ${SCRIPT_DIR}))
 ########################################################################################
-# set locale temporarily to english
-# due to some non-english locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
 
 shopt -s expand_aliases
 for g in "" e f; do

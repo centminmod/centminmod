@@ -1,5 +1,12 @@
 #!/bin/bash
 ###############################################################################
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+###############################################################################
 # ffmpeg installer for centminmod.com LEMP stack
 # based on instructions at https://trac.ffmpeg.org/wiki/CompilationGuide/Centos
 # http://git.videolan.org/?p=ffmpeg.git;a=blob;f=doc/APIchanges;hb=HEAD
@@ -41,12 +48,6 @@ FDKAAC_VER='0.1.6'
 FONTCONFIG_VER='2.13.1'
 FREETYPE_VER='2.9'
 ###############################################################################
-# set locale temporarily to english
-# due to some non-english locale issues
-export LC_ALL=en_US.UTF-8
-export LANG=en_US.UTF-8
-export LANGUAGE=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
 
 shopt -s expand_aliases
 for g in "" e f; do

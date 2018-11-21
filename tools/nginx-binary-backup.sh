@@ -1,5 +1,12 @@
 #!/bin/bash
 #########################################################
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
+#########################################################
 # backup nginx binary and modules
 # written by George Liu (eva2000) https://centminmod.com
 #########################################################
