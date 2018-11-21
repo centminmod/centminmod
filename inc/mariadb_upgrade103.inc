@@ -702,6 +702,9 @@ echo
         fi
     fi
 
+# remove mysqlreload cmd shortcut
+rm -rf /usr/bin/mysqlreload
+
 echo "------------------------------------------------"
 echo "MariaDB 10.3.x Upgrade completed"
 echo "------------------------------------------------"

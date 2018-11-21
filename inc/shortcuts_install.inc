@@ -125,14 +125,18 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         echo "systemctl daemon-reload; service mysql stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "systemctl daemon-reload; service mysql start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "systemctl daemon-reload; service mysql restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
-        echo "systemctl daemon-reload; service mysql reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
+        if [[ "$MARIADB_INSTALLTENTHREE" != [yY] || "$(mysqladmin ver | awk '/Server version/ {print $3}' | cut -d . -f1,2)" != '10.3' ]]; then
+            echo "systemctl daemon-reload; service mysql reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
+        fi
     
     elif [ -f /etc/init.d/mysqld ]; then
     
         echo "systemctl daemon-reload; service mysqld stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "systemctl daemon-reload; service mysqld start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
         echo "systemctl daemon-reload; service mysqld restart" >/usr/bin/mysqlrestart ; chmod 700 /usr/bin/mysqlrestart
-        echo "systemctl daemon-reload; service mysqld reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
+        if [[ "$MARIADB_INSTALLTENTHREE" != [yY] || "$(mysqladmin ver | awk '/Server version/ {print $3}' | cut -d . -f1,2)" != '10.3' ]]; then
+            echo "systemctl daemon-reload; service mysqld reload" >/usr/bin/mysqlreload ; chmod 700 /usr/bin/mysqlreload
+        fi
     
     fi
         echo "/etc/init.d/nginx stop;/etc/init.d/php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
