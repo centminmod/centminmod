@@ -1295,6 +1295,19 @@ else
   CHACHACIPHERS=""
 fi
 
+DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+    # openssl 1.1.0 unsupported flag enable-tlsext
+    if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm")" ]]; then
+        TLSONETHREEOPT=' enable-tls1_3'
+        TLSONETHREE_DETECT='y'
+    else
+        TLSONETHREEOPT=""
+        TLSONETHREE_DETECT='n'
+    fi
+fi
+
 if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
   TLSONETHREE_CIPHERS='TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-CCM-8-SHA256:TLS13-AES-128-CCM-SHA256:'
 else

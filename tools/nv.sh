@@ -21,7 +21,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 DIR_TMP=/svr-setup
 CONFIGSCANBASE='/etc/centminmod'
-OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION/ {print $2}' $CUR_DIR/centmin.sh)
+OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION=/ {print $2}' $CUR_DIR/centmin.sh)
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$CURRENTIP/country)
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
@@ -784,7 +784,7 @@ DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
 DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
     # openssl 1.1.0 unsupported flag enable-tlsext
-    if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/Configure")" ]]; then
+    if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm")" ]]; then
         TLSONETHREEOPT=' enable-tls1_3'
         TLSONETHREE_DETECT='y'
     else
