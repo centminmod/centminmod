@@ -315,7 +315,7 @@ fi
 if [[ "$PHP_ARGON" = [yY] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='y'
-elif [[ "$PHP_ARGON" = [nN] ]]; then
+elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='n'
 fi
