@@ -22,6 +22,16 @@ fi
         mailparsephpexttarball
     fi
     echo
+    if [[ "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
+        # mailparse PHP 7.3 compatibility
+        # https://git.php.net/?p=pecl/mail/mailparse.git;a=commit;h=13c2c425e519b22660a03d566c35e76b3d4751dc
+        PHPSEVENTHREE_MAILPARSE='y'
+        pushd "${DIR_TMP}"
+        rm -rf mailparse-git
+        echo "git clone --depth=1 https://git.php.net/repository/pecl/mail/mailparse.git mailparse-git"
+        git clone --depth=1 https://git.php.net/repository/pecl/mail/mailparse.git mailparse-git
+        popd
+    fi
 }
 
 mailparseinstall() {
@@ -37,12 +47,16 @@ mailparseinstall() {
     pwd
     echo "cd $DIR_TMP"
     cd $DIR_TMP
-    if [ ! -d "$DIR_TMP/mailparse-${MAILPARSEPHP_VER}" ]; then
-        tar xzf ${PHPEXT_MAILPARSELINKFILE}
-    fi
-    cd mailparse-${MAILPARSEPHP_VER}
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-        make clean
+    if [[ "$PHPSEVENTHREE_MAILPARSE" != [yY] ]]; then
+        if [ ! -d "$DIR_TMP/mailparse-${MAILPARSEPHP_VER}" ]; then
+            tar xzf ${PHPEXT_MAILPARSELINKFILE}
+        fi
+        cd mailparse-${MAILPARSEPHP_VER}
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
+    else
+        cd mailparse-git
     fi
     /usr/local/bin/phpize
     ./configure --with-php-config=/usr/local/bin/php-config

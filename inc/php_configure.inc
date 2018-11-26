@@ -308,7 +308,7 @@ fi
 # disable temporarily for php 7.2.0 due to libzip compile errors
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
 
-if [[ "$PHPMUVER" = 7.3 ]]; then
+if [[ "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
   PHP_LIBZIP='y'
 fi

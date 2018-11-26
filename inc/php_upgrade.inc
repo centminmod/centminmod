@@ -990,10 +990,10 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     if [ -f "${CONFIGSCANDIR}/suhosin.ini" ]; then
         cecho "rm -rf ${CONFIGSCANDIR}/suhosin.ini" $boldyellow
     fi
-    if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
-        cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
-        cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
-    fi
+    # if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
+    #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+    #     cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+    # fi
     if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
         cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
         cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
