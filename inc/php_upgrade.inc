@@ -913,11 +913,11 @@ else
     fi
 fi
 
-if [[ "$PHPSEVENTHREE_EXTFIX" != [nN] && "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
-    cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
-    cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
-    rm -rf "${CONFIGSCANDIR}/mailparse.ini"
-fi
+# if [[ "$PHPSEVENTHREE_EXTFIX" != [nN] && "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
+#     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+#     cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+#     rm -rf "${CONFIGSCANDIR}/mailparse.ini"
+# fi
 if [[ "$PHPSEVENTHREE_EXTFIX" != [nN] && "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
     cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
