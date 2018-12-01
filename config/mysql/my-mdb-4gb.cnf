@@ -87,7 +87,7 @@ innodb_doublewrite = 1
 # innodb settings
 innodb_read_ahead = linear
 innodb_file_per_table = 1
-innodb_open_files = 1000
+innodb_open_files = 4000
 innodb_data_file_path= ibdata1:10M:autoextend
 innodb_buffer_pool_size = 128M
 innodb_additional_mem_pool_size = 32M

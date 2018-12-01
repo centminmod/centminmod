@@ -72,7 +72,7 @@ innodb_purge_threads=1
 innodb_doublewrite = 1
 
 innodb_file_per_table = 1
-innodb_open_files = 1000
+innodb_open_files = 2000
 innodb_data_file_path= ibdata1:10M:autoextend
 innodb_buffer_pool_size = 48M
 innodb_additional_mem_pool_size = 32M
