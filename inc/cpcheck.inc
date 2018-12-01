@@ -188,10 +188,11 @@ fix_phperrorlogperm() {
 }
 
 march_hostcheck() {
-  # if linode kernel/host detected set disable GCC march=native
-  # as linode vps can switch host nodes with differing cpu models
-  # causing seg faults for nginx and php-fpm
-  if [[ "$(uname -r | grep -o 'linode')" ]]; then
+  # smarter detection of cloud vps providers who run a mix of different
+  # cpu models to prevent issues when you switch host nodes with differing 
+  # cpu models causing seg faults for nginx and php-fpm
+  VPS_ASNCHECK=$(curl -s https://ipinfo.io/org)
+  if [[ "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'linode|digitalocean|vultr|choopa')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
     if [[ -f /etc/centminmod/custom_config.inc && ! "$(grep 'MARCH_TARGETNATIVE' /etc/centminmod/custom_config.inc)" ]]; then
       echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc

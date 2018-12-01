@@ -36,6 +36,7 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # Clang & GCC Compilers
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
+MARCH_TARGETNATIVE_ALWAYS='n' # force native compiler to override smarter vps detection routine
 CLANG='y'                     # Nginx and LibreSSL
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/

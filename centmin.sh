@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='074'
+SCRIPT_INCREMENTVER='075'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2018'
@@ -387,6 +387,7 @@ DISABLE_IPVSIX='n'
 PARALLEL_MODE=y
 # compiler related
 MARCH_TARGETNATIVE='y'        # for intel 64bit only set march=native, if no set to x86-64
+MARCH_TARGETNATIVE_ALWAYS='n' # force native compiler to override smarter vps detection routine
 CLANG='n'                     # Nginx and LibreSSL
 CLANG_FOUR='n'                # Clang 4.0+ optional support https://community.centminmod.com/threads/13729/
 CLANG_FIVE='n'                # Clang 5.0+ optional support https://community.centminmod.com/threads/13729/
