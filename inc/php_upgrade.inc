@@ -571,27 +571,27 @@ fi
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
-            echo "time ./sapi/cgi/php-cgi -T80 ../Zend/bench.php"
-            time ./sapi/cgi/php-cgi -T80 ../Zend/bench.php
-            echo "time ./sapi/cgi/php-cgi -T40 ../Zend/micro_bench.php"
-            time ./sapi/cgi/php-cgi -T40 ../Zend/micro_bench.php
-            echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
-            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php
+            echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php""
+            time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php"
             if [ -f "$PHPPGO_INDEXPATH" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH"
             fi
             if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_TWO""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_TWO"
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_TWO""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_TWO"
             fi
             if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_THREE""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_THREE"
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_THREE""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_THREE"
             fi
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
-                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR""
-                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR"
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR"
             fi
         fi
         echo "make prof-clean"
