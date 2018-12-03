@@ -1,0 +1,227 @@
+diff --git a/include/openssl/ssl.h b/include/openssl/ssl.h
+index d6b1b4e6a6..173dbb1ef8 100644
+--- a/include/openssl/ssl.h
++++ b/include/openssl/ssl.h
+@@ -173,12 +173,12 @@ extern "C" {
+ # define SSL_DEFAULT_CIPHER_LIST "ALL:!COMPLEMENTOFDEFAULT:!eNULL"
+ /* This is the default set of TLSv1.3 ciphersuites */
+ # if !defined(OPENSSL_NO_CHACHA) && !defined(OPENSSL_NO_POLY1305)
+-#  define TLS_DEFAULT_CIPHERSUITES "TLS_AES_256_GCM_SHA384:" \
++#  define TLS_DEFAULT_CIPHERSUITES "TLS_AES_128_GCM_SHA256:" \
+                                    "TLS_CHACHA20_POLY1305_SHA256:" \
+-                                   "TLS_AES_128_GCM_SHA256"
++                                   "TLS_AES_256_GCM_SHA384"
+ # else
+-#  define TLS_DEFAULT_CIPHERSUITES "TLS_AES_256_GCM_SHA384:" \
+-                                   "TLS_AES_128_GCM_SHA256"
++#  define TLS_DEFAULT_CIPHERSUITES "TLS_AES_128_GCM_SHA256:" \
++                                   "TLS_AES_256_GCM_SHA384"
+ #endif
+ /*
+  * As of OpenSSL 1.0.0, ssl_create_cipher_list() in ssl/ssl_ciph.c always
+diff --git a/include/openssl/tls1.h b/include/openssl/tls1.h
+index e13b5dd4bc..779341c948 100644
+--- a/include/openssl/tls1.h
++++ b/include/openssl/tls1.h
+@@ -30,6 +30,16 @@ extern "C" {
+ # define TLS1_3_VERSION                  0x0304
+ # define TLS_MAX_VERSION                 TLS1_3_VERSION
+ 
++/* TODO(TLS1.3) REMOVE ME: Version indicators for draft version */
++# define TLS1_3_VERSION_DRAFT_23         0x7f17
++# define TLS1_3_VERSION_DRAFT_26         0x7f1a
++# define TLS1_3_VERSION_DRAFT_27         0x7f1b
++# define TLS1_3_VERSION_DRAFT            0x7f1c
++# define TLS1_3_VERSION_DRAFT_TXT_23     "TLS 1.3 (draft 23)"
++# define TLS1_3_VERSION_DRAFT_TXT_26     "TLS 1.3 (draft 26)"
++# define TLS1_3_VERSION_DRAFT_TXT_27     "TLS 1.3 (draft 27)"
++# define TLS1_3_VERSION_DRAFT_TXT        "TLS 1.3 (draft 28)"
++
+ /* Special value for method supporting multiple versions */
+ # define TLS_ANY_VERSION                 0x10000
+ 
+diff --git a/ssl/record/ssl3_record_tls13.c b/ssl/record/ssl3_record_tls13.c
+index a11ed483e6..4fd583dd03 100644
+--- a/ssl/record/ssl3_record_tls13.c
++++ b/ssl/record/ssl3_record_tls13.c
+@@ -173,8 +173,9 @@ int tls13_enc(SSL *s, SSL3_RECORD *recs, size_t n_recs, int sending)
+     if (((alg_enc & SSL_AESCCM) != 0
+                  && EVP_CipherUpdate(ctx, NULL, &lenu, NULL,
+                                      (unsigned int)rec->length) <= 0)
+-            || EVP_CipherUpdate(ctx, NULL, &lenu, recheader,
+-                                sizeof(recheader)) <= 0
++            || (s->version_draft != TLS1_3_VERSION_DRAFT_23
++                 && EVP_CipherUpdate(ctx, NULL, &lenu, recheader,
++                                     sizeof(recheader)) <= 0)
+             || EVP_CipherUpdate(ctx, rec->data, &lenu, rec->input,
+                                 (unsigned int)rec->length) <= 0
+             || EVP_CipherFinal_ex(ctx, rec->data + lenu, &lenf) <= 0
+diff --git a/ssl/ssl_locl.h b/ssl/ssl_locl.h
+index 70e5a1740f..7b3b270ffc 100644
+--- a/ssl/ssl_locl.h
++++ b/ssl/ssl_locl.h
+@@ -1080,6 +1080,8 @@ struct ssl_st {
+      * DTLS1_VERSION)
+      */
+     int version;
++    /* TODO(TLS1.3): Remove this before release */
++    int version_draft;
+     /* SSLv3 */
+     const SSL_METHOD *method;
+     /*
+diff --git a/ssl/statem/extensions_clnt.c b/ssl/statem/extensions_clnt.c
+index ab4dbf6713..745897b638 100644
+--- a/ssl/statem/extensions_clnt.c
++++ b/ssl/statem/extensions_clnt.c
+@@ -533,8 +533,25 @@ EXT_RETURN tls_construct_ctos_supported_versions(SSL *s, WPACKET *pkt,
+         return EXT_RETURN_FAIL;
+     }
+ 
++    /*
++     * TODO(TLS1.3): There is some discussion on the TLS list as to whether
++     * we should include versions <TLS1.2. For the moment we do. To be
++     * reviewed later.
++     */
+     for (currv = max_version; currv >= min_version; currv--) {
+-        if (!WPACKET_put_bytes_u16(pkt, currv)) {
++        /* TODO(TLS1.3): Remove this first if clause prior to release!! */
++        if (currv == TLS1_3_VERSION) {
++            if (!WPACKET_put_bytes_u16(pkt, TLS1_3_VERSION)
++                    || !WPACKET_put_bytes_u16(pkt, TLS1_3_VERSION_DRAFT)
++                    || !WPACKET_put_bytes_u16(pkt, TLS1_3_VERSION_DRAFT_27)
++                    || !WPACKET_put_bytes_u16(pkt, TLS1_3_VERSION_DRAFT_26)
++                    || !WPACKET_put_bytes_u16(pkt, TLS1_3_VERSION_DRAFT_23)) {
++                SSLfatal(s, SSL_AD_INTERNAL_ERROR,
++                         SSL_F_TLS_CONSTRUCT_CTOS_SUPPORTED_VERSIONS,
++                         ERR_R_INTERNAL_ERROR);
++                return EXT_RETURN_FAIL;
++            }
++        } else if (!WPACKET_put_bytes_u16(pkt, currv)) {
+             SSLfatal(s, SSL_AD_INTERNAL_ERROR,
+                      SSL_F_TLS_CONSTRUCT_CTOS_SUPPORTED_VERSIONS,
+                      ERR_R_INTERNAL_ERROR);
+@@ -1763,6 +1780,15 @@ int tls_parse_stoc_supported_versions(SSL *s, PACKET *pkt, unsigned int context,
+         return 0;
+     }
+ 
++    /* TODO(TLS1.3): Remove this before release */
++    if (version == TLS1_3_VERSION_DRAFT
++            || version == TLS1_3_VERSION_DRAFT_27
++            || version == TLS1_3_VERSION_DRAFT_26
++            || version == TLS1_3_VERSION_DRAFT_23) {
++        s->version_draft = version;
++        version = TLS1_3_VERSION;
++    }
++
+     /*
+      * The only protocol version we support which is valid in this extension in
+      * a ServerHello is TLSv1.3 therefore we shouldn't be getting anything else.
+diff --git a/ssl/statem/extensions_srvr.c b/ssl/statem/extensions_srvr.c
+index 0f2b22392b..6c1ce9813f 100644
+--- a/ssl/statem/extensions_srvr.c
++++ b/ssl/statem/extensions_srvr.c
+@@ -897,7 +897,8 @@ int tls_parse_ctos_cookie(SSL *s, PACKET *pkt, unsigned int context, X509 *x,
+     }
+     if (!WPACKET_put_bytes_u16(&hrrpkt, TLSEXT_TYPE_supported_versions)
+             || !WPACKET_start_sub_packet_u16(&hrrpkt)
+-            || !WPACKET_put_bytes_u16(&hrrpkt, s->version)
++               /* TODO(TLS1.3): Fix this before release */
++            || !WPACKET_put_bytes_u16(&hrrpkt, s->version_draft)
+             || !WPACKET_close(&hrrpkt)) {
+         WPACKET_cleanup(&hrrpkt);
+         SSLfatal(s, SSL_AD_INTERNAL_ERROR, SSL_F_TLS_PARSE_CTOS_COOKIE,
+@@ -1652,7 +1653,8 @@ EXT_RETURN tls_construct_stoc_supported_versions(SSL *s, WPACKET *pkt,
+ 
+     if (!WPACKET_put_bytes_u16(pkt, TLSEXT_TYPE_supported_versions)
+             || !WPACKET_start_sub_packet_u16(pkt)
+-            || !WPACKET_put_bytes_u16(pkt, s->version)
++                /* TODO(TLS1.3): Update to remove the TLSv1.3 draft indicator */
++            || !WPACKET_put_bytes_u16(pkt, s->version_draft)
+             || !WPACKET_close(pkt)) {
+         SSLfatal(s, SSL_AD_INTERNAL_ERROR,
+                  SSL_F_TLS_CONSTRUCT_STOC_SUPPORTED_VERSIONS,
+diff --git a/ssl/statem/statem_lib.c b/ssl/statem/statem_lib.c
+index 4324896f50..d0de7ffe3d 100644
+--- a/ssl/statem/statem_lib.c
++++ b/ssl/statem/statem_lib.c
+@@ -1786,6 +1786,8 @@ int ssl_choose_server_version(SSL *s, CLIENTHELLO_MSG *hello, DOWNGRADE *dgrd)
+         unsigned int best_vers = 0;
+         const SSL_METHOD *best_method = NULL;
+         PACKET versionslist;
++        /* TODO(TLS1.3): Remove this before release */
++        unsigned int orig_candidate = 0;
+ 
+         suppversions->parsed = 1;
+ 
+@@ -1807,6 +1809,23 @@ int ssl_choose_server_version(SSL *s, CLIENTHELLO_MSG *hello, DOWNGRADE *dgrd)
+             return SSL_R_BAD_LEGACY_VERSION;
+ 
+         while (PACKET_get_net_2(&versionslist, &candidate_vers)) {
++            /* TODO(TLS1.3): Remove this before release */
++            if (candidate_vers == TLS1_3_VERSION
++                    || candidate_vers == TLS1_3_VERSION_DRAFT
++                    || candidate_vers == TLS1_3_VERSION_DRAFT_26
++                    || candidate_vers == TLS1_3_VERSION_DRAFT_23) {
++                if (best_vers == TLS1_3_VERSION
++                        && (orig_candidate > candidate_vers
++                        || orig_candidate == TLS1_3_VERSION))
++                    continue;
++                orig_candidate = candidate_vers;
++                candidate_vers = TLS1_3_VERSION;
++            }
++            /*
++             * TODO(TLS1.3): There is some discussion on the TLS list about
++             * whether to ignore versions <TLS1.2 in supported_versions. At the
++             * moment we honour them if present. To be reviewed later
++             */
+             if (version_cmp(s, candidate_vers, best_vers) <= 0)
+                 continue;
+             if (ssl_version_supported(s, candidate_vers, &best_method))
+@@ -1829,6 +1848,9 @@ int ssl_choose_server_version(SSL *s, CLIENTHELLO_MSG *hello, DOWNGRADE *dgrd)
+             }
+             check_for_downgrade(s, best_vers, dgrd);
+             s->version = best_vers;
++            /* TODO(TLS1.3): Remove this before release */
++            if (best_vers == TLS1_3_VERSION)
++                s->version_draft = orig_candidate;
+             s->method = best_method;
+             return 0;
+         }
+diff --git a/ssl/t1_trce.c b/ssl/t1_trce.c
+index be3039af38..99c4ddcb41 100644
+--- a/ssl/t1_trce.c
++++ b/ssl/t1_trce.c
+@@ -65,6 +65,11 @@ static const ssl_trace_tbl ssl_version_tbl[] = {
+     {TLS1_1_VERSION, "TLS 1.1"},
+     {TLS1_2_VERSION, "TLS 1.2"},
+     {TLS1_3_VERSION, "TLS 1.3"},
++    /* TODO(TLS1.3): Remove these lines before release */
++    {TLS1_3_VERSION_DRAFT_23, TLS1_3_VERSION_DRAFT_TXT_23},
++    {TLS1_3_VERSION_DRAFT_26, TLS1_3_VERSION_DRAFT_TXT_26},
++    {TLS1_3_VERSION_DRAFT_27, TLS1_3_VERSION_DRAFT_TXT_27},
++    {TLS1_3_VERSION_DRAFT, TLS1_3_VERSION_DRAFT_TXT},
+     {DTLS1_VERSION, "DTLS 1.0"},
+     {DTLS1_2_VERSION, "DTLS 1.2"},
+     {DTLS1_BAD_VER, "DTLS 1.0 (bad)"}
+@@ -638,8 +643,19 @@ static int ssl_print_version(BIO *bio, int indent, const char *name,
+     if (*pmsglen < 2)
+         return 0;
+     vers = ((*pmsg)[0] << 8) | (*pmsg)[1];
+-    if (version != NULL)
+-        *version = vers;
++    if (version != NULL) {
++        /* TODO(TLS1.3): Remove the draft conditional here before release */
++        switch(vers) {
++        case TLS1_3_VERSION_DRAFT_23:
++        case TLS1_3_VERSION_DRAFT_26:
++        case TLS1_3_VERSION_DRAFT_27:
++        case TLS1_3_VERSION_DRAFT:
++            *version = TLS1_3_VERSION;
++            break;
++        default:
++            *version = vers;
++        }
++    }
+     BIO_indent(bio, indent, 80);
+     BIO_printf(bio, "%s=0x%x (%s)\n",
+                name, vers, ssl_trace_str(vers, ssl_version_tbl));

@@ -2,7 +2,7 @@
 opensslpatches() {
   {
 
-if [[ "$OPENSSL_TLSONETHREE_BACKPORTDRAFTS" = [yY] && "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1' ]] || [[ "$OPENSSL_TLSONETHREE_BACKPORTDRAFTS" = [yY] && "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1a' ]]; then
+if [[ "$OPENSSL_TLSONETHREE_BACKPORTDRAFTS" = [yY] && "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1' ]]; then
     echo
     echo "######################################################################"
     echo "Patching OpenSSL 1.1.1"
@@ -18,6 +18,32 @@ if [[ "$OPENSSL_TLSONETHREE_BACKPORTDRAFTS" = [yY] && "$(uname -m)" = 'x86_64' &
         openssl_draftbackport_err=$?
         if [[ "$openssl_draftbackport_err" -ne '0' ]]; then
             cecho "patch failed, revert patch $CUR_DIR/patches/openssl/openssl-1.1.1-tls13_draft.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
+if [[ "$OPENSSL_TLSONETHREE_BACKPORTDRAFTS" = [yY] && "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1a' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.1a"
+    echo "######################################################################"
+    echo "Backport TLS 1.3 draft 23, 26, 27, 28 support patch"
+    echo "https://github.com/hakasenyang/openssl-patch/issues/8"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf openssl-1.1.1a-tls13_draft.patch
+    if [ -f "$CUR_DIR/patches/openssl/openssl-1.1.1a-tls13_draft.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/openssl-1.1.1a-tls13_draft.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/openssl-1.1.1a-tls13_draft.patch"
+        openssl_draftbackport_err=$?
+        if [[ "$openssl_draftbackport_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/openssl-1.1.1a-tls13_draft.patch" $boldyellow
             pushd "$DIR_TMP"
             rm -rf "openssl-${OPENSSL_VERSION}"
             tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
