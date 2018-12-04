@@ -789,7 +789,7 @@ CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
-WGET_VERSION='1.19.5'
+WGET_VERSION='1.20'
 ###############################################################
 # cloudflare authenticated origin pull cert
 # setup https://community.centminmod.com/threads/13847/
