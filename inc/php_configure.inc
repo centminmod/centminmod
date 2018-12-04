@@ -60,9 +60,10 @@ PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 # compiling PHP with LTO support takes 2-4x times the memory
 # and cpu resources to do and takes 2-4x times longer to compile
 # so only do it for servers with enough cpu cores and memory
-if [[ "$CPUS" -lt '16' && "$TOTALMEMMB" -lt '31000' ]]; then
+CPUS_LTO=$(grep -c "processor" /proc/cpuinfo)
+if [[ "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -lt '31000' ]]; then
   PHP_LTO='n'
-elif [[ "$CPUS" -lt '16' && "$TOTALMEMMB" -gt '31000' ]]; then
+elif [[ "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -gt '31000' ]]; then
   PHP_LTO='n'
 fi
 
@@ -97,6 +98,10 @@ if [ -f /proc/user_beancounters ]; then
         # 7401P at 12 cpu cores has 3.0Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7401p
         # while greater than 12 cpu cores downclocks to 2.8Ghz
         CPUS_MAKEPHP=12
+    elif [[ "$(grep -o 'AMD EPYC 7371' /proc/cpuinfo | sort -u)" = 'AMD EPYC 7371' ]]; then
+        # 7371 at 8 cpu cores has 3.8Ghz clock frequency https://en.wikichip.org/wiki/amd/epyc/7371
+        # while greater than 8 cpu cores downclocks to 3.6Ghz
+        CPUS_MAKEPHP=8
     fi
     if [[ "$CPUS_MAKEPHP" -gt '8' ]]; then
         if [[ "$PHP_LTO" = [yY] ]]; then
