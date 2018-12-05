@@ -29,6 +29,7 @@ WGET_VERSION='1.20'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+WGET_STRACE='n'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
 shopt -s expand_aliases
@@ -391,9 +392,17 @@ source_pcreinstall() {
   make clean >/dev/null 2>&1
   ./configure --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
   sar_call
-  make${MAKETHREADS}
+  if [[ "$WGET_STRACE" = [yY] ]]; then
+    strace -o "${CENTMINLOGDIR}/strace_pcre_make_$DT.log" -f -s256 -tt -T -q make${MAKETHREADS}
+  else
+    make${MAKETHREADS}
+  fi
   sar_call
-  make install
+  if [[ "$WGET_STRACE" = [yY] ]]; then
+    strace -o "${CENTMINLOGDIR}/strace_pcre_make_install_$DT.log" -f -s256 -tt -T -q make install
+  else  
+    make install
+  fi
   sar_call
   /usr/local/bin/pcre-config --version
   fi
@@ -459,9 +468,17 @@ source_wgetinstall() {
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
   ./configure --with-ssl=openssl
   sar_call
-  make${MAKETHREADS}
+  if [[ "$WGET_STRACE" = [yY] ]]; then
+    strace -o "${CENTMINLOGDIR}/strace_wget_make_$DT.log" -f -s256 -tt -T -q make${MAKETHREADS}
+  else
+    make${MAKETHREADS}
+  fi
   sar_call
-  make install
+  if [[ "$WGET_STRACE" = [yY] ]]; then
+    strace -o "${CENTMINLOGDIR}/strace_wget_make_install_$DT.log" -f -s256 -tt -T -q make install
+  else
+    make install
+  fi
   sar_call
   echo "/usr/local/lib/" > /etc/ld.so.conf.d/wget.conf
   ldconfig
@@ -483,9 +500,34 @@ source_wgetinstall() {
   cecho "--------------------------------------------------------" $boldgreen
   if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
     cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
+    if [[ "$WGET_STRACE" = [yY] ]]; then
+      # ls -lah ${CENTMINLOGDIR} | grep $DT
+      if [ -f "${CENTMINLOGDIR}/strace_wget_make_$DT.log" ]; then
+        gzip -6 "${CENTMINLOGDIR}/strace_wget_make_$DT.log"
+        cecho "strace make log (gzip compressed): ${CENTMINLOGDIR}/strace_wget_make_$DT.log.gz" $boldyellow
+      fi
+      if [ -f "${CENTMINLOGDIR}/strace_wget_make_install_$DT.log" ]; then
+        gzip -6 "${CENTMINLOGDIR}/strace_wget_make_install_$DT.log"
+        cecho "strace make install log (gzip compressed): ${CENTMINLOGDIR}/strace_wget_make_install_$DT.log.gz" $boldyellow
+      fi
+    fi
   else
     cecho "wget ${WGET_VERSION} failed to update, still using system wget" $boldyellow
+    cecho "install log: ${CENTMINLOGDIR}/wget_source_install_${DT}.log" $boldyellow
+    if [[ "$WGET_STRACE" = [yY] ]]; then
+      if [ -f "${CENTMINLOGDIR}/strace_wget_make_$DT.log" ]; then
+        gzip -6 "${CENTMINLOGDIR}/strace_wget_make_$DT.log"
+        cecho "strace make log (gzip compressed): ${CENTMINLOGDIR}/strace_wget_make_$DT.log.gz" $boldyellow
+      fi
+      if [ -f "${CENTMINLOGDIR}/strace_wget_make_install_$DT.log" ]; then
+        gzip -6 "${CENTMINLOGDIR}/strace_wget_make_install_$DT.log"
+        cecho "strace make install log (gzip compressed): ${CENTMINLOGDIR}/strace_wget_make_install_$DT.log.gz" $boldyellow
+      fi
+    fi
   fi
+  # clean up strace logs older than 14 days
+  find "${CENTMINLOGDIR}" -type f -mtime +14 \( -name 'strace_wget_make*' ! -name "strace_pcre_make*" \) -print
+  find "${CENTMINLOGDIR}" -type f -mtime +14 \( -name 'strace_wget_make*' ! -name "strace_pcre_make*" \) -exec rm -rf {} \;
   cecho "--------------------------------------------------------" $boldgreen
   echo
   fi
