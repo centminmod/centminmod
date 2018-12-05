@@ -136,7 +136,7 @@ ngxver_checker() {
       cecho "===============================================================================" $boldgreen
       cecho "* Current Nginx Version:           $CURRENT_NGINXVERS" $boldyellow
       cecho "* Latest Nginx Mainline Available: $LASTEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
-      cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
+      # cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi
