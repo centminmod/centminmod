@@ -62,7 +62,23 @@ bin_backup() {
     NGXDEBUG_LABEL=""
   fi
 
-  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}"
+  # check if nginx binary built with Cloudflare HPACK patch
+  CHECK_NGINXHPACKBUILT=$(nginx -V 2>&1 | grep -o 'with-http_v2_hpack_enc')
+  if [[ "$CHECK_NGINXHPACKBUILT" = 'with-http_v2_hpack_enc' ]]; then
+    NGXHPACK_LABEL='-hpack'
+  else
+    NGXHPACK_LABEL=""
+  fi
+
+  # check if nginx binary built with Cloudflare zlib library
+  CHECK_NGINXCFZLIBBUILT=$(nginx -V 2>&1 | grep -o 'zlib-cloudflare')
+  if [[ "$CHECK_NGINXCFZLIBBUILT" = 'zlib-cloudflare' ]]; then
+    NGXZLIB_LABEL='-cfzlib'
+  else
+    NGXZLIB_LABEL=""
+  fi
+
+  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}"
   if [ ! -d "${NGINXBIN_BACKUPDIR}/${backup_tag}" ]; then
     echo "--------------------------------------------------------"
     echo "backup current Nginx binary and dynamic modules"
