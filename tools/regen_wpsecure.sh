@@ -157,10 +157,6 @@ location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
-# Deny access to any files with a .php extension in the uploads directory
-# Works in sub-directory installs and also in multisite network
-location ~* ${WPSUBDIR}/(?:uploads|files)/.*\.php\$ { deny all; }
-
 # Whitelist Exception for https://wordpress.org/plugins/onesignal-free-web-push-notifications//
 location ~ ^${WPSUBDIR}/wp-content/plugins/onesignal-free-web-push-notifications/ {
   include /usr/local/nginx/conf/php.conf;
