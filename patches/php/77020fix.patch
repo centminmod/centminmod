@@ -1,0 +1,10 @@
+--- php_imap.c  2018-12-04 18:06:09.000000000 +0000
++++ php_imap.c.new      2018-12-09 07:54:22.577561199 +0000
+@@ -4123,7 +4123,6 @@
+        if (!ZSTR_LEN(message)) {
+                /* this is not really an error, so it is allowed. */
+                php_error_docref(NULL, E_WARNING, "No message string in mail command");
+-               message = NULL;
+        }
+ 
+        if (_php_imap_mail(ZSTR_VAL(to), ZSTR_VAL(subject), ZSTR_VAL(message), headers?ZSTR_VAL(headers):NULL, cc?ZSTR_VAL(cc):NULL,

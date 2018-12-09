@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='076'
+SCRIPT_INCREMENTVER='077'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2018'
@@ -587,6 +587,7 @@ LUACJSONVER='2.1.0.6'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
+PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_CUSTOMSSL='n'            # compile php-fpm against openssl 1.0.2+ or libressl 2.3+ whichever nginx uses
 PHPMAKETEST=n                # set to y to enable make test after PHP make for diagnostic purposes
@@ -935,6 +936,7 @@ source "inc/imap.inc"
 source "inc/php_configure.inc"
 source "inc/phpng_download.inc"
 source "inc/php_upgrade.inc"
+source "inc/php_patch.inc"
 source "inc/suhosin_setup.inc"
 source "inc/nginx_pagespeed.inc"
 source "inc/nginx_modules.inc"
@@ -1840,6 +1842,10 @@ if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
 fi
 
     cd "${DIR_TMP}/php-${PHP_VERSION}"
+    PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${PHP_VERSION}/main/php_version.h)
+    echo "PHP VERSION ID: $PHPVER_ID"
+
+    php_patches
 
     ./buildconf --force
     mkdir fpm-build && cd fpm-build

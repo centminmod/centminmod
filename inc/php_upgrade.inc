@@ -384,6 +384,8 @@ fi
     fi
 
     cd "php-${phpver}"
+    PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${phpver}/main/php_version.h)
+    echo "PHP VERSION ID: $PHPVER_ID"
 
 ##############################################
 # begin update php.ini
@@ -427,17 +429,7 @@ fi # PHPDIFF
 
     make clean
 
-  if [[ "$PHPMUVER" = 5.3 ]]; then
-    # patch PHP 5.3 source tarballs
-    # https://bugs.php.net/bug.php?id=48795
-    # https://community.centminmod.com/posts/63882/
-    # pushd ../
-    if [ ! -f php53.patch ]; then
-        cp -a $CUR_DIR/patches/php/php53.patch php53.patch
-        patch < php53.patch
-    fi
-    # popd
-  fi
+    php_patches
 
     ./buildconf --force
     
