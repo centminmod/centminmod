@@ -26,7 +26,19 @@ php_patches() {
         patch --ignore-whitespace < 77020fix.patch
         popd
       fi
-      # popd
+    fi
+    if [[ "$PHPVER_ID" = '70300' ]]; then
+      # patch PHP 7.3.0 missing CVE patch
+      # https://bugs.php.net/bug.php?id=77275
+      if [ ! -f 77275fix.patch ]; then
+        echo
+        echo "patching PHP Zend Opcache Bug"
+        echo "https://bugs.php.net/bug.php?id=77275"
+        echo
+        cp -a $CUR_DIR/patches/php/77275fix.patch 77275fix.patch
+        dos2unix 77275fix.patch
+        patch --ignore-whitespace -p1 < 77275fix.patch
+      fi
     fi
   fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"

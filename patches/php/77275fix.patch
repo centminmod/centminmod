@@ -1,0 +1,135 @@
+From 93aabf1533bd3af673bb59cf283e6599ced3ab9a Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Mon, 10 Dec 2018 13:33:48 +0100
+Subject: [PATCH] Fixed bug #77275
+
+Instead of juggling with this problem during literal compaction,
+make sure that we always initialize Z_EXTRA for literals, which
+seems like the more robust solution.
+---
+ NEWS                                     |  2 ++
+ Zend/zend_compile.c                      |  5 +++--
+ ext/opcache/Optimizer/compact_literals.c |  1 -
+ ext/opcache/Optimizer/zend_optimizer.c   |  3 +--
+ ext/opcache/tests/bug77275.phpt          | 30 ++++++++++++++++++++++++++++++
+ 5 files changed, 36 insertions(+), 5 deletions(-)
+ create mode 100644 ext/opcache/tests/bug77275.phpt
+
+diff --git a/NEWS b/NEWS
+index c2b87fd..177f2c1 100644
+--- a/NEWS
++++ b/NEWS
+@@ -33,6 +33,8 @@ PHP                                                                        NEWS
+ - Opcache:
+   . Fixed bug #77215 (CFG assertion failure on multiple finalizing switch
+     frees in one block). (Nikita)
++  . Fixed bug #77275 (OPcache optimization problem for ArrayAccess->offsetGet).
++    (Nikita)
+ 
+ - PCRE:
+   . Fixed bug #77193 (Infinite loop in preg_replace_callback). (Anatol)
+diff --git a/Zend/zend_compile.c b/Zend/zend_compile.c
+index 6e387ea..d2e1cf4 100644
+--- a/Zend/zend_compile.c
++++ b/Zend/zend_compile.c
+@@ -480,10 +480,12 @@ static inline zend_string *zval_make_interned_string(zval *zv) /* {{{ */
+ /* Common part of zend_add_literal and zend_append_individual_literal */
+ static inline void zend_insert_literal(zend_op_array *op_array, zval *zv, int literal_position) /* {{{ */
+ {
++	zval *lit = CT_CONSTANT_EX(op_array, literal_position);
+ 	if (Z_TYPE_P(zv) == IS_STRING) {
+ 		zval_make_interned_string(zv);
+ 	}
+-	ZVAL_COPY_VALUE(CT_CONSTANT_EX(op_array, literal_position), zv);
++	ZVAL_COPY_VALUE(lit, zv);
++	Z_EXTRA_P(lit) = 0;
+ }
+ /* }}} */
+ 
+@@ -2444,7 +2446,6 @@ static inline void zend_handle_numeric_dim(zend_op *opline, znode *dim_node) /*
+ 			return;
+ 		}
+ 	}
+-	Z_EXTRA_P(CT_CONSTANT(opline->op2)) = 0;
+ }
+ /* }}} */
+ 
+diff --git a/ext/opcache/Optimizer/compact_literals.c b/ext/opcache/Optimizer/compact_literals.c
+index 95ec137..4f71e56 100644
+--- a/ext/opcache/Optimizer/compact_literals.c
++++ b/ext/opcache/Optimizer/compact_literals.c
+@@ -378,7 +378,6 @@ void zend_optimizer_compact_literals(zend_op_array *op_array, zend_optimizer_ctx
+ 						} else {
+ 							map[i] = j;
+ 							ZVAL_LONG(&zv, j);
+-							Z_EXTRA(op_array->literals[i]) = 0; /* allow merging with FETCH_DIM_... */
+ 							zend_hash_index_add_new(&hash, Z_LVAL(op_array->literals[i]), &zv);
+ 							if (i != j) {
+ 								op_array->literals[j] = op_array->literals[i];
+diff --git a/ext/opcache/Optimizer/zend_optimizer.c b/ext/opcache/Optimizer/zend_optimizer.c
+index 84f07a1..5d34525 100644
+--- a/ext/opcache/Optimizer/zend_optimizer.c
++++ b/ext/opcache/Optimizer/zend_optimizer.c
+@@ -206,6 +206,7 @@ int zend_optimizer_add_literal(zend_op_array *op_array, zval *zv)
+ 	op_array->last_literal++;
+ 	op_array->literals = (zval*)erealloc(op_array->literals, op_array->last_literal * sizeof(zval));
+ 	ZVAL_COPY_VALUE(&op_array->literals[i], zv);
++	Z_EXTRA(op_array->literals[i]) = 0;
+ 	return i;
+ }
+ 
+@@ -533,7 +534,6 @@ int zend_optimizer_update_op2_const(zend_op_array *op_array,
+ 					}
+ 				}
+ 				opline->op2.constant = zend_optimizer_add_literal(op_array, val);
+-				Z_EXTRA(op_array->literals[opline->op2.constant]) = 0;
+ 			} else {
+ 				opline->op2.constant = zend_optimizer_add_literal(op_array, val);
+ 			}
+@@ -562,7 +562,6 @@ int zend_optimizer_update_op2_const(zend_op_array *op_array,
+ 				}
+ 			}
+ 			opline->op2.constant = zend_optimizer_add_literal(op_array, val);
+-			Z_EXTRA(op_array->literals[opline->op2.constant]) = 0;
+ 			break;
+ 		case ZEND_ADD_ARRAY_ELEMENT:
+ 		case ZEND_INIT_ARRAY:
+diff --git a/ext/opcache/tests/bug77275.phpt b/ext/opcache/tests/bug77275.phpt
+new file mode 100644
+index 0000000..28f6a30
+--- /dev/null
++++ b/ext/opcache/tests/bug77275.phpt
+@@ -0,0 +1,30 @@
++--TEST--
++Bug #77275: OPcache optimization problem for ArrayAccess->offsetGet(string)
++--INI--
++opcache.enable_cli=1
++opcache.optimization_level=-1
++--FILE--
++<?php
++namespace Foo;
++class Bar { public function get() {} }
++class Record implements \ArrayAccess {
++    public function offsetSet($offset, $value) { throw new \Exception; }
++    public function offsetGet($offset) { var_dump($offset); }
++    public function offsetExists($offset) { throw new \Exception; }
++    public function offsetUnset($offset) { throw new \Exception; }
++}
++class Baz {
++    public function run() {
++        $a = pow(1, 2);
++        $b = new Bar();
++        $c = new Bar();
++        $d = new Bar();
++        $id = $b->get('a', 'b', 'c');
++        $rec = new Record();
++        $id = $rec['a'];
++    }
++}
++(new Baz())->run();
++?>
++--EXPECT--
++string(1) "a"
+-- 
+2.1.4
+
