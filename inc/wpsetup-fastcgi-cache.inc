@@ -2916,9 +2916,17 @@ chmod 0700 /usr/bin/wp
 /usr/bin/wp plugin status --allow-root
 /usr/bin/wp plugin update --all --allow-root | tee .wpcli-status
 #/usr/bin/wp core check-update --allow-root
+
+# for major core updates uncomment 3 lines directly below
 #/usr/bin/wp core update --allow-root
 #/usr/bin/wp core update-db --allow-root
 #/usr/bin/wp core update --allow-root
+
+# for minor core updates uncomment 3 lines directly below
+#/usr/bin/wp core update --minor --allow-root
+#/usr/bin/wp core update-db --allow-root
+#/usr/bin/wp core update --minor --allow-root
+
 chown -R nginx:nginx /home/nginx/domains/${vhostname}/public${WPSUBDIR}
 if [[ -f .wpcli-status && ! "\$(grep -w 'Plugin already updated' .wpcli-status)" ]]; then
   exec 99>/tmp/wp_updater_phpfpm.lock
