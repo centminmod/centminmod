@@ -67,7 +67,7 @@
 #<UDF name="lua" Label="Enable OpenResty Lua Nginx mdoule support ? (auto fallback to OpenSSL 1.0.2+ for Lua Nginx compatibility)" oneOf="yes,no" default="no" />
 # LUA=
 # 
-#<UDF name="php" Label="Install Latest PHP 5.6 or 7.0 or 7.1 or 7.2 Version ?" oneOf="5.6,7.0,7.1,7.2" default="5.6" />
+#<UDF name="php" Label="Install Latest PHP 5.6 or 7.0 or 7.1 or 7.2 or 7.3 Version ?" oneOf="5.6,7.0,7.1,7.2,7.3" default="5.6" />
 # PHP=
 # 
 #<UDF name="docker" Label="Install Docker ?" oneOf="yes,no" default="no" />
@@ -226,6 +226,15 @@ echo "Set NGXDYNAMIC_NGXPAGESPEED='y'"
 echo "Set NGINX_PAGESPEED='y'"
 echo "NGXDYNAMIC_NGXPAGESPEED='y'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_PAGESPEED='y'" >> /etc/centminmod/custom_config.inc
+echo
+fi
+
+# Build PHP version
+if [[ "$PHP" = '7.3' ]]; then
+echo
+yum -y update
+echo
+curl -O https://centminmod.com/betainstaller73.sh && chmod 0700 betainstaller73.sh && bash betainstaller73.sh
 echo
 fi
 
