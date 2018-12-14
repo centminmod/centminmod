@@ -721,6 +721,16 @@ fi
         echo "https://community.centminmod.com/posts/63295/"
         rm -rf /usr/local/bin/c_rehash
     fi
+    if [ -f /usr/local/lib/libssl.a ]; then
+        echo "clean up old /usr/local/lib/libssl.a"
+        rm -rf /usr/local/lib/libssl.a
+        ldconfig
+    fi
+    if [ -f /usr/local/lib/libcrypto.a ]; then
+        echo "clean up old /usr/local/lib/libcrypto.a"
+        rm -rf /usr/local/lib/libcrypto.a
+        ldconfig
+    fi
 
     if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         # lua nginx 0.10.7 and lower not compatible with openssl 1.1.x branch

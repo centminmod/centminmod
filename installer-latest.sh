@@ -636,6 +636,9 @@ source_wgetinstall() {
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
+    # ensure wget.sh installer utilises system openssl
+    export OPENSSL_CFLAGS="-I /usr/include"
+    export OPENSSL_LIBS="-L /usr/lib64 -lssl -lcrypto"
   else
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
