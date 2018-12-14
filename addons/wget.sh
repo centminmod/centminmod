@@ -469,6 +469,8 @@ source_wgetinstall() {
   ./configure --with-ssl=openssl
   sar_call
   if [[ "$WGET_STRACE" = [yY] ]]; then
+    make check
+    make distcheck
     strace -o "${CENTMINLOGDIR}/strace_wget_make_$DT.log" -f -s256 -tt -T -q make${MAKETHREADS}
   else
     make${MAKETHREADS}
