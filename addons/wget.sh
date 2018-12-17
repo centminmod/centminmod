@@ -73,6 +73,17 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [ -f /usr/local/lib/libssl.a ]; then
+    # echo "clean up old /usr/local/lib/libssl.a"
+    rm -rf /usr/local/lib/libssl.a
+    ldconfig
+fi
+if [ -f /usr/local/lib/libcrypto.a ]; then
+    # echo "clean up old /usr/local/lib/libcrypto.a"
+    rm -rf /usr/local/lib/libcrypto.a
+    ldconfig
+fi
+
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
