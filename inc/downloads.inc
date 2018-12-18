@@ -639,7 +639,11 @@ then
     phpgeolocation
     curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
     PHPGEO_CURLCHECK=$?
-    if [[ "$PHPGEO_CURLCHECK" = '0' ]]; then
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | egrep '200|301|302'
+    PHPGEO_CURLCHECKOK=$?
+    # check if download url is 404 not found but also 
+    # check for valid status header 200, 301 or 302
+    if [[ "$PHPGEO_CURLCHECK" = '0' || "$PHPGEO_CURLCHECKOK" != '0' ]]; then
         PHP_MIRRORURL="http://php.net"
         PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
     fi
