@@ -87,7 +87,7 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
     echo "DE server detected"
-    PHP_MIRRORURL="http://de1.php.net"
+    PHP_MIRRORURL="http://de2.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
     echo "FR server detected"
@@ -107,7 +107,7 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
     echo "IN server detected"
-    PHP_MIRRORURL="http://in1.php.net"
+    PHP_MIRRORURL="http://in3.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
     echo "JP server detected"
