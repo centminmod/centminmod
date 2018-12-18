@@ -2069,6 +2069,17 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+PHPSEVEN_CHECKVER=$?
+echo "$PHPSEVEN_CHECKVER"
+if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
+  if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
+      cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+      cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+      /etc/init.d/php-fpm restart >/dev/null 2>&1
+  fi
+fi
+
 echo "pureftpinstall"
 pureftpinstall
 
