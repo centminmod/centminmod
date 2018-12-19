@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.8'
+VER='0.0.9'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -10,13 +10,13 @@ export LC_CTYPE=en_US.UTF-8
 ######################################################
 # ruby, rubygem, rails and passenger installer
 # for Centminmod.com
-# written by George Liu (eva2000) vbtechsupport.com
+# written by George Liu (eva2000) centminmod.com
 ######################################################
-RUBYVER='2.4.0'
+RUBYVER='2.5.3'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='4.7.2'
+NODEJSVER='8'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
@@ -66,7 +66,7 @@ done
 CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
 
 if [ ! -d "$CENTMINLOGDIR" ]; then
-	mkdir -p "$CENTMINLOGDIR"
+  mkdir -p "$CENTMINLOGDIR"
 fi
 
 if [ "$CENTOSVER" == 'release' ]; then
@@ -169,17 +169,17 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
 fi
 
 preyum() {
-	if [[ ! -d /svr-setup ]]; then
-		yum -y install gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel make bzip2 autoconf automake libtool bison iconv-devel sqlite-devel openssl-devel
-	elif [[ -z "$(rpm -ql libffi-devel)" || -z "$(rpm -ql libyaml-devel)" || -z "$(rpm -ql sqlite-devel)" ]]; then
-		yum -y install libffi-devel libyaml-devel sqlite-devel
-	fi
+  if [[ ! -d /svr-setup ]]; then
+    yum -y install gcc-c++ patch readline readline-devel zlib zlib-devel libyaml-devel libffi-devel make bzip2 autoconf automake libtool bison iconv-devel sqlite-devel openssl-devel
+  elif [[ -z "$(rpm -ql libffi-devel)" || -z "$(rpm -ql libyaml-devel)" || -z "$(rpm -ql sqlite-devel)" ]]; then
+    yum -y install libffi-devel libyaml-devel sqlite-devel
+  fi
 
-	if [[ "$(rpm -ql ruby | grep -v 'not installed')" || "$(rpm -ql ruby-libs | grep -v 'not installed')" || "$(rpm -ql rubygems | grep -v 'not installed')" ]]; then
-		yum erase ruby ruby-libs ruby-mode rubygems
-	fi
+  if [[ "$(rpm -ql ruby | grep -v 'not installed')" || "$(rpm -ql ruby-libs | grep -v 'not installed')" || "$(rpm -ql rubygems | grep -v 'not installed')" ]]; then
+    yum -y erase ruby ruby-libs ruby-mode rubygems
+  fi
 
-	mkdir -p /home/.ccache/tmp
+  mkdir -p /home/.ccache/tmp
 }
 
 installnodejs() {
@@ -187,43 +187,43 @@ installnodejs() {
 # nodesource yum only works on CentOS 7 right now
 # https://github.com/nodesource/distributions/issues/128
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
-	if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
-	
-    	cd $DIR_TMP
-    	curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
-    	yum -y install nodejs --disableplugin=priorities --disablerepo=epel
-    	npm install npm@latest -g
-	
-	# npm install forever -g
-	# https://github.com/Unitech/pm2/issues/232
-	# https://github.com/arunoda/node-usage/issues/19
-	# npm install pm2@latest -g --unsafe-perm
-	
-	echo -n "Node.js Version: "
-	node -v
-	echo -n "npm Version: "
-	npm --version
-	# echo -n "forver Version: "
-	# forever -v
-	# echo -n "pm2 Version: "
-	# pm2 -V
-	else
-		echo "node.js install already detected"
-	fi
+  if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  
+      cd $DIR_TMP
+      curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
+      yum -y install nodejs --disableplugin=priorities --disablerepo=epel
+      npm install npm@latest -g
+  
+  # npm install forever -g
+  # https://github.com/Unitech/pm2/issues/232
+  # https://github.com/arunoda/node-usage/issues/19
+  # npm install pm2@latest -g --unsafe-perm
+  
+  echo -n "Node.js Version: "
+  node -v
+  echo -n "npm Version: "
+  npm --version
+  # echo -n "forver Version: "
+  # forever -v
+  # echo -n "pm2 Version: "
+  # pm2 -V
+  else
+    echo "node.js install already detected"
+  fi
 elif [[ "$CENTOS_SIX" = '6' ]]; then
-	echo
-	echo "CentOS 6.x detected... "
-	echo "addons/nodejs.sh currently only works on CentOS 7.x systems"
-	# exit
+  echo
+  echo "CentOS 6.x detected... "
+  echo "addons/nodejs.sh currently only works on CentOS 7.x systems"
+  # exit
 fi
 }
 
 installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
-      curl --silent -4 --location https://rpm.nodesource.com/setup_4.x | bash -
+      curl --silent -4 --location https://rpm.nodesource.com/setup_${NODEJSVER}.x | bash -
       yum -y install nodejs --disableplugin=priorities --disablerepo=epel
-      npm install npm@latest -g
+      time npm install npm@latest -g
   
     echo
     cecho "---------------------------" $boldyellow
@@ -245,95 +245,97 @@ installruby() {
 
 if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z $(which gem >/dev/null 2>&1) ]]; then
 
-	groupadd rvm
-	usermod -a -G rvm root
-	
-	echo "curl -sSL https://rvm.io/mpapis.asc | gpg -v --import -"
-	curl -sSL https://rvm.io/mpapis.asc | gpg -v --import -
-	\curl -L https://get.rvm.io | bash -s stable
-	# \curl -L https://get.rvm.io | bash -s stable --ruby
-	# \curl -L https://get.rvm.io | bash -s stable --rails
-	
-	source /etc/profile.d/rvm.sh
+  groupadd rvm
+  usermod -a -G rvm root
+  
+  echo "curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -"
+  curl -sSL https://rvm.io/mpapis.asc | gpg2 --import -
+  echo "curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -"
+  curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
+  \curl -L https://get.rvm.io | bash -s stable
+  # \curl -L https://get.rvm.io | bash -s stable --ruby
+  # \curl -L https://get.rvm.io | bash -s stable --rails
+  
+  source /etc/profile.d/rvm.sh
 
-	# export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/rvm/bin"
+  # export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin:/usr/local/rvm/bin"
 
-	# export PATH="$PATH:/usr/local/rvm/bin"
-	
-	# echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> ~/.bash_profile
+  # export PATH="$PATH:/usr/local/rvm/bin"
+  
+  # echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> ~/.bash_profile
 
-	echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> ~/.bashrc
-	
-	echo "checks..."
-	echo "--------------------------------"
-	echo "export PATH="$PATH""
-	export PATH="$PATH"
-	echo
-	echo $PATH
-	echo "--------------------------------"
-	rvm requirements
-	echo "--------------------------------"
-	rvm list
-	echo
-	rvm list | awk -F " " '/^\=\*/ {print $2}'
-	echo "--------------------------------"
-	type rvm | head -1
-	echo "--------------------------------"
-	
-	echo "rvm install ${RUBYVER}"
-	echo "rvm use ${RUBYVER} --default"
-	echo "rvm rubygems current"
-	echo "--------------------------------"	
-	echo $GEM_HOME
-	echo $GEM_PATH
-	echo "--------------------------------"
-	echo "gem install rake rails sqlite3 mysql bundler --no-ri --no-rdoc"
-	echo "gem install passenger --no-ri --no-rdoc"
-	
-	echo "--------------------------------"
-	# RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
-	rvm install ${RUBYVER}
-	echo "--------------------------------"
-	rvm use ${RUBYVER} --default
-	echo "--------------------------------"
+  echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> ~/.bashrc
+  
+  echo "checks..."
+  echo "--------------------------------"
+  echo "export PATH="$PATH""
+  export PATH="$PATH"
+  echo
+  echo $PATH
+  echo "--------------------------------"
+  rvm requirements
+  echo "--------------------------------"
+  rvm list
+  echo
+  rvm list | awk -F " " '/^\=\*/ {print $2}'
+  echo "--------------------------------"
+  type rvm | head -1
+  echo "--------------------------------"
+  
+  echo "rvm install ${RUBYVER}"
+  echo "rvm use ${RUBYVER} --default"
+  echo "rvm rubygems current"
+  echo "--------------------------------" 
+  echo $GEM_HOME
+  echo $GEM_PATH
+  echo "--------------------------------"
+  echo "gem install rake rails sqlite3 mysql bundler --no-ri --no-rdoc"
+  echo "gem install passenger --no-ri --no-rdoc"
+  
+  echo "--------------------------------"
+  # RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
+  rvm install ${RUBYVER}
+  echo "--------------------------------"
+  rvm use ${RUBYVER} --default
+  echo "--------------------------------"
 
-	echo "PATH echo..."
-	# sed -i 's/export PATH/#export PATH/' ~/.bashrc
+  echo "PATH echo..."
+  # sed -i 's/export PATH/#export PATH/' ~/.bashrc
 
-	# PATH=$(echo $PATH | tr ':' '\n' | sort | uniq | tr '\n' ':')
+  # PATH=$(echo $PATH | tr ':' '\n' | sort | uniq | tr '\n' ':')
 
-	# echo "export PATH=\"$PATH:/usr/local/rvm/gems/ruby-${RUBYVER}/bin:/usr/local/rvm/gems/ruby-${RUBYVER}@global/bin:/usr/local/rvm/rubies/ruby-${RUBYVER}/bin\"" >> ~/.bashrc
-	# export PATH="$PATH:/usr/local/rvm/gems/ruby-${RUBYVER}/bin:/usr/local/rvm/gems/ruby-${RUBYVER}@global/bin:/usr/local/rvm/rubies/ruby-${RUBYVER}/bin"
+  # echo "export PATH=\"$PATH:/usr/local/rvm/gems/ruby-${RUBYVER}/bin:/usr/local/rvm/gems/ruby-${RUBYVER}@global/bin:/usr/local/rvm/rubies/ruby-${RUBYVER}/bin\"" >> ~/.bashrc
+  # export PATH="$PATH:/usr/local/rvm/gems/ruby-${RUBYVER}/bin:/usr/local/rvm/gems/ruby-${RUBYVER}@global/bin:/usr/local/rvm/rubies/ruby-${RUBYVER}/bin"
 
-	# echo "export PATH="$PATH"" >> ~/.bashrc
-	# export PATH="$PATH"
+  # echo "export PATH="$PATH"" >> ~/.bashrc
+  # export PATH="$PATH"
 
-	echo "--------------------------------"
-	rvm rubygems current
-	echo "--------------------------------"
-	gem env
-	echo "--------------------------------"
-	gem install rake rails sqlite3 mysql --no-ri --no-rdoc
-	gem install passenger --no-ri --no-rdoc
-	echo "--------------------------------"
-	
-	echo "more checks..."
-	echo "--------------------------------"
-	ruby -v
-	echo "--------------------------------"
-	rails --version
-	echo "--------------------------------"
-	passenger -v | head -n1
-	echo "--------------------------------"
-	# passenger-memory-stats
-	passenger-memory-stats | sed -r "s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g"
-	echo "--------------------------------"
-	# passenger-status
-	echo "--------------------------------"
-	gem list
-	echo "--------------------------------"
+  echo "--------------------------------"
+  rvm rubygems current
+  echo "--------------------------------"
+  gem env
+  echo "--------------------------------"
+  gem install rake rails sqlite3 mysql --no-ri --no-rdoc
+  gem install passenger --no-ri --no-rdoc
+  echo "--------------------------------"
+  
+  echo "more checks..."
+  echo "--------------------------------"
+  ruby -v
+  echo "--------------------------------"
+  rails --version
+  echo "--------------------------------"
+  passenger -v | head -n1
+  echo "--------------------------------"
+  # passenger-memory-stats
+  passenger-memory-stats | sed -r "s/\x1B\[([0-9]{1,3}((;[0-9]{1,3})*)?)?[m|K]//g"
+  echo "--------------------------------"
+  # passenger-status
+  echo "--------------------------------"
+  gem list
+  echo "--------------------------------"
 else
-	echo "ruby or rvm or gem install already detected"
+  echo "ruby or rvm or gem install already detected"
 fi
 
 } # installruby
@@ -342,13 +344,13 @@ nginxruby() {
 
 if [[ -z $(which passenger-config >/dev/null 2>&1) || -f /usr/local/nginx/conf/passenger.conf ]]; then
 
-	PASSENGERROOT=$(passenger-config --root | head -n1)
+  PASSENGERROOT=$(passenger-config --root | head -n1)
 
-	echo "-------------------------------------------"
-	echo "Setup /usr/local/nginx/conf/passenger.conf"
-	echo "-------------------------------------------"
+  echo "-------------------------------------------"
+  echo "Setup /usr/local/nginx/conf/passenger.conf"
+  echo "-------------------------------------------"
 
-	echo "Passenger root located at: $PASSENGERROOT"
+  echo "Passenger root located at: $PASSENGERROOT"
 
 cat > "/usr/local/nginx/conf/passenger.conf" <<END
 #passenger_root $PASSENGERROOT;
@@ -356,60 +358,60 @@ cat > "/usr/local/nginx/conf/passenger.conf" <<END
 #passenger_max_pool_size 4;
 END
 
-	# Check that passenger.conf is included in nginx.con if not detected
-	PASSENGERCHECK=$(grep '/usr/local/nginx/conf/passenger.conf' /usr/local/nginx/conf/nginx.conf)
+  # Check that passenger.conf is included in nginx.con if not detected
+  PASSENGERCHECK=$(grep '/usr/local/nginx/conf/passenger.conf' /usr/local/nginx/conf/nginx.conf)
 
-	if [[ -z "$PASSENGERCHECK" ]]; then
-		sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/passenger.conf;/g' /usr/local/nginx/conf/nginx.conf
-	fi
-	cecho "-------------------------------------------" $boldgreen
-	cecho "Setup completed..." $boldyellow
-	cecho "-------------------------------------------" $boldgreen
-	echo ""
-	echo "Log out and log back into your SSH session"
-	echo "to complete the next setup steps bellow"
-	echo ""	
-	echo "Instructions also at https://community.centminmod.com/threads/3282"
+  if [[ -z "$PASSENGERCHECK" ]]; then
+    sed -i 's/http {/http { \n#include \/usr\/local\/nginx\/conf\/passenger.conf;/g' /usr/local/nginx/conf/nginx.conf
+  fi
+  cecho "-------------------------------------------" $boldgreen
+  cecho "Setup completed..." $boldyellow
+  cecho "-------------------------------------------" $boldgreen
+  echo ""
+  echo "Log out and log back into your SSH session"
+  echo "to complete the next setup steps bellow"
+  echo "" 
+  echo "Instructions also at https://community.centminmod.com/threads/3282"
 
-	echo ""
-	echo "Uncomment lines in /usr/local/nginx/conf/passenger.conf to enable passenger"
-	echo "Nginx needs to have passenger nginx module compiled for it to work"
-	echo ""
-	echo " 1. set NGINX_PASSENGER=y in persistent config file /etc/centminmod/custom_config.inc (create file if missing)"
-	echo " 2. run centmin.sh menu option 4 to recompile Nginx"
-	echo " 3. uncomment/enable /usr/local/nginx/conf/passenger.conf include file in nginx.conf"
-	echo " 4. then check that passenger module is in list of nginx modules via command: "
-	echo ""
-	echo " nginx -V"
-	echo ""
-	# sed -i 's/#passenger_/passenger_/g' /usr/local/nginx/conf/passenger.conf
-	echo ""
-	echo "This script only installs passenger, node.js, ruby, rails, rubygem and is provided as is."
-	echo "See Phusion Passenger documentation at for deployment and configuration at:"
-	echo "* http://www.modrails.com/documentation/Users%20guide%20Nginx.html"
-	echo "* https://github.com/phusion/passenger/wiki/Phusion-Passenger%3A-Node.js-tutorial"
-	echo "* https://github.com/phusion/passenger/wiki"
+  echo ""
+  echo "Uncomment lines in /usr/local/nginx/conf/passenger.conf to enable passenger"
+  echo "Nginx needs to have passenger nginx module compiled for it to work"
+  echo ""
+  echo " 1. set NGINX_PASSENGER=y in persistent config file /etc/centminmod/custom_config.inc (create file if missing)"
+  echo " 2. run centmin.sh menu option 4 to recompile Nginx"
+  echo " 3. uncomment/enable /usr/local/nginx/conf/passenger.conf include file in nginx.conf"
+  echo " 4. then check that passenger module is in list of nginx modules via command: "
+  echo ""
+  echo " nginx -V"
+  echo ""
+  # sed -i 's/#passenger_/passenger_/g' /usr/local/nginx/conf/passenger.conf
+  echo ""
+  echo "This script only installs passenger, node.js, ruby, rails, rubygem and is provided as is."
+  echo "See Phusion Passenger documentation at for deployment and configuration at:"
+  echo "* http://www.modrails.com/documentation/Users%20guide%20Nginx.html"
+  echo "* https://github.com/phusion/passenger/wiki/Phusion-Passenger%3A-Node.js-tutorial"
+  echo "* https://github.com/phusion/passenger/wiki"
 
-	echo ""
-	echo "Log out and log back into your SSH session"
-	echo "to complete the next setup steps above"
-	echo ""	
-	echo "Instructions also at https://community.centminmod.com/threads/3282"	
-	echo ""		
+  echo ""
+  echo "Log out and log back into your SSH session"
+  echo "to complete the next setup steps above"
+  echo "" 
+  echo "Instructions also at https://community.centminmod.com/threads/3282" 
+  echo ""   
 else
-	echo "Passenger install already detected"
+  echo "Passenger install already detected"
 fi
 }
 
 ###########################################################################
 case $1 in
-	install)
+  install)
 starttime=$(TZ=UTC date +%s.%N)
 {
-		preyum
-		installnodejs_new
-		installruby
-		nginxruby
+    preyum
+    installnodejs_new
+    installruby
+    nginxruby
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
@@ -417,9 +419,9 @@ endtime=$(TZ=UTC date +%s.%N)
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log
 echo "Total Phusion Passenger Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_passenger_install_${DT}.log
-	;;
-	*)
-		echo "$0 install"
-	;;
+  ;;
+  *)
+    echo "$0 install"
+  ;;
 esac
 exit
