@@ -1,6 +1,6 @@
-fastcgi_connect_timeout 60;
-fastcgi_send_timeout 180;
-fastcgi_read_timeout 180;
+fastcgi_connect_timeout 60s;
+fastcgi_send_timeout 180s;
+fastcgi_read_timeout 300s;
 fastcgi_buffer_size 256k;
 fastcgi_buffers 4 256k;
 fastcgi_busy_buffers_size 256k;

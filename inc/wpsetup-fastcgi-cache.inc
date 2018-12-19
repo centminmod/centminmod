@@ -985,9 +985,9 @@ if (\$fastcgi_debug) {
 #tcp_nopush off;
 #keepalive_requests 0;
 
-fastcgi_connect_timeout 60;
-fastcgi_send_timeout 180;
-fastcgi_read_timeout 180;
+fastcgi_connect_timeout 60s;
+fastcgi_send_timeout 180s;
+fastcgi_read_timeout 300s;
 fastcgi_buffer_size 512k;
 fastcgi_buffers 512 16k;
 fastcgi_busy_buffers_size 1m;
@@ -1093,9 +1093,9 @@ location ~ [^/]\.php(/|\$) {
 #tcp_nopush off;
 #keepalive_requests 0;
 
-fastcgi_connect_timeout 60;
-fastcgi_send_timeout 180;
-fastcgi_read_timeout 180;
+fastcgi_connect_timeout 60s;
+fastcgi_send_timeout 180s;
+fastcgi_read_timeout 300s;
 fastcgi_buffer_size 512k;
 fastcgi_buffers 512 16k;
 fastcgi_busy_buffers_size 1m;
@@ -1196,9 +1196,9 @@ location ~ [^/]\.php(/|\$) {
 #tcp_nopush off;
 #keepalive_requests 0;
 
-fastcgi_connect_timeout 60;
-fastcgi_send_timeout 180;
-fastcgi_read_timeout 180;
+fastcgi_connect_timeout 60s;
+fastcgi_send_timeout 180s;
+fastcgi_read_timeout 300s;
 fastcgi_buffer_size 512k;
 fastcgi_buffers 512 16k;
 fastcgi_busy_buffers_size 1m;
