@@ -43,6 +43,18 @@ if [ "$IGBINARYGIT" == 'y' ]; then
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
+        if [[ "$CENTOS_SIX" -eq '6' ]]; then
+            # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
+            if [ ! -f /usr/bin/autoconf268 ]; then
+                echo "yum -q -y install autoconf268"
+                yum -q -y install autoconf268
+            fi
+            if [ -f /usr/bin/autoconf268 ]; then
+                export PHP_AUTOCONF=/usr/bin/autoconf268
+                export PHP_AUTOHEADER=/usr/bin/autoheader268
+            fi
+            autoconf268 -V | head -n1
+        fi
         autoconf -V | head -n1
         /usr/local/bin/phpize -clean
         /usr/local/bin/phpize

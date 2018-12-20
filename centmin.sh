@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='078'
+SCRIPT_INCREMENTVER='079'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2018'
@@ -2074,9 +2074,10 @@ PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
   if [[ "$PHPMVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
-      cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-      cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-      /etc/init.d/php-fpm restart >/dev/null 2>&1
+      # cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+      # cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+      # /etc/init.d/php-fpm restart >/dev/null 2>&1
+      echo
   fi
 fi
 
