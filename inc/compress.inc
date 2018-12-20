@@ -8,6 +8,17 @@ LZLIB_VER='1.10'
 PLZIP_VER='1.7'
 PZIP_VER='15.14.1'
 
+compgcc_seven() {
+  if [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+    label='gcc7 built'
+    source /opt/rh/devtoolset-7/enable
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+}
+
 compressmenu_notice() {
   echo
   echo "Multi-thread compression Install"
@@ -21,6 +32,7 @@ compressmenu_notice() {
   5. zstd
   6. lz4"
   echo
+  compgcc_seven
 }
 
 zstdinstall() {
