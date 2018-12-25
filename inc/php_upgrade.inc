@@ -210,6 +210,9 @@ gethtpasswdsh
 PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+PHPSEVEN_CHECKVER=$?
+echo "$PHPSEVEN_CHECKVER"
 
     phpng_download
     autodetectextensions
@@ -505,7 +508,7 @@ cecho "#rm -rf /etc/centminmod/php.d/igbinary.ini
 #rm -rf /etc/centminmod/php.d/imagick.ini
 #rm -rf /etc/centminmod/php.d/memcache.ini
 rm -rf /etc/centminmod/php.d/mongodb.ini
-rm -rf /etc/centminmod/php.d/redis.ini
+#rm -rf /etc/centminmod/php.d/redis.ini
 rm -rf /etc/centminmod/php.d/suhosin.ini" $boldyellow
     echo
     cecho "then restart PHP-FPM again..." $boldyellow
