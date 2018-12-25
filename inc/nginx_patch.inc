@@ -167,18 +167,16 @@ ngx_hpack_patch() {
     echo "patching nginx http/2 full HPACK encoding for nginx 1.15.4-1.15.7"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -eq '1015008' ]]; then
-    pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
-    cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
-    cecho "nginx-1.15.8_http2-hpack.patch" $boldyellow
-    # rm -rf nginx-1.15.8_http2-hpack.patch
-    # wget -${ipv_forceopt}cnv https://github.com/cloudflare/sslconfig/raw/hpack_1.13.1/patches/nginx-1.15.8_http2-hpack.patch
-    cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.8_http2-hpack.patch" $boldyellow
-    patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.8_http2-hpack.patch
-    echo 
-    echo "patching nginx http/2 full HPACK encoding for nginx 1.15.8"
-    popd
-    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  # elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1015007' ]]; then
+  #   pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+  #   cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
+  #   cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
+  #   cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
+  #   patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
+  #   echo 
+  #   echo "patching nginx http/2 full HPACK encoding for nginx 1.15.8"
+  #   popd
+  #   NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
