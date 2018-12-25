@@ -181,9 +181,11 @@ if [[ "$UALL" = 'y' ]]; then
     lessphpmem='y'
 else
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.0, NGDEBUG)"
-    echo "PHP 7.0.0 is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 7.1.0 minus incompatible PHP extensions"
+    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.33, NGDEBUG)"
+    echo "PHP 7.0.33 is max fully supported version in 123.08stable. For PHP 7.1/7.2/7.3,"
+    echo "you want to upgrade and switch to Centmin Mod 123.09beta01 and newer branches"
+    echo "see How to switch to 123.09beta01 branch section instructions outlined at"
+    echo "https://community.centminmod.com/threads/4128/"
     echo "----------------------------------------------------------------"
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo "----------------------------------------------------------------"
