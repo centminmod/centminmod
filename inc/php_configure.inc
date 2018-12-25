@@ -339,13 +339,15 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
   else
     LIBDIR_ARGONSODIUM='lib'
   fi
-  if [ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]; then
+  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
         cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
     else
         echo "wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
         wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
+        # echo "wget -c${ipv_forceopt} "https://pecl.php.net/get/libsodium-${LIBSODIUM_VER}.tgz" --tries=3"
+        # wget -c${ipv_forceopt} "https://pecl.php.net/get/libsodium-${LIBSODIUM_VER}.tgz" --tries=3
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
             cecho "Error: libsodium-${LIBSODIUM_VER}.tar.gz download failed." $boldgreen
@@ -365,7 +367,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
     make install
     popd
   fi
-  if [ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]; then
+  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "${LIBARGON_VER}.tar.gz" ]; then
         cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
