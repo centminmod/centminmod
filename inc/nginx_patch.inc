@@ -349,6 +349,18 @@ ngxopenresty_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
+ngx_dynamic_tls_message() {
+     if [ -f "$(which figlet)" ]; then
+         figlet -ckf standard "Cloudflare Nginx Dynamic TLS Patch"
+     fi
+     echo "######################################################################"
+     echo "Patching Nginx for Dynamic TLS Size Support"
+     echo "######################################################################"
+     echo "Cloudflare Nginx Dynamic TLS patch"
+     echo "https://github.com/cloudflare/sslconfig/raw/master/patches/nginx__dynamic_tls_records.patch"
+     echo "######################################################################"
+}
+
 patchnginx() {
   {
   sleep "$NGINXPATCH_DELAY"
@@ -451,15 +463,6 @@ patchnginx() {
     NGINX_DYNAMICTLS='n'
   fi
   if [[ "$NGINX_DYNAMICTLS" = [yY] ]]; then
-     if [ -f "$(which figlet)" ]; then
-         figlet -ckf standard "Cloudflare Nginx Dynamic TLS Patch"
-     fi
-     echo "######################################################################"
-     echo "Patching Nginx for Dynamic TLS Size Support"
-     echo "######################################################################"
-     echo "Cloudflare Nginx Dynamic TLS patch"
-     echo "https://github.com/cloudflare/sslconfig/raw/master/patches/nginx__dynamic_tls_records.patch"
-     echo "######################################################################"
      if [ "$ngver" ]; then
        DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
      else
@@ -467,10 +470,13 @@ patchnginx() {
      fi
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records.patch'
+      ngx_dynamic_tls_message
      elif [[ "$DETECT_NGXVER" -ge '1011005' && "$DETECT_NGXVER" -le '1015003' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1011005.patch'
+      ngx_dynamic_tls_message
      elif [[ "$DETECT_NGXVER" -ge '1015004' && "$DETECT_NGXVER" -le '1015007' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015004.patch'
+      ngx_dynamic_tls_message
      fi
      rm -rf "${NGINXTLSPATCH_NAME}"
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
