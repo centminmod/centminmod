@@ -68,6 +68,14 @@ installopenssl() {
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
+        if [[ "$CENTOS_SIX" -eq '6' ]]; then
+            if [ ! -f /usr/bin/automake-1.5 ]]; then
+                yum -y install automake15
+            fi
+            if [ ! -f /usr/bin/automake-1.6 ]]; then
+                yum -y install automake16
+            fi
+        fi
         if [ ! -f configure ]; then
             # https://github.com/libressl-portable/portable/issues/99
             # sed -i 's|patch -p0 < patches\/tls.h.patch|patch -R -p0 < patches\/tls.h.patch|g' update.sh
