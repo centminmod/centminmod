@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.1'
+VER='0.0.2'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -13,7 +13,7 @@ export LC_CTYPE=en_US.UTF-8
 # written by George Liu (eva2000) centminmod.com
 # https://rvm.io/
 ######################################################
-RUBYVER='2.5.3'
+RUBYVER='2.6.0'
 RUBYBUILD=''
 
 DT=$(date +"%d%m%y-%H%M%S")
