@@ -516,6 +516,7 @@ source_wgetinstall() {
   cecho "--------------------------------------------------------" $boldgreen
   if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
     cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
+    cecho "https://community.centminmod.com/tags/wget/" $boldyellow
     if [[ "$WGET_STRACE" = [yY] ]]; then
       # ls -lah ${CENTMINLOGDIR} | grep $DT
       if [ -f "${CENTMINLOGDIR}/strace_wget_make_$DT.log" ]; then
@@ -529,6 +530,7 @@ source_wgetinstall() {
     fi
   else
     cecho "wget ${WGET_VERSION} failed to update, still using system wget" $boldyellow
+    cecho "https://community.centminmod.com/tags/wget/" $boldyellow
     cecho "install log: ${CENTMINLOGDIR}/wget_source_install_${DT}.log" $boldyellow
     if [[ "$WGET_STRACE" = [yY] ]]; then
       if [ -f "${CENTMINLOGDIR}/strace_wget_make_$DT.log" ]; then
