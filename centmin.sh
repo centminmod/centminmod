@@ -2467,7 +2467,7 @@ else
             cecho "14). SELinux disable" $boldgreen
             cecho "15). Install/Reinstall ImagicK PHP Extension" $boldgreen
             cecho "16). Change SSHD Port Number" $boldgreen
-            cecho "17). Multi-thread compression: pigz,pbzip2,lbzip2..." $boldgreen
+            cecho "17). Multi-thread compression: zstd,pigz,pbzip2,lbzip2" $boldgreen
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Install/Re-Install" $boldgreen
