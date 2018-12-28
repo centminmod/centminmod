@@ -1005,6 +1005,7 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     echo
 fi
 
+    php-config
     echo "***************************************************"
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' ]]; then
