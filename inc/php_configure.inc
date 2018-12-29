@@ -1106,7 +1106,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 fi
 
 # zend opcache hugepages
-if [[ "$PHPMUVER" > 7 ]]; then
+if [[ "$PHPMUVER" > 7 && ! -f /proc/user_beancounters ]]; then
   opcachehugepages
 else
   if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
