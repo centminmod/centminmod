@@ -1,13 +1,37 @@
 # for php 7 usage only
 opcachehugepages() {
-    if [ -f /usr/bin/numactl ]; then
-      # account for multiple cpu socket numa based memory
-      # https://community.centminmod.com/posts/48189/
-      FREEMEM=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort | head -n1)*1024))
-    else
-      FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [ -f /usr/bin/numactl ]; then
+        # account for multiple cpu socket numa based memory
+        # https://community.centminmod.com/posts/48189/
+        GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
+        if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
+          FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
+          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
+        else
+          FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        fi
+      else
+        FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+      fi
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+      if [ -f /usr/bin/numactl ]; then
+        # account for multiple cpu socket numa based memory
+        # https://community.centminmod.com/posts/48189/
+        GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
+        if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
+          FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
+          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
+        else
+          FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+        fi
+      else
+        FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+      fi
     fi
-    NRHUGEPAGES_COUNT=$(($FREEMEM/8/2048/16*16/4))
+    NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
 
     if [[ "$CENTOS_SEVEN" = '7' && ! -f /proc/user_beancounters ]]; then
       echo

@@ -129,9 +129,41 @@ phptuning() {
 phpsededit() {
     TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
     TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
-    TOTALMEM_PHP=$(($TOTALMEM_T+($TOTALMEM_SWAP/2)))
     PHPINICUSTOM='a_customphp.ini'
     CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
+
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [ -f /usr/bin/numactl ]; then
+        # account for multiple cpu socket numa based memory
+        # https://community.centminmod.com/posts/48189/
+        GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
+        if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
+          FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
+          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
+        else
+          FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        fi
+      else
+        FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+      fi
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+      if [ -f /usr/bin/numactl ]; then
+        # account for multiple cpu socket numa based memory
+        # https://community.centminmod.com/posts/48189/
+        GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
+        if [[ "$GETCPUNODE_COUNT" -ge '2' ]]; then
+          FREEMEM_NUMANODE=$(($(numactl --hardware | awk '/free:/ {print $4}' | sort -r | head -n1)*1024))
+          FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+          FREEMEM=$(($FREEMEM_NUMANODE+$FREEMEMCACHED))
+        else
+          FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+        fi
+      else
+        FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+      fi
+    fi
+    TOTALMEM_PHP=$FREEMEM
 
     if [[ ! -f "${CUSTOMPHPINIFILE}" ]]; then
         touch ${CUSTOMPHPINIFILE}
@@ -174,28 +206,52 @@ phpsededit() {
         PHP_REALPATHLIMIT='768k'
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM_PHP" -gt '1049576' && "$TOTALMEM_PHP" -le '2097152' ]]; then
-        ZOLIMIT='240'
+        ZOLIMIT='160'
         PHP_MEMORYLIMIT='320M'
         PHP_UPLOADLIMIT='320M'
         PHP_REALPATHLIMIT='1536k'
         PHP_REALPATHTTL='28800'
     elif [[ "$TOTALMEM_PHP" -gt '2097152' && "$TOTALMEM_PHP" -le '3145728' ]]; then
-        ZOLIMIT='304'
+        ZOLIMIT='192'
         PHP_MEMORYLIMIT='384M'
         PHP_UPLOADLIMIT='384M'
         PHP_REALPATHLIMIT='2048k'
         PHP_REALPATHTTL='43200'
     elif [[ "$TOTALMEM_PHP" -gt '3145728' && "$TOTALMEM_PHP" -le '4194304' ]]; then
-        ZOLIMIT='496'
+        ZOLIMIT='224'
         PHP_MEMORYLIMIT='512M'
         PHP_UPLOADLIMIT='512M'
         PHP_REALPATHLIMIT='3072k'
         PHP_REALPATHTTL='43200'
-    elif [[ "$TOTALMEM_PHP" -gt '4194304' ]]; then
-        ZOLIMIT='784'
+    elif [[ "$TOTALMEM_PHP" -gt '4194304' && "$TOTALMEM_PHP" -le '8180000' ]]; then
+        ZOLIMIT='288'
+        PHP_MEMORYLIMIT='640M'
+        PHP_UPLOADLIMIT='640M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+    elif [[ "$TOTALMEM_PHP" -gt '8180000' && "$TOTALMEM_PHP" -le '16360000' ]]; then
+        ZOLIMIT='320'
         PHP_MEMORYLIMIT='800M'
         PHP_UPLOADLIMIT='800M'
         PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+    elif [[ "$TOTALMEM_PHP" -gt '16360000' && "$TOTALMEM_PHP" -le '32400000' ]]; then
+        ZOLIMIT='480'
+        PHP_MEMORYLIMIT='1024M'
+        PHP_UPLOADLIMIT='1024M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+    elif [[ "$TOTALMEM_PHP" -gt '32400000' && "$TOTALMEM_PHP" -le '64800000' ]]; then
+        ZOLIMIT='600'
+        PHP_MEMORYLIMIT='1280M'
+        PHP_UPLOADLIMIT='1280M'
+        PHP_REALPATHLIMIT='4096k'
+        PHP_REALPATHTTL='43200'
+    elif [[ "$TOTALMEM_PHP" -gt '64800000' ]]; then
+        ZOLIMIT='800'
+        PHP_MEMORYLIMIT='2048M'
+        PHP_UPLOADLIMIT='2048M'
+        PHP_REALPATHLIMIT='8192k'
         PHP_REALPATHTTL='86400'
     fi
 
