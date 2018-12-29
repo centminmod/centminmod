@@ -381,6 +381,8 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
             cecho "Download done." $boldyellow
         fi
     fi
+    # rm -rf phc-winner-argon2-${LIBARGON_VER}
+    rm -rf "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so"
     tar xzf ${LIBARGON_VER}.tar.gz
     cd phc-winner-argon2-${LIBARGON_VER}
     make clean
