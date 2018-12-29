@@ -132,7 +132,7 @@ fi
 
 gitenv_setup() {
   # check local DNS resolve and network connectivity before setting up git clone
-  LOCALDNS_RESOLVER=$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}')
+  LOCALDNS_RESOLVER=$(awk '/nameserver/ {print $0}' /etc/resolv.conf | grep -v '#' | awk 'NR==1 {print $2}')
   if [[ "$LOCALDNS_RESOLVER" = '127.0.0.1' || "$LOCALDNS_RESOLVER" = 'localhost' ]]; then
     LOCALDNS_RESOLVER='8.8.8.8'
   fi
