@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='084'
+SCRIPT_INCREMENTVER='085'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2018'
@@ -1847,6 +1847,18 @@ fi
     echo "PHP VERSION ID: $PHPVER_ID"
 
     php_patches
+
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
+        # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
+        if [ ! -f /usr/bin/autoconf268 ]; then
+            echo "yum -q -y install autoconf268"
+            yum -q -y install autoconf268
+        fi
+        if [ -f /usr/bin/autoconf268 ]; then
+            export PHP_AUTOCONF=/usr/bin/autoconf268
+            export PHP_AUTOHEADER=/usr/bin/autoheader268
+        fi
+    fi
 
     ./buildconf --force
     mkdir fpm-build && cd fpm-build
