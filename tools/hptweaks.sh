@@ -106,7 +106,7 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
       FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
-    MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
+    MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
     MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
   elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
     if [ -f /usr/bin/numactl ]; then
@@ -124,7 +124,7 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
       FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
-    MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
+    MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
     MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
   elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' ]]; then
     if [ -f /usr/bin/numactl ]; then
@@ -142,7 +142,7 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
       FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
-    MAXLOCKEDMEM_COUNT=$(($FREEMEM/8/2048/16*16*4))
+    MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
     MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
   fi
   
@@ -174,6 +174,7 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
       fi
       cat /etc/security/limits.conf
       echo
+      ulimit -H -l
     elif [[ "$HP_CHECK" = '[never]' ]]; then
       echo
       echo "set vm.nr.hugepages in /etc/sysctl.conf"

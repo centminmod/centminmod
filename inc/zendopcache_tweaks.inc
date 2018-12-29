@@ -32,6 +32,8 @@ opcachehugepages() {
       fi
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
+    MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
+    MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
 
     if [[ "$CENTOS_SEVEN" = '7' && ! -f /proc/user_beancounters ]]; then
       echo
@@ -47,6 +49,24 @@ opcachehugepages() {
         echo
       fi
     fi
+    echo
+    echo "set system max locked memory limit"
+    echo
+    echo "/etc/security/limits.conf"
+    echo "* soft memlock $MAXLOCKEDMEM_SIZE"
+    echo "* hard memlock $MAXLOCKEDMEM_SIZE"
+    sed -i '/hard memlock/d' /etc/security/limits.conf
+    sed -i '/soft memlock/d' /etc/security/limits.conf
+    if [[ -z "$(grep 'soft memlock' /etc/security/limits.conf)" ]]; then
+      echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+      echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
+      echo
+    else
+      sed -i "s|memlock .*|memlock $MAXLOCKEDMEM_SIZE|g" /etc/security/limits.conf
+    fi
+    cat /etc/security/limits.conf
+    echo
+    ulimit -H -l
 
   # check if redis installed as redis server requires huge pages disabled
   if [[ -f /usr/bin/redis-cli ]]; then
