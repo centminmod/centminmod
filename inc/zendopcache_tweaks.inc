@@ -88,7 +88,7 @@ opcachehugepages() {
           echo -e "\nopcache.huge_code_pages=1" >> ${CONFIGSCANDIR}/zendopcache.ini
         fi
       fi
-    elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [yY] && ! -f /proc/user_beancounters ]]; then
+    elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [yY] && ! -f /proc/user_beancounters && "$FREEMEM" -ge '1980000' ]]; then
       # setting PHP explicit huge pages support for zend opcache
       # opcache.huge_code_pages
       if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
