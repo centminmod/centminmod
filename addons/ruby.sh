@@ -220,7 +220,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo $GEM_HOME
   echo $GEM_PATH
   echo "--------------------------------"
-  echo "gem install rake rails sqlite3 mysql bundler --no-ri --no-rdoc"
+  echo "gem install rake rails sqlite3"
     
   echo "--------------------------------"
   # RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
@@ -235,7 +235,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo "--------------------------------"
   gem env
   echo "--------------------------------"
-  gem install rake rails sqlite3 mysql --no-ri --no-rdoc
+  gem install rake rails sqlite3
   echo "--------------------------------"
   
   echo "more checks..."
