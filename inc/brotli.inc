@@ -275,6 +275,19 @@ libbroti_install() {
   fi
 }
 
+brdep_update() {
+  if [[ "$NGINX_BROTLIDEP_UPDATE" = [yY] ]]; then
+    grep 'BROTLI_VERSION' c/common/version.h
+    brotlilatest_tag=$(git tag | tail -1)
+    brotlibranch=$(echo $brotlilatest_tag | sed -e 's|v|local-|')
+    echo $brotlilatest_tag
+    echo $brotlibranch
+    git stash
+    git checkout $brotlilatest_tag -b $brotlibranch
+    grep 'BROTLI_VERSION' c/common/version.h
+  fi
+}
+
 ngxbrotli_download() {
   if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     # only if GCC used to compile nginx with ngx_brotli
@@ -302,26 +315,28 @@ ngxbrotli_download() {
       cd ngx_brotli
       git submodule update --init
       cd deps/brotli
+      brdep_update
       ./configure-cmake
       make${MAKETHREADS}
       make install
       cd ../../
       cd ../
     fi
-    if [[ "$INITIALINSTALL" != [yY] ]]; then
-        cd ngx_brotli
-        # git stash
-        git fetch origin
-        git reset --hard origin/master
-        git pull
-        git submodule update --init
-        cd deps/brotli
-        ./configure-cmake
-        make${MAKETHREADS}
-        make install
-        cd ../../
-        cd ../
-    fi
+    # if [[ "$INITIALINSTALL" != [yY] ]]; then
+    #     cd ngx_brotli
+    #     # git stash
+    #     git fetch origin
+    #     git reset --hard origin/master
+    #     git pull
+    #     git submodule update --init
+    #     cd deps/brotli
+    #     brdep_update
+    #     ./configure-cmake
+    #     make${MAKETHREADS}
+    #     make install
+    #     cd ../../
+    #     cd ../
+    # fi
     echo
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
 brotli on;
