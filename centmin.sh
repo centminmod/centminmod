@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='087'
+SCRIPT_INCREMENTVER='088'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/2019'
@@ -588,6 +588,7 @@ LUACJSONVER='2.1.0.6'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
+ZSTD_LOGROTATE_PHPFPM='n'    # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_HUGEPAGES='n'            # Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
@@ -670,6 +671,7 @@ POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL
 NGINX_VERSION='1.15.8'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
+ZSTD_LOGROTATE_NGINX='n'     # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
@@ -898,6 +900,7 @@ source "inc/nsd_submenu.inc"
 source "inc/nsd_install.inc"
 source "inc/nsdsetup.inc"
 source "inc/nsd_reinstall.inc"
+source "inc/compress.inc"
 source "inc/nginx_logformat.inc"
 source "inc/logrotate_nginx.inc"
 source "inc/logrotate_phpfpm.inc"
@@ -960,7 +963,6 @@ source "inc/mariadb_upgrade103.inc"
 source "inc/nginx_errorpage.inc"
 source "inc/sendmail.inc"
 source "inc/postfix.inc"
-source "inc/compress.inc"
 source "inc/diskalert.inc"
 source "inc/phpsededit.inc"
 source "inc/csfinstall.inc"
@@ -2106,12 +2108,10 @@ fi
 echo "source_pcreinstall"
 source_pcreinstall
 
-echo " "
-
+echo
 shortcutsinstall
 
-echo " "
-
+echo
 cecho "**********************************************************************" $boldgreen
 cecho "* Starting Services..." $boldgreen
 cecho "**********************************************************************" $boldgreen

@@ -24,6 +24,11 @@ echo "Creating /etc/logrotate.d/php-fpm file"
 echo "----------------------------------------------"
 echo "......"
 
+if [[ ! -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_PHPFPM" = [yY] ]]; then
+  echo "install zstd compression"
+  zstdinstall
+fi
+
 touch /etc/logrotate.d/php-fpm
 
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
@@ -33,6 +38,27 @@ else
 fi
 
 if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
+  if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_PHPFPM" = [yY] ]]; then
+cat > "/etc/logrotate.d/php-fpm" <<END
+/var/log/php-fpm/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        maxsize 500M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        endscript            
+}
+END
+  else
 cat > "/etc/logrotate.d/php-fpm" <<END
 /var/log/php-fpm/*.log {
         daily
@@ -48,7 +74,28 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         endscript            
 }
 END
+  fi
 else
+  if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_PHPFPM" = [yY] ]]; then
+cat > "/etc/logrotate.d/php-fpm" <<END
+/var/log/php-fpm/*.log {
+        daily
+        dateext
+        missingok
+        rotate 10
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        endscript            
+}
+END
+  else
 cat > "/etc/logrotate.d/php-fpm" <<END
 /var/log/php-fpm/*.log {
         daily
@@ -63,6 +110,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         endscript            
 }
 END
+  fi
 fi
 
 echo "----------------------------------------------------------------------------"

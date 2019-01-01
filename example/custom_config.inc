@@ -99,6 +99,7 @@ NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) 
 NGINX_VERSION='1.15.8'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
+ZSTD_LOGROTATE_NGINX='n'     # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 NGINX_IPV='n'                #NGINX IPV6 compile support for unattended mode only
 AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
@@ -223,6 +224,7 @@ LUACJSONVER='2.1.0.6'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
+ZSTD_LOGROTATE_PHPFPM='n'    # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_HUGEPAGES='n'            # Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
