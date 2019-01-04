@@ -133,7 +133,7 @@ phpsededit() {
     CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
 
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [ -f /usr/bin/numactl ]; then
+      if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
         # account for multiple cpu socket numa based memory
         # https://community.centminmod.com/posts/48189/
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
@@ -144,11 +144,15 @@ phpsededit() {
         else
           FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         fi
+      elif [[ -f /proc/user_beancounters ]]; then
+        FREEMEMOPENVZ=$(grep '^MemFree' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEM=$(($FREEMEMOPENVZ+$FREEMEMCACHED))
       else
         FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
       fi
     elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-      if [ -f /usr/bin/numactl ]; then
+      if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
         # account for multiple cpu socket numa based memory
         # https://community.centminmod.com/posts/48189/
         GETCPUNODE_COUNT=$(numactl --hardware | awk '/available: / {print $2}')
@@ -159,6 +163,10 @@ phpsededit() {
         else
           FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
         fi
+      elif [[ -f /proc/user_beancounters ]]; then
+        FREEMEMOPENVZ=$(grep '^MemFree' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEMCACHED=$(egrep '^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        FREEMEM=$(($FREEMEMOPENVZ+$FREEMEMCACHED))
       else
         FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
       fi
