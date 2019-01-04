@@ -49,8 +49,11 @@
 #<UDF name="compiler" Label="Build Nginx with GCC or Clang Compiler ?" oneOf="clang,gcc" default="gcc" />
 # COMPILER=
 # 
-#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.7+ or OpenSSL 1.1.1+ ?" oneOf="libressl,openssl" default="openssl" />
+#<UDF name="openssl" Label="Build Nginx against LibreSSL 2.8+ or OpenSSL 1.1.1+ ?" oneOf="libressl,openssl" default="openssl" />
 # OPENSSL=
+# 
+#<UDF name="zstdlogrotate" Label="Enable zstd compression for Nginx & PHP-FPM Log Rotation (https://community.centminmod.com/threads/16374/) ?" oneOf="yes,no" default="no" />
+# ZSTDLOGROTATE=
 # 
 #<UDF name="hpack" Label="Enable Cloudflare HTTP/2 HPACK Full Encoding Patch (community.centminmod.com/posts/51082/) ?" oneOf="yes,no" default="no" />
 # HPACK=
@@ -173,6 +176,17 @@ if [[ "$HPACK" = 'yes' ]]; then
 echo
 echo "Set NGINX_HPACK='y'"
 echo "NGINX_HPACK='y'" >> /etc/centminmod/custom_config.inc
+echo
+fi
+
+# Enable zstd compression for Nginx & PHP-FPM log rotation
+# https://community.centminmod.com/threads/16374/
+if [[ "$ZSTDLOGROTATE" = 'yes' ]]; then
+echo
+echo "Set ZSTD_LOGROTATE_NGINX='y'"
+echo "Set ZSTD_LOGROTATE_PHPFPM='y'"
+echo "ZSTD_LOGROTATE_NGINX='y'" >> /etc/centminmod/custom_config.inc
+echo "ZSTD_LOGROTATE_PHPFPM='y'" >> /etc/centminmod/custom_config.inc
 echo
 fi
 
