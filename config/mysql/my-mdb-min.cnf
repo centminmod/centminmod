@@ -7,7 +7,7 @@ bind-address=127.0.0.1
 skip-symbolic-links
 # optimized my.cnf for MariaDB 5.2.x
 # by eva2000
-# vbtechsupport.com
+# centminmod.com
 
 # 5.2.x
 #thread-handling = pool-of-threads

@@ -14,7 +14,7 @@ socket=/var/lib/mysql/mysql.sock
 #bind-address=127.0.0.1
 # optimized my.cnf for MariaDB 5.5.x
 # by eva2000
-# vbtechsupport.com
+# centminmod.com
 
 tmpdir=/home/mysqltmp
 
