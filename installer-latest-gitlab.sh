@@ -1218,10 +1218,14 @@ echo "NGINX_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo "GENERAL_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo "CLANG='n'" >> /etc/centminmod/custom_config.inc
 echo "LIBRESSL_SWITCH='n'" >> /etc/centminmod/custom_config.inc
-echo "NGX_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
-echo "PHP_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
-echo "NGX_LDGOLD='y'" >> /etc/centminmod/custom_config.inc
+# echo "NGX_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
+# echo "PHP_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
+# echo "NGX_LDGOLD='y'" >> /etc/centminmod/custom_config.inc
 # echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
+
+# mariadb 10.3 default install
+echo "MARIADB_INSTALLTENTHREE='y'" >> /etc/centminmod/custom_config.inc
+
 if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
   echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
 fi
