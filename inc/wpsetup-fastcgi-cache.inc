@@ -125,6 +125,16 @@ echo "set LETSENCRYPT_DETECT='y' and update domain DNS A record first"
 echo "then re-run vhost site creation menu option"
 cecho "---------------------------------------------------------------" $boldyellow
 fi
+# check mysql server is running
+mysqladmin -s ping >/dev/null 2>&1
+CHECKMYSQL_PING=$?
+if [[ "$CHECKMYSQL_PING" -ne '0' ]]; then
+  echo
+  echo "!!  Error: MariaDB MySQL Server is not running  !!"
+  echo "Please make sure MariaDB MySQL Server is running first"
+  echo "aborting centmin.sh menu option 22 run..."
+  exit
+fi
 echo
 read -ep "Do you want to continue with Nginx vhost site creation ? [y/n] " dovhost_continue
 echo
