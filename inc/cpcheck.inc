@@ -158,6 +158,9 @@ pip_updates() {
         pip2.7 install -qqq --upgrade pip
         pip2.7 install -qqq --upgrade psutil
         pip2.7 install -qqq --upgrade glances
+        echo
+        echo "CentOS 6 python 2.7 compatibility updates completed"
+        echo
       fi
     fi
   elif [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 ]]; then
