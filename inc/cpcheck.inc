@@ -144,8 +144,8 @@ pip_updates() {
   if [[ ! -f /usr/bin/python-config ]]; then
     $YUMDNFBIN -q -y install python-devel
   fi
-  if [ ! -f /usr/bin/pip ]; then
-    if [[ "CENTOS_SEVEN" -eq '7' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/pip ]] || [[ "$CENTOS_SIX" -eq '6' &&  ! -f /usr/bin/pip2.7 ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       $YUMDNFBIN -q -y install python2-pip
       export CC='gcc'
       pip install -qqq --upgrade pip
@@ -153,25 +153,39 @@ pip_updates() {
       $YUMDNFBIN -q -y install python-pip
       export CC='gcc'
       pip install -qqq --upgrade pip
+      if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
+        "${SCRIPT_DIR}/addons/python27_install.sh" install
+        pip2.7 install -qqq --upgrade pip
+        pip2.7 install -qqq --upgrade psutil
+        pip2.7 install -qqq --upgrade glances
+      fi
     fi
-  elif [ -f /usr/bin/pip ]; then
+  elif [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 ]]; then
+    CHECK_PIPVER=$(pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.|0|g')
+    if [[ "$CHECK_PIPVER" -lt '1801' ]]; then
+      pip2.7 install -qqq --upgrade pip
+    fi
+  elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip ]]; then
     CHECK_PIPVER=$(pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.||g')
     if [[ "$CHECK_PIPVER" -lt '901' ]]; then
       pip install -qqq --upgrade pip
     fi
   fi
-  if [[ -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
     # CHECK_PSUTILVER=$(pip show psutil 2>&1  | awk '/^Version:/ {print $2}' | sed -e 's|\.||g')
     # CHECK_GLANCESVER=$(pip show glances 2>&1  | awk '/^Version:/ {print $2}' | sed -e 's|\.||g')
-    CHECK_PIPUPDATE=$(pip list -o --format legacy | grep -o pip)
-    CHECK_PSUTILUPDATE=$(pip list -o --format legacy | grep -o psutil)
-    CHECK_GLANCESUPDATE=$(pip list -o --format legacy | grep -io glances)
+    CHECK_PIPUPDATE=$(pip list -o --format columns | grep -o pip)
+    CHECK_PSUTILUPDATE=$(pip list -o --format columns | grep -o psutil)
+    CHECK_GLANCESUPDATE=$(pip list -o --format columns | grep -io glances)
     if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
       export CC='gcc'
       pip install -qqq --upgrade pip
     fi
     if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
       export CC='gcc'
+      if [[ "$(rpm -qa python2-psutil | grep -o python2-psutil)" = 'python2-psutil' ]]; then
+        yum -q -y remove python2-psutil
+      fi
       pip install -qqq --upgrade psutil
     fi
     if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
@@ -2423,7 +2437,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   nginxlargefile_fix
   fix_phperrorlogperm
   crontabdisable_r
-  # pip_updates
+  pip_updates
   ngx_gzipbuffersfix
   ngx_brotlibuffersfix
   ngxmaster_openfiles
