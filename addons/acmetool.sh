@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.48'
+ACMEVER='1.0.49'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -978,7 +978,7 @@ server {
   ssl_session_tickets on;
   
   # enable ocsp stapling
-  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
@@ -1318,7 +1318,7 @@ server {
   ssl_session_tickets on;
   
   # enable ocsp stapling
-  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
@@ -1426,7 +1426,7 @@ server {
   ssl_session_tickets on;
   
   # enable ocsp stapling
-  #resolver 8.8.8.8 8.8.4.4 valid=10m;
+  #resolver 8.8.8.8 8.8.4.4 1.1.1.1 1.0.0.1 valid=10m;
   #resolver_timeout 10s;
   #ssl_stapling on;
   #ssl_stapling_verify on;
