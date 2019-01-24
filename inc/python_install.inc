@@ -61,14 +61,14 @@ easy_install-2.7 pytz
 easy_install-2.7 unidecode
 easy_install-2.7 Whoosh
 easy_install-2.7 South
-pip2.7 install virtualenv
-pip2.7 install Django
-pip2.7 install django-debug-toolbar
-pip2.7 install Django-MPTT
-pip2.7 install Coffin
-pip2.7 install django-haystack
-pip2.7 install Jinja2
-pip2.7 install reCAPTCHA-client
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install virtualenv
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install Django
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install django-debug-toolbar
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install Django-MPTT
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install Coffin
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install django-haystack
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install Jinja2
+PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install reCAPTCHA-client
 
 #######################################################
 # check /etc/ld.so.conf.d/opt-python${PYTHON_VERSION}.conf
