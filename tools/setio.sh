@@ -318,6 +318,7 @@ setpurgethreads() {
 
 setconcurrency() {
   INNODB_CONCURRENT=$(((CPUS+2)*2))
+  sed -i 's|^#innodb_thread_concurrency|innodb_thread_concurrency|g' /etc/my.cnf
   sed -i "s|innodb_thread_concurrency=.*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
   sed -i "s|innodb_thread_concurrency = .*|innodb_thread_concurrency = $INNODB_CONCURRENT|g" /etc/my.cnf
   /usr/bin/mysql -e "SET GLOBAL innodb_thread_concurrency = $INNODB_CONCURRENT;"
