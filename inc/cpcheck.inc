@@ -146,11 +146,11 @@ pip_updates() {
   fi
   if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/pip ]] || [[ "$CENTOS_SIX" -eq '6' &&  ! -f /usr/bin/pip2.7 ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-      $YUMDNFBIN -q -y install python2-pip
+      $YUMDNFBIN -q -y install python2-pip >/dev/null 2>&1
       export CC='gcc'
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
     else
-      $YUMDNFBIN -q -y install python-pip
+      $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
       export CC='gcc'
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
       if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then

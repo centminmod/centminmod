@@ -1,3 +1,93 @@
+yumpriorsclo() {
+if [ -f /etc/yum.repos.d/CentOS-SCLo-scl.repo ]; then
+cp -p /etc/yum.repos.d/CentOS-SCLo-scl.repo /etc/yum.repos.d/CentOS-SCLo-scl.repo.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/CentOS-SCLo-scl.repo)" ]
+        then
+                #echo priorities already set for CentOS-SCLo-scl.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for CentOS-SCLo-scl.repo"
+                ex -s /etc/yum.repos.d/CentOS-SCLo-scl.repo << EOF
+:/\[centos-sclo-sclo\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:/\[centos-sclo-sclo-testing\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:/\[centos-sclo-sclo-source\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:/\[centos-sclo-sclo-debuginfo\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:q
+EOF
+
+cecho "*************************************************" $boldgreen
+cecho "Fixing centos-sclo-sclo.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+cat /etc/yum.repos.d/CentOS-SCLo-scl.repo
+echo ""
+fi
+fi # repo file check
+
+if [ -f /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo ]; then
+cp -p /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo)" ]
+        then
+                #echo priorities already set for CentOS-SCLo-scl-rh.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for CentOS-SCLo-scl-rh.repo"
+                ex -s /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo << EOF
+:/\[centos-sclo-rh\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:/\[centos-sclo-rh-testing\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:/\[centos-sclo-rh-source\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:/\[centos-sclo-rh-debuginfo\]/ , /gpgkey/
+:a
+priority=99
+exclude=python*
+.
+:w
+:q
+EOF
+
+cecho "*************************************************" $boldgreen
+cecho "Fixing CentOS-SCLo-scl-rho.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+cat /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo
+echo ""
+fi
+fi # repo file check  
+}
+
 yumprioratrpms() {
 if [ -f /etc/yum.repos.d/atrpms.repo ]; then
 cp -p /etc/yum.repos.d/atrpms.repo /etc/yum.repos.d/atrpms.OLD

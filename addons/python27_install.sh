@@ -176,10 +176,15 @@ cecho "Installing Python 2.7" $boldgreen
 cecho "*************************************************" $boldgreen
 
 # install Python 2.7 besides system default Python 2.6
-yum -y remove python-tools
-yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
-
-rpm -ql python27 python27-devel python27-pip python27-setuptools python27-virtualenv tkinter27 | grep bin
+if [[ "$CENTOS_SIX" = '6' ]]; then
+  yum -y remove python-tools >/dev/null 2>&1
+  yum -y install python27 python27-devel python27-pip python27-setuptools python27-virtualenv --enablerepo=ius
+  rpm -ql python27 python27-devel python27-pip python27-setuptools python27-virtualenv tkinter27 | grep bin
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+  yum -y remove python2-pip python2-psutil python-tools >/dev/null 2>&1
+  yum -y install python27 python27-devel python27-python-pip python27-python-setuptools python27-python-virtualenv --enablerepo=ius
+  rpm -ql python27 python27-devel python27-python-pip python27-python-setuptools python27-python-virtualenv | grep bin
+fi
 }
 
 ###########################################################################
