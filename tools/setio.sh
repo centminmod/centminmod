@@ -43,7 +43,7 @@ if [ ! -d "$FIOBASEDIR" ]; then
     cp -a /etc/my.cnf /etc/my.cnf-setiobackup
     sed -i 's|\[mysqld\]|\[mysqld\]\nignore-db-dir=cmsetiofiotest|' /etc/my.cnf
     MARIADBVERCHECK=$(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4)
-    if [[ "$MARIADBVERCHECK" == '10.1' ]]; then
+    if [[ "$MARIADBVERCHECK" == '10.1' || "$MARIADBVERCHECK" == '10.2' || "$MARIADBVERCHECK" == '10.3' ]]; then
       sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
     fi
     # /usr/bin/mysqlreload
@@ -290,7 +290,7 @@ setthreads() {
 }
 
 setpurgethreads() {
-  if [[ "$MDB_SVER" = '10.0' || "$MDB_SVER" = '10.1' ]]; then
+  if [[ "$MDB_SVER" = '10.0' || "$MDB_SVER" = '10.1' || "$MDB_SVER" = '10.2' || "$MDB_SVER" = '10.3' ]]; then
     if [[ "$CPUS" -eq '1' ]]; then
       sed -i "s|innodb_purge_threads=.*|innodb_purge_threads = 1|g" /etc/my.cnf
       sed -i "s|innodb_purge_threads = .*|innodb_purge_threads = 1|g" /etc/my.cnf
