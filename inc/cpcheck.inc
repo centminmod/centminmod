@@ -147,10 +147,12 @@ pip_updates() {
   if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/pip ]] || [[ "$CENTOS_SIX" -eq '6' &&  ! -f /usr/bin/pip2.7 ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       $YUMDNFBIN -q -y install python2-pip >/dev/null 2>&1
+      yum -q -y versionlock python2-pip >/dev/null 2>&1
       export CC='gcc'
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
     else
       $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
+      yum -q -y versionlock python-pip >/dev/null 2>&1
       export CC='gcc'
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
       if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
@@ -182,6 +184,7 @@ pip_updates() {
     if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
       export CC='gcc'
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+      yum -q -y versionlock python2-pip >/dev/null 2>&1
     fi
     if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
       export CC='gcc'
