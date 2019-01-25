@@ -522,7 +522,7 @@ FFF
 # sed -i 's/innodb_additional_mem_pool_size/#innodb_additional_mem_pool_size/g' /etc/my.cnf
 # sed -i 's/skip-innodb/innodb=ON/g' /etc/my.cnf
 sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
-sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+#sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
 sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
 sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
 sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
