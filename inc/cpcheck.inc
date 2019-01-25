@@ -186,7 +186,7 @@ pip_updates() {
     if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
       export CC='gcc'
       if [[ "$(rpm -qa python2-psutil | grep -o python2-psutil)" = 'python2-psutil' ]]; then
-        yum -q -y remove python2-psutil
+        yum -q -y remove python2-psutil >/dev/null 2>&1
       fi
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade psutil
     fi
