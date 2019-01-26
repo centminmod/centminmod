@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.1.0
+VER=0.1.1
 ###############################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -297,7 +297,7 @@ createuserdb() {
 			fi
 		
 		elif [[ "$rootset" = [nN] && "$createnewuser" = [nN] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$		MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
 		
 			ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
@@ -311,7 +311,7 @@ createuserdb() {
 			fi
 		
 		elif [[ "$rootset" = [yY] && "$createnewuser" = [nN] ]]; then
-	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$		MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
+	echo "CREATE DATABASE \`$newdbname\`; USE \`$newdbname\`; GRANT index, select, insert, delete, update, create, drop, alter, create temporary tables, execute, lock tables, create view, show view, create routine, alter routine, trigger ON \`$newdbname\`.* TO '$existingmysqluser'@'$MYSQLHOSTNAME'; flush privileges; show grants for '$existingmysqluser'@'$MYSQLHOSTNAME';" | mysql ${MYSQLOPTS}
 		
 			ERROR=$?
 			if [[ "$ERROR" != '0' ]]; then
