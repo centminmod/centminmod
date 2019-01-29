@@ -1,3 +1,22 @@
+dft_phpupstream() {
+cat > "/usr/local/nginx/conf/default_phpupstream.conf"<<EOF
+upstream dft_php {
+  zone dftphp_zone 128k;
+  server 127.0.0.1:9000;
+  keepalive 2;
+}
+EOF
+
+  DFT_SETUPPHPUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/default_phpupstream.conf' /usr/local/nginx/conf/nginx.conf)
+  if [[ -z "$DFT_SETUPPHPUPSTREAM_INCLUDECHECK" ]]; then
+    # echo
+    # echo "include file /usr/local/nginx/conf/default_phpupstream.conf add to nginx.conf"
+    sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/default_phpupstream.conf;|g' /usr/local/nginx/conf/nginx.conf
+    service nginx restart >/dev/null 2>&1
+    service nginx php-fpm >/dev/null 2>&1
+  fi
+}
+
 redetect_tlsonethree() {
   # persistent config file /etc/centminmod/custom_config.inc
   # variable OPENSSL_TLSONETHREE controls whether OpenSSL 1.1.1
@@ -2452,6 +2471,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   disable_varnishrepo
   pzcat_install
   redetect_tlsonethree
+  dft_phpupstream
 fi
 
 }
