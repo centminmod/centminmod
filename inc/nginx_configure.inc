@@ -2511,7 +2511,7 @@ if [[ "$CLANG" = [yY] ]]; then
   if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
     time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
   fi
-  if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+  if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
     if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
       scl_install
     fi
@@ -2632,7 +2632,7 @@ fi
 # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
 # centos 6 based gcc 4.4.7
 if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; then
-  if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+  if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
     scl_install
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-6/root/usr/bin/gcc"
     # PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
@@ -2640,6 +2640,11 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; the
     if [[ "$INITIALINSTALL" != [yY] ]]; then
       if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
+        DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+        NGX_GSPLITDWARF='n'
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+        source /opt/rh/devtoolset-8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
         NGX_GSPLITDWARF='n'
@@ -2661,6 +2666,10 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; the
     else
       if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
+        DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+        source /opt/rh/devtoolset-8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
       elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
@@ -2755,7 +2764,7 @@ fi
 
 # devtoolset-4 usage of GCC 4.9 even for CentOS7
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
-  if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+  if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
     scl_install
     if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
       export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-7/root/usr/bin/gcc"
@@ -2782,6 +2791,28 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       else
         source /opt/gcc8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+      DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/rh/devtoolset-8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
         unset CC
@@ -2868,7 +2899,30 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       unset CXX
       export CC="gcc"
       export CXX="g++"
-    fi    
+    fi
+  elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-8/root/usr/bin/gcc"
+    DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+    DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting'
+    # PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+    PS_FLAGS=""
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
   elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-7/root/usr/bin/gcc"
     DEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
