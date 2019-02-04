@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='094'
+SCRIPT_INCREMENTVER='095'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/2019'
@@ -1043,6 +1043,15 @@ if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin
     echo "export LANGUAGE=en_US.UTF-8" >> /etc/profile.d/locale.sh
     source /etc/profile.d/locale.sh
   fi
+fi
+
+# auto enable nginx brotli module if Intel Skylake or newer cpus exist
+# newer cpus allow brotli compressed nginx files to be served faster
+# https://community.centminmod.com/posts/70527/
+if [[ "$(grep -o 'avx512' /proc/cpuinfo | uniq)" - 'avx512' ]]; then
+  NGXDYNAMIC_BROTLI='y'
+  NGINX_LIBBROTLI='y'
+  NGINX_BROTLIDEP_UPDATE='y'
 fi
 
 ###############################################################
