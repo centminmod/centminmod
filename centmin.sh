@@ -1048,7 +1048,7 @@ fi
 # auto enable nginx brotli module if Intel Skylake or newer cpus exist
 # newer cpus allow brotli compressed nginx files to be served faster
 # https://community.centminmod.com/posts/70527/
-if [[ "$(grep -o 'avx512' /proc/cpuinfo | uniq)" - 'avx512' ]]; then
+if [[ "$(grep -o 'avx512' /proc/cpuinfo | uniq)" = 'avx512' ]]; then
   NGXDYNAMIC_BROTLI='y'
   NGINX_LIBBROTLI='y'
   NGINX_BROTLIDEP_UPDATE='y'
