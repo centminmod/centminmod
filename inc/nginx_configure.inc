@@ -2024,7 +2024,7 @@ if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
 cat > "/usr/local/nginx/conf/brotli_inc.conf" <<EIF
 brotli on;
 brotli_static on;
-brotli_min_length 1000;
+brotli_min_length 65536;
 brotli_buffers 1024 8k;
 brotli_comp_level 5;
 brotli_types text/plain text/css text/xml application/javascript application/x-javascript application/xml application/xml+rss application/ecmascript application/json image/svg+xml;
@@ -2188,10 +2188,10 @@ if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VE
     fi
   fi
   THREADS=' --with-threads'
-  if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
     sed -i "s|backlog=.*|backlog=2048 reuseport;|" /usr/local/nginx/conf/conf.d/virtual.conf
   fi
   # workaround for nginx 1.9 compatibility
@@ -2232,10 +2232,10 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
       fi
   fi
   THREADS=' --with-threads'
-  if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^#include \/usr\/local\/nginx\/conf\/redisupstream.conf|include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -z "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
     sed -i "s|backlog=.*|backlog=2048 reuseport;|" /usr/local/nginx/conf/conf.d/virtual.conf
   fi
   # workaround for nginx 1.9 compatibility
@@ -2244,28 +2244,28 @@ elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.9' ]] || [[ -z "$ngver" && "$NGXIN
 elif [[ "$ngver" && "$NGXUPGRADE_VER" = '1.8' ]]; then
   STREAM=""
   THREADS=' --with-threads'
-  if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^include \/usr\/local\/nginx\/conf\/redisupstream.conf|#include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
     sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
   fi
 elif [[ -z "$ngver" && "$NGXINSTALL_VER" = '1.8' ]]; then
   STREAM=""
   THREADS=' --with-threads'
-  if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^include \/usr\/local\/nginx\/conf\/redisupstream.conf|#include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
     sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
   fi
 else
   STREAM=""
   THREADS=""
-  if [ -f /usr/local/nginx/conf/redisupstream.conf ]; then
+  if [[ -f /usr/local/nginx/conf/nginx.conf && -f /usr/local/nginx/conf/redisupstream.conf ]]; then
     sed -i "s|^include \/usr\/local\/nginx\/conf\/redisupstream.conf|#include \/usr\/local\/nginx\/conf\/redisupstream.conf|" /usr/local/nginx/conf/nginx.conf
   fi
-  if [[ "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+  if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep ' reuseport' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
     sed -i "s| reuseport||" /usr/local/nginx/conf/conf.d/virtual.conf
   fi  
 fi
