@@ -76,6 +76,20 @@ postgresqlinstall() {
     
         echo
         time $YUMDNFBIN -y install postgresql10 postgresql10-devel postgresql10-contrib postgresql10-libs postgresql10-server --disableplugin=priorities${DISABLEREPO_DNF}
+
+        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+          echo
+          /usr/pgsql-10/bin/postgresql-10-setup initdb
+          systemctl enable postgresql-10
+          systemctl start postgresql-10
+          systemctl status postgresql-10
+        elif [[ "$CENTOS_SIX" = '6' ]]; then
+          echo
+          service postgresql-10 initdb
+          chkconfig postgresql-10 on
+          service postgresql-10 start
+          service postgresql-10 status
+        fi
     fi
   fi
   if [[ "$POSTGRESQL_BRANCHVER" = '11' ]]; then
@@ -107,6 +121,20 @@ postgresqlinstall() {
     
         echo
         time $YUMDNFBIN -y install postgresql11 postgresql11-devel postgresql11-contrib postgresql11-libs postgresql11-server --disableplugin=priorities${DISABLEREPO_DNF}
+
+        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+          echo
+          /usr/pgsql-11/bin/postgresql-11-setup initdb
+          systemctl enable postgresql-11
+          systemctl start postgresql-11
+          systemctl status postgresql-11
+        elif [[ "$CENTOS_SIX" = '6' ]]; then
+          echo
+          service postgresql-11 initdb
+          chkconfig postgresql-11 on
+          service postgresql-11 start
+          service postgresql-11 status
+        fi
     fi
   fi
 }
