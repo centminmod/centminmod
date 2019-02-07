@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='095'
+SCRIPT_INCREMENTVER='096'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/2019'
@@ -625,7 +625,7 @@ REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downlo
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.5.3'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
-PDOPGSQL_PHPVER='9.6'       # pdo-pgsql PHP extension version for postgresql
+PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
 PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_LIBZIP='y'
 LIBZIP_VER='1.5.0'          # required for PHP 7.2 + with libsodium & argon2
@@ -640,6 +640,7 @@ PHPZOPFLI_ALWAYS='n'        # zopfli php extension always install on php recompi
 SHORTCUTS='y'                # shortcuts
 
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
+POSTGRESQL_BRANCHVER='11'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
 # If MDB_YUMREPOINSTALL=y and MDB_INSTALL=n then MDB_VERONLY version 
