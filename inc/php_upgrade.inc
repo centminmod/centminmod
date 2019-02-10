@@ -79,6 +79,30 @@ elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTZOPFLI=y
 fi
 
+if [[ -f "${CONFIGSCANDIR}/brotli.ini" || "$PHP_BROTLI" = [yY] ]]; then
+    DETECTBROTLI=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTBROTLI=y
+fi
+
+if [[ -f "${CONFIGSCANDIR}/lz4.ini" || "$PHP_LZFOUR" = [yY] ]]; then
+    DETECTLZFOUR=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTLZFOUR=y
+fi
+
+if [[ -f "${CONFIGSCANDIR}/lzf.ini" || "$PHP_LZF" = [yY] ]]; then
+    DETECTLZF=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTLZF=y
+fi
+
+if [[ -f "${CONFIGSCANDIR}/zstd.ini" || "$PHP_ZSTD" = [yY] ]]; then
+    DETECTZSTD=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTZSTD=y
+fi
+
 if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
     DETECTOPCACHE=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
@@ -171,6 +195,26 @@ fi
 if [[ "$DETECTZOPFLI" = [yY] ]] || [[ "$DETECTZOPFLI" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/zopfli.so" ]]; then
     cecho "Auto reinstalling previously detected Zopfli PHP extension" $boldyellow
     zopfliinstall
+fi
+
+if [[ "$DETECTBROTLI" = [yY] ]] || [[ "$DETECTBROTLI" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/brotli.so" ]]; then
+    cecho "Auto reinstalling previously detected brotli PHP extension" $boldyellow
+    php_ext_brotli
+fi
+
+if [[ "$DETECTLZFOUR" = [yY] ]] || [[ "$DETECTLZFOUR" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/lz4.so" ]]; then
+    cecho "Auto reinstalling previously detected lz4 PHP extension" $boldyellow
+    php_ext_lzfour
+fi
+
+if [[ "$DETECTLZF" = [yY] ]] || [[ "$DETECTLZF" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/lzf.so" ]]; then
+    cecho "Auto reinstalling previously detected lzf PHP extension" $boldyellow
+    php_ext_lzf
+fi
+
+if [[ "$DETECTZSTD" = [yY] ]] || [[ "$DETECTZSTD" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/zstd.so" ]]; then
+    cecho "Auto reinstalling previously detected zstd PHP extension" $boldyellow
+    php_ext_zstd
 fi
 
 if [[ "$DETECTOPCACHE" = [yY] ]]; then
@@ -842,6 +886,30 @@ elif [ -f "${CONFIGSCANDIR}/zopfli.ini" ]; then
         rm -rf "${CONFIGSCANDIR}/zopfli.ini"
     elif [[ "$PHPZOPFLI_ALWAYS" = [yY] && "$PHP_MAJORUPGRADE" = [nN] ]]; then
         zopfliinstall  
+    fi
+fi
+
+if [[ "$PHP_BROTLI" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/brotli.ini" ]; then
+        rm -rf "${CONFIGSCANDIR}/brotli.ini"
+    fi
+fi
+
+if [[ "$PHP_LZFOUR" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/lz4.ini" ]; then
+        rm -rf "${CONFIGSCANDIR}/lz4.ini"
+    fi
+fi
+
+if [[ "$PHP_LZF" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/lzf.ini" ]; then
+        rm -rf "${CONFIGSCANDIR}/lzf.ini"
+    fi
+fi
+
+if [[ "$PHP_ZSTD" = [nN] ]]; then
+    if [ -f "${CONFIGSCANDIR}/zstd.ini" ]; then
+        rm -rf "${CONFIGSCANDIR}/zstd.ini"
     fi
 fi
 

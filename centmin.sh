@@ -26,10 +26,10 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='096'
+SCRIPT_INCREMENTVER='097'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='31/01/2019'
+SCRIPT_DATE='31/03/2019'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -636,6 +636,10 @@ PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it 
 PHP_MCRYPTPECLVER='1.0.1'   # https://pecl.php.net/package/mcrypt
 PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
 PHPZOPFLI_ALWAYS='n'        # zopfli php extension always install on php recompiles
+PHP_BROTLI='n'              # brotli php extension https://github.com/kjdev/php-ext-brotli
+PHP_LZFOUR='n'              # lz4 php extension https://github.com/kjdev/php-ext-lz4
+PHP_LZF='n'                 # lzf php extension https://github.com/php/pecl-file_formats-lzf php-ext-lzf
+PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ext-zstd
 
 SHORTCUTS='y'                # shortcuts
 
@@ -902,6 +906,7 @@ source "inc/nsd_install.inc"
 source "inc/nsdsetup.inc"
 source "inc/nsd_reinstall.inc"
 source "inc/compress.inc"
+source "inc/compress_php.inc"
 source "inc/nginx_logformat.inc"
 source "inc/logrotate_nginx.inc"
 source "inc/logrotate_phpfpm.inc"
@@ -2078,6 +2083,26 @@ zopfliinstall
 if [[ "$PHPMSSQL" = [yY] ]]; then
   echo "php_mssqlinstall"
   php_mssqlinstall
+fi
+
+if [[ "$PHP_BROTLI" = [yY] ]]; then
+  echo "php_ext_brotli"
+  php_ext_brotli
+fi
+
+if [[ "$PHP_LZFOUR" = [yY] ]]; then
+  echo "php_ext_lzfour"
+  php_ext_lzfour
+fi
+
+if [[ "$PHP_LZF" = [yY] ]]; then
+  echo "php_ext_lzf"
+  php_ext_lzf
+fi
+
+if [[ "$PHP_ZSTD" = [yY] ]]; then
+  echo "php_ext_zstd"
+  php_ext_zstd
 fi
 
 if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.3' ]]; then

@@ -335,6 +335,10 @@ PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it 
 PHP_MCRYPTPECLVER='1.0.1'   # https://pecl.php.net/package/mcrypt
 PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
 PHPZOPFLI_ALWAYS='n'        # zopfli php extension always install on php recompiles
+PHP_BROTLI='n'              # brotli php extension https://github.com/kjdev/php-ext-brotli
+PHP_LZFOUR='n'              # lz4 php extension https://github.com/kjdev/php-ext-lz4
+PHP_LZF='n'                 # lzf php extension https://github.com/php/pecl-file_formats-lzf php-ext-lzf
+PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ext-zstd
 
 PHP_FTPEXT='y'              # ftp PHP extension
 PHP_MEMCACHE='y'            # memcache PHP extension 
