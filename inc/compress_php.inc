@@ -14,7 +14,7 @@ php_ext_brotli() {
     time make install
     echo "extension=brotli.so" > "${CONFIGSCANDIR}/brotli.ini"
     echo
-    fpmrestart
+    cmservice php-fpm reload
     echo
     php --ri brotli
     echo
@@ -47,7 +47,7 @@ php_ext_lzfour() {
     time make install
     echo "extension=lz4.so" > "${CONFIGSCANDIR}/lz4.ini"
     echo
-    fpmrestart
+    cmservice php-fpm reload
     echo
     php --ri lz4
     echo
@@ -75,7 +75,7 @@ php_ext_lzf() {
     time make install
     echo "extension=lzf.so" > "${CONFIGSCANDIR}/lzf.ini"
     echo
-    fpmrestart
+    cmservice php-fpm reload
     echo
     php --ri lz4
     echo
@@ -103,7 +103,7 @@ php_ext_zopfli() {
     time make install
     echo "extension=zopfli.so" > "${CONFIGSCANDIR}/zopfli.ini"
     echo
-    fpmrestart
+    cmservice php-fpm reload
     echo
     php --ri zopfli
     echo
@@ -128,7 +128,7 @@ php_ext_zstd() {
     time make install
     echo "extension=zstd.so" > "${CONFIGSCANDIR}/zstd.ini"
     echo
-    fpmrestart
+    cmservice php-fpm reload
     echo
     php --ri zstd
     echo
