@@ -158,63 +158,65 @@ ngx_brotlibuffersfix() {
 }
 
 pip_updates() {
-  # for glances and psutil as glances is installed via outdated EPEL
-  # yum repo but there's a new version available
-  if [[ ! -f /usr/bin/python-config ]]; then
-    $YUMDNFBIN -q -y install python-devel
-  fi
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/pip ]] || [[ "$CENTOS_SIX" -eq '6' &&  ! -f /usr/bin/pip2.7 ]]; then
-    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-      $YUMDNFBIN -q -y install python2-pip >/dev/null 2>&1
-      yum -q -y versionlock python2-pip >/dev/null 2>&1
-      export CC='gcc'
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
-    else
-      $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
-      yum -q -y versionlock python-pip >/dev/null 2>&1
-      export CC='gcc'
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
-      if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
-        "${SCRIPT_DIR}/addons/python27_install.sh" install
+  if [[ "$(date "+%u")" -eq '4' || "$(date "+%u")" -eq '6' ]]; then
+    # for glances and psutil as glances is installed via outdated EPEL
+    # yum repo but there's a new version available
+    if [[ ! -f /usr/bin/python-config ]]; then
+      $YUMDNFBIN -q -y install python-devel
+    fi
+    if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/pip ]] || [[ "$CENTOS_SIX" -eq '6' &&  ! -f /usr/bin/pip2.7 ]]; then
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        $YUMDNFBIN -q -y install python2-pip >/dev/null 2>&1
+        yum -q -y versionlock python2-pip >/dev/null 2>&1
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+      else
+        $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
+        yum -q -y versionlock python-pip >/dev/null 2>&1
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+        if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
+          "${SCRIPT_DIR}/addons/python27_install.sh" install
+          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
+          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
+          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade glances
+          echo
+          echo "CentOS 6 python 2.7 compatibility updates completed"
+          echo
+        fi
+      fi
+    elif [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 ]]; then
+      CHECK_PIPVER=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.|0|g')
+      if [[ "$CHECK_PIPVER" -lt '1801' ]]; then
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade glances
-        echo
-        echo "CentOS 6 python 2.7 compatibility updates completed"
-        echo
+      fi
+    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip ]]; then
+      CHECK_PIPVER=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.||g')
+      if [[ "$CHECK_PIPVER" -lt '901' ]]; then
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
       fi
     fi
-  elif [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 ]]; then
-    CHECK_PIPVER=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.|0|g')
-    if [[ "$CHECK_PIPVER" -lt '1801' ]]; then
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
-    fi
-  elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip ]]; then
-    CHECK_PIPVER=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.||g')
-    if [[ "$CHECK_PIPVER" -lt '901' ]]; then
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
-    fi
-  fi
-  if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
-    CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list -o --format columns)
-    CHECK_PIPUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o pip)
-    CHECK_PSUTILUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o psutil)
-    CHECK_GLANCESUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -io glances)
-    if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
-      export CC='gcc'
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
-      yum -q -y versionlock python2-pip >/dev/null 2>&1
-    fi
-    if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
-      export CC='gcc'
-      if [[ "$(rpm -qa python2-psutil | grep -o python2-psutil)" = 'python2-psutil' ]]; then
-        yum -q -y remove python2-psutil >/dev/null 2>&1
+    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
+      CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list -o --format columns)
+      CHECK_PIPUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o pip)
+      CHECK_PSUTILUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o psutil)
+      CHECK_GLANCESUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -io glances)
+      if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+        yum -q -y versionlock python2-pip >/dev/null 2>&1
       fi
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade psutil
-    fi
-    if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
-      export CC='gcc'
-      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade glances
+      if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
+        export CC='gcc'
+        if [[ "$(rpm -qa python2-psutil | grep -o python2-psutil)" = 'python2-psutil' ]]; then
+          yum -q -y remove python2-psutil >/dev/null 2>&1
+        fi
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade psutil
+      fi
+      if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade glances
+      fi
     fi
   fi
 }
@@ -1083,10 +1085,24 @@ yumupdatechecker() {
     YYUM_UPDATEPARAMETER="--disableplugin=priorities"
     echo
     echo " checking for YUM updates... please wait..."
+    # only check if last yum update was over 24hrs ago
+    LASTYUMCHECK_EPOCHDATE=$(date -d "$(awk '/Updated: / {print $1,$2,$3}' /var/log/yum.log | tail -1)" +%s)
+    # LASTYUMHISTORYCHECK_EPOCHDATE=$(date -d $(history | grep 'yum' | grep update | grep -v list | tail -1 | awk '{print $2}' | sed -e 's|\[||g' -e 's|\]||g' -e 's|\.|\/|g') +%s)
+    TODAY_EPOCHDATE=$(date +%s)
+    SEC_SINCELASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMCHECK_EPOCHDATE} | bc)
+    # SEC_SINCEHISTORYLASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMHISTORYCHECK_EPOCHDATE} | bc)
     if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-      UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+      if [[ "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+      else
+        UPDATE_CHECK=1
+      fi
     else
-      UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+      if [[ "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+      else
+        UPDATE_CHECK=1
+      fi
     fi
     if [[ "$UPDATE_CHECK" = '100' ]]; then
       echo
