@@ -463,12 +463,28 @@ fi
 
 read -ep "Enter email address for Admin User for Wordpress Installation: " WPADMINEMAIL
 
+# check if nginx server is compiled with default redis nginx modules, 
+# otherwise hide redis cache option if nginx server is missing 
+# required redis related nginx modules
+CHECKFOR_REDISMODULES=$(nginx -V 2>&1 | egrep -o 'ngx_http_redis|redis2-nginx-module|ngx_cache_purge|set-misc-nginx-module' | xargs)
+if [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_cache_purge')" = 'ngx_cache_purge' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'set-misc-nginx-module')" = 'set-misc-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'redis2-nginx-module')" = 'redis2-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_http_redis')" = 'ngx_http_redis' ]]; then  redis_ngx_exists='y'
+else
+  redis_ngx_exists='n'
+fi
+
 echo
 cecho "Default is to install KeyCDN WP Cache Enabler Plugin as it is more" $boldyellow
 cecho "stable and reliable than WP Super Cache and Redis Cache." $boldyellow
-cecho "Redis cache may have issues with caching due to long 6hr cache TTL" $boldyellow
-if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
-  cecho "Fastcgi_cache (PHP-FPM) will have best performance" $boldyellow
+if [[ "$redis_ngx_exists" = [yY] ]]; then
+  cecho "Redis cache may have issues with caching due to long 6hr cache TTL" $boldyellow
+  if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+    cecho "Fastcgi_cache (PHP-FPM) will have best performance" $boldyellow
+  fi
+else
+  cecho "!! Redis cache not available - no redis nginx modules detected !!" $boldyellow
+  if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+    cecho "!! Fastcgi_cache (PHP-FPM) not available - no required nginx modules detected" $boldyellow
+  fi
 fi
 cecho "You can select which caching method to use below:" $boldyellow
 echo
@@ -477,27 +493,43 @@ cecho "--------------------------------------------------------" $boldyellow
 cecho "        Wordpress Caching               " $boldgreen
 cecho "--------------------------------------------------------" $boldyellow
 cecho "1). KeyCDN Cache Enabler (default & recommended)" $boldgreen
-cecho "2). Redis Nginx Level Caching (may have issues with some wp plugins)" $boldgreen
-cecho "3). Wordpress Super Cache" $boldgreen
-if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
-  cecho "4). Fastcgi_cache (PHP-FPM)" $boldgreen
+if [[ "$redis_ngx_exists" = [yY] ]]; then
+  cecho "2). Redis Nginx Level Caching (may have issues with some wp plugins)" $boldgreen
+  cecho "3). Wordpress Super Cache" $boldgreen
+  if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+    cecho "4). Fastcgi_cache (PHP-FPM)" $boldgreen
+  fi
+else
+  cecho "2). Wordpress Super Cache" $boldgreen
 fi
 cecho "--------------------------------------------------------" $boldyellow
-if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
-  read -ep "Enter option [ 1 - 4 ] " wpcache_option
+if [[ "$redis_ngx_exists" = [yY] ]]; then
+  if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+    read -ep "Enter option [ 1 - 4 ] " wpcache_option
+  else
+    read -ep "Enter option [ 1 - 3 ] " wpcache_option
+  fi
 else
-  read -ep "Enter option [ 1 - 3 ] " wpcache_option
+  read -ep "Enter option [ 1 - 2 ] " wpcache_option
 fi
 echo
 
 if [[ "$wpcache_option" = '1' ]]; then
   wpscache='n'
 elif [[ "$wpcache_option" = '2' ]]; then
-  wpscache='redis'
+  if [[ "$redis_ngx_exists" = [yY] ]]; then
+    wpscache='redis'
+  else
+    wpscache='y'
+  fi
 elif [[ "$wpcache_option" = '3' ]]; then
   wpscache='y'
 elif [[ "$wpcache_option" = '4' ]]; then
-  wpscache='fastcgicache'
+  if [[ "$redis_ngx_exists" = [yY] ]]; then
+    wpscache='fastcgicache'
+  else
+    wpscache='n'  
+  fi
 else
   wpscache='n'
 fi
