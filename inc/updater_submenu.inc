@@ -311,14 +311,22 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
     echo "setting up fresh /usr/local/src/centminmod code base to match"
     echo
     cd /usr/local/src
-    rm -rf centminmod
+    mv centminmod centminmod-automoved
     echo "time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod"
     time git clone -b ${branchname} --depth=1 ${REMOTE_CMGIT} centminmod
-    echo
-    echo "Completed. Fresh /usr/local/src/centminmod code base in place"
-    echo "To run centmin.sh again, you need to change into directory: /usr/local/src/centminmod"
-    echo "cd /usr/local/src/centminmod"
-    echo
+    if [[ "$?" -eq '0' ]]; then
+      rm -rf centminmod-automoved
+      echo
+      echo "Completed. Fresh /usr/local/src/centminmod code base in place"
+      echo "To run centmin.sh again, you need to change into directory: /usr/local/src/centminmod"
+      echo "cd /usr/local/src/centminmod"
+      echo
+    else
+      mv centminmod-automoved centminmod
+      echo
+      echo "Error: wasn't able to successfully update /usr/local/src/centminmod code base"
+      echo "       restoring previous copy of /usr/local/src/centminmod code base"
+    fi
   fi # check gitclean.txt
 else
   echo
