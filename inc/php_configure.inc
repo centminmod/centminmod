@@ -483,12 +483,12 @@ if [[ ! -f /usr/bin/icu-config ]]; then
     sar_call
   fi
 fi
-if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version)" != '62.1' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '62' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
   yum -y install libicu62 --enablerepo=remi
   yum -y swap libicu-devel libicu62-devel --enablerepo=remi
 fi
-if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version)" != '50.1.2' ]]; then
+if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '50' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
   yum -y install libicu-last --enablerepo=remi
   yum -y remove libicu-devel
