@@ -463,13 +463,36 @@ if [[ ! -f /usr/bin/xslt-config ]]; then
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
-  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-   yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
-   sar_call
+  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel
+    sar_call
+  elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel
+    sar_call
+  elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel
+    sar_call
+  elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel
+    sar_call
+  elif [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
+    sar_call
   else
     yum -q -y install libicu libicu-devel --disablerepo=epel
     sar_call
   fi
+fi
+if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version)" != '62.1' ]]; then
+  # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
+  yum -y install libicu62 --enablerepo=remi
+  yum -y swap libicu-devel libicu62-devel --enablerepo=remi
+fi
+if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version)" != '50.1.2' ]]; then
+  # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
+  yum -y install libicu-last --enablerepo=remi
+  yum -y remove libicu-devel
+  yum -y install libicu-last-devel --enablerepo=remi
 fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
