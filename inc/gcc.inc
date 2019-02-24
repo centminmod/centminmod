@@ -1,3 +1,18 @@
+highergcc_cflags() {
+  # if DEVTOOLSETSEVEN or DEVTOOLSETEIGHT enabled, some PHP extensions have issues with implicit-fallthrough
+  if [[ "$GCCINTEL_PHP" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    DEVTOOLSETGENERAL_FALLTHROUGH='-Wimplicit-fallthrough=0'
+    DEVTOOLSETGENERAL_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+    export CFLAGS="${DEVTOOLSETGENERAL_FALLTHROUGH}${DEVTOOLSETGENERAL_EXTRAFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$GCCINTEL_PHP" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    DEVTOOLSETGENERAL_FALLTHROUGH='-Wimplicit-fallthrough=0'
+    DEVTOOLSETGENERAL_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+    export CFLAGS="${DEVTOOLSETGENERAL_FALLTHROUGH}${DEVTOOLSETGENERAL_EXTRAFLAGS}"
+    export CXXFLAGS="$CFLAGS"
+  fi
+}
+
 enable_clang() {
    if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]] && [[ ! -f /usr/bin/clang ]]; then
       time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
@@ -34,13 +49,20 @@ enable_devtoolset() {
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]]; then
-         if [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+         if [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+            if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+               scl_install
+            fi       
+            source /opt/rh/devtoolset-8/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+         elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-7/enable
-            GENERALDEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting'
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
          elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
                scl_install
@@ -72,7 +94,7 @@ enable_devtoolset() {
       gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_general_native.log
       if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
          CCM=64
-         GEN_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GENERALDEVTOOLSETSEVEN_FALLTHROUGH}${GENERALDEVTOOLSETSEVEN_EXTRAFLAGS}"
+         GEN_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
          # if only 1 cpu thread use -O2 to keep compile times sane
          if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $GEN_MTUNEOPT -pipe"

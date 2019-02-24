@@ -3,6 +3,8 @@ php_ext_brotli() {
     echo "*************************************************"
     cecho "* Installing brotli PHP extension" $boldgreen
     echo "*************************************************"
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "Downloading brotli PHP extension..."
     pushd "$DIR_TMP"
     rm -rf php-ext-brotli
@@ -27,6 +29,8 @@ php_ext_lzfour() {
     echo "*************************************************"
     cecho "* Installing lz4 PHP extension" $boldgreen
     echo "*************************************************"
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "Downloading lz4 PHP extension..."
     pushd "$DIR_TMP"
     rm -rf lz4 
@@ -60,6 +64,8 @@ php_ext_lzf() {
     echo "*************************************************"
     cecho "* Installing lzf PHP extension" $boldgreen
     echo "*************************************************"
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "Downloading lzf PHP extension..."
     if [ ! -f /usr/bin/lzf ]; then
       yum -y -q install liblzf
@@ -88,6 +94,8 @@ php_ext_zopfli() {
     echo "*************************************************"
     cecho "* Installing Zopfli PHP extension" $boldgreen
     echo "*************************************************"
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "Downloading Zopfli PHP extension..."
     if [ ! -f /usr/bin/zopfli ]; then
       yum -y -q install zopfli
@@ -116,6 +124,8 @@ php_ext_zstd() {
     echo "*************************************************"
     cecho "* Installing zstd PHP extension" $boldgreen
     echo "*************************************************"
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "Downloading zstd PHP extension..."
     zstdinstall
     pushd "$DIR_TMP"

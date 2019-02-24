@@ -141,6 +141,8 @@ imagickinstall() {
         checkphpext
         checkimagicksys
         imagick_fixes
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "*************************************************"
     cecho "* Installing imagick PHP Extension" $boldgreen
     echo "*************************************************"

@@ -748,6 +748,8 @@ fi
       echo -e "\n`date`\nSuccess: PHP was installed properly\n"
         echo
         echo
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
 
         # read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
 

@@ -39,7 +39,8 @@ mailparseinstall() {
     if [[ "$PHPMAILPARSE" = [yY] ]]; then
 
         checkphpextmailparse
-        
+      # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      enable_devtoolset
     echo "*************************************************"
     cecho "* Installing mailparse PHP Extension" $boldgreen
     echo "*************************************************"
