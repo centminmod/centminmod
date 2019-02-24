@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='099'
+SCRIPT_INCREMENTVER='100'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -425,8 +425,8 @@ PHP_PGO_TRAINRUNS='80'        # number of runs done during PGO PHP 7 training ru
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use devtoolset-4 GCC 5.3
 DEVTOOLSET_PHP='n'            # use devtoolset GCC for GCCINTEL_PHP='y'
 DEVTOOLSETSIX='n'             # Enable or disable devtoolset-6 GCC 6.2 support instead of devtoolset-4 GCC 5.3 support
-DEVTOOLSETSEVEN='y'           # Enable or disable devtoolset-7 GCC 7.1 support instead of devtoolset-6 GCC 6.2 support
-DEVTOOLSETEIGHT='n'           # source compiled GCC 8 from latest snapshot builds
+DEVTOOLSETSEVEN='n'           # Enable or disable devtoolset-7 GCC 7.1 support instead of devtoolset-6 GCC 6.2 support
+DEVTOOLSETEIGHT='y'           # source compiled GCC 8 from latest snapshot builds
 NGINX_DEVTOOLSETGCC='y'       # Use devtoolset-4 GCC 5.3 even for CentOS 7 nginx compiles
 GENERAL_DEVTOOLSETGCC='n'     # Use devtoolset-4 GCC 5.3 whereever possible/coded
 CRYPTO_DEVTOOLSETGCC='n'      # Use devtoolset-4 GCC 5.3 for libressl or openssl compiles
@@ -1152,6 +1152,20 @@ if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
   MARCH_TARGET='native'
 else
   MARCH_TARGET='x86-64'
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETSEVEN='n'
+elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETSEVEN='n'
 fi
 
 if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then
