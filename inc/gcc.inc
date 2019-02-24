@@ -20,12 +20,12 @@ enable_devtoolset() {
    # recompiles. however on initial install ccache has no benefits, so for initial
    # centmin mod install disabling ccache will in theory speed up first time installs
    if [[ "$INITIALINSTALL" != [yY] ]]; then            
-      export CC="ccache /usr/bin/gcc"
-      export CXX="ccache /usr/bin/g++"
+      export CC="ccache gcc"
+      export CXX="ccache g++"
       export CCACHE_CPP2=yes
    else
-      export CC="/usr/bin/gcc"
-      export CXX="/usr/bin/g++"
+      export CC="gcc"
+      export CXX="g++"
    fi
    CLANG_CFLAGOPT=""
    CFLAGS=""

@@ -84,9 +84,9 @@ fi
 
 # Disabled by default as currently PHP seems to fail to 
 # compile some of the PHP extensions with GCC 8
-if [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
-  DEVTOOLSETEIGHT='n'
-fi
+# if [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+#   DEVTOOLSETEIGHT='n'
+# fi
 
 # If PHP 5.3 detected disable PHP EMBED SAPI
 # https://community.centminmod.com/posts/63877/
@@ -724,7 +724,17 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 fi
 
 # set_intelflags
-if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+  # Enable faster clang compiler for PHP if less than 2 cpu threads
+  # CLANG_PHP='y'
+
+  # Disable PGO if less than 2 cpu threads
+  PHP_PGO='n'
+
+  # Disable php intel optimisation flags if less than 2 cpu threads
+  # detected due to being very very slow for php compile times
+  GCCINTEL_PHP='y'
+elif [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
   # CLANG_PHP='y'
 
@@ -771,14 +781,14 @@ else
   # recompiles. however on initial install ccache has no benefits, so for initial
   # centmin mod install disabling ccache will in theory speed up first time installs
   if [[ "$INITIALINSTALL" != [yY] ]]; then
-      export CC="ccache /usr/bin/gcc"
-      export CXX="ccache /usr/bin/g++"
+      export CC="ccache gcc"
+      export CXX="ccache g++"
       export CCACHE_CPP2=yes
       # PLACEHOLDER FOR CLAGS FOR PHP
       # CFLAGS=
   else
-      export CC="/usr/bin/gcc"
-      export CXX="/usr/bin/g++"
+      export CC="gcc"
+      export CXX="g++"
       # export CCACHE_CPP2=yes
       # PLACEHOLDER FOR CLAGS FOR PHP
       # CFLAGS=
@@ -890,6 +900,19 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       unset CXX
       export CC="ccache gcc"
       export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-8"
+        echo $CC
+        echo $CXX
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -940,6 +963,19 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       unset CXX
       export CC="ccache gcc"
       export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-8"
+        echo $CC
+        echo $CXX
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -979,8 +1015,16 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   fi
 
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    DEVTOOLSETEIGHT='y'
-    DEVTOOLSETSEVEN='y'
+    if [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETEIGHT='y'
+      DEVTOOLSETSEVEN='n'
+    elif [[ "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETEIGHT='y'
+      DEVTOOLSETSEVEN='n'
+    else
+      DEVTOOLSETEIGHT='y'
+      DEVTOOLSETSEVEN='y'
+    fi
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
       DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -991,6 +1035,16 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       unset CXX
       export CC="ccache gcc"
       export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
+      source /opt/rh/devtoolset-8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+      export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
       DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
@@ -1047,38 +1101,89 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     elif [[ "$CPU_MARCH" = 'silvermont' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=silvermont"
+      echo
+      gcc -c -Q -march=silvermont --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'bonnell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=bonnell"
+      echo
+      gcc -c -Q -march=bonnell --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'cannonlake' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=cannonlake"
+      echo
+      gcc -c -Q -march=cannonlake --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'skylake-avx512' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=skylake-avx512"
+      echo
+      gcc -c -Q -march=skylake-avx512 --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'skylake' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=skylake"
+      echo
+      gcc -c -Q -march=skylake --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'broadwell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=broadwell"
+      echo
+      gcc -c -Q -march=broadwell --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'haswell' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=haswell"
+      echo
+      gcc -c -Q -march=haswell --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'ivybridge' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=ivybridge"
+      echo
+      gcc -c -Q -march=ivybridge --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'sandybridge' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=sandybridge"
+      echo
+      gcc -c -Q -march=sandybridge --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'westmere' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=westmere"
+      echo
+      gcc -c -Q -march=westmere --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'nehalem' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=nehalem"
+      echo
+      gcc -c -Q -march=nehalem --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'core-avx2' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx2"
+      echo
+      gcc -c -Q -march=core-avx2 --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'core-avx-i' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core-avx-i"
+      echo
+      gcc -c -Q -march=core-avx-i --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'corei7-avx' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7-avx"
+      echo
+      gcc -c -Q -march=corei7-avx --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'corei7' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=corei7"
+      echo
+      gcc -c -Q -march=corei7 --help=target
+      echo
     elif [[ "$CENTOS_SIX" = '6' && "$CPU_MARCH" = 'core2' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core2"
+      echo
+      gcc -c -Q -march=core2 --help=target
+      echo
     elif [[ "$CENTOS_SEVEN" = '7' && "$CPU_MARCH" = 'core2' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=core2"
+      echo
+      gcc -c -Q -march=core2 --help=target
+      echo
     else
       PHP_MTUNEOPT="-m${CCM} -mtune=native"
     fi
