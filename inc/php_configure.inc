@@ -744,6 +744,16 @@ elif [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Disable php intel optimisation flags if less than 2 cpu threads
   # detected due to being very very slow for php compile times
   GCCINTEL_PHP='n'
+elif [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+  # Enable faster clang compiler for PHP if less than 2 cpu threads
+  # CLANG_PHP='y'
+
+  # Disable PGO if less than 2 cpu threads
+  # PHP_PGO='n'
+
+  # Disable php intel optimisation flags if less than 2 cpu threads
+  # detected due to being very very slow for php compile times
+  GCCINTEL_PHP='y'
 fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
@@ -796,6 +806,14 @@ else
 fi
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
+
+  # ensure devtoolset-7 and devtoolset-8 are installed
+  if [[ "$DEVTOOLSETEIGHT" = [yY] && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+      scl_install
+  fi
+  if [[ "$DEVTOOLSETSEVEN" = [yY] && ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+      scl_install
+  fi
 
   # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
   # initial php install
