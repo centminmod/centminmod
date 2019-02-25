@@ -128,7 +128,11 @@ scl_install() {
         fi
         sar_call
       fi
-      if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
+        echo
+        /opt/gcc9/bin/gcc --version
+        /opt/gcc9/bin/g++ --version
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         echo
         /opt/gcc8/bin/gcc --version
         /opt/gcc8/bin/g++ --version
@@ -311,10 +315,14 @@ libbroti_install() {
     fi    
     fi # centos 6 only needed
 
+    if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+      unset CC
+      unset CXX 
+    fi
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
       unset CC
       unset CXX 
-    fi        
+    fi
   fi
 }
 
