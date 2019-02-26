@@ -572,7 +572,7 @@ crypto_gcc() {
       if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
         which gcc
         which g++
         unset CC
@@ -583,7 +583,7 @@ crypto_gcc() {
         scl_install
         source /opt/rh/devtoolset-8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
         which gcc
         which g++
         unset CC
@@ -594,7 +594,7 @@ crypto_gcc() {
         scl_install
         source /opt/rh/devtoolset-7/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
         which gcc
         which g++
         unset CC
@@ -605,7 +605,7 @@ crypto_gcc() {
         scl_install
         source /opt/rh/devtoolset-7/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
         which gcc
         which g++
         unset CC
