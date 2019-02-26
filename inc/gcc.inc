@@ -49,7 +49,7 @@ enable_devtoolset() {
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]]; then
-         if [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+         if [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETEIGHT" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
                scl_install
             fi       
