@@ -37,12 +37,12 @@ phpxz_detect() {
     PHPTAR_FLAGS='xzf'
   fi
   
-  if [[ "$CENTOS_SEVEN" = 7 ]]; then
+  if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel -4'
     WGETRETRY=''
     AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
-  elif [[ "$CENTOS_SIX" = 6 ]]; then
+  elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel'
     WGETRETRY=''
     AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
@@ -51,7 +51,7 @@ phpxz_detect() {
     DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
     WGETRETRY='--tries=3'
     AXELPHPTARGZ=''
-    AXELPHPUPGRADETARGZ=''
+    AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.${PHPEXTSION}"
   fi   
 }
 

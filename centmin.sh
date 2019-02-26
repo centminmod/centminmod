@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='103'
+SCRIPT_INCREMENTVER='104'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -785,6 +785,7 @@ SIEGE_VERSION='4.0.4'
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
+USEAXEL='y'                  # whether to use axel download accelerator or wget
 ###############################################################
 # experimental Intel compiled optimisations 
 # when auto detect Intel based processors
@@ -1294,10 +1295,10 @@ checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOS_SEVEN" = 7 ]]; then
+if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel -4'
     WGETRETRY=''
-elif [[ "$CENTOS_SIX" = 6 ]]; then
+elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel'
     WGETRETRY=''
 else
