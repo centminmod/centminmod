@@ -218,6 +218,17 @@ else
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
+        if [ ! -f /usr/bin/autoconf268 ]; then
+            echo "yum -q -y install autoconf268"
+            yum -q -y install autoconf268
+        fi
+        if [ -f /usr/bin/autoconf268 ]; then
+            export PHP_AUTOCONF=/usr/bin/autoconf268
+            export PHP_AUTOHEADER=/usr/bin/autoheader268
+        fi
+    fi
+    autoreconf -f -i
     ./configure --with-libevent=/usr/${LIBDIR} --enable-sasl --enable-sasl-pwdb
     # ./configure --with-libevent=/usr/${LIBDIR} --enable-memcached --enable-memcached-igbinary --enable-memcached-json --with-php- config=/usr/local/bin/php-config
     make${MAKETHREADS}
@@ -251,6 +262,16 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
+        if [[ "$CENTOS_SIX" -eq '6' ]]; then
+            if [ ! -f /usr/bin/autoconf268 ]; then
+                echo "yum -q -y install autoconf268"
+                yum -q -y install autoconf268
+            fi
+            if [ -f /usr/bin/autoconf268 ]; then
+                export PHP_AUTOCONF=/usr/bin/autoconf268
+                export PHP_AUTOHEADER=/usr/bin/autoheader268
+            fi
+        fi
         /usr/local/bin/phpize
         ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
         make${MAKETHREADS}
@@ -271,6 +292,16 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         cd "${DIR_TMP}/memcache-${MEMCACHE_VERSION}"
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
+        fi
+        if [[ "$CENTOS_SIX" -eq '6' ]]; then
+            if [ ! -f /usr/bin/autoconf268 ]; then
+                echo "yum -q -y install autoconf268"
+                yum -q -y install autoconf268
+            fi
+            if [ -f /usr/bin/autoconf268 ]; then
+                export PHP_AUTOCONF=/usr/bin/autoconf268
+                export PHP_AUTOHEADER=/usr/bin/autoheader268
+            fi
         fi
         /usr/local/bin/phpize
         ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
