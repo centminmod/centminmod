@@ -463,10 +463,29 @@ if [[ ! -f /usr/bin/xslt-config ]]; then
 fi
 
 # for PHP versions lower than 7.1 switch back to system libicu versions for compatibility
-if [[ "$PHPMUVER" = 5.[23456] || "$PHPMVER" = 5.[23456] || "$PHPMUVER" = 7.[0] || "$PHPMVER" = 7.[0] ]]; then
+if [[ "$PHPMVER" = 5.[23456] ]]; then
   NEWLIBICU='n'
-elif [[ "$PHPMUVER" = 7.[1234] || "$PHPMVER" = 7.[1234] ]]; then
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMUVER" = 5.[23456] ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMVER" = '7.0' ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMUVER" = '7.0' ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMVER" = 7.[1234] ]]; then
   NEWLIBICU='y'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMUVER" = 7.[1234] ]]; then
+  NEWLIBICU='y'
+  echo "NEWLIBICU=$NEWLIBICU"
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
