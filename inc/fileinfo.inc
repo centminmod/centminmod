@@ -14,7 +14,7 @@ fileinfo_standalone() {
         fpmrestart
         php --ri fileinfo
         if [[ "$(php --ri fileinfo 2>&1 | grep 'already loaded')" ]]; then
-            echo '#extension=fileinfo.so' > "${CONFIGSCANDIR}/fileinfo.ini"
+            echo ';extension=fileinfo.so' > "${CONFIGSCANDIR}/fileinfo.ini"
             fpmrestart
             php --ri fileinfo
         fi
