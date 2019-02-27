@@ -40,7 +40,7 @@ rpm -ql GeoIP-devel GeoIP
 	cd $DIR_TMP
 
 cecho "GeoLiteCity database download ..." $boldyellow
-	wget -cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.dat.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+	wget -cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
 	gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
 	cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
 	

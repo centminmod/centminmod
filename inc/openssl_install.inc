@@ -65,16 +65,17 @@ installopenssl() {
         cd $DIR_TMP
         echo "Compiling LibreSSL..."
         cd libressl-${LIBRESSL_VERSION}
-        if [[ "$INITIALINSTALL" != [yY] ]]; then
-            make clean
-        fi
         if [[ "$CENTOS_SIX" -eq '6' ]]; then
-            if [ ! -f /usr/bin/automake-1.5 ]]; then
+            if [ ! -f /usr/bin/automake-1.5 ]; then
                 yum -y install automake15
             fi
-            if [ ! -f /usr/bin/automake-1.6 ]]; then
+            if [ ! -f /usr/bin/automake-1.6 ]; then
                 yum -y install automake16
             fi
+        fi
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+            autoreconf -f -i
         fi
         if [ ! -f configure ]; then
             # https://github.com/libressl-portable/portable/issues/99
