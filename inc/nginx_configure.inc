@@ -3240,7 +3240,11 @@ fi
     elif [[ "$CENTOS_SIX" -eq '6' ]]; then
       SETBUILD_OS='centos6'
     fi
-    SETBUILD_ENV="-$(virt-what)"
+    if [[ -z "$(virt-what)" ]]; then
+      SETBUILD_ENV=""
+    else
+      SETBUILD_ENV="-$(virt-what)"
+    fi
     SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}"
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
