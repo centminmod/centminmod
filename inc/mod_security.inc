@@ -1,7 +1,7 @@
 modsecurity_install() {
   if [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
     MODSEC_INSTALLED=y
-    DEVTOOLSETSIX='y'
+    DEVTOOLSETSEVEN='y'
     NGINX_DEVTOOLSETGCC='y'
     CLANG='n'
     # https://www.nginx.com/blog/compiling-and-installing-modsecurity-for-open-source-nginx/
@@ -130,7 +130,7 @@ EOF
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
   MODSEC_INSTALLED=y
-  DEVTOOLSETSIX='y'
+  DEVTOOLSETSEVEN='y'
   NGINX_DEVTOOLSETGCC='y'
   CLANG='n'
   export CLANG='n'

@@ -831,10 +831,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       fi
     elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
-      DEVTOOLSETSIX='y'
-    else
+      DEVTOOLSETSEVEN='y'
+    elif [[ "$CLANG" = [nN] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
-      DEVTOOLSETSIX='y'
+      DEVTOOLSETSEVEN='y'
     fi
   fi
 
