@@ -637,10 +637,19 @@ fi
 
 # let centmin.sh set PHPFINFO variable override the
 # low memory CHECKLOWMEMPHP variable check
-if [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -ge '1023000' ]]; then
+if [[ "$PHPFINFO_STANDALONE" = [yY] ]]; then
+  PHPFINFO='y'
+fi
+if [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -ge '1023000' && "$PHPFINFO_STANDALONE" = [yY] ]]; then
+  # PHPFINFO yes + low mem install + swap space enough = enable file info php extension
+  FILEINFOOPT=" --disable-fileinfo"
+elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -ge '1023000' && "$PHPFINFO_STANDALONE" = [nN] ]]; then
   # PHPFINFO yes + low mem install + swap space enough = enable file info php extension
   FILEINFOOPT=""
-elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" != "1" ]]; then
+elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" != "1" && "$PHPFINFO_STANDALONE" = [yY] ]]; then
+  # PHPFINFO yes + enough mem install = enable file info php extension
+  FILEINFOOPT=" --disable-fileinfo"
+elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" != "1" && "$PHPFINFO_STANDALONE" = [nN] ]]; then
   # PHPFINFO yes + enough mem install = enable file info php extension
   FILEINFOOPT=""
 elif [[ "$PHPFINFO" = [yY] ]] && [[ "$CHECKLOWMEMPHP" = "1" && "$TOTALSWAPMEM" -lt '1023000' ]]; then

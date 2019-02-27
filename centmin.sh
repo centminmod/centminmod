@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='105'
+SCRIPT_INCREMENTVER='106'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -617,6 +617,7 @@ PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on ph
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
+PHPFINFO_STANDALONE='n'      # Disable or Enable PHP File Info extension as standalone module
 PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
 PHPINTL='y'                  # Disable or Enable PHP intl extension
 PHPRECODE=n                  # Disable or Enable PHP Recode extension
@@ -961,6 +962,7 @@ source "inc/zendopcache_tweaks.inc"
 source "inc/php_extraopts.inc"
 source "inc/mysql_legacy.inc"
 source "inc/imap.inc"
+source "inc/fileinfo.inc"
 source "inc/php_configure.inc"
 source "inc/phpng_download.inc"
 source "inc/php_upgrade.inc"
@@ -2002,6 +2004,7 @@ fi
     #/etc/init.d/php-fpm restart 2>/dev/null
     # /etc/init.d/php-fpm force-quit
     /etc/init.d/php-fpm start
+    fileinfo_standalone
 
 if [[ "$(grep exclude /etc/yum.conf)" && "$MDB_INSTALL" = y ]]; then
     cecho "exclude line exists... adding nginx* mysql* php* exclusions" $boldgreen

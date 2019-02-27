@@ -1008,6 +1008,8 @@ fi
 #     rm -rf "${CONFIGSCANDIR}/memcached.ini"
 # fi
 
+fileinfo_standalone
+
 echo
 php --ini
 

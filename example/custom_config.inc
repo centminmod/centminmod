@@ -237,6 +237,7 @@ PHPIMAGICK_ALWAYS='y'        # imagick php extension is always reinstalled on ph
 PHPDEBUGMODE='n'             # --enable-debug PHP compile flag
 PHPIMAP='y'                  # Disable or Enable PHP Imap extension
 PHPFINFO='n'                 # Disable or Enable PHP File Info extension
+PHPFINFO_STANDALONE='n'      # Disable or Enable PHP File Info extension as standalone module
 PHPPCNTL='y'                 # Disable or Enable PHP Process Control extension
 PHPINTL='y'                  # Disable or Enable PHP intl extension
 PHPRECODE=n                  # Disable or Enable PHP Recode extension
