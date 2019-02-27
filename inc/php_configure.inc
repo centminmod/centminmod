@@ -462,11 +462,18 @@ if [[ ! -f /usr/bin/xslt-config ]]; then
   sar_call
 fi
 
+# for PHP versions lower than 7.1 switch back to system libicu versions for compatibility
+if [[ "$PHPMUVER" = 5.[23456] || "$PHPMVER" = 5.[23456] || "$PHPMUVER" = 7.[0] || "$PHPMVER" = 7.[0] ]]; then
+  NEWLIBICU='n'
+elif [[ "$PHPMUVER" = 7.[1234] || "$PHPMVER" = 7.[1234] ]]; then
+  NEWLIBICU='y'
+fi
+
 if [[ ! -f /usr/bin/icu-config ]]; then
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+  if [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
     yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel
     sar_call
-  elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+  elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
     yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel
     sar_call
   elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
@@ -483,10 +490,26 @@ if [[ ! -f /usr/bin/icu-config ]]; then
     sar_call
   fi
 fi
-if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '62' ]]; then
+if [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '62' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
   yum -y install libicu62 --enablerepo=remi
   yum -y swap libicu-devel libicu62-devel --enablerepo=remi
+fi
+# for PHP versions lower than 7.1 switch back to system libicu versions for compatibility
+if [[ "$NEWLIBICU" = [nN] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -gt '50' ]]; then
+  # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
+  if [ "$(rpm -ql libicu62)" ]; then
+    yum -y remove libicu62 --enablerepo=remi
+  fi
+  if [ "$(rpm -ql libicu62-devel)" ]; then
+    yum -y swap libicu62-devel libicu-devel --enablerepo=remi
+  else
+    if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      yum -q -y install libicu-devel --disablerepo=rpmforge,epel
+    else
+      yum -q -y install libicu-devel --disablerepo=epel
+    fi
+  fi
 fi
 if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '50' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
