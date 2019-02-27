@@ -2663,7 +2663,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; the
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
         NGX_GSPLITDWARF='n'
-      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc ]]; then
         source /opt/rh/devtoolset-8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
@@ -2688,7 +2688,7 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; the
         source /opt/gcc8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
-      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc ]]; then
         source /opt/rh/devtoolset-8/enable
         DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
@@ -2849,7 +2849,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         export CXX="g++"
         NGX_GSPLITDWARF='n'
       fi
-    elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc ]]; then
       DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
       DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
       if [[ "$INITIALINSTALL" != [yY] ]]; then
