@@ -1,6 +1,6 @@
 ngxpagespeed_setpipepatch() {
   # patch for centos 6 and ngx_pagespeed 1.13.35.1 beta
-  if [[ "$CENTOS_SIX" -eq '6' && -z "$(grep 'ifdef F_SETPIPE_SZ' "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}/src/ngx_event_connection.cc")" ]]; then
+  if [[ "$CENTOS_SIX" -eq '6' && "$NGINX_PAGESPEED" = [yY] && -z "$(grep 'ifdef F_SETPIPE_SZ' "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}/src/ngx_event_connection.cc")" ]]; then
     # only patch for 1.13.35.1 and lower
     if [[ "$(echo "$NGINX_PAGESPEEDPSOL_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo $NGINX_PAGESPEEDPSOL_VER | cut -d . -f2)" -le '13' ]] && [[ "$(echo $NGINX_PAGESPEEDPSOL_VER | cut -d . -f3)" -le '35' ]] && [[ "$(echo $NGINX_PAGESPEEDPSOL_VER | cut -d . -f4)" -le '1' ]]; then
         pushd "$DIR_TMP/ngx_pagespeed-${NGXPGSPEED_VER}/src"

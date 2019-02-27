@@ -306,7 +306,7 @@ install_stdzlib() {
             zlib_ccache
         fi
 
-        popd
+        # popd
         echo
         echo "zlib ${NGINX_ZLIBVER} installed"
         echo
