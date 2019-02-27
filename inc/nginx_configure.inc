@@ -813,6 +813,20 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         CLANG_FIVE='n'
         CLANG_SIX='n'
         CLANG_MASTER='y'
+      elif [[ "$CLANG_EIGHT" = [yY] && -f /opt/sbin/llvm-release_80/bin/clang ]]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='n'
+        CLANG_SIX='n'
+        CLANG_SEVEN='n'
+        CLANG_EIGHT='y'
+        CLANG_MASTER='n'
+      elif [[ "$CLANG_SEVEN" = [yY] && -f /opt/sbin/llvm-release_70/bin/clang ]]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='n'
+        CLANG_SIX='n'
+        CLANG_SEVEN='y'
+        CLANG_EIGHT='n'
+        CLANG_MASTER='n'
       elif [[ "$CLANG_SIX" = [yY] && -f /opt/sbin/llvm-release_60/bin/clang ]]; then
         CLANG_FOUR='n'
         CLANG_FIVE='n'
@@ -2572,11 +2586,15 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f /opt/sbin/llvm-relea
   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f /opt/sbin/llvm-release_60/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_60/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f /opt/sbin/llvm-release_70/bin/clang ]]; then
+  CLANG_NEWBIN='/opt/sbin/llvm-release_70/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f /opt/sbin/llvm-release_80/bin/clang ]]; then
+  CLANG_NEWBIN='/opt/sbin/llvm-release_80/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_MASTER" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_master/bin/clang'
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
   # if [ -f /opt/sbin/llvm/lib/LLVMgold.so ]; then
   #   LLVMLTO_OPT=' -flto'
   #   # export AR="$BUILD_DIR/llvmgold.binutils/binutils/ar"
