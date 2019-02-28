@@ -1091,6 +1091,9 @@ fi
 
     php-config
     echo "***************************************************"
+    if [ "$CPU_MARCH" ]; then
+        cecho "* PHP compiled with CPU_MARCH=$CPU_MARCH" $boldgreen
+    fi
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' ]]; then
         cecho "* PHP_PGO='y' detected. PHP compiled with Profile Guided Optimizations" $boldgreen
