@@ -972,10 +972,10 @@ gitenv_askupdate() {
 wgetver_check() {
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then
-    if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ "$(pcre-config --version | grep -q ${PCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
       if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
         if [[ -f "${SCRIPT_DIR}/addons/wget.sh" && -f /usr/local/sbin/nginx ]]; then
-          echo "update wget to ${WGET_VERSION} version... one time task"
+          echo "update wget ${WGET_VERSION} & pcre ${PCRE_VERSION} version... one time task"
           sleep 6
           "${SCRIPT_DIR}/addons/wget.sh" install
         fi
