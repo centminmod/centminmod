@@ -3244,6 +3244,7 @@ fi
       SETBUILD_ENV=""
     else
       SETBUILD_ENV="-$(virt-what)"
+      SETBUILD_ENV=$(echo $SETBUILD_ENV | tr -d '\n' | sed -e 's| |-|g')
     fi
     SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}"
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
