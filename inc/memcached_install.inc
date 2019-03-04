@@ -293,6 +293,14 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
            # patch support https://github.com/websupport-sk/pecl-memcache/pull/30
            wget -O memcache-php73.patch https://patch-diff.githubusercontent.com/raw/websupport-sk/pecl-memcache/pull/30.patch
            patch -p1 < memcache-php73.patch
+        elif [[ "$PHPCURRENTVER" = '7.[012]' || "$PHPMUVER" = '7.[012]' ]]; then
+           # rollback to commit prior to memcache 4.0.1 release
+           # https://github.com/websupport-sk/pecl-memcache/issues/38
+           git checkout 4a9e4ab0d1
+        elif [[ "$PHPCURRENTVER" = '5.[456]' || "$PHPMUVER" = '5.[456]' ]]; then
+           # rollback to commit prior to memcache 4.0.1 release
+           # https://github.com/websupport-sk/pecl-memcache/issues/38
+           git checkout 4a9e4ab0d1
         fi
         /usr/local/bin/phpize
         ./configure --enable-memcache --with-php-config=/usr/local/bin/php-config
