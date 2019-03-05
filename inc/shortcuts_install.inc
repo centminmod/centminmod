@@ -99,6 +99,11 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
         echo "/etc/init.d/memcached stop" >/usr/bin/memcachedstop ; chmod 700 /usr/bin/memcachedstop
         echo "/etc/init.d/memcached start" >/usr/bin/memcachedstart ; chmod 700 /usr/bin/memcachedstart
         echo "/etc/init.d/memcached restart" >/usr/bin/memcachedrestart ; chmod 700 /usr/bin/memcachedrestart
+        if [[ "$USEEDITOR" = 'vim' ]]; then
+            echo "vim /etc/init.d/memcached" >/usr/bin/memcachedconfig ; chmod 700 /usr/bin/memcachedconfig
+        else
+            echo "nano /etc/init.d/memcached" >/usr/bin/memcachedconfig ; chmod 700 /usr/bin/memcachedconfig
+        fi
     fi
     
     if [ -f /usr/sbin/csf ]; then
@@ -148,6 +153,11 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         echo "/etc/init.d/memcached stop" >/usr/bin/memcachedstop ; chmod 700 /usr/bin/memcachedstop
         echo "/etc/init.d/memcached start" >/usr/bin/memcachedstart ; chmod 700 /usr/bin/memcachedstart
         echo "/etc/init.d/memcached restart" >/usr/bin/memcachedrestart ; chmod 700 /usr/bin/memcachedrestart
+        if [[ "$USEEDITOR" = 'vim' ]]; then
+            echo "vim /etc/init.d/memcached" >/usr/bin/memcachedconfig ; chmod 700 /usr/bin/memcachedconfig
+        else
+            echo "nano /etc/init.d/memcached" >/usr/bin/memcachedconfig ; chmod 700 /usr/bin/memcachedconfig
+        fi
         if [ -f /usr/bin/memflush ]; then
         echo "memflush --quiet --servers=localhost:11211" >/usr/bin/memcachedflush ; chmod 700 /usr/bin/memcachedflush
         fi
