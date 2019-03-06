@@ -543,6 +543,11 @@ if [[ "$NEWLIBICU" = [nN] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.r
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
   if [ "$(rpm -ql libicu62)" ]; then
     yum -y remove libicu62 --enablerepo=remi
+    if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      yum -q -y install libicu-devel --disablerepo=rpmforge,epel
+    else
+      yum -q -y install libicu-devel --disablerepo=epel
+    fi
   fi
   if [ "$(rpm -ql libicu62-devel)" ]; then
     yum -y swap libicu62-devel libicu-devel --enablerepo=remi
