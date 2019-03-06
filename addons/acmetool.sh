@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.49'
+ACMEVER='1.0.50'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -733,13 +733,13 @@ switch_httpsdefault() {
   echo "setting HTTPS default in /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
   echo
   if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
-echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
-echo "sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf""
+echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x# server {| server {|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x# }| }|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 
 sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -761,6 +761,10 @@ sed -i '/^# server {/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "/^#   server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^#    return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# }/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^#       listen   80;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "/^#       server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^#       return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+
 
   echo
   echo "remove /usr/local/nginx/conf/conf.d/$vhostname.conf"
