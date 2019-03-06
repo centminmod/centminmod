@@ -475,15 +475,39 @@ if [[ "$PHPMVER" = '7.0' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
+if [[ "$PHPMVER" = '7.1' ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMVER" = '7.2' ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMVER" = '7.3'] ]]; then
+  NEWLIBICU='y'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMVER" = '7.4' ]]; then
+  NEWLIBICU='y'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
 if [[ "$PHPMUVER" = '7.0' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMVER" = 7.[1234] ]]; then
+if [[ "$PHPUVER" = '7.1' ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPUVER" = '7.2' ]]; then
+  NEWLIBICU='n'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPUVER" = '7.3'] ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMUVER" = 7.[1234] ]]; then
+if [[ "$PHPUVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
@@ -1164,13 +1188,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # for PHP_LTO='y'
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
     # remove  -gsplit-dwarf when PHP_LTO='y' seems *.dwo files aren't cleaned from /tmp with it enabled
-    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
+    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [nN] ]]; then
-    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
+    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -gsplit-dwarf -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
+    PHPEXTRA_CFLAGS="$PHPEXTRA_CFLAGS -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   fi
 
