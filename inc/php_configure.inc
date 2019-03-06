@@ -483,7 +483,7 @@ if [[ "$PHPMVER" = '7.2' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMVER" = '7.3'] ]]; then
+if [[ "$PHPMVER" = '7.3' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
@@ -503,7 +503,7 @@ if [[ "$PHPUVER" = '7.2' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '7.3'] ]]; then
+if [[ "$PHPUVER" = '7.3' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
