@@ -2,6 +2,32 @@
 opensslpatches() {
   {
 
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1b' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.1b"
+    echo "######################################################################"
+    echo "ChaCha20-Poly1305 long nonces patch"
+    echo "https://github.com/openssl/openssl/commit/f426625b6a"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL-1.1.1b-ChaCha20-Poly1305-CVE-2019-1543.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL-1.1.1b-ChaCha20-Poly1305-CVE-2019-1543.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL-1.1.1b-ChaCha20-Poly1305-CVE-2019-1543.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL-1.1.1b-ChaCha20-Poly1305-CVE-2019-1543.patch"
+        openssl_chachalong_err=$?
+        if [[ "$openssl_chachalong_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL-1.1.1b-ChaCha20-Poly1305-CVE-2019-1543.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
 if [[ "$OPENSSL_TLSONETHREE_BACKPORTDRAFTS" = [yY] && "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1' ]]; then
     echo
     echo "######################################################################"
