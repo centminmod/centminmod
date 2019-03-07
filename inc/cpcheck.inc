@@ -1,4 +1,5 @@
 dft_phpupstream() {
+  if [ ! -f /usr/local/nginx/conf/default_phpupstream.conf ]; then
 cat > "/usr/local/nginx/conf/default_phpupstream.conf"<<EOF
 upstream dft_php {
   zone dftphp_zone 128k;
@@ -6,6 +7,7 @@ upstream dft_php {
   keepalive 2;
 }
 EOF
+  fi
 
   DFT_SETUPPHPUPSTREAM_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/default_phpupstream.conf' /usr/local/nginx/conf/nginx.conf)
   if [[ -z "$DFT_SETUPPHPUPSTREAM_INCLUDECHECK" ]]; then
