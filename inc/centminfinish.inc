@@ -1,3 +1,34 @@
+disk_cleanups() {
+    # tidy up to reduce disk space usage
+    find /svr-setup -maxdepth 1 -type d ! -wholename "/svr-setup" -exec rm -rf {} \;
+    rm -f /svr-setup/1
+    rm -f /svr-setup/axel-2.14.1.tar.gz
+    rm -f /svr-setup/axel-2.4-1.el5.rf.i386.rpm
+    rm -f /svr-setup/axel-2.4-1.el5.rf.x86_64.rpm
+    rm -f /svr-setup/axel-2.4-1.el6.rf.i686.rpm
+    rm -f /svr-setup/axel-2.4-1.el6.rf.x86_64.rpm
+    rm -f /svr-setup/axel-2.5.tar.gz
+    rm -f /svr-setup/axel-2.6.tar.gz
+    rm -f /svr-setup/ccache-3.4.1.tar.gz
+    rm -f /svr-setup/city-fan.org-release-1-13.rhel6.noarch.rpm
+    rm -f /svr-setup/city-fan.org-release-1-13.rhel7.noarch.rpm
+    rm -f /svr-setup/csf.tgz-local
+    rm -f /svr-setup/epel-release*
+    rm -f /svr-setup/help-dummy.o
+    rm -f /svr-setup/mongodb-1.4.0.tgz
+    rm -f /svr-setup/ngx-fancyindex-0.3.1.tar.gz
+    rm -f /svr-setup/ngx_cache_purge-2.4.2.tar.gz
+    rm -f /svr-setup/package.xml
+    rm -f /svr-setup/redis2-nginx-module_v0.14.tar.gz
+    rm -f /svr-setup/remi-release-5.rpm
+    rm -f /svr-setup/remi-release-6.rpm
+    rm -f /svr-setup/rpmforge-release-0.5.3-1.el5*
+    rm -f /svr-setup/rpmforge-release-0.5.3-1.el6*
+    rm -f /svr-setup/set-misc-nginx-module_v0.31*
+    rm -f /svr-setup/varnish-release-3.0-1.el6.noarch.rpm
+    rm -f /svr-setup/wget-1.19.4.tar.gz
+}
+
 installchecks() {
 
   if [ "$UNATTENDED" == 'y' ]; then
@@ -7,6 +38,7 @@ sleep 0.3
 }
 
 entropyup
+disk_cleanups
 
     echo "*************************************************"
     cecho "* Post-Install Check List...." $boldgreen
