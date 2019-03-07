@@ -1,0 +1,103 @@
+Backported for 5.6 from 7.1 by remi
+without binary diff
+
+
+
+From 5e824a88d073d282c4f358f186cb87ddc284f83d Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Fri, 1 Mar 2019 23:25:45 -0800
+Subject: [PATCH] Fix integer overflows on 32-bits
+
+---
+ ext/exif/exif.c | 14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index cbde3effedf9..b4563927a505 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3577,10 +3577,10 @@ static int exif_process_IFD_in_TIFF(image_info_type *ImageInfo, size_t dir_offse
+ 	tag_table_type tag_table = exif_get_tag_table(section_index);
+ 
+ 	if (ImageInfo->ifd_nesting_level > MAX_IFD_NESTING_LEVEL) {
+-                return FALSE;
+-        }
++		return FALSE;
++	}
+ 
+-	if (ImageInfo->FileSize >= dir_offset+2) {
++	if (ImageInfo->FileSize >= 2 && ImageInfo->FileSize - 2 >= dir_offset) {
+ 		sn = exif_file_sections_add(ImageInfo, M_PSEUDO, 2, NULL);
+ #ifdef EXIF_DEBUG
+ 		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_NOTICE, "Read from TIFF: filesize(x%04X), IFD dir(x%04X + x%04X)", ImageInfo->FileSize, dir_offset, 2);
+@@ -3588,8 +3588,8 @@ static int exif_process_IFD_in_TIFF(image_info_type *ImageInfo, size_t dir_offse
+ 		php_stream_seek(ImageInfo->infile, dir_offset, SEEK_SET); /* we do not know the order of sections */
+ 		php_stream_read(ImageInfo->infile, (char*)ImageInfo->file.list[sn].data, 2);
+ 		num_entries = php_ifd_get16u(ImageInfo->file.list[sn].data, ImageInfo->motorola_intel);
+-		dir_size = 2/*num dir entries*/ +12/*length of entry*/*num_entries +4/* offset to next ifd (points to thumbnail or NULL)*/;
+-		if (ImageInfo->FileSize >= dir_offset+dir_size) {
++		dir_size = 2/*num dir entries*/ +12/*length of entry*/*(size_t)num_entries +4/* offset to next ifd (points to thumbnail or NULL)*/;
++		if (ImageInfo->FileSize >= dir_size && ImageInfo->FileSize - dir_size >= dir_offset) {
+ #ifdef EXIF_DEBUG
+ 			exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_NOTICE, "Read from TIFF: filesize(x%04X), IFD dir(x%04X + x%04X), IFD entries(%d)", ImageInfo->FileSize, dir_offset+2, dir_size-2, num_entries);
+ #endif
+@@ -3672,9 +3672,9 @@ static int exif_process_IFD_in_TIFF(image_info_type *ImageInfo, size_t dir_offse
+ 					}
+ 				}
+ 			}
+-			if (ImageInfo->FileSize >= dir_offset + ImageInfo->file.list[sn].size) {
++			if (ImageInfo->FileSize >= ImageInfo->file.list[sn].size && ImageInfo->FileSize - ImageInfo->file.list[sn].size >= dir_offset) {
+ 				if (ifd_size > dir_size) {
+-					if (dir_offset + ifd_size > ImageInfo->FileSize) {
++					if (ImageInfo->FileSize < ifd_size || dir_offset > ImageInfo->FileSize - ifd_size) {
+ 						exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Error in TIFF: filesize(x%04X) less than size of IFD(x%04X + x%04X)", ImageInfo->FileSize, dir_offset, ifd_size);
+ 						return FALSE;
+ 					}
+From 5f0e62a3e5b525163e538aaab0161c2c8c5d057b Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 2 Mar 2019 13:38:00 -0800
+Subject: [PATCH] Fix bug #77540 - Invalid Read on exif_process_SOFn
+
+---
+ ext/exif/exif.c              |  10 ++++++++--
+ ext/exif/tests/bug77540.jpg  | Bin 0 -> 91 bytes
+ ext/exif/tests/bug77540.phpt |  16 ++++++++++++++++
+ 3 files changed, 24 insertions(+), 2 deletions(-)
+ create mode 100644 ext/exif/tests/bug77540.jpg
+ create mode 100644 ext/exif/tests/bug77540.phpt
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index b4563927a505..ea88a8f115e8 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3519,7 +3519,7 @@ static int exif_scan_thumbnail(image_info_type *ImageInfo)
+ 			return FALSE;
+ 		marker = c;
+ 		length = php_jpg_get16(data+pos);
+-		if (pos+length>=ImageInfo->Thumbnail.size) {
++		if (length > ImageInfo->Thumbnail.size || pos >= ImageInfo->Thumbnail.size - length) {
+ 			return FALSE;
+ 		}
+ #ifdef EXIF_DEBUG
+@@ -3540,6 +3540,10 @@ static int exif_scan_thumbnail(image_info_type *ImageInfo)
+ 			case M_SOF14:
+ 			case M_SOF15:
+ 				/* handle SOFn block */
++				if (length < 8 || ImageInfo->Thumbnail.size - 8 < pos) {
++					/* exif_process_SOFn needs 8 bytes */
++					return FALSE;
++				}
+ 				exif_process_SOFn(data+pos, marker, &sof_info);
+ 				ImageInfo->Thumbnail.height   = sof_info.height;
+ 				ImageInfo->Thumbnail.width    = sof_info.width;
+@@ -4183,7 +4187,9 @@ PHP_FUNCTION(exif_thumbnail)
+ 	ZVAL_STRINGL(return_value, ImageInfo.Thumbnail.data, ImageInfo.Thumbnail.size, 1);
+ 	if (arg_c >= 3) {
+ 		if (!ImageInfo.Thumbnail.width || !ImageInfo.Thumbnail.height) {
+-			exif_scan_thumbnail(&ImageInfo TSRMLS_CC);
++			if (!exif_scan_thumbnail(&ImageInfo TSRMLS_CC)) {
++				ImageInfo.Thumbnail.width = ImageInfo.Thumbnail.height = 0;
++			}
+ 		}
+ 		zval_dtor(p_width);
+ 		zval_dtor(p_height);

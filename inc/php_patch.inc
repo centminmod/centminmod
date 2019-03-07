@@ -12,6 +12,39 @@ php_patches() {
       fi
       # popd
     fi
+    if [[ "$PHPMUVER" = '5.6' || "$PHPMVER" = '5.6' ]]; then
+      # backport security bug patch from PHP 7.1.27 to 
+      # PHP 5.6 bug #77540 https://bugs.php.net/bug.php?id=77540
+      if [ ! -f php5640-77540.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #77540"
+        echo "https://bugs.php.net/bug.php?id=77540"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-77540.patch php5640-77540.patch
+        dos2unix php5640-77540.patch
+        patch -p1 < php5640-77540.patch
+      fi
+      # PHP 5.6 bug #77563 https://bugs.php.net/bug.php?id=77563
+      if [ ! -f php5640-77563.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #77563"
+        echo "https://bugs.php.net/bug.php?id=77563"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-77563.patch php5640-77563.patch
+        dos2unix php5640-77563.patch
+        patch -p1 < php5640-77563.patch
+      fi
+      # PHP 5.6 bug #77630 https://bugs.php.net/bug.php?id=77630
+      if [ ! -f php5640-77630.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #77630"
+        echo "https://bugs.php.net/bug.php?id=77630"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-77630.patch php5640-77630.patch
+        dos2unix php5640-77630.patch
+        patch -p1 < php5640-77630.patch
+      fi
+    fi
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
       # patch PHP 7.2.13 and 7.1.25 missing CVE patch
       # https://bugs.php.net/bug.php?id=77020

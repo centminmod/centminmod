@@ -1,0 +1,90 @@
+Backported to 5.6 from 7.1 by remi
+
+
+
+From e3133e4db70476fb7adfdedb738483e2255ce0e1 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 2 Mar 2019 23:42:53 -0800
+Subject: [PATCH] Fix bug #77630 - safer rename() procedure
+
+In order to rename safer, we do the following:
+- set umask to 077 (unfortunately, not TS, so excluding ZTS)
+- chown() first, to set proper group before allowing group access
+- chmod() after, even if chown() fails
+---
+ main/streams/plain_wrapper.c | 51 ++++++++++++++++++++++++------------
+ 1 file changed, 34 insertions(+), 17 deletions(-)
+
+diff --git a/main/streams/plain_wrapper.c b/main/streams/plain_wrapper.c
+index af890a9aa3bb..7fdf906e6fad 100644
+--- a/main/streams/plain_wrapper.c
++++ b/main/streams/plain_wrapper.c
+@@ -1126,34 +1126,51 @@ static int php_plain_files_rename(php_st
+ # ifdef EXDEV
+ 		if (errno == EXDEV) {
+ 			struct stat sb;
++# if !defined(ZTS) && !defined(TSRM_WIN32) && !defined(NETWARE)
++			/* not sure what to do in ZTS case, umask is not thread-safe */
++			int oldmask = umask(077);
++# endif
++			int success = 0;
+ 			if (php_copy_file(url_from, url_to TSRMLS_CC) == SUCCESS) {
+ 				if (VCWD_STAT(url_from, &sb) == 0) {
++					success = 1;
+ #  if !defined(TSRM_WIN32) && !defined(NETWARE)
+-					if (VCWD_CHMOD(url_to, sb.st_mode)) {
+-						if (errno == EPERM) {
+-							php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+-							VCWD_UNLINK(url_from);
+-							return 1;
+-						}
++					/*
++					 * Try to set user and permission info on the target.
++					 * If we're not root, then some of these may fail.
++					 * We try chown first, to set proper group info, relying
++					 * on the system environment to have proper umask to not allow
++					 * access to the file in the meantime.
++					 */
++					if (VCWD_CHOWN(url_to, sb.st_uid, sb.st_gid)) {
+ 						php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+-						return 0;
++						if (errno != EPERM) {
++							success = 0;
++						}
+ 					}
+-					if (VCWD_CHOWN(url_to, sb.st_uid, sb.st_gid)) {
+-						if (errno == EPERM) {
++
++					if (success) {
++						if (VCWD_CHMOD(url_to, sb.st_mode)) {
+ 							php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+-							VCWD_UNLINK(url_from);
+-							return 1;
++							if (errno != EPERM) {
++								success = 0;
++							}
+ 						}
+-						php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+-						return 0;
+ 					}
+ #  endif
+-					VCWD_UNLINK(url_from);
+-					return 1;
++					if (success) {
++						VCWD_UNLINK(url_from);
++					}
++				} else {
++					php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+ 				}
++			} else {
++				php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+ 			}
+-			php_error_docref2(NULL TSRMLS_CC, url_from, url_to, E_WARNING, "%s", strerror(errno));
+-			return 0;
++#  if !defined(ZTS) && !defined(TSRM_WIN32) && !defined(NETWARE)
++			umask(oldmask);
++#  endif
++			return success;
+ 		}
+ # endif
+ #endif
