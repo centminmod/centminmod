@@ -42,7 +42,7 @@ sshdtweaks() {
   # centos 6.x openssh 5.3p1 backported ecdsa keys support but
   # not configured out of the box https://community.centminmod.com/posts/19702/
   # this sets up ecdh-sha2-* key exchange support
-  if [ ! -f /etc/ssh/ssh_host_ecdsa_key ]; then
+  if [[ "$CENTOS_SIX" -eq '6' && ! -f /etc/ssh/ssh_host_ecdsa_key ]]; then
     echo "ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key"
     ssh-keygen -q -N "" -t ecdsa -f /etc/ssh/ssh_host_ecdsa_key
   
