@@ -38,7 +38,6 @@ sleep 0.3
 }
 
 entropyup
-disk_cleanups
 
     echo "*************************************************"
     cecho "* Post-Install Check List...." $boldgreen

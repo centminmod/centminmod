@@ -2277,6 +2277,7 @@ fi
     cecho "* MariaDB Security Setup Completed" $boldgreen
     echo "*************************************************"
 
+disk_cleanups
 bookmark
 
 sync 
