@@ -13,7 +13,13 @@ fi
 if [[ ! -f /usr/local/nginx/html/memcache_*.php ]]; then
 
 cd $DIR_TMP
-cd memcache-${MEMCACHE_VERSION}
+# php 7 versus php <7 memcache source directory
+PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+  cd memcache-php7
+else
+  cd memcache-${MEMCACHE_VERSION}
+fi
 
     echo ""
     echo "*************************************************"
