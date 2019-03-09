@@ -236,6 +236,8 @@ march_hostcheck() {
   VPS_ASNCHECK=$(curl -s https://ipinfo.io/org)
   if [[ "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|vultr|choopa')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
+    NGX_GSPLITDWARF='n'
+    PHP_GSPLITDWARF='n'
     if [[ -f /etc/centminmod/custom_config.inc && ! "$(grep 'MARCH_TARGETNATIVE' /etc/centminmod/custom_config.inc)" ]]; then
       echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
     elif [[ ! -f /etc/centminmod/custom_config.inc && "$INITIALINSTALL" = [yY] ]]; then
