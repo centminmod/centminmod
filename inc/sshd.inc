@@ -3,6 +3,9 @@ sshdtweaks() {
   if [[ "$(grep '^#Port' /etc/ssh/sshd_config)" && "$(egrep '^#Port|^Port' /etc/ssh/sshd_config | wc -l)" -eq '1' ]]; then
     sed -i 's/^#Port /Port /g' /etc/ssh/sshd_config
   fi
+  if [[ ! "$(grep '^X11Forwarding no' /etc/ssh/sshd_config)" ]]; then
+    sed -i 's|^X11Forwarding .*|X11Forwarding no|' /etc/ssh/sshd_config
+  fi
 
   CHECKHOSTKEY=$(grep '#HostKey /etc/ssh/ssh_host_rsa_key' /etc/ssh/sshd_config)
   CHECKHOSTKEYB=$(grep '#HostKey /etc/ssh/ssh_host_ecdsa_key' /etc/ssh/sshd_config)
