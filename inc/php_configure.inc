@@ -1186,9 +1186,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   CPUSTEPPING=$(awk -F ": " '/stepping/ {print $2}' /proc/cpuinfo | uniq)
   SSEFOURTWOCHECK=$(grep -o sse4_2 /proc/cpuinfo | sort -u | wc -l)
   MARCHCHECK=$(gcc -c -Q -march=native --help=target | awk '/  -march=/ {print $2}' | head -n1)
-  gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
-  gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
+  # gcc --version | tee ${CENTMINLOGDIR}/gcc_php_native.log
+  # gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march|mfpmath' | tee -a ${CENTMINLOGDIR}/gcc_php_native.log
 
+  echo
+  gcc -c -Q -march=native --help=target | egrep '\-mtune|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_native.log
+  echo
+  gcc -c -Q -march=x86-64 --help=target | egrep '\-mtune|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64.log
+  echo
+  diff -y --suppress-common-lines ${CENTMINLOGDIR}/gcc_php_native.log ${CENTMINLOGDIR}/gcc_php_x86-64.log | tee ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
+  echo
+  egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_diff_native-vs-x86-64.log
+  # if non native target x86-64 is used 
+  # pick up important native cpu instructions
+  # and manually pass them to x86-64 target
+  if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
+    GCC_NONNATIVEFLAGS=""
+  else
+    GCC_NONNATIVEFLAGS=" $(egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_php_native.log | egrep -v 'march|mtune|avx512' | grep enabled | sed -e 's|\[||g' -e 's|\]||g' -e 's|enabled||g'| xargs)"
+    echo
+    gcc -c -Q -march=x86-64${GCC_NONNATIVEFLAGS} --help=target | egrep '\-mtune|\-march|\-msse|\-msse2|\-msse2avx|\-msse3|\-mavx|\-msse4|\-mssse3|\-mpclmul' | tee ${CENTMINLOGDIR}/gcc_php_x86-64-non-native.log
+  fi
+  echo
+  echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
+    echo
 
   # for PHP_LTO='y'
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [yY] ]]; then
@@ -1210,7 +1231,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     CCM=64
     
     if [[ "$MARCH_TARGETNATIVE" = [nN] ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
+      PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GCC_NONNATIVEFLAGS}"
     elif [[ "$CPU_MARCH" = 'silvermont' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=silvermont"
       echo
