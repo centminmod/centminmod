@@ -219,6 +219,7 @@ gitenv_askupdate() {
         echo "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
         echo
       fi
+      if [[ -f /opt/centminmod/first-login-run && -f /opt/centminmod/first-login.sh ]]; then /opt/centminmod/first-login.sh; fi
     fi
 }
 
