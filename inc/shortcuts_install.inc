@@ -119,11 +119,13 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo "/etc/init.d/nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
     echo "/etc/init.d/nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
     echo "/etc/init.d/nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
-    echo "/etc/init.d/php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
-    echo "/etc/init.d/php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
-    echo "/etc/init.d/php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
-    echo "/etc/init.d/php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
-    echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
+    if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
+        echo "/etc/init.d/php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
+        echo "/etc/init.d/php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
+        echo "/etc/init.d/php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+        echo "/etc/init.d/php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
+        echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
+    fi
 
     if [ -f /etc/init.d/mysql ]; then
     
@@ -144,10 +146,12 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         fi
     
     fi
-        echo "/etc/init.d/nginx stop;/etc/init.d/php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
-        echo "/etc/init.d/nginx start;/etc/init.d/php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-        echo "/etc/init.d/nginx restart;/etc/init.d/php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
-        echo "/etc/init.d/nginx reload;/etc/init.d/php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+        if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
+            echo "/etc/init.d/nginx stop;/etc/init.d/php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+            echo "/etc/init.d/nginx start;/etc/init.d/php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+            echo "/etc/init.d/nginx restart;/etc/init.d/php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+            echo "/etc/init.d/nginx reload;/etc/init.d/php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+        fi
     
     if [ -f /usr/local/bin/memcached ]; then
         echo "/etc/init.d/memcached stop" >/usr/bin/memcachedstop ; chmod 700 /usr/bin/memcachedstop
