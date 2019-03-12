@@ -1439,7 +1439,79 @@ sar_call
   if [[ "$INITIALINSTALL" = [yY] ]]; then
     echo
     echo "php_configure.inc make${MAKETHREADS_PHP}"
-    time make${MAKETHREADS_PHP}
+    echo "PHP_PGO = $PHP_PGO"
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' ]]; then
+        echo "make${MAKETHREADS_PHP} prof-gen"
+        time make${MAKETHREADS_PHP} prof-gen
+        if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
+            pushd "$DIR_TMP"
+            time git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
+            popd
+            GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
+            sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
+            ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
+            echo "time ./sapi/cgi/php-cgi -T80 ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T80 ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T40 ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T40 ../Zend/micro_bench.php
+            echo "./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php""
+            time ./sapi/cgi/php-cgi -T100 "$DIR_TMP/php_pgo_training_scripts/index.php"
+            if [ -f "$PHPPGO_INDEXPATH" ]; then
+                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH"
+            fi
+            if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
+                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_TWO""
+                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_TWO"
+            fi
+            if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
+                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_THREE""
+                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_THREE"
+            fi
+            if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
+                echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR""
+                time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR"
+            fi
+        elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
+            pushd "$DIR_TMP/php_pgo_training_scripts"
+            git stash
+            git pull
+            popd
+            GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
+            sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
+            ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
+            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php
+            echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php""
+            time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php"
+            if [ -f "$PHPPGO_INDEXPATH" ]; then
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH"
+            fi
+            if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_TWO""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_TWO"
+            fi
+            if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_THREE""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_THREE"
+            fi
+            if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
+                echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR""
+                time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR"
+            fi
+        fi
+        echo "make prof-clean"
+        time make prof-clean
+        echo "make${MAKETHREADS_PHP} prof-use"
+        time make${MAKETHREADS_PHP} prof-use
+    else
+        echo "make${MAKETHREADS_PHP}"
+        time make${MAKETHREADS_PHP}
+    fi
+
     sar_call
     echo
     
