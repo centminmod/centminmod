@@ -672,6 +672,7 @@ cmservice mysql restart
     echo "*************************************************"
     
     /etc/init.d/mysql stop
+    /etc/init.d/mysql start
 fi
 
 if [[ "$MDB_YUMREPOINSTALL" = [yY] && "$MDB_INSTALL" = [nN] ]]; then
