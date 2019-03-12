@@ -18,6 +18,7 @@ user=root
 password=$THEMYSQLPASS
 EOF
 
+{
 echo ""
 cecho "-------------------------------------------------------" $boldyellow
 cecho "MySQL root user password set" $boldgreen
@@ -25,4 +26,10 @@ cecho "MySQL root user added to /root/.my.cnf" $boldgreen
 cecho "-------------------------------------------------------" $boldyellow
 cecho "MySQL root password: $THEMYSQLPASS" $boldgreen
 cecho "-------------------------------------------------------" $boldyellow
+} 2>&1 | tee "${CENTMINLOGDIR}/set-dot-my.cnf.log"
+}
+
+
+show_mysqlpass() {
+  cat "${CENTMINLOGDIR}/set-dot-my.cnf.log"
 }

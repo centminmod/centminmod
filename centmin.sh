@@ -26,7 +26,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='110'
+SCRIPT_INCREMENTVER='111'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -1876,6 +1876,8 @@ fi
 
 mysqlinstallfunct
 
+securemysql
+
 if [[ "$PHP_INSTALL" = [yY] ]]; then
     phpinstallstarttime=$(TZ=UTC date +%s.%N)
     echo "*************************************************"
@@ -2273,9 +2275,11 @@ phpiadmin
     echo "*************************************************"
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] || "$UNATTENDED" == [yY] ]]; then
-  securemysql
+  # securemysql
+  show_mysqlpass
 else
-  securemysql
+  # securemysql
+  show_mysqlpass
 fi
 
     echo "*************************************************"
