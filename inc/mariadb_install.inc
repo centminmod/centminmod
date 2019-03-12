@@ -705,6 +705,7 @@ fi
     echo "*************************************************"
     
     cmservice mysql stop
+    cmservice mysql start
 fi
 
 }
