@@ -19,6 +19,7 @@ PHPFPMCONFDIR='/usr/local/nginx/conf/phpfpmd'
 
 UNATTENDED='y' # please leave at 'y' for best compatibility as at .07 release
 CMVERSION_CHECK='n'
+MENUEXIT_ALWAYS_YUMCHECK='y'  # also do yum check on centmin.sh exit
 CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
@@ -26,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='111'
+SCRIPT_INCREMENTVER='112'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'

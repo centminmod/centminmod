@@ -12,6 +12,7 @@ PUSHOVER_EMAIL='' # Signup pushover.net push email notifications to mobile & tab
 
 CMGIT='https://github.com/centminmod/centminmod.git'
 AUTO_GITUPDATE='n'
+MENUEXIT_ALWAYS_YUMCHECK='y'  # also do yum check on centmin.sh exit
 
 ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
 ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display

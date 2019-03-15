@@ -1096,13 +1096,17 @@ yumupdatechecker() {
     SEC_SINCELASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMCHECK_EPOCHDATE} | bc)
     # SEC_SINCEHISTORYLASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMHISTORYCHECK_EPOCHDATE} | bc)
     if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-      if [[ "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
+      if [[ "$MENUEXIT_ALWAYS_YUMCHECK" = [yY] ]]; then
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+      elif [[ "$MENUEXIT_ALWAYS_YUMCHECK" != [yY] && "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
         UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
       else
         UPDATE_CHECK=1
       fi
     else
-      if [[ "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
+      if [[ "$MENUEXIT_ALWAYS_YUMCHECK" = [yY] ]]; then
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+      elif [[ "$MENUEXIT_ALWAYS_YUMCHECK" != [yY] && "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
         UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
       else
         UPDATE_CHECK=1
