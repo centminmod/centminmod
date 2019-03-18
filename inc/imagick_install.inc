@@ -76,6 +76,9 @@ checkimagicksys() {
                     time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                 else
                     # yum clean all >/dev/null 2>&1
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
                     time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                 fi
             fi
@@ -108,6 +111,9 @@ checkimagicksys() {
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                     sar_call
                 else
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     sar_call
                 fi
@@ -129,6 +135,9 @@ checkimagicksys() {
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                     sar_call
                 else
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
                     time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     sar_call
                 fi
