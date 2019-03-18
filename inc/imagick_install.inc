@@ -61,6 +61,10 @@ checkimagicksys() {
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     # yum clean all >/dev/null 2>&1
+                    if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                        time $YUMDNFBIN -y install ImageMagick6-devel ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                    fi
                     time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     sar_call
                 fi
