@@ -4,6 +4,7 @@
 ENABLE_MARIADBTENUPGRADE='y'
 ENABLE_MARIADBTENTWOUPGRADE='n'
 ENABLE_MARIADBTENTHREEUPGRADE='n'
+ENABLE_MARIADBTENFOURUPGRADE='n'
 SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
 mariadbsubmenu() {
@@ -28,10 +29,11 @@ do
   cecho "5). MariaDB 10.x to MariaDB 10.1.x YUM upgrade" $boldgreen
   cecho "6). MariaDB 10.1.x to MariaDB 10.2.x YUM upgrade" $boldgreen
   cecho "7). MariaDB 10.2.x to MariaDB 10.3.x YUM upgrade" $boldgreen
-  cecho "8). Back to Main menu" $boldgreen
+  cecho "8). MariaDB 10.3.x to MariaDB 10.4.x YUM upgrade" $boldgreen
+  cecho "9). Back to Main menu" $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
 
-  read -ep "Enter option [ 0 - 8 ] " mmoption
+  read -ep "Enter option [ 0 - 9 ] " mmoption
   cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -310,7 +312,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
     if [[ "$ENABLE_MARIADBTENTHREEUPGRADE" = [nN] ]]; then
       echo "Place holder for now until MariaDB 10.3.x is ready to be added"
     else
-      # echo "Place holder for now until MariaDB 10.2.x is ready to be added"
+      # echo "Place holder for now until MariaDB 10.3.x is ready to be added"
       c7tmpsetup
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         mariadbtentwototenthreeupgrade
@@ -325,6 +327,38 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-2-to-10-3_upgrade.log
 ;;
 8)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu8-autobackup-$DT"
+  fi
+centminlog
+{
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+  if [[ "$MARIADBVERCHECK" = '10.4' ]]; then
+
+    echo ""
+    cecho "MariaDB 10.3.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '10.3' ]; then
+
+    if [[ "$ENABLE_MARIADBTENFOURUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 10.4.x is ready to be added"
+    else
+      # echo "Place holder for now until MariaDB 10.4.x is ready to be added"
+      c7tmpsetup
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        mariadbtenthreetotenfourupgrade
+      else
+        echo "currently only tested on CentOS 7 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '10.3' ]; then
+    echo "Need to be on MariaDB 10.3 before updating to MariaDB 10.4"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-3-to-10-4_upgrade.log
+;;
+9)
   break
 ;;
 esac
