@@ -91,7 +91,14 @@ checkimagicksys() {
                 echo "----------------------------------------------------------------------------------"
                 cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
                 echo "----------------------------------------------------------------------------------"
-                time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
+                    time $YUMDNFBIN -y install lcms2-devel libwebp7 libwebp7-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                else
+                    time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                fi
                 sar_call
                 yum -y remove ImageMagick${DISABLEREPO_DNF}
                 sar_call
