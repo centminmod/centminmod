@@ -209,18 +209,17 @@ top_info() {
     echo "------------------------------------------------------------------"
     echo "df -hT"
     df -hT
-    if [[ -f /usr/local/nginx/conf/phpstatus.conf && "$(grep '^#include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
+    if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -f /usr/local/nginx/conf/phpstatus.conf && "$(grep '^#include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
         sed -i 's|^#include /usr/local/nginx/conf/phpstatus.conf;|include /usr/local/nginx/conf/phpstatus.conf;|' /usr/local/nginx/conf/conf.d/virtual.conf
         nprestart >/dev/null 2>&1
     fi
-    echo
-    if [[ "$(grep '^include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" && -f /usr/bin/fpmstats ]]; then
+    if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep '^include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" && -f /usr/bin/fpmstats ]]; then
         echo
         echo "------------------------------------------------------------------"
         echo "php-fpm stats"
         echo
         fpmstats
-    elif [[ "$(grep '^include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" && ! -f /usr/bin/fpmstats ]]; then
+    elif [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep '^include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" && ! -f /usr/bin/fpmstats ]]; then
         echo
         echo "------------------------------------------------------------------"
         echo "php-fpm stats"
