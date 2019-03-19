@@ -233,6 +233,10 @@ top_info() {
     sar -r | sed -e "s|$(hostname)|hostname|g"
     echo
     echo "------------------------------------------------------------------"
+    echo "sar -u | sed -e \"s|\$(hostname)|hostname|g\""
+    sar -u | sed -e "s|$(hostname)|hostname|g"
+    echo
+    echo "------------------------------------------------------------------"
     if [ -d /usr/lib/systemd ]; then
         echo "top -bcn1 -w200"
         top -bcn1 -w200
@@ -246,8 +250,8 @@ top_info() {
     iotop -bton1 -P
     echo
     echo "------------------------------------------------------------------"
-    echo "pidstat -durh 1 5 | sed -e \"s|\$(hostname)|hostname|g\""
-    pidstat -durh 1 5 | sed -e "s|$(hostname)|hostname|g"
+    echo "pidstat -durh 1 10 | sed -e \"s|\$(hostname)|hostname|g\""
+    pidstat -durh 1 10 | sed -e "s|$(hostname)|hostname|g"
     echo "------------------------------------------------------------------"
     echo "Stats saved at: ${CENTMINLOGDIR}/cminfo-top-${DT}.log"
     echo "------------------------------------------------------------------"
