@@ -151,8 +151,10 @@ yum -y replace git --replace-with git2u --enablerepo=ius
 echo
 yum versionlock git perl-Git
 
-NEW_GITEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) git perl-Git")
-sed -i "s|^exclude=.*|$NEW_GITEXCLUDES|" /etc/yum.conf
+if [[ "$(grep '^exclude=' /etc/yum.conf | grep -o git)" != 'git' ]]; then
+    NEW_GITEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) git perl-Git")
+    sed -i "s|^exclude=.*|$NEW_GITEXCLUDES|" /etc/yum.conf
+fi
 
 echo
 git --version
