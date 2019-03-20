@@ -44,6 +44,16 @@ php_patches() {
         dos2unix php5640-77630.patch
         patch -p1 < php5640-77630.patch
       fi
+      # PHP 5.6 bug #76846 https://bugs.php.net/bug.php?id=76846
+      if [ ! -f php5640-76846.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #76846"
+        echo "https://bugs.php.net/bug.php?id=76846"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-76846.patch php5640-76846.patch
+        dos2unix php5640-76846.patch
+        patch -p1 < php5640-76846.patch
+      fi
     fi
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
       # patch PHP 7.2.13 and 7.1.25 missing CVE patch
