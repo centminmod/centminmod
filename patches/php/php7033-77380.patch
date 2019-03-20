@@ -1,0 +1,57 @@
+From 4feb9e66ff9636ad44bc23a91b7ebd37d83ddf1d Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Tue, 1 Jan 2019 17:15:20 -0800
+Subject: [PATCH] Fix bug #77380  (Global out of bounds read in xmlrpc base64
+ code)
+
+---
+ ext/xmlrpc/libxmlrpc/base64.c  |  4 ++--
+ ext/xmlrpc/tests/bug77380.phpt | 17 +++++++++++++++++
+ 2 files changed, 19 insertions(+), 2 deletions(-)
+ create mode 100644 ext/xmlrpc/tests/bug77380.phpt
+
+diff --git a/ext/xmlrpc/libxmlrpc/base64.c b/ext/xmlrpc/libxmlrpc/base64.c
+index 5ebdf31f7ade..a4fa19327b76 100644
+--- a/ext/xmlrpc/libxmlrpc/base64.c
++++ b/ext/xmlrpc/libxmlrpc/base64.c
+@@ -77,7 +77,7 @@ void base64_encode_xmlrpc(struct buffer_st *b, const char *source, int length)
+ 
+   while (!hiteof) {
+     unsigned char igroup[3], ogroup[4];
+-    int c, n;
++	int c, n;
+ 
+     igroup[0] = igroup[1] = igroup[2] = 0;
+     for (n = 0; n < 3; n++) {
+@@ -169,7 +169,7 @@ void base64_decode_xmlrpc(struct buffer_st *bfr, const char *source, int length)
+ 		return;
+ 	    }
+ 
+-	    if (dtable[c] & 0x80) {
++	    if (dtable[(unsigned char)c] & 0x80) {
+ 	      /*
+ 	      fprintf(stderr, "Offset %i length %i\n", offset, length);
+ 	      fprintf(stderr, "character '%c:%x:%c' in input file.\n", c, c, dtable[c]);
+diff --git a/ext/xmlrpc/tests/bug77380.phpt b/ext/xmlrpc/tests/bug77380.phpt
+new file mode 100644
+index 000000000000..8559c07a5aea
+--- /dev/null
++++ b/ext/xmlrpc/tests/bug77380.phpt
+@@ -0,0 +1,17 @@
++--TEST--
++Bug #77380 (Global out of bounds read in xmlrpc base64 code)
++--SKIPIF--
++<?php
++if (!extension_loaded("xmlrpc")) print "skip";
++?>
++--FILE--
++<?php
++var_dump(xmlrpc_decode(base64_decode("PGJhc2U2ND7CkzwvYmFzZTY0Pgo=")));
++?>
++--EXPECT--
++object(stdClass)#1 (2) {
++  ["scalar"]=>
++  string(0) ""
++  ["xmlrpc_type"]=>
++  string(6) "base64"
++}

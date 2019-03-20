@@ -1,0 +1,49 @@
+Backported for 7.0 by Remi
+
+
+From 78bd3477745f1ada9578a79f61edb41886bec1cb Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 29 Dec 2018 18:25:37 -0800
+Subject: [PATCH] Fix bug #77247 (heap buffer overflow in
+ phar_detect_phar_fname_ext)
+
+---
+ ext/phar/phar.c              |  2 +-
+ ext/phar/tests/bug77247.phpt | 14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
+ create mode 100644 ext/phar/tests/bug77247.phpt
+
+diff --git a/ext/phar/phar.c b/ext/phar/phar.c
+index 82a9ef31943a..0d2173195c32 100644
+--- a/ext/phar/phar.c
++++ b/ext/phar/phar.c
+@@ -2021,7 +2021,7 @@ int phar_detect_phar_fname_ext(const char *filename, int filename_len, const cha
+ 	}
+ 
+ 	while (pos != filename && (*(pos - 1) == '/' || *(pos - 1) == '\0')) {
+-		pos = memchr(pos + 1, '.', filename_len - (pos - filename) + 1);
++		pos = memchr(pos + 1, '.', filename_len - (pos - filename) - 1);
+ 		if (!pos) {
+ 			return FAILURE;
+ 		}
+diff --git a/ext/phar/tests/bug77247.phpt b/ext/phar/tests/bug77247.phpt
+new file mode 100644
+index 000000000000..588975f9f2f8
+--- /dev/null
++++ b/ext/phar/tests/bug77247.phpt
+@@ -0,0 +1,14 @@
++--TEST--
++PHP bug #77247 (heap buffer overflow in phar_detect_phar_fname_ext)
++--SKIPIF--
++<?php if (!extension_loaded("phar")) die("skip"); ?>
++--FILE--
++<?php
++try {
++var_dump(new Phar('a/.b', 0,'test.phar'));
++} catch(UnexpectedValueException $e) {
++	echo "OK";
++}
++?>
++--EXPECT--
++OK
+\ No newline at end of file

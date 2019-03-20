@@ -1,0 +1,41 @@
+From c6e34d91b88638966662caac62c4d0e90538e317 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 29 Dec 2018 20:06:08 -0800
+Subject: [PATCH] Fix bug #77371 (heap buffer overflow in mb regex functions -
+ compile_string_node)
+
+---
+ ext/mbstring/oniguruma/regcomp.c |  1 +
+ ext/mbstring/tests/bug77371.phpt | 10 ++++++++++
+ 2 files changed, 11 insertions(+)
+ create mode 100644 ext/mbstring/tests/bug77371.phpt
+
+diff --git a/ext/mbstring/oniguruma/regcomp.c b/ext/mbstring/oniguruma/regcomp.c
+index b93ca948a773..c72d65d6942f 100644
+--- a/ext/mbstring/oniguruma/regcomp.c
++++ b/ext/mbstring/oniguruma/regcomp.c
+@@ -524,6 +524,7 @@ compile_string_node(Node* node, regex_t* reg)
+ 
+   for (; p < end; ) {
+     len = enclen(enc, p);
++    if (p + len > end) len = end - p;
+     if (len == prev_len) {
+       slen++;
+     }
+diff --git a/ext/mbstring/tests/bug77371.phpt b/ext/mbstring/tests/bug77371.phpt
+new file mode 100644
+index 000000000000..f23445bd0917
+--- /dev/null
++++ b/ext/mbstring/tests/bug77371.phpt
+@@ -0,0 +1,10 @@
++--TEST--
++Bug #77371 (heap buffer overflow in mb regex functions - compile_string_node)
++--SKIPIF--
++<?php extension_loaded('mbstring') or die('skip mbstring not available'); ?>
++--FILE--
++<?php
++var_dump(mb_ereg("()0\xfc00000\xfc00000\xfc00000\xfc",""))
++?>
++--EXPECT--
++bool(false)
+\ No newline at end of file

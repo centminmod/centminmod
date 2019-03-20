@@ -1,0 +1,73 @@
+Backported for 7.0 by remi
+without binary diff
+
+
+
+From e0f5d62bd6690169998474b62f92a8c5ddf0e699 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 3 Mar 2019 22:33:38 -0800
+Subject: [PATCH] Fix bug #77586 - phar_tar_writeheaders_int() buffer overflow
+
+---
+ NEWS                                          | 11 +++++-----
+ ext/phar/tar.c                                |  7 ++++++-
+ ext/phar/tests/bug71488.phpt                  |  5 +++--
+ ext/phar/tests/bug77586.phpt                  | 21 +++++++++++++++++++
+ ...-dne29hvpNWXiVbepwIf8-NRHWM9LITLo3nXZnKVNC |  1 +
+ 5 files changed, 37 insertions(+), 8 deletions(-)
+ create mode 100644 ext/phar/tests/bug77586.phpt
+ create mode 100644 ext/phar/tests/bug77586/files/link-nktarAMLdJBv7BGYnpzg-ZDycSpWN3Ne3kacltOSE-EqfhStJ1EoBpGuoua6VE-dne29hvpNWXiVbepwIf8-NRHWM9LITLo3nXZnKVNC
+
+diff --git a/ext/phar/tar.c b/ext/phar/tar.c
+index 9de3047f7c90..20f688272752 100644
+--- a/ext/phar/tar.c
++++ b/ext/phar/tar.c
+@@ -762,7 +762,12 @@ static int phar_tar_writeheaders_int(phar_entry_info *entry, void *argument) /*
+ 	header.typeflag = entry->tar_type;
+ 
+ 	if (entry->link) {
+-		strncpy(header.linkname, entry->link, strlen(entry->link));
++		if (strlcpy(header.linkname, entry->link, sizeof(header.linkname)) >= sizeof(header.linkname)) {
++			if (fp->error) {
++				spprintf(fp->error, 4096, "tar-based phar \"%s\" cannot be created, link \"%s\" is too long for format", entry->phar->fname, entry->link);
++			}
++			return ZEND_HASH_APPLY_STOP;
++		}
+ 	}
+ 
+ 	strncpy(header.magic, "ustar", sizeof("ustar")-1);
+diff --git a/ext/phar/tests/bug77586.phpt b/ext/phar/tests/bug77586.phpt
+new file mode 100644
+index 000000000000..039cc16994eb
+--- /dev/null
++++ b/ext/phar/tests/bug77586.phpt
+@@ -0,0 +1,21 @@
++--TEST--
++Bug #77586 Symbolic link names in tar-formatted phar must be less than 100 bytes.
++--SKIPIF--
++<?php if (!extension_loaded("phar") || true /* blocked by bug 65332 */) die("skip"); ?>
++--FILE--
++<?php
++$dir = __DIR__."/bug77586";
++$phar = new PharData($dir . "/bug77586.tar");
++$phar->buildFromDirectory($dir . "/files");
++?>
++--CLEAN--
++<?php
++$dir = __DIR__."/bug77586";
++unlink($dir . "/bug77586.tar");
++?>
++--EXPECTF--
++Fatal error: Uncaught PharException: tar-based phar "%s/bug77586.tar" cannot be created, link "%s" is too long for format %s
++Stack trace:
++#0 %s/bug77586.php(%d): PharData->buildFromDirectory('%s')
++#1 {main}
++  thrown in %s/bug77586.php %s on line %d
+diff --git a/ext/phar/tests/bug77586/files/link-nktarAMLdJBv7BGYnpzg-ZDycSpWN3Ne3kacltOSE-EqfhStJ1EoBpGuoua6VE-dne29hvpNWXiVbepwIf8-NRHWM9LITLo3nXZnKVNC b/ext/phar/tests/bug77586/files/link-nktarAMLdJBv7BGYnpzg-ZDycSpWN3Ne3kacltOSE-EqfhStJ1EoBpGuoua6VE-dne29hvpNWXiVbepwIf8-NRHWM9LITLo3nXZnKVNC
+new file mode 100644
+index 000000000000..1de565933b05
+--- /dev/null
++++ b/ext/phar/tests/bug77586/files/link-nktarAMLdJBv7BGYnpzg-ZDycSpWN3Ne3kacltOSE-EqfhStJ1EoBpGuoua6VE-dne29hvpNWXiVbepwIf8-NRHWM9LITLo3nXZnKVNC
+@@ -0,0 +1 @@
++target
+\ No newline at end of file

@@ -1,0 +1,82 @@
+From 45cdcb2d0be89fe7bc404dd150240ec83f5de401 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Fri, 28 Sep 2018 12:56:47 +0200
+Subject: [PATCH] Fixed bug #76846
+
+---
+ NEWS                     |  2 ++
+ Zend/tests/bug76846.phpt | 27 +++++++++++++++++++++++++++
+ Zend/zend_objects_API.c  |  6 ++++--
+ 3 files changed, 33 insertions(+), 2 deletions(-)
+ create mode 100644 Zend/tests/bug76846.phpt
+
+diff --git a/Zend/tests/bug76846.phpt b/Zend/tests/bug76846.phpt
+new file mode 100644
+index 000000000000..c167a8bb789f
+--- /dev/null
++++ b/Zend/tests/bug76846.phpt
+@@ -0,0 +1,27 @@
++--TEST--
++Bug #76846: Segfault in shutdown function after memory limit error
++--INI--
++memory_limit=33M
++--SKIPIF--
++<?php
++$zend_mm_enabled = getenv("USE_ZEND_ALLOC");
++if ($zend_mm_enabled === "0") {
++	die("skip Zend MM disabled");
++}
++?>
++--FILE--
++<?php
++
++register_shutdown_function(function() {
++    new stdClass;
++});
++
++$ary = [];
++while (true) {
++    $ary[] = new stdClass;
++}
++
++?>
++--EXPECTF--
++Fatal error: Allowed memory size of %d bytes exhausted at %s:%d (tried to allocate %d bytes) in %s on line %d
++%A
+diff --git a/Zend/zend_objects_API.c b/Zend/zend_objects_API.c
+index 54d8d51456d8..cbb637c54907 100644
+--- a/Zend/zend_objects_API.c
++++ b/Zend/zend_objects_API.c
+@@ -116,8 +116,10 @@ ZEND_API void zend_objects_store_put(zend_object *object)
+ 		EG(objects_store).free_list_head = GET_OBJ_BUCKET_NUMBER(EG(objects_store).object_buckets[handle]);
+ 	} else {
+ 		if (EG(objects_store).top == EG(objects_store).size) {
+-			EG(objects_store).size <<= 1;
+-			EG(objects_store).object_buckets = (zend_object **) erealloc(EG(objects_store).object_buckets, EG(objects_store).size * sizeof(zend_object*));
++			uint32_t new_size = 2 * EG(objects_store).size;
++			EG(objects_store).object_buckets = (zend_object **) erealloc(EG(objects_store).object_buckets, new_size * sizeof(zend_object*));
++			/* Assign size after realloc, in case it fails */
++			EG(objects_store).size = new_size;
+ 		}
+ 		handle = EG(objects_store).top++;
+ 	}
+From fa84b8ebb4ab14ca841d7e479865548dadc5eb88 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Fri, 28 Sep 2018 13:39:43 +0200
+Subject: [PATCH] Fix test for release builds
+
+---
+ Zend/tests/bug76846.phpt | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/Zend/tests/bug76846.phpt b/Zend/tests/bug76846.phpt
+index c167a8bb789f..fbef2010338c 100644
+--- a/Zend/tests/bug76846.phpt
++++ b/Zend/tests/bug76846.phpt
+@@ -23,5 +23,4 @@ while (true) {
+ 
+ ?>
+ --EXPECTF--
+-Fatal error: Allowed memory size of %d bytes exhausted at %s:%d (tried to allocate %d bytes) in %s on line %d
+-%A
++Fatal error: Allowed memory size of %d bytes exhausted%s(tried to allocate %d bytes) in %s on line %d%A

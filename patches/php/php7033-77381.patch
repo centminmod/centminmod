@@ -1,0 +1,158 @@
+From 31f59e1f3074ab344b473dde6077a6844ca87264 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Wed, 2 Jan 2019 00:36:30 -0800
+Subject: [PATCH] Fix more issues with encodilng length
+
+Should fix bug #77381, bug #77382, bug #77385, bug #77394.
+---
+ ext/mbstring/oniguruma/enc/unicode.c |  1 +
+ ext/mbstring/oniguruma/regcomp.c     | 11 +++++------
+ ext/mbstring/oniguruma/regparse.c    | 10 +++-------
+ ext/mbstring/oniguruma/regparse.h    | 12 ++++++++++++
+ ext/mbstring/tests/bug77371.phpt     |  2 +-
+ ext/mbstring/tests/bug77381.phpt     | 16 ++++++++++++++++
+ 6 files changed, 38 insertions(+), 14 deletions(-)
+ create mode 100644 ext/mbstring/tests/bug77381.phpt
+
+diff --git a/ext/mbstring/oniguruma/enc/unicode.c b/ext/mbstring/oniguruma/enc/unicode.c
+index e13429f51e9c..9f86095896b6 100644
+--- a/ext/mbstring/oniguruma/enc/unicode.c
++++ b/ext/mbstring/oniguruma/enc/unicode.c
+@@ -10989,6 +10989,7 @@ onigenc_unicode_mbc_case_fold(OnigEncoding enc,
+ 
+   code = ONIGENC_MBC_TO_CODE(enc, p, end);
+   len = enclen(enc, p);
++  if (*pp + len > end) len = end - *pp;
+   *pp += len;
+ 
+ #ifdef USE_UNICODE_CASE_FOLD_TURKISH_AZERI
+diff --git a/ext/mbstring/oniguruma/regcomp.c b/ext/mbstring/oniguruma/regcomp.c
+index c72d65d6942f..820257341f54 100644
+--- a/ext/mbstring/oniguruma/regcomp.c
++++ b/ext/mbstring/oniguruma/regcomp.c
+@@ -469,13 +469,13 @@ compile_length_string_node(Node* node, regex_t* reg)
+   ambig = NSTRING_IS_AMBIG(node);
+ 
+   p = prev = sn->s;
+-  prev_len = enclen(enc, p);
++  SAFE_ENC_LEN(enc, p, sn->end, prev_len);
+   p += prev_len;
+   slen = 1;
+   rlen = 0;
+ 
+   for (; p < sn->end; ) {
+-    len = enclen(enc, p);
++    SAFE_ENC_LEN(enc, p, sn->end, len);
+     if (len == prev_len) {
+       slen++;
+     }
+@@ -518,13 +518,12 @@ compile_string_node(Node* node, regex_t* reg)
+   ambig = NSTRING_IS_AMBIG(node);
+ 
+   p = prev = sn->s;
+-  prev_len = enclen(enc, p);
++  SAFE_ENC_LEN(enc, p, end, prev_len);
+   p += prev_len;
+   slen = 1;
+ 
+   for (; p < end; ) {
+-    len = enclen(enc, p);
+-    if (p + len > end) len = end - p;
++    SAFE_ENC_LEN(enc, p, end, len);
+     if (len == prev_len) {
+       slen++;
+     }
+@@ -3391,7 +3390,7 @@ expand_case_fold_string(Node* node, regex_t* reg)
+       goto err;
+     }
+ 
+-    len = enclen(reg->enc, p);
++	SAFE_ENC_LEN(reg->enc, p, end, len);
+ 
+     if (n == 0) {
+       if (IS_NULL(snode)) {
+diff --git a/ext/mbstring/oniguruma/regparse.c b/ext/mbstring/oniguruma/regparse.c
+index 252ca1871202..fcfaf4378c06 100644
+--- a/ext/mbstring/oniguruma/regparse.c
++++ b/ext/mbstring/oniguruma/regparse.c
+@@ -246,12 +246,6 @@ strdup_with_null(OnigEncoding enc, UChar* s, UChar* end)
+ }
+ #endif
+ 
+-#if (defined (__GNUC__) && __GNUC__ > 2 ) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX)
+-# define UNEXPECTED(condition) __builtin_expect(condition, 0)
+-#else
+-# define UNEXPECTED(condition) (condition)
+-#endif
+-
+ /* scan pattern methods */
+ #define PEND_VALUE   0
+ 
+@@ -3589,7 +3583,9 @@ fetch_token(OnigToken* tok, UChar** src, UChar* end, ScanEnv* env)
+ 	tok->u.code = (OnigCodePoint )num;
+       }
+       else { /* string */
+-	p = tok->backp + enclen(enc, tok->backp);
++          int len;
++          SAFE_ENC_LEN(enc, tok->backp, end, len);
++          p = tok->backp + len;
+       }
+       break;
+     }
+diff --git a/ext/mbstring/oniguruma/regparse.h b/ext/mbstring/oniguruma/regparse.h
+index 0c5c2c936c04..bcab03ed5892 100644
+--- a/ext/mbstring/oniguruma/regparse.h
++++ b/ext/mbstring/oniguruma/regparse.h
+@@ -348,4 +348,16 @@ extern int onig_print_names(FILE*, regex_t*);
+ #endif
+ #endif
+ 
++#if (defined (__GNUC__) && __GNUC__ > 2 ) && !defined(DARWIN) && !defined(__hpux) && !defined(_AIX)
++# define UNEXPECTED(condition) __builtin_expect(condition, 0)
++#else
++# define UNEXPECTED(condition) (condition)
++#endif
++
++#define SAFE_ENC_LEN(enc, p, end, res) do {  \
++    int __res = enclen(enc, p);              \
++    if (UNEXPECTED(p + __res > end)) __res = end - p;    \
++	res = __res;                             \
++} while(0);
++
+ #endif /* REGPARSE_H */
+diff --git a/ext/mbstring/tests/bug77371.phpt b/ext/mbstring/tests/bug77371.phpt
+index f23445bd0917..33e5fc115c96 100644
+--- a/ext/mbstring/tests/bug77371.phpt
++++ b/ext/mbstring/tests/bug77371.phpt
+@@ -4,7 +4,7 @@ Bug #77371 (heap buffer overflow in mb regex functions - compile_string_node)
+ <?php extension_loaded('mbstring') or die('skip mbstring not available'); ?>
+ --FILE--
+ <?php
+-var_dump(mb_ereg("()0\xfc00000\xfc00000\xfc00000\xfc",""))
++var_dump(mb_ereg("()0\xfc00000\xfc00000\xfc00000\xfc",""));
+ ?>
+ --EXPECT--
+ bool(false)
+\ No newline at end of file
+diff --git a/ext/mbstring/tests/bug77381.phpt b/ext/mbstring/tests/bug77381.phpt
+new file mode 100644
+index 000000000000..cb83759fc09b
+--- /dev/null
++++ b/ext/mbstring/tests/bug77381.phpt
+@@ -0,0 +1,16 @@
++--TEST--
++Bug #77381 (heap buffer overflow in multibyte match_at)
++--SKIPIF--
++<?php extension_loaded('mbstring') or die('skip mbstring not available'); ?>
++--FILE--
++<?php
++var_dump(mb_ereg("000||0\xfa","0"));
++var_dump(mb_ereg("(?i)000000000000000000000\xf0",""));
++var_dump(mb_ereg("0000\\"."\xf5","0"));
++var_dump(mb_ereg("(?i)FFF00000000000000000\xfd",""));
++?>
++--EXPECT--
++int(1)
++bool(false)
++bool(false)
++bool(false)

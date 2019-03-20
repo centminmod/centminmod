@@ -1,0 +1,47 @@
+From 7f0ab7c20c83a52862ad7c8acf31c3fa739f1274 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 3 Mar 2019 18:22:32 -0800
+Subject: [PATCH] Fix bug #77396 - Null Pointer Dereference in
+ phar_create_or_parse_filename
+
+---
+ ext/phar/phar.c              |  3 +++
+ ext/phar/tests/bug77396.phpt | 15 +++++++++++++++
+ 2 files changed, 18 insertions(+)
+ create mode 100644 ext/phar/tests/bug77396.phpt
+
+diff --git a/ext/phar/phar.c b/ext/phar/phar.c
+index 0d2173195c32..e117ab0dc068 100644
+--- a/ext/phar/phar.c
++++ b/ext/phar/phar.c
+@@ -1390,6 +1390,9 @@ int phar_create_or_parse_filename(char *fname, int fname_len, char *alias, int a
+ 	/* set up our manifest */
+ 	mydata = ecalloc(1, sizeof(phar_archive_data));
+ 	mydata->fname = expand_filepath(fname, NULL);
++	if (mydata->fname == NULL) {
++		return FAILURE;
++	}
+ 	fname_len = strlen(mydata->fname);
+ #ifdef PHP_WIN32
+ 	phar_unixify_path_separators(mydata->fname, fname_len);
+diff --git a/ext/phar/tests/bug77396.phpt b/ext/phar/tests/bug77396.phpt
+new file mode 100644
+index 000000000000..f7a2a2f02617
+--- /dev/null
++++ b/ext/phar/tests/bug77396.phpt
+@@ -0,0 +1,15 @@
++--TEST--
++Bug #77396 Relative filename exceeding maximum path length causes null pointer dereference.
++--SKIPIF--
++<?php if (!extension_loaded("phar")) die("skip"); ?>
++--FILE--
++<?php
++$path = '../' . str_repeat("x", PHP_MAXPATHLEN) . '.tar';
++$phar = new PharData($path);
++?>
++--EXPECTF--
++Fatal error: Uncaught UnexpectedValueException: Phar creation or opening failed in %s/bug77396.php:%d
++Stack trace:
++#0 %s/bug77396.php(%d): PharData->__construct(%s)
++#1 {main}
++  thrown in %s/bug77396.php on line %d

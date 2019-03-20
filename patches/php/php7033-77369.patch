@@ -1,0 +1,42 @@
+Backported for 7.0 by Remi
+
+
+From 8d3dfabef459fe7815e8ea2fd68753fd17859d7b Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 29 Dec 2018 20:39:08 -0800
+Subject: [PATCH] Fix #77369 - memcpy with negative length via crafted DNS
+ response
+
+---
+ ext/standard/dns.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/ext/standard/dns.c b/ext/standard/dns.c
+index 8e102f816f6e..b5fbcb96f968 100644
+--- a/ext/standard/dns.c
++++ b/ext/standard/dns.c
+@@ -459,6 +459,10 @@ static u_char *php_parserr(u_char *cp, u
+ 	GETLONG(ttl, cp);
+ 	GETSHORT(dlen, cp);
+ 	CHECKCP(dlen);
++	if (dlen == 0) {
++		/* No data in the response - nothing to do */
++		return NULL;
++	}
+ 	if (type_to_fetch != T_ANY && type != type_to_fetch) {
+ 		cp += dlen;
+ 		return cp;
+@@ -549,7 +553,12 @@ static u_char *php_parserr(u_char *cp, u
+ 			CHECKCP(n);
+ 			add_assoc_stringl(subarray, "tag", (char*)cp, n);
+ 			cp += n;
+-			add_assoc_string(subarray, "value", (char*)cp);
++			if ( (size_t) dlen < ((size_t)n) + 2 ) {
++				return NULL;
++			}
++ 			n = dlen - n - 2;
++ 			CHECKCP(n);
++ 			add_assoc_stringl(subarray, "value", (char*)cp, n);
+ 			break;
+ 		case DNS_T_TXT:
+ 			{

@@ -1,0 +1,42 @@
+From 254a5914ad7f9dbdc4f6090229f6b0f4317a695e Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Wed, 9 Jan 2019 14:26:18 +0100
+Subject: [PATCH] Fix #77431 SplFileInfo::__construct() accepts NUL bytes
+
+`SplFileInfo::__construct()` has to expect a path instead of a string,
+analogous to `SplFileObject::__construct()`.
+---
+ ext/spl/spl_directory.c     | 2 +-
+ ext/spl/tests/bug77431.phpt | 9 +++++++++
+ 2 files changed, 10 insertions(+), 1 deletion(-)
+ create mode 100644 ext/spl/tests/bug77431.phpt
+
+diff --git a/ext/spl/spl_directory.c b/ext/spl/spl_directory.c
+index fc4001ae1f8c..748b1549b54c 100644
+--- a/ext/spl/spl_directory.c
++++ b/ext/spl/spl_directory.c
+@@ -1109,7 +1109,7 @@ SPL_METHOD(SplFileInfo, __construct)
+ 	char *path;
+ 	size_t len;
+ 
+-	if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "s", &path, &len) == FAILURE) {
++	if (zend_parse_parameters_throw(ZEND_NUM_ARGS(), "p", &path, &len) == FAILURE) {
+ 		return;
+ 	}
+ 
+diff --git a/ext/spl/tests/bug77431.phpt b/ext/spl/tests/bug77431.phpt
+new file mode 100644
+index 000000000000..eb1ca96b7564
+--- /dev/null
++++ b/ext/spl/tests/bug77431.phpt
+@@ -0,0 +1,9 @@
++--TEST--
++Bug #77431 (SplFileInfo::__construct() accepts NUL bytes)
++--FILE--
++<?php
++new SplFileInfo("bad\0good");
++?>
++--EXPECTF--
++Fatal error: Uncaught TypeError: SplFileInfo::__construct() expects parameter 1 to be a valid path, string given in %s:%d
++Stack trace:%A
+\ No newline at end of file
