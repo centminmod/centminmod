@@ -327,7 +327,11 @@ nginxlargefile_fix() {
         CLIENTMAXBODYSIZEMB=$(($GET_CLIENTMAXBODYSIZE / 1024))
         CLIENTMAXBODYSIZEKB="$GET_CLIENTMAXBODYSIZE"
       fi
-      CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|awk 'NR == 1 {print $1}')
+      if [[ -z "$(find /home/nginx/domains/ -maxdepth 1 -type d \( ! -wholename /home/nginx/domains/ \))" ]]; then
+        CHECKMAXFILESIZE_VHOSTS=0
+      else
+        CHECKMAXFILESIZE_VHOSTS=$(find /home/nginx/domains/*/public -maxdepth 4 -size +"${CLIENTMAXBODYSIZEMB}"M -type f -printf '%s %p\n'|sort -nr|awk 'NR == 1 {print $1}')
+      fi
       if [[ "$CHECKMAXFILESIZE_VHOSTS" -ge '1' ]]; then
         MAXFILESIZE_VHOSTS=$(echo $(($CHECKMAXFILESIZE_VHOSTS * 1024 / 1000 / 1024)))
         CLIENTMAXBODYSIZEKB_THRESHOLD='5242880'
