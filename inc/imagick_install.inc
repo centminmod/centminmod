@@ -9,6 +9,15 @@ checkphpext() {
 
 checkimagicksys() {
 
+    if [ ! -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+        yum -y install yum-plugin-versionlock
+    fi
+    if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+        VERSIONLOCK_REPO=',versionlock'
+    else
+        VERSIONLOCK_REPO=""
+    fi
+
     if [ -f /usr/bin/re2c ]; then
         if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
             rerpm
@@ -35,6 +44,10 @@ checkimagicksys() {
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     yum clean all >/dev/null 2>&1
+                    if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                        time yum -y install ImageMagick6-devel ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                    fi
                     yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             else
@@ -44,6 +57,9 @@ checkimagicksys() {
                     yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
                     yum clean all >/dev/null 2>&1
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
                     yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
@@ -59,13 +75,23 @@ checkimagicksys() {
                 echo "----------------------------------------------------------------------------------"
                 cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
                 echo "----------------------------------------------------------------------------------"
-                yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+                if [[ "$CENTOS_SEVEN" = '7' ]]; then
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
+                    yum -y install lcms2-devel libwebp7 libwebp7-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+                else
+                    yum -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi
+                fi
                 yum -y remove ImageMagick
           
                 if [[ "$CENTOS_SIX" = '6' ]]; then
                     # yum -y install libwebp libwebp-devel --skip-broken
                     yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
                     yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
                 echo
@@ -84,6 +110,9 @@ checkimagicksys() {
                     # yum -y install libwebp libwebp-devel --skip-broken
                     yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
+                    if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
+                    fi
                     yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
