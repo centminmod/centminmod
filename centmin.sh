@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='114'
+SCRIPT_INCREMENTVER='115'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -605,7 +605,7 @@ LUACJSONVER='2.1.0.7'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
-SWITCH_PHPFPM_SYSTEMD='n'    # Switch to centos 7 systemd php-fpm service file https://community.centminmod.com/threads/16511/
+SWITCH_PHPFPM_SYSTEMD='y'    # Switch to centos 7 systemd php-fpm service file https://community.centminmod.com/threads/16511/
 ZSTD_LOGROTATE_PHPFPM='n'    # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_TUNING='n'               # initial php-fpm install auto tuning
@@ -672,7 +672,8 @@ POSTGRESQL_BRANCHVER='11'   # PostgresSQL branch version https://www.postgresql.
 
 MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
-MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
+MARIADB_INSTALLTENTHREE='y' # MariaDB 10.3 YUM default install if set to yes
+MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
