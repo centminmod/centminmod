@@ -96,6 +96,14 @@ LOAD15=$(cat /proc/loadavg | awk {'print $3'})
 MEM=$(free -m)
 DF=$(df -hT)
 
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+  ipv_forceopt_wget=""
+else
+  ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+fi
+
 motd_output() {
 echo "
 ===============================================================================
