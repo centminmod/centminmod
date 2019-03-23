@@ -1679,6 +1679,43 @@ pureftpdupdates() {
       service pure-ftpd restart >/dev/null 2>&1
     fi
   fi
+  # fix bug https://community.centminmod.com/posts/71920/
+  if [[ "$INITIALINSTALL" != [yY] && -f /etc/pure-ftpd/pure-ftpd.conf ]]; then
+    check_pureftpd_verboselog=$(awk '/VerboseLog/ {print $2}' /etc/pure-ftpd/pure-ftpd.conf)
+    check_pureftpd_tls=$(awk '/^TLS / {print $2}' /etc/pure-ftpd/pure-ftpd.conf)
+    check_pureftpd_portrange=$(awk '/PassivePortRange / {print $3}' /etc/pure-ftpd/pure-ftpd.conf)
+    # echo "check_pureftpd_tls = $check_pureftpd_tls"
+    # echo "check_pureftpd_verboselog = $check_pureftpd_verboselog"
+    # echo "check_pureftpd_portrange = $check_pureftpd_portrange"
+    
+    if [[ "$check_pureftpd_tls" != '2' || "$check_pureftpd_verboselog" != 'yes' ]] && [[ "$check_pureftpd_portrange" != '50011' ]]; then
+      echo "fix pure-ftpd updated configuration"
+      echo "https://community.centminmod.com/posts/71920/"
+      echo "backup existing config at /etc/pure-ftpd/pure-ftpd.conf.backup.$DT"
+      # backup original /etc/pure-ftpd/pure-ftpd.conf
+      cp -a /etc/pure-ftpd/pure-ftpd.conf "/etc/pure-ftpd/pure-ftpd.conf.backup.$DT"
+      # tweak /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/# UnixAuthentication  /UnixAuthentication  /' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/VerboseLog .*/VerboseLog yes/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|# PureDB user |# PureDB-user |' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/# PureDB .*/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/# CreateHomeDir .*/CreateHomeDir               yes/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/# TLS .*/TLS                      2/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/# PassivePortRange .*/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's/^PassivePortRange    3000 3050/PassivePortRange    30001 50011/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|MaxClientsNumber .*|MaxClientsNumber            1000|' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|MaxClientsPerIP .*|MaxClientsPerIP             500|' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|NoAnonymous .*|NoAnonymous                 yes|' /etc/pure-ftpd/pure-ftpd.conf
+      # fix default file/directory permissions
+      sed -i 's/Umask .*/Umask                       137:027/' /etc/pure-ftpd/pure-ftpd.conf
+      sed -i 's|# TLSCipherSuite .*|TLSCipherSuite               HIGH|' /etc/pure-ftpd/pure-ftpd.conf
+      sdiff -s -w200 /etc/pure-ftpd/pure-ftpd.conf "/etc/pure-ftpd/pure-ftpd.conf.backup.$DT"
+      cat /etc/pure-ftpd/pure-ftpd.conf | egrep 'UnixAuthentication|VerboseLog|PureDB |CreateHomeDir|TLS|PassivePortRange|TLSCipherSuite|MaxClientsNumber|MaxClientsPerIP|NoAnonymous|Umask'
+      if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        service pure-ftpd restart >/dev/null 2>&1
+      fi
+    fi
+  fi
 }
 
 leupdates() {
