@@ -101,7 +101,7 @@ else
     if [ -s igbinary-${IGBINARY_VERSION}.tgz ]; then
         cecho "igbinary-${IGBINARY_VERSION}.tgz Archive found, skipping download..." $boldgreen
     else
-        download_cmd http://pecl.php.net/get/igbinary-${IGBINARY_VERSION}.tgz $WGETRETRY
+        download_cmd https://pecl.php.net/get/igbinary-${IGBINARY_VERSION}.tgz $WGETRETRY
     fi
 
 tar -xzvf igbinary-${IGBINARY_VERSION}.tgz

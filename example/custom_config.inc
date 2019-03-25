@@ -357,7 +357,7 @@ IGBINARY_VERSION='1.2.1'
 IGBINARY_INSTALL='y'        # install or not igbinary support for APC and Memcached server
 IGBINARYGIT='y'
 ZOPCACHEDFT='y'
-ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 http://pecl.php.net/package/ZendOpcache
+ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 https://pecl.php.net/package/ZendOpcache
 ZOPCACHE_OVERRIDE='n'           # ='y'ill override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'     # Use this version of Python

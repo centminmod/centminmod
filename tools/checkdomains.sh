@@ -63,7 +63,7 @@ if [[ "$CHECKDOMAINS_DEBUG" != [yY] ]]; then
 LISTDOMAINS=$(egrep -rn 'http:|https:|baseurl=|mirrorlist=' /usr/local/src/centminmod/ /etc/yum.repos.d/ | egrep -v 'http://ftp.osuosl.org|\${HTUSER}|\$request_uri|\$vhostname|\${vhostname}|rpm.axivo.com|foo.bar|master.ourdelta.org|newdomain1.com|apt.sw.be|medium.com|href=|my.incapsula.com|#|echo|cecho|<li>|<li class|centos.alt.ru|<|>|\(|\[|\)|\]|<html|<!DOCTYPE|nginx.org|centminmod.com|centmin.com|centmin.sh|github.com|php.net|yum.mariadb.org|apache.mirror.uber.com.au' | sed -e "s|<||g" -e "s|'||g" -e "s|\| bash -s stable||g" | grep -Eo '(http|https|ftp)://[^/"]+' | sed -e "s|http:\/\/||g" -e "s|https:\/\/||g" | sort | uniq -c | sort -rn | awk '{print $2}')
 fi
 
-OTHERDOMAINS='nginx.org centminmod.com centmin.com centmin.sh github.com php.net yum.mariadb.org'
+OTHERDOMAINS='nginx.org centminmod.com centmin.com centmin.sh github.com www.php.net yum.mariadb.org'
 
 for d in ${OTHERDOMAINS[@]}; do
   echo "----------"

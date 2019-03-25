@@ -481,7 +481,7 @@ input {
 <body>
 <div class="head">
 	<h1 class="memcache">
-		<span class="logo"><a href="http://pecl.php.net/package/memcache">memcache</a></span>
+		<span class="logo"><a href="https://pecl.php.net/package/memcache">memcache</a></span>
 		<span class="nameinfo">memcache.php by <a href="http://livebookmark.net">Harun Yayli</a></span>
 	</h1>
 	<hr class="memcache">
