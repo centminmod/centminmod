@@ -1269,7 +1269,7 @@ reuseportchecks() {
 
 rclocalchecks() {
   if [[ "$CENTOS_SEVEN" = '7' && ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
-    echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/ fi' >> /etc/rc.local
+    echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
   fi
 
 # https://community.centminmod.com/posts/52406/

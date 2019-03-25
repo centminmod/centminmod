@@ -794,7 +794,7 @@ fi
         ulimit -n 524288
         echo "ulimit -n 524288" >> /etc/rc.local
         if [[ ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
-          echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/ fi' >> /etc/rc.local
+          echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
         fi
     fi # check if custom open file descriptor limits already exist
 

@@ -12,7 +12,7 @@ phpfpm_setup_systemd() {
   mkdir -p /etc/systemd/system/php-fpm.service.d
   echo "d      /var/run/php-fpm/         0755 root root" > /etc/tmpfiles.d/php-fpm.conf
   if [[ ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
-    echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/ fi' >> /etc/rc.local
+    echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
   fi
 
   if [ -f /proc/user_beancounters ]; then
