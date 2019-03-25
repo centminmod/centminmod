@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='116'
+SCRIPT_INCREMENTVER='117'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -133,6 +133,10 @@ if [ -f /etc/init.d/directadmin ]; then
 echo "DirectAdmin detected.. centmin mod NOT compatible"
 echo "aborting script..."
 exit
+fi
+
+if [ ! -d /var/run/php-fpm/ ]; then
+    mkdir -p /var/run/php-fpm/
 fi
 
 TESTEDCENTOSVER='7.9'
