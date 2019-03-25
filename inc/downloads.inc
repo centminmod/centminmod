@@ -60,14 +60,14 @@ phpgeolocation() {
   # determine server geo location country wise and setup php download mirror 
   # closest to that country for faster downloads to speed up installs
   # upgrades
-  # PHP_MIRRORURL='http://php.net'
+  # PHP_MIRRORURL='https://www.php.net'
   # PHPUPGRADE_MIRRORURL='http://php.net'
   
   # Get server's 2 digit country code
   SERVER_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
 
   if [[ -z "$SERVER_COUNTRY" ]]; then
-    PHP_MIRRORURL="http://php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'AU' ]]; then
     echo "AU server detected"
@@ -131,14 +131,14 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
     echo "US server detected"
-    PHP_MIRRORURL="http://php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
     echo "VN server detected"
     PHP_MIRRORURL="http://my1.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   else
-    PHP_MIRRORURL="http://php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   fi
 }
@@ -644,7 +644,7 @@ then
     # check if download url is 404 not found but also 
     # check for valid status header 200, 301 or 302
     if [[ "$PHPGEO_CURLCHECK" = '0' || "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-        PHP_MIRRORURL="http://php.net"
+        PHP_MIRRORURL="https://www.php.net"
         PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
     fi
     cd "$DIR_TMP"
@@ -674,7 +674,7 @@ ERROR=$?
     checklogdetails
     # exit #$ERROR
     if [[ "$ERROR" -eq '2' ]]; then
-      PHP_MIRRORURL="http://php.net"
+      PHP_MIRRORURL="https://www.php.net"
       PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
       rm -rf "php-${PHP_VERSION}.tar.${PHPEXTSION}"
       cecho "Download again php-${PHP_VERSION}.tar.${PHPEXTSION} ..." $boldyellow

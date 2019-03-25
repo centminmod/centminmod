@@ -400,7 +400,7 @@ fi
         # check if download url is 404 not found but also 
         # check for valid status header 200, 301 or 302
         if [[ "$PHPGEO_CURLCHECK" = '0' || "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-            PHP_MIRRORURL="http://php.net"
+            PHP_MIRRORURL="https://www.php.net"
             PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
         fi
         if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
