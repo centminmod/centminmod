@@ -170,15 +170,19 @@ pip_updates() {
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         $YUMDNFBIN -q -y install python2-pip >/dev/null 2>&1
         yum -q -y versionlock python2-pip >/dev/null 2>&1
-        NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
-        sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
+          NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
+          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
       else
         $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
         yum -q -y versionlock python-pip >/dev/null 2>&1
-        NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
-        sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
+          NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
+          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
         if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
@@ -207,12 +211,20 @@ pip_updates() {
       CHECK_PIPUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o pip)
       CHECK_PSUTILUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o psutil)
       CHECK_GLANCESUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -io glances)
+      if [[ "$(yum versionlock list | grep 'python2-pip')" ]]; then
+        if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
+          NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
+          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        fi
+      fi
       if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
         yum -q -y versionlock python2-pip >/dev/null 2>&1
-        NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
-        sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
+          NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
+          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        fi
       fi
       if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
         export CC='gcc'
