@@ -47,8 +47,8 @@ start() {
 
     # get the amount of memory in the machine
     mem_total_kb=$(grep MemTotal /proc/meminfo | grep -E --only-matching '[[:digit:]]+')
-    #we will only assign 25% of system memory to zram
-    mem_total_kb=$((mem_total_kb / 4))
+    # only assign 30% of system memory to zram
+    mem_total_kb=$((mem_total_kb * 3 / 10))
 
     mem_total=$((mem_total_kb * 1024))
 
