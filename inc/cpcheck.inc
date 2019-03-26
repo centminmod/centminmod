@@ -177,6 +177,8 @@ pip_updates() {
       else
         $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
         yum -q -y versionlock python-pip >/dev/null 2>&1
+        NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
+        sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
         if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
