@@ -1090,7 +1090,7 @@ yumupdatechecker() {
       YEXCLUDE='nginx* php* mysql*'
     fi
     YYUM_PARAMETER="--disableplugin=priorities${VERSIONLOCK_REPO} --setopt=deltarpm=0"
-    YYUM_UPDATEPARAMETER="--disableplugin=priorities"
+    YYUM_UPDATEPARAMETER="--disableplugin=priorities --setopt=deltarpm=0"
     echo
     echo " checking for YUM updates... please wait..."
     # only check if last yum update was over 24hrs ago
