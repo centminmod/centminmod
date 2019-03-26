@@ -1089,7 +1089,7 @@ yumupdatechecker() {
       YENABLEREPOS=""
       YEXCLUDE='nginx* php* mysql*'
     fi
-    YYUM_PARAMETER="--disableplugin=priorities${VERSIONLOCK_REPO}"
+    YYUM_PARAMETER="--disableplugin=priorities${VERSIONLOCK_REPO} --setopt=deltarpm=0"
     YYUM_UPDATEPARAMETER="--disableplugin=priorities"
     echo
     echo " checking for YUM updates... please wait..."
