@@ -170,6 +170,8 @@ pip_updates() {
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         $YUMDNFBIN -q -y install python2-pip >/dev/null 2>&1
         yum -q -y versionlock python2-pip >/dev/null 2>&1
+        NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
+        sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
       else
@@ -207,6 +209,8 @@ pip_updates() {
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
         yum -q -y versionlock python2-pip >/dev/null 2>&1
+        NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
+        sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
       fi
       if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
         export CC='gcc'
