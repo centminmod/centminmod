@@ -12,9 +12,11 @@
 ### END INIT INFO
 
 KERNEL_VER=$(uname -r | awk -F '-' '{print $1}' | sed 's/\.//g')
+KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
 VERCOMPARE=`expr $KERNEL_VER \< 2632`
+NUMERICVERCOMPARE=`expr $KERNEL_NUMERICVER \< 2006032000`
 
-if [[ "$VERCOMPARE" = "1"  ]]; then
+if [[ "$NUMERICVERCOMPARE" = "1"  ]]; then
 	echo "unsupported kernel.. aborting script"
 	exit
 fi
@@ -26,17 +28,28 @@ fi
 
 start() {
     # get the number of CPUs
-    num_cpus=$(grep -c processor /proc/cpuinfo)
-    # if something goes wrong, assume we have 1
-    [ "$num_cpus" != 0 ] || num_cpus=1
+    if [[ "$KERNEL_NUMERICVER" -ge '3015000000' ]]; then
+        # kernel 3.15+ supports multi-threaded streams
+        num_cpus=1
+    else
+        num_cpus=$(grep -c processor /proc/cpuinfo)
+    fi
+    num_physicalcpus=$(grep -c processor /proc/cpuinfo)
+    # # if something goes wrong, assume we have 1
+    # [ "$num_cpus" != 0 ] || num_cpus=1
+
+    # cap number of compression streams to n-1
+    if [[ "$num_physicalcpus" -ge '2' ]]; then
+        num_physicalcpus=$(($num_physicalcpus-1))
+    fi
 
     # set decremented number of CPUs
     decr_num_cpus=$((num_cpus - 1))
 
     # get the amount of memory in the machine
     mem_total_kb=$(grep MemTotal /proc/meminfo | grep -E --only-matching '[[:digit:]]+')
-    #we will only assign 33% of system memory to zram
-    mem_total_kb=$((mem_total_kb / 3))
+    #we will only assign 25% of system memory to zram
+    mem_total_kb=$((mem_total_kb / 4))
 
     mem_total=$((mem_total_kb * 1024))
 
@@ -45,18 +58,36 @@ start() {
 
     # initialize the devices
     for i in $(seq 0 $decr_num_cpus); do
-    echo $((mem_total / num_cpus)) > /sys/block/zram$i/disksize
+    echo "echo $((mem_total / num_cpus)) > /sys/block/zram${i}/disksize"
+    echo $((mem_total / num_cpus)) > /sys/block/zram${i}/disksize
+    if [[ "$KERNEL_NUMERICVER" -ge '3015000000' ]]; then
+        echo
+        echo "echo 'lz4' > /sys/block/zram${i}/comp_algorithm"
+        echo 'lz4' > /sys/block/zram${i}/comp_algorithm
+        echo
+        echo "echo ${num_physicalcpus} > /sys/block/zram${i}/max_comp_streams"
+        echo ${num_physicalcpus} > /sys/block/zram${i}/max_comp_streams
+    fi
+    echo
+    echo "cat /sys/block/zram${i}/max_comp_streams"
+    cat /sys/block/zram${i}/max_comp_streams
+    echo
+    echo "cat /sys/block/zram${i}/comp_algorithm"
+    cat /sys/block/zram${i}/comp_algorithm
+    echo
     done
 
     # Creating swap filesystems
     for i in $(seq 0 $decr_num_cpus); do
-    mkswap /dev/zram$i
+    mkswap /dev/zram${i}
     done
 
     # Switch the swaps on
     for i in $(seq 0 $decr_num_cpus); do
-    swapon -p 100 /dev/zram$i
+    swapon -p 100 /dev/zram${i}
     done
+
+    status
 }
 
 stop() {
@@ -64,12 +95,13 @@ for i in $(grep '^/dev/zram' /proc/swaps | awk '{ print $1 }'); do
 swapoff "$i"
 done
 
-if [ -d /proc/modules ]; then
-    if grep -q "^zram " /proc/modules; then
-        sleep 1
-        rmmod zram
-    fi
-fi
+# if [ -d /proc/modules ]; then
+#     if grep -q "^zram " /proc/modules; then
+#         sleep 1
+#         rmmod zram
+#     fi
+# fi
+modprobe -r zram
 }
 
 status() {
