@@ -107,16 +107,17 @@ status() {
         ls /sys/block/zram* > /dev/null 2>&1 || exit 0
         echo -e "-------\nzram Compression Stats:\n-------"
         for i in /sys/block/zram*; do
+                algorithm=$(< $i/comp_algorithm)
                 compr=$(< $i/compr_data_size)
                 orig=$(< $i/orig_data_size)
                 ratio=0
                 if [ $compr -gt 0 ]; then
                         ratio=$(echo "scale=2; $orig*100/$compr" | bc -q)
                 fi
-                echo -e "/dev/${i/*\/}:\t$ratio% ($orig -> $compr)"
+                echo -e "/dev/${i/*\/}: $algorithm $ratio% (${orig}->${compr})" | column -t
         done
         echo -e "-------\nSWAP Stats:\n-------"
-        swapon -s | grep zram
+        swapon -s | egrep 'zram|Filename' | column -t
         echo -e "-------\nMemory Stats:\n-------"
         free -m -l -t
 }
