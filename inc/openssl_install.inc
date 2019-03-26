@@ -597,8 +597,8 @@ crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
       if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
-        CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+        CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
         unset CC
@@ -609,7 +609,7 @@ crypto_gcc() {
         scl_install
         source /opt/rh/devtoolset-8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+        CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
         unset CC
@@ -620,7 +620,7 @@ crypto_gcc() {
         scl_install
         source /opt/rh/devtoolset-7/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
         unset CC
@@ -631,7 +631,7 @@ crypto_gcc() {
         scl_install
         source /opt/rh/devtoolset-7/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type'
+        CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
         unset CC
