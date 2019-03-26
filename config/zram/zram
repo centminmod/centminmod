@@ -31,17 +31,16 @@ start() {
     if [[ "$KERNEL_NUMERICVER" -ge '3015000000' ]]; then
         # kernel 3.15+ supports multi-threaded streams
         num_cpus=1
+        # cap number of compression streams to n-1
+        num_physicalcpus=$(grep -c processor /proc/cpuinfo)
+        if [[ "$num_physicalcpus" -ge '2' ]]; then
+            num_physicalcpus=$(($num_physicalcpus-1))
+        fi
     else
         num_cpus=$(grep -c processor /proc/cpuinfo)
     fi
-    num_physicalcpus=$(grep -c processor /proc/cpuinfo)
     # # if something goes wrong, assume we have 1
     # [ "$num_cpus" != 0 ] || num_cpus=1
-
-    # cap number of compression streams to n-1
-    if [[ "$num_physicalcpus" -ge '2' ]]; then
-        num_physicalcpus=$(($num_physicalcpus-1))
-    fi
 
     # set decremented number of CPUs
     decr_num_cpus=$((num_cpus - 1))
