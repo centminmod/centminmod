@@ -425,5 +425,6 @@ PORTFLOOD_INTERVAL=300
 
 #####################################################
 # MariaDB overrides
+MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
 MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes

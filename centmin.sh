@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='118'
+SCRIPT_INCREMENTVER='119'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -676,6 +676,7 @@ POSTGRESQL_BRANCHVER='11'   # PostgresSQL branch version https://www.postgresql.
 
 MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
+MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
 MARIADB_INSTALLTENTHREE='y' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
 
@@ -1880,6 +1881,8 @@ if [[ "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
   mariadbtenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
   mariadbtenthree_installfunct
+elif [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
+  mariadbtentwo_installfunct
 else
   mariadbinstallfunct
 fi
