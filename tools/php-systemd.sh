@@ -23,7 +23,9 @@ LimitNOFILE=262144
 LimitNPROC=16384
 LimitSTACK=262144
 #LimitNICE=-15
-Nice=-10
+# disable Nice for bug workaround
+# https://community.centminmod.com/threads/17045/
+# Nice=-10
 StartLimitBurst=50
 #CPUShares=1500
 #CPUSchedulingPolicy=fifo
