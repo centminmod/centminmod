@@ -230,12 +230,54 @@ pip_updates() {
         export CC='gcc'
         if [[ "$(rpm -qa python2-psutil | grep -o python2-psutil)" = 'python2-psutil' ]]; then
           yum -q -y remove python2-psutil >/dev/null 2>&1
+          # yum -q -y versionlock python2-psutil >/dev/null 2>&1
+          if [[ ! "$(grep 'python2-psutil' /etc/yum.conf)" ]]; then
+            NEW_PYTHONPSUTIL_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-psutil")
+            sed -i "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
+          fi
         fi
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade psutil
       fi
       if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade glances
+      fi
+    fi
+    if [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 && -f /usr/bin/python2.7-config ]]; then
+      CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 list -o --format columns)
+      CHECK_PIPUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o pip)
+      CHECK_PSUTILUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o psutil)
+      CHECK_GLANCESUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -io glances)
+      if [[ "$(yum versionlock list | grep 'python-pip')" ]]; then
+        if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
+          NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
+          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        fi
+      fi
+      if [[ "$CHECK_PIPUPDATE" = 'pip' ]]; then
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
+        yum -q -y versionlock python-pip >/dev/null 2>&1
+        if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
+          NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
+          sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
+        fi
+      fi
+      if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
+        export CC='gcc'
+        if [[ "$(rpm -qa python-psutil | grep -o python-psutil)" = 'python-psutil' ]]; then
+          yum -q -y remove python-psutil >/dev/null 2>&1
+          # yum -q -y versionlock python-psutil >/dev/null 2>&1
+          if [[ ! "$(grep 'python-psutil' /etc/yum.conf)" ]]; then
+            NEW_PYTHONPSUTIL_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-psutil")
+            sed -i "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
+          fi
+        fi
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
+      fi
+      if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade glances
       fi
     fi
   fi
