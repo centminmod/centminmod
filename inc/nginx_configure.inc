@@ -1312,7 +1312,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       cd ../
       # setup /vhost_status.html
       \cp -af "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
-      MAINURIHOST=$(curl -s https://ipinfo.io/ip)
+      MAINURIHOST=$(curl -4s https://ipinfo.io/ip)
       NEWURI="/vhost_status"
       if [ -f /usr/local/nginx/html/vhost_status.html ]; then
           sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
@@ -1334,7 +1334,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         cd ../
         # setup /vhost_status.html
         \cp -af "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
-        MAINURIHOST=$(curl -s https://ipinfo.io/ip)
+        MAINURIHOST=$(curl -4s https://ipinfo.io/ip)
         NEWURI="/vhost_status"
         if [ -f /usr/local/nginx/html/vhost_status.html ]; then
           sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html

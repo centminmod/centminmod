@@ -251,7 +251,7 @@ march_hostcheck() {
   # smarter detection of cloud vps providers who run a mix of different
   # cpu models to prevent issues when you switch host nodes with differing 
   # cpu models causing seg faults for nginx and php-fpm
-  VPS_ASNCHECK=$(curl -s https://ipinfo.io/org)
+  VPS_ASNCHECK=$(curl -4s https://ipinfo.io/org)
   if [[ "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|vultr|choopa')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
     NGX_GSPLITDWARF='n'
