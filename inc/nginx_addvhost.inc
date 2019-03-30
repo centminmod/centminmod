@@ -25,17 +25,29 @@ check_dns() {
     echo
     if [[ "$TOPLEVEL" = [yY] ]]; then
       VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns)
+      VHOST_ACHECKLIST=$(echo $VHOST_ACHECK | xargs)
       VHOST_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | grep -v $vhostname_dns)
+      VHOST_AWWWCHECKLIST=$(echo $VHOST_AWWWCHECK | xargs)
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | grep -io cloudflare)
+      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | grep -io cloudflare)
+      declare -a dnsa=($VHOST_ACHECK)
+      dnsa_noips=${#dnsa[@]}
+      declare -a dnsawww=($VHOST_AWWWCHECK)
+      dnsawww_noips=${#dnsawww[@]}
     else
       VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns)
+      VHOST_ACHECKLIST=$(echo $VHOST_ACHECK | xargs)
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | grep -io cloudflare)
+      declare -a dnsa=($VHOST_ACHECK)
+      dnsa_noips=${#dnsa[@]}
     fi
     echo
     if [[ "$TOPLEVEL" = [yY] ]]; then
       cecho "$vhostname_dns is a top level domain" $boldyellow  
       if [ "$VHOST_ACHECK" ]; then
         cecho "your server IP address: $CNIP" $boldyellow
-        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
-        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
+        if [[ -z "$ISCF_ACHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
@@ -46,7 +58,7 @@ check_dns() {
         fi
       else
         cecho "your server IP address: $CNIP" $boldyellow
-        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
         cecho "!! Error: missing DNS A record for $vhostname_dns" $boldyellow
         echo
         read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
@@ -55,8 +67,8 @@ check_dns() {
         fi
       fi
       if [ "$VHOST_AWWWCHECK" ]; then
-        cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
-        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
+        cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECKLIST" $boldyellow
+        if [[ -z "$ISCF_AWWWCHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
@@ -66,7 +78,7 @@ check_dns() {
           fi
         fi
       else
-        cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECK" $boldyellow
+        cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECKLIST" $boldyellow
         cecho "!! Error: missing DNS A record for www.$vhostname_dns" $boldyellow
         echo
         read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
@@ -85,8 +97,8 @@ check_dns() {
       cecho "$vhostname_dns is not a top level domain" $boldyellow
       if [ "$VHOST_ACHECK" ]; then
         cecho "your server IP address: $CNIP" $boldyellow
-        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
-        if [[ "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
+        if [[ -z "$ISCF_ACHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
@@ -96,7 +108,7 @@ check_dns() {
           fi
         fi
       else
-        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECK" $boldyellow
+        cecho "current DNS A record IP address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
         cecho "!! Error: missing DNS A record for $vhostname_dns" $boldyellow
         echo
         read -ep "Abort this Nginx vhost domain setup to setup proper DNS A record(s) first? [y/n]: " letabort
