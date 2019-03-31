@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.50'
+ACMEVER='1.0.51'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -3895,8 +3895,8 @@ issue_acmedns() {
     # if CF_DNSAPI enabled for Cloudflare DNS mode, use Cloudflare API for setting
     # up DNS mode validation via TXT DNS record creation
     if [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_KEY" ]]; then
-      export CF_KEY="$CF_KEY"
-      export CF_EMAIL="$CF_EMAIL"
+      export CF_Key="$CF_KEY"
+      export CF_Email="$CF_EMAIL"
       DNSAPI_OPT=' dns_cf'
       sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
       sed -i "s|CF_Key=\".*|CF_Key=\"$CF_KEY\"|" "$ACMECERTHOME"account.conf
