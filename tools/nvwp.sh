@@ -391,6 +391,8 @@ fi
 if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
   wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
+elif [ -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
+  wget $CLOUDFLARE_AUTHORIGINPULLCERT -O origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
