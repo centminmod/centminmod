@@ -28,8 +28,8 @@ check_dns() {
       VHOST_ACHECKLIST=$(echo $VHOST_ACHECK | xargs)
       VHOST_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | grep -v $vhostname_dns)
       VHOST_AWWWCHECKLIST=$(echo $VHOST_AWWWCHECK | xargs)
-      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | grep -io cloudflare)
-      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | grep -io cloudflare)
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsa=($VHOST_ACHECK)
       dnsa_noips=${#dnsa[@]}
       declare -a dnsawww=($VHOST_AWWWCHECK)
@@ -37,7 +37,7 @@ check_dns() {
     else
       VHOST_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns)
       VHOST_ACHECKLIST=$(echo $VHOST_ACHECK | xargs)
-      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | grep -io cloudflare)
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsa=($VHOST_ACHECK)
       dnsa_noips=${#dnsa[@]}
     fi
