@@ -71,63 +71,63 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'AU' ]]; then
     echo "AU server detected"
-    PHP_MIRRORURL="http://au2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'BR' ]]; then
     echo "BR server detected"
-    PHP_MIRRORURL="http://br2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'CA' ]]; then
     echo "CA server detected"
-    PHP_MIRRORURL="http://ca1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'CN' ]]; then
     echo "CN server detected"
-    PHP_MIRRORURL="http://cn2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'DE' ]]; then
     echo "DE server detected"
-    PHP_MIRRORURL="http://de2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'FR' ]]; then
     echo "FR server detected"
-    PHP_MIRRORURL="http://fr2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'GB' ]]; then
     echo "GB server detected"
-    PHP_MIRRORURL="http://uk1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'HK' ]]; then
     echo "HK server detected"
-    PHP_MIRRORURL="http://hk1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'ID' ]]; then
     echo "ID server detected"
-    PHP_MIRRORURL="http://id1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'IN' ]]; then
     echo "IN server detected"
-    PHP_MIRRORURL="http://in3.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'JP' ]]; then
     echo "JP server detected"
-    PHP_MIRRORURL="http://jp2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'PH' ]]; then
     echo "PH server detected"
-    PHP_MIRRORURL="http://sg2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'RU' ]]; then
     echo "RU server detected"
-    PHP_MIRRORURL="http://lt1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'SG' ]]; then
     echo "SG server detected"
-    PHP_MIRRORURL="http://sg2.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'TH' ]]; then
     echo "TH server detected"
-    PHP_MIRRORURL="http://th1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'US' ]]; then
     echo "US server detected"
@@ -135,7 +135,7 @@ phpgeolocation() {
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   elif [[ "$SERVER_COUNTRY" = 'VN' ]]; then
     echo "VN server detected"
-    PHP_MIRRORURL="http://my1.php.net"
+    PHP_MIRRORURL="https://www.php.net"
     PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
   else
     PHP_MIRRORURL="https://www.php.net"
@@ -637,9 +637,9 @@ if [[ "$PHP_INSTALL" = [yY] ]];
 then
 
     phpgeolocation
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | grep '404'
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" | grep 'HTTP\/' | grep '404'
     PHPGEO_CURLCHECK=$?
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" | grep 'HTTP\/' | egrep '200|301|302'
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
     PHPGEO_CURLCHECKOK=$?
     # check if download url is 404 not found but also 
     # check for valid status header 200, 301 or 302
@@ -653,8 +653,8 @@ then
     if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
     else
-        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY"
-        $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY
+        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY"
+        $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download failed." $boldgreen
@@ -681,8 +681,8 @@ ERROR=$?
       if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
       else
-        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY"
-        $DOWNLOADAPP "${PHP_MIRRORURL}/get/php-${PHP_VERSION}.tar.${PHPEXTSION}/from/this/mirror" $AXELPHPTARGZ $WGETRETRY
+        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY"
+        $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download again failed." $boldgreen
