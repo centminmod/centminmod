@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='122'
+SCRIPT_INCREMENTVER='123'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -881,8 +881,14 @@ else
   fi
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   AXEL_VER='2.16.1'
+fi
+
+if [[ "$CENTOS_SIX" -eq '6' ]]; then
+  # disable axel due to issues with php.net new cdn download system
+  # https://community.centminmod.com/posts/72398/
+  USEAXEL='n'
 fi
 
 # ensure clang alternative to gcc compiler is used only for 64bit OS
@@ -1330,9 +1336,11 @@ download_cmd() {
     # with ECDSA ciphers due to CentOS system OpenSSL 1.0.2e
     echo "ECDSA SSL Cipher BASED HTTPS detected, switching from axel to wget"
     DOWNLOADAPP="wget ${WGETOPT}"
+    WGETRETRY='--tries=3'
   elif [[ "$CENTOS_SIX" = '6' && "$HTTPS_AXELCHECK" = 'https' ]]; then
     echo "CentOS 6 Axel fallback to wget for HTTPS download"
     DOWNLOADAPP="wget ${WGETOPT}"
+    WGETRETRY='--tries=3'
   fi
   $DOWNLOADAPP $1 $2 $3 $4
 }
