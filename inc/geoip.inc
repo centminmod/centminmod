@@ -200,7 +200,7 @@ cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
     \$geoip2_data_continent_geonameid continent geoname_id;
     \$geoip2_data_continent_name continent names en;
     \$geoip2_data_country_geonameid country geoname_id;
-    \$geoip2_data_country_iso country iso_code;
+    \$geoip2_data_country_code country iso_code;
     \$geoip2_data_country_name country names en;
     \$geoip2_data_country_is_eu country is_in_european_union;
     \$geoip2_data_location_accuracyradius location accuracy_radius;
@@ -244,9 +244,29 @@ echo "fastcgi_param GEOIP_POSTAL_CODE \$geoip_postal_code;" >> /usr/local/nginx/
 echo "fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;" >> /usr/local/nginx/conf/php.conf
 echo "fastcgi_param GEOIP_LATITUDE \$geoip_latitude;" >> /usr/local/nginx/conf/php.conf
 echo "fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;" >> /usr/local/nginx/conf/php.conf
-echo "#fastcgi_param GEOIP_COUNTRY_CODE \$geoip2_data_country_code;" >> /usr/local/nginx/conf/php.conf
-echo "#fastcgi_param GEOIP_COUNTRY_NAME \$geoip2_data_country_name;" >> /usr/local/nginx/conf/php.conf
-echo "#fastcgi_param GEOIP_CITY    \$geoip2_data_city_name;" >> /usr/local/nginx/conf/php.conf
+
+echo "#fastcgi_param GEOIP2_CITY \$geoip2_data_city_name;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_CITY_GEONAMEID \$geoip2_data_city_geonameid;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_CONTINENT_CODE \$geoip2_data_continent_code;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_CONTINENT_GEONAMEID \$geoip2_data_continent_geonameid;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_CONTINENT_NAME \$geoip2_data_continent_name;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_COUNTRY_GEONAMEID \$geoip2_data_country_geonameid;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_COUNTRY_CODE \$geoip2_data_country_code;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_COUNTRY_NAME \$geoip2_data_country_name;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_COUNTRY_IN_EU \$geoip2_data_country_is_eu;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_LOCATION_ACCURACY_RADIUS \$geoip2_data_location_accuracyradius;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_LATITUDE \$geoip2_data_location_latitude;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_LONGITUDE \$geoip2_data_location_longitude;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_LOCATION_METROCODE \$geoip2_data_location_metrocode;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_LOCATION_TIMEZONE \$geoip2_data_location_timezone;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_POSTAL_CODE \$geoip2_data_postal_code;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGISTERED_COUNTRY_GEONAMEID \$geoip2_data_rcountry_geonameid;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGISTERED_COUNTRY_ISO \$geoip2_data_rcountry_iso;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGISTERED_COUNTRY_NAME \$geoip2_data_rcountry_name;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGISTERED_COUNTRY_IN_EU \$geoip2_data_rcountry_is_eu;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGION_GEONAMEID \$geoip2_data_region_geonameid;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGION \$geoip2_data_region_iso;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_REGION_NAME \$geoip2_data_region_name;" >> /usr/local/nginx/conf/php.conf
 echo "}" >> /usr/local/nginx/conf/php.conf
 
 cat > "/usr/local/nginx/conf/geoip.conf" <<EOF
@@ -337,11 +357,11 @@ END
 <html>
 <body>
 <?php 
-\$geoip_country_code = getenv(GEOIP2_COUNTRY_ISO_CODE);
+\$geoip_country_code = getenv(GEOIP2_COUNTRY_CODE);
 /*
-\$geoip_country_code = \$_SERVER['GEOIP2_COUNTRY_ISO_CODE']; // works as well
+\$geoip_country_code = \$_SERVER['GEOIP2_COUNTRY_CODE']; // works as well
 */
-\$geoip_country_name = getenv(GEOIP2_COUNTRY);  
+\$geoip_country_name = getenv(GEOIP2_COUNTRY_NAME);  
 \$geoip_region = getenv(GEOIP2_REGION_NAME);
 \$geoip_city = getenv(GEOIP2_CITY);
 \$geoip_postal_code = getenv(GEOIP2_POSTAL_CODE);
