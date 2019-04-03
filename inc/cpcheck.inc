@@ -1038,6 +1038,9 @@ gitenv_askupdate() {
 }
 
 wgetver_check() {
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    WGET_VERSION=$WGET_VERSION_SEVEN
+  fi
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     if [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ "$(pcre-config --version | grep -q ${PCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then

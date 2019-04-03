@@ -46,6 +46,7 @@ ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.1'
+WGET_VERSION_SEVEN='1.20.2'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
@@ -119,6 +120,10 @@ fi
 
 if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
     CENTOS_SIX='6'
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  WGET_VERSION=$WGET_VERSION_SEVEN
 fi
 
 if [ -f /proc/user_beancounters ]; then

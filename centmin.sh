@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='123'
+SCRIPT_INCREMENTVER='124'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -826,6 +826,7 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
 WGET_VERSION='1.20.1'
+WGET_VERSION_SEVEN='1.20.2'
 ###############################################################
 # cloudflare authenticated origin pull cert
 # setup https://community.centminmod.com/threads/13847/
@@ -1172,6 +1173,10 @@ if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then
   MARCH_TARGET='native'
 else
   MARCH_TARGET='x86-64'
+fi
+
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  WGET_VERSION=$WGET_VERSION_SEVEN
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
