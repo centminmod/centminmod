@@ -163,7 +163,9 @@ geoiptwolite_install() {
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
   rm -rf GeoLite2-City_*
 
+  echo "------------------------------------------------------"
   cecho "GeoLite2 Country database download ..." $boldyellow
+  echo "------------------------------------------------------"
   curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
@@ -176,12 +178,35 @@ geoiptwolite_install() {
   rm -rf GeoLite2-Country_*
 
   echo "------------------------------------------------------"
+  cecho "GeoLite2 ASN database download ..." $boldyellow
+  echo "------------------------------------------------------"
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz | grep 'HTTP\/' | grep '200'
+  GEOIPTWOASNDATA_CURLCHECK=$?
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPTWOASNDATA_CURLCHECK" = '0' ]]; then
+    wget -${ipv_forceopt} https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
+  fi
+  tar xvzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
+  cp -a GeoLite2-ASN_*/GeoLite2-ASN.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
+  rm -rf GeoLite2-ASN_*
+
+  echo "------------------------------------------------------"
   cecho "Check GeoIP2 Lite Databases" $boldyellow
   echo "------------------------------------------------------"
   echo
+  ls -lah /usr/share/GeoIP/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
+  echo
   /usr/local/bin/mmdblookup --help
   echo
+  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en"
   /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
+  echo
+  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number"
+  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number
+  echo
+  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization"
+  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization
   echo
 
   cecho "Setup geoip2 database updater cronjob" $boldyellow
@@ -231,6 +256,12 @@ cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
     \$geoip2_data_region_geonameid subdivisions 0 geoname_id;
     \$geoip2_data_region_iso subdivisions 0 iso_code;
     \$geoip2_data_region_name subdivisions 0 names en;
+  }
+
+  geoip2 /usr/share/GeoIP/GeoLite2-ASN.mmdb {
+    auto_reload 5m;
+    \$geoip2_data_autonomous_system_number autonomous_system_number;
+    \$geoip2_data_autonomous_system_organization autonomous_system_organization;
   }
 EOF
   fi
@@ -283,6 +314,10 @@ echo "#fastcgi_param GEOIP2_REGISTERED_COUNTRY_IN_EU \$geoip2_data_rcountry_is_e
 echo "#fastcgi_param GEOIP2_REGION_GEONAMEID \$geoip2_data_region_geonameid;" >> /usr/local/nginx/conf/php.conf
 echo "#fastcgi_param GEOIP2_REGION \$geoip2_data_region_iso;" >> /usr/local/nginx/conf/php.conf
 echo "#fastcgi_param GEOIP2_REGION_NAME \$geoip2_data_region_name;" >> /usr/local/nginx/conf/php.conf
+
+echo "#fastcgi_param GEOIP2_ASN \$geoip2_data_autonomous_system_number;" >> /usr/local/nginx/conf/php.conf
+echo "#fastcgi_param GEOIP2_ASN_ORG \$geoip2_data_autonomous_system_organization;" >> /usr/local/nginx/conf/php.conf
+
 echo "}" >> /usr/local/nginx/conf/php.conf
 
 cat > "/usr/local/nginx/conf/geoip.conf" <<EOF
@@ -390,8 +425,12 @@ END
 \$geoip_registered_country_code = getenv(GEOIP2_REGISTERED_COUNTRY_ISO);
 \$ip = getenv(REMOTE_ADDR);
 \$city_db_build_date = getenv(GEOIP2_CITY_BUILD_DATE);
+\$geoip_asn = getenv(GEOIP2_ASN);
+\$geoip_asn_org = getenv(GEOIP2_ASN_ORG);
 
 echo 'ip: '.\$ip.'<br>';
+echo 'asn: '.\$geoip_asn.'<br>';
+echo 'org: '.\$geoip_asn_org.'<br>';
 echo 'country_code: '.\$geoip_country_code.'<br>';
 echo 'country_name: '.\$geoip_country_name.'<br>';  
 echo 'region: '.\$geoip_region.'<br>';

@@ -24,7 +24,9 @@ geoiptwo_updater() {
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
   rm -rf GeoLite2-City_*
 
+  echo "------------------------------------------------------"
   echo "GeoLite2 Country database download ..."
+  echo "------------------------------------------------------"
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -39,12 +41,31 @@ geoiptwo_updater() {
   rm -rf GeoLite2-Country_*
 
   echo "------------------------------------------------------"
+  echo "GeoLite2 ASN database download ..."
+  echo "------------------------------------------------------"
+  GEOIPTWOASNDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
+  # only overwrite existing downloaded file if the download url is working
+  # if download doesn't work, do not overwrite existing downloaded file
+  if [[ "$GEOIPTWOASNDATA_CURLCHECK" = '0' ]]; then
+    wget -4 https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
+  fi
+  tar xzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
+  cp -a GeoLite2-ASN_*/GeoLite2-ASN.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
+  rm -rf GeoLite2-ASN_*
+
+  echo "------------------------------------------------------"
   echo "Check GeoIP2 Lite Databases"
   echo "------------------------------------------------------"
-  ls -lah /usr/share/GeoIP/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
+  ls -lah /usr/share/GeoIP/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
   echo
   echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en"
   /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
+  echo
+  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number"
+  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number
+  echo
+  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization"
+  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization
   echo
   popd
 }
