@@ -112,7 +112,7 @@ geoipinstall() {
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
+    wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
   curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
@@ -120,7 +120,7 @@ geoipinstall() {
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+    wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
   fi
   gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
@@ -129,7 +129,7 @@ geoipinstall() {
 geoiptwolite_install() {
   cecho "GeoIP2 Lite database and library install..." $boldyellow
   pushd $DIR_TMP
-  #wget -${ipv_forceopt}cnv https://github.com/maxmind/libmaxminddb/releases/download/1.3.2/libmaxminddb-1.3.2.tar.gz
+  #wget -${ipv_forceopt} https://github.com/maxmind/libmaxminddb/releases/download/1.3.2/libmaxminddb-1.3.2.tar.gz
   #tar xvzf libmaxminddb-1.3.2.tar.gz
   #cd libmaxminddb-1.3.2
   rm -rf libmaxminddb
@@ -149,13 +149,15 @@ geoiptwolite_install() {
 
   mkdir -p /usr/share/GeoIP
   pushd /usr/share/GeoIP
+  echo "------------------------------------------------------"
   cecho "GeoLite2 City database download ..." $boldyellow
+  echo "------------------------------------------------------"
   curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+    wget -${ipv_forceopt} https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
@@ -167,18 +169,26 @@ geoiptwolite_install() {
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+    wget -${ipv_forceopt} https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
   rm -rf GeoLite2-Country_*
 
+  echo "------------------------------------------------------"
   cecho "Check GeoIP2 Lite Databases" $boldyellow
+  echo "------------------------------------------------------"
   echo
   /usr/local/bin/mmdblookup --help
   echo
   /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
   echo
+
+  cecho "Setup geoip2 database updater cronjob" $boldyellow
+  if [[ -f /usr/local/src/centminmod/tools/geoip2db-update.sh && ! "$(crontab -l | grep 'geoip2db-update.sh')" ]]; then
+    (crontab -l ; echo "20 2 * * 4 /usr/local/src/centminmod/tools/geoip2db-update.sh >/dev/null 2>&1") | crontab
+  fi
+
   popd
   popd
 }
