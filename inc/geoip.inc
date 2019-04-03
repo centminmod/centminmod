@@ -200,11 +200,15 @@ if [[ ! -f /usr/local/nginx/conf/geoip2.conf ]]; then
 cat > "/usr/local/nginx/conf/geoip2.conf" <<EOF
 # GeoIP2 Lite databases
   # geoip2 /usr/share/GeoIP/GeoLite2-Country.mmdb {
+  #   auto_reload 5m;
+  #   \$geoip2_metadata_country_build metadata build_epoch;
   #   \$geoip2_data_country_code country iso_code;
   #   \$geoip2_data_country_name country names en;
   # }
 
   geoip2 /usr/share/GeoIP/GeoLite2-City.mmdb {
+    auto_reload 5m;
+    \$geoip2_metadata_city_build metadata build_epoch;
     \$geoip2_data_city_name city names en;
     \$geoip2_data_city_geonameid city geoname_id;
     \$geoip2_data_continent_code continent code;
@@ -256,6 +260,7 @@ echo "fastcgi_param GEOIP_CITY_CONTINENT_CODE \$geoip_city_continent_code;" >> /
 echo "fastcgi_param GEOIP_LATITUDE \$geoip_latitude;" >> /usr/local/nginx/conf/php.conf
 echo "fastcgi_param GEOIP_LONGITUDE \$geoip_longitude;" >> /usr/local/nginx/conf/php.conf
 
+echo "#fastcgi_param GEOIP2_CITY_BUILD_DATE \$geoip2_metadata_city_build;" >> /usr/local/nginx/conf/php.conf
 echo "#fastcgi_param GEOIP2_CITY \$geoip2_data_city_name;" >> /usr/local/nginx/conf/php.conf
 echo "#fastcgi_param GEOIP2_CITY_GEONAMEID \$geoip2_data_city_geonameid;" >> /usr/local/nginx/conf/php.conf
 echo "#fastcgi_param GEOIP2_CONTINENT_CODE \$geoip2_data_continent_code;" >> /usr/local/nginx/conf/php.conf
@@ -383,7 +388,10 @@ END
 \$geoip_country_in_eu = getenv(GEOIP2_COUNTRY_IN_EU);
 \$geoip_location_radius = getenv(GEOIP2_LOCATION_ACCURACY_RADIUS);
 \$geoip_registered_country_code = getenv(GEOIP2_REGISTERED_COUNTRY_ISO);
+\$ip = getenv(REMOTE_ADDR);
+\$city_db_build_date = getenv(GEOIP2_CITY_BUILD_DATE);
 
+echo 'ip: '.\$ip.'<br>';
 echo 'country_code: '.\$geoip_country_code.'<br>';
 echo 'country_name: '.\$geoip_country_name.'<br>';  
 echo 'region: '.\$geoip_region.'<br>';
@@ -395,6 +403,7 @@ echo 'longitude: '.\$geoip_longitude.'<br>';
 echo 'country in eu: '.\$geoip_country_in_eu.'<br>';
 echo 'location accuracy radius: '.\$geoip_location_radius.'<br>';
 echo 'registered country code for IP: '.\$geoip_registered_country_code.'<br>';
+echo "geolite2 database build date: " . gmdate('r', \$city_db_build_date) . "<br>";
 ?>
 </body>
 </html>
