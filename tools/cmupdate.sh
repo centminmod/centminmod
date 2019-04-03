@@ -35,16 +35,24 @@ fupdate() {
     else
       echo
       echo "Detected Centmin Mod Github Remote Repo Changes"
-      echo "setting up fresh /usr/local/src/centminmod code base to match"
+      echo "setting up fresh ${CM_INSTALLDIR} code base to match"
       echo
-      rm -rf "${CM_INSTALLDIR}"
       cd /usr/local/src
+      mv centminmod centminmod-automoved-cmupdate
       git clone -b ${branchname} --depth=1 https://github.com/centminmod/centminmod.git centminmod
-      echo
-      echo "Completed. Fresh /usr/local/src/centminmod code base in place"
-      echo "To run centmin.sh again, you need to change into directory: ${CM_INSTALLDIR}"
-      echo "cd ${CM_INSTALLDIR}"
-      echo
+      if [[ "$?" -eq '0' ]]; then
+        rm -rf centminmod-automoved-cmupdate
+        echo
+        echo "Completed. Fresh ${CM_INSTALLDIR} code base in place"
+        echo "To run centmin.sh again, you need to change into directory: ${CM_INSTALLDIR}"
+        echo "cd ${CM_INSTALLDIR}"
+        echo
+      else
+        mv centminmod-automoved-cmupdate centminmod
+        echo
+        echo "Error: wasn't able to successfully update ${CM_INSTALLDIR} code base"
+        echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
+      fi
     fi
   fi
 }
