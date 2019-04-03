@@ -825,7 +825,7 @@ CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
-WGET_VERSION='1.20.1'
+WGET_VERSION='1.20.2'
 WGET_VERSION_SEVEN='1.20.2'
 ###############################################################
 # cloudflare authenticated origin pull cert

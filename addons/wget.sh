@@ -25,7 +25,7 @@ ALTPCRE_VERSION='8.43'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
-WGET_VERSION='1.20.1'
+WGET_VERSION='1.20.2'
 WGET_VERSION_SEVEN='1.20.2'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
@@ -260,6 +260,15 @@ sar_call() {
   $SARCALL 1 1
 }
 
+patch_wget() {
+  if [[ "$WGET_VERSION" = '1.20.2' && -f /usr/local/src/centminmod/patches/wget/x509_v_flag_partial_chain.patch ]]; then
+    if [ ! -f x509_v_flag_partial_chain.patch ]; then
+      cp -a /usr/local/src/centminmod/patches/wget/x509_v_flag_partial_chain.patch x509_v_flag_partial_chain.patch
+      patch -p1 < x509_v_flag_partial_chain.patch
+    fi
+  fi
+}
+
 scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -485,6 +494,7 @@ source_wgetinstall() {
   if [ -f config.status ]; then
     make clean
   fi
+  patch_wget
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"

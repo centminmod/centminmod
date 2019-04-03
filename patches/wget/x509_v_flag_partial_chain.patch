@@ -1,0 +1,32 @@
+From 0eaa5f1771f3d96c88f0a3d464df1fa4bdb7e307 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tim=20R=C3=BChsen?= <tim.ruehsen@gmx.de>
+Date: Wed, 3 Apr 2019 14:54:45 +0200
+Subject: * src/openssl.c (ssl_init): Check for X509_V_FLAG_PARTIAL_CHAIN
+
+---
+ src/openssl.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/openssl.c b/src/openssl.c
+index a6fec5b..a150217 100644
+--- a/src/openssl.c
++++ b/src/openssl.c
+@@ -328,6 +328,7 @@ ssl_init (void)
+   SSL_CTX_set_default_verify_paths (ssl_ctx);
+   SSL_CTX_load_verify_locations (ssl_ctx, opt.ca_cert, opt.ca_directory);
+ 
++#ifdef X509_V_FLAG_PARTIAL_CHAIN
+   /* Set X509_V_FLAG_PARTIAL_CHAIN to allow the client to anchor trust in
+    * a non-self-signed certificate. This defies RFC 4158 (Path Building)
+    * which defines a trust anchor in terms of a self-signed certificate.
+@@ -356,6 +357,7 @@ ssl_init (void)
+       logprintf(LOG_NOTQUIET, _("OpenSSL: Failed to allocate verification param\n"));
+       /* We continue on error */
+     }
++#endif
+ 
+   if (opt.crl_file)
+     {
+-- 
+cgit v1.0-41-gc330
+
