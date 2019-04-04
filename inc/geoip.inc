@@ -12,6 +12,26 @@ ngxgeoipmemtweak() {
   fi
 }
 
+geoiptwolite_phpext_install() {
+  if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+    cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow
+    pushd $DIR_TMP
+    rm -rf MaxMind-DB-Reader-php
+    git clone --depth=1 https://github.com/maxmind/MaxMind-DB-Reader-php
+    cd MaxMind-DB-Reader-php
+    cd ext
+    /usr/local/bin/phpize
+    ./configure --with-php-config=/usr/local/bin/php-config
+    make$MAKETHREADS
+    # make test
+    make install
+cat > "${CONFIGSCANDIR}/maxminddb.ini" <<EOF
+extension=maxminddb.so
+EOF
+    popd
+  fi
+}
+
 geoipphpext() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
@@ -72,6 +92,7 @@ cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
+  geoiptwolite_phpext_install
   else
     echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
 fi
@@ -146,6 +167,8 @@ geoiptwolite_install() {
   make$MAKETHREADS
   make install
   ldconfig
+
+  geoiptwolite_phpext_install
 
   mkdir -p /usr/share/GeoIP
   pushd /usr/share/GeoIP
