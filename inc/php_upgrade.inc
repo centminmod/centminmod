@@ -577,6 +577,12 @@ if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Disable PGO if less than 2 cpu threads
   PHP_PGO='n'
 fi
+if [[ "$PHP_PGO_ALWAYS" = [yY] ]]; then
+  # override above greater than 2 cpu only PHP PGO enabling
+  # so when PHP_PGO_ALWAYS='y' set, you can even do PHP PGO
+  # compilations when you have 1 cpu detected
+  PHP_PGO='y'
+fi
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Make"

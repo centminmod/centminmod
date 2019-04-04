@@ -835,6 +835,12 @@ elif [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHP
   # detected due to being very very slow for php compile times
   GCCINTEL_PHP='y'
 fi
+if [[ "$PHP_PGO_ALWAYS" = [yY] ]]; then
+  # override above greater than 2 cpu only PHP PGO enabling
+  # so when PHP_PGO_ALWAYS='y' set, you can even do PHP PGO
+  # compilations when you have 1 cpu detected
+  PHP_PGO='y'
+fi
 
 if [[ "$CLANG_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' && ! -f /usr/bin/clang ]] || [[ "$CENTOS_SEVEN" = '7' && ! -f /bin/clang ]]; then
