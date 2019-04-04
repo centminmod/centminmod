@@ -1,0 +1,167 @@
+From afc129d7f5cd54edf8614c71318a9b3506d79848 Mon Sep 17 00:00:00 2001
+From: bohwaz <github.bohwaz@miam.kd2.org>
+Date: Sun, 16 Dec 2018 22:52:37 +0100
+Subject: [PATCH] SQLite3: add DEFENSIVE config for SQLite >= 3.26.0 as a
+ mitigation strategy against potential security flaws
+
+(cherry picked from commit 58c25bf679125a2da354db58ddc6b0cf6d10ee00)
+---
+ NEWS                                     |  5 +++
+ ext/sqlite3/php_sqlite3.h                |  1 +
+ ext/sqlite3/sqlite3.c                    |  9 ++++++
+ ext/sqlite3/tests/sqlite3_defensive.phpt | 40 ++++++++++++++++++++++++
+ php.ini-development                      | 11 +++++++
+ php.ini-production                       | 11 +++++++
+ 6 files changed, 77 insertions(+)
+ create mode 100644 ext/sqlite3/tests/sqlite3_defensive.phpt
+
+diff --git a/NEWS b/NEWS
+index d21699c54b..4ab4ddb5cd 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,11 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.1.28
++
++- SQLite3:
++  . Added sqlite3.defensive INI directive. (BohwaZ)
++
+ Backported from 7.1.27
+ 
+ - Core:
+diff --git a/ext/sqlite3/php_sqlite3.h b/ext/sqlite3/php_sqlite3.h
+index c6bf4af07e..047b63d95f 100644
+--- a/ext/sqlite3/php_sqlite3.h
++++ b/ext/sqlite3/php_sqlite3.h
+@@ -28,6 +28,7 @@ extern zend_module_entry sqlite3_module_entry;
+ 
+ ZEND_BEGIN_MODULE_GLOBALS(sqlite3)
+ 	char *extension_dir;
++	int dbconfig_defensive;
+ ZEND_END_MODULE_GLOBALS(sqlite3)
+ 
+ #ifdef ZTS
+diff --git a/ext/sqlite3/sqlite3.c b/ext/sqlite3/sqlite3.c
+index a22f455331..5e6d9dd792 100644
+--- a/ext/sqlite3/sqlite3.c
++++ b/ext/sqlite3/sqlite3.c
+@@ -81,6 +81,9 @@ static void php_sqlite3_error(php_sqlite3_db_object *db_obj, char *format, ...)
+ */
+ PHP_INI_BEGIN()
+ 	STD_PHP_INI_ENTRY("sqlite3.extension_dir",  NULL, PHP_INI_SYSTEM, OnUpdateString, extension_dir, zend_sqlite3_globals, sqlite3_globals)
++#if SQLITE_VERSION_NUMBER >= 3026000
++	STD_PHP_INI_ENTRY("sqlite3.defensive",  "1", PHP_INI_SYSTEM, OnUpdateBool, dbconfig_defensive, zend_sqlite3_globals, sqlite3_globals)
++#endif
+ PHP_INI_END()
+ /* }}} */
+ 
+@@ -178,6 +181,12 @@ PHP_METHOD(sqlite3, open)
+ 		sqlite3_set_authorizer(db_obj->db, php_sqlite3_authorizer, NULL);
+ 	}
+ 
++#if SQLITE_VERSION_NUMBER >= 3026000
++	if (SQLITE3G(dbconfig_defensive)) {
++		sqlite3_db_config(db_obj->db, SQLITE_DBCONFIG_DEFENSIVE, 1, NULL);
++	}
++#endif
++
+ 	if (fullpath != filename) {
+ 		efree(fullpath);
+ 	}
+diff --git a/ext/sqlite3/tests/sqlite3_defensive.phpt b/ext/sqlite3/tests/sqlite3_defensive.phpt
+new file mode 100644
+index 0000000000..064d87b50a
+--- /dev/null
++++ b/ext/sqlite3/tests/sqlite3_defensive.phpt
+@@ -0,0 +1,40 @@
++--TEST--
++SQLite3 defensive mode ini setting
++--SKIPIF--
++<?php require_once(__DIR__ . '/skipif.inc');
++
++if (SQLite3::version()['versionNumber'] < 3026000) {
++	die("skip: sqlite3 library version < 3.26: no support for defensive mode");
++}
++
++?>
++--INI--
++sqlite3.defensive=On
++--FILE--
++<?php
++
++$db = new SQLite3(':memory:');
++var_dump($db->exec('CREATE TABLE test (a, b);'));
++
++// This does not generate an error!
++var_dump($db->exec('PRAGMA writable_schema = ON;'));
++var_dump($db->querySingle('PRAGMA writable_schema;'));
++
++// Should be 1
++var_dump($db->querySingle('SELECT COUNT(*) FROM sqlite_master;'));
++
++// Should generate an error!
++var_dump($db->querySingle('DELETE FROM sqlite_master;'));
++
++// Should still be 1
++var_dump($db->querySingle('SELECT COUNT(*) FROM sqlite_master;'));
++?>
++--EXPECTF--
++bool(true)
++bool(true)
++int(1)
++int(1)
++
++Warning: SQLite3::querySingle(): Unable to prepare statement: 1, table sqlite_master may not be modified in %s on line %d
++bool(false)
++int(1)
+\ No newline at end of file
+diff --git a/php.ini-development b/php.ini-development
+index 50b9dbc37e..0a5be60f6b 100644
+--- a/php.ini-development
++++ b/php.ini-development
+@@ -969,8 +969,19 @@ cli_server.color = On
+ ;intl.use_exceptions = 0
+ 
+ [sqlite3]
++; Directory pointing to SQLite3 extensions
++; http://php.net/sqlite3.extension-dir
+ ;sqlite3.extension_dir =
+ 
++; SQLite defensive mode flag (only available from SQLite 3.26+)
++; When the defensive flag is enabled, language features that allow ordinary
++; SQL to deliberately corrupt the database file are disabled. This forbids
++; writing directly to the schema, shadow tables (eg. FTS data tables), or
++; the sqlite_dbpage virtual table.
++; https://www.sqlite.org/c3ref/c_dbconfig_defensive.html
++; (for older SQLite versions, this flag has no use)
++sqlite3.defensive = 1
++
+ [Pcre]
+ ;PCRE library backtracking limit.
+ ; http://php.net/pcre.backtrack-limit
+diff --git a/php.ini-production b/php.ini-production
+index 52a11fce3f..c05428fdbc 100644
+--- a/php.ini-production
++++ b/php.ini-production
+@@ -969,8 +969,19 @@ cli_server.color = On
+ ;intl.use_exceptions = 0
+ 
+ [sqlite3]
++; Directory pointing to SQLite3 extensions
++; http://php.net/sqlite3.extension-dir
+ ;sqlite3.extension_dir =
+ 
++; SQLite defensive mode flag (only available from SQLite 3.26+)
++; When the defensive flag is enabled, language features that allow ordinary
++; SQL to deliberately corrupt the database file are disabled. This forbids
++; writing directly to the schema, shadow tables (eg. FTS data tables), or
++; the sqlite_dbpage virtual table.
++; https://www.sqlite.org/c3ref/c_dbconfig_defensive.html
++; (for older SQLite versions, this flag has no use)
++sqlite3.defensive = 1
++
+ [Pcre]
+ ;PCRE library backtracking limit.
+ ; http://php.net/pcre.backtrack-limit

@@ -1,0 +1,34 @@
+Without test as binary patch not supported
+
+
+
+
+From 1e7511f2476380f9eb523f60817610c8eab6b116 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 17 Mar 2019 22:54:46 -0700
+Subject: [PATCH] Fix bug #77753 - Heap-buffer-overflow in php_ifd_get32s
+
+(cherry picked from commit f3aefc6d071b807ddacae0a0bc49f09c38e18490)
+---
+ ext/exif/exif.c              |   4 ++++
+ ext/exif/tests/bug77753.phpt |  16 ++++++++++++++++
+ ext/exif/tests/bug77753.tiff | Bin 0 -> 873 bytes
+ 3 files changed, 20 insertions(+)
+ create mode 100644 ext/exif/tests/bug77753.phpt
+ create mode 100644 ext/exif/tests/bug77753.tiff
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index ce8db170c7..4350124305 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -2812,6 +2812,10 @@ static int exif_process_IFD_in_MAKERNOTE(image_info_type *ImageInfo, char * valu
+ 		exif_error_docref("exif_read_data#error_ifd" EXIFERR_CC, ImageInfo, E_WARNING, "Illegal IFD size: 2 + 0x%04X*12 = 0x%04X > 0x%04X", NumDirEntries, 2+NumDirEntries*12, value_len);
+ 		return FALSE;
+ 	}
++	if ((dir_start - value_ptr) > value_len - (2+NumDirEntries*12)) {
++		exif_error_docref("exif_read_data#error_ifd" EXIFERR_CC, ImageInfo, E_WARNING, "Illegal IFD size: 0x%04X > 0x%04X", (dir_start - value_ptr) + (2+NumDirEntries*12), value_len);
++		return FALSE;
++	}
+ 
+ 	for (de=0;de<NumDirEntries;de++) {
+ 		if (!exif_process_IFD_TAG(ImageInfo, dir_start + 2 + 12 * de,

@@ -54,6 +54,35 @@ php_patches() {
         dos2unix php5640-76846.patch
         patch -p1 < php5640-76846.patch
       fi
+      # PHP 5.6 bug #77753 https://bugs.php.net/bug.php?id=77753
+      if [ ! -f php5640-77753.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #77753"
+        echo "https://bugs.php.net/bug.php?id=77753"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-77753.patch php5640-77753.patch
+        dos2unix php5640-77753.patch
+        patch -p1 < php5640-77753.patch
+      fi
+      # PHP 5.6 bug #77831 https://bugs.php.net/bug.php?id=77831
+      if [ ! -f php5640-77831.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #77831"
+        echo "https://bugs.php.net/bug.php?id=77831"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-77831.patch php5640-77831.patch
+        dos2unix php5640-77831.patch
+        patch -p1 < php5640-77831.patch
+      fi
+      # PHP 5.6 Backported from 7.1.28 added sqlite3.defensive INI directive
+      if [ ! -f php5640-sqlite3-defensive.patch ]; then
+        echo
+        echo "patching PHP 5.6 for php5640-sqlite3-defensive patch"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-sqlite3-defensive.patch php5640-sqlite3-defensive.patch
+        dos2unix php5640-sqlite3-defensive.patch
+        patch -p1 < php5640-sqlite3-defensive.patch
+      fi
     fi
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
       # patch PHP 7.2.13 and 7.1.25 missing CVE patch
@@ -100,14 +129,16 @@ php_patches() {
       # PHP bug #77431 https://bugs.php.net/bug.php?id=77431
       # PHP bug #77630 https://bugs.php.net/bug.php?id=77630
       # PHP bug #76846 https://bugs.php.net/bug.php?id=76846
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert'
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
           if [[ "$bugid" != 'php-openssl-cert' ]]; then
             echo "patching PHP 7.0.33+ for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
-          else
+          elif [[ "$bugid" = 'sqlite3-defensive' ]]; then
+            echo "patching PHP 7.0.33+ sqlite3-defensive patch"
+          elif [[ "$bugid" = 'php-openssl-cert' ]]; then
             echo "patching PHP 7.0.33+ php-openssl-cert patch"
           fi
           echo
