@@ -442,6 +442,7 @@ END
 \$geoip_city_continent_code = getenv(GEOIP2_CONTINENT_CODE);
 \$geoip_latitude = getenv(GEOIP2_LATITUDE);
 \$geoip_longitude = getenv(GEOIP2_LONGITUDE);
+\$geoip_timezone = getenv(GEOIP2_LOCATION_TIMEZONE);
 
 \$geoip_country_in_eu = getenv(GEOIP2_COUNTRY_IN_EU);
 \$geoip_location_radius = getenv(GEOIP2_LOCATION_ACCURACY_RADIUS);
@@ -458,6 +459,7 @@ echo 'country_code: '.\$geoip_country_code.'<br>';
 echo 'country_name: '.\$geoip_country_name.'<br>';  
 echo 'region: '.\$geoip_region.'<br>';
 echo 'city: '.\$geoip_city.'<br>';
+echo 'timezone: '.\$geoip_timezone.'<br>';
 echo 'postal_code: '.\$geoip_postal_code.'<br>';
 echo 'city_continent_code: '.\$geoip_city_continent_code.'<br>';
 echo 'latitude: '.\$geoip_latitude.'<br>';
