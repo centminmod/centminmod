@@ -160,6 +160,19 @@ cecho "*************************************************" $boldgreen
 yum -y install python34u python34u-devel python34u-pip python34u-setuptools python34u-tools --enablerepo=ius
 rpm -ql python34u python34u-devel python34u-pip python34u-setuptools python34u-tools python34u-tkinter | grep bin
 
+# switch in favour of epel python34 version
+if [[ "$(rpm -qa python34u)" ]]; then
+  # remove ius community python34u
+  yum -y remove python34u python34u-devel python34u-pip python34u-setuptools python34u-tools python34u-libs python34u-tkinter
+  # install epel python34
+  yum -y install python34 python34-devel python34-pip python34-setuptools python34-tools python34-libs python34-tkinter
+fi
+if [[ ! "$(rpm -qa cmake3)" ]]; then
+  # reinstall removed dependencies from above removed ius community packages
+  yum -y install cmake3 cmake3-data
+fi
+
+
 } 2>&1 | tee ${CENTMINLOGDIR}/python34-install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)

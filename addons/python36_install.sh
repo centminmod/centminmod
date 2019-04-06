@@ -152,9 +152,23 @@ cecho "*************************************************" $boldgreen
 cecho "Installing Python 3.6" $boldgreen
 cecho "*************************************************" $boldgreen
 
-# install Python 3.4 besides system default Python 2.6
+# install Python 3.6 besides system default Python 2.6
 yum -y install python36u python36u-devel python36u-pip python36u-setuptools python36u-tools --enablerepo=ius
 rpm -ql python36u python36u-devel python36u-pip python36u-setuptools python36u-tools python36u-tkinter | grep bin
+
+# switch in favour of epel python36 version
+# only apply to centos 7 as centos 6 epel doesn't have python36
+if [[ -f /bin/systemctl && "$(rpm -qa python36u)" ]]; then
+  # remove ius community python36u
+  yum -y remove python36u python36u-devel python36u-pip python36u-setuptools python36u-tools python36u-libs python36u-tkinter
+  # install epel python36
+  yum -y install python36 python36-devel python36-pip python36-setuptools python36-tools python36-libs python36-tkinter
+fi
+if [[ ! "$(rpm -qa cmake3)" ]]; then
+  # reinstall removed dependencies from above removed ius community packages
+  yum -y install cmake3 cmake3-data
+fi
+
 
 } 2>&1 | tee ${CENTMINLOGDIR}/python36-install_${DT}.log
 
