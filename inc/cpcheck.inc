@@ -1154,6 +1154,13 @@ yumupdatechecker() {
     fi
     YYUM_PARAMETER="--disableplugin=priorities${VERSIONLOCK_REPO} --setopt=deltarpm=0"
     YYUM_UPDATEPARAMETER="--disableplugin=priorities --setopt=deltarpm=0"
+    # if IUS Community python34u, python35u or python36u packages installed from addons installers
+    # ensure that system/EPEL versions of python34 and python36 are excluded from yum list & yum updates
+    if [[ "$(yum list installed python34u* python35u* python36u* -q --exclude=python* | grep -v Installed| tr -s ' ' | column -t)" ]]; then
+      YUM_EXCLUDE_PYTHON=' --exclude=python34-*,python35-*,python36-*'
+    else
+      YUM_EXCLUDE_PYTHON=""
+    fi
     echo
     echo " checking for YUM updates... please wait..."
     # only check if last yum update was over 24hrs ago
@@ -1164,15 +1171,15 @@ yumupdatechecker() {
     # SEC_SINCEHISTORYLASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMHISTORYCHECK_EPOCHDATE} | bc)
     if [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
       if [[ "$MENUEXIT_ALWAYS_YUMCHECK" = [yY] ]]; then
-        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
       elif [[ "$MENUEXIT_ALWAYS_YUMCHECK" != [yY] && "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
-        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
       else
         UPDATE_CHECK=1
       fi
     else
       if [[ "$MENUEXIT_ALWAYS_YUMCHECK" = [yY] ]]; then
-        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=$YENABLEREPOS --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
+        UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
       elif [[ "$MENUEXIT_ALWAYS_YUMCHECK" != [yY] && "${SEC_SINCELASTUPDATE}" -gt '86400' ]]; then
         UPDATE_CHECK=$(/usr/bin/yum $YYUM_PARAMETER -e 0 -d 0 check-update --exclude="$YEXCLUDE" 1> /dev/null 2>&1; echo $?)
       else
@@ -1192,9 +1199,9 @@ yumupdatechecker() {
       cecho "  To list available YUM Updates type: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
       if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 ]]; then
-        echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+        echo "  yum list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi"
       elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-        echo "  yum list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS"
+        echo "  yum list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON}"
       else
         echo "  yum list updates $YYUM_PARAMETER"
       fi
@@ -1202,11 +1209,11 @@ yumupdatechecker() {
       cecho "  Following Updates are available: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
       if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 ]]; then
-        yum -q list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+        yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
         IMAGEMAGICK_UPDATECHECK=$(grep ImageMagick6 "/root/centminlogs/yumcheck-imagemagick6-$DT.txt" >/dev/null 2>&1; echo $?)
         rm -rf "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
       elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
-        yum -q list updates $YYUM_PARAMETER --enablerepo=$YENABLEREPOS | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
+        yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
         IMAGEMAGICK_UPDATECHECK=$(grep ImageMagick6 "/root/centminlogs/yumcheck-imagemagick6-$DT.txt" >/dev/null 2>&1; echo $?)
         rm -rf "/root/centminlogs/yumcheck-imagemagick6-$DT.txt"
       else
@@ -1224,13 +1231,13 @@ yumupdatechecker() {
           echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
           echo
         fi
-        echo "  yum update $YYUM_UPDATEPARAMETER --enablerepo=$YENABLEREPOS --disableexcludes=main,remi"
+        echo "  yum update $YYUM_UPDATEPARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi"
       elif [[ -f /etc/yum.repos.d/remi.repo || -f /etc/yum.repos.d/city-fan.org.repo ]]; then
         if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
           echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
           echo
         fi
-        echo "  yum update $YYUM_UPDATEPARAMETER --enablerepo=$YENABLEREPOS"
+        echo "  yum update $YYUM_UPDATEPARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON}"
       else
         if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
           echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
