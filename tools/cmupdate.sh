@@ -7,14 +7,10 @@
 MAINDIR='/etc/centminmod'
 CM_INSTALLDIR='/usr/local/src/centminmod'
 #############
-if [ -f "${MAINDIR}/custom_config.inc" ]; then
-    # default is at /etc/centminmod/custom_config.inc
-    source "${MAINDIR}/custom_config.inc"
-fi
-
 # variables
 #############
-branchname=123.09beta01
+cmupdate_branchname=123.09beta01
+cmupdate_branchname_new=$cmupdate_branchname
 DT=$(date +"%d%m%y-%H%M%S")
 ######################################################
 # functions
@@ -26,9 +22,15 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 
+if [ -f "${MAINDIR}/custom_config.inc" ]; then
+    # default is at /etc/centminmod/custom_config.inc
+    source "${MAINDIR}/custom_config.inc"
+fi
+CHECK_GITCLEAN=$(curl -4sL https://github.com/centminmod/centminmod/raw/${cmupdate_branchname}/gitclean.txt)
+
 fupdate() {
   if [[ -d "${CM_INSTALLDIR}/.git" ]]; then
-    if [[ "$(curl -sL https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
+    if [[ "$CHECK_GITCLEAN" = 'no' ]]; then
       cd "${CM_INSTALLDIR}"
       git stash
       git pull
@@ -39,7 +41,7 @@ fupdate() {
       echo
       cd /usr/local/src
       mv centminmod centminmod-automoved-cmupdate
-      git clone -b ${branchname} --depth=1 https://github.com/centminmod/centminmod.git centminmod
+      git clone -b ${cmupdate_branchname_new} --depth=1 https://github.com/centminmod/centminmod.git centminmod
       if [[ "$?" -eq '0' ]]; then
         rm -rf centminmod-automoved-cmupdate
         echo
