@@ -2362,6 +2362,7 @@ else
 fi
 
   if [[ "$NGINX_NJS" = [yY] ]]; then
+    FLTO_OPT=""
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
       NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
       pushd "$DIR_TMP"
@@ -2436,6 +2437,7 @@ fi
     fi
   else
     NGINX_NJSOPT=""
+    FLTO_OPT=' -flto'
       if [[ -f /usr/local/nginx/modules/ngx_http_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
         rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
       fi
@@ -3301,16 +3303,16 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
     else
       if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
         # GeoIP2 Lite fails to compile with -fuse-ld=gold
-        NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -flto"
+        NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}"
       else
         if [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] ]]; then
-          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -flto -ffat-lto-objects -fuse-ld=gold"
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -ffat-lto-objects -fuse-ld=gold"
         else
-          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT -flto -fuse-ld=gold"
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold"
         fi
       fi
       if [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
-        NGINX_OPENSSLOPT_EXTRAS=' -flto -ffat-lto-objects'
+        NGINX_OPENSSLOPT_EXTRAS='${FLTO_OPT} -ffat-lto-objects'
       else
         NGINX_OPENSSLOPT_EXTRAS=""
       fi
