@@ -2364,18 +2364,25 @@ fi
   if [[ "$NGINX_NJS" = [yY] ]]; then
     if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_NJS" = [yY] ]]; then
       NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
-      if [ ! -f /usr/bin/hg ]; then
-        time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
-      fi
-      if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-        pushd "$DIR_TMP"
-        hg clone https://hg.nginx.org/njs/
-        popd
-      elif [ -f /usr/bin/hg ]; then
-        pushd "${DIR_TMP}/njs"
-        hg pull
-        popd
-      fi
+      pushd "$DIR_TMP"
+      rm -rf njs
+      git clone --depth=1 https://github.com/nginx/njs
+      popd
+      # if [ ! -f /usr/bin/hg ]; then
+      #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
+      # fi
+      # if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
+      #   pushd "$DIR_TMP"
+      #   echo
+      #   echo "hg clone https://hg.nginx.org/njs/"
+      #   hg clone https://hg.nginx.org/njs/
+      #   echo
+      #   popd
+      # elif [ -f /usr/bin/hg ]; then
+      #   pushd "${DIR_TMP}/njs"
+      #   hg pull
+      #   popd
+      # fi
       if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
         echo "load_module \"modules/ngx_http_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
         echo "load_module \"modules/ngx_stream_js_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -2388,18 +2395,25 @@ fi
       fi
     else
       NGINX_NJSOPT=' --add-module=../njs/nginx'
-      if [ ! -f /usr/bin/hg ]; then
-        time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
-      fi
-      if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
-        pushd "$DIR_TMP"
-        hg clone https://hg.nginx.org/njs/
-        popd
-      elif [ -f /usr/bin/hg ]; then
-        pushd "${DIR_TMP}/njs"
-        hg pull
-        popd
-      fi
+      pushd "$DIR_TMP"
+      rm -rf njs
+      git clone --depth=1 https://github.com/nginx/njs
+      popd
+      # if [ ! -f /usr/bin/hg ]; then
+      #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
+      # fi
+      # if [[ -f /usr/bin/hg && ! -d "${DIR_TMP}/njs" ]]; then
+      #   pushd "$DIR_TMP"
+      #   echo
+      #   echo "hg clone https://hg.nginx.org/njs/"
+      #   hg clone https://hg.nginx.org/njs/
+      #   echo
+      #   popd
+      # elif [ -f /usr/bin/hg ]; then
+      #   pushd "${DIR_TMP}/njs"
+      #   hg pull
+      #   popd
+      # fi
       # if NGXDYNAMIC_NJS='y' was previously set with nginx 1.9.11+, then the nginx
       # dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
       # created
@@ -2429,6 +2443,8 @@ fi
         rm -rf /usr/local/nginx/modules/ngx_http_js_module.so.old
       fi
   fi
+  # echo "sleep"
+  # sleep 120
 
 if [[ "$NGINX_GEOIP" = [yY] ]]; then
   if [[ ! -d /usr/share/GeoIP ]]; then
