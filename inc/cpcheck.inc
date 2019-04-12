@@ -1534,14 +1534,10 @@ cmupdatecheck() {
 }
 
 dmotdcheck() {
-  if [ ! -h /usr/local/bin/dmotd ]; then
-    if [ -f "${SCRIPT_DIR}/config/motd/dmotd.sh" ]; then
-      rm -rf /usr/local/bin/dmotd
-      ln -s "${SCRIPT_DIR}/config/motd/dmotd.sh" /usr/local/bin/dmotd >/dev/null 2>&1
-      if [ -f /usr/local/bin/dmotd ]; then
-        chmod +x /usr/local/bin/dmotd
-      fi
-    fi
+  # correct /etc/profile.d/dmotd.sh setup bug
+  if [[ -f /etc/profile.d/dmotd.sh && "$(grep '"0"' /etc/profile.d/dmotd.sh)" ]]; then
+    echo '#!/bin/bash' > /etc/profile.d/dmotd.sh
+    echo "if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then  /usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
   fi
 }
 
@@ -2544,7 +2540,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   csf_portflood
   checkaliases
   checkcmdircmd
-  # dmotdcheck
+  dmotdcheck
   nvcheck
   cmupdatecheck
   multiphpcheck
