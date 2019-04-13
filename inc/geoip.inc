@@ -234,6 +234,8 @@ geoiptwolite_install() {
 
   cecho "Setup geoip2 database updater cronjob" $boldyellow
   if [[ -f /usr/local/src/centminmod/tools/geoip2db-update.sh && ! "$(crontab -l | grep 'geoip2db-update.sh')" ]]; then
+    mkdir -p /etc/centminmod/cronjobs
+    crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-geoip2db-update-setup-${DT}.txt
     (crontab -l ; echo "20 2 * * 4 /usr/local/src/centminmod/tools/geoip2db-update.sh >/dev/null 2>&1") | crontab
     crontab -l
   fi

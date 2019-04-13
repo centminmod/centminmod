@@ -2654,6 +2654,8 @@ fi
 
 if [[ -z "$(crontab -l 2>&1 | grep cminfo_updater)" ]]; then
     crontab -l > cronjoblist
+    mkdir -p /etc/centminmod/cronjobs
+    cp cronjoblist /etc/centminmod/cronjobs/cronjoblist-before-setupdate-cminfo-updater-setup-${DT}.txt
     echo "0 */4 * * * /usr/bin/cminfo_updater 2>/dev/null" >> cronjoblist
     crontab cronjoblist
     rm -rf cronjoblist
