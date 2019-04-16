@@ -849,6 +849,7 @@ nginxpgspeedtarball() {
   fi # NGINX_PAGESPEEDGITMASTER
 
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [nN] ]]; then
+          rm -rf "${NGX_PAGESPEEDLINKFILE}"
           cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
       if [[ "$NGINX_PAGESPEEDGITMASTER" != [yY] && -s "${NGX_PAGESPEEDLINKFILE}" && "$(tar -tzf ${NGX_PAGESPEEDLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
           echo '#2'
