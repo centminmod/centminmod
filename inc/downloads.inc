@@ -809,7 +809,7 @@ echo ""
 nginxpgspeedtarball() {
 
   if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-
+    NGINX_PAGESPEEDGITMASTER='n'
     cd "$DIR_TMP"
 
     # official github master zip renamed
