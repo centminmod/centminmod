@@ -508,16 +508,29 @@ if [ -n "$(grep ^priority /etc/yum.repos.d/percona-release.repo)" ]
                 #echo priorities already set for percona-release.repo
 PRIOREXISTS=1
         else
-                echo "setting yum priorities for percona-release.repo"
-                ex -s /etc/yum.repos.d/percona-release.repo << EOF
+            if [[ "$(grep 'percona-release-$basearch' /etc/yum.repos.d/percona-release.repo)" ]]; then
+            echo "setting yum priorities for percona-release.repo"
+            ex -s /etc/yum.repos.d/percona-release.repo << EOF
 :/\[percona-release-\$basearch\]/ , /gpgcheck/
 :a
 priority=11
-exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster*
+exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster* sysbench
 .
 :w
 :q
 EOF
+            elif [[ "$(grep 'percona-release-x86_64' /etc/yum.repos.d/percona-release.repo)" ]]; then
+            echo "setting yum priorities for percona-release.repo"
+            ex -s /etc/yum.repos.d/percona-release.repo << EOF
+:/\[percona-release-x86_64]/ , /gpgcheck/
+:a
+priority=11
+exclude=Percona-SQL* Percona-Server* Percona-XtraDB-Cluster* sysbench
+.
+:w
+:q
+EOF
+            fi
 
 sed -i 's/enabled = 1/enabled = 0/g' /etc/yum.repos.d/percona-release.repo
 

@@ -795,6 +795,16 @@ fixnoarch_percona() {
   fi
 }
 
+fixsysbench_percona() {
+  # prevent sysbench install via percona-release yum repo
+  if [[ -f /etc/yum.repos.d/percona-release.repo && "$(grep '^exclude=' /etc/yum.repos.d/percona-release.repo | grep sysbench > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/percona-release.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_SYSBENCH_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/percona-release.repo) sysbench")
+    sed -i "s|^exclude=.*|$NEW_SYSBENCH_EXCLUDES|" /etc/yum.repos.d/percona-release.repo
+    fi
+  fi
+}
+
 fixpercona_epel() {
   # prevent percona-xtrabackup install via epel yum repo
   if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep percona-xtrabackup > /dev/null 2>&1; echo $?)" = '1' ]]; then
@@ -2598,6 +2608,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixlshw_rpmforge
   fixpercona_epel
   fixnoarch_percona
+  fixsysbench_percona
   #fixclamav_epel
   nano_highlight
   checkwoff
