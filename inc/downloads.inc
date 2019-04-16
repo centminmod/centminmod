@@ -809,7 +809,7 @@ echo ""
 nginxpgspeedtarball() {
 
   if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
-    NGINX_PAGESPEEDGITMASTER='n'
+    # NGINX_PAGESPEEDGITMASTER='n'
     cd "$DIR_TMP"
 
     # official github master zip renamed
@@ -817,8 +817,12 @@ nginxpgspeedtarball() {
 
             cecho "Download ${NGX_PAGESPEEDGITLINKFILE} ..." $boldyellow
         if [ -s "${NGX_PAGESPEEDGITLINKFILE}" ]; then
+          echo '#1'
           cecho "${NGX_PAGESPEEDGITLINKFILE} Archive found, skipping download..." $boldgreen
+          echo "ls -lah ${NGX_PAGESPEEDGITLINKFILE}"
+          ls -lah "${NGX_PAGESPEEDGITLINKFILE}"
     else
+          echo '#1'
           echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDGITLINK} -O ${NGX_PAGESPEEDGITLINKFILE} --tries=3"
           wget -c${ipv_forceopt} --progress=bar "${NGX_PAGESPEEDGITLINK}" -O "${NGX_PAGESPEEDGITLINKFILE}" --tries=3
       ERROR=$?
@@ -831,7 +835,7 @@ nginxpgspeedtarball() {
           #echo ""
         fi
     fi
-    tar xzf "${NGX_PAGESPEEDGITLINKFILE}"
+    tar xvzf "${NGX_PAGESPEEDGITLINKFILE}"
 
     ERROR=$?
       if [[ "$ERROR" != '0' ]]; then
@@ -844,41 +848,49 @@ nginxpgspeedtarball() {
       fi
   fi # NGINX_PAGESPEEDGITMASTER
 
-        cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
-    if [[ "$NGINX_PAGESPEEDGITMASTER" != [yY] && -s "${NGX_PAGESPEEDLINKFILE}" && "$(tar -tzf ${NGX_PAGESPEEDLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
-    else
-        echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3"
-        wget -c${ipv_forceopt} --progress=bar "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
-checklogdetails
-  exit #$ERROR
-else 
-         cecho "Download done." $boldyellow
-#echo ""
-  fi
+if [[ "$NGINX_PAGESPEEDGITMASTER" = [nN] ]]; then
+          cecho "Download ${NGX_PAGESPEEDLINKFILE} ..." $boldyellow
+      if [[ "$NGINX_PAGESPEEDGITMASTER" != [yY] && -s "${NGX_PAGESPEEDLINKFILE}" && "$(tar -tzf ${NGX_PAGESPEEDLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+          echo '#2'
+          cecho "${NGX_PAGESPEEDLINKFILE} Archive found, skipping download..." $boldgreen
+          echo "ls -lah ${NGX_PAGESPEEDLINKFILE}"
+          ls -lah ${NGX_PAGESPEEDLINKFILE}
+      else
+          echo '#2'
+          echo "wget -c${ipv_forceopt} --progress=bar ${NGX_PAGESPEEDLINK} -O ${NGX_PAGESPEEDLINKFILE} --tries=3"
+          wget -c${ipv_forceopt} --progress=bar "${NGX_PAGESPEEDLINK}" -O "${NGX_PAGESPEEDLINKFILE}" --tries=3
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_PAGESPEEDLINKFILE} download failed." $boldgreen
+  checklogdetails
+    exit #$ERROR
+  else 
+          cecho "Download done." $boldyellow
+  #echo ""
     fi
-
-tar xzf "${NGX_PAGESPEEDLINKFILE}"
-
-ERROR=$?
-  if [[ "$ERROR" != '0' ]]; then
-  cecho "Error: ${NGX_PAGESPEEDLINKFILE} extraction failed." $boldgreen
-checklogdetails
-  exit #$ERROR
-else 
-         cecho "${NGX_PAGESPEEDLINKFILE} valid file." $boldyellow
-echo ""
-  fi
+      fi
+  
+  tar xvzf "${NGX_PAGESPEEDLINKFILE}"
+  
+  ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${NGX_PAGESPEEDLINKFILE} extraction failed." $boldgreen
+  checklogdetails
+    exit #$ERROR
+  else 
+          cecho "${NGX_PAGESPEEDLINKFILE} valid file." $boldyellow
+  echo ""
+    fi
+fi
 
 # determine top level extracted directory name for $DIR_TMP/${NGX_PAGESPEEDLINKFILE}
 if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
   # NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDGITLINKFILE}" | head -1 | cut -f1 -d"/")
   NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+  echo "$NGXPGSPEED_DIR"
 else
   NGXPGSPEED_DIR=$(tar -tzf "$DIR_TMP/${NGX_PAGESPEEDLINKFILE}" | head -1 | cut -f1 -d"/")
+  echo "$NGXPGSPEED_DIR"
 fi
 
 #if [[ "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
@@ -898,6 +910,9 @@ fi
       # 1.12+ new method https://github.com/pagespeed/ngx_pagespeed/issues/1337
       PS_BRANCHVER=$(echo $NGXPGSPEED_VER | cut -c1-4| sed -e 's|\.|00|')
       if [[ "$PS_BRANCHVER" -ge '10013' ]]; then
+        if [[ "$(uname -m)" = 'x86_64' && "$PSOL_MIRROR" = [yY] ]] || [[ "$(uname -m)" = 'x86_64' && "$NGINX_PAGESPEEDGITMASTER" = [yY] ]]; then
+          echo 'https://github.com/centminmod/centminmod-ngx-pagespeed/raw/master/downloads/1.13.35.2-x64.tar.gz' > PSOL_BINARY_URL
+        fi
         psol_url=$(scripts/format_binary_url.sh PSOL_BINARY_URL)
         wget -c $psol_url
         ERROR=$?
