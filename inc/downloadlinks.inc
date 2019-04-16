@@ -53,8 +53,8 @@ CENTOSFIVERPMFORGE="http://ftp.tu-chemnitz.de/pub/linux/dag/redhat/el5/en/${ARCH
 CENTOSFIVECENTALTFILE="centalt-release-5-3.noarch.rpm"
 CENTOSFIVECENTALT="http://centos.alt.ru/repository/centos/5/${RPMFARCH}/${CENTOSFIVECENTALTFILE}"
 
-CENTOSFIVEPERCONARELEASEFILE="percona-release-0.1-4.noarch.rpm"
-CENTOSFIVEPERCONARELEASE="https://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSFIVEPERCONARELEASEFILE}"
+CENTOSFIVEPERCONARELEASEFILE="percona-release-latest.noarch.rpm"
+CENTOSFIVEPERCONARELEASE="https://repo.percona.com/yum/${CENTOSFIVEPERCONARELEASEFILE}"
 
 CENTOSFIVEVARNISHFILE='varnish-release-3.0-1.el5.centos.noarch.rpm'
 CENTOSFIVEVARNISH="http://repo.varnish-cache.org/redhat/varnish-3.0/el5/noarch/varnish-release/${CENTOSFIVEVARNISHFILE}"
@@ -71,8 +71,8 @@ CENTOSSIXCENTALTFILE="centalt-release-6-1.noarch.rpm"
 CENTOSSIXCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSSIXCENTALTFILE}"
 CENTOSSIXCENTALTLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXCENTALTFILE}"
 
-CENTOSSIXPERCONALRELEASEFILE="percona-release-0.1-4.noarch.rpm"
-CENTOSSIXPERCONALRELEASE="https://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSIXPERCONALRELEASEFILE}"
+CENTOSSIXPERCONALRELEASEFILE="percona-release-latest.noarch.rpm"
+CENTOSSIXPERCONALRELEASE="https://repo.percona.com/yum/${CENTOSSIXPERCONALRELEASEFILE}"
 
 CENTOSSIXVARNISHFILE="varnish-4.1.el6.rpm"
 CENTOSSIXVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSIXVARNISHFILE}"
@@ -83,7 +83,7 @@ CENTOSSIXAXIVO="http://rpm.axivo.com/${CENTOSSIXAXIVOFILE}"
 CENTOSSIXAXIVOLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXAXIVOFILE}"
 
 CENTOSSIXREMIFILE="remi-release-6.rpm"
-CENTOSSIXREMI="https://rpms.remirepo.net/enterprise//${CENTOSSIXREMIFILE}"
+CENTOSSIXREMI="https://rpms.remirepo.net/enterprise/${CENTOSSIXREMIFILE}"
 CENTOSSIXREMILOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSIXREMIFILE}"
 
 CENTOSSIXATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
@@ -157,8 +157,8 @@ CENTOSSEVENCENTALTFILE="centalt-release-6-1.noarch.rpm"
 CENTOSSEVENCENTALT="http://centos.alt.ru/repository/centos/6/${RPMFARCH}/${CENTOSSEVENCENTALTFILE}"
 CENTOSSEVENCENTALTLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENCENTALTFILE}"
 
-CENTOSSEVENPERCONALRELEASEFILE="percona-release-0.1-4.noarch.rpm"
-CENTOSSEVENPERCONALRELEASE="https://www.percona.com/redir/downloads/percona-release/redhat/latest/${CENTOSSEVENPERCONALRELEASEFILE}"
+CENTOSSEVENPERCONALRELEASEFILE="percona-release-latest.noarch.rpm"
+CENTOSSEVENPERCONALRELEASE="https://repo.percona.com/yum/${CENTOSSEVENPERCONALRELEASEFILE}"
 
 CENTOSSEVENVARNISHFILE="varnish-4.1.el7.rpm"
 CENTOSSEVENVARNISH="https://repo.varnish-cache.org/redhat/${CENTOSSEVENVARNISHFILE}"
@@ -169,7 +169,7 @@ CENTOSSEVENAXIVO="http://rpm.axivo.com/${CENTOSSEVENAXIVOFILE}"
 CENTOSSEVENAXIVOLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENAXIVOFILE}"
 
 CENTOSSEVENREMIFILE="remi-release-7.rpm"
-CENTOSSEVENREMI="https://rpms.remirepo.net/enterprise//${CENTOSSEVENREMIFILE}"
+CENTOSSEVENREMI="https://rpms.remirepo.net/enterprise/${CENTOSSEVENREMIFILE}"
 CENTOSSEVENREMILOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/repos/${CENTOSSEVENREMIFILE}"
 
 CENTOSSEVENATRPMSFILE="atrpms-repo-6-7.el6.x86_64.rpm"
