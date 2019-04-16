@@ -301,6 +301,7 @@ if [ -s "${CENTOSSEVENPERCONALRELEASEFILE}" ]; then
   CCPERCONACHECK="$ERR"
     if [ "$CCPERCONACHECK" == '0' ]; then
       yumpriorpercona
+      yum-config-manager --disable percona-release-noarch
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENPERCONALRELEASEFILE} install." $boldgreen
@@ -324,6 +325,7 @@ rpm -Uvh ${CENTOSSEVENPERCONALRELEASEFILE}
   CCPERCONACHECK="$ERR"
     if [ "$CCPERCONACHECK" == '0' ]; then
       yumpriorpercona
+      yum-config-manager --disable percona-release-noarch
       echo ""
     else
       cecho "Error: problem with ${CENTOSSEVENPERCONALRELEASEFILE} install." $boldgreen

@@ -789,6 +789,22 @@ fixlshw_rpmforge() {
   fi
 }
 
+fixnoarch_percona() {
+  if [[ "$(yum-config-manager percona-release-noarch | awk '/enabled = / {print $3}')" != 'False' ]]; then
+    yum-config-manager --disable percona-release-noarch >/dev/null 2>&1
+  fi
+}
+
+fixpercona_epel() {
+  # prevent percona-xtrabackup install via epel yum repo
+  if [[ -f /etc/yum.repos.d/epel.repo && "$(grep '^exclude=' /etc/yum.repos.d/epel.repo | grep percona-xtrabackup > /dev/null 2>&1; echo $?)" = '1' ]]; then
+    if [[ "$(grep '^exclude=' /etc/yum.repos.d/epel.repo > /dev/null 2>&1; echo $?)" = '0' ]]; then
+    NEW_XTRABACKUPEXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) percona-xtrabackup")
+    sed -i "s|^exclude=.*|$NEW_XTRABACKUPEXCLUDES|" /etc/yum.repos.d/epel.repo
+    fi
+  fi
+}
+
 fixnodejs_epel() {
   # prevent node.js 6.x install by epel in favour of nodesource
   # repo via addons/nodejs.sh
@@ -2580,6 +2596,8 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fixnginx_epel
   fixsclutils_epel
   fixlshw_rpmforge
+  fixpercona_epel
+  fixnoarch_percona
   #fixclamav_epel
   nano_highlight
   checkwoff

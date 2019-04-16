@@ -424,7 +424,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
-exclude=varnish varnish-libs galera nodejs nginx mongodb redis* scl-utils
+exclude=varnish varnish-libs galera nodejs nginx mongodb redis* scl-utils percona-xtrabackup
 .
 :w
 :q
