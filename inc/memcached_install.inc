@@ -237,7 +237,13 @@ else
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
-    ./configure --with-libevent="/usr/${LIBDIR}" --enable-sasl --enable-sasl-pwdb
+    MEMCACHED_VERSION_NUMERIC=$(echo $MEMCACHED_VERSION | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
+    if [[ "$MEMCACHED_VERSION_NUMERIC" -ge '1015013000' && "$MEMCACHED_TLS" = [yY] ]]; then
+        MEMCACHED_TLSOPTION=' --enable-tls'
+    else
+        MEMCACHED_TLSOPTION=""
+    fi
+    ./configure --with-libevent="/usr/${LIBDIR}" --enable-sasl --enable-sasl-pwdb${MEMCACHED_TLSOPTION}
     # ./configure --with-libevent=/usr/${LIBDIR} --enable-memcached --enable-memcached-igbinary --enable-memcached-json --with-php- config=/usr/local/bin/php-config
     make${MAKETHREADS}
     make install

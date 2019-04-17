@@ -309,17 +309,18 @@ PCRE_SOURCEINSTALL='n'
 PCRE_VERSION='8.43'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.3'   # PHP extension for imagick
-MAILPARSEPHP_VER='2.1.6'    # https://pecl.php.net/package/mailparse
+IMAGICKPHP_VER='3.4.3'        # PHP extension for imagick
+MAILPARSEPHP_VER='2.1.6'      # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.0.2' # For PHP 7
-MEMCACHED_INSTALL='y'       # Install Memcached
-LIBEVENT_VERSION='2.1.8'   # Use this version of Libevent
-MEMCACHED_VERSION='1.5.12'  # Use this version of Memcached server
-MEMCACHE_VERSION='3.0.8'    # Use this version of Memcache
-MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
+MEMCACHED_INSTALL='y'         # Install Memcached
+LIBEVENT_VERSION='2.1.8'      # Use this version of Libevent
+MEMCACHED_VERSION='1.5.13'    # Use this version of Memcached server
+MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
+MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
+MEMCACHEDPHP_VER='2.2.0'      # Memcached PHP extension not server
 MEMCACHEDPHP_SEVENVER='3.1.3' # Memcached PHP 7 only extension version
-LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
-LIBMEMCACHED_VER='1.0.18'   # libmemcached version for source compile
+LIBMEMCACHED_YUM='y'          # switch to YUM install instead of source compile
+LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='3.1.6'        # redis PHP version for PHP <7.x
