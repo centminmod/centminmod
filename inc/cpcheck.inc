@@ -379,11 +379,11 @@ nginxlargefile_fix() {
       # the size of the existing nginx.conf set client_max_body_size directive only
       GET_CLIENTMAXBODY=$(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf)
       if [[ "$(echo $GET_CLIENTMAXBODY | grep 'm')" ]]; then
-        GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|m;||')))
+        GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|m;||'| head -n1)))
         CLIENTMAXBODYSIZEMB="$GET_CLIENTMAXBODYSIZE"
         CLIENTMAXBODYSIZEKB=$(($GET_CLIENTMAXBODYSIZE * 1024))
       elif [[ "$(echo $GET_CLIENTMAXBODY | grep 'k')" ]]; then
-        GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|k;||')))
+        GET_CLIENTMAXBODYSIZE=$(($(awk '/client_max_body_size/ {print $2}' /usr/local/nginx/conf/nginx.conf | sed -e 's|k;||'| head -n1)))
         CLIENTMAXBODYSIZEMB=$(($GET_CLIENTMAXBODYSIZE / 1024))
         CLIENTMAXBODYSIZEKB="$GET_CLIENTMAXBODYSIZE"
       fi
@@ -603,8 +603,8 @@ update_cmdshortcuts() {
 
 update_nginxconf() {
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$NGINX_ALLOWOVERRIDE" = [yY] ]]; then
-    NGX_WRKCON=$(grep -w 'worker_connections' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}' | grep -v 'worker_connections')
-    NGX_KT=$(grep -w 'keepalive_timeout' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}'| grep -v keep)
+    NGX_WRKCON=$(grep -w 'worker_connections' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}' | grep -v 'worker_connections'| head -n1)
+    NGX_KT=$(grep -w 'keepalive_timeout' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}'| grep -v keep| head -n1)
     # adjust to new default higher values only if previous defaults are detected
     # do not adjust if end user has changed values from previous defaults
     if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' ]]; then
