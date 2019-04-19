@@ -2540,7 +2540,12 @@ if [[ "$1" = 'install' ]]; then
     echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
-pushd "$SCRIPT_DIR"; bash centmin.sh
+pushd "$SCRIPT_DIR"; . ./centmin.sh
+function cleanup_msg {
+  exit 1
+}
+
+trap cleanup_msg SIGHUP SIGINT SIGTERM SIGTSTP
 EOF
     chmod 0700 /usr/bin/centmin
 
@@ -2655,7 +2660,12 @@ else
     echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
-pushd "$SCRIPT_DIR"; bash centmin.sh
+pushd "$SCRIPT_DIR"; . ./centmin.sh
+function cleanup_msg {
+  exit 1
+}
+
+trap cleanup_msg SIGHUP SIGINT SIGTERM SIGTSTP
 EOF
     chmod 0700 /usr/bin/centmin
 
