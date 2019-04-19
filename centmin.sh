@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='132'
+SCRIPT_INCREMENTVER='133'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -2541,7 +2541,7 @@ if [[ "$1" = 'install' ]]; then
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
 pushd "$SCRIPT_DIR"; . ./centmin.sh
-function cleanup_msg {
+cleanup_msg() {
   exit 1
 }
 
@@ -2661,7 +2661,7 @@ else
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
 pushd "$SCRIPT_DIR"; . ./centmin.sh
-function cleanup_msg {
+cleanup_msg() {
   exit 1
 }
 

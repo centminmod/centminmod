@@ -1538,7 +1538,7 @@ checkcmdircmd() {
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
 pushd "$SCRIPT_DIR"; . ./centmin.sh
-function cleanup_msg {
+cleanup_msg() {
   exit 1
 }
 
