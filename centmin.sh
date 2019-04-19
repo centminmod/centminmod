@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='131'
+SCRIPT_INCREMENTVER='132'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -2468,7 +2468,7 @@ function cleanup_msg {
 }
 
 # http://linuxcommand.org/wss0160.php
-trap cleanup_msg SIGHUP SIGINT SIGTERM
+trap cleanup_msg SIGHUP SIGINT SIGTERM SIGTSTP
 
 # end functions
 #####################################################################

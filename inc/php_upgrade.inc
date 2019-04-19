@@ -312,6 +312,12 @@ else
     echo "Current PHP Version: $(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')"
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+    echo
+    read -ep "Do you still want to continue? [y/n] " phpfpm_stillcont
+    if [[ "$phpfpm_stillcont" = [nN] ]];then
+        exit 0
+    fi
+    echo
     echo "----------------------------------------------------------------"
     echo "existing php.ini will be backed up at /usr/local/lib/php.ini-oldversion_$DT"
     
