@@ -390,7 +390,9 @@ if [[ "$UALL" = 'y' ]]; then
     ngver=$NGINX_VERSION
     recompileopenssl='n'
 else
-    echo ""
+    echo
+    echo "Current Nginx Version: $(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)"
+    echo
     read -ep "Install which version of Nginx? (version i.e. type $NGINX_VERSION): " ngver
     service nginx reload >/dev/null 2>&1
 

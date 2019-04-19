@@ -308,6 +308,9 @@ else
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
     echo "NGDEBUG is PHP 7.4.0 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
+    echo
+    echo "Current PHP Version: $(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')"
+    echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo "----------------------------------------------------------------"
     echo "existing php.ini will be backed up at /usr/local/lib/php.ini-oldversion_$DT"
