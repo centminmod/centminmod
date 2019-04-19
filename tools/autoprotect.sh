@@ -13,6 +13,10 @@
 DT=$(date +"%d%m%y-%H%M%S")
 SCRIPTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BASEDIR=$(dirname $SCRIPTDIR)
+NICE=$(which nice)
+NICEOPT='-n 12'
+IONICE=$(which ionice)
+IONICEOPT='-c2 -n7'
 
 DEBUG='n'
 TOPLEVEL_DIR='/home/nginx/domains'
@@ -41,7 +45,7 @@ for domain in $(ls $TOPLEVEL_DIR); do
 	if [ ! -d "/usr/local/nginx/conf/autoprotect/${domain}" ]; then
   	mkdir -p "/usr/local/nginx/conf/autoprotect/${domain}"
 	fi
-	HTPATHS=$(find "${TOPLEVEL_DIR}/${domain}" -name ".htaccess" -print0 | xargs -0 echo)
+	HTPATHS=$($NICE $NICEOPT $IONICE $IONICEOPT find "${TOPLEVEL_DIR}/${domain}" -name ".htaccess" -print0 | xargs -0 echo)
 	declare -a arrays
 	arrays=(${HTPATHS})
   for d in "${arrays[@]}"; do
