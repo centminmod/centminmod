@@ -604,11 +604,15 @@ update_cmdshortcuts() {
 update_nginxconf() {
   if [[ -f /usr/local/nginx/conf/nginx.conf && "$NGINX_ALLOWOVERRIDE" = [yY] ]]; then
     NGX_WRKCON=$(grep -w 'worker_connections' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}' | grep -v 'worker_connections'| head -n1)
+    NGX_KEEPALIVEREQUESTS=$(grep -w 'keepalive_requests' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}' | grep -v 'keepalive_requests'| head -n1)
     NGX_KT=$(grep -w 'keepalive_timeout' /usr/local/nginx/conf/nginx.conf | column -t| tr -s " " | sed -e 's|;||g' | awk '{print $2}'| grep -v keep| head -n1)
     # adjust to new default higher values only if previous defaults are detected
     # do not adjust if end user has changed values from previous defaults
-    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' ]]; then
-      sed -i 's|worker_connections .*|worker_connections  50000;|' /usr/local/nginx/conf/nginx.conf
+    if [[ "$NGX_KEEPALIVEREQUESTS" -eq '500' ]]; then
+      sed -i 's|keepalive_requests .*|keepalive_requests  1000;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' ]]; then
+      sed -i 's|worker_connections .*|worker_connections  80000;|' /usr/local/nginx/conf/nginx.conf
     fi
     if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
       NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
