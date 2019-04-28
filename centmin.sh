@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='136'
+SCRIPT_INCREMENTVER='137'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -818,13 +818,13 @@ VARNISHREPO_DISABLE='y'
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y'
 # use at own risk as it can break the system
-# info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
+# info at https://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
 CUSTOM_CURLRPM='n'
 CUSTOM_CURLRPMVER='7.47.1-2.0'       # custom curl/libcurl version
 CUSTOM_CURLLIBSSHVER='1.6.0-4.0'     # libssh2 version
 CUSTOM_CURLRPMCARESVER='1.10.0-6.0'  # c-ares version
-CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
-CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
+CUSTOM_CURLRPMSYSURL='https://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
+CUSTOM_CURLRPMLIBURL='https://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
 WGET_VERSION='1.20.3'

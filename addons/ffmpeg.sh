@@ -242,7 +242,7 @@ install_nasm() {
 			hash -r
 		fi
 		# install from official nasm yum repo
-		yum-config-manager --add-repo http://www.nasm.us/nasm.repo
+		yum-config-manager --add-repo https://www.nasm.us/nasm.repo
 		yum -y install nasm --disableplugin=priorities
 	fi
 }
@@ -374,7 +374,7 @@ make install
 make distclean
 
 cd ${OPT}/ffmpeg_sources
-curl -L -O http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+curl -L -O https://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
 tar xzvf lame-3.99.5.tar.gz
 cd lame-3.99.5
 ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin" --enable-shared --enable-nasm

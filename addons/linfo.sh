@@ -77,7 +77,7 @@ cd $DIR_TMP
     if [ -s linfo-${LINFO_VER}.tar.gz ]; then
         cecho "linfo-${LINFO_VER}.tar.gz found, skipping download..." $boldgreen
     else
-       wget -q -c http://downloads.sourceforge.net/project/linfo/Linfo%20Stable%20Releases/linfo-${LINFO_VER}.tar.gz --tries=3
+       wget -q -c https://downloads.sourceforge.net/project/linfo/Linfo%20Stable%20Releases/linfo-${LINFO_VER}.tar.gz --tries=3
        # wget -q -c http://sourceforge.net/projects/linfo/files/Linfo%20Stable%20Releases/linfo-${LINFO_VER}.tar.gz/download --tries=3
 ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then

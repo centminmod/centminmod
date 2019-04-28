@@ -367,13 +367,13 @@ SIEGE_VERSION='4.0.4'
 
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y' use at own risk as it can break the system
-# info at http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
+# info at https://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring/
 CUSTOM_CURLRPM='n'
 CUSTOM_CURLRPMVER='7.47.1-2.0'       # custom curl/libcurl version
 CUSTOM_CURLLIBSSHVER='1.6.0-4.0'     # libssh2 version
 CUSTOM_CURLRPMCARESVER='1.10.0-6.0'  # c-ares version
-CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
-CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
+CUSTOM_CURLRPMSYSURL='https://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
+CUSTOM_CURLRPMLIBURL='https://mirror.city-fan.org/ftp/contrib/libraries'
 
 SELFSIGNEDSSL_C='US'
 SELFSIGNEDSSL_ST='California'

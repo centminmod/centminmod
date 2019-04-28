@@ -566,7 +566,7 @@ libresslgeolocation() {
           curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
           LIBRESSL_CURLCHECK=$?
           if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-            LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
+            LIBRESSL_MIRRORURL="https://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
             LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
             curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
             LIBRESSL_CURLCHECK=$?
@@ -615,7 +615,7 @@ libresslgeolocation() {
           curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
           LIBRESSL_CURLCHECK=$?
           if [[ "$LIBRESSL_CURLCHECK" != '0' ]]; then
-            LIBRESSL_MIRRORURL="http://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
+            LIBRESSL_MIRRORURL="https://mirrors.mit.edu/pub/OpenBSD/LibreSSL"
             LIBRESSL_LINK="${LIBRESSL_MIRRORURL}/libressl-${LIBRESSL_VERSION}.tar.gz"
             curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$LIBRESSL_LINK" | grep 'HTTP\/' | grep '200'
             LIBRESSL_CURLCHECK=$?

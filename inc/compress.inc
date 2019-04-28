@@ -184,7 +184,7 @@ function funct_lzipinstall {
       echo "lzip-${LZIP_VER}.tar.gz [found]"
       else
       echo "Error: lzip-${LZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} http://nongnu.askapache.com/lzip/lzip-${LZIP_VER}.tar.gz --tries=3
+      wget -c${ipv_forceopt} https://nongnu.askapache.com/lzip/lzip-${LZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lzip-${LZIP_VER}.tar.gz
@@ -214,14 +214,14 @@ function funct_plzipinstall {
       echo "lzlib-${LZLIB_VER}.tar.gz [found]"
       else
       echo "Error: lzlib-${LZLIB_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} http://nongnu.askapache.com/lzip/lzlib/lzlib-${LZLIB_VER}.tar.gz --tries=3
+      wget -c${ipv_forceopt} https://nongnu.askapache.com/lzip/lzlib/lzlib-${LZLIB_VER}.tar.gz --tries=3
     fi
     
     if [ -s plzip-${PLZIP_VER}.tar.gz ]; then
       echo "plzip-${PLZIP_VER}.tar.gz [found]"
       else
       echo "Error: plzip-${PLZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} http://nongnu.askapache.com/lzip/plzip/plzip-${PLZIP_VER}.tar.gz --tries=3
+      wget -c${ipv_forceopt} https://nongnu.askapache.com/lzip/plzip/plzip-${PLZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lzlib-${LZLIB_VER}.tar.gz
