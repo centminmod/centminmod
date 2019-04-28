@@ -7,6 +7,10 @@ assignees: ''
 
 ---
 
+**Bug Report Forums**
+
+* Check the official Centmin Mod Community's [Bug Report Forum](https://community.centminmod.com/forums/bug-reports.12/) to see if the bug has already been reported/resolved. 
+
 **Background Information**
 
 Please fill in any relevant information that applies to you:
