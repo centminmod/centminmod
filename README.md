@@ -15,19 +15,25 @@ Fastest method of install and allows fully unattended installation. Just type th
 
 ### For latest 1.2.3-eva2000.08 stable install
 
+Supports max PHP 7.0 version. For PHP 7.1+ and higher use 123.09beta01 (1.2.3-eva2000.09) beta installer below.
+
     yum -y update; curl -O https://centminmod.com/installer.sh && chmod 0700 installer.sh && bash installer.sh
 
 ### For latest 1.2.3-eva2000.09 beta install
+
+Also known as 123.09beta01 supports PHP 7.1, 7.2, 7.3.
 
     yum -y update; curl -O https://centminmod.com/betainstaller.sh && chmod 0700 betainstaller.sh && bash betainstaller.sh
 
 ## Centmin Mod installed via Git    
 
+Recommended way is via above curl installer.sh or betainstaller.sh commands.
+
 Type as root user in SSH these commands, Centmin Mod will have it's install setup at /usr/local/src/centminmod. Replace `branchname=123.08stable` with `branchname=123.09beta01` if you want to install the beta version.
 
     yum -y install git wget nano bc unzip
     cd /usr/local/src
-    branchname=123.08stable
+    branchname=123.09beta01
     git clone -b ${branchname} --depth=1 https://github.com/centminmod/centminmod.git centminmod
     cd centminmod
 
