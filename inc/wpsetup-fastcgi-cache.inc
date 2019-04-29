@@ -797,6 +797,12 @@ if (\$arg_add-to-cart != "") { set \$no_wpfastcgicache 1; set \$skip_reason "\${
 # Add trailing slash to */wp-admin requests.
 rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 
+# strip gclid/fbclid query strings from urls via a
+# 302 redirect to url without the query strings
+if (\$wpfcgi_ignorearg) {
+  rewrite ^ $uri? redirect;
+}
+
 # Centmin Mod Nginx has nginx_cache_purge module
 # added http://centminmod.com/nginx.html
     location ~ /purge(/.*) {
@@ -929,6 +935,12 @@ map \$request_uri \$wpfcgi_nocacheuri {
     ~^/wp-mail.php                       1;
     ~^/wp-register.php               1;
     ~^/xmlrpc.php                    1;
+}
+
+map \$args \$wpfcgi_ignorearg {
+    default             0;
+    ~*fbclid            1;
+    ~*gclid             1;
 }
 
 map \$remote_addr \$fastcgi_debug {
