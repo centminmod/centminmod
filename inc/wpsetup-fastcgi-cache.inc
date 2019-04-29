@@ -28,6 +28,64 @@ configure_autoptimize() {
   \wp option list --search=autoptimize_* --allow-root
 }
 
+fastcgicache_zonesetup() {
+  FASTCGICACHE_TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+  if [[ "$FASTCGICACHE_TOTALMEM" -gt '1049576' && "$FASTCGICACHE_TOTALMEM" -le '2097152' ]]; then
+    FASTCGICACHE_MEMSIZE=30
+    FASTCGICACHE_MAXSIZE=60
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '2097152' && "$FASTCGICACHE_TOTALMEM" -le '3145728' ]]; then
+    FASTCGICACHE_MEMSIZE=45
+    FASTCGICACHE_MAXSIZE=90
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '3145728' && "$FASTCGICACHE_TOTALMEM" -le '4194304' ]]; then
+    FASTCGICACHE_MEMSIZE=60
+    FASTCGICACHE_MAXSIZE=120
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '4194304' && "$FASTCGICACHE_TOTALMEM" -le '8388608' ]]; then
+    FASTCGICACHE_MEMSIZE=90
+    FASTCGICACHE_MAXSIZE=180
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '8388608' && "$FASTCGICACHE_TOTALMEM" -le '16777216' ]]; then
+    FASTCGICACHE_MEMSIZE=120
+    FASTCGICACHE_MAXSIZE=240
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '16777216' && "$FASTCGICACHE_TOTALMEM" -le '33554432' ]]; then
+    FASTCGICACHE_MEMSIZE=180
+    FASTCGICACHE_MAXSIZE=360
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '33554432' && "$FASTCGICACHE_TOTALMEM" -le '67108864' ]]; then
+    FASTCGICACHE_MEMSIZE=240
+    FASTCGICACHE_MAXSIZE=480
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '67108864' && "$FASTCGICACHE_TOTALMEM" -le '123217728' ]]; then
+    FASTCGICACHE_MEMSIZE=300
+    FASTCGICACHE_MAXSIZE=600
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '123217728' && "$FASTCGICACHE_TOTALMEM" -le '268435456' ]]; then
+    FASTCGICACHE_MEMSIZE=450
+    FASTCGICACHE_MAXSIZE=900
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  elif [[ "$FASTCGICACHE_TOTALMEM" -gt '268435456' ]]; then
+    FASTCGICACHE_MEMSIZE=600
+    FASTCGICACHE_MAXSIZE=1200
+    FASTCGICACHE_LOADERFILES=1000
+    FASTCGICACHE_LOADERTHRESHOLD=2000
+  fi
+cat >> "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf"<<FCD
+fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_zone=$fastcgicache_name:${FASTCGICACHE_MEMSIZE}m inactive=1h max_size=${FASTCGICACHE_MAXSIZE}m loader_files=${FASTCGICACHE_LOADERFILES} loader_threshold=#{FASTCGICACHE_LOADERTHRESHOLD};
+FCD
+}
+
 fc_wpinstall() {
     if [ ! -f /usr/bin/wp ]; then
       cecho "------------------------------------------------------------" $boldgreen
@@ -699,22 +757,41 @@ set \$no_wpfastcgicache 0;
 # POST requests and urls with a query string should always go to PHP
 if (\$request_method = POST) {
   set \$no_wpfastcgicache 1;
+  set \$skip_reason "\${skip_reason}-POST";
 }
+
 if (\$query_string != "") {
   set \$no_wpfastcgicache 1;
+  set \$skip_reason "\${skip_reason}-QueryString";
 }
+
+if (\$wpfcgi_request_nocache) {
+  set \$skip_reason "\${skip_reason}-XMLHttpRequest";
+}
+
+if (\$wpfcgi_nocachecookie) {
+  set \$skip_reason "\${skip_reason}-Cookie";
+}
+
+if (\$wpfcgi_nocacheuri) {
+  set \$skip_reason "\${skip_reason}-URI";
+}
+
+if (\$arg_preview) {   
+  set \$no_wpfastcgicache 1;
+  set \$skip_reason "\${skip_reason}-Preview";
+}  
 
 # exclude mobile devices from redis caching
 if (\$wpfcgi_cache_mobile = 1) { set \$no_wpfastcgicache 1; }
 
 # bypass cache for woocommerce
-if (\$arg_add-to-cart != "") { 
-  set \$no_wpfastcgicache 1;
-}
+if (\$arg_add-to-cart != "") { set \$no_wpfastcgicache 1; set \$skip_reason "\${skip_reason}-Woocommerce"; }
 
 ## bypass cache for empty woocommerce carts
 #if (\$cookie_woocommerce_items_in_cart != "0") { 
 #  set \$no_wpfastcgicache 1;
+#  set \$skip_reason "\${skip_reason}-Woocommerce";
 #}
 
 # Add trailing slash to */wp-admin requests.
@@ -730,12 +807,14 @@ rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 }
 FCC
 
-cat >> "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf"<<FCD
-fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_zone=$fastcgicache_name:30m inactive=1h max_size=60m loader_files=1000 loader_threshold=2000;
-FCD
+fastcgicache_zonesetup
+# cat >> "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf"<<FCD
+# fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_zone=$fastcgicache_name:30m inactive=1h max_size=60m loader_files=1000 loader_threshold=2000;
+# FCD
 
 cat > "/usr/local/nginx/conf/wpfastcgi_cache_map.conf"<<FCD
 upstream wpfcgi_cache_php {
+  zone upstream_wpfcgicache 512k;
   keepalive 16;
   #least_conn;
   #server unix:/tmp/php5-fpm.sock;
@@ -935,9 +1014,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     }
 
     # bypass cache for woocommerce
-    if (\$arg_add-to-cart != "") { 
-        set \$cache_uri 'nullcache';
-    }
+    if (\$arg_add-to-cart != "") { set \$cache_uri 'nullcache'; }
 
     ## bypass cache for empty woocommerce carts
     #if (\$cookie_woocommerce_items_in_cart != "0") { 
@@ -1012,12 +1089,13 @@ fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_noca
 fastcgi_cache_valid     200 15m;
 fastcgi_cache_valid     301 302 15m;
 fastcgi_cache_valid     303 304 15m;
-fastcgi_cache_valid     404 5m;
+fastcgi_cache_valid     404 1m;
 #add_header X-Fpm-Cache    \$upstream_cache_status;
 if (\$fastcgi_debug) {
  add_header X-Processing-Time \$request_time always;
  add_header X-Request-ID      \$request_id always;
  add_header X-Fpm-Cache    \$upstream_cache_status;
+ add_header X-Fpm-Cache-Skip \$skip_reason;
 }
 ### fastcgi_cache end ###
 
@@ -2381,9 +2459,7 @@ if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_n
 }
 
 # bypass cache for woocommerce
-if (\$arg_add-to-cart != "") { 
-  set \$skip_cache 1;
-}
+if (\$arg_add-to-cart != "") { set \$skip_cache 1; }
 
 ## bypass cache for empty woocommerce carts
 #if (\$cookie_woocommerce_items_in_cart != "0") { 

@@ -665,9 +665,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     }
 
     # bypass cache for woocommerce
-    if (\$arg_add-to-cart != "") { 
-        set \$cache_uri 'nullcache';
-    }
+    if (\$arg_add-to-cart != "") { set \$cache_uri 'nullcache'; }
 
     ## bypass cache for empty woocommerce carts
     #if (\$cookie_woocommerce_items_in_cart != "0") { 
@@ -1978,9 +1976,7 @@ if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_n
 }
 
 # bypass cache for woocommerce
-if (\$arg_add-to-cart != "") { 
-  set \$skip_cache 1;
-}
+if (\$arg_add-to-cart != "") { set \$skip_cache 1; }
 
 ## bypass cache for empty woocommerce carts
 #if (\$cookie_woocommerce_items_in_cart != "0") { 
