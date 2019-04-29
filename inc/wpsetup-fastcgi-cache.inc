@@ -941,6 +941,7 @@ map \$args \$wpfcgi_ignorearg {
     default             0;
     ~*fbclid            1;
     ~*gclid             1;
+    ~*utm               1;
 }
 
 map \$remote_addr \$fastcgi_debug {
