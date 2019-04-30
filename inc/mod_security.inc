@@ -49,6 +49,12 @@ modsecurity_install() {
     if [ ! -f /usr/include/yajl/yajl_common.h ]; then
       yum -y install yajl-devel
     fi
+    if [ ! -f /usr/bin/ssdeep ]; then
+      yum -y install ssdeep ssdeep-devel
+    fi
+    if [ ! -f /usr/include/lmdb.h ]; then
+      yum -y install lmdb lmdb-devel
+    fi
     pushd "$DIR_TMP"
     rm -rf ModSecurity
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
