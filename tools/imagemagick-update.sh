@@ -345,7 +345,7 @@ php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
-if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '39' ]]; then
+if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
     IMAGICKGITLINK='https://github.com/mkoppanen/imagick'
     # fallback mirror if official github is down, use gitlab mirror
     curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
