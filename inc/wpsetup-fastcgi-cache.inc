@@ -1079,7 +1079,6 @@ location ~ [^/]\.php(/|\$) {
     }
 
     fastcgi_pass    wpfcgi_cache_php;
-    fastcgi_keep_conn on;
     keepalive_requests 200;
     #fastcgi_pass   127.0.0.1:9000;
     #fastcgi_pass   unix:/tmp/php5-fpm.sock;
