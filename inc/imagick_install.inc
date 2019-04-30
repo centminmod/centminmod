@@ -139,6 +139,18 @@ php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | grep '7.0'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
+if [[ "$CENTOS_SIX" -eq '6' ]]; then
+    # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
+    if [ ! -f /usr/bin/autoconf268 ]; then
+        echo "yum -q -y install autoconf268"
+        yum -q -y install autoconf268
+    fi
+    if [ -f /usr/bin/autoconf268 ]; then
+        export PHP_AUTOCONF=/usr/bin/autoconf268
+        export PHP_AUTOHEADER=/usr/bin/autoheader268
+    fi
+fi
+
 if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
     if [[ -d "imagick-php7" && -d "imagick-php7/.git" ]]; then       
         cd imagick-php7
