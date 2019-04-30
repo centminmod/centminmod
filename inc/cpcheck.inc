@@ -1235,6 +1235,14 @@ yumupdatechecker() {
       else
         echo "  yum list updates $YYUM_PARAMETER"
       fi
+      if [[ -f /usr/local/bin/kernel-update && "$(uname -r | grep -o elrepo)" = 'elrepo' ]]; then
+        echo
+        cecho "-------------------------------------------------------------" $boldgreen
+        cecho "  To Check For ELRepo Kernel Updates type: " $boldyellow
+        cecho "-------------------------------------------------------------" $boldgreen
+        echo "/usr/local/bin/kernel-update"
+        echo
+      fi
       cecho "-------------------------------------------------------------" $boldgreen
       cecho "  Following Updates are available: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
