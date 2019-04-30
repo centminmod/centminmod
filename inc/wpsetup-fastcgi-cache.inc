@@ -1079,6 +1079,8 @@ location ~ [^/]\.php(/|\$) {
     }
 
     fastcgi_pass    wpfcgi_cache_php;
+    fastcgi_keep_conn on;
+    keepalive_requests 200;
     #fastcgi_pass   127.0.0.1:9000;
     #fastcgi_pass   unix:/tmp/php5-fpm.sock;
     fastcgi_index  index.php;
@@ -1089,25 +1091,29 @@ location ~ [^/]\.php(/|\$) {
 ### fastcgi_cache start ###
 fastcgi_cache_methods GET;
 fastcgi_cache_key       \$scheme\$request_method\$host\$request_uri;
-fastcgi_cache_lock        on;
-fastcgi_keep_conn         on;
-fastcgi_cache_lock_age    5s;
+fastcgi_cache_lock         on;
+fastcgi_keep_conn          on;
+fastcgi_cache_lock_age     5s;
 fastcgi_cache_lock_timeout 5s;
-fastcgi_cache_use_stale error timeout invalid_header updating http_500;
-fastcgi_ignore_headers  Cache-Control Expires Set-Cookie;
-fastcgi_cache           $fastcgicache_name;
-fastcgi_no_cache        \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
-fastcgi_cache_bypass    \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
-fastcgi_cache_valid     200 15m;
-fastcgi_cache_valid     301 302 15m;
-fastcgi_cache_valid     303 304 15m;
-fastcgi_cache_valid     404 1m;
+fastcgi_cache_use_stale    error timeout invalid_header updating http_500;
+fastcgi_ignore_headers     Cache-Control Expires Set-Cookie;
+fastcgi_cache              $fastcgicache_name;
+fastcgi_no_cache           \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
+fastcgi_cache_bypass       \$no_wpfastcgicache \$wpfcgi_nocachecookie \$wpfcgi_nocacheuri \$wpfcgi_request_nocache;
+fastcgi_cache_valid        200 15m;
+fastcgi_cache_valid        301 302 15m;
+fastcgi_cache_valid        303 304 15m;
+fastcgi_cache_valid        404 1m;
 #add_header X-Fpm-Cache    \$upstream_cache_status;
 if (\$fastcgi_debug) {
+ # https://nginx.org/en/docs/http/ngx_http_upstream_module.html#variables
  add_header X-Processing-Time \$request_time always;
  add_header X-Request-ID      \$request_id always;
- add_header X-Fpm-Cache    \$upstream_cache_status;
- add_header X-Fpm-Cache-Skip \$skip_reason;
+ add_header X-FpmCache        \$upstream_cache_status;
+ add_header X-FpmCache-Skip   \$skip_reason;
+ add_header X-FpmCache-Upstream-Connect  \$upstream_connect_time;
+ add_header X-FpmCache-Upstream-Queue    \$upstream_queue_time;
+ add_header X-FpmCache-Upstream-Response \$upstream_response_time;
 }
 ### fastcgi_cache end ###
 
