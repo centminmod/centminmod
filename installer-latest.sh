@@ -1040,8 +1040,11 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
 
   # ensure ipset doesn't get caught in autoremove list
   # https://community.centminmod.com/posts/48144/
+  KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
   if [ -f /proc/user_beancounters ]; then
     USER_PKGS=""
+  elif [[ -f /proc/user_beancounters && "$KERNEL_NUMERICVER" -ge '3000000000' ]]; then
+    USER_PKGS=" ipset ipset-devel"  
   else
     USER_PKGS=" ipset ipset-devel"
   fi
