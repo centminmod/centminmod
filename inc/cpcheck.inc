@@ -2479,7 +2479,7 @@ setup_pwdh() {
 }
 
 cpcheck() {
-  if [[ -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ -f $(which virt-what) && $(virt-what | head -n1) = 'lxc' ]]; then
+  if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f $(which virt-what) && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
     CHECK_LXD='y'
     if [[ -d /etc/profile.d && ! -f /etc/profile.d/locale.sh ]]; then
       echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh

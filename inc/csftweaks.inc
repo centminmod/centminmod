@@ -155,6 +155,19 @@ if [ -f /etc/csf/csf.conf ]; then
             sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
             setiplimits
         fi
+    elif [[ -f /proc/user_beancounters && "$(find /lib/modules/`uname -r` -name 'ipset')" && "$KERNEL_NUMERICVER" -ge '3000000000' ]]; then
+        # openvz7's 3.10 linux kernels support IPSET
+        if [[ ! -f /usr/sbin/ipset ]]; then
+            # CSF now has ipset support to offload large IP address numbers 
+            # from iptables so uses less server resources to handle many IPs
+            # does not work with OpenVZ VPS so only implement for non-OpenVZ
+            yum -q -y install ipset ipset-devel
+            sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
+            setiplimits
+        elif [[ -f /usr/sbin/ipset ]]; then
+            sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
+            setiplimits
+        fi
     else
         sed -i 's/LF_IPSET = \"1\"/LF_IPSET = \"0\"/' /etc/csf/csf.conf
         sed -i 's/^DENY_IP_LIMIT = .*/DENY_IP_LIMIT = \"200\"/' /etc/csf/csf.conf
