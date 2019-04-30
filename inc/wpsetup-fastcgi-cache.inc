@@ -820,10 +820,9 @@ fastcgicache_zonesetup
 
 cat > "/usr/local/nginx/conf/wpfastcgi_cache_map.conf"<<FCD
 upstream wpfcgi_cache_php {
-  zone upstream_wpfcgicache 512k;
-  keepalive 16;
+  zone upstream_wpfcgicache 64k;
+  keepalive 4;
   #least_conn;
-  #server unix:/tmp/php5-fpm.sock;
   server 127.0.0.1:9000;
 }
 
