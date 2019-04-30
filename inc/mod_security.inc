@@ -63,7 +63,9 @@ modsecurity_install() {
     git submodule update
     ./build.sh
     if [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
-      ./configure --with-maxmind=/usr/local
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig
+      ./configure
+      # ./configure --with-maxmind=/usr/local
     elif [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [nN] ]]; then
       ./configure --without-maxmind
     else
