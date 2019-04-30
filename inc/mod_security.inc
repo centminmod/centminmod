@@ -62,7 +62,13 @@ modsecurity_install() {
     git submodule init
     git submodule update
     ./build.sh
-    ./configure
+    if [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
+      ./configure --with-maxmind=/usr/local
+    elif [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [nN] ]]; then
+      ./configure --without-maxmind
+    else
+      ./configure
+    fi
     make${MAKETHREADS}
     make install
     popd

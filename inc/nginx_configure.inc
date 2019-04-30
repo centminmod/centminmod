@@ -209,7 +209,7 @@ fi
   #################################################################################
   ngx_dynamicfunction
   #################################################################################
-  modsecurity_install
+  # modsecurity_install
   #################################################################################
   
 # CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
@@ -2520,6 +2520,10 @@ else
     sed -i 's|^include /usr/local/nginx/conf/geoip2.conf;|#include /usr/local/nginx/conf/geoip2.conf;|' /usr/local/nginx/conf/geoip.conf
   fi
 fi
+
+  #################################################################################
+  modsecurity_install
+  #################################################################################
 
 if [[ "$NGINX_THREADS" = [yY] ]]; then
   if [[ "$NGX_VEREVAL" -ge '10800' ]] || [[ "$NGX_VEREVAL" = 'master' ]] || [[ "$NGX_VEREVAL" = 'master-google' ]]; then
