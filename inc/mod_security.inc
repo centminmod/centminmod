@@ -1,7 +1,7 @@
 modsecurity_install() {
   if [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
     MODSEC_INSTALLED=y
-    DEVTOOLSETSEVEN='y'
+    # DEVTOOLSETSEVEN='y'
     NGINX_DEVTOOLSETGCC='y'
     CLANG='n'
     # https://www.nginx.com/blog/compiling-and-installing-modsecurity-for-open-source-nginx/
@@ -10,29 +10,32 @@ modsecurity_install() {
     echo "build libmodsecurity..."
     # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
 
-    # force devtoolset-6 gcc 6.2.1+ usage
-      if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+    # force devtoolset-8 gcc 8+ usage
+      if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
         export CC="ccache gcc"
         export CXX="ccache g++"
+        # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
-      elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-6/enable
+      elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-8/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
         export CXX="ccache g++"
+        # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
-      elif [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-4/enable
+      elif [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-7/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
         export CXX="ccache g++"
+        # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
       fi
@@ -130,10 +133,16 @@ EOF
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
   MODSEC_INSTALLED=y
-  DEVTOOLSETSEVEN='y'
+  # DEVTOOLSETSEVEN='y'
   NGINX_DEVTOOLSETGCC='y'
   CLANG='n'
   export CLANG='n'
   echo "ModSecurity Check for CLANG = $CLANG"
+  else
+    MODSEC_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/modsec\/main.conf' /usr/local/nginx/conf/conf.d/virtual.conf)
+    if [[ "$NGINX_MODSECURITY" != [yY] && "$MODSEC_INCLUDECHECK" ]]; then
+      sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+      sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
   fi
 }
