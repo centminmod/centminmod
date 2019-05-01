@@ -1,0 +1,65 @@
+Without test as binary patch not supported
+
+
+
+
+From 8c12f5a635fb4fc5f485bc4f884aea5c7b37f6b0 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 29 Apr 2019 23:38:12 -0700
+Subject: [PATCH] Fix bug #77950 - Heap-buffer-overflow in _estrndup via
+ exif_process_IFD_TAG
+
+I do not completely understand what is going on there, but I am pretty
+sure dir_entry <= offset_base if not a normal situation, so we better not
+to rely on such dir_entry.
+
+(cherry picked from commit f80ad18afae2230c2c1802c7d829100af646874e)
+---
+ NEWS                         |  12 ++++++++++--
+ ext/exif/exif.c              |   2 +-
+ ext/exif/tests/bug77950.phpt |  12 ++++++++++++
+ ext/exif/tests/bug77950.tiff | Bin 0 -> 1267 bytes
+ 4 files changed, 23 insertions(+), 3 deletions(-)
+ create mode 100644 ext/exif/tests/bug77950.phpt
+ create mode 100644 ext/exif/tests/bug77950.tiff
+
+diff --git a/NEWS b/NEWS
+index a49afe2411..f26a3ad10e 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,11 +1,19 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.1.29
++
++- EXIF
++  . Fixed bug #77950 (Heap-buffer-overflow in _estrndup via exif_process_IFD_TAG). 
++    (CVE-2019-11036) (Stas)
++
+ Backported from 7.1.28
+ 
+ - EXIF:
+-  . Fixed bug #77753 (Heap-buffer-overflow in php_ifd_get32s). (Stas)
+-  . Fixed bug #77831 (Heap-buffer-overflow in exif_iif_add_value). (Stas)
++  . Fixed bug #77753 (Heap-buffer-overflow in php_ifd_get32s). (CVE-2019-11034)
++    (Stas)
++  . Fixed bug #77831 (Heap-buffer-overflow in exif_iif_add_value). 
++	(CVE-2019-11035) (Stas)
+ 
+ - SQLite3:
+   . Added sqlite3.defensive INI directive. (BohwaZ)
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index 0e490abd1b..a9df95d554 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -2890,7 +2890,7 @@ static int exif_process_IFD_TAG(image_info_type *ImageInfo, char *dir_entry, cha
+             offset_base is ImageInfo->file.list[sn].data-dir_offset
+             dir_entry - offset_base is dir_offset+2+i*12
+         */
+-		if (byte_count > IFDlength || offset_val > IFDlength-byte_count || value_ptr < dir_entry || offset_val < (size_t)(dir_entry-offset_base)) {
++		if (byte_count > IFDlength || offset_val > IFDlength-byte_count || value_ptr < dir_entry || offset_val < (size_t)(dir_entry-offset_base) || dir_entry <= offset_base) {
+ 			/* It is important to check for IMAGE_FILETYPE_TIFF
+ 			 * JPEG does not use absolute pointers instead its pointers are
+ 			 * relative to the start of the TIFF header in APP1 section. */
+
