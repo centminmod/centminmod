@@ -105,6 +105,7 @@ modsecurity_install() {
       # sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
     fi
     if [ ! -f "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/crs-setup.conf" ]; then
+      newowaspver='y'
       pushd "$DIR_TMP"
       wget "https://github.com/SpiderLabs/owasp-modsecurity-crs/archive/v${MODSECURITY_OWASPVER}.tar.gz"
       tar xvzf "v${MODSECURITY_OWASPVER}.tar.gz"
@@ -114,7 +115,16 @@ modsecurity_install() {
       ls -lah "/usr/local/nginx/owasp-modsecurity-crs-${MODSECURITY_OWASPVER}/rules/"
       popd
     fi
-    if [ ! -f /usr/local/nginx/modsec/main.conf ]; then
+    if [[ ! -f /usr/local/nginx/modsec/main.conf || "$newowaspver" = [yY] ]]; then
+      if [ -f /usr/local/nginx/modsec/main.conf ]; then
+        MODSEC_DT=$(date +"%d%m%y-%H%M%S")
+        # backup existing /usr/local/nginx/modsec/main.conf if it exists
+        cp -a /usr/local/nginx/modsec/main.conf "/usr/local/nginx/modsec/main.conf-backup-${MODSEC_DT}"
+        echo
+        echo "detected existing /usr/local/nginx/modsec/main.conf file"
+        echo "backed up to /usr/local/nginx/modsec/main.conf-backup-${MODSEC_DT}"
+        echo
+      fi
 cat > "/usr/local/nginx/modsec/main.conf" <<EOF
 # Edit to set SecRuleEngine On
 Include "/usr/local/nginx/modsec/modsecurity.conf"
