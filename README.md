@@ -39,7 +39,7 @@ PHP 7.2.x default beta installer
 
     yum -y update; curl -O https://centminmod.com/betainstaller72.sh && chmod 0700 betainstaller72.sh && bash betainstaller72.sh
 
-PHP 7.3.x default beta installer. See [PHP 7.3 release information](https://community.centminmod.com/threads/php-7-3-0-7-2-13-7-1-25-7-0-33-5-6-39-released.16184/) and[ ]PHP 7.3 vs 7.2 vs 7.1 vs 7.0 benchmarks](https://community.centminmod.com/threads/php-7-3-vs-7-2-vs-7-1-vs-7-0-php-fpm-benchmarks.16090/).
+PHP 7.3.x default beta installer. See [PHP 7.3 release information](https://community.centminmod.com/threads/php-7-3-0-7-2-13-7-1-25-7-0-33-5-6-39-released.16184/) and [PHP 7.3 vs 7.2 vs 7.1 vs 7.0 benchmarks](https://community.centminmod.com/threads/php-7-3-vs-7-2-vs-7-1-vs-7-0-php-fpm-benchmarks.16090/).
 
     yum -y update; curl -O https://centminmod.com/betainstaller73.sh && chmod 0700 betainstaller73.sh && bash betainstaller73.sh
 
