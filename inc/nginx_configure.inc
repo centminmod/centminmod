@@ -713,7 +713,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
       LIBRESSLOPT=""
       BORINGSSLOPT=""
-      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
+      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           TLSTHREEOPT='y'
@@ -721,7 +721,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           TLSTHREEOPT='y'
@@ -742,7 +742,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       # export OPENSSL_BPATH=$DIR_TMP
       LIBRESSLOPT=""
       BORINGSSLOPT=""
-      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
+      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" = [yY] ]]; then
         OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -752,7 +752,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           TLSTHREEOPT='y'
@@ -1729,7 +1729,7 @@ else
     if [ "$NOSOURCEOPENSSL" == 'n' ]; then
       OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
       LIBRESSLOPT=""
-      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
+      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           TLSTHREEOPT='y'
@@ -1737,7 +1737,7 @@ else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           TLSTHREEOPT='y'
@@ -1767,7 +1767,7 @@ else
       OPENSSLDIR=$(tar -tzf "$DIR_TMP/${OPENSSL_LINKFILE}" | head -1 | cut -f1 -d"/")
       # export OPENSSL_BPATH=$DIR_TMP
       LIBRESSLOPT=""
-      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]]; then
+      if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" = [yY] ]]; then
         OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -1777,7 +1777,7 @@ else
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
-      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]]; then
+      elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           TLSTHREEOPT='y'
