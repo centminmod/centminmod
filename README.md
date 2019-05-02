@@ -21,13 +21,33 @@ Supports max PHP 7.0 version. For PHP 7.1+ and higher use 123.09beta01 (1.2.3-ev
 
 ### For latest 1.2.3-eva2000.09 beta install
 
-Also known as 123.09beta01 supports PHP 7.1, 7.2, 7.3.
+Also known as 123.09beta01 branch which supports PHP 7.1, 7.2, 7.3.
+
+default PHP 5.6 beta installer
 
     yum -y update; curl -O https://centminmod.com/betainstaller.sh && chmod 0700 betainstaller.sh && bash betainstaller.sh
 
+PHP 7.0.x default beta installer
+
+    yum -y update; curl -O https://centminmod.com/betainstaller7.sh && chmod 0700 betainstaller7.sh && bash betainstaller7.sh
+
+PHP 7.1.x default beta installer
+
+    yum -y update; curl -O https://centminmod.com/betainstaller71.sh && chmod 0700 betainstaller71.sh && bash betainstaller71.sh
+
+PHP 7.2.x default beta installer
+
+    yum -y update; curl -O https://centminmod.com/betainstaller72.sh && chmod 0700 betainstaller72.sh && bash betainstaller72.sh
+
+PHP 7.3.x default beta installer. See [PHP 7.3 release information](https://community.centminmod.com/threads/php-7-3-0-7-2-13-7-1-25-7-0-33-5-6-39-released.16184/) and[ ]PHP 7.3 vs 7.2 vs 7.1 vs 7.0 benchmarks](https://community.centminmod.com/threads/php-7-3-vs-7-2-vs-7-1-vs-7-0-php-fpm-benchmarks.16090/).
+
+    yum -y update; curl -O https://centminmod.com/betainstaller73.sh && chmod 0700 betainstaller73.sh && bash betainstaller73.sh
+
+You can also customise your installs via pre-populating the persistent config file, `/etc/centminmod/custom_config.inc` with overriding variables instead of directly editing `centmin.sh` file **BEFORE** running the the `betainstaller.sh`. See examples discussed on the forums [here](https://community.centminmod.com/threads/discussion-how-do-you-initially-install-setup-your-centmin-mod-server.14736/).
+
 ## Centmin Mod installed via Git    
 
-Recommended way is via above curl installer.sh or betainstaller.sh commands.
+Recommended way is via above curl `installer.sh` or `betainstaller.sh` commands even if you need to customise your `centmin.sh` settings - you can do that via pre-populating the persistent config file, `/etc/centminmod/custom_config.inc` with overriding variables instead of directly editing `centmin.sh` file.
 
 Type as root user in SSH these commands, Centmin Mod will have it's install setup at /usr/local/src/centminmod. Replace `branchname=123.08stable` with `branchname=123.09beta01` if you want to install the beta version.
 
