@@ -1253,6 +1253,12 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       echo "gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target
       echo
+    elif [[ "$CPU_MARCH" = 'cascadelake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=cascadelake"
+      echo
+      echo "gcc -c -Q -march=cascadelake${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=cascadelake${PHPEXTRA_CFLAGS} --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'cannonlake' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=cannonlake"
       echo
