@@ -124,7 +124,13 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
   popd
 fi
 
-nprestart
+  # restart services
+  if [[ "$(service nginx status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    service nginx restart >/dev/null 2>&1
+  fi
+  if [[ "$(service php-fpm status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    service php-fpm restart >/dev/null 2>&1
+  fi
 
 echo
 cecho "Updated GeoIP databases" $boldyellow

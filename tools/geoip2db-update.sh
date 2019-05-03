@@ -53,6 +53,14 @@ geoiptwo_updater() {
   cp -a GeoLite2-ASN_*/GeoLite2-ASN.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
   rm -rf GeoLite2-ASN_*
 
+  # restart services
+  if [[ "$(service nginx status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    service nginx restart >/dev/null 2>&1
+  fi
+  if [[ "$(service php-fpm status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    service php-fpm restart >/dev/null 2>&1
+  fi
+
   echo "------------------------------------------------------"
   echo "Check GeoIP2 Lite Databases"
   echo "------------------------------------------------------"
