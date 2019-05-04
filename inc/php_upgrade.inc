@@ -330,10 +330,11 @@ else
         PHPCONF_DIFFCHECK=1
     fi
     if [[ "$PHPCONF_DIFFCHECK" != '0' && "$PHP_OVERWRITECONF" = [yY] ]]; then
-        echo "Want to update to latest php.conf ? (overwrites will auto backup existing php.conf)"
-        echo "existing php.conf will be backed up at /usr/local/nginx/conf/php.conf-oldversion_$DT"
+        echo "Want to update to latest php.conf & php-fpm.conf ? (overwrites will auto backup existing files)"
+        echo "existing php.conf will be backed up to /usr/local/nginx/conf/php.conf-oldversion_$DT"
+        echo "existing php-fpm.conf will be backed up to /usr/local/etc/php-fpm.conf-oldversion_$DT"
         echo "----------------------------------------------------------------"
-        read -ep "Update & overwrite your existing php.conf [y/n]: " overwritephpfpmconf
+        read -ep "Update & overwrite your existing php.conf & php-fpm.conf [y/n]: " overwritephpfpmconf
         echo "----------------------------------------------------------------"
     else
         echo "----------------------------------------------------------------"
