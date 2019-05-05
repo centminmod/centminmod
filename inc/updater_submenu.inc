@@ -150,7 +150,7 @@ gitenv_setup() {
   # get Centmin Mod Git url remotely so to allow for Git repo renaming in future where
   # user can just use centmin.sh menu option 23 submenus to switch to a newly renamed
   # Git repo name if needed
-  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
   echo
   cecho "setup Centmin Mod git sourced install..." $boldyellow
   cd /usr/local/src
@@ -209,9 +209,9 @@ gitenv_setup() {
 
 gitenv_update() {
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
-  if [[ "$(curl -sL https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
+  if [[ "$(curl -4sLk https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
     echo
     cecho "Updating Current Centmin Mod code branch via git" $boldyellow
     # git fetch
@@ -354,7 +354,7 @@ gitenv_change() {
     exit 1
   fi
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
-  REMOTE_CMGIT=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+  REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   echo
   echo "fetching latest branch list..."

@@ -1014,9 +1014,9 @@ gitenv_askupdate() {
       # https://github.com/centminmod/centminmod/raw/${branchname}/giturl.txt
       # check if you can properly resolve raw.githubusercontent.com first in case of dns outpages
       # issues at github end https://community.centminmod.com/threads/centmin-mod-github-com-repo-504-timeouts.9232/
-      CURL_GITURLCHECKER=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
+      CURL_GITURLCHECKER=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt >/dev/null 2>&1; echo $?)
       if [[ "$CURL_GITURLCHECKER" = '0' ]]; then
-        CURL_GITURL=$(curl -s${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
+        CURL_GITURL=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
       else
         # just default to https://github.com/centminmod/centminmod.git if can not resolve the
         # https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt

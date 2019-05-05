@@ -26,7 +26,7 @@ if [ -f "${MAINDIR}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
     source "${MAINDIR}/custom_config.inc"
 fi
-CHECK_GITCLEAN=$(curl -4sL https://github.com/centminmod/centminmod/raw/${cmupdate_branchname}/gitclean.txt)
+CHECK_GITCLEAN=$(curl -4sLk https://github.com/centminmod/centminmod/raw/${cmupdate_branchname}/gitclean.txt)
 
 fupdate() {
   if [[ -d "${CM_INSTALLDIR}/.git" ]]; then
