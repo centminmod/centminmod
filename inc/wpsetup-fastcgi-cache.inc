@@ -82,7 +82,7 @@ fastcgicache_zonesetup() {
     FASTCGICACHE_LOADERTHRESHOLD=2000
   fi
 cat >> "/usr/local/nginx/conf/wpfastcgi_cache_path_includes.conf"<<FCD
-fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_zone=$fastcgicache_name:${FASTCGICACHE_MEMSIZE}m inactive=1h max_size=${FASTCGICACHE_MAXSIZE}m loader_files=${FASTCGICACHE_LOADERFILES} loader_threshold=#{FASTCGICACHE_LOADERTHRESHOLD};
+fastcgi_cache_path  /home/fastcgicache_wp/${fastcgicache_name} levels=1:2 keys_zone=$fastcgicache_name:${FASTCGICACHE_MEMSIZE}m inactive=1h max_size=${FASTCGICACHE_MAXSIZE}m loader_files=${FASTCGICACHE_LOADERFILES} loader_threshold=${FASTCGICACHE_LOADERTHRESHOLD};
 FCD
 }
 
@@ -552,47 +552,82 @@ echo
 cecho "--------------------------------------------------------" $boldyellow
 cecho "        Wordpress Caching               " $boldgreen
 cecho "--------------------------------------------------------" $boldyellow
-cecho "1). KeyCDN Cache Enabler (default & recommended)" $boldgreen
-if [[ "$redis_ngx_exists" = [yY] ]]; then
-  cecho "2). Redis Nginx Level Caching (may have issues with some wp plugins)" $boldgreen
-  cecho "3). Wordpress Super Cache" $boldgreen
-  if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
-    cecho "4). Fastcgi_cache (PHP-FPM)" $boldgreen
-  fi
-else
-  cecho "2). Wordpress Super Cache" $boldgreen
-fi
-cecho "--------------------------------------------------------" $boldyellow
-if [[ "$redis_ngx_exists" = [yY] ]]; then
-  if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
-    read -ep "Enter option [ 1 - 4 ] " wpcache_option
-  else
-    read -ep "Enter option [ 1 - 3 ] " wpcache_option
-  fi
-else
-  read -ep "Enter option [ 1 - 2 ] " wpcache_option
-fi
-echo
-
-if [[ "$wpcache_option" = '1' ]]; then
-  wpscache='n'
-elif [[ "$wpcache_option" = '2' ]]; then
+if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
   if [[ "$redis_ngx_exists" = [yY] ]]; then
+PS3='--------------------------------------------------------
+Enter option [ 1 - 4 ] '
+select_wpcache_opts=("KeyCDN Cache Enabler" "Redis Nginx Level Caching" "Wordpress Super Cache" "Fastcgi_cache (PHP-FPM)")
+  else
+PS3='--------------------------------------------------------
+Enter option [ 1 - 3 ] '
+select_wpcache_opts=("KeyCDN Cache Enabler" "Wordpress Super Cache" "Fastcgi_cache (PHP-FPM)")
+  fi
+elif [[ "$redis_ngx_exists" = [yY] ]]; then
+PS3='--------------------------------------------------------
+Enter option [ 1 - 3 ] '
+select_wpcache_opts=("KeyCDN Cache Enabler" "Redis Nginx Level Caching" "Wordpress Super Cache")
+else
+PS3='--------------------------------------------------------
+Enter option [ 1 - 2 ] '
+select_wpcache_opts=("KeyCDN Cache Enabler" "Wordpress Super Cache")
+fi
+select optwp in "${select_wpcache_opts[@]}"; do
+case $optwp in
+  "KeyCDN Cache Enabler" )
+    wpscache='n'
+    wpcache_option=$REPLY
+    echo
+    echo "you selected option $wpcache_option (KeyCDN Cache Enabler) [wpscache=$wpscache]"
+    echo
+    break
+    ;;
+  "Redis Nginx Level Caching" )
     wpscache='redis'
-  else
+    wpcache_option=$REPLY
+    echo
+    echo "you selected option $wpcache_option (Redis Nginx Level Cache) [wpscache=$wpscache]"
+    echo
+    break
+    ;;
+  "Wordpress Super Cache" )
     wpscache='y'
-  fi
-elif [[ "$wpcache_option" = '3' ]]; then
-  wpscache='y'
-elif [[ "$wpcache_option" = '4' ]]; then
-  if [[ "$redis_ngx_exists" = [yY] ]]; then
-    wpscache='fastcgicache'
-  else
-    wpscache='n'  
-  fi
-else
-  wpscache='n'
-fi
+    wpcache_option=$REPLY
+    echo
+    echo "you selected option $wpcache_option (Wordpress Super Cache) [wpscache=$wpscache]"
+    echo
+    break
+    ;;
+  "Fastcgi_cache (PHP-FPM)" )
+    if [[ "$redis_ngx_exists" = [yY] && "$WP_FASTCGI_CACHE" = [yY] ]]; then
+      wpscache='fastcgicache'
+    elif [[ "$redis_ngx_exists" = [nN] && "$WP_FASTCGI_CACHE" = [yY] ]]; then
+      wpscache='fastcgicache'
+    else
+      wpscache='n'  
+    fi
+    wpcache_option=$REPLY
+    echo
+    echo "you selected option $wpcache_option (Fastcgi_cache PHP-FPM) [wpscache=$wpscache]"
+    echo
+    break
+    ;;
+  * )
+    echo
+    if [[ "$WP_FASTCGI_CACHE" = [yY] ]]; then
+      if [[ "$redis_ngx_exists" = [yY] ]]; then
+        echo "Valid options are 1 - 4"
+      else
+        echo "Valid options are 1 - 3"
+      fi
+    elif [[ "$redis_ngx_exists" = [yY] ]]; then
+      echo "Valid options are 1 - 3"
+    else
+      echo "Valid options are 1 - 2"
+    fi
+    echo
+    ;;
+esac
+done
 
 TESTEMAIL=$(echo "${WPADMINEMAIL}" |  grep '^[a-zA-Z0-9._%+-]*@[a-zA-Z0-9-]*[\.[a-zA-Z0-9]*]*[a-zA-Z0-9]$')
 # echo "$TESTEMAIL"
@@ -1111,8 +1146,7 @@ if (\$fastcgi_debug) {
  add_header X-FpmCache        \$upstream_cache_status;
  add_header X-FpmCache-Skip   \$skip_reason;
  add_header X-FpmCache-Upstream-Connect  \$upstream_connect_time;
- add_header X-FpmCache-Upstream-Queue    \$upstream_queue_time;
- add_header X-FpmCache-Upstream-Response \$upstream_response_time;
+  add_header X-FpmCache-Upstream-Response \$upstream_response_time;
 }
 ### fastcgi_cache end ###
 
@@ -1434,17 +1468,19 @@ else
   CHACHACIPHERS=""
 fi
 
-DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
-DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
-if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
-    # openssl 1.1.0 unsupported flag enable-tlsext
-    if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm")" ]]; then
-        TLSONETHREEOPT=' enable-tls1_3'
-        TLSONETHREE_DETECT='y'
-    else
-        TLSONETHREEOPT=""
-        TLSONETHREE_DETECT='n'
-    fi
+if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm" ]; then
+  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+  DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+      # openssl 1.1.0 unsupported flag enable-tlsext
+      if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm")" ]]; then
+          TLSONETHREEOPT=' enable-tls1_3'
+          TLSONETHREE_DETECT='y'
+      else
+          TLSONETHREEOPT=""
+          TLSONETHREE_DETECT='n'
+      fi
+  fi
 fi
 
 if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
@@ -3196,6 +3232,24 @@ if [[ "$wpcli_ssldefault" = '1' ]]; then
   \wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
 fi
 
+# create /usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh
+if [ -d "/usr/local/nginx/conf/wpincludes/${vhostname}" ]; then
+cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh" <<EOF
+#!/bin/bash
+WPSITE_INSTALLPATH='/home/nginx/domains/${vhostname}/public'
+cd \$WPSITE_INSTALLPATH;
+wp cli version --allow-root;
+echo "WP-Home    \$(wp option get home --allow-root)";
+echo "WP-SiteURL \$(wp option get siteurl --allow-root)";
+wp core version --extra --allow-root | column -t;
+wp user list --role=administrator --allow-root;
+wp config list --allow-root;
+wp plugin list --allow-root;
+wp theme list --allow-root;
+EOF
+chmod +x /usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh
+fi
+
 {
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
@@ -3430,6 +3484,9 @@ cecho "-------------------------------------------------------------" $boldyello
 cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
 cecho "$vhostname setup info log saved at: " $boldwhite
 cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${vhostname}_wordpress_addvhost.log" $boldwhite
+cecho "-------------------------------------------------------------" $boldyellow
+cecho "wpinfo.sh script saved at:" $boldwhite
+cecho "/usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
 

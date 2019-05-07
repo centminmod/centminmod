@@ -802,17 +802,19 @@ else
   CHACHACIPHERS=""
 fi
 
-DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
-DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
-if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
-    # openssl 1.1.0 unsupported flag enable-tlsext
-    if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm")" ]]; then
-        TLSONETHREEOPT=' enable-tls1_3'
-        TLSONETHREE_DETECT='y'
-    else
-        TLSONETHREEOPT=""
-        TLSONETHREE_DETECT='n'
-    fi
+if [ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm" ]; then
+  DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
+  DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+  if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+      # openssl 1.1.0 unsupported flag enable-tlsext
+      if [[ "$(grep -w 'tls1_3' "${DIR_TMP}/openssl-${OPENSSL_VERSION}/configdata.pm")" ]]; then
+          TLSONETHREEOPT=' enable-tls1_3'
+          TLSONETHREE_DETECT='y'
+      else
+          TLSONETHREEOPT=""
+          TLSONETHREE_DETECT='n'
+      fi
+  fi
 fi
 
 if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
