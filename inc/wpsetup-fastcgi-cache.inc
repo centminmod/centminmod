@@ -471,6 +471,12 @@ read -ep "Install CyberChimps Responsive Theme (cyberchimps.com/responsive-theme
 
 echo
 echo "Wordpress Setup: "
+echo
+echo "Not a fan of Gutenberg Editor ? You can switch to Classic Editor"
+echo "If you run into Gutenberg Editor issues, you can later switch to"
+echo "the Classic Editor https://wordpress.org/plugins/classic-editor/"
+read -ep "Install Classic Editor Wordpress Plugin ? [y/n]: " -i y wpclassic_editor
+echo
 read -ep "Set custom WP Admin Display Name ? [y/n]: " setdisplayname
 if [[ "$setdisplayname" = [yY] ]]; then
   read -ep "Enter Custom WP Admin Display Name: " displayname
@@ -2770,6 +2776,14 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
 fi
 
 # installed + activated by default
+
+# install classic editor plugin instead of gutenberg
+if [[ "$wpclassic_editor" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install classic-editor --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
+
 # wp super cache
 if [[ "$wpscache" = [yY] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
