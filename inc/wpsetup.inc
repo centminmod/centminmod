@@ -1468,6 +1468,20 @@ location ~ ^${WPSUBDIR}/wp-content/updraft { deny all; }
 # Block nginx-help log from public viewing
 location ~* ${WPSUBDIR}/wp-content/uploads/nginx-helper/ { deny all; }
 
+# WebP extension support if you are converting /uploads images to webp
+location ~ ^${WPSUBDIR}/wp-content/uploads/ {
+  #pagespeed off;
+  #pagespeed unplugged;
+  #autoindex on;
+  #add_header X-Robots-Tag "noindex, nofollow";
+  location ~* ^${WPSUBDIR}/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
+    expires 30d;
+    add_header Vary "Accept-Encoding";
+    add_header Cache-Control "public, no-transform";
+    try_files \$uri\$webp_extension \$uri =404;
+  }
+}
+
 location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
   include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
