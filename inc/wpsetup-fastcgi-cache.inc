@@ -1123,8 +1123,19 @@ location ~ [^/]\.php(/|\$) {
     #fastcgi_param PHP_ADMIN_VALUE open_basedir=\$document_root/:/usr/local/lib/php/:/tmp/;
 
 ### fastcgi_cache start ###
+
+    #set \$wpfcgi_wosession "";
+    #if (\$http_cookie ~* "wp_woocommerce_session_[^=]*=([^%]+)%7C") {
+    #  set \$wpfcgi_wosession wp_woocommerce_session_\$1;
+    #}
+    #if (\$no_wpfastcgicache = 0 ) {
+    #  more_clear_headers "Set-Cookie*";
+    #  set \$wpfcgi_wosession "";
+    #}
+
 fastcgi_cache_methods GET;
 fastcgi_cache_key       \$scheme\$request_method\$host\$request_uri;
+#fastcgi_cache_key       \$scheme\$request_method\$host\$request_uri\$wpfcgi_wosession;
 fastcgi_cache_lock         on;
 fastcgi_keep_conn          on;
 fastcgi_cache_lock_age     5s;
@@ -2244,8 +2255,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/si-contact-form/ {
 
 # Whitelist Exception for https://wordpress.org/plugins/akismet/
 location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/ {
-  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(form|akismet)\.(css|js)\$ { allow all; }
-  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(.+)\.(png|gif)\$ { allow all; }
+  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(form|akismet)\.(css|js)\$ { allow all; expires 30d;}
+  location ~ ^${WPSUBDIR}/wp-content/plugins/akismet/(.+/)?(.+)\.(png|gif)\$ { allow all; expires 30d;}
   location ~* ${WPSUBDIR}/wp-content/plugins/akismet/akismet/.*\.php\$ {
     include /usr/local/nginx/conf/php.conf;
     include /usr/local/nginx/conf/staticfiles.conf;
@@ -2415,6 +2426,17 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wlm-social/ {
 
 # Whitelist Exception for mediagrid timthumb
 location ~ ^${WPSUBDIR}/wp-content/plugins/media-grid/classes/ {
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
+# Whitelist Exception for webp-express
+location ~ ^${WPSUBDIR}/wp-content/plugins/webp-express/ {
   include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   # below include file needs to be manually created at that path and to be uncommented

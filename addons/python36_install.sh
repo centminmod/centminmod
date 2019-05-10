@@ -164,7 +164,7 @@ if [[ -f /bin/systemctl && "$(rpm -qa python36u)" ]]; then
   # install epel python36
   yum -y install python36 python36-devel python36-pip python36-setuptools python36-tools python36-libs python36-tkinter
 fi
-if [[ ! "$(rpm -qa cmake3)" ]]; then
+if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
   # reinstall removed dependencies from above removed ius community packages
   yum -y install cmake3 cmake3-data
 fi
