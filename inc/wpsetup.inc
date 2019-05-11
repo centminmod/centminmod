@@ -388,6 +388,17 @@ echo "Not a fan of Gutenberg Editor ? You can switch to Classic Editor"
 echo "If you run into Gutenberg Editor issues, you can later switch to"
 echo "the Classic Editor https://wordpress.org/plugins/classic-editor/"
 read -ep "Install Classic Editor Wordpress Plugin ? [y/n]: " -i y wpclassic_editor
+
+echo
+echo "Autoptimize WP Plugin is installed by default. Do you want to install"
+echo "companion Autoptimize Gzip Plugin to precompresses js/css optimized files"
+echo "details at https://community.centminmod.com/threads/15314/"
+read -ep "Install Autoptimize Gzip Companion Wordpress Plugin ? [y/n]: " -i y wpautoptimize_gzip
+
+if [[ "$wpautoptimize_gzip" = [yY] ]]; then
+  WP_AUTOPTIMIZE_GZIP='y'
+fi
+
 echo
 read -ep "Set custom WP Admin Display Name ? [y/n]: " setdisplayname
 if [[ "$setdisplayname" = [yY] ]]; then
