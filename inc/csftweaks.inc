@@ -1,5 +1,5 @@
 reduceports() {
-    PORTS_TOCHECK='3000 3334 8080 8888 9312 6081 6082 30865'
+    PORTS_TOCHECK='3000 3334 8888 9312 6081 6082 30865'
     # reduce number of whitelisted open ports setup by csf install routine
     # double check if any services are listening on these ports before removal
     for p in $PORTS_TOCHECK; do
