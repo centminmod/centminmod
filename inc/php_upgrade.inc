@@ -298,7 +298,7 @@ fi
 funct_mktempfile
 
 if [[ "$UALL" = 'y' ]]; then 
-    phpver=${PHP_VERSION}
+    phpver=${php-config --version}
     overwritephpfpmconf='n'
     lessphpmem='y'
 else

@@ -95,13 +95,16 @@ if [[ "$PHPMUVER" > 5.5 ]]; then
   # echo "installed, you will have to use menu option #10 or #15 to"
   # echo "reinstall after upgrading to PHP 5.5.0 with Zend OPcache."
   echo "-----------------------------------------------------------------------------------------"
-  read -ep "Do you want to use Zend OPcache [y/n] ? " zendopcacheon
+  read -ep "Do you want to use Zend OPcache [y/n] ? " -i y zendopcacheon
   echo ""
 
 if [[ "$zendopcacheon" = [nN] ]]; then
   if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
     rm -rf ${CONFIGSCANDIR}/zendopcache.ini
   fi
+else
+  # default to yes for Zend Opcache install if input is not n or N for no
+  zendopcacheon='y'
 fi
 
 if [[ "$zendopcacheon" = [yY] ]]; then
