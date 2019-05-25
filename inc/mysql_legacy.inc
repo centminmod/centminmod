@@ -13,7 +13,11 @@ addmysql_legacy() {
     echo "legacy extension re-added. Otherwise answer"
     echo "no which is recommended for best stability"
     echo
-    read -ep "Re-add legacy mysql extension to PHP 7+ [y/n] ? " add_legacymysql
+    if [[ "$UALL" = 'y' ]]; then
+      add_legacymysql='n'
+    else
+      read -ep "Re-add legacy mysql extension to PHP 7+ [y/n] ? " add_legacymysql
+    fi
     echo ""
   fi
   if [[ "$add_legacymysql" != [yY] ]]; then
