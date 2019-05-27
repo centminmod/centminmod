@@ -1,0 +1,72 @@
+From 6f9dfd947302f9a0d2fa6a78bf385b1ca7dafdf3 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Thu, 23 May 2019 12:29:08 +0200
+Subject: [PATCH] Fix bug #77955
+
+Free metadata before freeing the arena. I don't have a repro script,
+but the added assertion fails for many existing tests prior to this
+change.
+---
+ NEWS                         |  4 ++++
+ Zend/zend_arena.h            | 11 +++++++++++
+ ext/mysqlnd/mysqlnd_result.c |  5 +++--
+ 3 files changed, 18 insertions(+), 2 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index a62c9dd88126..7ddff4c431fb 100644
+--- a/NEWS
++++ b/NEWS
+@@ -14,6 +14,10 @@ PHP                                                                        NEWS
+   . Fixed bug #77956 (When mysqli.allow_local_infile = Off, use a meaningful
+     error message). (Sjon Hortensius)
+ 
++- MySQLnd:
++  . Fixed bug #77955 (Random segmentation fault in mysqlnd from php-fpm).
++    (Nikita)
++
+ - Opcache:
+   . Fixed bug #78015 (Incorrect evaluation of expressions involving partials
+     arrays in SCCP). (Nikita)
+diff --git a/Zend/zend_arena.h b/Zend/zend_arena.h
+index f83a5103cea7..604285fc97e2 100644
+--- a/Zend/zend_arena.h
++++ b/Zend/zend_arena.h
+@@ -110,6 +110,17 @@ static zend_always_inline void zend_arena_release(zend_arena **arena_ptr, void *
+ 	arena->ptr = (char*)checkpoint;
+ }
+ 
++static zend_always_inline zend_bool zend_arena_contains(zend_arena *arena, void *ptr)
++{
++	while (arena) {
++		if ((char*)ptr > (char*)arena && (char*)ptr <= arena->ptr) {
++			return 1;
++		}
++		arena = arena->prev;
++	}
++	return 0;
++}
++
+ #endif /* _ZEND_ARENA_H_ */
+ 
+ /*
+diff --git a/ext/mysqlnd/mysqlnd_result.c b/ext/mysqlnd/mysqlnd_result.c
+index f0852af360b1..06a7793c9acd 100644
+--- a/ext/mysqlnd/mysqlnd_result.c
++++ b/ext/mysqlnd/mysqlnd_result.c
+@@ -294,13 +294,14 @@ void MYSQLND_METHOD(mysqlnd_res, free_result_contents_internal)(MYSQLND_RES * re
+ {
+ 	DBG_ENTER("mysqlnd_res::free_result_contents_internal");
+ 
+-	result->m.free_result_buffers(result);
+-
+ 	if (result->meta) {
++		ZEND_ASSERT(zend_arena_contains(result->memory_pool->arena, result->meta));
+ 		result->meta->m->free_metadata(result->meta);
+ 		result->meta = NULL;
+ 	}
+ 
++	result->m.free_result_buffers(result);
++
+ 	DBG_VOID_RETURN;
+ }
+ /* }}} */

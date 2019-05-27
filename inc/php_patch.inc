@@ -159,6 +159,24 @@ php_patches() {
         fi
       done
     fi
+    if [[ "$PHPVER_ID" -ge '70304' && "$PHPVER_ID" -le '70306' ]]; then
+      # backport security bug patch for php 7.3
+      # fix lands in PHP 7.3.7 so backport for 7.3.4 to 7.3.6 https://bugs.php.net/bug.php?id=77955
+      phpseven_bugids='77955'
+      for bugid in $phpseven_bugids; do
+        if [[ ! -f "php735-${bugid}.patch" && -f "$CUR_DIR/patches/php/php735-${bugid}.patch" ]]; then
+          echo
+          if [[ "$bugid" != 'php-openssl-cert' ]]; then
+            echo "patching PHP 7.3.4+ for bug #${bugid}"
+            echo "https://bugs.php.net/bug.php?id=${bugid}"
+          fi
+          echo
+          cp -a $CUR_DIR/patches/php/php735-${bugid}.patch php735-${bugid}.patch
+          dos2unix php735-${bugid}.patch
+          patch -p1 < php735-${bugid}.patch
+        fi
+      done
+    fi
   fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"
 }

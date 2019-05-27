@@ -102,6 +102,11 @@ if [[ "$PHPMUVER" > 5.5 ]]; then
   fi
   echo ""
 
+if [[ "$zendopcacheon" = 'yy' || "$zendopcacheon" = 'yY' || "$zendopcacheon" = 'Yy' || "$zendopcacheon" = 'YY' ]]; then
+  # account for common typos
+  zendopcacheon='y'
+fi
+
 if [[ "$zendopcacheon" = [nN] ]]; then
   if [ -f ${CONFIGSCANDIR}/zendopcache.ini ]; then
     rm -rf ${CONFIGSCANDIR}/zendopcache.ini
