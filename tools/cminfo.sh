@@ -255,17 +255,23 @@ top_info() {
     echo
     echo "------------------------------------------------------------------"
     if [ -d /usr/lib/systemd ]; then
-        echo "top -bcn1 -w200"
-        top -bcn1 -w200
+        echo "top -bHn1 -w200"
+        top -bHn1 -w200
     else
-        echo "top -bcn1"
-        top -bcn1
+        echo "top -bHn1"
+        top -bHn1
     fi
     echo
     echo "------------------------------------------------------------------"
     echo "iotop -bton1 -P"
     iotop -bton1 -P
     echo
+    if [ -f /root/mysqlreport ]; then
+        echo "------------------------------------------------------------------"
+        echo "mysqlreport"
+        /root/mysqlreport 2>/dev/null
+        echo
+    fi
     echo "------------------------------------------------------------------"
     echo "pidstat -durh 1 10 | sed -e \"s|\$(hostname)|hostname|g\""
     pidstat -durh 1 10 | sed -e "s|$(hostname)|hostname|g"
