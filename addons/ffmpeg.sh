@@ -42,11 +42,11 @@ LIBOGG_VER='1.3.3'
 LIBVORBIS_VER='1.3.6'
 GD_ENABLE='n'
 NASM_SOURCEINSTALL='n'
-NASM_VER='2.14rc16'
+NASM_VER='2.14'
 YASM_VER='1.3.0'
 FDKAAC_VER='0.1.6'
 FONTCONFIG_VER='2.13.1'
-FREETYPE_VER='2.9'
+FREETYPE_VER='2.10.0'
 ###############################################################################
 
 shopt -s expand_aliases
@@ -198,21 +198,21 @@ if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7
 fi
 
 do_continue() {
+	# echo
+	# echo "-------------------------------------------------------------------------"
+	# echo "Installing ffmpeg-php extension relies on the ffmpeg-php developer"
+	# echo "to keep ffmpeg-php updated for ffmpeg compatibility and that has"
+	# echo "been flaky with various compatibility issues. There have been work"
+	# echo "arounds like https://community.centminmod.com/posts/24018/ but "
+	# echo "there are no guarantees due to issues outlined in this thread post"
+	# echo "at https://community.centminmod.com/posts/7078/"
+	# echo
+	# echo "if ffmpeg-php fails to compile, you can unload it by removing the"
+	# echo "settings file at /etc/centminmod/php.d/ffmpeg.ini and restarting"
+	# echo "php-fpm service"
+	# echo "-------------------------------------------------------------------------"
 	echo
-	echo "-------------------------------------------------------------------------"
-	echo "Installing ffmpeg-php extension relies on the ffmpeg-php developer"
-	echo "to keep ffmpeg-php updated for ffmpeg compatibility and that has"
-	echo "been flaky with various compatibility issues. There have been work"
-	echo "arounds like https://community.centminmod.com/posts/24018/ but "
-	echo "there are no guarantees due to issues outlined in this thread post"
-	echo "at https://community.centminmod.com/posts/7078/"
-	echo
-	echo "if ffmpeg-php fails to compile, you can unload it by removing the"
-	echo "settings file at /etc/centminmod/php.d/ffmpeg.ini and restarting"
-	echo "php-fpm service"
-	echo "-------------------------------------------------------------------------"
-	echo
-	read -ep "Do you want to continue with ffmpeg-php + ffmpeg install ? [y/n] " cont_install
+	read -ep "Do you want to continue with ffmpeg binary only install ? [y/n] " cont_install
 	echo
 
 if [[ "$cont_install" != [yY] ]]; then
@@ -578,6 +578,18 @@ echo
 	
 }
 
+phpext_no() {
+  echo
+  echo "The ffmpeg php extension is no longer supported due to developer support ending"
+  echo "If you have ran centmin.sh menu option 19 submenu option 1, then you have installed"
+  echo "ffmpeg binary at /opt/bin/ffmpeg and can use that with some web apps only requiring"
+  echo "pointing to the full path of ffmpeg binary at /opt/bin/ffmpeg"
+  echo
+  if [ -f "${CONFIGSCANDIR}/ffmpeg.ini" ]; then
+    rm -f "${CONFIGSCANDIR}/ffmpeg.ini"
+  fi
+}
+
 phpext() {
 
   FFMPEG_PHPVERCHECK=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)
@@ -667,7 +679,7 @@ phpext() {
 	else
 		echo ""
 		echo "FFMPEG php extension does not support PHP 7.x"
-		echo ""		
+		echo ""
   fi # php version check
 
 }
@@ -678,7 +690,7 @@ case "$1" in
 		{
 		do_continue
 		install
-		phpext
+		# phpext
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
@@ -705,9 +717,9 @@ echo "Total FFMPEG Source Compile Install Time: $INSTALLTIME seconds" >> ${CENTM
 		{
 		# php_quite=$2
 		# if [[ "$php_quite" != 'silent' ]]; then
-			do_continue
+			# do_continue
 		# fi
-		phpext
+		phpext_no
 		} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ffmpeg_phpext_install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
