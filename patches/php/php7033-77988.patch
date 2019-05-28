@@ -1,0 +1,59 @@
+Without test as binary patch not supported
+
+
+
+
+From 205b94a281839a91d805af27b997331e76029a4b Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 27 May 2019 17:16:29 -0700
+Subject: [PATCH] Fix bug #77988 - heap-buffer-overflow on php_jpg_get16
+
+(cherry picked from commit 73ff4193be24192c894dc0502d06e2b2db35eefb)
+---
+ NEWS                         |  16 +++++++++++++++-
+ ext/exif/exif.c              |   2 ++
+ ext/exif/tests/bug77988.jpg  | Bin 0 -> 1202 bytes
+ ext/exif/tests/bug77988.phpt |  11 +++++++++++
+ 4 files changed, 28 insertions(+), 1 deletion(-)
+ create mode 100644 ext/exif/tests/bug77988.jpg
+ create mode 100644 ext/exif/tests/bug77988.phpt
+
+diff --git a/NEWS b/NEWS
+index ebcd60c4be..b6e18aa242 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,20 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.1.30
++
++- EXIF:
++  . Fixed bug #77988 (heap-buffer-overflow on php_jpg_get16). 
++  (CVE-2019-11040) (Stas)
++
++- GD:
++  . Fixed bug #77973 (Uninitialized read in gdImageCreateFromXbm).
++  (CVE-2019-11038) (cmb)
++
++- Iconv:
++  . Fixed bug #78069 (Out-of-bounds read in iconv.c:_php_iconv_mime_decode()
++  due to integer overflow). (CVE-2019-11039). (maris dot adam)
++
+ Backported from 7.1.29
+ 
+ - EXIF
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index a9df95d554..dd7d268bbd 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3525,6 +3525,8 @@ static int exif_scan_thumbnail(image_info_type *ImageInfo)
+ 		if (c == 0xFF)
+ 			return FALSE;
+ 		marker = c;
++		if (pos>=ImageInfo->Thumbnail.size)
++			return FALSE;
+ 		length = php_jpg_get16(data+pos);
+ 		if (length > ImageInfo->Thumbnail.size || pos >= ImageInfo->Thumbnail.size - length) {
+ 			return FALSE;
+

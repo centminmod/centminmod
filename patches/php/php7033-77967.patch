@@ -1,0 +1,71 @@
+From c7d9dee3b911ad6417a6c94dc91f7af7607b313e Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 27 May 2019 18:04:00 -0700
+Subject: [PATCH] Fix bug #77967 - Bypassing open_basedir restrictions via file
+ uris
+
+(cherry picked from commit c34895e837b50213c2bb201c612904342d2bd216)
+---
+ NEWS                  | 15 +++++++++------
+ ext/sqlite3/sqlite3.c |  9 +++++++++
+ 2 files changed, 18 insertions(+), 6 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index b6e18aa242..ede58a694e 100644
+--- a/NEWS
++++ b/NEWS
+@@ -4,16 +4,19 @@ PHP                                                                        NEWS
+ Backported from 7.1.30
+ 
+ - EXIF:
+-  . Fixed bug #77988 (heap-buffer-overflow on php_jpg_get16). 
+-  (CVE-2019-11040) (Stas)
++  . Fixed bug #77988 (heap-buffer-overflow on php_jpg_get16).
++    (CVE-2019-11040) (Stas)
+ 
+ - GD:
+   . Fixed bug #77973 (Uninitialized read in gdImageCreateFromXbm).
+-  (CVE-2019-11038) (cmb)
++    (CVE-2019-11038) (cmb)
+ 
+ - Iconv:
+   . Fixed bug #78069 (Out-of-bounds read in iconv.c:_php_iconv_mime_decode()
+-  due to integer overflow). (CVE-2019-11039). (maris dot adam)
++    due to integer overflow). (CVE-2019-11039). (maris dot adam)
++
++- SQLite:
++  . Fixed bug #77967 (Bypassing open_basedir restrictions via file uris). (Stas)
+ 
+ Backported from 7.1.29
+ 
+@@ -26,8 +29,8 @@ Backported from 7.1.28
+ - EXIF:
+   . Fixed bug #77753 (Heap-buffer-overflow in php_ifd_get32s). (CVE-2019-11034)
+     (Stas)
+-  . Fixed bug #77831 (Heap-buffer-overflow in exif_iif_add_value). 
+-	(CVE-2019-11035) (Stas)
++  . Fixed bug #77831 (Heap-buffer-overflow in exif_iif_add_value).
++    (CVE-2019-11035) (Stas)
+ 
+ - SQLite3:
+   . Added sqlite3.defensive INI directive. (BohwaZ)
+diff --git a/ext/sqlite3/sqlite3.c b/ext/sqlite3/sqlite3.c
+index 5e6d9dd792..1753b27907 100644
+--- a/ext/sqlite3/sqlite3.c
++++ b/ext/sqlite3/sqlite3.c
+@@ -2054,6 +2054,15 @@ static int php_sqlite3_authorizer(void *autharg, int access_type, const char *ar
+ 				}
+ #endif
+ 
++				if (strncmp(arg3, "file:", 5) == 0) {
++					/* starts with "file:" */
++					if (!arg3[5]) {
++						return SQLITE_DENY;
++					}
++					if (php_check_open_basedir(arg3 + 5)) {
++						return SQLITE_DENY;
++					}
++				}
+ 				if (php_check_open_basedir(arg3)) {
+ 					return SQLITE_DENY;
+ 				}

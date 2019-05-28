@@ -1,0 +1,36 @@
+Without test as binary patch not supported
+
+
+
+
+From aabd02d6dd1eab180486cff933dc8d08d4297e38 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 27 May 2019 16:32:42 -0700
+Subject: [PATCH] Fix bug #78069 - Out-of-bounds read in
+ iconv.c:_php_iconv_mime_decode() due to integer overflow
+
+(cherry picked from commit 7cf7148a8f8f4f55fb04de2a517d740bb6253eac)
+---
+ ext/iconv/iconv.c             |   4 +++-
+ ext/iconv/tests/bug78069.data | Bin 0 -> 107 bytes
+ ext/iconv/tests/bug78069.phpt |  15 +++++++++++++++
+ 3 files changed, 18 insertions(+), 1 deletion(-)
+ create mode 100644 ext/iconv/tests/bug78069.data
+ create mode 100644 ext/iconv/tests/bug78069.phpt
+
+diff --git a/ext/iconv/iconv.c b/ext/iconv/iconv.c
+index 335dbd17e9..bbc4b0f5e3 100644
+--- a/ext/iconv/iconv.c
++++ b/ext/iconv/iconv.c
+@@ -1645,7 +1645,9 @@ static php_iconv_err_t _php_iconv_mime_decode(smart_str *pretval, const char *st
+ 							 * we can do at this point. */
+ 							if (*(p1 + 1) == '=') {
+ 								++p1;
+-								--str_left;
++								if (str_left > 1) {
++									--str_left;
++								}
+ 							}
+ 
+ 							err = _php_iconv_appendl(pretval, encoded_word, (size_t)((p1 + 1) - encoded_word), cd_pl);
+

@@ -1,0 +1,57 @@
+From 7de8c0284cd9e237eb8a1faa9b41af1d3ef32ea9 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 27 May 2019 18:04:00 -0700
+Subject: [PATCH] Fix bug #77967 - Bypassing open_basedir restrictions via file
+ uris
+
+(cherry picked from commit c34895e837b50213c2bb201c612904342d2bd216)
+---
+ NEWS                  | 7 +++++--
+ ext/sqlite3/sqlite3.c | 9 +++++++++
+ 2 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index 9345c039a2..cff9517ed5 100644
+--- a/NEWS
++++ b/NEWS
+@@ -15,6 +15,9 @@ Backported from 7.1.30
+   . Fixed bug #78069 (Out-of-bounds read in iconv.c:_php_iconv_mime_decode()
+     due to integer overflow). (CVE-2019-11039). (maris dot adam)
+ 
++- SQLite:
++  . Fixed bug #77967 (Bypassing open_basedir restrictions via file uris). (Stas)
++
+ Backported from 7.1.29
+ 
+ - EXIF
+@@ -26,8 +29,8 @@ Backported from 7.1.28
+ - EXIF:
+   . Fixed bug #77753 (Heap-buffer-overflow in php_ifd_get32s). (CVE-2019-11034)
+     (Stas)
+-  . Fixed bug #77831 (Heap-buffer-overflow in exif_iif_add_value). 
+-	(CVE-2019-11035) (Stas)
++  . Fixed bug #77831 (Heap-buffer-overflow in exif_iif_add_value).
++    (CVE-2019-11035) (Stas)
+ 
+ - SQLite3:
+   . Added sqlite3.defensive INI directive. (BohwaZ)
+diff --git a/ext/sqlite3/sqlite3.c b/ext/sqlite3/sqlite3.c
+index 761b777d06..7bf873ff69 100644
+--- a/ext/sqlite3/sqlite3.c
++++ b/ext/sqlite3/sqlite3.c
+@@ -2062,6 +2062,15 @@ static int php_sqlite3_authorizer(void *autharg, int access_type, const char *ar
+ 				}
+ #endif
+ 
++				if (strncmp(arg3, "file:", 5) == 0) {
++					/* starts with "file:" */
++					if (!arg3[5]) {
++						return SQLITE_DENY;
++					}
++					if (php_check_open_basedir(arg3 + 5 TSRMLS_CC)) {
++						return SQLITE_DENY;
++					}
++				}
+ 				if (php_check_open_basedir(arg3 TSRMLS_CC)) {
+ 					return SQLITE_DENY;
+ 				}
