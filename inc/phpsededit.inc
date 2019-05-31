@@ -132,6 +132,15 @@ phpsededit() {
     PHPINICUSTOM='a_customphp.ini'
     CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
 
+    # php-fpm backlog tweak
+    if [[ ! -f /proc/user_beancounters && -f /usr/local/etc/php-fpm.conf ]]; then
+        GETSOMAXCON_VALUE=$(sysctl net.core.somaxconn | awk -F  '= ' '{print $2}')
+        SET_PHPFPMBACKLOG=$(($GETSOMAXCON_VALUE/16))
+        SET_NGINXBACKLOG=$SET_PHPFPMBACKLOG
+        sed -i "s|;listen.backlog = .*|listen.backlog = $SET_PHPFPMBACKLOG|" /usr/local/etc/php-fpm.conf
+        sed -i "s|backlog=2048|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
+
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
         # account for multiple cpu socket numa based memory

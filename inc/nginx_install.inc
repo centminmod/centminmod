@@ -133,9 +133,11 @@ fi # CENTOS_SEVEN = 7
 #######################################################
 # tcp optimisations
 opt_tcp
-if [[ ! -f /proc/user_beancounters ]]; then
-    sed -i 's/backlog=256/backlog=2048/g' $CM_INSTALLDIR/config/nginx/conf.d/virtual.conf
-fi
+    if [[ ! -f /proc/user_beancounters && -f /usr/local/nginx/conf/conf.d/virtual.conf ]]; then
+        GETSOMAXCON_VALUE=$(sysctl net.core.somaxconn | awk -F  '= ' '{print $2}')
+        SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/16))
+        sed -i "s|backlog=2048|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
 
     # nginx Modules / Prerequisites
   cecho "Installing nginx Modules / Prerequisites..." $boldgreen

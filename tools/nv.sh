@@ -122,18 +122,27 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
   HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'  
 elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
-  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/ | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep reuseport | awk -F ':  ' '{print $2}' | grep -o reuseport)" != 'reuseport' ]]; then
-    # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
-    NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
-    if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
-      ADD_REUSEPORT=' reuseport'
+    # check if backlogg directive is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
+    # CHECK_HTTPSBACKLOG=$(grep -rn listen /usr/local/nginx/conf/conf.d/ | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep backlog | awk -F ':  ' '{print $2}' | grep -o backlog)
+    # if [[ "$CHECK_HTTPSBACKLOG" != 'backlog' ]]; then
+    #   if [[ ! -f /proc/user_beancounters ]]; then
+    #       GETSOMAXCON_VALUE=$(sysctl net.core.somaxconn | awk -F  '= ' '{print $2}')
+    #       SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/16))
+    #       ADD_BACKLOG=" backlog=$SET_NGINXBACKLOG"
+    #   fi
+    # fi
+    if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/ | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep reuseport | awk -F ':  ' '{print $2}' | grep -o reuseport)" != 'reuseport' ]]; then
+      # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
+      NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
+      if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+        ADD_REUSEPORT=' reuseport'
+      else
+        ADD_REUSEPORT=""
+      fi
+      LISTENOPT="ssl http2${ADD_REUSEPORT}${ADD_BACKLOG}"
     else
-      ADD_REUSEPORT=""
+      LISTENOPT="ssl http2${ADD_BACKLOG}"
     fi
-    LISTENOPT="ssl http2${ADD_REUSEPORT}"
-  else
-    LISTENOPT='ssl http2'
-  fi
   COMP_HEADER='#spdy_headers_comp 5'
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
   HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
