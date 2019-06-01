@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='174'
+SCRIPT_INCREMENTVER='175'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -2031,8 +2031,10 @@ fi
     mkdir /var/log/php-fpm/
     touch /var/log/php-fpm/www-error.log
     touch /var/log/php-fpm/www-php.error.log
+    touch /var/log/php-fpm/www-slow.log
     chmod 0666 /var/log/php-fpm/www-error.log
     chmod 0666 /var/log/php-fpm/www-php.error.log
+    chmod 0666 /var/log/php-fpm/www-slow.log
     fpmconfdir
 
     #chown -R root:nginx /var/lib/php/session/
@@ -2661,6 +2663,12 @@ else
     sed -i '/centmin=/d' /root/.bashrc
     rm -rf /usr/bin/cmdir
     alias cmdir="pushd ${SCRIPT_DIR}"
+    alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'
+    alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'
+    alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'
+    echo "alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'" >> /root/.bashrc
+    echo "alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'" >> /root/.bashrc
+    echo "alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'" >> /root/.bashrc
     echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash

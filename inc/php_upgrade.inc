@@ -1026,6 +1026,16 @@ fi
 
 fileinfo_standalone
 
+# set php-fpm alias log inspection shotcuts
+if [[ ! "$(grep fpm-errlog /root/.bashrc)" || ! "$(grep fpm-slowlog /root/.bashrc)" || ! "$(grep fpm-phperrlog /root/.bashrc)" ]]; then
+  alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'
+  alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'
+  alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'
+  echo "alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'" >> /root/.bashrc
+  echo "alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'" >> /root/.bashrc
+  echo "alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'" >> /root/.bashrc
+fi
+
 echo
 php --ini
 
