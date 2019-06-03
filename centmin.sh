@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='176'
+SCRIPT_INCREMENTVER='177'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2019'
@@ -651,7 +651,7 @@ REDISPHP_VER='3.1.6'        # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='4.3.0'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.5.3'      # MongoDB PHP version
+MONGODBPHP_VER='1.5.4'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
