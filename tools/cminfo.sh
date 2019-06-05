@@ -266,11 +266,23 @@ top_info() {
     echo "iotop -bton1 -P"
     iotop -bton1 -P
     echo
-    if [ -f /root/mysqlreport ]; then
+    # ensure mysql server is running before triggering mysqlreport output
+    if [[ "$(service mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqlreport"
         /root/mysqlreport 2>/dev/null
         echo
+    fi
+    if [[ "$PT_SUMMARY_REPORT" = [Yy] ]]; then
+        if [[ "$(uname -m)" = 'x86_64' && ! -f /usr/bin/pt-summary ]]; then
+            # 64bit OS only
+            yum -q -y install percona-toolkit --enablerepo=percona-release-x86_64
+        fi
+        if [[ "$(service mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
+            echo "------------------------------------------------------------------"
+            /usr/bin/pt-summary 2>/dev/null | sed -e 's|Percona Toolkit ||g'
+            echo
+        fi
     fi
     echo "------------------------------------------------------------------"
     echo "pidstat -durh 1 10 | sed -e \"s|\$(hostname)|hostname|g\""
