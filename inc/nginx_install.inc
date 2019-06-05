@@ -359,6 +359,9 @@ geoipphp
     detect_tlsonethree
 
     # zlibsymlink_fix
+    if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
+        cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
+    fi
 
     echo "*************************************************"
     cecho "* nginx installed, Apache disabled" $boldgreen

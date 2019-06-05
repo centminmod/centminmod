@@ -1052,7 +1052,9 @@ fi
             /usr/bin/sitestatus on
         fi
     fi
-
+    if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
+        cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
+    fi
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Updated"
     fi
