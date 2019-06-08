@@ -221,6 +221,11 @@ while getopts ":d:s:u:" opt; do
     case "$opt" in
 	d)
 	 vhostname=${OPTARG}
+   # if checkidn_vhost = 0 then internationalized domain name
+   checkidn_vhost=$(echo $vhostname | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
+   if [[ "$checkidn_vhost" = '0' ]]; then
+     vhostname=$(echo $vhostname | idn)
+   fi
    RUN=y
 	;;
 	s)

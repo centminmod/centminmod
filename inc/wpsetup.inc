@@ -318,6 +318,12 @@ wpinfo_notice
 
 read -ep "Enter vhost domain name you want to add (without www. prefix): " vhostname
 
+   # if checkidn_vhost = 0 then internationalized domain name
+   checkidn_vhost=$(echo $vhostname | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
+   if [[ "$checkidn_vhost" = '0' ]]; then
+     vhostname=$(echo $vhostname | idn)
+   fi
+
 # check to make sure you don't add a domain name vhost that matches
 # your server main hostname setup in server_name within main hostname
 # nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
@@ -2972,7 +2978,7 @@ echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
 cecho "$vhostname setup info log saved at: " $boldwhite
-cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${vhostname}_wordpress_addvhost.log" $boldwhite
+cecho "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "wpinfo.sh script saved at:" $boldwhite
 cecho "/usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh" $boldwhite

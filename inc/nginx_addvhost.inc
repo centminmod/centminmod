@@ -1,7 +1,7 @@
 check_dns() {
   vhostname_dns="$1"
     # if CHECKIDN = 0 then internationalized domain name which not supported by letsencrypt
-    CHECKIDN=$(echo $vhostname_dns | grep '^xn--' >/dev/null 2>&1; echo $?)
+    CHECKIDN=$(echo $vhostname_dns | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
     if [[ "$CHECKIDN" = '0' ]]; then
       TOPLEVELCHECK=$(dig soa @8.8.8.8 $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//' | idn)
     else
@@ -509,6 +509,12 @@ echo
 info_notice
 
 read -ep "Enter vhost domain name to add (without www. prefix): " vhostname
+
+   # if checkidn_vhost = 0 then internationalized domain name
+   checkidn_vhost=$(echo $vhostname | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
+   if [[ "$checkidn_vhost" = '0' ]]; then
+     vhostname=$(echo $vhostname | idn)
+   fi
 
 if [ -d "/home/nginx/domains/$vhostname" ]; then
   echo ""

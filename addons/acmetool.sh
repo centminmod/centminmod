@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.52'
+ACMEVER='1.0.53'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -359,7 +359,7 @@ checkdate() {
 check_dns() {
   vhostname_dns="$1"
     # if CHECKIDN = 0 then internationalized domain name which not supported by letsencrypt
-    CHECKIDN=$(echo $vhostname_dns | grep '^xn--' >/dev/null 2>&1; echo $?)
+    CHECKIDN=$(echo $vhostname_dns | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
     if [[ "$CHECKIDN" = '0' ]]; then
       TOPLEVELCHECK=$(dig soa @8.8.8.8 $vhostname_dns | grep -v ^\; | grep SOA | awk '{print $1}' | sed 's/\.$//' | idn)
     else
@@ -472,12 +472,24 @@ split_domains() {
     SAN=1
     DOMAIN_LIST="$(echo "$parse_domains"| sed -e 's|\s||g' | sed -e 's|,| -d |g')"
     vhostname=$(echo "$parse_domains"| awk -F ',' '{print $1}')
+    # if checkidn_vhost = 0 then internationalized domain name
+    checkidn_splitvhost=$(echo $vhostname | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
+    if [[ "$checkidn_splitvhost" = '0' ]]; then
+      DOMAIN_LIST=$(echo $DOMAIN_LIST | idn)
+      vhostname=$(echo $vhostname | idn)
+    fi
     DOMAIN_LISTNGX="$(echo "$(echo "$parse_domains"| sed -e 's|,| |g') www.$vhostname")"
     # take only 1st entry for nginx vhost
   else
     SAN=0
     DOMAIN_LIST="$parse_domains"
     vhostname="$parse_domains"
+    # if checkidn_vhost = 0 then internationalized domain name
+    checkidn_splitvhost=$(echo $vhostname | idn | grep '^xn--' >/dev/null 2>&1; echo $?)
+    if [[ "$checkidn_splitvhost" = '0' ]]; then
+      DOMAIN_LIST=$(echo $DOMAIN_LIST | idn)
+      vhostname=$(echo $vhostname | idn)
+    fi
   fi
 }
 
