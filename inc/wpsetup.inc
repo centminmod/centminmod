@@ -2974,6 +2974,9 @@ rm -rf /tmp/setupwp.log
     fi
   fi
 
+# make sure all wordpress installed files are owned by nginx user/group
+chown -R nginx:nginx /home/nginx/domains/${vhostname}/public
+
 echo
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname wordpress setup successfully" $boldwhite
