@@ -2483,6 +2483,17 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/webp-express/ {
   #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
+# Whitelist Exception for wp-shortcode  
+location ~ ^${WPSUBDIR}/wp-content/plugins/wp-shortcode/ {
+  include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
+  # below include file needs to be manually created at that path and to be uncommented
+  # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
+  # allows you to add commonly shared settings to all wp plugin location matches which
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
+}
+
 # Block PHP files in content directory.
 location ~* ${WPSUBDIR}/wp-content/.*\.php\$ {
   deny all;
