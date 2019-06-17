@@ -588,10 +588,19 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
         vhostssl='lelive'
       elif [[ "$vhostssl_opt" = '4' ]]; then
         vhostssl='lelived'
+      else
+        vhostssl=invalidopt
       fi
       echo
     fi
   fi
+fi
+
+if [[ "$vhostssl" = 'invalidopt' ]]; then
+  echo
+  echo "error: you entered invalid option = $vhostssl_opt"
+  echo "aborting run..."
+  exit 1
 fi
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then

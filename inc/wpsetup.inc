@@ -378,10 +378,19 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
       elif [[ "$vhostssl_opt" = '4' ]]; then
         vhostssl='lelived'
         wpcli_ssldefault=1
+      else
+        vhostssl=invalidopt
       fi
       echo
     fi
   fi
+fi
+
+if [[ "$vhostssl" = 'invalidopt' ]]; then
+  echo
+  echo "error: you entered invalid option = $vhostssl_opt"
+  echo "aborting run..."
+  exit 1
 fi
 
 echo "Theme Setup: "
