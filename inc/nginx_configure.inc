@@ -3355,7 +3355,9 @@ if [[ ! -f /proc/user_beancounters && -f /usr/local/nginx/conf/conf.d/virtual.co
     GETSOMAXCON_VALUE=$(sysctl net.core.somaxconn | awk -F  '= ' '{print $2}')
     SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/16))
     # take care of non-HTTPS listen backlog socket directive as per ip/port pair rules
-    sed -i "s|backlog=2048|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf
+    if [ ! -z "$SET_NGINXBACKLOG" ]; then
+      sed -i "s|backlog=2048|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf
+    fi
 fi
 if [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f /proc/user_beancounters && -f "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h" ]]; then
     # change nginx backlog defaults specifically for HTTPS vhosts as above line for virtual.conf
@@ -3364,7 +3366,9 @@ if [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f /proc/user_beancounters && -f 
     # duplication directive option errors you try to set backlog incorrectly on HTTPS vhost once
     # only. Specifically setting backlog listen directive on a HTTPS vhost properly will override
     # whatever custom default is configured here.
-    sed -i "s|^#define NGX_LISTEN_BACKLOG .*|#define NGX_LISTEN_BACKLOG        $SET_NGINXBACKLOG|" "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h"
+    if [ ! -z "$SET_NGINXBACKLOG" ]; then
+      sed -i "s|^#define NGX_LISTEN_BACKLOG .*|#define NGX_LISTEN_BACKLOG        $SET_NGINXBACKLOG|" "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h"
+    fi
     grep 'NGX_LISTEN_BACKLOG' "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h"
 fi
 
