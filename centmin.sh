@@ -23,7 +23,7 @@ SCRIPT_DATE='31/07/2015'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
-COPYRIGHT="Copyright 2011-2015 CentminMod.com"
+COPYRIGHT="Copyright 2011-2019 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -308,7 +308,7 @@ NGINX_LIBATOMIC=y            # Nginx configured with libatomic support
 NGINX_HTTPREDIS=y            # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT=y              # Nginx configured with pcre & pcre-jit support
-NGINX_PCREVER='8.41'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.42'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_HEADERSMORE='0.33'
 NGINX_CACHEPURGEVER='2.3'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
@@ -402,7 +402,7 @@ CLOUDFLARE_PATCHSSL='n'    # set 'y' to implement Cloudflare's kill RC4 patch ht
 
 # LibreSSL
 LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='2.8.3'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='2.9.2'   # Use this version of LibreSSL http://www.libressl.org/
 ##################################
 
 # Choose whether to compile Nginx --with-google_perftools_module
@@ -413,7 +413,7 @@ GPERFTOOLS_VERSION='1.8.3'     # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE v8.12
 PCRE_SOURCEINSTALL=n     
-PCRE_VERSION='8.41'          # PCRE version
+PCRE_VERSION='8.42'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.3'   # PHP extension for imagick
