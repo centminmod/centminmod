@@ -44,7 +44,7 @@ fi
       # https://community.centminmod.com/posts/57637/
       if [ -d /etc/systemd/system ]; then
         if [ -d /etc/systemd/system/redis.service.d ]; then
-          echo -e "[Unit]\nAfter=network.target rc.local" > /etc/systemd/system/redis.service.d/after-rc-local.conf
+          # echo -e "[Unit]\nAfter=network.target rc.local" > /etc/systemd/system/redis.service.d/after-rc-local.conf
           systemctl daemon-reload
           systemctl restart redis
         fi
