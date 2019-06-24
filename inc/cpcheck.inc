@@ -159,6 +159,17 @@ ngx_brotlibuffersfix() {
   fi
 }
 
+python_centossix_sclfix() {
+  if [[ "$CENTOX_SIX" -eq '6' ]]; then
+    if [[ -f /etc/yum.repos.d/CentOS-SCLo-scl.repo && ! "$(grep 'exclude =' /etc/yum.repos.d/CentOS-SCLo-scl.repo)" ]]; then
+      yum-config-manager -q --save --setopt=centos-sclo-sclo.exclude=python27* >/dev/null 2>&1
+    fi
+    if [[ -f /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo && ! "$(grep 'exclude =' /etc/yum.repos.d/CentOS-SCLo-scl-rh.repo)" ]]; then
+      yum-config-manager -q --save --setopt=centos-sclo-rh.exclude=python27* >/dev/null 2>&1
+    fi
+  fi
+}
+
 pip_updates() {
   if [[ "$(date "+%u")" -eq '4' || "$(date "+%u")" -eq '6' ]]; then
     # for glances and psutil as glances is installed via outdated EPEL
@@ -2562,6 +2573,7 @@ setup_pwdh
 cmupdatecheck
 pzcat_install
 csf_portflood
+python_centossix_sclfix
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -2653,6 +2665,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   pzcat_install
   redetect_tlsonethree
   dft_phpupstream
+  python_centossix_sclfix
 fi
 
 }
