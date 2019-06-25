@@ -121,7 +121,7 @@ numa_opt() {
     echo
     cecho "apply numa optimisation if required" $boldyellow
     if [[ -f /usr/bin/numactl && "$(numactl --hardware | awk '/available:/ {print $2}')" -gt '2' && ! -f /etc/systemd/system/mariadb.service.d/numa.conf ]]; then
-      echo -e "[Service]\nExecStart=/usr/bin/numactl --interleave=all /usr/sbin/mysqld $MYSQLD_OPTS $_WSREP_NEW_CLUSTER $_WSREP_START_POSITION\"" > /etc/systemd/system/mariadb.service.d/numa.conf
+      echo -e "[Service]\nExecStart=\nExecStart=/usr/bin/numactl --interleave=all /usr/sbin/mysqld \$MYSQLD_OPTS \$_WSREP_NEW_CLUSTER \$_WSREP_START_POSITION\"" > /etc/systemd/system/mariadb.service.d/numa.conf
     else
       skip='y'
     fi
