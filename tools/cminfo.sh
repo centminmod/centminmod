@@ -61,6 +61,10 @@ if [ ! -f /usr/bin/tree ]; then
     yum -y -q install tree
 fi
 
+if [ ! -f /usr/bin/smem ]; then
+    yum -y -q install smem
+fi
+
 if [ -z $PASS ]; then
     MYSQLADMINOPT="-h $MYSQLHOST"
 else
@@ -207,6 +211,24 @@ top_info() {
     free -mtl
     echo
     echo "------------------------------------------------------------------"
+    echo "top 10 processes using swap (VmSwap)"
+    echo
+    find /proc -maxdepth 2 -path "/proc/[0-9]*/status" -readable -exec awk -v FS=":" '{process[$1]=$2;sub(/^[ \t]+/,"",process[$1]);} END {if(process["VmSwap"] && process["VmSwap"] != "0 kB") printf "%10s %-30s %20s\n",process["Pid"],process["Name"],process["VmSwap"]}' '{}' \; | awk '{print $(NF-1),$0}' | sort -rh | cut -d " " -f2- | head -n10
+    echo
+    echo "------------------------------------------------------------------"
+    echo "top 10 processes''virtual memory size (VmSize/VSZ)"
+    echo "RSS vx VSZ https://stackoverflow.com/a/21049737/272648"
+    echo
+    find /proc -maxdepth 2 -path "/proc/[0-9]*/status" -readable -exec awk -v FS=":" '{process[$1]=$2;sub(/^[ \t]+/,"",process[$1]);} END {if(process["VmSize"] && process["VmSize"] != "0 kB") printf "%10s %-30s %20s\n",process["Pid"],process["Name"],process["VmSize"]}' '{}' \; | awk '{print $(NF-1),$0}' | sort -rh | cut -d " " -f2- | head -n10
+    echo
+    if [ -f /usr/bin/smem ]; then
+        echo "------------------------------------------------------------------"
+        echo "smem process memory info (sorted by RSS)"
+        echo
+        smem -rt -s rss
+        echo
+    fi
+    echo "------------------------------------------------------------------"
     echo "df -hT"
     df -hT
     if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -f /usr/local/nginx/conf/phpstatus.conf && "$(grep '^#include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
@@ -230,14 +252,14 @@ top_info() {
     echo "------------------------------------------------------------------"
     echo "Filter sar -q for times cpu load avg (1min) hit/exceeded cpu threads max"
     loadavg=$(printf "%0.2f" $(nproc))
-    sarfilteredone=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($4>=lvg) print $0}' | grep -v Linux)
+    sarfilteredone=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | egrep -v 'Linux|Average')
     echo
     echo "${sarfilteredone:-no times found that >= $loadavg}"
     echo
     echo "------------------------------------------------------------------"
     echo "Filter sar -q for times cpu load avg (5min) hit/exceeded cpu threads max"
     loadavg=$(printf "%0.2f" $(nproc))
-    sarfilteredfive=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($5>=lvg) print $0}' | grep -v Linux)
+    sarfilteredfive=$(sar -q | sed -e "s|$(hostname)|hostname|g" | grep -v runq-sz | awk -v lvg=$loadavg '{if ($6>=lvg) print $0}' | egrep -v 'Linux|Average')
     echo
     echo "${sarfilteredfive:-no times found that >= $loadavg}"
     echo
