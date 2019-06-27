@@ -218,12 +218,16 @@ top_info() {
     echo "------------------------------------------------------------------"
     echo "top 10 processes' virtual memory size (VmSize/VSZ)"
     echo "RSS vs VSZ https://stackoverflow.com/a/21049737/272648"
+    echo "RSS https://en.wikipedia.org/wiki/Resident_set_size"
+    # echo "VSZ https://en.wikipedia.org/wiki/Virtual_memory"
     echo
     find /proc -maxdepth 2 -path "/proc/[0-9]*/status" -readable -exec awk -v FS=":" '{process[$1]=$2;sub(/^[ \t]+/,"",process[$1]);} END {if(process["VmSize"] && process["VmSize"] != "0 kB") printf "%10s %-30s %20s\n",process["Pid"],process["Name"],process["VmSize"]}' '{}' \; | awk '{print $(NF-1),$0}' | sort -rh | cut -d " " -f2- | head -n10
     echo
     if [ -f /usr/bin/smem ]; then
         echo "------------------------------------------------------------------"
         echo "smem process memory info (sorted by RSS)"
+        echo "PSS https://en.wikipedia.org/wiki/Proportional_set_size"
+        echo "USS https://en.wikipedia.org/wiki/Unique_set_size"
         echo
         smem -rt -s rss
         echo
