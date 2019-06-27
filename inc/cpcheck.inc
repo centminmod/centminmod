@@ -1,3 +1,16 @@
+disable_avahi() {
+  if [[ "$(pgrep avahi)" && -f /usr/lib/systemd/system/avahi-daemon.service ]]; then
+        systemctl disable avahi-daemon.socket avahi-daemon.service >/dev/null 2>&1
+        systemctl mask avahi-daemon.socket avahi-daemon.service >/dev/null 2>&1
+        systemctl stop avahi-daemon.socket avahi-daemon.service >/dev/null 2>&1
+        # systemctl status avahi-daemon.socket avahi-daemon.service >/dev/null 2>&1
+  elif [[ "$(pgrep avahi)" && -f /etc/rc.d/init.d/avahi-daemon ]]; then
+        service avahi-daemon stop >/dev/null 2>&1
+        chkconfig avahi-daemon off >/dev/null 2>&1
+        # service avahi-daemon status >/dev/null 2>&1
+  fi
+}
+
 dft_phpupstream() {
   if [ ! -f /usr/local/nginx/conf/default_phpupstream.conf ]; then
 cat > "/usr/local/nginx/conf/default_phpupstream.conf"<<EOF
@@ -2574,6 +2587,7 @@ cmupdatecheck
 pzcat_install
 csf_portflood
 python_centossix_sclfix
+disable_avahi
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -2666,6 +2680,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   redetect_tlsonethree
   dft_phpupstream
   python_centossix_sclfix
+  disable_avahi
 fi
 
 }
