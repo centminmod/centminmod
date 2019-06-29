@@ -573,6 +573,7 @@ fi
                 echo "try again by running centmin.sh menu option 4"
                 echo "make sure you type the correct nginx version"
                 echo "report errors on the forums at community.centminmod.com/forums/8/"
+                echo "with info asked at community.centminmod.com/threads/17778/"
             echo
             free -m
             echo
@@ -607,6 +608,7 @@ fi
             echo "try again by running centmin.sh menu option 4"
             echo "make sure you type the correct nginx version"
             echo "report errors on the forums at community.centminmod.com/forums/8/"
+            echo "with info asked at community.centminmod.com/threads/17778/"
             echo
             free -m
             echo
@@ -661,6 +663,7 @@ fi
   if [ $ERR != 0 ]; then
       echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo "with info asked at community.centminmod.com/threads/17778/"
         echo
         free -m
         echo
@@ -731,6 +734,7 @@ fi
   if [ $ERR != 0 ]; then
       echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo "with info asked at community.centminmod.com/threads/17778/"
         echo
         free -m
         echo
@@ -823,6 +827,7 @@ fi
   if [ $ERR != 0 ]; then
       echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo "with info asked at community.centminmod.com/threads/17778/"
         echo
         free -m
         echo

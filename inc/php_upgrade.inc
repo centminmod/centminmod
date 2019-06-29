@@ -531,6 +531,7 @@ fi
   if [ $ERR != 0 ]; then
       echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo "with info asked at community.centminmod.com/threads/17857/"
         echo
         free -m
         echo
@@ -681,6 +682,7 @@ fi
         free -m
         echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo "with info asked at community.centminmod.com/threads/17857/"
         echo
         free -m
         echo
@@ -743,6 +745,7 @@ fi
   if [ $ERR != 0 ]; then
     echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
+        echo "with info asked at community.centminmod.com/threads/17857/"
         echo
         free -m
         echo
