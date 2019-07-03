@@ -16,7 +16,7 @@ phpfpm_setup_systemd() {
     echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
   fi
 
-  if [ -f /proc/user_beancounters ]; then
+  if [[ -f /proc/user_beancounters || "$(virt-what | grep -o lxc )" = 'lxc' ]]; then
 cat > /etc/systemd/system/php-fpm.service.d/limit.conf <<EOF
 [Service]
 LimitNOFILE=262144
