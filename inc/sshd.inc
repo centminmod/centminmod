@@ -61,12 +61,17 @@ sshdtweaks() {
   if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(egrep '^KexAlgorithms|^Ciphers|^MACs' /etc/ssh/sshd_config)" ]]; then
     # improve openssh security https://infosec.mozilla.org/guidelines/openssh
 cat >> /etc/ssh/sshd_config <<EOF
+
 KexAlgorithms curve25519-sha256@libssh.org,ecdh-sha2-nistp521,ecdh-sha2-nistp384,ecdh-sha2-nistp256,diffie-hellman-group-exchange-sha256
 Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
 MACs hmac-sha2-512-etm@openssh.com,hmac-sha2-256-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-512,hmac-sha2-256,umac-128@openssh.com
 EOF
     # echo "awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.tmp && mv -f /etc/ssh/moduli.tmp /etc/ssh/moduli"
     awk '$5 >= 3071' /etc/ssh/moduli > /etc/ssh/moduli.tmp && mv -f /etc/ssh/moduli.tmp /etc/ssh/moduli
+  fi
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(egrep '^PrintMotd noKexAlgorithms' /etc/ssh/sshd_config)" ]]; then
+    # fix https://community.centminmod.com/posts/75607/
+    sed -i 's|^PrintMotd noKexAlgorithms|PrintMotd no\nKexAlgorithms|' /etc/ssh/sshd_config
   fi
   
   if [[ ! -z "$CHECKHOSTKEY" || ! -z "$CHECKHOSTKEYB" || ! -z "$CHECKHOSTKEYC" || ! -z "$CHECKHOSTKEYD" || ! -z "$CHECKTCPALIVE" || -z "$CHECKVALUES" ]]; then
