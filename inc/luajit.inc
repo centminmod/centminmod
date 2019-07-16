@@ -10,7 +10,13 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
-        make${MAKETHREADS}
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+            # enable GC64 mode in LuaJIT builds on 64bit systems
+            # https://blog.openresty.com/en/luajit-gc64-mode/
+            make${MAKETHREADS} XCFLAGS='-DLUAJIT_ENABLE_GC64'
+        else
+            make${MAKETHREADS}
+        fi
         sar_call
         make install
         sar_call
@@ -38,7 +44,13 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
-        make${MAKETHREADS}
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+            # enable GC64 mode in LuaJIT builds on 64bit systems
+            # https://blog.openresty.com/en/luajit-gc64-mode/
+            make${MAKETHREADS} XCFLAGS='-DLUAJIT_ENABLE_GC64'
+        else
+            make${MAKETHREADS}
+        fi
         sar_call
         make install
         sar_call
