@@ -1,3 +1,18 @@
+mysql_charset_default() {
+  # if you set SET_DEFAULT_MYSQLCHARSET='utf8mb4' in persistent config file
+  # /etc/centminmod/custom_config.inc prior to initial Centmin Mod install
+  # this routine allows changing MariaDB MySQL /etc/my.cnf default characterset
+  # & collation from utf8 defaults to utf8mb4 defaults 
+  # https://community.centminmod.com/posts/76010/
+  if [[ -f /etc/my.cnf && "$SET_DEFAULT_MYSQLCHARSET" = 'utf8mb4' ]]; then
+    sed -i 's|default-character-set=.*|default-character-set=utf8mb4|g' /etc/my.cnf
+    sed -i 's|character-set-server=.*|character-set-server=utf8mb4|g' /etc/my.cnf
+  elif [[ -f /etc/my.cnf && "$SET_DEFAULT_MYSQLCHARSET" = 'utf8' ]]; then
+    sed -i 's|default-character-set=.*|default-character-set=utf8|g' /etc/my.cnf
+    sed -i 's|character-set-server=.*|character-set-server=utf8|g' /etc/my.cnf
+  fi
+}
+
 disable_avahi() {
   if [[ "$(pgrep avahi)" && -f /usr/lib/systemd/system/avahi-daemon.service ]]; then
         systemctl disable avahi-daemon.socket avahi-daemon.service >/dev/null 2>&1

@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='206'
+SCRIPT_INCREMENTVER='207'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2019'
@@ -679,6 +679,10 @@ POSTGRESQL_BRANCHVER='11'   # PostgresSQL branch version https://www.postgresql.
 # number won't have any effect in determining version of MariaDB 5.2.x to install. 
 # YUM Repo will install whatever is latest MariaDB 5.2.x version available via the YUM REPO
 
+# MariaDB MySQL default client and server character set utf8 or utf8mb4 options
+# only applies during initial Centmin Mod install and can be overrident via
+# persistent config file /etc/centminmod/custom_config.inc prior to initial Centmin Mod install
+SET_DEFAULT_MYSQLCHARSET='utf8'
 MDB_INSTALL='n'             # Install via RPM MariaDB MySQL Server replacement (Not recommended for VPS with less than 256MB RAM!)
 MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
 MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
