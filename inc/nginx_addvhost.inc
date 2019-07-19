@@ -637,7 +637,16 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
         vhostssl=invalidopt
       fi
       echo
-    fi
+      if [[ "$vhostssl_opt" -eq '2' || "$vhostssl_opt" -eq '4' ]]; then
+        echo "If using Cloudflare in front of site, disable CF option for"
+        echo "Always Use HTTPS in CF Dashboard Crypto Tab as Nginx will do"
+        echo "the non-https to https redirect on this end and not require"
+        echo "Cloudflare's Always Use HTTPS. If enabled it will cause the"
+        echo "error message: too many redirects"
+        echo
+        sleep 1
+      fi
+    fi # vhostssl_le
   fi
 fi
 
