@@ -69,6 +69,7 @@ lzfourinstall() {
     tar xvzf lz4-${LZFOUR_VER}.tar.gz
     cd lz4-${LZFOUR_VER}
     make clean
+    rm -f /usr/local/bin/lz4* /usr/local/bin/unlz4*
     make -j$(nproc)
     make install
     if [ -f /usr/local/bin/lz4 ]; then
