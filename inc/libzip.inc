@@ -8,7 +8,7 @@ libzip_install() {
   if [[ "$(rpm -ql libzip5-devel | grep -o 'libzip.so' )" = 'libzip.so' ]]; then
       yum -y remove libzip5 libzip5-devel --enablerepo=remi
   fi
-  pushd /svr-setup/
+  pushd "$DIR_TMP"
   cecho "Download ${LIBZIP_LINKFILE} ..." $boldyellow
   if [ -s "${LIBZIP_LINKFILE}" ]; then
       cecho "${LIBZIP_LINKFILE} found, skipping download..." $boldgreen

@@ -346,7 +346,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
   # if [[ ! -f /usr/include/zip.h ]]; then
   #   time $YUMDNFBIN${CACHESKIP} -q -y install libzip5 libzip5-devel --enablerepo=remi
   # fi
-  if [[ ! -f /usr/local/include/zip.h ]]; then
+  if [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
     libzip_install
   fi
   if [[ "$(uname -m)" = 'x86_64' ]]; then
