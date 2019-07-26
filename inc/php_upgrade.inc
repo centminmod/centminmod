@@ -313,6 +313,18 @@ else
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo
+    # validate php version format is 7.3.x and not 7.3
+    phpver_formatcheck="$(echo "$phpver" | grep '[0-9].[0-9].[0-9]')"
+    if [[ ! "$phpver_formatcheck" ]]; then
+        echo
+        echo "error: invalid php version format entered you entered: $phpver"
+        echo
+        echo "correct exact format example is 7.3.7 not 7.3"
+        echo "latest php versions are listed at https://php.net/"
+        echo
+        read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
+        echo
+    fi
     read -ep "Do you still want to continue? [y/n] " phpfpm_stillcont
     if [[ "$phpfpm_stillcont" = [nN] ]];then
         exit 0
