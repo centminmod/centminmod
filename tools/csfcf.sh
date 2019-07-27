@@ -8,6 +8,7 @@ CFIP6LOG='/root/cfips6.txt'
 CFIPNGINXLOG='/root/cfnginxlog.log'
 CFIPCSFLOG='/root/csf_log.log'
 CFINCLUDEFILE='/usr/local/nginx/conf/cloudflare.conf'
+CFINCLUDEFILE_APACHE='/etc/httpd/conf/extra/httpd-includes-remoteip.conf'
 CURL_TIMEOUTS='--max-time 20 --connect-timeout 20'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################
@@ -214,6 +215,51 @@ nginxsetup() {
 }
 
 ###############################
+apachesetup() {
+	# mod_remoteip
+	# https://support.cloudflare.com/hc/en-us/articles/360029696071
+	if [ -d /etc/httpd/conf/extra ]; then
+		echo
+		# echo "create $CFINCLUDEFILE_APACHE include file"
+		if [ -f "$CFINCLUDEFILE_APACHE" ]; then
+			\cp -af "$CFINCLUDEFILE_APACHE" "${CFINCLUDEFILE_APACHE}.bak"
+		fi
+		echo > $CFINCLUDEFILE_APACHE
+		cflista=$(/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/)
+		cflistb=$(/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/)
+		if [ ! -f /etc/httpd/conf/extra/cloudflare_customips.conf ]; then
+			touch /etc/httpd/conf/extra/cloudflare_customips.conf
+		fi
+		echo "Include /etc/httpd/conf/extra/cloudflare_customips.conf" >> $CFINCLUDEFILE_APACHE
+		for i in $cflista; do
+      	if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        		echo "RemoteIPTrustedProxy $i;" >> $CFINCLUDEFILE_APACHE
+      	fi
+		done
+		if [[ -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+			for i in $cflistb; do
+      	if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        			echo "RemoteIPTrustedProxy $i;" >> $CFINCLUDEFILE_APACHE
+      	fi
+			done
+		else
+			for i in $cflistb; do
+      	if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        			echo "#RemoteIPTrustedProxy $i;" >> $CFINCLUDEFILE_APACHE
+      	fi
+			done
+		fi
+		echo "RemoteIPHeader CF-Connecting-IP" >> $CFINCLUDEFILE_APACHE
+		echo 'LogFormat "%{CF-Connecting-IP}i %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"" cfproxy'  >> $CFINCLUDEFILE_APACHE
+		if [[ "$(diff -u "${CFINCLUDEFILE_APACHE}.bak" "$CFINCLUDEFILE_APACHE" >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+			service httpd reload >/dev/null 2>&1
+		fi
+		rm -rf "${CFINCLUDEFILE_APACHE}.bak"
+		echo "created $CFINCLUDEFILE_APACHE include file"
+	fi
+}
+
+###############################
 case "$1" in
 ipv4)
 	ipv4get
@@ -227,9 +273,16 @@ csf)
 nginx)
 	nginxsetup
 ;;
+apache)
+	apachesetup
+;;
 auto)
 	csfadd
 	nginxsetup
+;;
+auto-apache)
+	csfadd
+	apachesetup
 ;;
 *)
 echo "$0 {ipv4|ipv6|csf|nginx|auto}"
