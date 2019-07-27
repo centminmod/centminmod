@@ -233,24 +233,24 @@ apachesetup() {
 		echo "Include /etc/httpd/conf/extra/cloudflare_customips.conf" >> $CFINCLUDEFILE_APACHE
 		for i in $cflista; do
       	if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        		echo "RemoteIPTrustedProxy $i;" >> $CFINCLUDEFILE_APACHE
+        		echo "RemoteIPTrustedProxy $i" >> $CFINCLUDEFILE_APACHE
       	fi
 		done
 		if [[ -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]]; then
 			for i in $cflistb; do
       	if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        			echo "RemoteIPTrustedProxy $i;" >> $CFINCLUDEFILE_APACHE
+        			echo "RemoteIPTrustedProxy $i" >> $CFINCLUDEFILE_APACHE
       	fi
 			done
 		else
 			for i in $cflistb; do
       	if [[ "$(ipcalc -c "$i" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-        			echo "#RemoteIPTrustedProxy $i;" >> $CFINCLUDEFILE_APACHE
+        			echo "#RemoteIPTrustedProxy $i" >> $CFINCLUDEFILE_APACHE
       	fi
 			done
 		fi
 		echo "RemoteIPHeader CF-Connecting-IP" >> $CFINCLUDEFILE_APACHE
-		echo 'LogFormat "%{CF-Connecting-IP}i %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"" cfproxy'  >> $CFINCLUDEFILE_APACHE
+		# echo 'LogFormat "%{CF-Connecting-IP}i %l %u %t "%r" %>s %O "%{Referer}i" "%{User-Agent}i"" cfproxy'  >> $CFINCLUDEFILE_APACHE
 		if [[ "$(diff -u "${CFINCLUDEFILE_APACHE}.bak" "$CFINCLUDEFILE_APACHE" >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
 			service httpd reload >/dev/null 2>&1
 		fi
