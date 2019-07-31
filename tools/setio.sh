@@ -116,7 +116,7 @@ baseinfo() {
 
 fiosetup() {
   cd ${FIOBASEDIR}
-  if [[ ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/reads-16k.ini" || ! -f "${FIOBASEDIR}/writes-16k.ini" ]]; then
+  if [[ ! -f "${FIOBASEDIR}/reads.ini" || ! -f "${FIOBASEDIR}/writes.ini" || ! -f "${FIOBASEDIR}/reads-16k.ini" || ! -f "${FIOBASEDIR}/writes-16k.ini" ]]; then
     rm -rf reads.ini writes.ini reads-16k.ini writes-16k.ini
     \cp -f "${SCRIPT_DIR}/config/setio/reads.ini" reads.ini
     \cp -f "${SCRIPT_DIR}/config/setio/writes.ini" writes.ini
