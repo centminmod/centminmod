@@ -1,0 +1,32 @@
+Without test as binary patch not supported
+
+
+
+
+From 13cbda640120afdaf68f44bb482723d451bc86ec Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 7 Jul 2019 17:01:01 -0700
+Subject: [PATCH] Fix bug #78222 (heap-buffer-overflow on exif_scan_thumbnail)
+
+(cherry picked from commit dea2989ab8ba87a6180af497b2efaf0527e985c5)
+---
+ ext/exif/exif.c              |   2 +-
+ ext/exif/tests/bug78222.jpg  | Bin 0 -> 91 bytes
+ ext/exif/tests/bug78222.phpt |  11 +++++++++++
+ 3 files changed, 12 insertions(+), 1 deletion(-)
+ create mode 100644 ext/exif/tests/bug78222.jpg
+ create mode 100644 ext/exif/tests/bug78222.phpt
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index b6c31773ab..a5fa0b8fb0 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3508,7 +3508,7 @@ static int exif_scan_thumbnail(image_info_type *ImageInfo TSRMLS_DC)
+ 	size_t          length=2, pos=0;
+ 	jpeg_sof_info   sof_info;
+ 
+-	if (!data) {
++	if (!data || ImageInfo->Thumbnail.size < 4) {
+ 		return FALSE; /* nothing to do here */
+ 	}
+ 	if (memcmp(data, "\xFF\xD8\xFF", 3)) {

@@ -123,6 +123,36 @@ php_patches() {
         dos2unix php5640-78069.patch
         patch -p1 < php5640-78069.patch
       fi
+      # PHP 5.6 bug #77919 https://bugs.php.net/bug.php?id=77919
+      if [ ! -f php5640-77919.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #77919"
+        echo "https://bugs.php.net/bug.php?id=77919"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-77919.patch php5640-77919.patch
+        dos2unix php5640-77919.patch
+        patch -p1 < php5640-77919.patch
+      fi
+      # PHP 5.6 bug #78222 https://bugs.php.net/bug.php?id=78222
+      if [ ! -f php5640-78222.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78222"
+        echo "https://bugs.php.net/bug.php?id=78222"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78222.patch php5640-78222.patch
+        dos2unix php5640-78222.patch
+        patch -p1 < php5640-78222.patch
+      fi
+      # PHP 5.6 bug #78256 https://bugs.php.net/bug.php?id=78256
+      if [ ! -f php5640-78256.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78256"
+        echo "https://bugs.php.net/bug.php?id=78256"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78256.patch php5640-78256.patch
+        dos2unix php5640-78256.patch
+        patch -p1 < php5640-78256.patch
+      fi
     fi
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
       # patch PHP 7.2.13 and 7.1.25 missing CVE patch
@@ -173,7 +203,10 @@ php_patches() {
       # PHP bug #77967 https://bugs.php.net/bug.php?id=77967
       # PHP bug #77988 https://bugs.php.net/bug.php?id=77988
       # PHP bug #78069 https://bugs.php.net/bug.php?id=78069
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069'
+      # PHP bug #78222 https://bugs.php.net/bug.php?id=78222
+      # PHP bug #78222 https://bugs.php.net/bug.php?id=78222
+      # PHP bug #78256 https://bugs.php.net/bug.php?id=78256
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 78222 78222 78256'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo

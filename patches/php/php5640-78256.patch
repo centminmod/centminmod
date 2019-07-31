@@ -1,0 +1,47 @@
+Without test as binary patch not supported
+
+
+
+
+From 63c0ed60c2b5580b1542690d52d4a26401342563 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 7 Jul 2019 17:39:59 -0700
+Subject: [PATCH] Fix bug #78256 (heap-buffer-overflow on
+ exif_process_user_comment)
+
+(cherry picked from commit aeb6d13185a2ea4f1496ede2697469faed98ce05)
+---
+ ext/exif/exif.c              |   6 +++---
+ ext/exif/tests/bug78256.jpg  | Bin 0 -> 69 bytes
+ ext/exif/tests/bug78256.phpt |  11 +++++++++++
+ 3 files changed, 14 insertions(+), 3 deletions(-)
+ create mode 100644 ext/exif/tests/bug78256.jpg
+ create mode 100644 ext/exif/tests/bug78256.phpt
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index a5fa0b8fb0..ec362f7e6d 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -2628,7 +2628,7 @@ static int exif_process_user_comment(image_info_type *ImageInfo, char **pszInfoP
+ {
+ 	int   a;
+ 	char  *decode;
+-	size_t len;;
++	size_t len;
+ 
+ 	*pszEncoding = NULL;
+ 	/* Copy the comment */
+@@ -2641,11 +2641,11 @@ static int exif_process_user_comment(image_info_type *ImageInfo, char **pszInfoP
+ 			/* First try to detect BOM: ZERO WIDTH NOBREAK SPACE (FEFF 16)
+ 			 * since we have no encoding support for the BOM yet we skip that.
+ 			 */
+-			if (!memcmp(szValuePtr, "\xFE\xFF", 2)) {
++			if (ByteCount >=2 && !memcmp(szValuePtr, "\xFE\xFF", 2)) {
+ 				decode = "UCS-2BE";
+ 				szValuePtr = szValuePtr+2;
+ 				ByteCount -= 2;
+-			} else if (!memcmp(szValuePtr, "\xFF\xFE", 2)) {
++			} else if (ByteCount >=2 && !memcmp(szValuePtr, "\xFF\xFE", 2)) {
+ 				decode = "UCS-2LE";
+ 				szValuePtr = szValuePtr+2;
+ 				ByteCount -= 2;

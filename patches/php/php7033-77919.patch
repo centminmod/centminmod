@@ -1,0 +1,61 @@
+From 8fb2917b3fa4f97ae290b109e91dab558552ad3c Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Mon, 29 Jul 2019 16:08:03 +0200
+Subject: [PATCH] Fix #77919: Potential UAF in Phar RSHUTDOWN
+
+We have to properly clean up in case phar_flush() is failing.
+
+We also make the expectation of the respective test case less liberal
+to avoid missing such bugs in the future.
+
+(cherry picked from commit cd1101e8c87aa175c2d5e87ddec656e50ef4ab5d)
+---
+ NEWS                         | 9 +++++++++
+ ext/phar/phar_object.c       | 4 +++-
+ ext/phar/tests/bug71488.phpt | 5 ++++-
+ 3 files changed, 16 insertions(+), 2 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index 0a941ccd21..e27ac93e67 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,17 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++ Backported from 7.1.31
++ 
++- EXIF:
++  . Fixed bug #78256 (heap-buffer-overflow on exif_process_user_comment).
++    (CVE-2019-11042) (Stas)
++  . Fixed bug #78222 (heap-buffer-overflow on exif_scan_thumbnail).
++    (CVE-2019-11041) (Stas)
++  
++- Phar:
++  . Fixed bug #77919 (Potential UAF in Phar RSHUTDOWN). (cmb)
++
+ Backported from 7.1.30
+ 
+ - EXIF:
+diff --git a/ext/phar/phar_object.c b/ext/phar/phar_object.c
+index 539ef50f8f..d4ad4e0dcf 100644
+--- a/ext/phar/phar_object.c
++++ b/ext/phar/phar_object.c
+@@ -2064,7 +2064,7 @@ static zend_object *phar_rename_archive(phar_archive_data **sphar, char *ext, ze
+ 	char *newname = NULL, *newpath = NULL;
+ 	zval ret, arg1;
+ 	zend_class_entry *ce;
+-	char *error;
++	char *error = NULL;
+ 	const char *pcr_error;
+ 	int ext_len = ext ? strlen(ext) : 0;
+ 	size_t new_len, oldname_len;
+@@ -2232,6 +2232,8 @@ static zend_object *phar_rename_archive(phar_archive_data **sphar, char *ext, ze
+ 	phar_flush(phar, 0, 0, 1, &error);
+ 
+ 	if (error) {
++		zend_hash_str_del(&(PHAR_G(phar_fname_map)), newpath, phar->fname_len);
++		*sphar = NULL;
+ 		zend_throw_exception_ex(spl_ce_BadMethodCallException, 0, "%s", error);
+ 		efree(error);
+ 		efree(oldpath);
