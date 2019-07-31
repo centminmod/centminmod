@@ -203,10 +203,10 @@ php_patches() {
       # PHP bug #77967 https://bugs.php.net/bug.php?id=77967
       # PHP bug #77988 https://bugs.php.net/bug.php?id=77988
       # PHP bug #78069 https://bugs.php.net/bug.php?id=78069
-      # PHP bug #78222 https://bugs.php.net/bug.php?id=78222
+      # PHP bug #77919 https://bugs.php.net/bug.php?id=77919
       # PHP bug #78222 https://bugs.php.net/bug.php?id=78222
       # PHP bug #78256 https://bugs.php.net/bug.php?id=78256
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 78222 78222 78256'
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
