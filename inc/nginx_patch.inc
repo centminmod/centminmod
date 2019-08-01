@@ -517,6 +517,14 @@ patchnginx() {
      fi
   fi
   ngx_hpack_patch
+  if [[ "$DETECT_NGXVER" -eq '1017002' ]]; then
+    # fix gzip zero size buf alerts
+    # https://github.com/nginx/nginx/commit/39c40428f93db246a9a27e7a109413fae46e195d
+    if [[ -f "$CUR_DIR/patches/nginx/nginx-1.17.2-fix-zero-size-buf.patch" ]]; then
+      echo "patch -p1 < "$CUR_DIR/patches/nginx/nginx-1.17.2-fix-zero-size-buf.patch""
+      patch -p1 < "$CUR_DIR/patches/nginx/nginx-1.17.2-fix-zero-size-buf.patch"
+    fi
+  fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 

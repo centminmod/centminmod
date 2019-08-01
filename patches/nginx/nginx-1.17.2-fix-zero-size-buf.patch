@@ -1,0 +1,66 @@
+From 39c40428f93db246a9a27e7a109413fae46e195d Mon Sep 17 00:00:00 2001
+From: Maxim Dounin <mdounin@mdounin.ru>
+Date: Wed, 31 Jul 2019 17:29:00 +0300
+Subject: [PATCH] Gzip: fixed "zero size buf" alerts after ac5a741d39cf.
+
+After ac5a741d39cf it is now possible that after zstream.avail_out
+reaches 0 and we allocate additional buffer, there will be no more data
+to put into this buffer, triggering "zero size buf" alert.  Fix is to
+reset b->temporary flag in this case.
+
+Additionally, an optimization added to avoid allocating additional buffer
+in this case, by checking if last deflate() call returned Z_STREAM_END.
+Note that checking for Z_STREAM_END by itself is not enough to fix alerts,
+as deflate() can return Z_STREAM_END without producing any output if the
+buffer is smaller than gzip trailer.
+
+Reported by Witold Filipczyk,
+http://mailman.nginx.org/pipermail/nginx-devel/2019-July/012469.html.
+---
+ src/http/modules/ngx_http_gzip_filter_module.c | 15 +++++++++++----
+ 1 file changed, 11 insertions(+), 4 deletions(-)
+
+diff --git a/src/http/modules/ngx_http_gzip_filter_module.c b/src/http/modules/ngx_http_gzip_filter_module.c
+index 48f3dd7c7c..c75169c537 100644
+--- a/src/http/modules/ngx_http_gzip_filter_module.c
++++ b/src/http/modules/ngx_http_gzip_filter_module.c
+@@ -778,7 +778,7 @@ ngx_http_gzip_filter_deflate(ngx_http_request_t *r, ngx_http_gzip_ctx_t *ctx)
+ 
+     ctx->out_buf->last = ctx->zstream.next_out;
+ 
+-    if (ctx->zstream.avail_out == 0) {
++    if (ctx->zstream.avail_out == 0 && rc != Z_STREAM_END) {
+ 
+         /* zlib wants to output some more gzipped data */
+ 
+@@ -868,6 +868,7 @@ ngx_http_gzip_filter_deflate_end(ngx_http_request_t *r,
+     ngx_http_gzip_ctx_t *ctx)
+ {
+     int           rc;
++    ngx_buf_t    *b;
+     ngx_chain_t  *cl;
+ 
+     ctx->zin = ctx->zstream.total_in;
+@@ -888,13 +889,19 @@ ngx_http_gzip_filter_deflate_end(ngx_http_request_t *r,
+         return NGX_ERROR;
+     }
+ 
+-    cl->buf = ctx->out_buf;
++    b = ctx->out_buf;
++
++    if (ngx_buf_size(b) == 0) {
++        b->temporary = 0;
++    }
++
++    b->last_buf = 1;
++
++    cl->buf = b;
+     cl->next = NULL;
+     *ctx->last_out = cl;
+     ctx->last_out = &cl->next;
+ 
+-    ctx->out_buf->last_buf = 1;
+-
+     ctx->zstream.avail_in = 0;
+     ctx->zstream.avail_out = 0;
+ 
