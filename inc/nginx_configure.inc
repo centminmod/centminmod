@@ -2447,7 +2447,11 @@ fi
     fi
   else
     NGINX_NJSOPT=""
-    FLTO_OPT=' -flto'
+    if [[ " $CENTOS_SEVEN" -eq '7' ]]; then
+      FLTO_OPT=" -flto=$(nproc)"
+    else
+      FLTO_OPT=' -flto'
+    fi
       if [[ -f /usr/local/nginx/modules/ngx_http_js_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
         rm -rf /usr/local/nginx/modules/ngx_http_js_module.so
       fi
@@ -3322,16 +3326,30 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
     else
       if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
         # GeoIP2 Lite fails to compile with -fuse-ld=gold
-        NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}"
+        if [[ "$CENTOS_SEVEN" -eq '7' && "$NGINX_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -ffat-lto-objects -fuse-ld=gold"
+        elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINX_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] ]]; then
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold"
+        elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINX_FATLTO_OBJECTS" = [yY] ]]; then
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -ffat-lto-objects"
+        else
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}"
+        fi
       else
         if [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -ffat-lto-objects -fuse-ld=gold"
-        else
+        elif [[ "$NGX_LDGOLD" = [yY] ]]; then
           NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT} -fuse-ld=gold"
+        else
+          NGXEXTRA_LDGOLDCCOPT="$NGXEXTRA_LDGOLDCCOPT${FLTO_OPT}"
         fi
       fi
-      if [[ "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
-        NGINX_OPENSSLOPT_EXTRAS='${FLTO_OPT} -ffat-lto-objects'
+      if [[ "$CENTOS_SEVEN" -eq '7' && "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT} -ffat-lto-objects -fuse-ld=gold"
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINXOPENSSL_FATLTO_OBJECTS" = [yY] && "$NGX_LDGOLD" = [nN] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" ${FLTO_OPT} -ffat-lto-objects"
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$NGINXOPENSSL_FATLTO_OBJECTS" != [yY] && "$NGX_LDGOLD" = [yY] && "$DETECT_NGXVER" -ge '1015005' && "$(echo $OPENSSL_VERSION | grep -o '1.1.1')" = '1.1.1' ]]; then
+        NGINX_OPENSSLOPT_EXTRAS=" -fuse-ld=gold"
       else
         NGINX_OPENSSLOPT_EXTRAS=""
       fi
