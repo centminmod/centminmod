@@ -3652,19 +3652,15 @@ FTP password created for $vhostname : $ftppass
 EOF
 fi
 cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
-upload files to /home/nginx/domains/$vhostname/public" 
-vhost log files directory is /home/nginx/domains/$vhostname/log" 
+upload files to /home/nginx/domains/$vhostname/public 
+vhost log files directory is /home/nginx/domains/$vhostname/log 
 
-------------------------------------------------------------" 
 SSH commands to uninstall created Wordpress install and Nginx vhost:
   /root/tools/wp_uninstall_${vhostname}.sh
-------------------------------------------------------------" 
 
-------------------------------------------------------------" 
 Wordpress Auto Updater created at:
   /root/tools/wp_updater_${vhostname}.sh
 cronjob set for every 8 hours update (3x times per day)
-------------------------------------------------------------" 
 
 Wordpress domain: $vhostname
 Wordpress DB Name: $DB
