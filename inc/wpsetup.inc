@@ -3061,6 +3061,76 @@ cecho "wpinfo.sh script saved at:" $boldwhite
 cecho "/usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
+if [[ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" ]]; then
+  echo "Wordpress login details QR Code"
+  touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
+cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
+FTP hostname : $CNIP
+FTP port : 21
+FTP mode : FTP (explicit SSL)
+FTP Passive (PASV) : ensure is checked/enabled
+FTP username created for $vhostname : $ftpuser
+FTP password created for $vhostname : $ftppass
+EOF
+fi
+cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
+upload files to /home/nginx/domains/$vhostname/public" 
+vhost log files directory is /home/nginx/domains/$vhostname/log" 
+
+------------------------------------------------------------" 
+SSH commands to uninstall created Wordpress install and Nginx vhost:
+  /root/tools/wp_uninstall_${vhostname}.sh
+------------------------------------------------------------" 
+
+------------------------------------------------------------" 
+Wordpress Auto Updater created at:
+  /root/tools/wp_updater_${vhostname}.sh
+cronjob set for every 8 hours update (3x times per day)
+------------------------------------------------------------" 
+
+Wordpress domain: $vhostname
+Wordpress DB Name: $DB
+Wordpress DB User: $DBUSER
+Wordpress DB Pass: $DBPASS
+Wordpress Admin User ID: ${WUID}
+Wordpress Admin User: $WPADMINUSER
+Wordpress Admin Pass: $WPADMINPASS
+Wordpress Admin Email: $WPADMINEMAIL
+EOF
+if [[ "$setdisplayname" = [yY] ]]; then
+cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
+Wordpress Admin Display Name: $WPADMIN_DISPLAYNAME
+EOF
+fi
+if [[ "$disablepwdprotect" != [yY] ]]; then
+  if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
+    echo  >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "Wordpress wp-login.php password protection info:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "wp-login.php protection Username: $HTUSER" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "wp-login.php protection Password: $HTPASS" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    if [[ "$wpcli_ssldefault" = '1' ]]; then
+      echo "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    else
+      echo "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    fi
+    echo >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "Resetting wp-login.php protection:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "Step 2. run command:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "Step 3. restart Nginx + PHP-FPM services" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    echo "     nprestart" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+  fi
+fi
+  if [[ "$QRCODE" = [yY] && -f /usr/bin/qrencode && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" ]]; then
+    echo
+    cat -v "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" | \qrencode -t ansiutf8
+    echo
+  fi
+fi
 
 else
 
