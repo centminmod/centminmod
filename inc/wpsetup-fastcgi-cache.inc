@@ -3639,7 +3639,6 @@ cecho "/usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
 if [[ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" ]]; then
-  echo "Wordpress login details QR Code"
   touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
@@ -3699,6 +3698,8 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
   fi
 fi
   if [[ "$QRCODE" = [yY] && -f /usr/bin/qrencode && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" ]]; then
+    echo
+    echo "Wordpress login details QR Code"
     echo
     cat -v "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" | \qrencode -t ansiutf8
     echo
