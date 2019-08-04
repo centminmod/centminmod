@@ -78,7 +78,21 @@ bin_backup() {
     NGXZLIB_LABEL=""
   fi
 
-  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}"
+  # check if nginx binary built with lto & fat-lto-objects
+  CHECK_NGINXLTOBUILT=$(nginx -V 2>&1 | grep -o 'flto')
+  if [[ "$CHECK_NGINXLTOBUILT" = 'flto' ]]; then
+    NGXLTO_LABEL='-lto'
+    if [[ "$(nginx -V 2>&1 | grep -o 'ffat-lto-objects')" ]]; then
+      NGXFATLTO_LABEL='-fat-lto'
+    elif [[ "$(nginx -V 2>&1 | grep -o 'fno-fat-lto-objects')" ]]; then
+      NGXFATLTO_LABEL='-no-fat-lto'
+    fi
+  else
+    NGXLTO_LABEL=""
+    NGXFATLTO_LABEL=""
+  fi
+  
+  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}${NGXLTO_LABEL}${NGXFATLTO_LABEL}"
   if [ ! -d "${NGINXBIN_BACKUPDIR}/${backup_tag}" ]; then
     echo "--------------------------------------------------------"
     echo "backup current Nginx binary and dynamic modules"
