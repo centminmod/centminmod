@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='220'
+SCRIPT_INCREMENTVER='221'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2019'
@@ -919,6 +919,7 @@ fi
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
 source "inc/fastmirrors.conf"
+source "inc/qrencode.inc"
 source "inc/tcp.inc"
 source "inc/customrpms.inc"
 source "inc/pureftpd.inc"

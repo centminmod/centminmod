@@ -2607,6 +2607,7 @@ pzcat_install
 csf_portflood
 python_centossix_sclfix
 disable_avahi
+qrencode_setup
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -2700,6 +2701,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   dft_phpupstream
   python_centossix_sclfix
   disable_avahi
+  qrencode_setup
 fi
 
 }
