@@ -3639,36 +3639,28 @@ cecho "/usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh" $boldwhite
 cecho "-------------------------------------------------------------" $boldyellow
 echo ""
 if [[ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" ]]; then
-  touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+  # populate plain text logs for QR Code generation
+  touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"  
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
-cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
-FTP hostname : $CNIP
-FTP port : 21
-FTP mode : FTP (explicit SSL)
-FTP Passive (PASV) : ensure is checked/enabled
-FTP username created for $vhostname : $ftpuser
-FTP password created for $vhostname : $ftppass
+  touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-ftp.log"
+cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-ftp.log" <<EOF
+FTP hostname: $CNIP
+FTP port: 21
+FTP mode: FTP (explicit SSL)
+FTP Passive (PASV): ensure is checked/enabled
+FTP username: $ftpuser
+FTP password: $ftppass
 EOF
 fi
 cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
-upload files to /home/nginx/domains/$vhostname/public 
-vhost log files directory is /home/nginx/domains/$vhostname/log 
-
-SSH commands to uninstall created Wordpress install and Nginx vhost:
-  /root/tools/wp_uninstall_${vhostname}.sh
-
-Wordpress Auto Updater created at:
-  /root/tools/wp_updater_${vhostname}.sh
-cronjob set for every 8 hours update (3x times per day)
-
-Wordpress domain: $vhostname
-Wordpress DB Name: $DB
-Wordpress DB User: $DBUSER
-Wordpress DB Pass: $DBPASS
-Wordpress Admin User ID: ${WUID}
-Wordpress Admin User: $WPADMINUSER
-Wordpress Admin Pass: $WPADMINPASS
-Wordpress Admin Email: $WPADMINEMAIL
+Wordpress Info
+domain: $vhostname
+DB Name: $DB
+DB User: $DBUSER
+DB Pass: $DBPASS
+Admin User: $WPADMINUSER
+Admin Pass: $WPADMINPASS
+Admin Email: $WPADMINEMAIL
 EOF
 if [[ "$setdisplayname" = [yY] ]]; then
 cat >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" <<EOF
@@ -3677,31 +3669,46 @@ EOF
 fi
 if [[ "$disablepwdprotect" != [yY] ]]; then
   if [[ -f /usr/local/nginx/conf/htpasswd.sh && -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-    echo  >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "Wordpress wp-login.php password protection info:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "wp-login.php protection Username: $HTUSER" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "wp-login.php protection Password: $HTPASS" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    echo  >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    echo "wp-login.php password protection info:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    echo "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    echo "wp-login.php protection Username: $HTUSER" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    echo "wp-login.php protection Password: $HTPASS" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     if [[ "$wpcli_ssldefault" = '1' ]]; then
-      echo "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+      echo "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     else
-      echo "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+      echo "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     fi
-    echo >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "Resetting wp-login.php protection:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "Step 2. run command:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "Step 3. restart Nginx + PHP-FPM services" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
-    echo "     nprestart" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log"
+    # echo >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "Resetting wp-login.php protection:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "Step 1. remove protection file at /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "     rm -rf /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "Step 2. run command:" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "     /usr/local/nginx/conf/htpasswd.sh create /home/nginx/domains/$vhostname/htpasswd_wplogin YOURUSERNAME YOURPASSWORD" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "Step 3. restart Nginx + PHP-FPM services" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
+    # echo "     nprestart" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
   fi
 fi
-  if [[ "$QRCODE" = [yY] && -f /usr/bin/qrencode && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" ]]; then
-    echo
-    echo "Wordpress login details QR Code"
-    echo
-    cat -v "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" | \qrencode -t ansiutf8
+  if [[ "$QRCODE" = [yY] && -f /usr/bin/qrencode ]]; then
+    if [[ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log" ]]; then
+      echo
+      echo "wp-login.php HTTP Password login details QR Code"
+      echo
+      cat -v "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log" | \qrencode -t ansiutf8
+    fi
+    if [[ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-ftp.log" ]]; then
+      echo
+      echo "Pure-FTPD FTP login details QR Code"
+      echo
+      cat -v "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-ftp.log" | \qrencode -t ansiutf8
+    fi
+    if [[ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" ]]; then
+      echo
+      echo "Wordpress login details QR Code"
+      echo
+      cat -v "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins.log" | \qrencode -t ansiutf8
+    fi
     echo
   fi
 fi
