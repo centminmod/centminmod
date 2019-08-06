@@ -14,7 +14,7 @@ iouring_patch() {
     if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
       pushd "$DIR_TMP"
       rm -rf liburing
-      git clone --depth=1 http://git.kernel.dk/cgit/liburing/
+      git clone http://git.kernel.dk/cgit/liburing/
       cd liburing
       ./configure
       make -j$(nproc)
