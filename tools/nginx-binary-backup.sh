@@ -79,7 +79,7 @@ bin_backup() {
   fi
 
   # check if nginx binary built with lto & fat-lto-objects
-  CHECK_NGINXLTOBUILT=$(nginx -V 2>&1 | grep -o 'flto')
+  CHECK_NGINXLTOBUILT=$(nginx -V 2>&1 | grep -o 'flto' | uniq)
   if [[ "$CHECK_NGINXLTOBUILT" = 'flto' ]]; then
     NGXLTO_LABEL='-lto'
     if [[ "$(nginx -V 2>&1 | grep -o 'ffat-lto-objects')" ]]; then
