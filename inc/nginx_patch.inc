@@ -19,17 +19,23 @@ iouring_patch() {
       ./configure
       make -j$(nproc)
       make install
+      if [[ -f /usr/lib/liburing.so && -f /usr/lib/pkgconfig/liburing.pc ]]; then
+        liburing_ver=$(PKG_CONFIG_PATH='/usr/lib/pkgconfig' pkg-config --modversion liburing)
+        echo "$liburing $liburing_ver installed"
+      fi
       popd
-      pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
-      cecho "patching nginx for Linux 5.1 Kernel AIO io_ring https://github.com/hakasenyang/openssl-patch/pull/22" $boldyellow
-      cecho "https://lwn.net/Articles/776703/" $boldyellow
-      cecho "https://hub.packtpub.com/linux-5-1-out-with-io_uring-io-interface-persistent-memory-new-patching-improvements-and-more-2/" $boldyellow
-      cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx_io_uring.patch" $boldyellow
-      patch -p1 < "$CUR_DIR/patches/nginx/nginx_io_uring.patch"
-      echo
-      sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
-      echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
-      popd
+      if [ -f /usr/lib/liburing.so ]; then
+        pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+        cecho "patching nginx for Linux 5.1 Kernel AIO io_ring https://github.com/hakasenyang/openssl-patch/pull/22" $boldyellow
+        cecho "https://lwn.net/Articles/776703/" $boldyellow
+        cecho "https://hub.packtpub.com/linux-5-1-out-with-io_uring-io-interface-persistent-memory-new-patching-improvements-and-more-2/" $boldyellow
+        cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx_io_uring.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/nginx/nginx_io_uring.patch"
+        echo
+        sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
+        echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
+        popd
+      fi
     fi
   else
     sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
