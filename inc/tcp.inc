@@ -157,6 +157,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
+kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
 fs.inotify.max_queued_events=32768
@@ -226,6 +227,7 @@ EOF
             fi
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
+kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
 fs.inotify.max_queued_events=32768

@@ -1,3 +1,13 @@
+less_console_verbose() {
+  if [[ ! "$(grep 'kernel.printk' /etc/sysctl.d/101-sysctl.conf)" && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.d/101-sysctl.conf
+    sysctl --system >/dev/null 2>&1
+  elif [[ ! "$(grep 'kernel.printk' /etc/sysctl.conf)" && -f /etc/sysctl.conf && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.conf
+    sysctl -p >/dev/null 2>&1
+  fi
+}
+
 mysql_charset_default() {
   # if you set SET_DEFAULT_MYSQLCHARSET='utf8mb4' in persistent config file
   # /etc/centminmod/custom_config.inc prior to initial Centmin Mod install
@@ -2243,6 +2253,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
+kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
 net.core.wmem_max=16777216
@@ -2702,6 +2713,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   python_centossix_sclfix
   disable_avahi
   qrencode_setup
+  less_console_verbose
 fi
 
 }

@@ -854,6 +854,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             fi
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
+kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
 net.core.wmem_max=16777216
@@ -919,6 +920,7 @@ EOF
             fi
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
+kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
 net.core.wmem_max=16777216
