@@ -1,0 +1,484 @@
+From 5e463cc0c3161dec121a693b0c4e589694eb9682 Mon Sep 17 00:00:00 2001
+From: Carter Li <carter.li@eoitek.com>
+Date: Thu, 13 Jun 2019 20:23:58 +0800
+Subject: [PATCH] Add io_uring support
+
+---
+ auto/unix                            |  39 ++---
+ src/event/modules/ngx_epoll_module.c | 222 +++++----------------------
+ src/event/ngx_event.h                |   1 -
+ src/os/unix/ngx_linux_aio_read.c     |  44 +++---
+ src/os/unix/ngx_linux_config.h       |   3 +-
+ 5 files changed, 68 insertions(+), 241 deletions(-)
+
+diff --git a/auto/unix b/auto/unix
+index 43d3b25..5b8ade8 100644
+--- a/auto/unix
++++ b/auto/unix
+@@ -532,44 +532,23 @@ if [ $NGX_FILE_AIO = YES ]; then
+
+     if [ $ngx_found = no ]; then
+
+-        ngx_feature="Linux AIO support"
++        ngx_feature="Linux io_uring support (liburing)"
+         ngx_feature_name="NGX_HAVE_FILE_AIO"
+         ngx_feature_run=no
+-        ngx_feature_incs="#include <linux/aio_abi.h>
+-                          #include <sys/eventfd.h>"
++        ngx_feature_incs="#include <liburing.h>"
+         ngx_feature_path=
+-        ngx_feature_libs=
+-        ngx_feature_test="struct iocb  iocb;
+-                          iocb.aio_lio_opcode = IOCB_CMD_PREAD;
+-                          iocb.aio_flags = IOCB_FLAG_RESFD;
+-                          iocb.aio_resfd = -1;
+-                          (void) iocb;
+-                          (void) eventfd(0, 0)"
++        ngx_feature_libs="-luring"
++        ngx_feature_test="struct io_uring  ring;
++                          int ret = io_uring_queue_init(64, &ring, 0);
++                          if (ret < 0) return 1;
++                          io_uring_queue_exit(&ring);"
+         . auto/feature
+
+         if [ $ngx_found = yes ]; then
+             have=NGX_HAVE_EVENTFD . auto/have
+             have=NGX_HAVE_SYS_EVENTFD_H . auto/have
+             CORE_SRCS="$CORE_SRCS $LINUX_AIO_SRCS"
+-        fi
+-    fi
+-
+-    if [ $ngx_found = no ]; then
+-
+-        ngx_feature="Linux AIO support (SYS_eventfd)"
+-        ngx_feature_incs="#include <linux/aio_abi.h>
+-                          #include <sys/syscall.h>"
+-        ngx_feature_test="struct iocb  iocb;
+-                          iocb.aio_lio_opcode = IOCB_CMD_PREAD;
+-                          iocb.aio_flags = IOCB_FLAG_RESFD;
+-                          iocb.aio_resfd = -1;
+-                          (void) iocb;
+-                          (void) SYS_eventfd"
+-        . auto/feature
+-
+-        if [ $ngx_found = yes ]; then
+-            have=NGX_HAVE_EVENTFD . auto/have
+-            CORE_SRCS="$CORE_SRCS $LINUX_AIO_SRCS"
++            CORE_LIBS="$CORE_LIBS -luring"
+         fi
+     fi
+
+@@ -577,7 +556,7 @@ if [ $NGX_FILE_AIO = YES ]; then
+         cat << END
+
+ $0: no supported file AIO was found
+-Currently file AIO is supported on FreeBSD 4.3+ and Linux 2.6.22+ only
++Currently file AIO is supported on FreeBSD 4.3+ and Linux 5.1.0+ (requires liburing) only
+
+ END
+         exit 1
+diff --git a/src/event/modules/ngx_epoll_module.c b/src/event/modules/ngx_epoll_module.c
+index 76aee08..812b43a 100644
+--- a/src/event/modules/ngx_epoll_module.c
++++ b/src/event/modules/ngx_epoll_module.c
+@@ -75,23 +75,6 @@ int epoll_wait(int epfd, struct epoll_event *events, int nevents, int timeout)
+ #define SYS_eventfd       323
+ #endif
+
+-#if (NGX_HAVE_FILE_AIO)
+-
+-#define SYS_io_setup      245
+-#define SYS_io_destroy    246
+-#define SYS_io_getevents  247
+-
+-typedef u_int  aio_context_t;
+-
+-struct io_event {
+-    uint64_t  data;  /* the data field from the iocb */
+-    uint64_t  obj;   /* what iocb this event came from */
+-    int64_t   res;   /* result code for this event */
+-    int64_t   res2;  /* secondary result */
+-};
+-
+-
+-#endif
+ #endif /* NGX_TEST_BUILD_EPOLL */
+
+
+@@ -124,7 +107,7 @@ static ngx_int_t ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer,
+     ngx_uint_t flags);
+
+ #if (NGX_HAVE_FILE_AIO)
+-static void ngx_epoll_eventfd_handler(ngx_event_t *ev);
++static void ngx_epoll_io_uring_handler(ngx_event_t *ev);
+ #endif
+
+ static void *ngx_epoll_create_conf(ngx_cycle_t *cycle);
+@@ -141,13 +124,10 @@ static ngx_connection_t     notify_conn;
+ #endif
+
+ #if (NGX_HAVE_FILE_AIO)
++struct io_uring             ngx_ring;
+
+-int                         ngx_eventfd = -1;
+-aio_context_t               ngx_aio_ctx = 0;
+-
+-static ngx_event_t          ngx_eventfd_event;
+-static ngx_connection_t     ngx_eventfd_conn;
+-
++static ngx_event_t          ngx_ring_event;
++static ngx_connection_t     ngx_ring_conn;
+ #endif
+
+ #if (NGX_HAVE_EPOLLRDHUP)
+@@ -217,102 +197,40 @@ ngx_module_t  ngx_epoll_module = {
+
+ #if (NGX_HAVE_FILE_AIO)
+
+-/*
+- * We call io_setup(), io_destroy() io_submit(), and io_getevents() directly
+- * as syscalls instead of libaio usage, because the library header file
+- * supports eventfd() since 0.3.107 version only.
+- */
+-
+-static int
+-io_setup(u_int nr_reqs, aio_context_t *ctx)
+-{
+-    return syscall(SYS_io_setup, nr_reqs, ctx);
+-}
+-
+-
+-static int
+-io_destroy(aio_context_t ctx)
+-{
+-    return syscall(SYS_io_destroy, ctx);
+-}
+-
+-
+-static int
+-io_getevents(aio_context_t ctx, long min_nr, long nr, struct io_event *events,
+-    struct timespec *tmo)
+-{
+-    return syscall(SYS_io_getevents, ctx, min_nr, nr, events, tmo);
+-}
+-
+-
+ static void
+ ngx_epoll_aio_init(ngx_cycle_t *cycle, ngx_epoll_conf_t *epcf)
+ {
+-    int                 n;
+     struct epoll_event  ee;
+
+-#if (NGX_HAVE_SYS_EVENTFD_H)
+-    ngx_eventfd = eventfd(0, 0);
+-#else
+-    ngx_eventfd = syscall(SYS_eventfd, 0);
+-#endif
+-
+-    if (ngx_eventfd == -1) {
+-        ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+-                      "eventfd() failed");
+-        ngx_file_aio = 0;
+-        return;
+-    }
+-
+-    ngx_log_debug1(NGX_LOG_DEBUG_EVENT, cycle->log, 0,
+-                   "eventfd: %d", ngx_eventfd);
+-
+-    n = 1;
+-
+-    if (ioctl(ngx_eventfd, FIONBIO, &n) == -1) {
+-        ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+-                      "ioctl(eventfd, FIONBIO) failed");
+-        goto failed;
+-    }
+-
+-    if (io_setup(epcf->aio_requests, &ngx_aio_ctx) == -1) {
++    if (io_uring_queue_init(64, &ngx_ring, 0) < 0) {
+         ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+-                      "io_setup() failed");
++                      "io_uring_queue_init() failed");
+         goto failed;
+     }
+
+-    ngx_eventfd_event.data = &ngx_eventfd_conn;
+-    ngx_eventfd_event.handler = ngx_epoll_eventfd_handler;
+-    ngx_eventfd_event.log = cycle->log;
+-    ngx_eventfd_event.active = 1;
+-    ngx_eventfd_conn.fd = ngx_eventfd;
+-    ngx_eventfd_conn.read = &ngx_eventfd_event;
+-    ngx_eventfd_conn.log = cycle->log;
++    ngx_ring_event.data = &ngx_ring_conn;
++    ngx_ring_event.handler = ngx_epoll_io_uring_handler;
++    ngx_ring_event.log = cycle->log;
++    ngx_ring_event.active = 1;
++    ngx_ring_conn.fd = ngx_ring.ring_fd;
++    ngx_ring_conn.read = &ngx_ring_event;
++    ngx_ring_conn.log = cycle->log;
+
+     ee.events = EPOLLIN|EPOLLET;
+-    ee.data.ptr = &ngx_eventfd_conn;
++    ee.data.ptr = &ngx_ring_conn;
+
+-    if (epoll_ctl(ep, EPOLL_CTL_ADD, ngx_eventfd, &ee) != -1) {
++    if (epoll_ctl(ep, EPOLL_CTL_ADD, ngx_ring.ring_fd, &ee) != -1) {
+         return;
+     }
+
+     ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
+                   "epoll_ctl(EPOLL_CTL_ADD, eventfd) failed");
+
+-    if (io_destroy(ngx_aio_ctx) == -1) {
+-        ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+-                      "io_destroy() failed");
+-    }
++    io_uring_queue_exit(&ngx_ring);
+
+ failed:
+
+-    if (close(ngx_eventfd) == -1) {
+-        ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+-                      "eventfd close() failed");
+-    }
+-
+-    ngx_eventfd = -1;
+-    ngx_aio_ctx = 0;
++    ngx_ring.ring_fd = 0;
+     ngx_file_aio = 0;
+ }
+
+@@ -549,23 +467,11 @@ ngx_epoll_done(ngx_cycle_t *cycle)
+
+ #if (NGX_HAVE_FILE_AIO)
+
+-    if (ngx_eventfd != -1) {
+-
+-        if (io_destroy(ngx_aio_ctx) == -1) {
+-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+-                          "io_destroy() failed");
+-        }
+-
+-        if (close(ngx_eventfd) == -1) {
+-            ngx_log_error(NGX_LOG_ALERT, cycle->log, ngx_errno,
+-                          "eventfd close() failed");
+-        }
+-
+-        ngx_eventfd = -1;
++    if (ngx_ring.ring_fd != 0) {
++        io_uring_queue_exit(&ngx_ring);
++        ngx_ring.ring_fd = 0;
+     }
+
+-    ngx_aio_ctx = 0;
+-
+ #endif
+
+     ngx_free(event_list);
+@@ -940,83 +846,31 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
+ #if (NGX_HAVE_FILE_AIO)
+
+ static void
+-ngx_epoll_eventfd_handler(ngx_event_t *ev)
++ngx_epoll_io_uring_handler(ngx_event_t *ev)
+ {
+-    int               n, events;
+-    long              i;
+-    uint64_t          ready;
+-    ngx_err_t         err;
+     ngx_event_t      *e;
++    struct io_uring_cqe  *cqe;
+     ngx_event_aio_t  *aio;
+-    struct io_event   event[64];
+-    struct timespec   ts;
+-
+-    ngx_log_debug0(NGX_LOG_DEBUG_EVENT, ev->log, 0, "eventfd handler");
+-
+-    n = read(ngx_eventfd, &ready, 8);
+-
+-    err = ngx_errno;
+-
+-    ngx_log_debug1(NGX_LOG_DEBUG_EVENT, ev->log, 0, "eventfd: %d", n);
+-
+-    if (n != 8) {
+-        if (n == -1) {
+-            if (err == NGX_EAGAIN) {
+-                return;
+-            }
+-
+-            ngx_log_error(NGX_LOG_ALERT, ev->log, err, "read(eventfd) failed");
+-            return;
+-        }
+
+-        ngx_log_error(NGX_LOG_ALERT, ev->log, 0,
+-                      "read(eventfd) returned only %d bytes", n);
+-        return;
+-    }
+-
+-    ts.tv_sec = 0;
+-    ts.tv_nsec = 0;
+-
+-    while (ready) {
+-
+-        events = io_getevents(ngx_aio_ctx, 1, 64, event, &ts);
+-
+-        ngx_log_debug1(NGX_LOG_DEBUG_EVENT, ev->log, 0,
+-                       "io_getevents: %d", events);
+-
+-        if (events > 0) {
+-            ready -= events;
+-
+-            for (i = 0; i < events; i++) {
+-
+-                ngx_log_debug4(NGX_LOG_DEBUG_EVENT, ev->log, 0,
+-                               "io_event: %XL %XL %L %L",
+-                                event[i].data, event[i].obj,
+-                                event[i].res, event[i].res2);
+-
+-                e = (ngx_event_t *) (uintptr_t) event[i].data;
+-
+-                e->complete = 1;
+-                e->active = 0;
+-                e->ready = 1;
+-
+-                aio = e->data;
+-                aio->res = event[i].res;
+-
+-                ngx_post_event(e, &ngx_posted_events);
+-            }
++    ngx_log_debug(NGX_LOG_DEBUG_EVENT, ev->log, 0,
++                   "io_uring_peek_cqe: START");
++
++    while (io_uring_peek_cqe(&ngx_ring, &cqe) >= 0 && cqe) {
++        ngx_log_debug3(NGX_LOG_DEBUG_EVENT, ev->log, 0,
++                       "io_event: %p %d %d",
++                       cqe->user_data, cqe->res, cqe->flags);
+
+-            continue;
+-        }
++        e = (ngx_event_t *) io_uring_cqe_get_data(cqe);
++        e->complete = 1;
++        e->active = 0;
++        e->ready = 1;
+
+-        if (events == 0) {
+-            return;
+-        }
++        aio = e->data;
++        aio->res = cqe->res;
+
+-        /* events == -1 */
+-        ngx_log_error(NGX_LOG_ALERT, ev->log, ngx_errno,
+-                      "io_getevents() failed");
+-        return;
++        io_uring_cqe_seen(&ngx_ring, cqe);
++
++        ngx_post_event(e, &ngx_posted_events);
+     }
+ }
+
+diff --git a/src/event/ngx_event.h b/src/event/ngx_event.h
+index bb77c4a..fcb0812 100644
+--- a/src/event/ngx_event.h
++++ b/src/event/ngx_event.h
+@@ -167,7 +167,6 @@ struct ngx_event_aio_s {
+     size_t                     nbytes;
+ #endif
+
+-    ngx_aiocb_t                aiocb;
+     ngx_event_t                event;
+ };
+
+diff --git a/src/os/unix/ngx_linux_aio_read.c b/src/os/unix/ngx_linux_aio_read.c
+index 9f0a6c1..8826531 100644
+--- a/src/os/unix/ngx_linux_aio_read.c
++++ b/src/os/unix/ngx_linux_aio_read.c
+@@ -10,19 +10,12 @@
+ #include <ngx_event.h>
+
+
+-extern int            ngx_eventfd;
+-extern aio_context_t  ngx_aio_ctx;
++extern struct io_uring  ngx_ring;
+
+
+ static void ngx_file_aio_event_handler(ngx_event_t *ev);
+
+
+-static int
+-io_submit(aio_context_t ctx, long n, struct iocb **paiocb)
+-{
+-    return syscall(SYS_io_submit, ctx, n, paiocb);
+-}
+-
+
+ ngx_int_t
+ ngx_file_aio_init(ngx_file_t *file, ngx_pool_t *pool)
+@@ -50,10 +43,11 @@ ssize_t
+ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
+     ngx_pool_t *pool)
+ {
+-    ngx_err_t         err;
+-    struct iocb      *piocb[1];
+-    ngx_event_t      *ev;
+-    ngx_event_aio_t  *aio;
++    ngx_err_t             err;
++    ngx_event_t          *ev;
++    ngx_event_aio_t      *aio;
++    struct io_uring_sqe  *sqe;
++    struct iovec          iov;
+
+     if (!ngx_file_aio) {
+         return ngx_read_file(file, buf, size, offset);
+@@ -93,22 +87,24 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
+         return NGX_ERROR;
+     }
+
+-    ngx_memzero(&aio->aiocb, sizeof(struct iocb));
++    sqe = io_uring_get_sqe(&ngx_ring);
++
++    if (!sqe) {
++        ngx_log_debug4(NGX_LOG_DEBUG_CORE, file->log, 0,
++                       "aio no sqe left:%d @%O:%uz %V",
++                       ev->complete, offset, size, &file->name);
++        return ngx_read_file(file, buf, size, offset);
++    }
+
+-    aio->aiocb.aio_data = (uint64_t) (uintptr_t) ev;
+-    aio->aiocb.aio_lio_opcode = IOCB_CMD_PREAD;
+-    aio->aiocb.aio_fildes = file->fd;
+-    aio->aiocb.aio_buf = (uint64_t) (uintptr_t) buf;
+-    aio->aiocb.aio_nbytes = size;
+-    aio->aiocb.aio_offset = offset;
+-    aio->aiocb.aio_flags = IOCB_FLAG_RESFD;
+-    aio->aiocb.aio_resfd = ngx_eventfd;
++    iov.iov_base = buf;
++    iov.iov_len = size;
++    io_uring_prep_readv(sqe, file->fd, &iov, 1, offset);
++    io_uring_sqe_set_data(sqe, ev);
+
+-    ev->handler = ngx_file_aio_event_handler;
+
+-    piocb[0] = &aio->aiocb;
++    ev->handler = ngx_file_aio_event_handler;
+
+-    if (io_submit(ngx_aio_ctx, 1, piocb) == 1) {
++    if (io_uring_submit(&ngx_ring) == 1) {
+         ev->active = 1;
+         ev->ready = 0;
+         ev->complete = 0;
+diff --git a/src/os/unix/ngx_linux_config.h b/src/os/unix/ngx_linux_config.h
+index 3036cae..daf5b4c 100644
+--- a/src/os/unix/ngx_linux_config.h
++++ b/src/os/unix/ngx_linux_config.h
+@@ -94,8 +94,7 @@ extern ssize_t sendfile(int s, int fd, int32_t *offset, size_t size);
+ #endif
+ #include <sys/syscall.h>
+ #if (NGX_HAVE_FILE_AIO)
+-#include <linux/aio_abi.h>
+-typedef struct iocb  ngx_aiocb_t;
++#include <liburing.h>
+ #endif
+
+
+--
+2.22.0

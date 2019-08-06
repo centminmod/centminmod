@@ -1,3 +1,42 @@
+iouring_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
+  # for nginx 1.17.0+ and Linux Kernel 5.1+
+  if [[ "$NGINX_IOURING_PATCH" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
+    if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
+      pushd "$DIR_TMP"
+      rm -rf liburing
+      git clone --depth=1 http://git.kernel.dk/cgit/liburing/
+      cd liburing
+      ./configure
+      make -j$(nproc)
+      make install
+      popd
+      pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+      cecho "patching nginx for Linux 5.1 Kernel AIO io_ring https://github.com/hakasenyang/openssl-patch/pull/22" $boldyellow
+      cecho "https://lwn.net/Articles/776703/" $boldyellow
+      cecho "https://hub.packtpub.com/linux-5-1-out-with-io_uring-io-interface-persistent-memory-new-patching-improvements-and-more-2/" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx_io_uring.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/nginx/nginx_io_uring.patch"
+      echo
+      sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
+      echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
+      popd
+    fi
+  else
+    sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
+    sed -i 's|^sendfile off;|sendfile on;|' /usr/local/nginx/conf/nginx.conf
+  fi
+}
+
 ngx_maxprotocol_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -525,6 +564,7 @@ patchnginx() {
       patch -p1 < "$CUR_DIR/patches/nginx/nginx-1.17.2-fix-zero-size-buf.patch"
     fi
   fi
+  iouring_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
