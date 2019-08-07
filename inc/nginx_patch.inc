@@ -19,6 +19,7 @@ iouring_patch() {
       ./configure
       make -j$(nproc)
       make install
+      ldconfig
       if [[ -f /usr/lib/liburing.so && -f /usr/lib/pkgconfig/liburing.pc ]]; then
         liburing_ver=$(PKG_CONFIG_PATH='/usr/lib/pkgconfig' pkg-config --modversion liburing)
         echo "$liburing $liburing_ver installed"
