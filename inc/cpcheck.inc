@@ -658,16 +658,19 @@ update_nginxconf() {
     # adjust to new default higher values only if previous defaults are detected
     # do not adjust if end user has changed values from previous defaults
     if [[ "$NGX_KEEPALIVEREQUESTS" -eq '500' ]]; then
-      sed -i 's|keepalive_requests .*|keepalive_requests  1000;|' /usr/local/nginx/conf/nginx.conf
+      sed -i 's|keepalive_requests .*|keepalive_requests  5000;|' /usr/local/nginx/conf/nginx.conf
     fi
-    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' ]]; then
-      sed -i 's|worker_connections .*|worker_connections  80000;|' /usr/local/nginx/conf/nginx.conf
+    if [[ "$NGX_KEEPALIVEREQUESTS" -eq '1000' ]]; then
+      sed -i 's|keepalive_requests .*|keepalive_requests  5000;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' ]]; then
+      sed -i 's|worker_connections .*|worker_connections  100000;|' /usr/local/nginx/conf/nginx.conf
     fi
     if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
       NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
     fi
-    if [[ "$NGX_KT" -eq '8' ]]; then
-      sed -i 's|keepalive_timeout .*|keepalive_timeout  5s;|' /usr/local/nginx/conf/nginx.conf
+    if [[ "$NGX_KT" -eq '8s' ]]; then
+      sed -i 's|keepalive_timeout .*|keepalive_timeout  10s;|' /usr/local/nginx/conf/nginx.conf
     fi
   fi
 }
