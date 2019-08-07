@@ -442,7 +442,7 @@ git clone --depth 1 https://aomedia.googlesource.com/aom libaom
 mkdir -p ${OPT}/ffmpeg_sources/aom_build
 cd aom_build
 # build/cmake/aom_config_defaults.cmake
-cmake3 -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DBUILD_SHARED_LIBS=1 -DENABLE_NASM=on -DENABLE_CCACHE=on ../libaom
+cmake3 -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DCMAKE_INSTALL_LIBDIR="lib" -DBUILD_SHARED_LIBS=1 -DENABLE_NASM=on -DENABLE_CCACHE=on ../libaom
 make${MAKETHREADS}
 make install
 fi
