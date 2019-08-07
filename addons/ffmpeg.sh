@@ -24,6 +24,7 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###############################################################################
 # GCC options
 GCC_SEVEN='n'
+GCC_EIGHT='n'
 OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
@@ -31,6 +32,7 @@ FFMPEG_DEBUG='n'
 DISABLE_NETWORKFFMPEG='n'
 ENABLE_FBTRANSFORM='n'
 ENABLE_AVONE='n'
+ENABLE_DAVONED='n'
 ENABLE_FPIC='n'
 ENABLE_FONTCONFIG='n'
 ENABLE_LIBASS='y'
@@ -175,6 +177,13 @@ else
   ENABLE_AVONEOPT=""
 fi
 
+if [[ "$ENABLE_DAVONED" = [yY] ]]; then
+  ENABLE_DAVONEDOPT=' --enable-libdav1d'
+  ENABLE_FPIC='y'
+else
+  ENABLE_DAVONEDOPT=""
+fi
+
 if [[ "$ENABLE_FPIC" = [yY] ]]; then
   ENABLE_FPICOPT=' --enable-pic --extra-ldexeflags=-pie'
   EXTRACFLAG_FPICOPTS='-fPIC'
@@ -193,6 +202,12 @@ fi
 
 if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
   source /opt/rh/devtoolset-7/enable
+  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0"
+  export CXXFLAGS="${CFLAGS}"
+fi
+
+if [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+  source /opt/rh/devtoolset-8/enable
   export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0"
   export CXXFLAGS="${CFLAGS}"
 fi
@@ -432,11 +447,52 @@ make${MAKETHREADS}
 make install
 fi
 
+if [[ "$ENABLE_DAVONED" = [yY] ]]; then
+  cd ${OPT}/ffmpeg_sources
+  if [[ ! "$(rpm -qa meson)" ]]; then
+    yum -q -y install meson ninja-build SDL2-devel
+  fi
+  if [[ ! "$(rpm -qa ninja-build)" ]]; then
+    yum -q -y install ninja-build
+  fi
+  if [[ ! "$(rpm -qa SDL2-devel)" ]]; then
+    yum -q -y install SDL2-devel
+  fi
+  # if [[ ! "$(rpm -qa libplacebo-devel)" ]]; then
+  #   yum -q -y install libplacebo-devel
+  # fi
+  
+  cd ${OPT}/ffmpeg_sources
+  rm -rf shaderc
+  git clone --depth 1 https://github.com/google/shaderc
+  mkdir -p "${OPT}/ffmpeg_sources/shaderc/build"
+  cd "${OPT}/ffmpeg_sources/shaderc"
+  ./utils/git-sync-deps
+  cd "${OPT}/ffmpeg_sources/shaderc/build"
+  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" cmake3 -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="${OPT}/ffmpeg" -DCMAKE_INSTALL_LIBDIR="${OPT}/ffmpeg/lib" ../
+  ninja-build install
+  
+  cd ${OPT}/ffmpeg_sources
+  rm -rf libplacebo
+  git clone --depth 1 https://code.videolan.org/videolan/libplacebo.git
+  mkdir -p libplacebo/build
+  cd libplacebo
+  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" meson build --buildtype release --prefix="${OPT}/ffmpeg" --libdir="${OPT}/ffmpeg/lib"
+  ninja-build -C build install
+  
+  cd ${OPT}/ffmpeg_sources
+  rm -rf dav1d
+  git clone --depth 1 https://code.videolan.org/videolan/dav1d.git
+  cd dav1d
+  PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" LD_LIBRARY_PATH=${OPT}/ffmpeg/lib LDFLAGS="-L${OPT}/ffmpeg/lib" CPPFLAGS="-I${OPT}/ffmpeg/include" meson build --buildtype release --prefix="${OPT}/ffmpeg" --libdir="${OPT}/ffmpeg/lib"
+  ninja-build -C build install
+fi
+
 cd ${OPT}/ffmpeg_sources
 rm -rf ffmpeg
 git clone --depth 1 git://source.ffmpeg.org/ffmpeg
 cd ffmpeg
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared${DISABLE_FFMPEGNETWORK}
 make${MAKETHREADS}
 make install
 make distclean
@@ -555,7 +611,7 @@ fi
 cd ${OPT}/ffmpeg_sources/ffmpeg
 make distclean
 git pull
-LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
+LD_LIBRARY_PATH=${OPT}/ffmpeg/lib PKG_CONFIG_PATH="${OPT}/ffmpeg/lib/pkgconfig" ./configure --prefix="${OPT}/ffmpeg" --extra-cflags="${EXTRACFLAG_FPICOPTS} -I${OPT}/ffmpeg/include" --extra-ldflags="-L${OPT}/ffmpeg/lib${LDFLAG_FPIC}" --bindir="${OPT}/bin" --pkg-config-flags="--static" --extra-libs=-lpthread --extra-libs=-lm --enable-gpl${FFMPEG_DEBUGOPT} --enable-nonfree --enable-libfdk-aac --enable-libfreetype --enable-libmp3lame --enable-libopus --enable-libvorbis --enable-libvpx --enable-libx264 --enable-libx265${ENABLE_AVONEOPT}${ENABLE_DAVONEDOPT}${ENABLE_LIBASSOPT}${ENABLE_ZIMGOPT}${ENABLE_OPENCVOPT} --enable-swscale${ENABLE_FONTCONFIGOPT}${ENABLE_FPICOPT} --enable-shared
 make${MAKETHREADS}
 make install
 make distclean
