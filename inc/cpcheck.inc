@@ -1,3 +1,42 @@
+opt_sslcache() {
+  # dynamically tune nginx ssl_session_cache based on system detected memory installed
+  TOTALMEM_SSLCACHE=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+  if [[ "$TOTALMEM_SSLCACHE" -gt '500000' && "$TOTALMEM_SSLCACHE" -le '800000' ]]; then
+    # (20x4000)/(60x60) = 22.22 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=20
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '800000' && "$TOTALMEM_SSLCACHE" -le '1000000' ]]; then
+    # (40x4000)/(60x60) = 44.44 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=40
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '1000000' && "$TOTALMEM_SSLCACHE" -le '1880000' ]]; then
+    # (60x4000)/(60x60) = 66.67 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=60
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '1880000' && "$TOTALMEM_SSLCACHE" -le '2890000' ]]; then
+    # (80x4000)/(60x60) = 88.88 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=80
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '2890000' && "$TOTALMEM_SSLCACHE" -le '3890000' ]]; then
+    # (150x4000)/(60x60) = 166.67 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=150
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '3890000' && "$TOTALMEM_SSLCACHE" -le '7800000' ]]; then
+    # (300x4000)/(60x60) = 333.33 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=300
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '7800000' && "$TOTALMEM_SSLCACHE" -le '15600000' ]]; then
+    # (500x4000)/(60x60) = 555.55 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=500
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '15600000' && "$TOTALMEM_SSLCACHE" -le '23600000' ]]; then
+    # (1000x4000)/(60x60) = 1,111.11 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=1000
+  elif [[ "$TOTALMEM_SSLCACHE" -gt '23600000' ]]; then
+    # (2000x4000)/(60x60) = 2,222.22 sessions/sec on 60 min ssl session cache timeout
+    sslcachesize=2000
+  fi
+  if [[ "$NGINX_SSLCACHE_ALLOWOVERRIDE" = [yY] && ! -f /proc/user_beancounters && -f /usr/local/nginx/conf/ssl_include.conf ]]; then
+    # create new nginx shared ssl cache name SSLv2 so not to conflict with any existing
+    # shared ssl cache from existing ssl cache name = SSL
+    sed -i "s|shared:SSL:.*|shared:SSLv2:${sslcachesize}m;|" /usr/local/nginx/conf/ssl_include.conf
+    service nginx restart >/dev/null 2>&1
+  fi
+}
+
 less_console_verbose() {
   if [[ ! "$(grep 'kernel.printk' /etc/sysctl.d/101-sysctl.conf)" && -f /etc/sysctl.d/101-sysctl.conf ]]; then
     echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.d/101-sysctl.conf
@@ -669,7 +708,7 @@ update_nginxconf() {
     if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
       NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
     fi
-    if [[ "$NGX_KT" -eq '8s' ]]; then
+    if [[ "$NGX_KT" = '8s' ]]; then
       sed -i 's|keepalive_timeout .*|keepalive_timeout  10s;|' /usr/local/nginx/conf/nginx.conf
     fi
   fi
@@ -2622,6 +2661,7 @@ csf_portflood
 python_centossix_sclfix
 disable_avahi
 qrencode_setup
+opt_sslcache
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -2717,6 +2757,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   disable_avahi
   qrencode_setup
   less_console_verbose
+  opt_sslcache
 fi
 
 }
