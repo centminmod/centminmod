@@ -1,3 +1,9 @@
+add_versionlocks() {
+  if [[ ! "$(yum versionlock list | grep 'LibRaw')" ]]; then
+    yum -q versionlock LibRaw >/dev/null 2>&1
+  fi
+}
+
 opt_sslcache() {
   opt_sslcache_silent=$1
   # dynamically tune nginx ssl_session_cache based on system detected memory installed
@@ -2760,6 +2766,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   qrencode_setup
   less_console_verbose
   opt_sslcache
+  add_versionlocks
 fi
 
 }
