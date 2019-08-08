@@ -526,6 +526,9 @@ patchnginx() {
      elif [[ "$DETECT_NGXVER" -ge '1015008' && "$DETECT_NGXVER" -le '1015012' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
+     elif [[ "$DETECT_NGXVER" -ge '1017001' && "$DETECT_NGXVER" -le '1017002' ]]; then
+      NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
+      ngx_dynamic_tls_message
      fi
      rm -rf "${NGINXTLSPATCH_NAME}"
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
@@ -552,6 +555,11 @@ patchnginx() {
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
       fi
      elif [[ "$DETECT_NGXVER" -ge '1015008' && "$DETECT_NGXVER" -le '1015012' ]]; then
+      if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
+        echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
+        patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
+      fi
+     elif [[ "$DETECT_NGXVER" -ge '1017001' && "$DETECT_NGXVER" -le '1017002' ]]; then
       if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
