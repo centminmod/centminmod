@@ -281,6 +281,7 @@ fi
     cp -R $CUR_DIR/htdocs/custom_errorpages/* /usr/local/nginx/html
     #rm -rf $CUR_DIR/htdocs
     cp -R $CUR_DIR/config/nginx/* /usr/local/nginx/conf
+    opt_sslcache silent
 
     #################################################################################
     ngx_dynamicfunction

@@ -1,4 +1,5 @@
 opt_sslcache() {
+  opt_sslcache_silent=$1
   # dynamically tune nginx ssl_session_cache based on system detected memory installed
   TOTALMEM_SSLCACHE=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
   if [[ "$TOTALMEM_SSLCACHE" -gt '500000' && "$TOTALMEM_SSLCACHE" -le '800000' ]]; then
@@ -33,7 +34,9 @@ opt_sslcache() {
     # create new nginx shared ssl cache name SSLv2 so not to conflict with any existing
     # shared ssl cache from existing ssl cache name = SSL
     sed -i "s|shared:SSL:.*|shared:SSLv2:${sslcachesize}m;|" /usr/local/nginx/conf/ssl_include.conf
-    service nginx restart >/dev/null 2>&1
+    if [[ "$opt_sslcache_silent" != 'silent' ]]; then
+      service nginx restart >/dev/null 2>&1
+    fi
   fi
 }
 
@@ -2661,7 +2664,6 @@ csf_portflood
 python_centossix_sclfix
 disable_avahi
 qrencode_setup
-opt_sslcache
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
