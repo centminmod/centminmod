@@ -651,7 +651,7 @@ cecho "---------------------------------------------------------------" $boldyel
 # nginx vhost at /usr/local/nginx/conf/conf.d/virtual.conf
 if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
   CHECK_MAINHOSTNAME=$(awk '/server_name/ {print $2}' /usr/local/nginx/conf/conf.d/virtual.conf | sed -e 's|;||')
-  if [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" ]]; then
+  if [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" && "${ALLOW_MAINHOSTNAME_SSL}" != [yY] ]]; then
     echo
     echo " Error: $vhostname is already setup for server main hostname"
     echo " at /usr/local/nginx/conf/conf.d/virtual.conf"
@@ -664,6 +664,8 @@ if [ -f /usr/local/nginx/conf/conf.d/virtual.conf ]; then
     echo " Aborting nginx vhost creation..."
     echo
     exit 1
+  elif [[ "${CHECK_MAINHOSTNAME}" = "${vhostname}" && "${ALLOW_MAINHOSTNAME_SSL}" = [yY] ]]; then
+    create_mainhostname_ssl=y
   fi
 fi
 
@@ -929,6 +931,14 @@ else
   CFAUTHORIGINPULL_INCLUDES=""
 fi
 
+# set web root differently if it's main hostname
+
+if [[ "$create_mainhostname_ssl" = [yY] ]]; then
+  PUBLIC_WEBROOT='root   html;'
+else
+  PUBLIC_WEBROOT="root /home/nginx/domains/$vhostname/public;"
+fi
+
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
@@ -964,7 +974,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
-  root /home/nginx/domains/$vhostname/public;
+  $PUBLIC_WEBROOT
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
@@ -1070,7 +1080,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
-  root /home/nginx/domains/$vhostname/public;
+  $PUBLIC_WEBROOT
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
@@ -1168,7 +1178,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
-  root /home/nginx/domains/$vhostname/public;
+  $PUBLIC_WEBROOT
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
@@ -1263,7 +1273,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
-  root /home/nginx/domains/$vhostname/public;
+  $PUBLIC_WEBROOT
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
@@ -1333,7 +1343,7 @@ server {
   error_log /home/nginx/domains/$vhostname/log/error.log;
 
   include /usr/local/nginx/conf/autoprotect/$vhostname/autoprotect-$vhostname.conf;
-  root /home/nginx/domains/$vhostname/public;
+  $PUBLIC_WEBROOT
   # uncomment cloudflare.conf include if using cloudflare for
   # server and/or vhost site
   #include /usr/local/nginx/conf/cloudflare.conf;
@@ -1445,9 +1455,13 @@ fi
 cecho "-------------------------------------------------------------" $boldyellow
 cecho "vhost for $vhostname created successfully" $boldwhite
 echo
-if [[ "$sslconfig" != 'yd' ]] || [[ "$sslconfig" != 'ydle' ]]; then
-  cecho "domain: http://$vhostname" $boldyellow
-  cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+if [[ "$create_mainhostname_ssl" != [yY] ]]; then
+  if [[ "$sslconfig" != 'yd' ]] || [[ "$sslconfig" != 'ydle' ]]; then
+    cecho "domain: http://$vhostname" $boldyellow
+    cecho "vhost conf file for $vhostname created: /usr/local/nginx/conf/conf.d/$vhostname.conf" $boldwhite
+  fi
+elif [[ "$create_mainhostname_ssl" = [yY] ]]; then
+  rm -f "/usr/local/nginx/conf/conf.d/$vhostname.conf"
 fi
 if [[ "$vhostssl" = [yY] ]]; then
   echo
@@ -1466,7 +1480,11 @@ if [[ "$vhostssl" = [yY] ]]; then
   cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
 fi
 echo
-cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
+if [[ "$create_mainhostname_ssl" != [yY] ]]; then
+  cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite
+elif [[ "$create_mainhostname_ssl" = [yY] ]]; then
+  cecho "upload files to /usr/local/nginx/html" $boldwhite
+fi
 cecho "vhost log files directory is /home/nginx/domains/$vhostname/log" $boldwhite
 
 echo
