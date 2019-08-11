@@ -1,4 +1,27 @@
+check_pythonthree_six() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(yum list python36 -q 2>&1 | grep -o No)" = 'No' ]]; then
+    # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
+    # https://community.centminmod.com/threads/18142/
+    if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
+      wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+    fi
+    if [ ! -f "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" ]; then
+      wget -4 -q -O "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-3.6.8-1.el7.x86_64.rpm
+    fi
+    yum -y localinstall "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
+  fi
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(yum list python36-libs -q 2>&1 | grep -o No)" = 'No' ]]; then
+    # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
+    # https://community.centminmod.com/threads/18142/
+    if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
+      wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+    fi
+    yum -y localinstall "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
+  fi
+}
+
 libzip_install() {
+  check_pythonthree_six
   if [ ! -f /usr/bin/cmake3 ]; then
       echo
       echo "yum -y install cmake3"

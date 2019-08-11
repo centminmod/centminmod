@@ -101,6 +101,28 @@ return
 starttime=$(TZ=UTC date +%s.%N)
 {
 
+check_pythonthree_six() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(yum list python36 -q 2>&1 | grep -o No)" = 'No' ]]; then
+    # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
+    # https://community.centminmod.com/threads/18142/
+    if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
+      wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+    fi
+    if [ ! -f "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" ]; then
+      wget -4 -q -O "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-3.6.8-1.el7.x86_64.rpm
+    fi
+    yum -y localinstall "${DIR_TMP}/python36-3.6.8-1.el7.x86_64.rpm" "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
+  fi
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$(yum list python36-libs -q 2>&1 | grep -o No)" = 'No' ]]; then
+    # workaround for premature EPEL python36 package retirement before CentOS 7.7 is ready
+    # https://community.centminmod.com/threads/18142/
+    if [ ! -f "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" ]; then
+      wget -4 -q -O "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm" https://centminmod.com/centminmodparts/epel/el7/x86_64/python36-libs-3.6.8-1.el7.x86_64.rpm
+    fi
+    yum -y localinstall "${DIR_TMP}/python36-libs-3.6.8-1.el7.x86_64.rpm"
+  fi
+}
+
 if [[ "$CENTOS_SIX" = '6' ]]; then
     rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
     yum -y install https://centos6.iuscommunity.org/ius-release.rpm
@@ -165,6 +187,7 @@ if [[ -f /bin/systemctl && "$(rpm -qa python36u)" ]]; then
   yum -y install python36 python36-devel python36-pip python36-setuptools python36-tools python36-libs python36-tkinter
 fi
 if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+  check_pythonthree_six
   # reinstall removed dependencies from above removed ius community packages
   yum -y install cmake3 cmake3-data
 fi
