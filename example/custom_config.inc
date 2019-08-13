@@ -103,7 +103,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
-NGINX_VERSION='1.17.2'      # Use this version of Nginx
+NGINX_VERSION='1.17.3'      # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINXCPU_AUTOTUNE_NEW='y'    # revised nginx worker_proccess auto tuned settings for >12 cpu thread based servers
