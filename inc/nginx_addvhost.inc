@@ -644,6 +644,8 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
         echo "Cloudflare's Always Use HTTPS. If enabled it will cause the"
         echo "error message: too many redirects"
         echo
+        echo "Also change Cloudflare SSL from Flexible to Full SSL mode"
+        echo
         sleep 1
       fi
     fi # vhostssl_le
