@@ -107,7 +107,7 @@ checks() {
       if [[ "$serverhostname_ipv4" = "$serverip_ipv4" ]]; then
         checkptr_ipv4=y
         echo "-----------------------------------------------------------------------------"
-        echo -e "pass:\n$serverhostname reverse PTR lookup IPv4 address = $serverhostname_ipv4"
+        echo -e "pass: ok\n$serverhostname reverse PTR lookup IPv4 address = $serverhostname_ipv4"
       else
         echo
         echo "server IPv4 IP: $serverip_ipv4"
@@ -138,7 +138,7 @@ checks() {
       if [[ "$serverip_ipv6" ]] && [[ "$serverhostname_ipv6" = "$serverip_ipv6" ]]; then
         checkptr_ipv6=y
         echo "-----------------------------------------------------------------------------"
-        echo -e "pass:\n$serverhostname reverse PTR lookup IPv6 address = $serverhostname_ipv6"
+        echo -e "pass: ok\n$serverhostname reverse PTR lookup IPv6 address = $serverhostname_ipv6"
       elif [[ "$serverip_ipv6" ]] && [[ "$serverhostname_ipv6" != "$serverip_ipv6" ]]; then
         echo
         echo "server IPv6 IP: $serverip_ipv6"
