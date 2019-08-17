@@ -304,6 +304,10 @@ if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
     postconf -n inet_protocols
     postconf -e 'inet_protocols = ipv4'
     postconf -n inet_protocols
+else
+    postconf -n inet_protocols
+    postconf -e 'inet_protocols = ipv4'
+    postconf -n inet_protocols
 fi
 
 cmservice postfix restart
