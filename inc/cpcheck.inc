@@ -53,12 +53,14 @@ opt_sslcache() {
 }
 
 less_console_verbose() {
-  if [[ ! "$(grep 'kernel.printk' /etc/sysctl.d/101-sysctl.conf)" && -f /etc/sysctl.d/101-sysctl.conf ]]; then
-    echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.d/101-sysctl.conf
-    sysctl --system >/dev/null 2>&1
-  elif [[ ! "$(grep 'kernel.printk' /etc/sysctl.conf)" && -f /etc/sysctl.conf && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
-    echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.conf
-    sysctl -p >/dev/null 2>&1
+  if [ ! -f /proc/user_beancounters ]; then
+    if [[ ! "$(grep 'kernel.printk' /etc/sysctl.d/101-sysctl.conf)" && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+      echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.d/101-sysctl.conf
+      sysctl --system >/dev/null 2>&1
+    elif [[ ! "$(grep 'kernel.printk' /etc/sysctl.conf)" && -f /etc/sysctl.conf && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
+      echo 'kernel.printk=4 1 1 7' >> /etc/sysctl.conf
+      sysctl -p >/dev/null 2>&1
+    fi
   fi
 }
 
