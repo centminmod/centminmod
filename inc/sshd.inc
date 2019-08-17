@@ -101,13 +101,21 @@ fi
 echo "*************************************************"
 cecho "* Setup sshd" $boldgreen
 echo "*************************************************"
+echo
+read -ep "Do you want to continue changing your default SSH port? [y/n]: " sshdport_changeport
+
+if [[ "$sshdport_changeport" != [yY] ]]; then
+  echo
+  echo "aborting SSH port change menu..."
+  exit
+fi
 
 echo "--------------------------"
 echo "backup sshd_config"
 echo "--------------------------"
-echo "cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config-backup"
+echo "cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config-backup.${DT}"
 
-cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config-backup
+cp -a /etc/ssh/sshd_config /etc/ssh/sshd_config-backup.${DT}
 
 echo "--------------------------"
 echo "change ssh port"
