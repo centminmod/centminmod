@@ -1,3 +1,9 @@
+symlink_setup_emailnotify() {
+  if [[ -f "${SCRIPT_DIR}/tools/emailnotify.sh" && ! -h /usr/local/bin/emailnotify ]]; then
+    ln -s "${SCRIPT_DIR}/tools/emailnotify.sh" /usr/local/bin/emailnotify >/dev/null 2>&1
+  fi
+}
+
 add_versionlocks() {
   if [[ ! "$(yum versionlock list | grep 'LibRaw')" ]]; then
     yum -q versionlock LibRaw >/dev/null 2>&1
@@ -2767,6 +2773,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   less_console_verbose
   opt_sslcache
   add_versionlocks
+  symlink_setup_emailnotify
 fi
 
 }
