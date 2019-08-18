@@ -711,6 +711,14 @@ version_log() {
         echo "error: /etc/centminmod-versionlog is missing"
     fi
 }
+
+check_version() {
+    latest_incre=$(curl -4sL https://github.com/centminmod/centminmod/raw/123.09beta01/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
+    cur_incre=$(awk -F '.b' '{print $3}' /etc/centminmod-release)
+    latest="123.09beta01.b${latest_incre}"
+    current="123.09beta01.b${cur_incre}"
+    if [[ "$cur_incre" -eq "$latest_incre" ]]; then echo "centminmod latest version $current detected"; else echo "your centminmod version $current is older than latest $latest"; fi
+}
 #########
 if [[ -z "$1" ]]; then
     infooutput
@@ -739,8 +747,11 @@ case "$1" in
         ;;
     versions)
     version_log
+        ;;
+    checkver)
+    check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|listlogs|debug-menuexit|versions}"
+    echo "$0 {info|update|netstat|top|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
