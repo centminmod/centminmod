@@ -76,6 +76,49 @@ postfix_update() {
   fi
 }
 
+cloudflare_note() {
+  if [[ "$(curl -s4Ik $serverhostname | awk '/Server:/ {print $2}')" = 'cloudflare' ]]; then
+  echo "
+  Cloudflare users should DISABLE 'orange cloud' Proxy on
+  server's main $serverhostname DNS record as enabling
+  Cloudflare on main $serverhostname DNS record will negatively
+  impact proper email delivery from your server as destination
+  mail servers can not do a proper reverse DNS PTR lookup to
+  verify and match your main hostname $serverhostname and it's
+  resolving server IP address which currently points to:
+  $pointed_hostname_ip
+  "
+  fi
+}
+
+check_fail_msg() {
+  echo "
+  server ${text_label} IP: $pointed_ip
+  $serverhostname checked DNS ${text_label} record: $pointed_hostname_ip
+  
+  -----------------------------------------------------------------------------
+  fail: PTR ${text_label} DNS record setup
+  -----------------------------------------------------------------------------
+  Centmin Mod main hostname $serverhostname reverse PTR 
+  DNS ${text_label} record not detected
+
+  $serverhostname requires a working PTR DNS record to ensure
+  server outbound sent emails are properly delivered to your
+  previously setup server notification email addresses otherwise
+  server sent emails end up in destination receipient's spam/junk
+  mail box. Full instructions to remedy this can be read at
+  https://community.centminmod.com/threads/6999/
+  $cloudflare_note
+  -----------------------------------------------------------------------------
+
+  " | tee /tmp/check_fail_msg.log
+}
+
+check_pass_msg() {
+  echo "-----------------------------------------------------------------------------"
+  echo -e "pass: ok\n$serverhostname reverse PTR lookup ${text_label} address = $pointed_hostname_ip"
+}
+
 checks() {
   serverip_ipv4=$(curl -4s https://ipinfo.io/ip)
   serverip_ipv6=$(curl -6s https://ipinfo.io/ip)
@@ -106,66 +149,27 @@ checks() {
       multiip='n'
       if [[ "$serverhostname_ipv4" = "$serverip_ipv4" ]]; then
         checkptr_ipv4=y
-        echo "-----------------------------------------------------------------------------"
-        echo -e "pass: ok\n$serverhostname reverse PTR lookup IPv4 address = $serverhostname_ipv4"
+        text_label='IPv4'
+        pointed_hostname_ip=$serverhostname_ipv4
+        check_pass_msg
       else
-        echo
-        echo "server IPv4 IP: $serverip_ipv4"
-        echo "$serverhostname checked DNS IPv4 record: $serverhostname_ipv4"
-        echo
-        echo "-----------------------------------------------------------------------------"
-        echo "fail: PTR IPv4 DNS record setup"
-        echo "-----------------------------------------------------------------------------"
-        echo "$serverhostname reverse PTR lookup IPv4 not found"
-        echo "$serverhostname requires a working PTR DNS record to ensure"
-        echo "server outbound sent emails are properly delivered to your"
-        echo "previously setup server notification email addresses otherwise"
-        echo "server sent emails end up in destination receipient's spam/junk"
-        echo "mail box. Full instructions to remedy this can be read at"
-        echo "https://community.centminmod.com/threads/6999/"
-        echo
-        echo "Cloudflare users should DISABLE 'orange cloud' Proxy on"
-        echo "server's main $serverhostname DNS record as enabling"
-        echo "Cloudflare on main $serverhostname DNS record will negatively"
-        echo "impact proper email delivery from your server as destination"
-        echo "mail servers can not do a proper reverse DNS PTR lookup to"
-        echo "verify and match your main hostname $serverhostname and it's"
-        echo "resolving server IP address which currently points to:"
-        echo "$serverhostname_ipv4"
-        echo "-----------------------------------------------------------------------------"
-        echo
+        text_label='IPv4'
+        pointed_ip=$serverip_ipv4
+        pointed_hostname_ip=$serverhostname_ipv4
+        check_fail_msg
+        failipv4=y
       fi
       if [[ "$serverip_ipv6" ]] && [[ "$serverhostname_ipv6" = "$serverip_ipv6" ]]; then
         checkptr_ipv6=y
-        echo "-----------------------------------------------------------------------------"
-        echo -e "pass: ok\n$serverhostname reverse PTR lookup IPv6 address = $serverhostname_ipv6"
+        text_label='IPv6'
+        pointed_hostname_ip=$serverhostname_ipv6
+        check_pass_msg
       elif [[ "$serverip_ipv6" ]] && [[ "$serverhostname_ipv6" != "$serverip_ipv6" ]]; then
-        echo
-        echo "server IPv6 IP: $serverip_ipv6"
-        echo "$serverhostname checked DNS IPv6 record: $serverhostname_ipv6"
-        echo
-        echo
-        echo "-----------------------------------------------------------------------------"
-        echo "fail: PTR IPv6 DNS record setup"
-        echo "-----------------------------------------------------------------------------"
-        echo "$serverhostname reverse PTR lookup IPv6 not found"
-        echo "$serverhostname requires a working PTR DNS record to ensure"
-        echo "server outbound sent emails are properly delivered to your"
-        echo "previously setup server notification email addresses otherwise"
-        echo "server sent emails end up in destination receipient's spam/junk"
-        echo "mail box. Full instructions to remedy this can be read at"
-        echo "https://community.centminmod.com/threads/6999/"
-        echo
-        echo "Cloudflare users should DISABLE 'orange cloud' Proxy on"
-        echo "server's main $serverhostname DNS record as enabling"
-        echo "Cloudflare on main $serverhostname DNS record will negatively"
-        echo "impact proper email delivery from your server as destination"
-        echo "mail servers can not do a proper reverse DNS PTR lookup to"
-        echo "verify and match your main hostname $serverhostname and it's"
-        echo "resolving server IP address which currently points to:"
-        echo "$serverhostname_ipv6"
-        echo "-----------------------------------------------------------------------------"
-        echo
+        text_label='IPv6'
+        pointed_ip=$serverip_ipv6
+        pointed_hostname_ip=$serverhostname_ipv6
+        check_fail_msg
+        failipv6=y
       fi
     fi
   fi
@@ -177,6 +181,9 @@ check_sent() {
     echo "email sent at $email_date"
   else
     echo "error detected sending email"
+  fi
+  if [ -f /tmp/check_fail_msg.log ]; then
+    rm -f /tmp/check_fail_msg.log
   fi
 }
 
@@ -204,13 +211,32 @@ send_mail() {
     body=$1
     subject=$2
     if [ -f "$body" ]; then
-      echo "cat \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-      cat "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+      if [[ "$failipv4" = [yY] && -f /tmp/check_fail_msg.log ]]; then
+        # append check_fail_msg to body of email so user is aware of issue
+        #body=$(cat "$body" /tmp/check_fail_msg.log)
+        bodyecho="$body"
+        check_fail_msg_note="Message to $serverhostname system administrator regarding mail deliverability improvements: "
+        body=$(echo -e "$(cat "$body")\n\n${check_fail_msg_note}\n$(cat /tmp/check_fail_msg.log)")
+        echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+        echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+      else
+        echo "cat \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+        cat "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+      fi
       get_mailid
       check_sent
     else
-      echo "echo \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-      echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+      if [[ "$failipv4" = [yY] && -f /tmp/check_fail_msg.log ]]; then
+        # append check_fail_msg to body of email so user is aware of issue
+        bodyecho="$body"
+        check_fail_msg_note="Message to $serverhostname system administrator regarding mail deliverability improvements: "
+        body=$(echo -e "$body\n\n${check_fail_msg_note}\n$(cat /tmp/check_fail_msg.log)")
+        echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+        echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+      else
+        echo "echo \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+        echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+      fi
       get_mailid
       check_sent
     fi
