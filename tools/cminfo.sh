@@ -717,7 +717,13 @@ check_version() {
     cur_incre=$(awk -F '.b' '{print $3}' /etc/centminmod-release)
     latest="123.09beta01.b${latest_incre}"
     current="123.09beta01.b${cur_incre}"
-    if [[ "$cur_incre" -eq "$latest_incre" ]]; then echo "centminmod latest version $current detected"; else echo "your centminmod version $current is older than latest $latest"; fi
+    if [[ "$cur_incre" -eq "$latest_incre" ]]; then
+        echo "centminmod latest version $current detected"
+        exit 0
+    else
+        echo "your centminmod version $current is older than latest $latest"
+        exit 1
+    fi
 }
 #########
 if [[ -z "$1" ]]; then
