@@ -1,0 +1,119 @@
+From 1ea539fe2afbc3bfa7ffa80e680b88aa52e03527 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Fri, 16 Aug 2019 14:29:19 +0200
+Subject: [PATCH 2/3] Fix #75457: heap-use-after-free in php7.0.25
+
+Backport <https://vcs.pcre.org/pcre?view=revision&revision=1638>.
+
+(cherry picked from commit 7bf1f9d561826c4a3ed748e55bb756375cdf28b9)
+---
+ ext/pcre/pcrelib/pcre_compile.c | 11 ++++++++++-
+ ext/pcre/tests/bug75457.phpt    | 10 ++++++++++
+ 2 files changed, 20 insertions(+), 1 deletion(-)
+ create mode 100644 ext/pcre/tests/bug75457.phpt
+
+diff --git a/ext/pcre/pcrelib/pcre_compile.c b/ext/pcre/pcrelib/pcre_compile.c
+index c7827745c8..402c4284d1 100644
+--- a/ext/pcre/pcrelib/pcre_compile.c
++++ b/ext/pcre/pcrelib/pcre_compile.c
+@@ -483,7 +483,7 @@ static const char error_texts[] =
+   "lookbehind assertion is not fixed length\0"
+   "malformed number or name after (?(\0"
+   "conditional group contains more than two branches\0"
+-  "assertion expected after (?(\0"
++  "assertion expected after (?( or (?(?C)\0"
+   "(?R or (?[+-]digits must be followed by )\0"
+   /* 30 */
+   "unknown POSIX class name\0"
+@@ -6732,6 +6732,15 @@ for (;; ptr++)
+           for (i = 3;; i++) if (!IS_DIGIT(ptr[i])) break;
+           if (ptr[i] == CHAR_RIGHT_PARENTHESIS)
+             tempptr += i + 1;
++
++          /* tempptr should now be pointing to the opening parenthesis of the
++          assertion condition. */
++
++          if (*tempptr != CHAR_LEFT_PARENTHESIS)
++            {
++            *errorcodeptr = ERR28;
++            goto FAILED;
++            }
+           }
+ 
+         /* For conditions that are assertions, check the syntax, and then exit
+diff --git a/ext/pcre/tests/bug75457.phpt b/ext/pcre/tests/bug75457.phpt
+new file mode 100644
+index 0000000000..c7ce9ed0f9
+--- /dev/null
++++ b/ext/pcre/tests/bug75457.phpt
+@@ -0,0 +1,10 @@
++--TEST--
++Bug #75457 (heap-use-after-free in php7.0.25)
++--FILE--
++<?php
++$pattern = "/(((?(?C)0?=))(?!()0|.(?0)0)())/";
++var_dump(preg_match($pattern, "hello"));
++?>
++--EXPECTF--
++Warning: preg_match(): Compilation failed: assertion expected after (?( or (?(?C) at offset 4 in %sbug75457.php on line %d
++bool(false)
+-- 
+2.20.1
+
+From 41dc3ff967e44932a6646de9ac7331f0d5c5fdc4 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Wed, 28 Aug 2019 10:00:28 +0200
+Subject: [PATCH 3/3] NEWS
+
+---
+ NEWS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index 62f3f8f4b8..a3c0c90143 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,7 +1,15 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
+- Backported from 7.1.31
++Backported from 7.1.32
++
++- mbstring:
++  . Fixed CVE-2019-13224 (don't allow different encodings for onig_new_deluxe) (stas)
++
++- pcre:
++  . Fixed bug #75457 (heap use-after-free in pcrelib) (cmb)
++
++Backported from 7.1.31
+  
+ - EXIF:
+   . Fixed bug #78256 (heap-buffer-overflow on exif_process_user_comment).
+-- 
+2.20.1
+
+From b781eb2900cc0d74e385e704711a0002a9ecc8cb Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Wed, 28 Aug 2019 14:34:48 +0200
+Subject: [PATCH] relax test, offset may be different on various system lib
+ versions
+
+---
+ ext/pcre/tests/bug75457.phpt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/pcre/tests/bug75457.phpt b/ext/pcre/tests/bug75457.phpt
+index c7ce9ed0f9..571a4bde77 100644
+--- a/ext/pcre/tests/bug75457.phpt
++++ b/ext/pcre/tests/bug75457.phpt
+@@ -6,5 +6,5 @@ $pattern = "/(((?(?C)0?=))(?!()0|.(?0)0)())/";
+ var_dump(preg_match($pattern, "hello"));
+ ?>
+ --EXPECTF--
+-Warning: preg_match(): Compilation failed: assertion expected after (?( or (?(?C) at offset 4 in %sbug75457.php on line %d
++Warning: preg_match(): Compilation failed: assertion expected after (?( or (?(?C) at offset %d in %sbug75457.php on line %d
+ bool(false)
+-- 
+2.20.1
+

@@ -153,6 +153,26 @@ php_patches() {
         dos2unix php5640-78256.patch
         patch -p1 < php5640-78256.patch
       fi
+      # PHP 5.6 bug #75457 https://bugs.php.net/bug.php?id=75457
+      if [ ! -f php5640-75457.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #75457"
+        echo "https://bugs.php.net/bug.php?id=75457"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-75457.patch php5640-75457.patch
+        dos2unix php5640-75457.patch
+        patch -p1 < php5640-75457.patch
+      fi
+      # PHP 5.6 bug #78380 https://bugs.php.net/bug.php?id=78380
+      if [ ! -f php5640-78380.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78380"
+        echo "https://bugs.php.net/bug.php?id=78380"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78380.patch php5640-78380.patch
+        dos2unix php5640-78380.patch
+        patch -p1 < php5640-78380.patch
+      fi
     fi
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
       # patch PHP 7.2.13 and 7.1.25 missing CVE patch
@@ -206,7 +226,9 @@ php_patches() {
       # PHP bug #77919 https://bugs.php.net/bug.php?id=77919
       # PHP bug #78222 https://bugs.php.net/bug.php?id=78222
       # PHP bug #78256 https://bugs.php.net/bug.php?id=78256
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256'
+      # PHP bug #75457 https://bugs.php.net/bug.php?id=75457
+      # PHP bug #78380 https://bugs.php.net/bug.php?id=78380
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
