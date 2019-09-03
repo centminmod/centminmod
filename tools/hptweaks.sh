@@ -111,7 +111,8 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
     MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
-    MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
+    MAXLOCKEDMEM_SIZE=$(($MAXLOCKEDMEM_COUNT*1024))
+    MAXLOCKEDMEM_SIZE_NGINX=$(($MAXLOCKEDMEM_SIZE*32))
   elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
     if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
       # account for multiple cpu socket numa based memory
@@ -133,7 +134,8 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
     MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
-    MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
+    MAXLOCKEDMEM_SIZE=$(($MAXLOCKEDMEM_COUNT*1024))
+    MAXLOCKEDMEM_SIZE_NGINX=$(($MAXLOCKEDMEM_SIZE*32))
   elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' ]]; then
     if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
       # account for multiple cpu socket numa based memory
@@ -155,7 +157,8 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
     fi
     NRHUGEPAGES_COUNT=$(($FREEMEM/2/2048/16*16/4))
     MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
-    MAXLOCKEDMEM_SIZE=$((MAXLOCKEDMEM_COUNT*1024))
+    MAXLOCKEDMEM_SIZE=$(($MAXLOCKEDMEM_COUNT*1024))
+    MAXLOCKEDMEM_SIZE_NGINX=$(($MAXLOCKEDMEM_SIZE*32))
   fi
   
   if [[ "$NRHUGEPAGES_COUNT" -ge '1' ]]; then
@@ -177,7 +180,12 @@ if [[ -f /sys/kernel/mm/transparent_hugepage/enabled ]]; then
       echo "* hard memlock $MAXLOCKEDMEM_SIZE"
       sed -i '/hard memlock/d' /etc/security/limits.conf
       sed -i '/soft memlock/d' /etc/security/limits.conf
-      if [[ -z "$(grep 'soft memlock' /etc/security/limits.conf)" ]]; then
+      if [[ -z "$(grep 'nginx soft memlock' /etc/security/limits.conf)" ]]; then
+        echo "nginx soft memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+        echo "nginx hard memlock $MAXLOCKEDMEM_SIZE_NGINX" >> /etc/security/limits.conf
+        echo
+      fi
+      if [[ -z "$(grep '* soft memlock' /etc/security/limits.conf)" ]]; then
         echo "* soft memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
         echo "* hard memlock $MAXLOCKEDMEM_SIZE" >> /etc/security/limits.conf
         echo

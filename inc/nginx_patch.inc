@@ -36,6 +36,23 @@ iouring_patch() {
         sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
         echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
         popd
+        # raise nginx max memlock limits
+        if [ "$CENTOS_SIX" -eq '6' ]; then
+          FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
+        else
+          FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+        fi
+        IOURING_MAXLOCKEDMEM_COUNT=$(($FREEMEM/2/2048/16*16*4))
+        IOURING_MAXLOCKEDMEM_SIZE=$(($IOURING_MAXLOCKEDMEM_COUNT*1024))
+        IOURING_MAXLOCKEDMEM_SIZE_NGINX=$(($IOURING_MAXLOCKEDMEM_SIZE*32))
+        if [ -f /etc/init.d/nginx ]; then
+          sed -i '/ulimit -l/d' /etc/init.d/nginx
+          sed -i "s|#!\/bin\/sh|#!\/bin\/sh\nif [ ! -f \/proc\/user_beancounters ]; then ulimit -l $IOURING_MAXLOCKEDMEM_SIZE_NGINX ; fi\n|g" /etc/init.d/nginx
+          if [ "$CENTOS_SEVEN" -eq '7' ]; then
+            systemctl daemon-reload >/dev/null 2>&1
+          fi
+          head -n8 /etc/init.d/nginx
+        fi
       fi
     fi
   else
