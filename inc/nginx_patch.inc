@@ -37,7 +37,7 @@ iouring_patch() {
         echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
         popd
         # raise nginx max memlock limits
-        if [ "$CENTOS_SIX" -eq '6' ]; then
+        if [[ "$CENTOS_SIX" = '6' ]]; then
           FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
         else
           FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
