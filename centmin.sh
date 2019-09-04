@@ -27,10 +27,10 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='253'
+SCRIPT_INCREMENTVER='254'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='31/07/2019'
+SCRIPT_DATE='31/10/2019'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -2239,28 +2239,23 @@ echo
 cecho "**********************************************************************" $boldgreen
 cecho "* Starting Services..." $boldgreen
 cecho "**********************************************************************" $boldgreen
-if [[ "$NSD_INSTALL" = [yY] ]]; 
-then
+if [[ "$NSD_INSTALL" = [yY] && -f /etc/init.d/nsd ]]; then
     /etc/init.d/nsd start
 fi
 
-if [ -f /etc/init.d/ntpd ];
-then
+if [ -f /etc/init.d/ntpd ]; then
     /etc/init.d/ntpd start
 fi
 
-if [[ "$NGINX_INSTALL" = [yY] ]]; 
-then
+if [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
     /etc/init.d/nginx start
 fi
 
-if [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; 
-then
+if [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
     /etc/init.d/mysql start
 fi
 
-if [[ "$MYSQL_INSTALL" = [yY] ]]; 
-then
+if [[ "$MYSQL_INSTALL" = [yY] && -f /etc/init.d/mysqld ]]; then
     /etc/init.d/mysqld start
 fi
 echo " "
