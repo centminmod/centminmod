@@ -14,7 +14,7 @@ chkconfig php-fpm off
 }
 
 mariadboff() {
-service mysql stop
+service mysqld stop
 chkconfig mysql off
 }
 

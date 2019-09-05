@@ -99,6 +99,30 @@ else
   ipv_forceopt='4'
 fi
 
+cmservice() {
+  servicename=$1
+  action=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "service ${servicename} $action"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      service "${servicename}" "$action"
+    fi
+  else
+    if [[ "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' ]]; then
+      echo "service ${servicename} $action"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        service "${servicename}" "$action"
+      fi
+    elif [[ "${servicename}" = 'mysql' || "${servicename}" = 'mysqld' ]]; then
+      servicename='mariadb'
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    fi
+  fi
+}
+
 #####################################################
 top_info() {
     SYSTYPE=$(virt-what | head -n1)
@@ -293,7 +317,7 @@ top_info() {
     iotop -bton1 -P
     echo
     # ensure mysql server is running before triggering mysqlreport output
-    if [[ "$(service mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
+    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqlreport"
         /root/mysqlreport 2>/dev/null
@@ -304,7 +328,7 @@ top_info() {
             # 64bit OS only
             yum -q -y install percona-toolkit --enablerepo=percona-release-x86_64
         fi
-        if [[ "$(service mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
+        if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
             echo "------------------------------------------------------------------"
             /usr/bin/pt-summary 2>/dev/null | sed -e 's|Percona Toolkit ||g'
             echo
@@ -590,7 +614,7 @@ for c in $VHOSTSCONF; do
     echo "* /usr/local/nginx/conf/conf.d/$c"; 
 done
 
-if [[ -z "$(service mysql status | grep not)" ]]; then
+if [[ -z "$(cmservice mysql status | grep not)" ]]; then
 echo
 echo "------------------------------------------------------------------"
 echo " MySQL Databases:"

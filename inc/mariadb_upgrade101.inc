@@ -342,7 +342,7 @@ echo
 echo "shut down existing MariaDB server for upgrade.."
 mysql -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
 sleep 10
-service mysql stop
+service mysqld stop
 echo
 # move aside existing ib_logfile* files
 cd $MYSQLDATADIR

@@ -17,8 +17,8 @@ fi
     cd $DIR_TMP
 
 
-    cmchkconfig mysqld on
-    cmservice mysqld start
+    cmchkconfig mysql on
+    cmservice mysql start
 
 
     echo "*************************************************"
@@ -31,7 +31,7 @@ mysqlproclimit
     echo "*************************************************"
     cecho "* MySQL installed" $boldgreen
     echo "*************************************************"
-    cmservice mysqld stop
+    cmservice mysql stop
 fi
 
 }

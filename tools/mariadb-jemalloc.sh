@@ -56,8 +56,32 @@ for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
 done
 
+cmservice() {
+  servicename=$1
+  action=$2
+  if [[ "$CENTOS_SEVEN" != '7' ]] && [[ "${servicename}" = 'haveged' || "${servicename}" = 'pure-ftpd' || "${servicename}" = 'mysql' || "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' || "${servicename}" = 'memcached' || "${servicename}" = 'nsd' || "${servicename}" = 'csf' || "${servicename}" = 'lfd' ]]; then
+    echo "service ${servicename} $action"
+    if [[ "$CMSDEBUG" = [nN] ]]; then
+      service "${servicename}" "$action"
+    fi
+  else
+    if [[ "${servicename}" = 'php-fpm' || "${servicename}" = 'nginx' ]]; then
+      echo "service ${servicename} $action"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        service "${servicename}" "$action"
+      fi
+    elif [[ "${servicename}" = 'mysql' || "${servicename}" = 'mysqld' ]]; then
+      servicename='mariadb'
+      echo "systemctl $action ${servicename}.service"
+      if [[ "$CMSDEBUG" = [nN] ]]; then
+        systemctl "$action" "${servicename}.service"
+      fi
+    fi
+  fi
+}
+
 switch_malloc() {
-  if [[ "$JEMALLOC" = [yY] && "$(service mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  if [[ "$JEMALLOC" = [yY] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
     echo
     cecho "check existing mysqld memory usage" $boldyellow
     pidstat -rh -C mysqld | sed -e "s|$(hostname)|hostname|g"
@@ -117,7 +141,7 @@ switch_malloc() {
 }
 
 numa_opt() {
-  if [[ "$NUMA" = [yY] && "$(service mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  if [[ "$NUMA" = [yY] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
     echo
     cecho "apply numa optimisation if required" $boldyellow
     if [[ -f /usr/bin/numactl && "$(numactl --hardware | awk '/available:/ {print $2}')" -gt '2' && ! -f /etc/systemd/system/mariadb.service.d/numa.conf ]]; then

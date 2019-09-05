@@ -280,8 +280,13 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
   cmchkconfig mysql off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable mysql service type these 2 commands:" $boldyellow
-  echo "service mysql start"
-  echo "chkconfig mysql on"
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    echo "service mysql start"
+    echo "chkconfig mysql on"
+  else
+    echo "systemctl start mariadb"
+    echo "systemctl enable mariadb"
+  fi
   cecho "--------------------------------------------------------" $boldyellow
 fi
 

@@ -178,8 +178,8 @@ install_cfzlib() {
                     echo "mysqladmin flush-tables"
                     mysqladmin flush-tables
                     sleep 10s
-                    service mysql status;
-                    service mysql restart;
+                    cmservice mysql status;
+                    cmservice mysql restart;
                 elif [[ "$i" = 'pickup' || "$i" = 'qmgr' ]]; then
                     service postfix status;
                     service postfix restart;
@@ -302,7 +302,7 @@ install_stdzlib() {
                     echo "mysqladmin flush-tables"
                     mysqladmin flush-tables
                     sleep 10s
-                    service mysql status;
+                    service mysqld status;
                     service mysql restart;
                 elif [[ "$i" = 'pickup' || "$i" = 'qmgr' ]]; then
                     service postfix status;

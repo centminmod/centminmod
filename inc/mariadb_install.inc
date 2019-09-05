@@ -505,7 +505,7 @@ if [[ "$MDB_INSTALL" = [yY] ]]; then
     cecho "* Installing MariaDB " $boldgreen
     echo "*************************************************"
 
-cmservice mysqld stop
+cmservice mysql stop
 
 ${YUMDNFBIN}${CACHESKIP} -y remove mysql mysql-libs
 
@@ -538,7 +538,7 @@ fi
 
 perdbiinstall
 
-cmservice mysqld stop
+cmservice mysql stop
 
 #yum -y remove mysql mysql-libs
 
