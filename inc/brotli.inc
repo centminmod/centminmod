@@ -403,7 +403,7 @@ ngxbrotli_download() {
     echo "download ngx_brotli module"
     cd $DIR_TMP
 
-    NGXBROTLILINK='https://github.com/eustas/ngx_brotli'
+    NGXBROTLILINK='https://github.com/google/ngx_brotli'
     # fallback mirror if official github is down, use gitlab mirror
     curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
     NGXBROTLICURLCHECK=$?
