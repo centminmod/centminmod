@@ -928,7 +928,7 @@ rewrite /wp-admin\$ \$scheme://\$host\$uri/ permanent;
 # strip gclid/fbclid query strings from urls via a
 # 302 redirect to url without the query strings
 if (\$wpfcgi_ignorearg) {
-  rewrite ^ $uri? redirect;
+  rewrite ^ \$uri? redirect;
 }
 
 # Centmin Mod Nginx has nginx_cache_purge module
