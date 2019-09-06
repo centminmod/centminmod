@@ -127,7 +127,7 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
         echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
     fi
 
-    if [ -f /etc/init.d/mysql ]; then
+    if [[ -f /etc/init.d/mysql || -f /usr/lib/systemd/system/mariadb.service ]]; then
     
         echo "systemctl daemon-reload; service mysql stop" >/usr/bin/mysqlstop ; chmod 700 /usr/bin/mysqlstop
         echo "systemctl daemon-reload; service mysql start" >/usr/bin/mysqlstart ; chmod 700 /usr/bin/mysqlstart
