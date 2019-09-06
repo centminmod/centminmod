@@ -2195,7 +2195,11 @@ if [[ "$PHP_ZSTD" = [yY] ]]; then
   php_ext_zstd
 fi
 
-if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.3' ]]; then
+if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.4' ]]; then
+  if [ -f /usr/local/src/centminmod/addons/php74-mcrypt.sh ]; then
+    /usr/local/src/centminmod/addons/php74-mcrypt.sh menu
+  fi
+elif [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.3' ]]; then
   if [ -f /usr/local/src/centminmod/addons/php73-mcrypt.sh ]; then
     /usr/local/src/centminmod/addons/php73-mcrypt.sh menu
   fi
@@ -2210,7 +2214,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then

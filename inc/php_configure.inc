@@ -1,3 +1,12 @@
+oniguruma_check() {
+  if [[ "$(rpm -qa oniguruma5 oniguruma5-devel | wc -l)" -lt '2' ]]; then
+    echo
+    echo "install oniguruma5 oniguruma5-devel"
+    echo
+    yum -y install oniguruma5 oniguruma5-devel --enablerepo=remi
+  fi
+}
+
 function funct_phpconfigure {
 # set locale temporarily to english
 # for php compile due to some non-english
@@ -281,6 +290,8 @@ else
     MAKETHREADS_PHP=" -j$CPUS_MAKEPHP"
 fi
 
+oniguruma_check
+
 # whether to switch from system used zlib to cloudflare zlib performance
 # fork for php conmpilations for cpus supporting SSE4.2 at least
 CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
@@ -319,6 +330,9 @@ if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
   PDOSQLLITE_OPT=' --without-pdo-sqlite'
 else
   PDOSQLLITE_OPT=' --with-pdo-sqlite'
+  if [[ -z "$(rpm -qa sqlite-devel)" ]]; then
+    yum -q -y install sqlite-devel
+  fi
 fi
 
 # php 7.2 & 7.3 specific config options
@@ -903,7 +917,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
   # initial php install
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
@@ -948,7 +962,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
   # php upgrades
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
@@ -994,7 +1008,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   fi
   # CentOS 7 use devtoolset-4 GCC 5.2 if it's detected
   # initial php install
-  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
@@ -1060,7 +1074,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
   # php upgrades
-  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
