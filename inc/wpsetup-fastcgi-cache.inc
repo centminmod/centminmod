@@ -564,6 +564,10 @@ if [[ "$wpautoptimize_gzip" = [yY] ]]; then
 fi
 
 echo
+echo "Google Native LazyLoad Plugin https://wordpress.org/plugins/native-lazyload/"
+read -ep "Install Google Native LazyLoad Plugin ? [y/n]: " -i y wp_google_lazyload
+
+echo
 read -ep "Set custom WP Admin Display Name ? [y/n]: " setdisplayname
 if [[ "$setdisplayname" = [yY] ]]; then
   read -ep "Enter Custom WP Admin Display Name: " displayname
@@ -2893,6 +2897,13 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
 fi
 
 # installed + activated by default
+
+# install google native lazy load plugin
+if [[ "$wp_google_lazyload" = [yY] ]]; then
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install native-lazyload --activate --allow-root
+  cecho "------------------------------------------------------------" $boldgreen
+fi
 
 # install classic editor plugin instead of gutenberg
 if [[ "$wpclassic_editor" = [yY] ]]; then
