@@ -81,7 +81,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
   FFI_OPT=' --with-ffi'
 else
-  FFI_OPT="' --with-ffi'"
+  FFI_OPT=""
 fi
 
 # enable CentOS 7 systemd integration for PHP-FPM versions 5.5 and higher
