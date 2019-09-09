@@ -79,6 +79,9 @@ fi
 # Enable Foreign Function Interface FFI extension
 # for PHP 7.4+ https://wiki.php.net/rfc/ffi
 if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
+  if [[ -z "$(rpm -qa libffi-devel)" ]]; then
+    yum -q -y install libffi-devel
+  fi
   FFI_OPT=' --with-ffi'
 else
   FFI_OPT=""
