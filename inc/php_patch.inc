@@ -266,7 +266,7 @@ php_patches() {
       done
     fi
   fi
-  if [[ "$FPM_WAKEUP_PATCH" = [yY] -f "$CUR_DIR/patches/php/intel/reduce-fpm-event-wakeups.patch" ]]; then
+  if [[ "$FPM_WAKEUP_PATCH" = [yY] && -f "$CUR_DIR/patches/php/intel/reduce-fpm-event-wakeups.patch" ]]; then
     echo
     echo "PHP-FPM patch to reduce event wakeups"
     echo
