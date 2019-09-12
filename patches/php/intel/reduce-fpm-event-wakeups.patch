@@ -1,0 +1,42 @@
+From: Arjan van de Ven <arjan@linux.intel.com>
+
+Reduce system wakeups by not waking up PHP once per second
+
+
+--- php-7.1.4/sapi/fpm/fpm/fpm_events.c	2017-04-18 10:15:58.611242467 -0700
++++ php-7.1.4/sapi/fpm/fpm/fpm_events.c	2017-04-18 10:29:11.051295951 -0700
+@@ -402,10 +402,10 @@
+ 
+ 		/* 1s timeout if none has been set */
+ 		if (!timerisset(&ms) || timercmp(&ms, &now, <) || timercmp(&ms, &now, ==)) {
+-			timeout = 1000;
++			timeout = 30000;
+ 		} else {
+ 			timersub(&ms, &now, &tmp);
+-			timeout = (tmp.tv_sec * 1000) + (tmp.tv_usec / 1000) + 1;
++			timeout = (tmp.tv_sec * 1000) + (tmp.tv_usec / 1000) + 30000;
+ 		}
+ 
+ 		ret = module->wait(fpm_event_queue_fd, timeout);
+--- php-5.6.17/sapi/fpm/fpm/fpm_process_ctl.c~	2016-01-06 10:14:47.000000000 -0500
++++ php-5.6.17/sapi/fpm/fpm/fpm_process_ctl.c	2016-03-12 18:15:18.726600269 -0500
+@@ -191,7 +191,7 @@
+ 		} else {
+ 			sig = SIGKILL;
+ 		}
+-		timeout = 1;
++		timeout = 10;
+ 	}
+ 
+ 	fpm_pctl_kill_all(sig);
+--- php-7.1.1/sapi/fpm/fpm/fpm_process_ctl.c~	2017-01-17 20:44:41.000000000 +0000
++++ php-7.1.1/sapi/fpm/fpm/fpm_process_ctl.c	2017-01-30 04:24:06.467900642 +0000
+@@ -454,7 +454,7 @@
+ 	}
+ 
+ 	/* ensure heartbeat is not lower than FPM_PCTL_MIN_HEARTBEAT */
+-	fpm_globals.heartbeat = MAX(fpm_globals.heartbeat, FPM_PCTL_MIN_HEARTBEAT);
++	fpm_globals.heartbeat = 10 * MAX(fpm_globals.heartbeat, FPM_PCTL_MIN_HEARTBEAT);
+ 
+ 	/* first call without setting to initialize the timer */
+ 	zlog(ZLOG_DEBUG, "heartbeat have been set up with a timeout of %dms", fpm_globals.heartbeat);

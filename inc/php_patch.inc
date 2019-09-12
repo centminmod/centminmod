@@ -266,5 +266,13 @@ php_patches() {
       done
     fi
   fi
+  if [[ "$FPM_WAKEUP_PATCH" = [yY] -f "$CUR_DIR/patches/php/intel/reduce-fpm-event-wakeups.patch" ]]; then
+    echo
+    echo "PHP-FPM patch to reduce event wakeups"
+    echo
+    cp -a "$CUR_DIR/patches/php/intel/reduce-fpm-event-wakeups.patch" reduce-fpm-event-wakeups.patch
+    dos2unix reduce-fpm-event-wakeups.patch
+    patch -p1 < reduce-fpm-event-wakeups.patch
+  fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"
 }
