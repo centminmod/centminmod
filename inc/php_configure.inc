@@ -1,3 +1,18 @@
+pgophpbench() {
+  echo
+  echo "PGO phpbench setup start"
+  rm -rf "${DIR_TMP}/phpbench"
+  mkdir -p "${DIR_TMP}/phpbench" /opt/phpbench
+  wget -4 -O "${DIR_TMP}/phpbench/phpbench-0.8.1.zip" https://github.com/centminmod/centminmod-php71/raw/master/scripts/phpbench-0.8.1.zip
+  wget -4 -O /opt/phpbench/detailed_benchmark.php https://github.com/centminmod/centminmod-php71/raw/master/scripts/detailed_benchmark.php
+  pushd "${DIR_TMP}/phpbench"
+  unzip phpbench-0.8.1.zip
+  \cp -af tests /opt/phpbench/tests
+  popd
+  echo "PGO phpbench setup end"
+  echo
+}
+
 oniguruma_check() {
   if [[ "$(rpm -qa oniguruma5 oniguruma5-devel | wc -l)" -lt '2' ]]; then
     echo
@@ -1570,6 +1585,16 @@ sar_call
                 echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR""
                 time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR"
             fi
+            echo "pgophpbench"
+            pgophpbench
+            if [ -f "${DIR_TMP}/phpbench/phpbench.php" ]; then
+              echo "./sapi/cgi/php-cgi -T10 ${DIR_TMP}/phpbench/phpbench.php"
+              time ./sapi/cgi/php-cgi -T10 "${DIR_TMP}/phpbench/phpbench.php"
+            fi
+            if [ -f /opt/phpbench/detailed_benchmark.php ]; then
+              echo "./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php"
+              time ./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php
+            fi
         elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP/php_pgo_training_scripts"
             git stash
@@ -1599,6 +1624,16 @@ sar_call
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
                 echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR""
                 time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR"
+            fi
+            echo "pgophpbench"
+            pgophpbench
+            if [ -f "${DIR_TMP}/phpbench/phpbench.php" ]; then
+              echo "./sapi/cgi/php-cgi -T10 ${DIR_TMP}/phpbench/phpbench.php"
+              time ./sapi/cgi/php-cgi -T10 "${DIR_TMP}/phpbench/phpbench.php"
+            fi
+            if [ -f /opt/phpbench/detailed_benchmark.php ]; then
+              echo "./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php"
+              time ./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php
             fi
         fi
         echo "make prof-clean"

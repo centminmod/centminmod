@@ -644,6 +644,16 @@ fi
                 echo "./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR""
                 time ./sapi/cgi/php-cgi -T100 "$PHPPGO_INDEXPATH_FOUR"
             fi
+            echo "pgophpbench"
+            pgophpbench
+            if [ -f "${DIR_TMP}/phpbench/phpbench.php" ]; then
+              echo "./sapi/cgi/php-cgi -T10 ${DIR_TMP}/phpbench/phpbench.php"
+              time ./sapi/cgi/php-cgi -T10 "${DIR_TMP}/phpbench/phpbench.php"
+            fi
+            if [ -f /opt/phpbench/detailed_benchmark.php ]; then
+              echo "./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php"
+              time ./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php
+            fi
         elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP/php_pgo_training_scripts"
             git stash
@@ -673,6 +683,16 @@ fi
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
                 echo "./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR""
                 time ./sapi/cgi/php-cgi -T80 "$PHPPGO_INDEXPATH_FOUR"
+            fi
+            echo "pgophpbench"
+            pgophpbench
+            if [ -f "${DIR_TMP}/phpbench/phpbench.php" ]; then
+              echo "./sapi/cgi/php-cgi -T10 ${DIR_TMP}/phpbench/phpbench.php"
+              time ./sapi/cgi/php-cgi -T10 "${DIR_TMP}/phpbench/phpbench.php"
+            fi
+            if [ -f /opt/phpbench/detailed_benchmark.php ]; then
+              echo "./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php"
+              time ./sapi/cgi/php-cgi -T20 /opt/phpbench/detailed_benchmark.php
             fi
         fi
         echo "make prof-clean"
