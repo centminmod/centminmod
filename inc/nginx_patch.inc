@@ -33,6 +33,7 @@ iouring_patch() {
         cecho "patch -p1 < $CUR_DIR/patches/nginx/nginx_io_uring.patch" $boldyellow
         patch -p1 < "$CUR_DIR/patches/nginx/nginx_io_uring.patch"
         echo
+        sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
         sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
         echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
         popd
