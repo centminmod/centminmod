@@ -265,11 +265,35 @@ python_centossix_sclfix() {
 }
 
 pip_updates() {
-  if [[ "$(date "+%u")" -eq '4' || "$(date "+%u")" -eq '6' ]]; then
+  if [[ "$(date "+%u")" -eq '3' || "$(date "+%u")" -eq '4' || "$(date "+%u")" -eq '6' ]]; then
     # for glances and psutil as glances is installed via outdated EPEL
     # yum repo but there's a new version available
     if [[ ! -f /usr/bin/python-config ]]; then
       $YUMDNFBIN -q -y install python-devel
+    fi
+    if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
+        # $YUMDNFBIN -q -y install python-urllib3 >/dev/null 2>&1
+        # yum -q -y versionlock python-urllib3 >/dev/null 2>&1
+        if [[ ! "$(grep 'python-urllib3' /etc/yum.conf)" ]]; then
+          NEW_PYTHONURLLIB_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-urllib3")
+          sed -i "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
+        fi
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade urllib3
+    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
+        CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list -o --format columns)
+        CHECK_PIPURLLIBUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o urllib3)
+        if [[ "$(rpm -qa python-urllib3 | grep -o python-urllib3)" = 'python-urllib3' ]]; then
+          yum -q -y remove python-urllib3 >/dev/null 2>&1
+          yum versionlock delete python-urllib3 >/dev/null 2>&1
+          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq urllib3
+        fi
+        if [[ ! "$(grep 'python-urllib3' /etc/yum.conf)" ]]; then
+          NEW_PYTHONURLLIB_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-urllib3")
+          sed -i "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
+        fi
+        export CC='gcc'
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade urllib3
     fi
     if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/pip ]] || [[ "$CENTOS_SIX" -eq '6' &&  ! -f /usr/bin/pip2.7 ]]; then
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
@@ -1295,6 +1319,7 @@ yumupdatechecker() {
     # if IUS Community python34u, python35u or python36u packages installed from addons installers
     # ensure that system/EPEL versions of python34 and python36 are excluded from yum list & yum updates
     if [[ "$(yum list installed python34u* python35u* python36u* -q --exclude=python* 2>&1 | grep -v Installed | grep -v 'No matching Packages' | tr -s ' ' | column -t)" ]]; then
+      PROMPT_FOR_BASE_PYTHON='y'
       YUM_EXCLUDE_PYTHON=' --exclude=python34-*,python35-*,python36-*'
     else
       YUM_EXCLUDE_PYTHON=""
@@ -1390,6 +1415,17 @@ yumupdatechecker() {
           echo
         fi
         echo "  yum update $YYUM_UPDATEPARAMETER"
+      fi
+      echo
+      if [[ "$CENTOS_SEVEN" = '7' && "$PROMPT_FOR_BASE_PYTHON" = [yY] ]]; then
+        echo "detected python36u IUS Community YUM packages installed"
+        echo "For CentOS 7 they have been replaced with native CentOS 7.7+"
+        echo "python3 packages now"
+        echo
+        echo "One time task to run the addons/python36_install.sh script"
+        echo "to switch from python36u to python3 packages for Python 3.6"
+        echo "before doing YUM update command, run the script at:"
+        echo "/usr/local/src/centminmod/addons/python36_install.sh"
       fi
       echo
     else
