@@ -38,6 +38,11 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
             echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
             echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
             echo "No guarantee 100% working install with your CentOS $CENTOSVER"
+            if [[ "$CENTOS_EIGHT" = '8' ]]; then
+              echo
+              echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
+              echo
+            fi
      echo "-----------------------------------------------------"
             echo ""
             read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
