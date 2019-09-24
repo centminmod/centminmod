@@ -346,6 +346,15 @@ else
     echo "*************************************************"
     echo "The date/time before was:"
     date
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+    echo
+    time $YUMDNFBIN -y install chrony
+    systemctl start chronyd
+    systemctl enable chronyd
+    systemctl status chronyd
+    echo "current chrony ntp servers"
+    chronyc sources
+else
     echo
     time $YUMDNFBIN -y install ntp
     chkconfig ntpd on
@@ -378,6 +387,7 @@ else
     echo -e "\ncheck ntpd peers list"
     ntpdc -p
     fi
+fi
     echo "The date/time is now:"
     date
   fi
