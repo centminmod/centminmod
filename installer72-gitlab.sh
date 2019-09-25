@@ -127,6 +127,9 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  WGET_VERSION=$WGET_VERSION_SEVEN
+fi
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
@@ -226,7 +229,7 @@ if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-  if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+  if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
 :a
@@ -235,11 +238,22 @@ exclude=*.i386 *.i586 *.i686
 :w
 :q
 EOF
+  elif [[ "$CENTOS_EIGHT" = '8' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
+.
+:w
+:q
+EOF
   fi
 fi
 
 # some centos images don't even install tar by default !
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
 elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
@@ -297,18 +311,26 @@ if [ ! -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -318,18 +340,26 @@ elif [ -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -340,57 +370,57 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     echo "LXC/LXD container system detected, NTP not installed"
 else
-  if [ ! -f /usr/sbin/ntpd ]; then
-    echo "*************************************************"
-    echo "* Installing NTP (and syncing time)"
-    echo "*************************************************"
-    echo "The date/time before was:"
-    date
-if [[ "$CENTOS_EIGHT" = '8' ]]; then
-    echo
-    time $YUMDNFBIN -y install chrony
-    systemctl start chronyd
-    systemctl enable chronyd
-    systemctl status chronyd
-    echo "current chrony ntp servers"
-    chronyc sources
-else
-    echo
-    time $YUMDNFBIN -y install ntp
-    chkconfig ntpd on
-    if [ -f /etc/ntp.conf ]; then
-    if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
-        echo "logfile /var/log/ntpd.log" >> /etc/ntp.conf
-        ls -lahrt /var/log | grep 'ntpd.log'
-    fi
-    echo "current ntp servers"
-    NTPSERVERS=$(awk '/server / {print $2}' /etc/ntp.conf | grep ntp.org | sort -r)
-    for s in $NTPSERVERS; do
-      if [ -f /usr/bin/nc ]; then
-        echo -ne "\n$s test connectivity: "
-        if [[ "$(echo | nc -u -w1 $s 53 >/dev/null 2>&1 ;echo $?)" = '0' ]]; then
-        echo " ok"
-        else
-        echo " error"
+  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+      echo
+      time $YUMDNFBIN -y install chrony
+      systemctl start chronyd
+      systemctl enable chronyd
+      systemctl status chronyd
+      echo "current chrony ntp servers"
+      chronyc sources
+  else
+    if [ ! -f /usr/sbin/ntpd ]; then
+      echo "*************************************************"
+      echo "* Installing NTP (and syncing time)"
+      echo "*************************************************"
+      echo "The date/time before was:"
+      date
+      echo
+      time $YUMDNFBIN -y install ntp
+      chkconfig ntpd on
+      if [ -f /etc/ntp.conf ]; then
+        if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
+            echo "logfile /var/log/ntpd.log" >> /etc/ntp.conf
+            ls -lahrt /var/log | grep 'ntpd.log'
         fi
+        echo "current ntp servers"
+        NTPSERVERS=$(awk '/server / {print $2}' /etc/ntp.conf | grep ntp.org | sort -r)
+        for s in $NTPSERVERS; do
+          if [ -f /usr/bin/nc ]; then
+            echo -ne "\n$s test connectivity: "
+            if [[ "$(echo | nc -u -w1 $s 53 >/dev/null 2>&1 ;echo $?)" = '0' ]]; then
+            echo " ok"
+            else
+            echo " error"
+            fi
+          fi
+            ntpdate -q $s | tail -1
+            if [[ -f /etc/ntp/step-tickers && -z "$(grep $s /etc/ntp/step-tickers )" ]]; then
+            echo "$s" >> /etc/ntp/step-tickers
+            fi
+        done
+        if [ -f /etc/ntp/step-tickers ]; then
+            echo -e "\nsetup /etc/ntp/step-tickers server list\n"
+            cat /etc/ntp/step-tickers
+        fi
+        service ntpd restart >/dev/null 2>&1
+        echo -e "\ncheck ntpd peers list"
+        ntpdc -p
       fi
-        ntpdate -q $s | tail -1
-        if [[ -f /etc/ntp/step-tickers && -z "$(grep $s /etc/ntp/step-tickers )" ]]; then
-        echo "$s" >> /etc/ntp/step-tickers
-        fi
-    done
-    if [ -f /etc/ntp/step-tickers ]; then
-        echo -e "\nsetup /etc/ntp/step-tickers server list\n"
-        cat /etc/ntp/step-tickers
     fi
-    service ntpd restart >/dev/null 2>&1
-    echo -e "\ncheck ntpd peers list"
-    ntpdc -p
-    fi
-fi
-    echo "The date/time is now:"
-    date
   fi
+  echo "The date/time is now:"
+  date
 fi
 
 # only run for CentOS 6.x

@@ -82,6 +82,9 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  WGET_VERSION=$WGET_VERSION_SEVEN
+fi
 
 if [ -f /usr/local/lib/libssl.a ]; then
     # echo "clean up old /usr/local/lib/libssl.a"

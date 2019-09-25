@@ -127,6 +127,9 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  WGET_VERSION=$WGET_VERSION_SEVEN
+fi
 
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
@@ -226,7 +229,7 @@ if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-  if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+  if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
 :a
@@ -235,11 +238,22 @@ exclude=*.i386 *.i586 *.i686
 :w
 :q
 EOF
+  elif [[ "$CENTOS_EIGHT" = '8' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
+.
+:w
+:q
+EOF
   fi
 fi
 
 # some centos images don't even install tar by default !
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
 elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
@@ -297,18 +311,26 @@ if [ ! -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -318,18 +340,26 @@ elif [ -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
     if [ -d /etc/cron.d ]; then
       echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
     fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi

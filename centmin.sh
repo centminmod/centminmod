@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='281'
+SCRIPT_INCREMENTVER='282'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2019'
@@ -1200,6 +1200,9 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  WGET_VERSION=$WGET_VERSION_SEVEN
+fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETEIGHT='y'
@@ -1246,11 +1249,20 @@ if [[ "$NGINX_VIDEO" = [yY] ]]; then
 fi
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-  if [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+  if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
 ex -s /etc/yum.conf << EOF
 :/plugins=1/
 :a
 exclude=*.i386 *.i586 *.i686
+.
+:w
+:q
+EOF
+  elif [[ "$CENTOS_EIGHT" = '8' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
 .
 :w
 :q
