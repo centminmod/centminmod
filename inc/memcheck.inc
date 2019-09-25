@@ -9,7 +9,15 @@ TOTALMEM=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_T=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
 TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
-ISLOWMEM='262144'
+
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+  ISLOWMEM='1870000'
+elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+  ISLOWMEM='930000'
+else
+  ISLOWMEM='262144'
+fi
+
 #############################################################
 # Formulas
 TOTALMEMMB=`echo "scale=0;$TOTALMEM/1024" | bc`
