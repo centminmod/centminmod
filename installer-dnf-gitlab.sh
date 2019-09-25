@@ -347,7 +347,15 @@ else
     echo "The date/time before was:"
     date
     echo
-    time $YUMDNFBIN -y install ntp${DISABLEREPO_DNF}
+    time $YUMDNFBIN -y install chrony
+    systemctl start chronyd
+    systemctl enable chronyd
+    systemctl status chronyd
+    echo "current chrony ntp servers"
+    chronyc sources
+else
+    echo
+    time $YUMDNFBIN -y install ntp
     chkconfig ntpd on
     if [ -f /etc/ntp.conf ]; then
     if [[ -z "$(grep 'logfile' /etc/ntp.conf)" ]]; then
@@ -378,6 +386,7 @@ else
     echo -e "\ncheck ntpd peers list"
     ntpdc -p
     fi
+fi
     echo "The date/time is now:"
     date
   fi
@@ -998,7 +1007,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   if [[ -f /etc/machine-info && "$(grep -qi 'OVH bhs' /etc/machine-info; echo $?)" -eq '0' ]]; then
     # detected OVH BHS based server so disable slower babylon network mirror
     # https://community.centminmod.com/posts/47320/
-    if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+    if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum/pluginconf.d/fastestmirror.conf ]]; then
       echo "exclude=ca.mirror.babylon.network" >> /etc/yum/pluginconf.d/fastestmirror.conf
       cat /etc/yum/pluginconf.d/fastestmirror.conf
     fi
@@ -1024,7 +1033,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
       sar_call

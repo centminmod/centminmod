@@ -1008,7 +1008,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   if [[ -f /etc/machine-info && "$(grep -qi 'OVH bhs' /etc/machine-info; echo $?)" -eq '0' ]]; then
     # detected OVH BHS based server so disable slower babylon network mirror
     # https://community.centminmod.com/posts/47320/
-    if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
+    if [[ "$CENTOS_SEVEN" = '7' && -f /etc/yum/pluginconf.d/fastestmirror.conf ]]; then
       echo "exclude=ca.mirror.babylon.network" >> /etc/yum/pluginconf.d/fastestmirror.conf
       cat /etc/yum/pluginconf.d/fastestmirror.conf
     fi
@@ -1034,7 +1034,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
       sar_call
@@ -1220,7 +1220,7 @@ cd $INSTALLDIR
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '7.2' | head -n1)
-PHPVERLATEST=${PHPVERLATEST:-"7.2.17"}
+PHPVERLATEST=${PHPVERLATEST:-"7.2.22"}
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
