@@ -1721,10 +1721,14 @@ cmupdatecheck() {
 }
 
 dmotdcheck() {
-  # correct /etc/profile.d/dmotd.sh setup bug
-  if [[ -f /etc/profile.d/dmotd.sh && "$(grep '"0"' /etc/profile.d/dmotd.sh)" ]]; then
+  # correct /etc/profile.d/dmotd.sh to only run motd and logging on interactive ssh sessions
+  # skip for non-interactive sessions like remote ssh logs that are scripted
+  if [[ -f /etc/profile.d/dmotd.sh && -z "$(grep 'tty' /etc/profile.d/dmotd.sh)" ]]; then
     echo '#!/bin/bash' > /etc/profile.d/dmotd.sh
-    echo "if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then  /usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
+    # echo "if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then  /usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
+    echo "if tty -s; then type='interactive'; if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then /usr/local/bin/dmotd; fi; else type='non-interactive'; fi;" >> /etc/profile.d/dmotd.sh
+    echo "if echo \$0 | grep -e ^\\- 2>&1>/dev/null; then login='login'; else login='non-login'; fi;" >> /etc/profile.d/dmotd.sh
+    # echo "$type/$login"
   fi
 }
 
