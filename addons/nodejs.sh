@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.7'
+VER='0.0.8'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -14,7 +14,7 @@ export LC_CTYPE=en_US.UTF-8
 ######################################################
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 4, 5, 6, 7 or 8
-NODEJSVER='8'
+NODEJSVER='10'
 NODEJS_SOURCEINSTALL='y'
 NODEJS_REINSTALL='y'
 
@@ -225,6 +225,7 @@ installnodejs_new() {
   if [[ "$(which node >/dev/null 2>&1; echo $?)" != '0' ]]; then
       cd $DIR_TMP
       curl --silent -4 --location https://rpm.nodesource.com/setup_${NODEJSVER}.x | bash -
+      yum clean all
       yum -y install nodejs --disableplugin=priorities --disablerepo=epel
       time npm install npm@latest -g
   
@@ -241,6 +242,13 @@ installnodejs_new() {
   else
     echo
     cecho "node.js install already detected" $boldgreen
+    echo
+    echo "if node.js was installed via this addon you can update node.js"
+    echo "using below command to uninstall previous version:"
+    echo
+    echo " yum -y erase \$(rpm -qa nodejs)"
+    echo
+    echo "then re-run this script to install node.js again"
   fi
 }
 
@@ -342,7 +350,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 			make${MAKETHREADS}
 			make install
 			make doc
-    	npm install npm@latest -g
+    	    npm install npm@latest -g
 		
 			echo
 			cecho "---------------------------" $boldyellow
