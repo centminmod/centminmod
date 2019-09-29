@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.8'
+VER='0.0.9'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -14,7 +14,7 @@ export LC_CTYPE=en_US.UTF-8
 ######################################################
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 4, 5, 6, 7 or 8
-NODEJSVER='10'
+NODEJSVER='12'
 NODEJS_SOURCEINSTALL='y'
 NODEJS_REINSTALL='y'
 
