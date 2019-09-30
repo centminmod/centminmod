@@ -156,11 +156,16 @@ fi # check to see if csf.pignore already has custom apps added
 
 # if CentOS 7 is detected disable firewalld in favour 
 # of csf iptables ip6tables for now
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
     if [[ "$FIREWALLD_DISABLE" = [yY] ]]; then
         # disable firewalld
-        systemctl disable firewalld
-        systemctl stop firewalld
+        if [[ "$CENTOS_EIGHT" = '8' ]]; then
+            systemctl disable firewalld nftables
+            systemctl stop firewalld nftables
+        else
+            systemctl disable firewalld
+            systemctl stop firewalld
+        fi
     
         # install iptables-services package
         if [ ! -f /usr/lib/systemd/system/iptables.service ]; then
