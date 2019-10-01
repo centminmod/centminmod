@@ -129,6 +129,17 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
+
+  # enable CentOS 8 PowerTools repo for -devel packages
+  if [ ! -f /usr/bin/yum-config-manager ]; then
+    yum -q -y install dnf-utils
+    yum-config-manager --enable PowerTools
+  elif [ -f /usr/bin/yum-config-manager ]; then
+    yum-config-manager --enable PowerTools
+  fi
+
+  # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
+  yum -q -y module disable nginx mysql php:7.2
 fi
 
 if [ -f /proc/user_beancounters ]; then
