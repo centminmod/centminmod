@@ -229,7 +229,7 @@ check_dns() {
           echo
           cecho "$vhostname_dns IPv4 DNS A record is behind Sucuri IPs" $boldyellow
         fi
-        cecho "current DNS A rv4ecord IP address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
+        cecho "current DNS A record IPv4 address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
         if [[ -z "$ISCF_ACHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
