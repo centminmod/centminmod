@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='287'
+SCRIPT_INCREMENTVER='288'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2019'
@@ -1213,6 +1213,12 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
   yum -q -y module disable nginx mysql php:7.2
+
+  # install missing dependencies specific to CentOS 8
+  # for csf firewall installs
+  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+    yum -q -y install perl-Math-BigInt
+  fi
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then

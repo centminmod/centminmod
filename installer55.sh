@@ -140,6 +140,12 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
   yum -q -y module disable nginx mysql php:7.2
+
+  # install missing dependencies specific to CentOS 8
+  # for csf firewall installs
+  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+    yum -q -y install perl-Math-BigInt
+  fi
 fi
 
 if [ -f /proc/user_beancounters ]; then
