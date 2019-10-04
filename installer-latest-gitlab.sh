@@ -1053,7 +1053,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
     time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
     sar_call
-  elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' ]]; then
+  elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -ge '263000' && "$CENTOS_SIX" = '6' ]]; then
     time $YUMDNFBIN -y install yum-plugin-fastestmirror yum-plugin-security
     sar_call
   fi
@@ -1117,7 +1117,14 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   touch /tmp/curlinstaller-yum
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   sar_call
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+    time $YUMDNFBIN -y install qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing
+    libc_fix
+    if [ -f /usr/bin/pip ]; then
+      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
+    fi
+    sar_call
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     time $YUMDNFBIN -y install qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel
     libc_fix
     if [ -f /usr/bin/pip ]; then
