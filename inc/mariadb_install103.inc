@@ -40,6 +40,94 @@ else
 fi
 
 ###############################################################################
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+
+#     if [ "$(uname -m)" == 'aarch64' ]; then
+
+# if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# else
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = http://yum.mariadb.org/10.1/centos8-amd64
+# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# fi
+
+    if [ "$(uname -m)" == 'aarch64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-aarch64
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3/centos8-aarch64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+    fi
+
+    if [ "$(uname -m)" == 'x86_64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3/centos8-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    else
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3/centos8-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    fi # centos 8 uname -m
+
+fi
+
+###############################################################################
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 
 #     if [ "$(uname -m)" == 'aarch64' ]; then
@@ -218,7 +306,7 @@ fi # centos5 check
 ###############################################################################
 
 # only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
     echo ""
     echo "Check for existing mysql-server packages"
     OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
@@ -281,10 +369,18 @@ echo ""
 
 echo "MariaDB 10.3 YUM install..."
 
-if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    DISABLEOTHERREPO=' --disablerepo=epel --disablerepo=rpmforge --disableplugin=priorities'
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+  yumpriorities_opt=""
+  yumdisable_appstream=' --disablerepo=AppStream'
 else
-    DISABLEOTHERREPO=' --disablerepo=epel --disableplugin=priorities'
+  yumpriorities_opt=' --disableplugin=priorities'
+  yumdisable_appstream=""
+fi
+
+if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    DISABLEOTHERREPO="--disablerepo=epel --disablerepo=rpmforge${yumpriorities_opt}"
+else
+    DISABLEOTHERREPO="--disablerepo=epel${yumpriorities_opt}"
 fi
 
 # set /etc/my.cnf templates
@@ -309,7 +405,7 @@ sed -i '/^innodb_file_format/d' /etc/my.cnf
 sed -i '/^innodb_support_xa/d' /etc/my.cnf
 
 # only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
     echo ""
     echo "*************************************************"
     cecho "MariaDB 10.3.x YUM install..." $boldgreen
@@ -331,6 +427,20 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo "*************************************************"
     echo ""
     time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}
+
+    cp -a /etc/my.cnf /etc/my.cnf-newold
+elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    # run for CentOS 8.x
+    echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
+    time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI
+
+    echo ""
+    echo "*************************************************"
+    cecho "MariaDB 10.3.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}" $boldgreen
+    echo "*************************************************"
+    echo ""
+    time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}
 
     cp -a /etc/my.cnf /etc/my.cnf-newold
 fi # CENTOS_SEVEN != 7
@@ -408,11 +518,11 @@ ls -lah /var/log/mysqld.log
 echo
 
 # only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
     mysqlinitfix
 fi # CENTOS_SEVEN != 7
 
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
@@ -726,7 +836,7 @@ mjemalloc
 cmservice mysql restart
 #mysql_secure_installation
 
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
     # for CentOS 5.x and 6.x only
     # remove default innodb tablespace and log files that are incompatible with
     # MariaDB 5.5 / 10 included my.cnf used
