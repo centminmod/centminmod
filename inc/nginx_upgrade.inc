@@ -522,8 +522,14 @@ check_requestscheme
     CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
     CUR_NGINXUPGRADEVER=$(echo "$ngver" |sed -e 's|\.|0|g' | head -n1)    
 
-if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN] ]]; then
+if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN] || "$NGINX_HTTP3" = [nN] ]]; then
     # if centmin.sh option NGINXPATCH=n then disable patches by 
+    # wiping the nginx downloaded source and redownloading a fresh copy
+    rm -rf nginx-${ngver}*
+fi
+
+if [[ "$NGINX_HTTP3" = [yY] ]]; then
+    # if centmin.sh option NGINX_HTTP3='y' then disable other patches by 
     # wiping the nginx downloaded source and redownloading a fresh copy
     rm -rf nginx-${ngver}*
 fi
@@ -869,7 +875,7 @@ fi
             sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
         fi
-    elif [[ "$NGINX_HTTP2" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10903' ]]; then
+    elif [[ "$NGINX_HTTP2" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10903' ]] || [[ "$NGINX_HTTP3" = [yY] ]] && [[ "$DETECT_NGXVER" -ge '1016001' ]]; then
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then

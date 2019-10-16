@@ -1,3 +1,28 @@
+nginx_httpthree_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] && -f ../quiche/extras/nginx/nginx-1.16.patch ]]; then
+    BORINGSSL_SWITCH='n'
+    LIBRESSL_SWITCH='n'
+    NGINX_HPACK='n'
+    NGINX_HTTPPUSH='n'
+    NGINX_HTTP2='n'
+    NGINX_DYNAMICTLS='n'
+    cecho "patching nginx for Cloudflare's Nginx HTTP/3 Patch Support" $boldyellow
+    echo "patch -p1 < ../quiche/extras/nginx/nginx-1.16.patch"
+    # sed -i 's|&& cmake |&& cmake3 |' ../quiche/extras/nginx/nginx-1.16.patch
+    patch -p1 < ../quiche/extras/nginx/nginx-1.16.patch
+    cecho "patched nginx for Cloudflare's Nginx HTTP/3 Patch Support" $boldyellow
+  fi
+}
+
 iouring_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -588,7 +613,6 @@ patchnginx() {
       rm -rf "${NGINXTLSPATCH_NAME}"
      fi
   fi
-  ngx_hpack_patch
   if [[ "$DETECT_NGXVER" -eq '1017002' ]]; then
     # fix gzip zero size buf alerts
     # https://github.com/nginx/nginx/commit/39c40428f93db246a9a27e7a109413fae46e195d
@@ -597,7 +621,9 @@ patchnginx() {
       patch -p1 < "$CUR_DIR/patches/nginx/nginx-1.17.2-fix-zero-size-buf.patch"
     fi
   fi
+  nginx_httpthree_patch
   iouring_patch
+  ngx_hpack_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 

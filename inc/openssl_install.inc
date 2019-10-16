@@ -595,7 +595,17 @@ fi # CLOUDFLARE_PATCHSSL
 
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
-      if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+      if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/enable ]]; then
+        source /opt/gcc9/enable
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
@@ -689,7 +699,7 @@ crypto_gcc() {
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
-            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}"
+            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}"
             # if only 1 cpu thread use -O2 to keep compile times sane
             if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"
@@ -852,7 +862,7 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
-    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]] && [[ "$NGINX_HTTP3" = [nN] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
@@ -978,7 +988,69 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
-    elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
+    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [yY] ]] || [[ "$BORINGSSL_SWITCH" = [nN] && "$NGINX_HTTP3" = [yY] ]]; then
+        boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
+        crypto_gcc
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling BoringSSL + Quiche For HTTP/3"
+        fi
+
+        if [ ! -f /usr/local/go/bin/go ]; then
+            # if golang is not detected BoringSSL switch will be disabled
+            # and default to using OpenSSL 1.0.2+
+            # BORINGSSL_SWITCH='n'
+            if [ -f /usr/local/src/centminmod/addons/golang.sh ]; then
+                /usr/local/src/centminmod/addons/golang.sh install
+                . /root/.bashrc
+            fi
+        fi
+
+        echo "Setup BoringSSL + Quiche For HTTP/3..."
+        boringsslinstallendtime=$(TZ=UTC date +%s.%N)
+        BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
+
+        export CMAKE_C_COMPILER="gcc"
+        export CMAKE_CXX_COMPILER="g++"
+        export CC="gcc"
+        export CXX="g++"
+        export GO_EXECUTABLE="/usr/local/go/bin/go"
+        mkdir -p /home/buildtmp
+        chmod 1777 /home/buildtmp
+        export TMPDIR=/home/buildtmp
+        # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' ${BORINGSSL_DIR}/boringssl/CMakeLists.txt
+        ln -s /usr/local/go/bin/go /usr/local/bin/go
+
+        pushd "$DIR_TMP"
+        rm -rf quiche
+        git clone --recursive https://github.com/cloudflare/quiche
+
+        # install latest rust version
+        if [[ "$(rpm -qa rust)" && ! -f /root/.cargo/bin/rustc ]]; then
+            yum -q -y remove rust
+            curl https://sh.rustup.rs -sSf | sh -s -- -y
+            source $HOME/.cargo/env
+            export PATH="$HOME/.cargo/bin:${PATH}"
+            if [ ! "$(grep "\$HOME/.cargo/bin:" /root/.bashrc)" ]; then
+                echo 'export PATH="$HOME/.cargo/bin:/usr/local/quiche/bin/:${PATH}"' >> /root/.bashrc;
+            fi
+            rustc --version
+        else
+            if [ ! -f /root/.cargo/bin/rustc ]; then
+                curl https://sh.rustup.rs -sSf | sh -s -- -y
+                source $HOME/.cargo/env
+                export PATH="$HOME/.cargo/bin:${PATH}"
+                if [ ! "$(grep "\$HOME/.cargo/bin:" /root/.bashrc)" ]; then
+                    echo 'export PATH="$HOME/.cargo/bin:/usr/local/quiche/bin/:${PATH}"' >> /root/.bashrc;
+                fi
+            fi
+            source $HOME/.cargo/env
+            rustc --version
+        fi
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_borgingssl_quiche_http3_${DT}.log
+        echo "BoringSSL + Quiche For HTTP/3 Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_borgingssl_quiche_http3_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_borgingssl_quiche_http3_${DT}.log
+    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         crypto_gcc
         if [ -f "$(which figlet)" ]; then
