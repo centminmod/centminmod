@@ -278,6 +278,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   # fi
 
   if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] ]]; then
+    # grab current Cloudflare Quiche HTTP/3 protocol version & populate alt-svc include file
+    QUICHE_H3_VER=$(awk '/QUICHE_H3_APPLICATION_PROTOCOL/ {print $3}' ../quiche/include/quiche.h | sed -e 's|\\x05||' -e 's|\"||g')
+    echo "add_header alt-svc '${QUICHE_H3_VER}=\":443\"; ma=86400';" > /usr/local/nginx/conf/altsvc_http3.conf
     # use GCC 7.3.1 devtoolset for best HTTP/3 Quiche library compatibility
     DEVTOOLSETSIX='n'
     DEVTOOLSETSEVEN='y'
@@ -309,6 +312,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       alternatives --set cmake /usr/bin/cmake3
       # alternatives --remove cmake /usr/bin/cmake3
     fi
+  else
+    echo > /usr/local/nginx/conf/altsvc_http3.conf
   fi
 
   if [[ "$NGINX_IOURING_PATCH" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
