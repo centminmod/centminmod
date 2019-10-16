@@ -155,7 +155,7 @@ function funct_lbzip2install {
       echo "lbzip2-${LBZIP_VER}.tar.gz [found]"
       else
       echo "Error: lbzip2-${LBZIP_VER}.tar.gz not found!!! Downloading now......"
-      wget -c${ipv_forceopt} http://archive.lbzip2.org/lbzip2-${LBZIP_VER}.tar.gz --tries=3
+      wget -c${ipv_forceopt} https://github.com/kjn/lbzip2/archive/v${LBZIP_VER}.tar.gz -O lbzip2-${LBZIP_VER}.tar.gz --tries=3
     fi
     
     tar xzf lbzip2-${LBZIP_VER}.tar.gz
