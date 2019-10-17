@@ -315,6 +315,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       # alternatives --remove cmake /usr/bin/cmake3
     fi
   else
+    NGINX_HTTP2='y'
+    NGINX_HTTP3='n'
     echo > /usr/local/nginx/conf/altsvc_http3.conf
     echo > /usr/local/nginx/conf/listener_http3.conf
   fi
