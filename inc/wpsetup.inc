@@ -3065,7 +3065,18 @@ elif [[ "$wpscache" = 'redis' ]]; then
   cecho "------------------------------------------------------------" $boldgreen
 fi
 } 2>&1 | tee /tmp/setupwp.log
+if [ -f /usr/sbin/sendmail ]; then
+sendmail -i \$WPADMINEMAIL <<END
+From: \$WPADMINEMAIL_FROM
+To: \$WPADMINEMAIL
+Subject: ${vhostname} Wordpress Installed \$(date)
+
+\$(cat /tmp/setupwp.log)
+
+END
+else
 cat -v /tmp/setupwp.log | /usr/bin/tr -cd '\11\12\15\40-\176' | perl -pe 's/\x1b.*?[mGKH]//g' | dos2unix | mail -r $WPADMINEMAIL_FROM -s "${vhostname} Wordpress Installed `date`" $WPADMINEMAIL
+fi
 cp -a /tmp/setupwp.log "${CENTMINLOGDIR}/setupwp-$(date +"%d%m%y-%H%M%S").log"
 rm -rf /tmp/setupwp.log
 
