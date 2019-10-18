@@ -3254,6 +3254,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/root/bin:/root/bin:/bin
 EMAIL=$WPADMINEMAIL
 EMAILFROM=$WPADMINEMAIL_FROM
 DT=\$(date +"%d%m%y-%H%M%S")
+# set locale temporarily to english
+# due to some non-english locale issues
+export LC_ALL=en_US.UTF-8
+export LANG=en_US.UTF-8
+export LANGUAGE=en_US.UTF-8
+export LC_CTYPE=en_US.UTF-8
 
 {
 cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}

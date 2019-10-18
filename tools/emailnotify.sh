@@ -217,11 +217,35 @@ send_mail() {
         bodyecho="$body"
         check_fail_msg_note="Message to $serverhostname system administrator regarding mail deliverability improvements: "
         body=$(echo -e "$(cat "$body")\n\n${check_fail_msg_note}\n$(cat /tmp/check_fail_msg.log)")
-        echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-        echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        bodyfile=/tmp/emailnotify_temp.log
+        echo "$body" > "$bodyfile"
+        if [ -f /usr/sbin/sendmail ]; then
+(cat - $bodyfile)<<END | sendmail -t $primary_email
+From: $primary_email
+To: $primary_email
+Subject:  ${subject} - $(hostname) ${email_date}
+
+END
+          rm -f "$bodyfile"
+        else
+          echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        fi
       else
-        echo "cat \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-        cat "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        bodyfile=/tmp/emailnotify_temp.log
+        cat "$body" > "$bodyfile"
+        if [ -f /usr/sbin/sendmail ]; then
+(cat - $bodyfile)<<END | sendmail -t $primary_email
+From: $primary_email
+To: $primary_email
+Subject:  ${subject} - $(hostname) ${email_date}
+
+END
+          rm -f "$bodyfile"
+        else
+          echo "cat \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+          cat "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        fi
       fi
       get_mailid
       check_sent
@@ -231,11 +255,35 @@ send_mail() {
         bodyecho="$body"
         check_fail_msg_note="Message to $serverhostname system administrator regarding mail deliverability improvements: "
         body=$(echo -e "$body\n\n${check_fail_msg_note}\n$(cat /tmp/check_fail_msg.log)")
-        echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-        echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        bodyfile=/tmp/emailnotify_temp.log
+        echo "$body" > "$bodyfile"
+        if [ -f /usr/sbin/sendmail ]; then
+(cat - $bodyfile)<<END | sendmail -t $primary_email
+From: $primary_email
+To: $primary_email
+Subject:  ${subject} - $(hostname) ${email_date}
+
+END
+          rm -f "$bodyfile"
+        else
+          echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        fi
       else
-        echo "echo \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-        echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        bodyfile=/tmp/emailnotify_temp.log
+        echo "$body" > "$bodyfile"
+        if [ -f /usr/sbin/sendmail ]; then
+(cat - $bodyfile)<<END | sendmail -t $primary_email
+From: $primary_email
+To: $primary_email
+Subject:  ${subject} - $(hostname) ${email_date}
+
+END
+          rm -f "$bodyfile"
+        else
+          echo "echo \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
+          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+        fi
       fi
       get_mailid
       check_sent
@@ -262,7 +310,7 @@ case "$1" in
       echo "error: incorrect paramters"
       usage
     else
-      send_mail $2 $3
+      send_mail "${2}" "${3}"
     fi
     ;;
   * )
