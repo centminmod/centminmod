@@ -290,6 +290,18 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     # disable ccache use compatibility
     export CCACHE_DISABLE=1
     # disable for compatibility
+    NGXDYNAMIC_LUA='n'
+    NGXDYNAMIC_ECHO='n'
+    NGXDYNAMIC_HEADERSMORE='n'
+    NGXDYNAMIC_NJS='n'
+    NGXDYNAMIC_XSLT='n'
+    NGXDYNAMIC_PERL='n'
+    NGXDYNAMIC_IMAGEFILTER='n'
+    NGXDYNAMIC_GEOIP='n'
+    NGXDYNAMIC_GEOIPTWOLITE='n'
+    NGXDYNAMIC_STREAM='n'
+    NGXDYNAMIC_STREAMGEOIP='n'
+    NGXDYNAMIC_STREAMREALIP='n'
     NGXDYNAMIC_SETMISC='n'
     NGXDYNAMIC_DEVELKIT='n'
     BORINGSSL_SWITCH='n'

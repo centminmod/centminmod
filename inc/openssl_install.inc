@@ -1018,7 +1018,9 @@ fi
         chmod 1777 /home/buildtmp
         export TMPDIR=/home/buildtmp
         # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' ${BORINGSSL_DIR}/boringssl/CMakeLists.txt
-        ln -s /usr/local/go/bin/go /usr/local/bin/go
+        if [ ! -h /usr/local/bin/go ]; then
+            ln -s /usr/local/go/bin/go /usr/local/bin/go
+        fi
 
         pushd "$DIR_TMP"
         rm -rf quiche
