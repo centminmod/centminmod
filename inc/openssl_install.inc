@@ -1024,7 +1024,36 @@ fi
 
         pushd "$DIR_TMP"
         rm -rf quiche
+        rm -rf quiche-bin
         git clone --recursive https://github.com/cloudflare/quiche
+        # cp -a quiche quiche-bin
+
+        pushd quiche/deps/boringssl
+        mkdir -p build
+        cd build
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            rm -rf CMakeCache.txt
+        fi
+        cmake ..
+        make${MAKETHREADS}
+        if [[ "$NGINX_HTTP3" = [yY] && -f "$DIR_TMP/quiche/deps/boringssl/build/tool/bssl" ]]; then
+            pushd "$DIR_TMP/quiche/deps/boringssl/build/tool"
+            make clean
+            make${MAKETHREADS}
+            popd
+            mkdir -p /opt/boringssl/bin
+            # echo "\cp -af $DIR_TMP/quiche/deps/boringssl/build/tool/bssl /opt/boringssl/bin/bssl"
+            \cp -af "$DIR_TMP/quiche/deps/boringssl/build/tool/bssl" /opt/boringssl/bin/bssl
+            # echo
+            # echo "/opt/boringssl/bin/bssl"
+            /opt/boringssl/bin/bssl
+            # echo "ln -sf "/opt/boringssl/bin/bssl" /usr/local/bin/bssl"
+            ln -sf "/opt/boringssl/bin/bssl" /usr/local/bin/bssl
+            ls -lah /usr/local/bin/bssl
+            ls -lah /opt/boringssl/bin/bssl
+        fi
+        echo
+        popd
 
         # install latest rust version
         if [[ "$(rpm -qa rust)" && ! -f /root/.cargo/bin/rustc ]]; then
@@ -1116,7 +1145,11 @@ fi
         if [ -f "${BORINGSSL_DIR}/boringssl/build/tool/bssl" ]; then
             echo "ln -sf ${BORINGSSL_DIR}/boringssl/build/tool/bssl /usr/local/bin/bssl"
             ln -sf "${BORINGSSL_DIR}/boringssl/build/tool/bssl" /usr/local/bin/bssl
+            mkdir -p /opt/boringssl/bin
+            echo "\cp -af ${BORINGSSL_DIR}/boringssl/build/tool/bssl /opt/boringssl/bin/bssl"
+            \cp -af "${BORINGSSL_DIR}/boringssl/build/tool/bssl" /opt/boringssl/bin/bssl
             ls -lah /usr/local/bin/bssl
+            ls -lah /opt/boringssl/bin/bssl
         fi
         unset TMPDIR
         boringsslinstallendtime=$(TZ=UTC date +%s.%N)
