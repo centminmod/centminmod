@@ -44,6 +44,8 @@ zlibsymlink_fix() {
 
 zlibng_install() {
   if [[ "$NGINX_ZLIBNG" = [yY] ]]; then
+    CLOUDFLARE_ZLIB='n'
+    NGINX_ZLIBCUSTOM='n'
     echo
     echo "install zlib-ng..."
     echo

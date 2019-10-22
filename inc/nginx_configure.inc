@@ -248,6 +248,8 @@ fi
 if [[ "$NGINX_ZLIBNG" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   zlibng_install
   ZLIBNG_OPT=' --with-zlib=../zlib-ng'
+  CLOUDFLARE_ZLIB='n'
+  NGINX_ZLIBCUSTOM='n'
 else
   ZLIBNG_OPT=""
 fi
