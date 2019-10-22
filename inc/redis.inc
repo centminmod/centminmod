@@ -86,6 +86,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NG
         fi
         if [ ! -d redis-php7 ]; then
             time git clone -b php7 "$PHPREDISGITLINK" redis-php7
+            git submodule update --init
         fi
         cd redis-php7
         if [[ "$INITIALINSTALL" != [yY] ]]; then
@@ -103,10 +104,29 @@ if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NG
             fi
         fi
         /usr/local/bin/phpize
-        if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
-            ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary
+        redis_check_zstd=$(grep -o 'enable-redis-zstd' config.m4)
+        if [[ "$redis_check_zstd" = 'enable-redis-zstd' ]]; then
+            if [[ ! "$(rpm -qa libzstd-devel)" ]]; then
+                yum -q -y install libzstd libzstd-devel
+            fi
+            redis_zstd_opt=' --enable-redis-zstd'
         else
-            ./configure --with-php-config=/usr/local/bin/php-config
+            redis_zstd_opt=''
+        fi
+        redis_check_lzf=$(grep -o 'enable-redis-lzf' config.m4)
+        if [[ "$redis_check_lzf" = 'enable-redis-lzf' ]]; then
+            if [[ ! "$(rpm -qa liblzf)" ]]; then
+                yum -q -y install liblzf liblzf-devel
+            fi
+            # redis_lzf_opt=' --enable-redis-lzf'
+            redis_lzf_opt=''
+        else
+            redis_lzf_opt=''
+        fi
+        if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
+            ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
+        else
+            ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
         fi
         make${MAKETHREADS}
         make install
@@ -121,14 +141,33 @@ if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NG
             make clean
         fi
         /usr/local/bin/phpize
+        redis_check_zstd=$(grep -o 'enable-redis-zstd' config.m4)
+        if [[ "$redis_check_zstd" = 'enable-redis-zstd' ]]; then
+            if [[ ! "$(rpm -qa libzstd-devel)" ]]; then
+                yum -q -y install libzstd libzstd-devel
+            fi
+            redis_zstd_opt=' --enable-redis-zstd'
+        else
+            redis_zstd_opt=''
+        fi
+        redis_check_lzf=$(grep -o 'enable-redis-lzf' config.m4)
+        if [[ "$redis_check_lzf" = 'enable-redis-lzf' ]]; then
+            if [[ ! "$(rpm -qa liblzf)" ]]; then
+                yum -q -y install liblzf liblzf-devel
+            fi
+            # redis_lzf_opt=' --enable-redis-lzf'
+            redis_lzf_opt=''
+        else
+            redis_lzf_opt=''
+        fi
         if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
             if [[ "$PHPMUVER" = '5.5' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '5.5' ]]; then
                 ./configure --with-php-config=/usr/local/bin/php-config
             else
-                ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary
+                ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
             fi
         else
-            ./configure --with-php-config=/usr/local/bin/php-config
+            ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
         fi
         make${MAKETHREADS}
         make install   
