@@ -61,7 +61,7 @@ ipv4get() {
 			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
 		fi
 	done
-	echo "real_ip_header CF-Connecting-IP;" >> $CFIPNGINXLOG
+	echo "real_ip_header X-Forwarded-For;" >> $CFIPNGINXLOG
 	
 	echo "--------------------------------------------"
 	echo "  1). add to nginx.conf"
@@ -106,7 +106,7 @@ ipv6get() {
 			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
 		fi
 	done
-	echo "real_ip_header CF-Connecting-IP;" >> $CFIPNGINXLOG
+	echo "real_ip_header X-Forwarded-For;" >> $CFIPNGINXLOG
 	
 	echo "--------------------------------------------"
 	echo "  1). add to nginx.conf"
@@ -186,6 +186,7 @@ nginxsetup() {
 	cflistb=$(/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/)
 	if [ ! -f /usr/local/nginx/conf/cloudflare_customips.conf ]; then
 		touch /usr/local/nginx/conf/cloudflare_customips.conf
+		echo -e "# http://nginx.org/en/docs/http/ngx_http_realip_module.html#real_ip_recursive\nreal_ip_recursive off;" >> /usr/local/nginx/conf/cloudflare_customips.conf
 	fi
 	echo "include /usr/local/nginx/conf/cloudflare_customips.conf;" >> $CFINCLUDEFILE
 	for i in $cflista; do
@@ -206,7 +207,7 @@ nginxsetup() {
       fi
 		done
 	fi
-	echo "real_ip_header CF-Connecting-IP;" >> $CFINCLUDEFILE
+	echo "real_ip_header X-Forwarded-For;" >> $CFINCLUDEFILE
 	if [[ "$(diff -u "${CFINCLUDEFILE}.bak" "$CFINCLUDEFILE" >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
 		service nginx reload >/dev/null 2>&1
 	fi
