@@ -1222,16 +1222,26 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       echo "ls -lahR /usr/local/lib/lua/${BUILDLUA_VER}/resty/"
       ls -lahR /usr/local/lib/lua/${BUILDLUA_VER}/resty/
       echo
+      echo "setup lua_package_path include file"
+      echo "lua_package_path '/usr/local/lib/lua/?.lua;/usr/local/lib/lua/5.1/?.lua;/usr/local/lib/lua/ngx/?.lua;/usr/local/lib/lua/resty/?.lua;;';" > /usr/local/nginx/conf/lua-package-path-include.conf
+
+      LUAPACKAGEPATH_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/lua-package-path-include.conf' /usr/local/nginx/conf/nginx.conf)
+      if [[ -z "$LUAPACKAGEPATH_INCLUDECHECK" ]]; then
+        sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/lua-package-path-include.conf;|g' /usr/local/nginx/conf/nginx.conf
+        #service nginx restart >/dev/null 2>&1
+      fi
+      echo
       cd "${DIR_TMP}"
   else
     LUAOPT=""
     LUALD_OPT="-Wl,-rpath,${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
-      if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
-        rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
-      fi
-      if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
-        rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
-      fi
+    if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
+      rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
+    fi
+    if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
+      rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
+    fi
+    echo > /usr/local/nginx/conf/lua-package-path-include.conf
   fi
 
   if [[ "$NGINX_SPDY" = [yY] ]]; then
