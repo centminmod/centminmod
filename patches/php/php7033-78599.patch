@@ -1,0 +1,53 @@
+From 6e705460ff4f02358b9fb037169c53f4103a21b7 Mon Sep 17 00:00:00 2001
+From: Jakub Zelenka <bukka@php.net>
+Date: Sat, 12 Oct 2019 15:56:16 +0100
+Subject: [PATCH] Fix bug #78599 (env_path_info underflow can lead to RCE)
+ (CVE-2019-11043)
+
+cheery-picked from ab061f95ca966731b1c84cf5b7b20155c0a1c06a
+without the test as tester not available
+---
+ sapi/fpm/fpm/fpm_main.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/sapi/fpm/fpm/fpm_main.c b/sapi/fpm/fpm/fpm_main.c
+index 695839cd9a..88c7c9f118 100644
+--- a/sapi/fpm/fpm/fpm_main.c
++++ b/sapi/fpm/fpm/fpm_main.c
+@@ -1208,8 +1208,8 @@ static void init_request_info(void)
+ 								path_info = script_path_translated + ptlen;
+ 								tflag = (slen != 0 && (!orig_path_info || strcmp(orig_path_info, path_info) != 0));
+ 							} else {
+-								path_info = env_path_info ? env_path_info + pilen - slen : NULL;
+-								tflag = (orig_path_info != path_info);
++								path_info = (env_path_info && pilen > slen) ? env_path_info + pilen - slen : NULL;
++								tflag = path_info && (orig_path_info != path_info);
+ 							}
+ 
+ 							if (tflag) {
+From 8df4c9426c4810699e9290382d4e60453caa96e2 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 22 Oct 2019 08:41:53 +0200
+Subject: [PATCH] add NEWS entry
+
+---
+ NEWS | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index a3c0c90143..b5a736947b 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.1.33
++
++- FPM:
++  . Fixed bug #78599 (env_path_info underflow in fpm_main.c can lead to RCE).
++    (CVE-2019-11043) (Jakub Zelenka)
++
+ Backported from 7.1.32
+ 
+ - mbstring:
