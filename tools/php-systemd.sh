@@ -21,7 +21,7 @@ cat > /etc/systemd/system/php-fpm.service.d/limit.conf <<EOF
 [Service]
 LimitNOFILE=262144
 LimitNPROC=16384
-LimitSTACK=262144
+LimitSTACK=2097152
 #LimitNICE=-15
 # disable Nice for bug workaround
 # https://community.centminmod.com/threads/17045/
