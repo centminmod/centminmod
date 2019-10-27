@@ -1,3 +1,22 @@
+php_pcrejit_stacksize() {
+  if [[ "$PHP_PCREJIT_STACKSIZE_ADJUST" = [yY] ]]; then
+    pushd ../
+    get_php_pcrejit_stacksize=$(awk '/#define PCRE_JIT_STACK_MAX_SIZE/ {print $3}' ext/pcre/php_pcre.c | sed -e 's|(||g')
+    echo "existing PHP PCRE_JIT_STACK_MAX_SIZE = $get_php_pcrejit_stacksize * 1024"
+    if [[ "$get_php_pcrejit_stacksize" -eq '64' || "$get_php_pcrejit_stacksize" -eq '192' ]] && [ -f ext/pcre/php_pcre.c ]; then
+      # only change if php 7.2 (64) or 7.3 (192) defaults are for 
+      # PHP 7+ PCRE JIT when pcre.jit=1 enabled https://www.php.net/manual/en/pcre.configuration.php
+        grep -w 'PCRE_JIT_STACK_MAX_SIZE' ext/pcre/php_pcre.c
+        echo
+        sed -i "s|#define PCRE_JIT_STACK_MAX_SIZE .*|#define PCRE_JIT_STACK_MAX_SIZE ($PHP_PCREJIT_STACKSIZE * 1024)|" ext/pcre/php_pcre.c
+        echo
+        grep -w 'PCRE_JIT_STACK_MAX_SIZE' ext/pcre/php_pcre.c
+        echo
+    fi
+    popd
+  fi
+}
+
 pgophpbench() {
   echo
   echo "PGO phpbench setup start"
@@ -1528,6 +1547,8 @@ if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
 else
   PHP_OPENSSLOPT='--with-openssl'
 fi
+
+php_pcrejit_stacksize
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
