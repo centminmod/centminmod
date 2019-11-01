@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='301'
+SCRIPT_INCREMENTVER='302'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2019'
@@ -2650,7 +2650,7 @@ else
             cecho "18). Suhosin PHP Extension install" $boldgreen
             cecho "19). Install FFMPEG and FFMPEG PHP Extension" $boldgreen
             cecho "20). NSD Install/Re-Install" $boldgreen
-            cecho "21). Update - Nginx + PHP-FPM + Siege" $boldgreen
+            cecho "21). Data Transfer (TBA)" $boldgreen
             cecho "22). Add Wordpress Nginx vhost + Cache Plugin" $boldgreen
             cecho "23). Update Centmin Mod Code Base" $boldgreen
             cecho "24). Exit" $boldgreen
@@ -3197,56 +3197,15 @@ EOF
         starttime=$(TZ=UTC date +%s.%N)
         centminlog
         {
-        
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        ccacheinstall
-        fi
-        
-        cecho "Updating Nginx, PHP-FPM & Siege versions" $boldyellow
+        cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
         echo
-        yumskipinstall
-
-        if [[ "$yuminstallrun" == [yY] ]]; then
-            yuminstall
-        fi
-
-        funct_nginxupgrade
-        funct_phpupgrade
-        checksiege
-        siegeinstall
-
-        echo ""
-            cecho "--------------------------------------------------------" $boldyellow
-            cecho "Check Nginx Version:" $boldyellow
-            cecho "--------------------------------------------------------" $boldyellow
-            nginx -V
-        echo ""
-            cecho "--------------------------------------------------------" $boldyellow
-            cecho "Check PHP-FPM Version:" $boldyellow
-            cecho "--------------------------------------------------------" $boldyellow
-            php -v
-        echo ""
-            cecho "--------------------------------------------------------" $boldyellow
-            cecho "Check Siege Benchmark Version:" $boldyellow
-            cecho "--------------------------------------------------------" $boldyellow
-        siege -V
-
-        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
         
-        if [ "$CCACHEINSTALL" == 'y' ]; then
-        
-            # check if ccache installed first
-            if [ -f /usr/bin/ccache ]; then
-        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a  "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
-            fi
-        fi
-
         endtime=$(TZ=UTC date +%s.%N)
         INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
-        echo "Total Update Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_update_all.log"
-        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'update_all.log' | tail -1)"
-
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
+        echo "Total Data Transfer Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep '_data_transfer.log' | tail -1)"
         ;;
         22|addwpvhost)
         if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost.log" ]; then
