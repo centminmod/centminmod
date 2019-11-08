@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='307'
+SCRIPT_INCREMENTVER='308'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2019'
@@ -3125,7 +3125,7 @@ EOF
         compressmenu_notice
         funct_pigzinstall
         funct_pbzip2install
-        funct_lbzip2install
+        # funct_lbzip2install
         funct_lzipinstall
         funct_plzipinstall
         zstdinstall
@@ -3364,7 +3364,7 @@ EOF
         compressmenu_notice
         funct_pigzinstall
         funct_pbzip2install
-        funct_lbzip2install
+        # funct_lbzip2install
         funct_lzipinstall
         funct_plzipinstall
         #funct_p7zipinstall

@@ -19,6 +19,34 @@ compgcc_seven() {
   fi
 }
 
+compgcc_eight() {
+  if [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    label='gcc7 built'
+    source /opt/rh/devtoolset-8/enable
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+}
+
+pgo_export_compress() {
+export CFLAGS="$CFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export FFLAGS="$CFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export CFLAGS_GENERATE="$CFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
+export FCFLAGS_GENERATE="$FCFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
+export FFLAGS_GENERATE="$FFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
+export CXXFLAGS_GENERATE="$CXXFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
+export LDFLAGS_GENERATE="$LDFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
+export CFLAGS_USE="$CFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export FCFLAGS_USE="$FCFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export FFLAGS_USE="$FFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export CXXFLAGS_USE="$CXXFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export LDFLAGS_USE="$LDFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction " 
+}
+
 compressmenu_notice() {
   echo
   echo "Multi-thread compression Install"
@@ -27,12 +55,13 @@ compressmenu_notice() {
   echo "
   1. pigz
   2. pbzip2
-  3. lbzip2
-  4. plzip
-  5. zstd
-  6. lz4"
+  3. plzip
+  4. zstd
+  5. lz4"
   echo
   compgcc_seven
+  compgcc_eight
+  pgo_export_compress
 }
 
 zstdinstall() {
@@ -101,7 +130,17 @@ function funct_pigzinstall {
     make clean
     # rm -rf Makefile
     # wget -c${ipv_forceopt} https://raw.github.com/madler/pigz/5316bf3440025ca37d84d7580a8f616c0127668a/Makefile -O Makefile
+    # export CFLAGS="${CFLAGS_GENERATE}" 
+    # export CXXFLAGS="${CXXFLAGS_GENERATE}" 
+    # export FFLAGS="${FFLAGS_GENERATE}" 
+    # export FCFLAGS="${FCFLAGS_GENERATE}" 
+    # export LDFLAGS="${LDFLAGS_GENERATE}"
+    CFLAGS="${CFLAGS_GENERATE}" CXXFLAGS="${CXXFLAGS_GENERATE}" FFLAGS="${FFLAGS_GENERATE}" FCFLAGS="${FCFLAGS_GENERATE}" LDFLAGS="${LDFLAGS_GENERATE}"
     make -j$(nproc)
+    make tests -j$(nproc) CFLAGS="${CFLAGS_GENERATE}" CXXFLAGS="${CXXFLAGS_GENERATE}" FFLAGS="${FFLAGS_GENERATE}" FCFLAGS="${FCFLAGS_GENERATE}" LDFLAGS="${LDFLAGS_GENERATE}"
+    make clean
+    CFLAGS="${CFLAGS_USE}" CXXFLAGS="${CXXFLAGS_USE}" FFLAGS="${FFLAGS_USE}" FCFLAGS="${FCFLAGS_USE}" LDFLAGS="${LDFLAGS_USE}"
+    make -j$(nproc) CFLAGS="${CFLAGS_USE}" CXXFLAGS="${CXXFLAGS_USE}" FFLAGS="${FFLAGS_USE}" FCFLAGS="${FCFLAGS_USE}" LDFLAGS="${LDFLAGS_USE}"
     \cp -f pigz unpigz /usr/local/bin
     ls -lh /usr/local/bin | grep pigz
     if [ -f /usr/local/bin/pigz ]; then

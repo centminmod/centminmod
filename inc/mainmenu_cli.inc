@@ -96,7 +96,7 @@ multithreadcomp)
 compressmenu_notice
 funct_pigzinstall
 funct_pbzip2install
-funct_lbzip2install
+# funct_lbzip2install
 funct_lzipinstall
 funct_plzipinstall
 #funct_p7zipinstall
