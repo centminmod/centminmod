@@ -1067,6 +1067,7 @@ fi
 # fi
 
 fileinfo_standalone
+phptimezonedb_install
 
 # set php-fpm alias log inspection shotcuts
 if [[ ! "$(grep fpm-errlog /root/.bashrc)" || ! "$(grep fpm-slowlog /root/.bashrc)" || ! "$(grep fpm-phperrlog /root/.bashrc)" ]]; then

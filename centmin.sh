@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='305'
+SCRIPT_INCREMENTVER='306'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2019'
@@ -649,6 +649,8 @@ PHPIMAGICK='y'               # Disable or Enable PHP ImagicK extension
 PHPMAILPARSE='y'             # Disable or Enable PHP mailparse extension
 PHPIONCUBE='n'               # Disable or Enable Ioncube Loader via addons/ioncube.sh
 PHPMSSQL='n'                 # Disable or Enable MSSQL server PHP extension
+PHPTIMEZONEDB='y'            # timezonedb PHP extension updated https://pecl.php.net/package/timezonedb
+PHPTIMEZONEDB_VER='2019.3'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
@@ -1041,6 +1043,7 @@ source "inc/igbinary.inc"
 source "inc/apcprotect.inc"
 source "inc/apcinstall.inc"
 source "inc/apcreinstall.inc"
+source "inc/timezonedb.inc"
 source "inc/zendopcache_55ini.inc"
 source "inc/zendopcache_install.inc"
 source "inc/zendopcache_upgrade.inc"
@@ -2226,6 +2229,11 @@ fi
 if [[ "$PHP_ZSTD" = [yY] ]]; then
   echo "php_ext_zstd"
   php_ext_zstd
+fi
+
+if [[ "$PHPTIMEZONEDB" = [yY] ]]; then
+  echo "phptimezonedb_install"
+  phptimezonedb_install
 fi
 
 if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMVER" = '7.4' ]]; then
