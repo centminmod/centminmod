@@ -3228,9 +3228,18 @@ egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_diff_nati
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
   echo
 
+NGINX_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$NGINX_CPU_MARCH" = 'nehalem' || "$NGINX_CPU_MARCH" = 'westmere' || "$NGINX_CPU_MARCH" = 'core2' || "$NGINX_CPU_MARCH" = 'bonnell' || "$NGINX_CPU_MARCH" = 'silvermont' ]]; then
+  NGINX_FALIGN_FUCTION_OPT=''
+elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -gt '40805' && "$GCC_FALIGN_FUNCTION" = [yY] ]]; then
+  NGINX_FALIGN_FUCTION_OPT=' -falign-functions=32'
+else
+  NGINX_FALIGN_FUCTION_OPT=''
+fi
+
 if [[ "$CLANG" = [nN] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
   CCM=64
-  MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GCC_NONNATIVEFLAGS}${NGX_FOPENOPT} "
+  MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GCC_NONNATIVEFLAGS}${NGX_FOPENOPT}${NGINX_FALIGN_FUCTION_OPT} "
 elif [[ -f "${CLANG_NEWBIN}" && "$CLANG" = [yY] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
   CCM=64
   MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${NGX_FOPENOPT} "
@@ -3246,10 +3255,6 @@ elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 else
   MTUNEOPT=""
 fi
-
-# fix no longer needed with libressl 2.3.3
-# https://community.centminmod.com/threads/libressl-2-3-3-released.6788/
-# libresslcompile_fix
 
 if [[ "$CLANG" = [yY] ]]; then
   if [[ "$NGINX_PASSENGER" = [yY] ]]; then

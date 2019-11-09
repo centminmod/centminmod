@@ -1335,7 +1335,11 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
-    
+    if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -gt '40805' && "$GCC_FALIGN_FUNCTION" = [yY] ]]; then
+      FALIGN_FUNCTION_OPT=' -falign-functions=32'
+    else
+      FALIGN_FUNCTION_OPT=''
+    fi
     if [[ "$MARCH_TARGETNATIVE" = [nN] ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GCC_NONNATIVEFLAGS}"
     elif [[ "$CPU_MARCH" = 'silvermont' ]]; then
@@ -1351,49 +1355,49 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'cascadelake' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=cascadelake"
+      PHP_MTUNEOPT="-m${CCM} -march=cascadelake${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=cascadelake${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=cascadelake${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'cannonlake' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=cannonlake"
+      PHP_MTUNEOPT="-m${CCM} -march=cannonlake${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=cannonlake${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=cannonlake${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'skylake-avx512' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=skylake-avx512"
+      PHP_MTUNEOPT="-m${CCM} -march=skylake-avx512${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=skylake-avx512${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=skylake-avx512${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'skylake' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=skylake"
+      PHP_MTUNEOPT="-m${CCM} -march=skylake${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=skylake${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=skylake${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'broadwell' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=broadwell"
+      PHP_MTUNEOPT="-m${CCM} -march=broadwell${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=broadwell${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=broadwell${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'haswell' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=haswell"
+      PHP_MTUNEOPT="-m${CCM} -march=haswell${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=haswell${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=haswell${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'ivybridge' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=ivybridge"
+      PHP_MTUNEOPT="-m${CCM} -march=ivybridge${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=ivybridge${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=ivybridge${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'sandybridge' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=sandybridge"
+      PHP_MTUNEOPT="-m${CCM} -march=sandybridge${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=sandybridge${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=sandybridge${PHPEXTRA_CFLAGS} --help=target
@@ -1411,25 +1415,25 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       gcc -c -Q -march=nehalem${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'core-avx2' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=core-avx2"
+      PHP_MTUNEOPT="-m${CCM} -march=core-avx2${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=core-avx2${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=core-avx2${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'core-avx-i' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=core-avx-i"
+      PHP_MTUNEOPT="-m${CCM} -march=core-avx-i${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=core-avx-i${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=core-avx-i${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'corei7-avx' && "$(cat /proc/cpuinfo | grep -o 'avx' | uniq)" = 'avx' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=corei7-avx"
+      PHP_MTUNEOPT="-m${CCM} -march=corei7-avx${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=corei7-avx${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=corei7-avx${PHPEXTRA_CFLAGS} --help=target
       echo
     elif [[ "$CPU_MARCH" = 'corei7' ]]; then
-      PHP_MTUNEOPT="-m${CCM} -march=corei7"
+      PHP_MTUNEOPT="-m${CCM} -march=corei7${FALIGN_FUNCTION_OPT}"
       echo
       echo "gcc -c -Q -march=corei7${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=corei7${PHPEXTRA_CFLAGS} --help=target

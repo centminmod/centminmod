@@ -17,6 +17,7 @@ compgcc_seven() {
   else
     label=""
   fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
 compgcc_eight() {
@@ -28,13 +29,21 @@ compgcc_eight() {
   else
     label=""
   fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
 pgo_export_compress() {
-export CFLAGS="$CFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
-export FCFLAGS="$CFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
-export FFLAGS="$CFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
-export CXXFLAGS="$CXXFLAGS -O3 -falign-functions=32 -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+  if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$COMP_CPU_MARCH" = 'nehalem' || "$COMP_CPU_MARCH" = 'westmere' || "$COMP_CPU_MARCH" = 'core2' || "$COMP_CPU_MARCH" = 'bonnell' || "$COMP_CPU_MARCH" = 'silvermont' ]]; then
+    COMP_FALIGN_FUCTION_OPT=''
+  elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -gt '40805' && "$GCC_FALIGN_FUNCTION" = [yY] ]]; then
+    COMP_FALIGN_FUCTION_OPT=' -falign-functions=32'
+  else
+    COMP_FALIGN_FUCTION_OPT=''
+  fi
+export CFLAGS="$CFLAGS -O3${COMP_FALIGN_FUCTION_OPT} -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export FCFLAGS="$CFLAGS -O3${COMP_FALIGN_FUCTION_OPT} -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export FFLAGS="$CFLAGS -O3${COMP_FALIGN_FUCTION_OPT} -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
+export CXXFLAGS="$CXXFLAGS -O3${COMP_FALIGN_FUCTION_OPT} -ffat-lto-objects -flto=$(nproc) -fno-math-errno -fno-semantic-interposition -fno-trapping-math "
 export CFLAGS_GENERATE="$CFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
 export FCFLAGS_GENERATE="$FCFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
 export FFLAGS_GENERATE="$FFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "

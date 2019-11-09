@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='308'
+SCRIPT_INCREMENTVER='309'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/10/2019'
@@ -826,6 +826,9 @@ USEAXEL='y'                  # whether to use axel download accelerator or wget
 INTELOPT='n'
 # GCC optimization level choices: -O2 or -O3 or -Ofast (only for GCC via CLANG=n)
 GCC_OPTLEVEL='-O3'
+# https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html
+# enabled will set -falign-functions=32 for GCC compiles of Nginx and PHP-FPM and pigz
+GCC_FALIGN_FUNCTION='n'
 
 # experimental custom RPM compiled packages to replace source 
 # compiled versions for 64bit systems only
