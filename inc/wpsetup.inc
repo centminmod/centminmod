@@ -2748,7 +2748,7 @@ fi
 rm -rf .wpcli-status
 } 2>&1 | tee /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
 if [ -f /usr/sbin/sendmail ]; then
-sendmail -i \$EMAIL <<END
+sendmail -i $EMAIL <<END
 From: \$EMAILFROM
 To: \$EMAIL
 Subject: Wordpress WP-CLI Auto Update \$(date)
@@ -3072,7 +3072,7 @@ elif [[ "$wpscache" = 'redis' ]]; then
 fi
 } 2>&1 | tee /tmp/setupwp.log
 if [ -f /usr/sbin/sendmail ]; then
-sendmail -i \$WPADMINEMAIL <<END
+sendmail -i $WPADMINEMAIL <<END
 From: \$WPADMINEMAIL_FROM
 To: \$WPADMINEMAIL
 Subject: ${vhostname} Wordpress Installed \$(date)
