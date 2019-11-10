@@ -36,7 +36,7 @@ pgo_export_compress() {
   if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$COMP_CPU_MARCH" = 'nehalem' || "$COMP_CPU_MARCH" = 'westmere' || "$COMP_CPU_MARCH" = 'core2' || "$COMP_CPU_MARCH" = 'bonnell' || "$COMP_CPU_MARCH" = 'silvermont' ]]; then
     COMP_FALIGN_FUCTION_OPT=''
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -gt '40805' && "$GCC_FALIGN_FUNCTION" = [yY] ]]; then
-    COMP_FALIGN_FUCTION_OPT=' -falign-functions=32'
+    COMP_FALIGN_FUCTION_OPT=' -falign-functions=32 -malign-data=cacheline'
   else
     COMP_FALIGN_FUCTION_OPT=''
   fi
@@ -49,11 +49,11 @@ export FCFLAGS_GENERATE="$FCFLAGS -fprofile-generate -fprofile-dir=/home/pgo_com
 export FFLAGS_GENERATE="$FFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
 export CXXFLAGS_GENERATE="$CXXFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
 export LDFLAGS_GENERATE="$LDFLAGS -fprofile-generate -fprofile-dir=/home/pgo_compress -fprofile-update=atomic "
-export CFLAGS_USE="$CFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
-export FCFLAGS_USE="$FCFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
-export FFLAGS_USE="$FFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
-export CXXFLAGS_USE="$CXXFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
-export LDFLAGS_USE="$LDFLAGS -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction " 
+export CFLAGS_USE="$CFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export FCFLAGS_USE="$FCFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export FFLAGS_USE="$FFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export CXXFLAGS_USE="$CXXFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction "
+export LDFLAGS_USE="$LDFLAGS${COMP_FALIGN_FUCTION_OPT} -fprofile-use -fprofile-dir=/home/pgo_compress -fprofile-correction " 
 }
 
 compressmenu_notice() {
