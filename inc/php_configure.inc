@@ -1614,10 +1614,6 @@ sar_call
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE""
                 time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE"
             fi
-            if [ -f "$PHPPGO_INDEXPATH_FIVE" ]; then
-                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE"
-            fi
             if [ -f "$PHPPGO_INDEXPATH_SIX" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX""
                 time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX"
@@ -1661,10 +1657,6 @@ sar_call
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR""
                 time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR"
-            fi
-            if [ -f "$PHPPGO_INDEXPATH_FIVE" ]; then
-                echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE"
             fi
             if [ -f "$PHPPGO_INDEXPATH_FIVE" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE""
