@@ -1576,6 +1576,9 @@ sar_call
     echo "php_configure.inc make${MAKETHREADS_PHP}"
     echo "PHP_PGO = $PHP_PGO"
     if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.4' ]]; then
+        # get cpu core to fix for PGO training for optimal cpu cache access
+        pgo_cpurange=$(echo $(($(nproc)-1)))
+        pgo_cpulist=$(seq 1 $pgo_cpurange)
         echo "make${MAKETHREADS_PHP} prof-gen"
         time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
@@ -1588,6 +1591,14 @@ sar_call
             ls -lah "$DIR_TMP/php_pgo_training_scripts"
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
+
+            if [ -f ./sapi/cgi/php ]; then
+              echo "time ./sapi/cgi/php ../Zend/bench.php"
+              time ./sapi/cgi/php ../Zend/bench.php
+              echo "time ./sapi/cgi/php ../Zend/micro_bench.php"
+              time ./sapi/cgi/php ../Zend/micro_bench.php
+            fi
+
             echo "time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
             time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/bench.php
             echo "time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
@@ -1596,37 +1607,45 @@ sar_call
             time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php"
             if [ -f "$PHPPGO_INDEXPATH" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_FIVE" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_SIX" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX" >/dev/null
             fi
             echo "pgophpbench"
             pgophpbench
             if [ -f "${DIR_TMP}/phpbench/phpbench.php" ]; then
               echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ${DIR_TMP}/phpbench/phpbench.php"
               time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "${DIR_TMP}/phpbench/phpbench.php"
+              if [ -f ./sapi/cgi/php ]; then
+                echo "./sapi/cgi/php ${DIR_TMP}/phpbench/phpbench.php"
+                time ./sapi/cgi/php "${DIR_TMP}/phpbench/phpbench.php"
+              fi
             fi
             if [ -f /opt/phpbench/detailed_benchmark.php ]; then
               echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} /opt/phpbench/detailed_benchmark.php"
               time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} /opt/phpbench/detailed_benchmark.php
+              if [ -f ./sapi/cgi/php ]; then
+                echo "./sapi/cgi/php /opt/phpbench/detailed_benchmark.php"
+                time ./sapi/cgi/php /opt/phpbench/detailed_benchmark.php
+              fi
             fi
         elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP/php_pgo_training_scripts"
@@ -1636,45 +1655,61 @@ sar_call
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
             sed -i "s|define('DB_PASSWORD', 'root');|define('DB_PASSWORD', '$GET_ROOT_PASS');|" "$DIR_TMP/php_pgo_training_scripts/constants.php"
             ./sapi/cli/php "$DIR_TMP/php_pgo_training_scripts/init.php"
-            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
-            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/bench.php
-            echo "time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
-            time ./sapi/cgi/php-cgi -T2,${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php
+
+            if [ -f ./sapi/cgi/php ]; then
+              echo "time ./sapi/cgi/php ../Zend/bench.php"
+              time ./sapi/cgi/php ../Zend/bench.php
+              echo "time ./sapi/cgi/php ../Zend/micro_bench.php"
+              time ./sapi/cgi/php ../Zend/micro_bench.php
+            fi
+
+            echo "time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/bench.php"
+            time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/bench.php
+            echo "time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php"
+            time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ../Zend/micro_bench.php
             echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php""
             time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$DIR_TMP/php_pgo_training_scripts/index.php"
             if [ -f "$PHPPGO_INDEXPATH" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_TWO" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_TWO" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_THREE" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_THREE" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_FOUR" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FOUR" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_FIVE" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_FIVE" >/dev/null
             fi
             if [ -f "$PHPPGO_INDEXPATH_SIX" ]; then
                 echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX""
-                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX"
+                time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "$PHPPGO_INDEXPATH_SIX" >/dev/null
             fi
             echo "pgophpbench"
             pgophpbench
             if [ -f "${DIR_TMP}/phpbench/phpbench.php" ]; then
               echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} ${DIR_TMP}/phpbench/phpbench.php"
               time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} "${DIR_TMP}/phpbench/phpbench.php"
+              if [ -f ./sapi/cgi/php ]; then
+                echo "./sapi/cgi/php ${DIR_TMP}/phpbench/phpbench.php"
+                time ./sapi/cgi/php "${DIR_TMP}/phpbench/phpbench.php"
+              fi
             fi
             if [ -f /opt/phpbench/detailed_benchmark.php ]; then
               echo "./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} /opt/phpbench/detailed_benchmark.php"
               time ./sapi/cgi/php-cgi -T${PHP_PGO_TRAINRUNS} /opt/phpbench/detailed_benchmark.php
+              if [ -f ./sapi/cgi/php ]; then
+                echo "./sapi/cgi/php /opt/phpbench/detailed_benchmark.php"
+                time ./sapi/cgi/php /opt/phpbench/detailed_benchmark.php
+              fi
             fi
         fi
         echo "make prof-clean"
