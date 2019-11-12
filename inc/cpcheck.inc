@@ -1891,6 +1891,11 @@ csf_distftp() {
 
 pureftpdupdates() {
   if [ -f /etc/pure-ftpd/pure-ftpd.conf ]; then
+    if [ "$SECOND_IP" ]; then
+      CNIP="$SECOND_IP"
+    else
+      CNIP=$(curl -4s https://ipinfo.io/ip)
+    fi
     # disable anonymous logins by default
     CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
     if [ "$CHECKPFTPD_ANON" ]; then
@@ -1936,6 +1941,21 @@ pureftpdupdates() {
     echo "may take a while to create..."
     openssl dhparam -out /etc/ssl/private/pure-ftpd-dhparams.pem 2048 >/dev/null 2>&1
     echo "pure-ftpd: /etc/ssl/private/pure-ftpd-dhparams.pem created"
+    if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+      service pure-ftpd restart >/dev/null 2>&1
+    fi
+  fi
+  if [[ "$INITIALINSTALL" != [yY] && -f /etc/pki/pure-ftpd/pure-ftpd.pem && "$(openssl x509 -in /etc/pki/pure-ftpd/pure-ftpd.pem -text -noout | grep '1024 bit')" ]]; then
+    echo "pure-ftpd: update & re-create 2048bit /etc/pki/pure-ftpd/pure-ftpd.pem file for $CNIP"
+    openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN=$CNIP" -newkey rsa:2048 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem >/dev/null 2>&1
+    echo "pure-ftpd: /etc/pki/pure-ftpd/pure-ftpd.pem created"
+    if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+      service pure-ftpd restart >/dev/null 2>&1
+    fi
+  elif [[ "$INITIALINSTALL" != [yY] && ! -f /etc/pki/pure-ftpd/pure-ftpd.pem ]]; then
+    echo "pure-ftpd: create 2048bit /etc/pki/pure-ftpd/pure-ftpd.pem file for $CNIP"
+    openssl req -x509 -days 7300 -sha256 -nodes -subj "/C=US/ST=California/L=Los Angeles/O=Default Company Ltd/CN=$CNIP" -newkey rsa:2048 -keyout /etc/pki/pure-ftpd/pure-ftpd.pem -out /etc/pki/pure-ftpd/pure-ftpd.pem >/dev/null 2>&1
+    echo "pure-ftpd: /etc/pki/pure-ftpd/pure-ftpd.pem created"
     if [[ "$(ps aufx | grep pure-ftpd | grep -v grep | grep pure-ftpd  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
       service pure-ftpd restart >/dev/null 2>&1
     fi
