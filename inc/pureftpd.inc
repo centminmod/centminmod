@@ -104,6 +104,8 @@ fi
     ls -lah /etc/pki/pure-ftpd
     echo
     echo "self-signed ssl cert generated"
+
+    pureftpd_symlink_fix
       
     echo "pure-ftpd installed"
     cmservice pure-ftpd restart

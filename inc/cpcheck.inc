@@ -1,3 +1,17 @@
+pureftpd_symlink_fix() {
+  # workaround for too many levels of symbolic links
+  # messages on openvz vpses
+  if [[ "$CENTOS_SEVEN" = '7' && -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+    echo
+    # echo "create /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
+    mkdir -p /etc/systemd/system/pure-ftpd.service.d
+    echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+    systemctl daemon-reload
+    #cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+  fi
+}
+
 symlink_setup_emailnotify() {
   if [[ -f "${SCRIPT_DIR}/tools/emailnotify.sh" && ! -h /usr/local/bin/emailnotify ]]; then
     ln -s "${SCRIPT_DIR}/tools/emailnotify.sh" /usr/local/bin/emailnotify >/dev/null 2>&1
@@ -2836,6 +2850,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   opt_sslcache
   add_versionlocks
   symlink_setup_emailnotify
+  pureftpd_symlink_fix
 fi
 
 }
