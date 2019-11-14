@@ -2440,6 +2440,23 @@ if [[ "$wpscache" = 'redis' ]]; then
   touch "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
   chmod 0660 "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
   chown nginx:nginx "/home/nginx/domains/${vhostname}/public/wp-content/uploads/nginx-helper/nginx.log"
+  cecho "------------------------------------------------------------" $boldgreen
+  \wp plugin install autoptimize --activate --allow-root
+  \wp option list --search=autoptimize_* --allow-root
+  if [[ "$WP_AUTOPTIMIZE_GZIP" = [yY] ]]; then
+    # https://community.centminmod.com/threads/15314/
+    # https://github.com/centminmod/autoptimize-gzip
+    echo
+    echo "configure autoptimize-gzip https://community.centminmod.com/threads/15314/"
+    mkdir -p "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip"
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/autoptimize-gzip.php" https://github.com/centminmod/autoptimize-gzip/raw/master/autoptimize-gzip.php
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/index.html" https://github.com/centminmod/autoptimize-gzip/raw/master/index.html
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/readme.md" https://github.com/centminmod/autoptimize-gzip/blob/master/readme.md
+    wget -4 -cnv -O "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/LICENSE" https://github.com/centminmod/autoptimize-gzip/raw/master/LICENSE
+    chown -R nginx:nginx "/home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/plugins/autoptimize-gzip"
+    \wp plugin activate autoptimize-gzip --allow-root
+    \wp plugin status autoptimize-gzip --allow-root
+  fi
 fi
 
 cecho "------------------------------------------------------------" $boldgreen
