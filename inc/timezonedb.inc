@@ -9,6 +9,7 @@ phptimezonedb_install() {
     fi
     tar xzf "timezonedb-${PHPTIMEZONEDB_VER}.tgz"
     cd "timezonedb-${PHPTIMEZONEDB_VER}"
+    make clean
     /usr/local/bin/phpize
     ./configure --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
