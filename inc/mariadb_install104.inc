@@ -354,6 +354,12 @@ cat >>/etc/my.cnf<<FFF
 innodb_default_row_format = dynamic
 innodb_file_per_table = 1
 
+# performance regressions
+# https://jira.mariadb.org/browse/MDEV-16337
+# https://jira.mariadb.org/browse/MDEV-20697
+#join_cache_level=0
+optimizer_use_condition_selectivity=1
+
 ## wsrep specific
 # wsrep_on=OFF
 # wsrep_provider
