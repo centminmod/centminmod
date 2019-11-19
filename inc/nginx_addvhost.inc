@@ -81,7 +81,12 @@ check_dns() {
           cecho "$vhostname_dns IPv4 DNS A record is behind Sucuri IPs" $boldyellow
         fi
         cecho "current DNS A record IPv4 address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
-        if [[ -z "$ISCF_ACHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
+        if [ "$SECOND_IP" ]; then
+          LOCAL_VHOST_ACHECK=$(ip a | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)
+        else
+          LOCAL_VHOST_ACHECK=$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)
+        fi
+        if [[ -z "$ISCF_ACHECK" && "$LOCAL_VHOST_ACHECK" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
@@ -151,7 +156,12 @@ check_dns() {
           cecho "www.$vhostname_dns IPv4 DNS A record is behind Sucuri IPs" $boldyellow
         fi
         cecho "current DNS A record IP address for www.$vhostname_dns is: $VHOST_AWWWCHECKLIST" $boldyellow
-        if [[ -z "$ISCF_AWWWCHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
+        if [ "$SECOND_IP" ]; then
+          LOCAL_VHOST_AWWWCHECK=$(ip a | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1; echo $?)
+        else
+          LOCAL_VHOST_AWWWCHECK=$(ifconfig | grep 'inet' | grep $VHOST_AWWWCHECK >/dev/null 2>&1; echo $?)
+        fi
+        if [[ -z "$ISCF_AWWWCHECK" && "$LOCAL_VHOST_AWWWCHECK" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
@@ -230,7 +240,12 @@ check_dns() {
           cecho "$vhostname_dns IPv4 DNS A record is behind Sucuri IPs" $boldyellow
         fi
         cecho "current DNS A record IPv4 address for $vhostname_dns is: $VHOST_ACHECKLIST" $boldyellow
-        if [[ -z "$ISCF_ACHECK" && "$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)" != '0' ]]; then
+        if [ "$SECOND_IP" ]; then
+          LOCAL_VHOST_ACHECK=$(ip a | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)
+        else
+          LOCAL_VHOST_ACHECK=$(ifconfig | grep 'inet' | grep $VHOST_ACHECK >/dev/null 2>&1; echo $?)
+        fi
+        if [[ -z "$ISCF_ACHECK" && "$LOCAL_VHOST_ACHECK" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
           echo
