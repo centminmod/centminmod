@@ -101,6 +101,15 @@ else
   ipv_forceopt='4'
 fi
 
+if [ ! -f /root/.mytop ]; then
+  echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0" > /root/.mytop
+fi
+if [ ! -f /usr/local/bin/mytop ]; then
+  wget -q -4 https://gist.github.com/centminmod/14419caaba4f33ffdb240b526f46e8b5/raw/mytop.pl -O /usr/local/bin/mytop
+  chmod +x /usr/local/bin/mytop
+  echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0\nfullqueries=1" > /root/.mytop
+fi
+
 cmservice() {
   servicename=$1
   action=$2
@@ -127,6 +136,7 @@ cmservice() {
 
 #####################################################
 top_info() {
+    cron=$1
     SYSTYPE=$(virt-what | head -n1)
     CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
     CCACHE_INFOVER=$(ccache -V | head -n1)
@@ -166,6 +176,12 @@ top_info() {
     
     if [ -f /usr/bin/clamscan ]; then
         CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
+    fi
+
+    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        echo "------------------------------------------------------------------"
+        mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
+        echo
     fi
 
     echo "------------------------------------------------------------------"
@@ -262,6 +278,7 @@ top_info() {
     echo "------------------------------------------------------------------"
     echo "df -hT"
     df -hT
+
     if [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && -f /usr/local/nginx/conf/phpstatus.conf && "$(grep '^#include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" ]]; then
         sed -i 's|^#include /usr/local/nginx/conf/phpstatus.conf;|include /usr/local/nginx/conf/phpstatus.conf;|' /usr/local/nginx/conf/conf.d/virtual.conf
         nprestart >/dev/null 2>&1
@@ -320,10 +337,62 @@ top_info() {
     iotop -bton1 -P
     echo
     # ensure mysql server is running before triggering mysqlreport output
+    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        echo "------------------------------------------------------------------"
+        echo "MySQL InnoDB Status"
+        if [[ "$cron" != 'cron' ]]; then
+            echo
+            echo "---"
+            echo "MySQL InnoDB Monitor Statistics Gathering for 10 seconds"
+            echo
+            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" >/dev/null
+            sleep 10
+            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G" 2>/dev/null
+            echo
+        elif [[ "$cron" = 'cron' ]]; then
+            echo
+            echo "---"
+            echo "MySQL InnoDB Monitor Statistics Gathering for 60 seconds"
+            echo
+            # sleep 60
+            mysql --connect-timeout=5 -e "SHOW ENGINE INNODB STATUS\G select sleep(60); SHOW ENGINE INNODB STATUS\G" 2>/dev/null
+            echo
+        fi
+        if [[ "$cron" != 'cron' ]]; then
+            mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=OFF; SET GLOBAL innodb_status_output_locks=OFF;" 2>/dev/null
+        fi
+        echo
+    fi
+    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        echo "------------------------------------------------------------------"
+        echo "mysqladmin var"
+        mysqladmin var | tr -s ' ' | egrep -v '+-' 2>/dev/null
+        echo
+        echo "mysqladmin ext"
+        mysqladmin ext 2>/dev/null
+        echo
+    fi
+    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        echo "------------------------------------------------------------------"
+        if [[ "$cron" = 'cron' ]]; then
+            proc_runs=20
+        else
+            proc_runs=5
+        fi
+        echo "mysqladmin proc -i1 -c${proc_runs}"
+        mysqladmin proc -i1 -c${proc_runs} 2>/dev/null
+        echo
+    fi
     if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqlreport"
         /root/mysqlreport 2>/dev/null
+        echo
+    fi
+    if [[ "$CMINFO_MYTOP" = [Yy] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
+        echo "------------------------------------------------------------------"
+        echo "mytop -b"
+        mytop -b 2>/dev/null
         echo
     fi
     if [[ "$PT_SUMMARY_REPORT" = [Yy] ]]; then
@@ -338,8 +407,14 @@ top_info() {
         fi
     fi
     echo "------------------------------------------------------------------"
-    echo "pidstat -durh 1 10 | sed -e \"s|\$(hostname)|hostname|g\""
-    pidstat -durh 1 10 | sed -e "s|$(hostname)|hostname|g"
+    if [[ "$cron" = 'cron' ]]; then
+        pidstat_sec=20
+    else
+        pidstat_sec=10
+    fi
+    echo "pidstat -durh 1 ${pidstat_sec} | sed -e \"s|\$(hostname)|hostname|g\""
+    echo "..."
+    pidstat -durh 1 ${pidstat_sec} | sed -e "s|$(hostname)|hostname|g"
     echo "------------------------------------------------------------------"
     echo "Stats saved at: ${CENTMINLOGDIR}/cminfo-top-${DT}.log"
     echo "------------------------------------------------------------------"
@@ -772,6 +847,11 @@ case "$1" in
     top_info
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-${DT}.log"
         ;;
+    top-cron)
+    {
+    top_info cron
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-cron-${DT}.log"
+        ;;
     listlogs)
     list_logs
         ;;
@@ -785,6 +865,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac

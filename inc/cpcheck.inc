@@ -1,3 +1,15 @@
+mytop_setup() {
+  if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
+      yum -y install mytop
+      echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0" > /root/.mytop
+      if [ ! -f /usr/local/bin/mytop ]; then
+          wget -q -4 https://gist.github.com/centminmod/14419caaba4f33ffdb240b526f46e8b5/raw/mytop.pl -O /usr/local/bin/mytop
+          chmod +x /usr/local/bin/mytop
+          echo -e "host=localhost\ndb=mysql\ndelay=2\nidle=0\nfullqueries=1" > /root/.mytop
+      fi
+  fi
+}
+
 pureftpd_symlink_fix() {
   # workaround for too many levels of symbolic links
   # messages on openvz vpses
