@@ -178,7 +178,7 @@ top_info() {
         CLAMAV_INFOVER=$(clamscan -V | head -n1 | awk -F "/" '{print $1}' | awk '{print $2}')
     fi
 
-    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         mysql --connect-timeout=5 -e "SET GLOBAL innodb_status_output=ON; SET GLOBAL innodb_status_output_locks=ON;" 2>/dev/null
         echo
@@ -337,7 +337,7 @@ top_info() {
     iotop -bton1 -P
     echo
     # ensure mysql server is running before triggering mysqlreport output
-    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         echo "MySQL InnoDB Status"
         if [[ "$cron" != 'cron' ]]; then
@@ -363,7 +363,7 @@ top_info() {
         fi
         echo
     fi
-    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqladmin var"
         mysqladmin var | tr -s ' ' | egrep -v '+-' 2>/dev/null
@@ -372,7 +372,7 @@ top_info() {
         mysqladmin ext 2>/dev/null
         echo
     fi
-    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+    if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
         if [[ "$cron" = 'cron' ]]; then
             proc_runs=20
@@ -383,13 +383,13 @@ top_info() {
         mysqladmin proc -i1 -c${proc_runs} 2>/dev/null
         echo
     fi
-    if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
+    if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /root/mysqlreport ]]; then
         echo "------------------------------------------------------------------"
         echo "mysqlreport"
         /root/mysqlreport 2>/dev/null
         echo
     fi
-    if [[ "$CMINFO_MYTOP" = [Yy] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
+    if [[ "$CMINFO_MYTOP" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/mytop && -f /root/.mytop ]]; then
         echo "------------------------------------------------------------------"
         echo "mytop -b"
         mytop -b 2>/dev/null
@@ -400,7 +400,7 @@ top_info() {
             # 64bit OS only
             yum -q -y install percona-toolkit --enablerepo=percona-release-x86_64
         fi
-        if [[ "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
+        if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && -f /usr/bin/pt-summary ]]; then
             echo "------------------------------------------------------------------"
             /usr/bin/pt-summary 2>/dev/null | sed -e 's|Percona Toolkit ||g'
             echo

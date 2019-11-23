@@ -81,7 +81,7 @@ cmservice() {
 }
 
 switch_malloc() {
-  if [[ "$JEMALLOC" = [yY] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  if [[ "$JEMALLOC" = [yY] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
     echo
     cecho "check existing mysqld memory usage" $boldyellow
     pidstat -rh -C mysqld | sed -e "s|$(hostname)|hostname|g"
@@ -141,7 +141,7 @@ switch_malloc() {
 }
 
 numa_opt() {
-  if [[ "$NUMA" = [yY] && "$(cmservice mysql status >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  if [[ "$NUMA" = [yY] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
     echo
     cecho "apply numa optimisation if required" $boldyellow
     if [[ -f /usr/bin/numactl && "$(numactl --hardware | awk '/available:/ {print $2}')" -gt '2' && ! -f /etc/systemd/system/mariadb.service.d/numa.conf ]]; then
