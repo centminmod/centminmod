@@ -193,6 +193,10 @@ if [ -f /etc/csf/csf.conf ]; then
         # https://support.censys.io/getting-started/frequently-asked-questions-faq
         csf -d 141.212.121.0/24 censys
         csf -d 141.212.122.0/24 censys
+        # https://whois.arin.net/rest/org/CENSY/nets
+        csf -d 198.108.66.0/23 censys
+        csf -d 198.108.204.216/29 censys
+
         csf --profile backup cmm-b4-shodan-block
         # block shodan scans
         # https://wiki.ipfire.org/configuration/firewall/blockshodan
