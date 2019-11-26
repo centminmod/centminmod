@@ -1077,6 +1077,8 @@ fi
                 if [ ! "$(grep "\$HOME/.cargo/bin:" /root/.bashrc)" ]; then
                     echo 'export PATH="$HOME/.cargo/bin:/usr/local/quiche/bin/:${PATH}"' >> /root/.bashrc;
                 fi
+            elif [ -f /root/.cargo/bin/rustc ]; then
+                rustup update
             fi
             source $HOME/.cargo/env
             rustc --version

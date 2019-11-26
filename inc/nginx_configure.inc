@@ -279,8 +279,29 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] ]]; then
     # grab current Cloudflare Quiche HTTP/3 protocol version & populate alt-svc include file
-    QUICHE_H3_VER=$(awk '/QUICHE_H3_APPLICATION_PROTOCOL/ {print $3}' ../quiche/include/quiche.h | sed -e 's|\\x05||' -e 's|\"||g')
-    echo "add_header alt-svc '${QUICHE_H3_VER}=\":443\"; ma=86400';" > /usr/local/nginx/conf/altsvc_http3.conf
+    QUICHE_H3_VER=$(awk '/QUICHE_H3_APPLICATION_PROTOCOL/ {print $3}' ../quiche/include/quiche.h | sed -e 's|\\x05||g' -e 's|\"||g')
+    QUICHE_H3_VER_LENGTH=$(echo $QUICHE_H3_VER | wc -c)
+    if [ "$QUICHE_H3_VER_LENGTH" -le '5' ]; then
+      echo "add_header alt-svc '${QUICHE_H3_VER}=\":443\"; ma=86400';" > /usr/local/nginx/conf/altsvc_http3.conf
+    else
+      QUICHE_H3_VER_ARRAY=$(echo "$QUICHE_H3_VER" | sed -e 's|h3|\nh3|g' | xargs -n1 | sort)
+      declare -a qarray
+      qarray=(${QUICHE_H3_VER_ARRAY})
+      array_last=$(echo $((${#qarray[@]}-1)))
+      echo > /tmp/quiche-draftvers.txt
+      for qv in ${qarray[@]}; do
+        if [[ "${qv}" = "${qarray[-1]}" ]]; then
+          echo "$qv is last entry"
+          echo "${qv}=\":443\"; ma=86400" >> /tmp/quiche-draftvers.txt
+        else
+          echo -e "${qv}=\":443\"; ma=86400," >> /tmp/quiche-draftvers.txt
+        fi
+        cat /tmp/quiche-draftvers.txt
+      done
+      quiche_header_versions=$(cat /tmp/quiche-draftvers.txt | xargs)
+      echo "add_header alt-svc '${quiche_header_versions}';" > /usr/local/nginx/conf/altsvc_http3.conf
+      rm -f /tmp/quiche-draftvers.txt
+    fi
     echo "listen 443 quic reuseport;" > /usr/local/nginx/conf/listener_http3.conf
     # use GCC 7.3.1 devtoolset for best HTTP/3 Quiche library compatibility
     DEVTOOLSETSIX='n'
