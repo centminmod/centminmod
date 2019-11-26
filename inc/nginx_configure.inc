@@ -292,13 +292,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       for qv in ${qarray[@]}; do
         if [[ "${qv}" = "${qarray[-1]}" ]]; then
           echo "$qv is last entry"
-          echo "${qv}=\":443\"; ma=86400" >> /tmp/quiche-draftvers.txt
+          echo "${qv}=Z:443Z; ma=86400" >> /tmp/quiche-draftvers.txt
         else
-          echo -e "${qv}=\":443\"; ma=86400," >> /tmp/quiche-draftvers.txt
+          echo -e "${qv}=Z:443Z; ma=86400," >> /tmp/quiche-draftvers.txt
         fi
         cat /tmp/quiche-draftvers.txt
       done
-      quiche_header_versions=$(cat /tmp/quiche-draftvers.txt | xargs)
+      quiche_header_versions=$(cat /tmp/quiche-draftvers.txt | xargs | sed -e 's|Z|"|g')
       echo "add_header alt-svc '${quiche_header_versions}';" > /usr/local/nginx/conf/altsvc_http3.conf
       rm -f /tmp/quiche-draftvers.txt
     fi
