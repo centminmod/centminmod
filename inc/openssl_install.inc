@@ -1027,6 +1027,10 @@ fi
         rm -rf quiche-bin
         git clone --recursive https://github.com/cloudflare/quiche
         # cp -a quiche quiche-bin
+        pushd quiche
+        quiche_commit=$(git log --pretty=format:'%h' -n 1)
+        echo "$quiche_commit" | tee quiche_commit.log
+        popd
 
         pushd quiche/deps/boringssl
         mkdir -p build

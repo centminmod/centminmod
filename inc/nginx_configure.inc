@@ -3503,7 +3503,14 @@ fi
       SETBUILD_ENV="-$(virt-what)"
       SETBUILD_ENV=$(echo $SETBUILD_ENV | tr -d '\n' | sed -e 's| |-|g')
     fi
-    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}"
+    if [[ "$NGINX_HTTP3" = [yY] ]]; then
+      if [ -f "${DIR_TMP}/quiche/quiche_commit.log" ]; then
+        quiche_commit=$(cat ${DIR_TMP}/quiche/quiche_commit.log)
+      fi
+      SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}-quiche-${quiche_commit}"
+    else
+      SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}"
+    fi
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
           pwd
