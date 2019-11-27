@@ -444,6 +444,12 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
     fi
     make${MAKETHREADS}
     make install
+    LIBSODIUM_OPT=' --with-sodium=/usr/local'
+    if [[ "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
+      # PHP 7.4 not finding sodium paths
+      export LIBSODIUM_CFLAGS='-I/usr/local/include'
+      export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
+    fi
     popd
   fi
   if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
@@ -467,6 +473,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$P
     make clean
     make${MAKETHREADS}
     make install PREFIX=/usr/local LIBRARY_REL=${LIBDIR_ARGONSODIUM}
+    ARGONTWO_OPT=' --with-password-argon2=/usr/local'
     popd
   fi
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
