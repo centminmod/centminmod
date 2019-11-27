@@ -65,5 +65,15 @@ libzip_install() {
   cmake3 ..
   make${MAKETHREADS}
   make install
+    if [[ "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        LIBDIR_LIBZIP='lib64'
+      else
+        LIBDIR_LIBZIP='lib'
+      fi
+      # PHP 7.4 not finding libzip paths
+      export LIBZIP_CFLAGS='-I/usr/local/include'
+      export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+    fi
   popd
 }
