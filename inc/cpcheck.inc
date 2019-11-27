@@ -19,8 +19,15 @@ pureftpd_symlink_fix() {
     mkdir -p /etc/systemd/system/pure-ftpd.service.d
     echo '[Service]' > /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
     echo 'PIDFile=/run/pure-ftpd.pid' >> /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
-    systemctl daemon-reload
+    systemctl daemon-reload >/dev/null 2>&1
     #cat /etc/systemd/system/pure-ftpd.service.d/pidfile.conf
+  fi
+}
+
+symlink_setup_mariadb() {
+  if [[ "$CENTOS_SEVEN" = '7' && "$MYSQLSERVICE_DISABLED" = [nN] && ! -h /etc/systemd/system/multi-user.target.wants/mariadb.service ]]; then
+    # ensure MariaDB service startup symlink is setup
+    systemctl enable mariadb >/dev/null 2>&1
   fi
 }
 
@@ -2862,6 +2869,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   opt_sslcache
   add_versionlocks
   symlink_setup_emailnotify
+  symlink_setup_mariadb
   pureftpd_symlink_fix
 fi
 

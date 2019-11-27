@@ -674,7 +674,7 @@ EFF
 fi
 
 cmservice mysql restart
-if [[ "$CENTOS_SEVEN" = '7' ]] ; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] ; then
     cmchkconfig mariadb on
 else
     cmchkconfig mysql on

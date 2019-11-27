@@ -750,6 +750,7 @@ fi
     cmservice mysql stop
     cmservice mysql start
     chkconfig mysql on
+    chkconfig mariadb on
 fi
 
 }
