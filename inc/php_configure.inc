@@ -387,7 +387,7 @@ fi
 # disable temporarily for php 7.2.0 due to libzip compile errors
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
 
-if [[ "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
+if [[ "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
   PHP_LIBZIP='y'
 fi
@@ -398,7 +398,7 @@ elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='n'
 fi
-if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 ]]; then
+if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   LIBZIP_OPT=' --with-libzip'
