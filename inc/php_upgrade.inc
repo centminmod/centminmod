@@ -306,7 +306,7 @@ else
     echo "----------------------------------------------------------------"
     echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.33, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 7.4.0 dev builds minus incompatible PHP extensions"
+    echo "NGDEBUG is PHP 8.0 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')"
@@ -319,7 +319,7 @@ else
         echo
         echo "error: invalid php version format entered you entered: $phpver"
         echo
-        echo "correct exact format example is 7.3.7 not 7.3"
+        echo "correct exact format example is 7.3.12 not 7.3"
         echo "latest php versions are listed at https://php.net/"
         echo
         read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
