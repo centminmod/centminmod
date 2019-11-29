@@ -1,6 +1,52 @@
 ########################################################################
 phpng_download() {
-  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.4.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.4.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.4.0RC'  ]]; then
+  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.0.0RC'  ]]; then
+    PHPNG_YES='y'
+    PHPNGVER=$PHPMU_ALPHAVER
+    # curl check as download url keeps changing between releases
+    REMIURL='https://downloads.php.net/~derick'
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
+    REMIURL_CURLCHECK=$?
+    if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
+      REMIURL='https://downloads.php.net/~cmb'
+    fi
+    cecho "Downloading PHP $PHPNGVER from ${REMIURL}/" $boldyellow
+    cd $DIR_TMP
+    if [ -f php-${PHPNGVER}.tar.xz ]; then
+      rm -rf php-${PHPNGVER}.tar.xz
+    fi
+    if [ -d php-${PHPNGVER} ]; then
+      rm -rf php-${PHPNGVER}
+    fi
+####################################################################
+        cecho "Download php-${PHPNGVER}.tar.xz ..." $boldyellow
+      if [ -s php-${PHPNGVER}.tar.xz ]; then
+         cecho "php-${PHPNGVER}.tar.xz found, skipping download..." $boldgreen
+      else
+          echo "wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3"
+          wget -${ipv_forceopt}cnv ${REMIURL}/php-${PHPNGVER}.tar.xz --tries=3
+    ERROR=$?
+      if [[ "$ERROR" != '0' ]]; then
+        cecho "Error: php-${PHPNGVER}.tar.xz download failed." $boldgreen
+        checklogdetails
+        exit #$ERROR
+      else 
+            cecho "Download done." $boldyellow
+        #echo ""
+      fi
+      fi
+
+    tar xJf php-${PHPNGVER}.tar.xz 
+    ERROR=$?
+      if [[ "$ERROR" != '0' ]]; then
+        cecho "Error: php-${PHPNGVER}.tar.xz extraction failed." $boldgreen
+        checklogdetails
+        exit #$ERROR
+      else 
+            cecho "php-${PHPNGVER}.tar.xz valid file." $boldyellow
+        echo ""
+      fi
+  elif [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '7.4.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '7.4.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '7.4.0RC'  ]]; then
     PHPNG_YES='y'
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
@@ -149,7 +195,7 @@ phpng_download() {
     if [ -d php-${PHPNGVER} ]; then
       rm -rf php-${PHPNGVER}
     fi
-    time git clone https://git.php.net/repository/php-src.git php-${PHPNGVER}
+    time git clone --depth=5 https://git.php.net/repository/php-src.git php-${PHPNGVER}
     cecho "Download PHP $PHPMUVER completed" $boldyellow
     echo
     cecho "Creating tar archive" $boldyellow

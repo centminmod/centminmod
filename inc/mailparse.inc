@@ -1,8 +1,8 @@
 checkphpextmailparse() {
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
+    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
 else
-    echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
+    echo $PHP_VERSION | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
 fi
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
@@ -22,7 +22,7 @@ fi
         mailparsephpexttarball
     fi
     echo
-    if [[ "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
+    if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
         # mailparse PHP 7.3 compatibility
         # https://git.php.net/?p=pecl/mail/mailparse.git;a=commit;h=13c2c425e519b22660a03d566c35e76b3d4751dc
         PHPSEVENTHREE_MAILPARSE='y'
