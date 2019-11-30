@@ -1173,6 +1173,11 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
         cecho "rm -rf ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         echo
     fi
+    if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/imagick.ini" ]]; then
+        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/imagick.ini" $boldyellow
+        cecho "rm -rf ${CONFIGSCANDIR}/imagick.ini" $boldyellow
+        echo
+    fi
     echo
     cecho "then restart PHP-FPM again..." $boldyellow
     echo
