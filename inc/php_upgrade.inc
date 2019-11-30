@@ -1163,6 +1163,16 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     #     cecho "rm -rf ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     # fi
+    if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/mcrypt.ini" ]]; then
+        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
+        cecho "rm -rf ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
+        echo
+    fi
+    if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/geoip.ini" ]]; then
+        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+        cecho "rm -rf ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+        echo
+    fi
     echo
     cecho "then restart PHP-FPM again..." $boldyellow
     echo

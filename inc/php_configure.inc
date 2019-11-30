@@ -413,7 +413,7 @@ elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='n'
 fi
-if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 ]]; then
+if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   echo "libzip check PHPMVER = $PHPMVER"

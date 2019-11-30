@@ -179,7 +179,7 @@ phpng_download() {
         echo ""
       fi    
 ####################################################################    
-  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '7.5' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
+  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.0' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
     if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
       PHPNGVER='NGDEBUG'
     elif [[ "$PHPMUVER" = '5.7' ]]; then
@@ -200,5 +200,10 @@ phpng_download() {
     echo
     cecho "Creating tar archive" $boldyellow
     tar -czf php-${PHPNGVER}.tar.gz php-${PHPNGVER}
+    if [ -f /usr/bin/pxz ]; then
+      tar -I 'pxz -1' -cf php-${PHPNGVER}.tar.xz php-${PHPNGVER}
+    else
+      tar -I 'xz -1' -cf php-${PHPNGVER}.tar.xz php-${PHPNGVER}
+    fi
   fi
 }
