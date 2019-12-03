@@ -35,6 +35,7 @@ iouring_patch() {
         echo
         sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
         sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
+        sed -i 's|^sendfile off;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
         echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
         popd
         # raise nginx max memlock limits
