@@ -386,7 +386,7 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.17.5'        # Use this version of Nginx
+NGINX_VERSION='1.17.6'        # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'
@@ -419,7 +419,7 @@ PCRE_VERSION='8.42'          # PCRE version
 IMAGICKPHP_VER='3.4.3'   # PHP extension for imagick
 MEMCACHED_INSTALL=y          # Install Memcached
 LIBEVENT_VERSION='2.0.22'    # Use this version of Libevent
-MEMCACHED_VERSION='1.5.12'    # Use this version of Memcached server
+MEMCACHED_VERSION='1.5.20'    # Use this version of Memcached server
 MEMCACHE_VERSION='3.0.8'     # Use this version of Memcache
 MEMCACHEDPHP_VER='2.2.0'    # Memcached PHP extension not server
 LIBMEMCACHED_YUM='y'        # switch to YUM install instead of source compile
