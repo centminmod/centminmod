@@ -907,6 +907,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             fi
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
+kernel.pid_max=65536
 kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
@@ -973,6 +974,7 @@ EOF
             fi
 cat >> "/etc/sysctl.conf" <<EOF
 # centminmod added
+kernel.pid_max=65536
 kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
