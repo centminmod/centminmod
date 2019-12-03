@@ -3442,7 +3442,13 @@ fi
       SETBUILD_ENV="-$(virt-what)"
       SETBUILD_ENV=$(echo $SETBUILD_ENV | tr -d '\n' | sed -e 's| |-|g')
     fi
-    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}"
+    # tag nginx builds with centmin mod latest commit for better troubleshooting
+    if [ -d "${CM_INSTALLDIR}/.git" ]; then
+      CM_COMMIT_LAST="-$(git --git-dir=${CM_INSTALLDIR}/.git rev-parse --short HEAD)"
+    else
+      CM_COMMIT_LAST=''
+    fi
+    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}"
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
           pwd
