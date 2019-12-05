@@ -449,7 +449,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
             export PHP_AUTOHEADER=/usr/bin/autoheader268
         fi
     fi
-    if [[ "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '7.4' ]]; then
+    if [[ "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' ]]; then
       pushd "$DIR_TMP"
       rm -rf memcached-php7
       time git clone --depth=1 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
