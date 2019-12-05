@@ -402,6 +402,18 @@ fi
 # disable temporarily for php 7.2.0 due to libzip compile errors
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
 
+if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+  # kerberos / krb5 and krb5-gasspi YUM packages on CentOS 6 is missing .pc files
+  # required for pkg-config to find location of dependency libraries for PHP 7.4+
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    LIBDIR_KERBEROS='lib64'
+  else
+    LIBDIR_KERBEROS='lib'
+  fi
+  # export KERBEROS_CFLAGS='-I/usr/${LIBDIR_KERBEROS}/include'
+  export KERBEROS_LIBS="-L/usr/${LIBDIR_KERBEROS} -lkrb5 -lk5crypto -lgssapi_krb5"
+fi
+
 if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
   PHP_LIBZIP='y'
