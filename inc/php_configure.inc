@@ -410,7 +410,7 @@ if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || 
   else
     LIBDIR_KERBEROS='lib'
   fi
-  # export KERBEROS_CFLAGS='-I/usr/${LIBDIR_KERBEROS}/include'
+  export KERBEROS_CFLAGS='-I/usr/include'
   export KERBEROS_LIBS="-L/usr/${LIBDIR_KERBEROS} -lkrb5 -lk5crypto -lgssapi_krb5"
 fi
 
