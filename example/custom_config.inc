@@ -343,7 +343,7 @@ REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='5.1.1'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.5.4'      # MongoDB PHP version
+MONGODBPHP_VER='1.6.1'      # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
