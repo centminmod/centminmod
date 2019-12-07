@@ -98,6 +98,26 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
   mkdir -p $CENTMINLOGDIR
 fi
 
+# sudo adjustment
+  if [ -d /etc/sudoers.d ]; then
+    if [ ! -f /etc/sudoers.d/addpaths ]; then
+      touch /etc/sudoers.d/addpaths
+      if [[ "$(uname -m)" = 'x86_64' ]]; then
+        if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
+          echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+        fi
+      else
+        if [[ "$(grep '\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin' /etc/sudoers.d/addpaths >/dev/null; echo $?)" != '0' ]]; then
+          echo "Defaults secure_path = /usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin" > /etc/sudoers.d/addpaths
+        fi
+      fi
+    fi
+    if [ -f /etc/sudoers.d/addpaths ]; then
+      chmod 0440 /etc/sudoers.d/addpaths
+      # visudo -c -q
+    fi
+  fi
+
 if [ "$CENTOSVER" == 'release' ]; then
     CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
     if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
