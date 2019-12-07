@@ -498,6 +498,32 @@ if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSIO
     echo
 fi
 
+if [[ "$(uname -m)" = 'x86_64' && "$LIBRESSL_SWITCH" = [nN] && "${OPENSSL_VERSION}" = '1.1.1d' ]]; then
+    echo
+    echo "######################################################################"
+    echo "Patching OpenSSL 1.1.1d"
+    echo "######################################################################"
+    echo "fix rsaz_512_sqr overflow bug on x86_64 (CVE-2019-1551) patch"
+    echo "https://www.openssl.org/news/secadv/20191206.txt"
+    echo  "######################################################################"
+    pushd "${DIR_TMP}/openssl-${OPENSSL_VERSION}"
+    rm -rf OpenSSL-1.1.1d-CVE-2019-1551.patch
+    if [ -f "$CUR_DIR/patches/openssl/OpenSSL-1.1.1d-CVE-2019-1551.patch" ]; then
+        cecho "patch -p1 < $CUR_DIR/patches/openssl/OpenSSL-1.1.1d-CVE-2019-1551.patch" $boldyellow
+        patch -p1 < "$CUR_DIR/patches/openssl/OpenSSL-1.1.1d-CVE-2019-1551.patch"
+        openssl_rsaz_512_sqr_err=$?
+        if [[ "$openssl_rsaz_512_sqr_err" -ne '0' ]]; then
+            cecho "patch failed, revert patch $CUR_DIR/patches/openssl/OpenSSL-1.1.1d-CVE-2019-1551.patch" $boldyellow
+            pushd "$DIR_TMP"
+            rm -rf "openssl-${OPENSSL_VERSION}"
+            tar xzf "openssl-${OPENSSL_VERSION}.tar.gz"
+            popd
+        fi
+    fi
+    popd
+    echo
+fi
+
 if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
     # if [[ "${OPENSSL_VERSION}" = '1.0.1h' ]]; then
         if [ -f "$(which figlet)" ]; then
