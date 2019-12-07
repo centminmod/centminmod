@@ -63,6 +63,16 @@ if [[ "$CENTOS_SEVEN" != '7' ]]; then
         alias fgrep='fgrep --color=auto'
         alias grep='grep --color=auto'
     fi
+    if [[ "$(id -u)" -ne '0' ]]; then
+        if [[ ! "$(egrep -w 'egrep|fgrep|grep' $HOME/.bashrc)" ]]; then
+            echo "alias egrep='egrep --color=auto'" >> $HOME/.bashrc
+            echo "alias fgrep='fgrep --color=auto'" >> $HOME/.bashrc
+            echo "alias grep='grep --color=auto'" >> $HOME/.bashrc
+            alias egrep='egrep --color=auto'
+            alias fgrep='fgrep --color=auto'
+            alias grep='grep --color=auto'
+        fi
+    fi
 
     echo "/etc/init.d/nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
     echo "/etc/init.d/nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
@@ -184,6 +194,12 @@ fi # CENTOS_SEVEN != 7
         if [[ ! "$(grep -w 'glances' /root/.bashrc)" ]]; then
             echo "alias top2=\"glances\"" >> /root/.bashrc
             alias top2="glances"
+        fi
+        if [[ "$(id -u)" -ne '0' ]]; then
+            if [[ ! "$(grep -w 'glances' $HOME/.bashrc)" ]]; then
+                echo "alias top2=\"glances\"" >> $HOME/.bashrc
+                alias top2="glances"
+            fi
         fi
     fi
 

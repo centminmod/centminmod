@@ -142,8 +142,8 @@ else
 # .bash_profile
 
 # Get the aliases and functions
-if [ -f ~/.bashrc ]; then
-        . ~/.bashrc
+if [ -f /root/.bashrc ]; then
+        . /root/.bashrc
 fi
 
 # User specific environment and startup programs
@@ -158,6 +158,34 @@ EOF
 # cat /root/.bash_profile
 fi
 
+if [[ "$(id -u)" -ne '0' ]]; then
+if [[ -f $HOME/.bash_profile ]]; then
+    NANOCHECK=`grep nano $HOME/.bash_profile`
+    if [ -z "$NANOCHECK" ]; then
+    sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' $HOME/.bash_profile
+    fi
+else
+    cat > $HOME/.bash_profile <<EOF
+# .bash_profile
+
+# Get the aliases and functions
+if [ -f $HOME/.bashrc ]; then
+        . $HOME/.bashrc
+fi
+
+# User specific environment and startup programs
+
+PATH=\$PATH:\$HOME/bin
+
+export PATH
+export EDITOR=nano
+export HISTTIMEFORMAT="%a %h %d – %r "
+EOF
+
+# cat $HOME/.bash_profile
+fi
+fi
+
 if [ -f /root/.screenrc ]; then
   DEFSCROLLCHECK=`grep defscrollback /root/.screenrc`
   if [ -z "$DEFSCROLLCHECK" ]; then
@@ -165,6 +193,16 @@ if [ -f /root/.screenrc ]; then
   fi
 else
   echo "defscrollback 200000" >> /root/.screenrc
+fi
+if [[ "$(id -u)" -ne '0' ]]; then
+  if [ -f $HOME/.screenrc ]; then
+    DEFSCROLLCHECK=`grep defscrollback $HOME/.screenrc`
+    if [ -z "$DEFSCROLLCHECK" ]; then
+    echo "defscrollback 200000" >> $HOME/.screenrc
+    fi
+  else
+    echo "defscrollback 200000" >> $HOME/.screenrc
+  fi
 fi
 
 if [[ -f /usr/bin/ccache && ! -f "${DIR_TMP}/${CCACHEFILE}" ]];then

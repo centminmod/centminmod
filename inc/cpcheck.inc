@@ -1735,6 +1735,25 @@ trap cleanup_msg SIGHUP SIGINT SIGTERM SIGTSTP
 EOF
     chmod 0700 /usr/bin/centmin
   fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ "$(grep 'cmdir=' $HOME/.bashrc)" || "$(grep 'centmin=' $HOME/.bashrc)" ]]; then
+      sed -i '/cmdir=/d' $HOME/.bashrc
+      sed -i '/centmin=/d' $HOME/.bashrc
+      rm -rf /usr/bin/cmdir
+      alias cmdir="pushd ${SCRIPT_DIR}"
+      echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> $HOME/.bashrc
+cat > "/usr/bin/centmin" << EOF
+#!/bin/bash
+pushd "$SCRIPT_DIR"; . ./centmin.sh
+cleanup_msg() {
+  exit 1
+}
+
+trap cleanup_msg SIGHUP SIGINT SIGTERM SIGTSTP
+EOF
+      chmod 0700 /usr/bin/centmin
+    fi
+  fi
 }
 
 nvcheck() {
@@ -2144,6 +2163,12 @@ crontabdisable_r() {
     # disable crontab -r commmand https://community.centminmod.com/threads/strange-cancellation-of-the-cron.14059/#post-59929
     echo 'crontab () { [[ $@ =~ -[iel]*r ]] && echo '"r" not allowed' || command crontab "$@" ;}' >> /root/.bashrc
   fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ ! "$(grep -w 'crontab \(\)' $HOME/.bashrc)" ]]; then
+      # disable crontab -r commmand https://community.centminmod.com/threads/strange-cancellation-of-the-cron.14059/#post-59929
+      echo 'crontab () { [[ $@ =~ -[iel]*r ]] && echo '"r" not allowed' || command crontab "$@" ;}' >> $HOME/.bashrc
+    fi
+  fi
 }
 
 xpowerby() {
@@ -2168,6 +2193,12 @@ pathfixes() {
   if [[ -z "$(grep '\$PATH:' /root/.bashrc)" ]]; then
     # sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" /root/.bashrc
     sed -i 's|export PATH=.*|export PATH="\$PATH:\/usr\/lib64\/ccache:\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin"|' /root/.bashrc
+  fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ -z "$(grep '\$PATH:' $HOME/.bashrc)" ]]; then
+      # sed -i "s|export PATH=\"\/usr\/lib64\/ccache|export PATH=\"\$PATH:\/usr\/lib64\/ccache|" $HOME/.bashrc
+      sed -i 's|export PATH=.*|export PATH="\$PATH:\/usr\/lib64\/ccache:\/usr\/local\/sbin:\/usr\/local\/bin:\/sbin:\/bin:\/usr\/sbin:\/usr\/bin:\/root\/bin"|' $HOME/.bashrc
+    fi
   fi
   # for sudo
   if [ -d /etc/sudoers.d ]; then
@@ -2676,12 +2707,32 @@ expand_cmdprompt() {
       echo 'export PS1="[\A][\u@\H \W]\\$ "' >> /root/.bashrc
       export PS1="[\A][\u@\H \W]\\$ "
     fi
-  fi  
+  fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ -z "$(grep 'PS1' $HOME/.bashrc)" ]]; then
+      if [ "$(id -u)" -eq 0 ]; then 
+        # you are root
+        ORIG=$PS1
+        # PS1="\e[40;1;37m[\A][\u@\H \w]\\$ \e[m " 
+        echo 'export PS1="[\A][\u@\H \W]\\$ "' >> $HOME/.bashrc
+        export PS1="[\A][\u@\H \W]\\$ "
+      else
+        ORIG=$PS1
+        echo 'export PS1="[\A][\u@\H \W]\\$ "' >> $HOME/.bashrc
+        export PS1="[\A][\u@\H \W]\\$ "
+      fi
+    fi
+  fi
 }
 
 setup_pwdh() {
   if [[ -z "$(grep -w 'pwdh' /root/.bashrc)" ]]; then
     echo "alias pwdh='echo -n \"\$HOSTNAME\"; echo \" \$PWD\"'" >> /root/.bashrc
+  fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ -z "$(grep -w 'pwdh' $HOME/.bashrc)" ]]; then
+      echo "alias pwdh='echo -n \"\$HOSTNAME\"; echo \" \$PWD\"'" >> $HOME/.bashrc
+    fi
   fi
 }
 
@@ -2881,7 +2932,14 @@ histformat() {
     echo "HISTTIMEFORMAT=\"[%d.%m.%y] %T   \"" >> /root/.bashrc
     echo "export HISTSIZE=10000" >> /root/.bashrc
     echo "export HISTTIMEFORMAT" >> /root/.bashrc
-  fi  
+  fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ -z "$(grep HISTTIMEFORMAT $HOME/.bashrc)" ]]; then
+      echo "HISTTIMEFORMAT=\"[%d.%m.%y] %T   \"" >> $HOME/.bashrc
+      echo "export HISTSIZE=10000" >> $HOME/.bashrc
+      echo "export HISTTIMEFORMAT" >> $HOME/.bashrc
+    fi
+  fi
 }
 
 setupdate() {

@@ -1085,6 +1085,17 @@ if [[ ! "$(grep fpm-errlog /root/.bashrc)" || ! "$(grep fpm-slowlog /root/.bashr
   echo "alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'" >> /root/.bashrc
   echo "alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'" >> /root/.bashrc
 fi
+if [[ "$(id -u)" -ne '0' ]]; then
+    # set php-fpm alias log inspection shotcuts
+    if [[ ! "$(grep fpm-errlog $HOME/.bashrc)" || ! "$(grep fpm-slowlog $HOME/.bashrc)" || ! "$(grep fpm-phperrlog $HOME/.bashrc)" ]]; then
+        alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'
+        alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'
+        alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'
+        echo "alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'" >> $HOME/.bashrc
+        echo "alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'" >> $HOME/.bashrc
+        echo "alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'" >> $HOME/.bashrc
+    fi
+fi
 
 echo
 php --ini

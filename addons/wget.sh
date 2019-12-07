@@ -541,6 +541,12 @@ source_wgetinstall() {
     echo "alias wget='/usr/local/bin/wget'" >> /root/.bashrc
   fi
   . /root/.bashrc
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ ! "$(grep '^alias wget' $HOME/.bashrc)" ]] && [[ "$(wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" = '0' ]]; then
+      echo "alias wget='/usr/local/bin/wget'" >> $HOME/.bashrc
+    fi
+    . $HOME/.bashrc
+  fi
 
   echo
   cecho "--------------------------------------------------------" $boldgreen

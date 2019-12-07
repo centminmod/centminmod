@@ -757,6 +757,12 @@ source_wgetinstall() {
     echo "alias wget='/usr/local/bin/wget'" >> /root/.bashrc
   fi
   . /root/.bashrc
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ ! "$(grep '^alias wget' $HOME/.bashrc)" ]]; then
+      echo "alias wget='/usr/local/bin/wget'" >> $HOME/.bashrc
+    fi
+    . $HOME/.bashrc
+  fi
 
   echo
   cecho "--------------------------------------------------------" $boldgreen
@@ -1325,6 +1331,14 @@ rm -rf /etc/centminmod/email-secondary.ini
     alias cmdir="pushd /usr/local/src/centminmod"
     echo "alias cmdir='pushd /usr/local/src/centminmod'" >> /root/.bashrc
     echo -e "pushd /usr/local/src/centminmod; bash centmin.sh" > /usr/bin/centmin
+    if [[ "$(id -u)" -ne '0' ]]; then
+      sed -i '/cmdir=/d' $HOME/.bashrc
+      sed -i '/centmin=/d' $HOME/.bashrc
+      rm -rf /usr/bin/cmdir
+      alias cmdir="pushd /usr/local/src/centminmod"
+      echo "alias cmdir='pushd /usr/local/src/centminmod'" >> $HOME/.bashrc
+      echo -e "pushd /usr/local/src/centminmod; bash centmin.sh" > /usr/bin/centmin
+    fi
     chmod 0700 /usr/bin/centmin
   echo
   echo "Created command shortcuts:"

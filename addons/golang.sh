@@ -158,6 +158,28 @@ go_install() {
 			cecho "---------------------------" $boldyellow
 		fi
 	fi
+  if [[ "$(id -u)" -ne '0' ]]; then
+    if [[ ! -d $HOME/golang/packages || ! "$(grep 'GOPATH' $HOME/.bashrc)" ]] && [ -f /usr/local/go/bin/go ]; then
+      cecho "---------------------------" $boldyellow
+      cecho "$HOME/.bashrc before update: " $boldwhite
+      cat $HOME/.bashrc
+      cecho "---------------------------" $boldyellow
+      mkdir -p $HOME/golang/packages
+      export GOPATH=$HOME/golang/packages
+      export PATH=$PATH:/usr/local/go/bin
+      export PATH=$GOPATH/bin:$PATH
+      if [[ ! "$(grep 'golang' $HOME/.bashrc)" ]]; then
+        echo "export PATH=\$PATH:/usr/local/go/bin" >> $HOME/.bashrc
+        echo "export GOPATH=~/golang/packages" >> $HOME/.bashrc
+        echo "export PATH=\$GOPATH/bin:\$PATH" >> $HOME/.bashrc
+        . $HOME/.bashrc
+        cecho "---------------------------" $boldyellow
+        cecho "$HOME/.bashrc after update: " $boldwhite
+        cat $HOME/.bashrc
+        cecho "---------------------------" $boldyellow
+      fi
+    fi
+  fi
 	echo
 	cecho "---------------------------" $boldyellow
 	cecho -n "golang Version: " $boldgreen

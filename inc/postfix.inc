@@ -321,4 +321,9 @@ postconf -n | grep mailbox_size_limit | head -n1 | awk '{print $3}'
   chmod 0700 /usr/bin/pflogsumm
   alias postfixlog='pflogsumm -d today --verbose_msg_detail /var/log/maillog'
   echo "alias postfixlog='pflogsumm -d today --verbose_msg_detail /var/log/maillog'" >> /root/.bashrc
+    if [[ "$(id -u)" -ne '0' ]]; then
+        if [[ ! "$(grep 'postfixlog' /root/.bashrc)" ]]; then
+            echo "alias postfixlog='pflogsumm -d today --verbose_msg_detail /var/log/maillog'" >> $HOME/.bashrc
+        fi
+    fi
 }

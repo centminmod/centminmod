@@ -80,24 +80,44 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
     if [ -f /usr/local/bin/ccache ]; then
       mkdir -p /home/.ccache
       chmod 700 /home/.ccache
-      sed -i '/CCACHE_DIR/d' ~/.bashrc
-      sed -i '/ccache gcc/d' ~/.bashrc
-      sed -i '/ccache g++/d' ~/.bashrc
+      sed -i '/CCACHE_DIR/d' /root/.bashrc
+      sed -i '/ccache gcc/d' /root/.bashrc
+      sed -i '/ccache g++/d' /root/.bashrc
       echo "run_second_cpp = true" > /home/.ccache/ccache.conf
       echo "compression = true" >> /home/.ccache/ccache.conf
       echo "compression_level = 2" >> /home/.ccache/ccache.conf
-      echo "export CCACHE_DIR=\"/home/.ccache\"" >> ~/.bashrc
-      echo "export CC=\"ccache gcc\"" >> ~/.bashrc
-      echo "export CXX=\"ccache g++\"" >> ~/.bashrc
-      # echo "export CC=\"ccache clang\"" >> ~/.bashrc
-      # echo "export CXX=\"ccache clang++\"" >> ~/.bashrc
-      sed -i '/CCACHE_CPP2/d' ~/.bashrc 
-      echo "export CCACHE_CPP2=yes" >> ~/.bashrc
-      #echo "export PATH=\"/usr/lib64/ccache:$PATH\"" >> ~/.bashrc
-      if [ -z "$(cat ~/.bashrc | grep 'PATH' | grep ccache)" ]; then
-        echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> ~/.bashrc
+      echo "export CCACHE_DIR=\"/home/.ccache\"" >> /root/.bashrc
+      echo "export CC=\"ccache gcc\"" >> /root/.bashrc
+      echo "export CXX=\"ccache g++\"" >> /root/.bashrc
+      # echo "export CC=\"ccache clang\"" >> /root/.bashrc
+      # echo "export CXX=\"ccache clang++\"" >> /root/.bashrc
+      sed -i '/CCACHE_CPP2/d' /root/.bashrc 
+      echo "export CCACHE_CPP2=yes" >> /root/.bashrc
+      #echo "export PATH=\"/usr/lib64/ccache:$PATH\"" >> /root/.bashrc
+      if [ -z "$(cat /root/.bashrc | grep 'PATH' | grep ccache)" ]; then
+        echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> /root/.bashrc
       fi
-      source ~/.bashrc
+      source /root/.bashrc
+      if [[ "$(id -u)" -ne '0' ]]; then
+        sed -i '/CCACHE_DIR/d' $HOME/.bashrc
+        sed -i '/ccache gcc/d' $HOME/.bashrc
+        sed -i '/ccache g++/d' $HOME/.bashrc
+        echo "run_second_cpp = true" > /home/.ccache/ccache.conf
+        echo "compression = true" >> /home/.ccache/ccache.conf
+        echo "compression_level = 2" >> /home/.ccache/ccache.conf
+        echo "export CCACHE_DIR=\"/home/.ccache\"" >> $HOME/.bashrc
+        echo "export CC=\"ccache gcc\"" >> $HOME/.bashrc
+        echo "export CXX=\"ccache g++\"" >> $HOME/.bashrc
+        # echo "export CC=\"ccache clang\"" >> $HOME/.bashrc
+        # echo "export CXX=\"ccache clang++\"" >> $HOME/.bashrc
+        sed -i '/CCACHE_CPP2/d' $HOME/.bashrc 
+        echo "export CCACHE_CPP2=yes" >> $HOME/.bashrc
+        #echo "export PATH=\"/usr/lib64/ccache:$PATH\"" >> $HOME/.bashrc
+        if [ -z "$(cat $HOME/.bashrc | grep 'PATH' | grep ccache)" ]; then
+          echo "export PATH=\"/usr/$LIBDIR/ccache:$PATH\"" >> $HOME/.bashrc
+        fi
+        source $HOME/.bashrc
+      fi
       ccache -M $CCACHESIZE
     fi
   cd ${CM_INSTALLDIR}

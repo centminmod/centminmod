@@ -992,6 +992,9 @@ fi
             if [ -f /usr/local/src/centminmod/addons/golang.sh ]; then
                 /usr/local/src/centminmod/addons/golang.sh install
                 . /root/.bashrc
+                if [[ "$(id -u)" -ne '0' ]]; then
+                    . $HOME/.bashrc
+                fi
             fi
         fi
 

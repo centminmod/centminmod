@@ -60,9 +60,15 @@ updatewpcli() {
 	if [ -f /usr/bin/wp ]; then
 
   WPALIASCHECK=$(grep 'allow-root' /root/.bashrc)
+  if [[ "$(id -u)" -ne '0' ]]; then
+    WPALIASCHECK=$(grep 'allow-root' $HOME/.bashrc)
+  fi
   
   if [[ -z "$WPALIASCHECK" ]]; then
     echo "alias wp='wp --allow-root'" >> /root/.bashrc
+    if [[ "$(id -u)" -ne '0' ]]; then
+      echo "alias wp='wp --allow-root'" >> $HOME/.bashrc
+    fi
   fi
   
   if [[ "$WPCLI_EXTRAPACKAGES" = [yY] && "$TOTALMEM_PHP" -gt '2000000' ]]; then
@@ -144,6 +150,9 @@ fi
 echo ""
 
 WPCLICHECK=$(grep 'WP-CLI' /root/.bash_profile)
+if [[ "$(id -u)" -ne '0' ]]; then
+  WPCLICHECK=$(grep 'WP-CLI' $HOME/.bash_profile)
+fi
 
 if [[ -z "$WPCLICHECK" ]]; then
 	echo ""
@@ -153,12 +162,24 @@ if [[ -z "$WPCLICHECK" ]]; then
 	#echo "" >> /root/.bash_profile
 	echo "# WP-CLI completions" >> /root/.bash_profile
 	echo "source ${WPCLIDIR}/wp-completion.bash" >> /root/.bash_profile
+  if [[ "$(id -u)" -ne '0' ]]; then
+    echo ""
+    echo "" >> $HOME/.bash_profile
+    echo "# WP-CLI completions" >> $HOME/.bash_profile
+    echo "source ${WPCLIDIR}/wp-completion.bash" >> $HOME/.bash_profile
+  fi
 fi
 
 WPALIASCHECK=$(grep 'allow-root' /root/.bashrc)
+if [[ "$(id -u)" -ne '0' ]]; then
+  WPALIASCHECK=$(grep 'allow-root' $HOME/.bashrc)
+fi
 
 if [[ -z "$WPALIASCHECK" ]]; then
   echo "alias wp='wp --allow-root'" >> /root/.bashrc
+  if [[ "$(id -u)" -ne '0' ]]; then
+    echo "alias wp='wp --allow-root'" >> $HOME/.bashrc
+  fi
 fi
 
 if [[ "$(wp package list --allow-root | grep -q 'eriktorsner\/wp-checksum'; echo $?)" -ne '0' ]]; then

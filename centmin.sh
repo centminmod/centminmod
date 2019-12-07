@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='351'
+SCRIPT_INCREMENTVER='352'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2019'
@@ -2618,6 +2618,13 @@ cleanup_msg() {
 
 trap cleanup_msg SIGHUP SIGINT SIGTERM SIGTSTP
 EOF
+    if [[ "$(id -u)" -ne '0' ]]; then
+      sed -i '/cmdir=/d' $HOME/.bashrc
+      sed -i '/centmin=/d' $HOME/.bashrc
+      rm -rf /usr/bin/cmdir
+      alias cmdir="pushd ${SCRIPT_DIR}"
+      echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> $HOME/.bashrc
+    fi
     chmod 0700 /usr/bin/centmin
 
     unsetramdisk
@@ -2735,6 +2742,15 @@ else
     echo "alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'" >> /root/.bashrc
     echo "alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'" >> /root/.bashrc
     echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> /root/.bashrc
+    if [[ "$(id -u)" -ne '0' ]]; then
+      sed -i '/cmdir=/d' $HOME/.bashrc
+      sed -i '/centmin=/d' $HOME/.bashrc
+      rm -rf /usr/bin/cmdir
+      echo "alias fpm-errlog='tail -10 /var/log/php-fpm/www-error.log'" >> $HOME/.bashrc
+      echo "alias fpm-phperrlog='tail -10 /var/log/php-fpm/www-php.error.log'" >> $HOME/.bashrc
+      echo "alias fpm-slowlog='tail -10 /var/log/php-fpm/www-slow.log'" >> $HOME/.bashrc
+      echo "alias cmdir='pushd ${SCRIPT_DIR}'" >> $HOME/.bashrc
+    fi
 cat > "/usr/bin/centmin" << EOF
 #!/bin/bash
 pushd "$SCRIPT_DIR"; . ./centmin.sh
