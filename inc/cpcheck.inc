@@ -797,7 +797,7 @@ checkipvsix() {
   # disable system IPv6 support
   # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
   if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
-    if [[ -d /etc/postfix && "$(postconf -n inet_protocols | grep -w 'all')" ]]; then
+    if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'all')" ]]; then
       postconf -e 'inet_protocols = ipv4'
       service postfix restart >/dev/null 2>&1
     fi
@@ -841,9 +841,10 @@ ListenStream=
 ListenStream=0.0.0.0:111
 ListenStream=/var/run/rpcbind.sock
 ROF
+      systemctl daemon-reload -q
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
-    if [[ -d /etc/postfix && "$(postconf -n inet_protocols | grep -w 'ipv4')" ]]; then
+    if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
       postconf -e 'inet_protocols = all'
       service postfix restart >/dev/null 2>&1
     fi
@@ -856,15 +857,15 @@ ROF
       echo 'net.ipv6.conf.all.disable_ipv6 = 0' >> /etc/sysctl.conf
       sysctl -w net.ipv6.conf.all.disable_ipv6=0 >/dev/null 2>&1
     elif [[ "$DETECH_CHANGES" = [yY] && "$(grep -w 'net.ipv6.conf.all.disable_ipv6' /etc/sysctl.conf)" ]]; then
-      sed -i 's|net.ipv6.conf.all.disable_ipv6 = .*|net.ipv6.conf.all.disable_ipv6 = 1|' /etc/sysctl.conf
-      sysctl -w net.ipv6.conf.all.disable_ipv6=1 >/dev/null 2>&1
+      sed -i 's|net.ipv6.conf.all.disable_ipv6 = .*|net.ipv6.conf.all.disable_ipv6 = 0|' /etc/sysctl.conf
+      sysctl -w net.ipv6.conf.all.disable_ipv6=0 >/dev/null 2>&1
     fi
     if [[ "$DETECH_CHANGES" = [nN] && ! "$(grep -w 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf)" ]]; then
       echo 'net.ipv6.conf.default.disable_ipv6 = 0' >> /etc/sysctl.conf
       sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null 2>&1
     elif [[ "$DETECH_CHANGES" = [yY] && "$(grep -w 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf)" ]]; then
-      sed -i 's|net.ipv6.conf.default.disable_ipv6 = .*|net.ipv6.conf.default.disable_ipv6 = 1|' /etc/sysctl.conf
-      sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
+      sed -i 's|net.ipv6.conf.default.disable_ipv6 = .*|net.ipv6.conf.default.disable_ipv6 = 0|' /etc/sysctl.conf
+      sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null 2>&1
     fi
   fi
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
@@ -899,6 +900,7 @@ ROF
       if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
         rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
       fi
+      systemctl daemon-reload -q
     fi
   if [[ "$DETECH_CHANGES" = [yY] ]]; then
     service network restart >/dev/null 2>&1
