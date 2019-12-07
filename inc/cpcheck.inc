@@ -1779,6 +1779,7 @@ dmotdcheck() {
     echo '#!/bin/bash' > /etc/profile.d/dmotd.sh
     # echo "if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then  /usr/local/bin/dmotd; fi" >> /etc/profile.d/dmotd.sh
     echo "if tty -s; then type='interactive'; if [[ \"\$(id -u)\" = '0' && -f /usr/local/bin/dmotd ]]; then /usr/local/bin/dmotd; fi; else type='non-interactive'; fi;" >> /etc/profile.d/dmotd.sh
+    echo "if tty -s; then type='interactive'; if [[ \"\$(id -u)\" != '0' && \"\$(id -Gn | grep -wo 'wheel')\" = 'wheel' && -f /usr/local/bin/dmotd ]]; then sudo /usr/local/bin/dmotd; fi; else type='non-interactive'; fi;" >> /etc/profile.d/dmotd.sh
     echo "if echo \$0 | grep -e ^\\- 2>&1>/dev/null; then login='login'; else login='non-login'; fi;" >> /etc/profile.d/dmotd.sh
     # echo "$type/$login"
   fi
