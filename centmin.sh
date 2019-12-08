@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='360'
+SCRIPT_INCREMENTVER='361'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2019'
@@ -2302,8 +2302,12 @@ if [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
-  sleep 3
+  sleep 2
   systemctl restart mariadb
+  if [[ "$(systemctl is-active mariadb -q; echo $?)" -ne '0' ]]; then
+    sleep 4
+    systemctl restart mariadb
+  fi
 elif [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
   sleep 3
   /etc/init.d/mysql restart
