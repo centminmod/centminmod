@@ -297,7 +297,7 @@ postconf -e 'smtp_tls_CAfile=/etc/pki/tls/certs/ca-bundle.crt'
 postconf -e 'smtp_tls_security_level = may'
 postconf -e 'smtp_tls_loglevel = 1'
 postconf -e 'smtp_tls_session_cache_database = btree:/var/lib/postfix/smtp_scache'
-service postfix reload
+cmservice postfix restart
 postconf -n smtp_tls_CAfile smtp_tls_security_level smtp_tls_loglevel smtp_tls_session_cache_database
 
 if [[ "$DISABLE_IPVSIX" = [yY] ]]; then

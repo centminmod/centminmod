@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='359'
+SCRIPT_INCREMENTVER='360'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2019'
@@ -2297,22 +2297,34 @@ if [ -f /etc/init.d/ntpd ]; then
 fi
 
 if [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
+  sleep 2
   /etc/init.d/nginx start
 fi
 
-if [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
-  /etc/init.d/mysql start
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
+  sleep 3
+  systemctl restart mariadb
+elif [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
+  sleep 3
+  /etc/init.d/mysql restart
 fi
 
 if [[ "$MYSQL_INSTALL" = [yY] && -f /etc/init.d/mysqld ]]; then
   /etc/init.d/mysqld start
 fi
 
+if [[ "$(service postfix status >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+  sleep 2
+  service postfix restart
+fi
+
 if [[ "$(service csf status >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+  sleep 2
   service csf start
 fi
 
 if [[ "$(service lfd status >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+  sleep 2
   service lfd start
 fi
 
