@@ -40,12 +40,18 @@ if [ -d /etc/sudoers.d ]; then
 
   # https://community.centminmod.com/posts/39469/
   echo "alias cmdir='pushd /usr/local/src/centminmod'" >> "/home/${sudo_username}/.bash_profile"
+  echo "alias centmin='sudo centmin'" >> "/home/${sudo_username}/.bashrc"
+  echo "alias cminfo='sudo cminfo'" >> "/home/${sudo_username}/.bashrc"
+  echo "alias cmupdate='sudo cmupdate'" >> "/home/${sudo_username}/.bashrc"
+  echo "alias pwdh='echo -n \"\$HOSTNAME\"; echo \" \$PWD\"'" >> "/home/${sudo_username}/.bashrc"
+  echo "alias postfixlog='sudo pflogsumm -d today --verbose_msg_detail /var/log/maillog'" >> "/home/${sudo_username}/.bashrc"
 
   echo
   # echo "${sudo_username}:${sudo_userpass}" | chpasswd
   echo "$sudo_username with password: $sudo_userpass created"
   echo "sudo setup for $sudo_username"
   echo "${sudo_username}    ALL=(ALL:ALL) ALL" > "/etc/sudoers.d/sudo.${sudo_username}"
+  # echo "${sudo_username}    ALL=(ALL:ALL) ALL: /usr/bin/centmin, /usr/bin/cminfo" > "/etc/sudoers.d/sudo.${sudo_username}"
   chmod 0440 "/etc/sudoers.d/sudo.${sudo_username}"
   visudo -c -q -f "/etc/sudoers.d/sudo.${sudo_username}"
   shift # shift all parameters;
