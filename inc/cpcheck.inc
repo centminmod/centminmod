@@ -799,7 +799,7 @@ checkipvsix() {
   if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
     if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'all')" ]]; then
       postconf -e 'inet_protocols = ipv4'
-      service postfix restart >/dev/null 2>&1
+      restartpostfix='y'
     fi
     if [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' ]]; then
       DETECH_CHANGES='y'
@@ -817,6 +817,9 @@ checkipvsix() {
     elif [[ "$(grep -w 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf)" ]]; then
       sed -i 's|net.ipv6.conf.default.disable_ipv6 = .*|net.ipv6.conf.default.disable_ipv6 = 1|' /etc/sysctl.conf
       sysctl -w net.ipv6.conf.default.disable_ipv6=1 >/dev/null 2>&1
+    fi
+    if [[ "$restartpostfix" = [yY] ]]; then
+      service postfix restart >/dev/null 2>&1
     fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
@@ -846,7 +849,7 @@ ROF
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
     if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
       postconf -e 'inet_protocols = all'
-      service postfix restart >/dev/null 2>&1
+      restartpostfix='y'
     fi
     if [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' ]]; then
       DETECH_CHANGES='y'
@@ -866,6 +869,9 @@ ROF
     elif [[ "$DETECH_CHANGES" = [yY] && "$(grep -w 'net.ipv6.conf.default.disable_ipv6' /etc/sysctl.conf)" ]]; then
       sed -i 's|net.ipv6.conf.default.disable_ipv6 = .*|net.ipv6.conf.default.disable_ipv6 = 0|' /etc/sysctl.conf
       sysctl -w net.ipv6.conf.default.disable_ipv6=0 >/dev/null 2>&1
+    fi
+    if [[ "$restartpostfix" = [yY] ]]; then
+      service postfix restart >/dev/null 2>&1
     fi
   fi
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
