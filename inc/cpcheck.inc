@@ -845,6 +845,8 @@ ListenStream=0.0.0.0:111
 ListenStream=/var/run/rpcbind.sock
 ROF
       systemctl daemon-reload -q
+      systemctl stop rpcbind.socket rpcbind.service -q
+      systemctl start rpcbind.socket rpcbind.service -q
     fi
   elif [[ "$DISABLE_IPVSIX" != [yY] ]]; then
     if [[ -d /etc/postfix && "$(grep -w 'inet_protocols' /etc/postfix/main.cf | grep -w 'ipv4')" ]]; then
@@ -873,6 +875,25 @@ ROF
     if [[ "$restartpostfix" = [yY] ]]; then
       service postfix restart >/dev/null 2>&1
     fi
+    # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
+    # https://community.centminmod.com/threads/13353/
+    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
+      # rpcbind.socket is active so needs restart
+      if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
+        rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
+      fi
+      systemctl daemon-reload -q
+      systemctl stop rpcbind.socket rpcbind.service -q
+      systemctl start rpcbind.socket rpcbind.service -q
+    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
+      # rpcbind.socket is not active so does not needs restart
+      if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
+        rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
+      fi
+      systemctl daemon-reload -q
+      systemctl stop rpcbind.socket rpcbind.service -q
+      systemctl start rpcbind.socket rpcbind.service -q
+    fi
   fi
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
@@ -891,23 +912,6 @@ ROF
     sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
     csf -ra >/dev/null 2>&1
   fi
-    # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
-    # https://community.centminmod.com/threads/13353/
-    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
-      # rpcbind.socket is active so needs restart
-      if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
-        rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
-      fi
-      systemctl daemon-reload -q
-      systemctl stop rpcbind.socket rpcbind.service -q
-      systemctl start rpcbind.socket rpcbind.service -q
-    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
-      # rpcbind.socket is not active so does not needs restart
-      if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
-        rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
-      fi
-      systemctl daemon-reload -q
-    fi
   if [[ "$DETECH_CHANGES" = [yY] ]]; then
     service network restart >/dev/null 2>&1
   fi
