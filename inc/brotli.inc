@@ -154,6 +154,9 @@ scl_install() {
         if [[ "$CLANG_FIVE" = [yY] && ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
           time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7-runtime devtoolset-7-libstdc++-devel llvm-toolset-7-clang llvm-toolset-7-llvm-libs llvm-toolset-7-llvm-static llvm-toolset-7-compiler-rt llvm-toolset-7-libomp llvm-toolset-7-clang-libs
         fi
+        if [[ "$CLANG_SEVEN" = [yY] && ! -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+          time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7.0-runtime llvm-toolset-7.0-llvm-devel llvm-toolset-7.0-clang llvm-toolset-7.0-clang-libs llvm-toolset-7.0-cmake llvm-toolset-7.0-llvm-libs llvm-toolset-7.0-llvm-static llvm-toolset-7.0-compiler-rt llvm-toolset-7.0-libomp
+        fi
         echo
         /opt/rh/devtoolset-8/root/usr/bin/gcc --version
         /opt/rh/devtoolset-8/root/usr/bin/g++ --version
@@ -177,6 +180,9 @@ scl_install() {
         fi
         if [[ "$CLANG_FIVE" = [yY] && ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
           time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7-runtime devtoolset-7-libstdc++-devel llvm-toolset-7-clang llvm-toolset-7-llvm-libs llvm-toolset-7-llvm-static llvm-toolset-7-compiler-rt llvm-toolset-7-libomp llvm-toolset-7-clang-libs
+        fi
+        if [[ "$CLANG_SEVEN" = [yY] && ! -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+          time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7.0-runtime llvm-toolset-7.0-llvm-devel llvm-toolset-7.0-clang llvm-toolset-7.0-clang-libs llvm-toolset-7.0-cmake llvm-toolset-7.0-llvm-libs llvm-toolset-7.0-llvm-static llvm-toolset-7.0-compiler-rt llvm-toolset-7.0-libomp
         fi
         echo
         /opt/rh/devtoolset-7/root/usr/bin/gcc --version
@@ -218,6 +224,10 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/gcc --version
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       fi
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    if [[ "$CLANG" = [yY] || "$CLANG_FOUR" = [yY] || "$CLANG_FIVE" = [yY] || "$CLANG_SIX" = [yY] || "$CLANG_SEVEN" = [yY] || "$CLANG_EIGHT" = [yY] ]] && [ ! -f /usr/bin/clang ]; then
+      time $YUMDNFBIN -y install llvm-toolset llvm llvm-devel llvm-libs llvm-static clang clang-devel clang-libs 
+    fi
   fi # centos 6 only needed
 }
 

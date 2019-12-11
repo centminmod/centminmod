@@ -813,7 +813,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     fi
     # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
     # cloudflare zlib
-    if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+    if [[ "$CLANG" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
+      if [[ "$CLANG" = [yY] || "$CLANG_FOUR" = [yY] || "$CLANG_FIVE" = [yY] || "$CLANG_SIX" = [yY] || "$CLANG_SEVEN" = [yY] || "$CLANG_EIGHT" = [yY] ]] && [ -f /usr/bin/clang ]; then
+        CLANG='y'
+      fi
+    elif [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
       CLANG='y'
       if [[ "$CLANG_MASTER" = [yY] && -f /opt/sbin/llvm-release_master/bin/clang ]]; then
         CLANG_FOUR='n'
@@ -826,6 +830,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         CLANG_SIX='n'
         CLANG_SEVEN='n'
         CLANG_EIGHT='y'
+        CLANG_MASTER='n'
+      elif [[ "$CLANG_SEVEN" = [yY] && -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='n'
+        CLANG_SIX='n'
+        CLANG_SEVEN='y'
+        CLANG_EIGHT='n'
         CLANG_MASTER='n'
       elif [[ "$CLANG_SEVEN" = [yY] && -f /opt/sbin/llvm-release_70/bin/clang ]]; then
         CLANG_FOUR='n'
@@ -2626,7 +2637,12 @@ if [[ "$CLANG" = [yY] ]]; then
 #   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
 # fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' && "$CLANG" = [yY] ]]; then
+  if [[ ! -f /usr/bin/clang ]]; then
+    scl_install
+    CLANG_NEWBIN='/usr/bin/clang'
+  fi
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
   if [[ ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
     scl_install
     CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
@@ -2644,6 +2660,8 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f /opt/sbin/llvm-relea
   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f /opt/sbin/llvm-release_60/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_60/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+  CLANG_NEWBIN='/opt/rh/llvm-toolset-7.0/root/usr/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f /opt/sbin/llvm-release_70/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_70/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f /opt/sbin/llvm-release_80/bin/clang ]]; then
@@ -2652,7 +2670,7 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_MASTER" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_master/bin/clang'
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
+if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
   # if [ -f /opt/sbin/llvm/lib/LLVMgold.so ]; then
   #   LLVMLTO_OPT=' -flto'
   #   # export AR="$BUILD_DIR/llvmgold.binutils/binutils/ar"
