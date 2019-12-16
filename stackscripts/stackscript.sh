@@ -70,7 +70,7 @@
 #<UDF name="lua" Label="Enable OpenResty Lua Nginx mdoule support ? (auto fallback to OpenSSL 1.0.2+ for Lua Nginx compatibility)" oneOf="yes,no" default="no" />
 # LUA=
 # 
-#<UDF name="php" Label="Install Latest PHP 5.6 or 7.0 or 7.1 or 7.2 or 7.3 Version ?" oneOf="5.6,7.0,7.1,7.2,7.3" default="5.6" />
+#<UDF name="php" Label="Install Latest PHP 5.6 or 7.0 or 7.1 or 7.2 or 7.3 or 7.4 Version ?" oneOf="5.6,7.0,7.1,7.2,7.3,7.4" default="7.2" />
 # PHP=
 # 
 #<UDF name="docker" Label="Install Docker ?" oneOf="yes,no" default="no" />
@@ -149,10 +149,10 @@ touch /etc/centminmod/custom_config.inc
 if [[ "$COMPILER" = 'gcc' ]]; then
 echo
 echo "Set CLANG='n'"
-echo "Set DEVTOOLSETSEVEN='y'"
+echo "Set DEVTOOLSETEIGHT='y'"
 echo "Set NGINX_DEVTOOLSETGCC='y'"
 echo "CLANG='n'" >> /etc/centminmod/custom_config.inc
-echo "DEVTOOLSETSEVEN='y'" >> /etc/centminmod/custom_config.inc
+echo "DEVTOOLSETEIGHT='y'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
 echo
 fi
@@ -240,6 +240,15 @@ echo "Set NGXDYNAMIC_NGXPAGESPEED='y'"
 echo "Set NGINX_PAGESPEED='y'"
 echo "NGXDYNAMIC_NGXPAGESPEED='y'" >> /etc/centminmod/custom_config.inc
 echo "NGINX_PAGESPEED='y'" >> /etc/centminmod/custom_config.inc
+echo
+fi
+
+# Build PHP version
+if [[ "$PHP" = '7.4' ]]; then
+echo
+yum -y update
+echo
+curl -O https://centminmod.com/betainstaller74.sh && chmod 0700 betainstaller74.sh && bash betainstaller74.sh
 echo
 fi
 
