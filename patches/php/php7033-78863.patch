@@ -1,0 +1,85 @@
+From f76bef09fce6c438ecee2d2e6f9804d54709174b Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 17 Dec 2019 11:03:29 +0100
+Subject: [PATCH] Fix #78863: DirectoryIterator class silently truncates after
+ a null byte
+
+Since the constructor of DirectoryIterator and friends is supposed to
+accepts paths (i.e. strings without NUL bytes), we must not accept
+arbitrary strings.
+
+(cherry picked from commit a5a15965da23c8e97657278fc8dfbf1dfb20c016)
+---
+ NEWS                        |  2 ++
+ ext/spl/spl_directory.c     |  4 ++--
+ ext/spl/tests/bug78863.phpt | 31 +++++++++++++++++++++++++++++++
+ 3 files changed, 35 insertions(+), 2 deletions(-)
+ create mode 100644 ext/spl/tests/bug78863.phpt
+
+diff --git a/NEWS b/NEWS
+index 02cd502c8c..39a2f43818 100644
+--- a/NEWS
++++ b/NEWS
+@@ -10,6 +10,8 @@ Backported from 7.2.26
+ - Core:
+   . Fixed bug #78862 (link() silently truncates after a null byte on Windows).
+     (CVE-2019-11044). (cmb)
++  . Fixed bug #78863 (DirectoryIterator class silently truncates after a null
++    byte). (CVE-2019-11045). (cmb)
+ 
+ Backported from 7.1.33
+ 
+diff --git a/ext/spl/spl_directory.c b/ext/spl/spl_directory.c
+index 300cf01909..abfce1525a 100644
+--- a/ext/spl/spl_directory.c
++++ b/ext/spl/spl_directory.c
+@@ -684,10 +684,10 @@ void spl_filesystem_object_construct(INTERNAL_FUNCTION_PARAMETERS, zend_long cto
+ 
+ 	if (SPL_HAS_FLAG(ctor_flags, DIT_CTOR_FLAGS)) {
+ 		flags = SPL_FILE_DIR_KEY_AS_PATHNAME|SPL_FILE_DIR_CURRENT_AS_FILEINFO;
+-		parsed = zend_parse_parameters(ZEND_NUM_ARGS(), "s|l", &path, &len, &flags);
++		parsed = zend_parse_parameters(ZEND_NUM_ARGS(), "p|l", &path, &len, &flags);
+ 	} else {
+ 		flags = SPL_FILE_DIR_KEY_AS_PATHNAME|SPL_FILE_DIR_CURRENT_AS_SELF;
+-		parsed = zend_parse_parameters(ZEND_NUM_ARGS(), "s", &path, &len);
++		parsed = zend_parse_parameters(ZEND_NUM_ARGS(), "p", &path, &len);
+ 	}
+ 	if (SPL_HAS_FLAG(ctor_flags, SPL_FILE_DIR_SKIPDOTS)) {
+ 		flags |= SPL_FILE_DIR_SKIPDOTS;
+diff --git a/ext/spl/tests/bug78863.phpt b/ext/spl/tests/bug78863.phpt
+new file mode 100644
+index 0000000000..dc88d98dee
+--- /dev/null
++++ b/ext/spl/tests/bug78863.phpt
+@@ -0,0 +1,31 @@
++--TEST--
++Bug #78863 (DirectoryIterator class silently truncates after a null byte)
++--FILE--
++<?php
++$dir = __DIR__ . '/bug78863';
++mkdir($dir);
++touch("$dir/bad");
++mkdir("$dir/sub");
++touch("$dir/sub/good");
++
++$it = new DirectoryIterator(__DIR__ . "/bug78863\0/sub");
++foreach ($it as $fileinfo) {
++    if (!$fileinfo->isDot()) {
++        var_dump($fileinfo->getFilename());
++    }
++}
++?>
++--EXPECTF--
++Fatal error: Uncaught UnexpectedValueException: DirectoryIterator::__construct() expects parameter 1 to be a valid path, string given in %s:%d
++Stack trace:
++#0 %s(%d): DirectoryIterator->__construct('%s')
++#1 {main}
++  thrown in %s on line %d
++--CLEAN--
++<?php
++$dir = __DIR__ . '/bug78863';
++unlink("$dir/sub/good");
++rmdir("$dir/sub");
++unlink("$dir/bad");
++rmdir($dir);
++?>

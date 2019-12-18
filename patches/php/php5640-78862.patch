@@ -1,0 +1,68 @@
+From 51eb09b2b14711c1d81c075429811c5f2a885be4 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Sat, 23 Nov 2019 13:01:33 +0100
+Subject: [PATCH] Fix #78862: link() silently truncates after a null byte on
+ Windows
+
+Since link() is supposed to accepts paths (i.e. strings without NUL
+bytes), we must not accept arbitrary strings.
+
+(cherry picked from commit 0e6c0654ed06751ced134515f7629c40bd979d7f)
+---
+ NEWS                                            |  4 ++++
+ ext/standard/link_win32.c                       |  2 +-
+ .../tests/file/windows_links/bug78862.phpt      | 17 +++++++++++++++++
+ 3 files changed, 22 insertions(+), 1 deletion(-)
+ create mode 100644 ext/standard/tests/file/windows_links/bug78862.phpt
+
+diff --git a/NEWS b/NEWS
+index 5102c97629..d7f67ea976 100644
+--- a/NEWS
++++ b/NEWS
+@@ -7,6 +7,10 @@ Backported from 7.2.26
+   . Fixed bug #78878 (Buffer underflow in bc_shift_addsub). (CVE-2019-11046).
+     (cmb)
+ 
++- Core:
++  . Fixed bug #78862 (link() silently truncates after a null byte on Windows).
++    (CVE-2019-11044). (cmb)
++
+ Backported from 7.1.33
+ 
+ - FPM:
+diff --git a/ext/standard/link_win32.c b/ext/standard/link_win32.c
+index 059201c6b2..4c537dbf69 100644
+--- a/ext/standard/link_win32.c
++++ b/ext/standard/link_win32.c
+@@ -208,7 +208,7 @@ PHP_FUNCTION(link)
+ 
+ 	/*First argument to link function is the target and hence should go to frompath
+ 	  Second argument to link function is the link itself and hence should go to topath */
+-	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ss", &frompath, &frompath_len, &topath, &topath_len) == FAILURE) {
++	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "pp", &frompath, &frompath_len, &topath, &topath_len) == FAILURE) {
+ 		return;
+ 	}
+ 
+diff --git a/ext/standard/tests/file/windows_links/bug78862.phpt b/ext/standard/tests/file/windows_links/bug78862.phpt
+new file mode 100644
+index 0000000000..33b4b49293
+--- /dev/null
++++ b/ext/standard/tests/file/windows_links/bug78862.phpt
+@@ -0,0 +1,17 @@
++--TEST--
++Bug #78862 (link() silently truncates after a null byte on Windows)
++--FILE--
++<?php
++file_put_contents(__DIR__ . '/bug78862.target', 'foo');
++var_dump(link(__DIR__ . "/bug78862.target\0more", __DIR__ . "/bug78862.link\0more"));
++var_dump(file_exists(__DIR__ . '/bug78862.link'));
++?>
++--EXPECTF--
++Warning: link() expects parameter 1 to be a valid path, string given in %s on line %d
++NULL
++bool(false)
++--CLEAN--
++<?php
++unlink(__DIR__ . '/bug78862.target');
++unlink(__DIR__ . '/bug78862.link');
++?>

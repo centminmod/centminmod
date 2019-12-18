@@ -1,0 +1,146 @@
+From b02ca1de8e0e5862df3c2c84358d2da624d39a1b Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 16 Dec 2019 00:10:39 -0800
+Subject: [PATCH] Fixed bug #78910
+
+(cherry picked from commit d348cfb96f2543565691010ade5e0346338be5a7)
+---
+ NEWS                         |  2 ++
+ ext/exif/exif.c              |  3 ++-
+ ext/exif/tests/bug78910.phpt | 17 +++++++++++++++++
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+ create mode 100644 ext/exif/tests/bug78910.phpt
+
+diff --git a/NEWS b/NEWS
+index dae019c976..ee2fe2830b 100644
+--- a/NEWS
++++ b/NEWS
+@@ -16,6 +16,8 @@ Backported from 7.2.26
+ - EXIF:
+   . Fixed bug #78793 (Use-after-free in exif parsing under memory sanitizer).
+     (CVE-2019-11050). (Nikita)
++  . Fixed bug #78910 (Heap-buffer-overflow READ in exif). (CVE-2019-11047).
++    (Nikita)
+ 
+ Backported from 7.1.33
+ 
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index 6a3bb912c3..f64a14ed9c 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -2759,7 +2759,8 @@ static int exif_process_IFD_in_MAKERNOTE(image_info_type *ImageInfo, char * valu
+ 			continue;
+ 		if (maker_note->model && (!ImageInfo->model || strcmp(maker_note->model, ImageInfo->model)))
+ 			continue;
+-		if (maker_note->id_string && strncmp(maker_note->id_string, value_ptr, maker_note->id_string_len))
++		if (maker_note->id_string && value_len >= maker_note->id_string_len
++				&& strncmp(maker_note->id_string, value_ptr, maker_note->id_string_len))
+ 			continue;
+ 		break;
+ 	}
+diff --git a/ext/exif/tests/bug78910.phpt b/ext/exif/tests/bug78910.phpt
+new file mode 100644
+index 0000000000..f5b1c32c1b
+--- /dev/null
++++ b/ext/exif/tests/bug78910.phpt
+@@ -0,0 +1,17 @@
++--TEST--
++Bug #78910: Heap-buffer-overflow READ in exif (OSS-Fuzz #19044)
++--FILE--
++<?php
++
++var_dump(exif_read_data('data:image/jpg;base64,TU0AKgAAAAwgICAgAAIBDwAEAAAAAgAAACKSfCAgAAAAAEZVSklGSUxN'));
++
++?>
++--EXPECTF--
++Notice: exif_read_data(): Read from TIFF: tag(0x927C, MakerNote  ): Illegal format code 0x2020, switching to BYTE in %s on line %d
++
++Warning: exif_read_data(): Process tag(x927C=MakerNote  ): Illegal format code 0x2020, suppose BYTE in %s on line %d
++
++Warning: exif_read_data(): IFD data too short: 0x0000 offset 0x000C in %s on line %d
++
++Warning: exif_read_data(): Invalid TIFF file in %s on line %d
++bool(false)
+From 10c1c8cb32eb507e045414392b6f51d3512e6cb0 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 17 Dec 2019 15:24:23 +0100
+Subject: [PATCH] Fix tests
+
+---
+ ext/bcmath/tests/bug78878.phpt | 3 +--
+ ext/exif/tests/bug76557.phpt   | 2 +-
+ ext/exif/tests/bug78910.phpt   | 8 ++++----
+ ext/spl/tests/bug54291.phpt    | 2 +-
+ ext/spl/tests/bug78863.phpt    | 2 +-
+ 5 files changed, 8 insertions(+), 9 deletions(-)
+
+diff --git a/ext/bcmath/tests/bug78878.phpt b/ext/bcmath/tests/bug78878.phpt
+index 2c9d72b946..3337270aad 100644
+--- a/ext/bcmath/tests/bug78878.phpt
++++ b/ext/bcmath/tests/bug78878.phpt
+@@ -9,5 +9,4 @@ if (!extension_loaded('bcmath')) die('skip bcmath extension not available');
+ print @bcmul("\xB26483605105519922841849335928742092", bcpowmod(2, 65535, -4e-4));
+ ?>
+ --EXPECT--
+-bc math warning: non-zero scale in modulus
+-0
++0bc math warning: non-zero scale in modulus
+diff --git a/ext/exif/tests/bug76557.phpt b/ext/exif/tests/bug76557.phpt
+index 4553b62772..8920de658a 100644
+--- a/ext/exif/tests/bug76557.phpt
++++ b/ext/exif/tests/bug76557.phpt
+@@ -70,7 +70,7 @@ Warning: exif_read_data(bug76557.jpg): Process tag(x3030=UndefinedTa): Illegal f
+ 
+ Warning: exif_read_data(bug76557.jpg): Process tag(x3030=UndefinedTa): Illegal format code 0x3030, suppose BYTE in %sbug76557.php on line %d
+ 
+-Warning: exif_read_data(bug76557.jpg): Process tag(x3030=UndefinedTa): Illegal pointer offset(x30303030 + x30303030 = x60606060 > x00EE) in %sbug76557.php on line %d
++Warning: exif_read_data(bug76557.jpg): Process tag(x3030=UndefinedTa): Illegal pointer offset(x30303030 + x30303030 = x60606060 > %s) in %sbug76557.php on line %d
+ 
+ Warning: exif_read_data(bug76557.jpg): File structure corrupted in %sbug76557.php on line %d
+ 
+diff --git a/ext/exif/tests/bug78910.phpt b/ext/exif/tests/bug78910.phpt
+index f5b1c32c1b..7e40b82389 100644
+--- a/ext/exif/tests/bug78910.phpt
++++ b/ext/exif/tests/bug78910.phpt
+@@ -7,11 +7,11 @@ var_dump(exif_read_data('data:image/jpg;base64,TU0AKgAAAAwgICAgAAIBDwAEAAAAAgAAA
+ 
+ ?>
+ --EXPECTF--
+-Notice: exif_read_data(): Read from TIFF: tag(0x927C, MakerNote  ): Illegal format code 0x2020, switching to BYTE in %s on line %d
++Notice: exif_read_data(jpg;base64,TU0AKgAAAAwgICAgAAIBDwAEAAAAAgAAACKSfCAgAAAAAEZVSklGSUxN): Read from TIFF: tag(0x927C, MakerNote  ): Illegal format code 0x2020, switching to BYTE in %s on line %d
+ 
+-Warning: exif_read_data(): Process tag(x927C=MakerNote  ): Illegal format code 0x2020, suppose BYTE in %s on line %d
++Warning: exif_read_data(jpg;base64,TU0AKgAAAAwgICAgAAIBDwAEAAAAAgAAACKSfCAgAAAAAEZVSklGSUxN): Process tag(x927C=MakerNote  ): Illegal format code 0x2020, suppose BYTE in %s on line %d
+ 
+-Warning: exif_read_data(): IFD data too short: 0x0000 offset 0x000C in %s on line %d
++Warning: exif_read_data(jpg;base64,TU0AKgAAAAwgICAgAAIBDwAEAAAAAgAAACKSfCAgAAAAAEZVSklGSUxN): IFD data too short: 0x0000 offset 0x000C in %s on line %d
+ 
+-Warning: exif_read_data(): Invalid TIFF file in %s on line %d
++Warning: exif_read_data(jpg;base64,TU0AKgAAAAwgICAgAAIBDwAEAAAAAgAAACKSfCAgAAAAAEZVSklGSUxN): Invalid TIFF file in %s on line %d
+ bool(false)
+diff --git a/ext/spl/tests/bug54291.phpt b/ext/spl/tests/bug54291.phpt
+index 9314b6b9ff..510963c688 100644
+--- a/ext/spl/tests/bug54291.phpt
++++ b/ext/spl/tests/bug54291.phpt
+@@ -5,7 +5,7 @@ Bug #54291 (Crash iterating DirectoryIterator for dir name starting with \0)
+ $dir = new DirectoryIterator("\x00/abc");
+ $dir->isFile();
+ --EXPECTF--
+-Fatal error: Uncaught exception 'UnexpectedValueException' with message 'Failed to open directory ""' in %s:%d
++Fatal error: Uncaught exception 'UnexpectedValueException' with message 'DirectoryIterator::__construct() expects parameter 1 to be a valid path, string given' in %s:%d
+ Stack trace:
+ #0 %s(%d): DirectoryIterator->__construct('\x00/abc')
+ #1 {main}
+diff --git a/ext/spl/tests/bug78863.phpt b/ext/spl/tests/bug78863.phpt
+index dc88d98dee..53a1110bc6 100644
+--- a/ext/spl/tests/bug78863.phpt
++++ b/ext/spl/tests/bug78863.phpt
+@@ -16,7 +16,7 @@ foreach ($it as $fileinfo) {
+ }
+ ?>
+ --EXPECTF--
+-Fatal error: Uncaught UnexpectedValueException: DirectoryIterator::__construct() expects parameter 1 to be a valid path, string given in %s:%d
++Fatal error: Uncaught exception 'UnexpectedValueException' with message 'DirectoryIterator::__construct() expects parameter 1 to be a valid path, string given' in %s:%d
+ Stack trace:
+ #0 %s(%d): DirectoryIterator->__construct('%s')
+ #1 {main}

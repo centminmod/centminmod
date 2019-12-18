@@ -183,7 +183,58 @@ php_patches() {
         dos2unix php5640-78599.patch
         patch -p1 < php5640-78599.patch
       fi
+      # PHP 5.6 bug #78862 https://bugs.php.net/bug.php?id=78862
+      if [ ! -f php5640-78862.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78862"
+        echo "https://bugs.php.net/bug.php?id=78862"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78862.patch php5640-78862.patch
+        dos2unix php5640-78862.patch
+        patch -p1 < php5640-78862.patch
+      fi
+      # PHP 5.6 bug #78863 https://bugs.php.net/bug.php?id=78863
+      if [ ! -f php5640-78863.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78863"
+        echo "https://bugs.php.net/bug.php?id=78863"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78863.patch php5640-78863.patch
+        dos2unix php5640-78863.patch
+        patch -p1 < php5640-78863.patch
+      fi
+      # PHP 5.6 bug #78793 https://bugs.php.net/bug.php?id=78793
+      if [ ! -f php5640-78793.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78793"
+        echo "https://bugs.php.net/bug.php?id=78793"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78793.patch php5640-78793.patch
+        dos2unix php5640-78793.patch
+        patch -p1 < php5640-78793.patch
+      fi
+      # PHP 5.6 bug #78878 https://bugs.php.net/bug.php?id=78878
+      if [ ! -f php5640-78878.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78878"
+        echo "https://bugs.php.net/bug.php?id=78878"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78878.patch php5640-78878.patch
+        dos2unix php5640-78878.patch
+        patch -p1 < php5640-78878.patch
+      fi
+      # PHP 5.6 bug #78910 https://bugs.php.net/bug.php?id=78910
+      if [ ! -f php5640-78910.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78910"
+        echo "https://bugs.php.net/bug.php?id=78910"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78910.patch php5640-78910.patch
+        dos2unix php5640-78910.patch
+        patch -p1 < php5640-78910.patch
+      fi
     fi
+
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
       # patch PHP 7.2.13 and 7.1.25 missing CVE patch
       # https://bugs.php.net/bug.php?id=77020
@@ -239,7 +290,12 @@ php_patches() {
       # PHP bug #75457 https://bugs.php.net/bug.php?id=75457
       # PHP bug #78380 https://bugs.php.net/bug.php?id=78380
       # PHP bug #78599 https://bugs.php.net/bug.php?id=78599
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599'
+      # PHP bug #78862 https://bugs.php.net/bug.php?id=78862
+      # PHP bug #78863 https://bugs.php.net/bug.php?id=78863
+      # PHP bug #78793 https://bugs.php.net/bug.php?id=78793
+      # PHP bug #78878 https://bugs.php.net/bug.php?id=78878
+      # PHP bug #78910 https://bugs.php.net/bug.php?id=78910
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
