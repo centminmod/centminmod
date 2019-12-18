@@ -39,92 +39,113 @@ else
 fi
 
 ipv4get() {
+	only=$1
 	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v4/ > $CFIPLOG
 	
 	CFIPS=$(cat $CFIPLOG)
 	
-	echo "--------------------------------------------"
-	echo " Downloading Cloudflare IP list"
-	echo " from: https://www.cloudflare.com/ips-v4/"
-	echo "--------------------------------------------"
-	echo ""
-	echo "--------------------------------------------"
-	echo " Format for Centminmod.com Nginx Installer"
-	echo "  1). add to nginx.conf"
-	echo "  2). add to /etc/csf/csf.allow"
-	echo "--------------------------------------------"
-	
-	for ip in $CFIPS; 
-	do
-		if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-			echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
-			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
-		fi
-	done
-	echo "real_ip_header X-Forwarded-For;" >> $CFIPNGINXLOG
-	
-	echo "--------------------------------------------"
-	echo "  1). add to nginx.conf"
-	echo "--------------------------------------------"
-	cat $CFIPNGINXLOG
-	
-	echo ""
-	
-	echo "--------------------------------------------"
-	echo "  2). add to /etc/csf/csf.allow"
-	echo "--------------------------------------------"
-	cat $CFIPCSFLOG
-	
-	rm -rf $CFIPLOG
-	rm -rf $CFIPNGINXLOG
-	rm -rf $CFIPCSFLOG
-	
-	echo "--------------------------------------------"
+	if [[ "$only" != 'only' ]]; then
+		echo "--------------------------------------------"
+		echo " Downloading Cloudflare IP list"
+		echo " from: https://www.cloudflare.com/ips-v4/"
+		echo "--------------------------------------------"
+		echo ""
+		echo "--------------------------------------------"
+		echo " Format for Centminmod.com Nginx Installer"
+		echo "  1). add to nginx.conf"
+		echo "  2). add to /etc/csf/csf.allow"
+		echo "--------------------------------------------"
+		
+		for ip in $CFIPS; 
+		do
+			if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+				echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
+				echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
+			fi
+		done
+		echo "real_ip_header X-Forwarded-For;" >> $CFIPNGINXLOG
+		
+		echo "--------------------------------------------"
+		echo "  1). add to nginx.conf"
+		echo "--------------------------------------------"
+		cat $CFIPNGINXLOG
+		
+		echo ""
+		
+		echo "--------------------------------------------"
+		echo "  2). add to /etc/csf/csf.allow"
+		echo "--------------------------------------------"
+		cat $CFIPCSFLOG
+		
+		rm -rf $CFIPLOG
+		rm -rf $CFIPNGINXLOG
+		rm -rf $CFIPCSFLOG
+		
+		echo "--------------------------------------------"
+	elif [[ "$only" = 'only' ]]; then
+		for ip in $CFIPS; 
+		do
+			if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+				echo "$ip"
+			fi
+		done
+	fi
 }
 
 ###############################
 ipv6get() {
+	only=$1
+
 	/usr/bin/curl -${ipv_forceopt}s ${CURL_TIMEOUTS} https://www.cloudflare.com/ips-v6/ > $CFIP6LOG
 	
 	CFIPS=$(cat $CFIP6LOG)
-	
-	echo "--------------------------------------------"
-	echo " Downloading Cloudflare IP list"
-	echo " from: https://www.cloudflare.com/ips-v6/"
-	echo "--------------------------------------------"
-	echo ""
-	echo "--------------------------------------------"
-	echo " Format for Centminmod.com Nginx Installer"
-	echo "  1). add to nginx.conf"
-	echo "  2). add to /etc/csf/csf.allow"
-	echo "--------------------------------------------"
-	
-	for ip in $CFIPS; 
-	do
-		if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-			echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
-			echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
-		fi
-	done
-	echo "real_ip_header X-Forwarded-For;" >> $CFIPNGINXLOG
-	
-	echo "--------------------------------------------"
-	echo "  1). add to nginx.conf"
-	echo "--------------------------------------------"
-	cat $CFIPNGINXLOG
-	
-	echo ""
-	
-	echo "--------------------------------------------"
-	echo "  2). add to /etc/csf/csf.allow"
-	echo "--------------------------------------------"
-	cat $CFIPCSFLOG
-	
-	rm -rf $CFIPLOG
-	rm -rf $CFIPNGINXLOG
-	rm -rf $CFIPCSFLOG
-	
-	echo "--------------------------------------------"
+
+	if [[ "$only" != 'only' ]]; then
+		echo "--------------------------------------------"
+		echo " Downloading Cloudflare IP list"
+		echo " from: https://www.cloudflare.com/ips-v6/"
+		echo "--------------------------------------------"
+		echo ""
+		echo "--------------------------------------------"
+		echo " Format for Centminmod.com Nginx Installer"
+		echo "  1). add to nginx.conf"
+		echo "  2). add to /etc/csf/csf.allow"
+		echo "--------------------------------------------"
+		
+		for ip in $CFIPS; 
+		do
+			if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+				echo "set_real_ip_from $ip;" >> $CFIPNGINXLOG
+				echo "csf -a $ip cloudflare" >> $CFIPCSFLOG
+			fi
+		done
+		echo "real_ip_header X-Forwarded-For;" >> $CFIPNGINXLOG
+		
+		echo "--------------------------------------------"
+		echo "  1). add to nginx.conf"
+		echo "--------------------------------------------"
+		cat $CFIPNGINXLOG
+		
+		echo ""
+		
+		echo "--------------------------------------------"
+		echo "  2). add to /etc/csf/csf.allow"
+		echo "--------------------------------------------"
+		cat $CFIPCSFLOG
+		
+		rm -rf $CFIPLOG
+		rm -rf $CFIPNGINXLOG
+		rm -rf $CFIPCSFLOG
+		
+		echo "--------------------------------------------"
+	elif [[ "$only" = 'only' ]]; then
+		for ip in $CFIPS; 
+		do
+			if [[ "$(ipcalc -c "$ip" >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+				echo "$ip"
+			fi
+		done
+	fi
 }
 
 ###############################
@@ -260,6 +281,16 @@ apachesetup() {
 	fi
 }
 
+haproxy_ips() {
+  if [[ -f /usr/local/src/centminmod/tools/csfcf.sh && -d /etc/haproxy/ ]]; then
+  	echo "populate cloudflare IPs in /etc/haproxy/cfips"
+    echo -n > /etc/haproxy/cfips
+    /usr/local/src/centminmod/tools/csfcf.sh ipv4-only >> /etc/haproxy/cfips
+    /usr/local/src/centminmod/tools/csfcf.sh ipv6-only >> /etc/haproxy/cfips
+    cat /etc/haproxy/cfips
+  fi
+}
+
 ###############################
 case "$1" in
 ipv4)
@@ -267,6 +298,12 @@ ipv4)
 ;;
 ipv6)
 	ipv6get
+;;
+ipv4-only)
+	ipv4get only
+;;
+ipv6-only)
+	ipv6get only
 ;;
 csf)
 	csfadd
@@ -277,16 +314,20 @@ nginx)
 apache)
 	apachesetup
 ;;
+haproxy)
+	haproxy_ips
+;;
 auto)
 	csfadd
 	nginxsetup
+	haproxy_ips
 ;;
 auto-apache)
 	csfadd
 	apachesetup
 ;;
 *)
-echo "$0 {ipv4|ipv6|csf|nginx|auto}"
+echo "$0 {ipv4|ipv6|ipv4-only|ipv6-only|csf|nginx|apache|haproxy|auto}"
 ;;
 esac
 exit
