@@ -314,6 +314,32 @@ php_patches() {
         fi
       done
     fi
+    if [[ "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.1' ]] && [[ "$PHPVER_ID" -ge '7133' ]]; then
+      # backport security bug patch from PHP 7.3. to 7.1.33
+      # PHP bug #78862 https://bugs.php.net/bug.php?id=78862
+      # PHP bug #78863 https://bugs.php.net/bug.php?id=78863
+      # PHP bug #78793 https://bugs.php.net/bug.php?id=78793
+      # PHP bug #78878 https://bugs.php.net/bug.php?id=78878
+      # PHP bug #78910 https://bugs.php.net/bug.php?id=78910
+      phpseven_bugids='78862 78863 78793 78878 78910'
+      for bugid in $phpseven_bugids; do
+        if [[ ! -f "php7133-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7133-${bugid}.patch" ]]; then
+          echo
+          if [[ "$bugid" != 'php-openssl-cert' ]]; then
+            echo "patching PHP 7.1.33+ for bug #${bugid}"
+            echo "https://bugs.php.net/bug.php?id=${bugid}"
+          elif [[ "$bugid" = 'sqlite3-defensive' ]]; then
+            echo "patching PHP 7.1.33+ sqlite3-defensive patch"
+          elif [[ "$bugid" = 'php-openssl-cert' ]]; then
+            echo "patching PHP 7.1.33+ php-openssl-cert patch"
+          fi
+          echo
+          cp -a $CUR_DIR/patches/php/php7133-${bugid}.patch php7133-${bugid}.patch
+          dos2unix php7133-${bugid}.patch
+          patch -p1 < php7133-${bugid}.patch
+        fi
+      done
+    fi
     if [[ "$PHPVER_ID" -ge '70304' && "$PHPVER_ID" -le '70306' ]]; then
       # backport security bug patch for php 7.3
       # fix lands in PHP 7.3.7 so backport for 7.3.4 to 7.3.6 https://bugs.php.net/bug.php?id=77955
