@@ -21,7 +21,7 @@ cfauthorigin_cronsetup() {
 cforigin() {
   mode=$1
   list_origincrt_domains=$(find ${cf_auth_origin_cert_dir} -type f -name 'origin.crt' -exec dirname {} \; 2>&1 | sed -e "s|${cf_auth_origin_cert_dir}/||g")
-  if [ "$list_origincrt_domains" ]; then
+  if [[ "$list_origincrt_domains" && -d "${cf_auth_origin_cert_dir}" ]]; then
     for d in $list_origincrt_domains; do
       expiry=$(openssl x509 -enddate -noout -in "${cf_auth_origin_cert_dir}/${d}/origin.crt" | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
       epochExpirydate=$(date -d"${expiry}" +%s)
