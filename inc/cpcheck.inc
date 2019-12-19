@@ -1,3 +1,13 @@
+cfauthorigin_cronsetup() {
+  if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/cf-authenticated-origin-cert-update.sh')" && -f "/usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh" ]]; then
+    mkdir -p /etc/centminmod/cronjobs/
+    crontab -l > /etc/centminmod/cronjobs/cronjoblist-before-cf-auth-origin-pull-update.txt
+    sed -i '/cf-authenticated-origin-cert-update.sh/d' /etc/centminmod/cronjobs/cronjoblist-before-cf-auth-origin-pull-update.txt
+    echo "0 0 * * 5 /usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh update >/dev/null 2>&1" >> /etc/centminmod/cronjobs/cronjoblist-before-cf-auth-origin-pull-update.txt
+    crontab /etc/centminmod/cronjobs/cronjoblist-before-cf-auth-origin-pull-update.txt
+  fi
+}
+
 mytop_setup() {
   if [[ $(rpm -q mytop >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y install mytop
@@ -2885,6 +2895,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   imagick_fixes
   apache_protect
   centossix_crsetup
+  cfauthorigin_cronsetup
   if [[ "$LOWMEM_INSTALL" != [yY] ]]; then
     wgetver_check
   fi
@@ -2936,6 +2947,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   symlink_setup_emailnotify
   symlink_setup_mariadb
   pureftpd_symlink_fix
+  cfauthorigin_cronsetup
 fi
 
 }
