@@ -327,12 +327,13 @@ PCRE_VERSION='8.43'          # PCRE version
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.4'        # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'      # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.0.2' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.0.4' # For PHP 7
 MEMCACHED_INSTALL='y'         # Install Memcached
 LIBEVENT_VERSION='2.1.8'      # Use this version of Libevent
 MEMCACHED_VERSION='1.5.20'    # Use this version of Memcached server
 MEMCACHED_TLS='n'             # TLS support https://github.com/memcached/memcached/wiki/ReleaseNotes1513
 MEMCACHE_VERSION='3.0.8'      # Use this version of Memcache
+MEMCACHE_COMPATVER='4.0.5.1'  # For PHP 7
 MEMCACHEDPHP_VER='2.2.0'      # Memcached PHP extension not server
 MEMCACHEDPHP_SEVENVER='3.1.5' # Memcached PHP 7 only extension version
 LIBMEMCACHED_YUM='y'          # switch to YUM install instead of source compile
