@@ -348,7 +348,7 @@ PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 
 if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
-    IMAGICKGITLINK='https://github.com/mkoppanen/imagick'
+    IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
     curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
     IMAGICKGITCURLCHECK=$?

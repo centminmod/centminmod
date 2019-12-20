@@ -2,12 +2,12 @@ highergcc_cflags() {
   # if DEVTOOLSETSEVEN or DEVTOOLSETEIGHT enabled, some PHP extensions have issues with implicit-fallthrough
   if [[ "$GCCINTEL_PHP" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
     DEVTOOLSETGENERAL_FALLTHROUGH='-Wimplicit-fallthrough=0'
-    DEVTOOLSETGENERAL_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+    DEVTOOLSETGENERAL_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
     export CFLAGS="${DEVTOOLSETGENERAL_FALLTHROUGH}${DEVTOOLSETGENERAL_EXTRAFLAGS}"
     export CXXFLAGS="$CFLAGS"
   elif [[ "$GCCINTEL_PHP" = [yY] && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
     DEVTOOLSETGENERAL_FALLTHROUGH='-Wimplicit-fallthrough=0'
-    DEVTOOLSETGENERAL_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+    DEVTOOLSETGENERAL_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
     export CFLAGS="${DEVTOOLSETGENERAL_FALLTHROUGH}${DEVTOOLSETGENERAL_EXTRAFLAGS}"
     export CXXFLAGS="$CFLAGS"
   fi
@@ -52,21 +52,21 @@ enable_devtoolset() {
          if [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETNINE" = [yY] && -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
             source /opt/gcc9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
          elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETEIGHT" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-8/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
          elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-7/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
          elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
                scl_install
