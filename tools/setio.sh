@@ -455,6 +455,10 @@ setio() {
     echo -n "Full Writes: "
     echo "$FIOW"
 
+    # adjust full reads by 50%
+    FIOR=$((FIOR*3/5))
+    FIOW=$((FIOW*3/5))
+
     # set innodb_flush_neighbors = 0 for SSD configurations
     # greater that disk I/O write speeds of 500 IOPs as some
     # non-SSD raid configs could still read 500 IOPs
@@ -595,7 +599,7 @@ setio() {
   echo "new value: "
   # grep 'innodb_io_capacity' /etc/my.cnf
   /usr/bin/mysql -e "SET GLOBAL innodb_io_capacity = $FIOWSET;"
-  IOMAX=$((FIOWSET*2))
+  IOMAX=$((FIOWSET*5/3))
   if [[ "$IOMAX" -gt "$FIOW" ]]; then
     IOMAX=$(echo "$IOMAX*0.66/1"|bc)
   fi
