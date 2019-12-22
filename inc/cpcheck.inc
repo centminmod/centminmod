@@ -2905,7 +2905,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fi
   check_jemstatsfile
   nginx_mutexoff
-  fixphpfpm_includes
+  #fixphpfpm_includes
   fixphpfpm_httpproxy
   fixlibmysqlclient_symlink
   fixnodejs_epel
