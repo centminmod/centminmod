@@ -501,6 +501,10 @@ nginxlargefile_fix() {
       sed -i 's|output_buffers   8 256k;|output_buffers   1 512k;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
     fi
+    if [[ "$(grep -w 'output_buffers   1 512K;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|output_buffers   1 512K;|output_buffers   2 32k;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
     if [[ "$(grep -w 'send_timeout     10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
       sed -i 's|send_timeout     10s;|send_timeout     60s;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
