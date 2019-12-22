@@ -6,7 +6,7 @@ phpfpm_setup_systemd() {
   fpm_systemd=$1
   if [[ -d /etc/systemd/system ]]; then
     if [ -f /etc/init.d/php-fpm ]; then 
-      /etc/init.d/php-fpm stop
+      service php-fpm stop
       rm -rf /etc/init.d/php-fpm
     fi
   mkdir -p /etc/systemd/system/php-fpm.service.d
@@ -106,10 +106,10 @@ fi
     echo "systemctl daemon-reload; systemctl show php-fpm -p StatusText --no-pager | awk -F '=' '{print \$2}'; phpstatuscheck=\$(curl -sI localhost/phpstatus 2>&1 | head -n1 | grep -o 200); if [[ \"\$phpstatuscheck\" -eq '200' ]]; then curl -s localhost/phpstatus; fi" >/usr/bin/fpmstats ; chmod 700 /usr/bin/fpmstats
   fi
 
-  echo "systemctl daemon-reload; /etc/init.d/nginx stop; systemctl stop php-fpm; echo \"Stopping php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
-  echo "systemctl daemon-reload; /etc/init.d/nginx start; systemctl start php-fpm; echo \"Starting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-  echo "systemctl daemon-reload; /etc/init.d/nginx restart; systemctl restart php-fpm; echo \"Restarting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
-  echo "systemctl daemon-reload; /etc/init.d/nginx reload; systemctl reload php-fpm; echo \"Reloading php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+  echo "systemctl daemon-reload; service nginx stop; systemctl stop php-fpm; echo \"Stopping php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+  echo "systemctl daemon-reload; service nginx start; systemctl start php-fpm; echo \"Starting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+  echo "systemctl daemon-reload; service nginx restart; systemctl restart php-fpm; echo \"Restarting php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+  echo "systemctl daemon-reload; service nginx reload; systemctl reload php-fpm; echo \"Reloading php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
 
   echo "systemctl daemon-reload"
   systemctl daemon-reload
@@ -157,18 +157,18 @@ restore_initd() {
       chmod 0666 /var/log/php-fpm/www-php.error.log
     fi
 
-    echo "/etc/init.d/php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
-    echo "/etc/init.d/php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
-    echo "/etc/init.d/php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
-    echo "/etc/init.d/php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
+    echo "service php-fpm stop" >/usr/bin/fpmstop ; chmod 700 /usr/bin/fpmstop
+    echo "service php-fpm start" >/usr/bin/fpmstart ; chmod 700 /usr/bin/fpmstart
+    echo "service php-fpm restart" >/usr/bin/fpmrestart ; chmod 700 /usr/bin/fpmrestart
+    echo "service php-fpm reload" >/usr/bin/fpmreload ; chmod 700 /usr/bin/fpmreload
     echo "/etc/init.d/php-fpm configtest" >/usr/bin/fpmconfigtest ; chmod 700 /usr/bin/fpmconfigtest
     echo "/etc/init.d/php-fpm status" >/usr/bin/fpmstatus ; chmod 700 /usr/bin/fpmstatus
     rm -rf /usr/bin/fpmstats
 
-    echo "/etc/init.d/nginx stop;/etc/init.d/php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
-    echo "/etc/init.d/nginx start;/etc/init.d/php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
-    echo "/etc/init.d/nginx restart;/etc/init.d/php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
-    echo "/etc/init.d/nginx reload;/etc/init.d/php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+    echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+    echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+    echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+    echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
 
     echo "systemctl daemon-reload"
     systemctl daemon-reload

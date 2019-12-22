@@ -173,7 +173,7 @@ fi
 # in current and previous autoprotect include conf files
 NGX_RESTARTCMD=$(grep y /tmp/diffcheck.txt >/dev/null 2>&1; echo $?)
 if [[ -f /etc/init.d/nginx && "$NGX_RESTARTCMD" = '0' ]]; then
-   # /etc/init.d/nginx restart >/dev/null 2>&1
+   # service nginx restart >/dev/null 2>&1
    sleep 2
    service nginx reload
    rm -rf /usr/local/nginx/conf/autoprotect/status-restart

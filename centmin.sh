@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='377'
+SCRIPT_INCREMENTVER='378'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2019'
@@ -2093,9 +2093,9 @@ fi
 
     #chown -R root:nginx /var/lib/php/session/
     chkconfig --levels 235 php-fpm on
-    #/etc/init.d/php-fpm restart 2>/dev/null
+    #service php-fpm restart 2>/dev/null
     # /etc/init.d/php-fpm force-quit
-    /etc/init.d/php-fpm start
+    service php-fpm start
     fileinfo_standalone
 
     if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "$CUR_DIR/tools/php-systemd.sh" ]]; then
@@ -2266,7 +2266,7 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
   if [[ "$PHPMVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
       # cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
       # cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-      # /etc/init.d/php-fpm restart >/dev/null 2>&1
+      # service php-fpm restart >/dev/null 2>&1
       echo
   fi
 fi
@@ -2299,7 +2299,7 @@ fi
 
 if [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
   sleep 2
-  /etc/init.d/nginx start
+  service nginx start
 fi
 
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then

@@ -715,7 +715,7 @@ service memcached start
 
 # fi # memcache.so check
 
-# /etc/init.d/php-fpm restart
+# service php-fpm restart
 #     fi # PHP_INSTALL=y
 
     echo "*************************************************"

@@ -1141,8 +1141,8 @@ fixphpfpm_includes() {
   done
     if [ -f /tmp/phpinc-restart-check ]; then
       rm -rf /tmp/phpinc-restart-check
-      /etc/init.d/nginx restart
-      /etc/init.d/php-fpm restart
+      service nginx restart
+      service php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_includes_${DT}.log"
   # remove log if empty
@@ -1171,8 +1171,8 @@ fixphpfpm_httpproxy() {
   done
     if [ -f /tmp/phprestart-check ]; then
       rm -rf /tmp/phprestart-check
-      /etc/init.d/nginx restart
-      /etc/init.d/php-fpm restart
+      service nginx restart
+      service php-fpm restart
     fi
   } 2>&1 | tee "/root/centminlogs/fixphpfpm_httpproxy_${DT}.log"
   # remove log if empty

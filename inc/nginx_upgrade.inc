@@ -787,7 +787,7 @@ if [[ "$NGINX_ZERODT" = [nN] ]]; then
   echo ""
   echo "nginx seems to be still running, trying to stop it again..."
   echo ""
-  # /etc/init.d/nginx stop and suppress any error messages
+  # service nginx stop and suppress any error messages
   /usr/local/sbin/nginx -s stop >/dev/null 2>&1
   sleep "$NGINXUPGRADESLEEP"
   fi
@@ -911,7 +911,7 @@ fi
        # zlibsymlink_fix
 
        if [[ "$NGINX_ZERODT" = [nN] ]]; then
-         /etc/init.d/nginx restart
+         service nginx restart
        elif [[ "$NGINX_ZERODT" = [yY] ]]; then
          echo "---------------------------------------------------------------------------"
          echo "nginx master id: $GETNGXPID"
