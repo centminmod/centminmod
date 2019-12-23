@@ -60,6 +60,7 @@ redisinstall() {
     echo "Downloading redis PHP extension..."
     cd $DIR_TMP
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then

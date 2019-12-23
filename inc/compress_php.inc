@@ -4,6 +4,7 @@ php_ext_brotli() {
     cecho "* Installing brotli PHP extension" $boldgreen
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
     echo "Downloading brotli PHP extension..."
     pushd "$DIR_TMP"
@@ -30,6 +31,7 @@ php_ext_lzfour() {
     cecho "* Installing lz4 PHP extension" $boldgreen
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
     echo "Downloading lz4 PHP extension..."
     pushd "$DIR_TMP"
@@ -65,6 +67,7 @@ php_ext_lzf() {
     cecho "* Installing lzf PHP extension" $boldgreen
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
     echo "Downloading lzf PHP extension..."
     if [ ! -f /usr/bin/lzf ]; then
@@ -95,6 +98,7 @@ php_ext_zopfli() {
     cecho "* Installing Zopfli PHP extension" $boldgreen
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
     echo "Downloading Zopfli PHP extension..."
     if [ ! -f /usr/bin/zopfli ]; then
@@ -125,6 +129,7 @@ php_ext_zstd() {
     cecho "* Installing zstd PHP extension" $boldgreen
     echo "*************************************************"
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
     echo "Downloading zstd PHP extension..."
     zstdinstall

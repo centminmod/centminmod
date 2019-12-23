@@ -88,6 +88,7 @@ funct_memcachedreinstall() {
    if [[ "$CLANG_MEMCACHED" = [yY] ]]; then
       enable_clang
    else
+      check_devtoolset_php
       enable_devtoolset
    fi
 

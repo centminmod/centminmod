@@ -35,6 +35,7 @@ EOF
 geoipphpext() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
+      check_devtoolset_php
       enable_devtoolset
 if [[ -d /usr/share/GeoIP ]]; then
   if [ ! -f /usr/bin/svn ]; then
