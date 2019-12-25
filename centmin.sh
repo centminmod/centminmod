@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='380'
+SCRIPT_INCREMENTVER='381'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2019'
@@ -1237,8 +1237,8 @@ elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVE
   DEVTOOLSETEIGHT='y'
   DEVTOOLSETSEVEN='n'
 elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
-  DEVTOOLSETEIGHT='n'
-  DEVTOOLSETSEVEN='y'
+  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETSEVEN='n'
 elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETEIGHT" = [nN] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
   DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='y'
@@ -1246,8 +1246,9 @@ fi
 
 if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then
   # centos 6 gcc 4.4.7 too low for boringssl compiles so need
-  # devtoolset-7 gcc 7.3.1+ compiler
-  DEVTOOLSETSEVEN='y'
+  # devtoolset-8 gcc 8.3.1+ compiler
+  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETSEVEN='n'
   CRYPTO_DEVTOOLSETGCC='y'
 fi
 

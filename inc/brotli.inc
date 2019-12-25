@@ -4,6 +4,18 @@
 scl_install() {
   # if gcc version is less than 4.7 (407) install scl collection yum repo
   if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
+    # centos 6 make sure devtoolset-8-gcc is available now
+    if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+      if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+        time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
+      fi
+      sar_call
+    else
+      if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+        time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils --disablerepo=rpmforge
+      fi
+      sar_call
+    fi
     # if devtoolset exists, enable it first before checking gcc versions
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       if [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then

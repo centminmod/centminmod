@@ -74,10 +74,12 @@ install_cfzlib() {
             CLANG_FOUR='y'
         elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
             CLANG='n'
-            DEVTOOLSETSEVEN='y'
+            DEVTOOLSETSEVEN='n'
+            DEVTOOLSETEIGHT='y'
         else
             CLANG='n'
-            DEVTOOLSETSEVEN='y'
+            DEVTOOLSETSEVEN='n'
+            DEVTOOLSETEIGHT='y'
         fi
 
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then

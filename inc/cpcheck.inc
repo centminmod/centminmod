@@ -308,6 +308,9 @@ python_centossix_sclfix() {
 }
 
 pip_updates() {
+  mkdir -p /home/piptmp
+  chmod 1777 /home/piptmp
+  export TMPDIR=/home/piptmp
   if [[ "$(date "+%u")" -eq '3' || "$(date "+%u")" -eq '4' || "$(date "+%u")" -eq '6' ]]; then
     # for glances and psutil as glances is installed via outdated EPEL
     # yum repo but there's a new version available
@@ -453,6 +456,8 @@ pip_updates() {
       fi
     fi
   fi
+  unset TMPDIR
+  rm -rf /home/piptmp
 }
 
 fix_phperrorlogperm() {
@@ -471,13 +476,13 @@ march_hostcheck() {
     NGX_GSPLITDWARF='n'
     PHP_GSPLITDWARF='n'
     if [[ -f /etc/centminmod/custom_config.inc && ! "$(grep 'MARCH_TARGETNATIVE' /etc/centminmod/custom_config.inc)" ]]; then
-      echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
+      echo -e "\nMARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
     elif [[ ! -f /etc/centminmod/custom_config.inc && "$INITIALINSTALL" = [yY] ]]; then
       touch /etc/centminmod/custom_config.inc
-      echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
+      echo -e "\nMARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
     elif [[ ! -f /etc/centminmod/custom_config.inc && "$INITIALINSTALL" != [yY] ]]; then
       touch /etc/centminmod/custom_config.inc
-      echo "MARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
+      echo -e "\nMARCH_TARGETNATIVE='n'" >> /etc/centminmod/custom_config.inc
     fi
   fi
 }

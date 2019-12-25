@@ -403,15 +403,44 @@ fi
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
 
 if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+  DEVTOOLSET_PHP='y'
+  GCCINTEL_PHP='y'
   # kerberos / krb5 and krb5-gasspi YUM packages on CentOS 6 is missing .pc files
   # required for pkg-config to find location of dependency libraries for PHP 7.4+
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     LIBDIR_KERBEROS='lib64'
+    LIBDIR_JPEG='lib64'
+    LIBDIR_SASL='lib64'
+    LIBDIR_GD='lib64'
   else
     LIBDIR_KERBEROS='lib'
+    LIBDIR_JPEG='lib'
+    LIBDIR_SASL='lib'
+    LIBDIR_GD='lib'
   fi
   export KERBEROS_CFLAGS='-I/usr/include'
   export KERBEROS_LIBS="-L/usr/${LIBDIR_KERBEROS} -lkrb5 -lk5crypto -lgssapi_krb5"
+  export JPEG_CFLAGS='-I/usr/include'
+  export JPEG_LIBS="-L/usr/${LIBDIR_JPEG} -ljpeg"
+  export SASL_CFLAGS='-I/usr/include'
+  export SASL_LIBS="-L/usr/${LIBDIR_SASL}"
+  export GD_CFLAGS='-I/usr/include'
+  export GD_LIBS="-L/usr/${LIBDIR_GD} -lgd"
+  # PHP 7.4 sqlite requires >3.7 but centos 6 only has sqlite 3.6.20
+  if [[ "$(uname -m)" = 'x86_64' && ! -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm" ]]; then
+    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm"
+    yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm
+  elif [[ "$(uname -m)" != 'x86_64' && ! -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm" ]]; then
+    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm"
+    yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm
+  fi
+  if [[ "$(uname -m)" = 'x86_64' && ! -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm" ]]; then
+    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm"
+    yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm
+  elif [[ "$(uname -m)" != 'x86_64' && ! -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm" ]]; then
+    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm"
+    yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm
+  fi
 fi
 
 if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
@@ -1037,23 +1066,49 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
   # initial php install
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
         scl_install
-        source /opt/rh/devtoolset-4/enable
+        source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+      elif [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        scl_install
+        source /opt/rh/devtoolset-7/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
-        source /opt/rh/devtoolset-7/enable
         scl_install
+        source /opt/rh/devtoolset-7/enable
         which gcc
         which g++
         unset CC
@@ -1082,23 +1137,49 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
   # php upgrades
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
         scl_install
-        source /opt/rh/devtoolset-4/enable
+        source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+      elif [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        scl_install
+        source /opt/rh/devtoolset-7/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
-        source /opt/rh/devtoolset-7/enable
         scl_install
+        source /opt/rh/devtoolset-7/enable
         which gcc
         which g++
         unset CC
@@ -1128,7 +1209,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   fi
   # CentOS 7 use devtoolset-4 GCC 5.2 if it's detected
   # initial php install
-  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
@@ -1205,7 +1286,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
   fi
   # php upgrades
-  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
