@@ -92,24 +92,24 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
   mkdir -p /usr/share/GeoIP
   pushd /usr/share/GeoIP
   cecho "GeoLite2 City database download ..." $boldyellow
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
   rm -rf GeoLite2-City_*
 
   cecho "GeoLite2 Country database download ..." $boldyellow
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
-    wget -${ipv_forceopt}cnv https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+    wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb

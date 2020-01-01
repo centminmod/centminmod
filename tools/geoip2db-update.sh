@@ -11,14 +11,14 @@ geoiptwo_updater() {
   echo "GeoLite2 City database download ..."
   echo "------------------------------------------------------"
   echo
-  GEOIPTWOCITYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)  
+  GEOIPTWOCITYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)  
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
     if [ -f /usr/share/GeoIP/GeoLite2-City.mmdb ] ; then
       ls -lah /usr/share/GeoIP/GeoLite2-City.mmdb
     fi
-    wget -4 https://geolite.maxmind.com/download/geoip/database/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+    wget -4 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
@@ -27,14 +27,14 @@ geoiptwo_updater() {
   echo "------------------------------------------------------"
   echo "GeoLite2 Country database download ..."
   echo "------------------------------------------------------"
-  GEOIPTWOCOUNTRYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
+  GEOIPTWOCOUNTRYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
     if [ -f /usr/share/GeoIP/GeoLite2-Country.mmdb ]; then
       ls -lah /usr/share/GeoIP/GeoLite2-Country.mmdb
     fi
-    wget -4 https://geolite.maxmind.com/download/geoip/database/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+    wget -4 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
@@ -43,11 +43,11 @@ geoiptwo_updater() {
   echo "------------------------------------------------------"
   echo "GeoLite2 ASN database download ..."
   echo "------------------------------------------------------"
-  GEOIPTWOASNDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
+  GEOIPTWOASNDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOASNDATA_CURLCHECK" = '0' ]]; then
-    wget -4 https://geolite.maxmind.com/download/geoip/database/GeoLite2-ASN.tar.gz -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
+    wget -4 https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   fi
   tar xzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-ASN_*/GeoLite2-ASN.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
