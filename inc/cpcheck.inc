@@ -2957,6 +2957,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   symlink_setup_mariadb
   pureftpd_symlink_fix
   cfauthorigin_cronsetup
+  csf_maxmind_rego
 fi
 
 }

@@ -1,3 +1,27 @@
+csf_maxmind_rego() {
+    if [ -f /etc/csf/csf.conf ]; then
+        # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
+        # https://dev.maxmind.com/geoip/geoipupdate/#Direct_Downloads
+        # check if MM_LICENSE_KEY variable is empty in /etc/csf/csf.conf
+        CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+        CHECK_CSF_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/csf/csf.conf | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+        CHECK_CSF_MM_LICENSE_KEY_VARCHECK=$(awk -F '=' '/MM_LICENSE_KEY/ {print $1}' /etc/csf/csf.conf | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+        if [[ "$CHECK_CMM_MM_LICENSE_KEY" && "$CHECK_CSF_MM_LICENSE_KEY_VARCHECK" && ! "$CHECK_CSF_MM_LICENSE_KEY" ]]; then
+            # if MM_LICENSE_KEY variable is set in Centmin Mod's persistent config file
+            # at /etc/centminmod/custom_config.inc  via CHECK_CMM_MM_LICENSE_KEY
+            # variable check and not set in CSF config file
+            # at /etc/csf/csf.conf, then ensure CSF Firewall's MM_LICENSE_KEY
+            # variable is populated as well using CHECK_CMM_MM_LICENSE_KEY
+            csf --profile backup cmm-before-maxmind-rego >/dev/null 2>&1
+            sed -i "s|MM_LICENSE_KEY = \"\"|MM_LICENSE_KEY = \"${MM_LICENSE_KEY}\"|" /etc/csf/csf.conf
+            csf --profile backup cmm-after-maxmind-rego >/dev/null 2>&1
+            if [[ "$(csf -l >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+                csf -ra >/dev/null 2>&1
+            fi
+        fi
+    fi
+}
+
 csfinstalls() {
 
     # centos 6.6 minimal bug
@@ -63,6 +87,7 @@ sed -i "s/DROP_NOLOG = \"67,68,/DROP_NOLOG = \"/g" /etc/csf/csf.conf
     echo "Disabling CSF Testing mode (activates firewall)..."
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
 
+csf_maxmind_rego
 csftweaks
 
 #######################################################
