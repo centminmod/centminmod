@@ -3,6 +3,13 @@
 # update centmin mod 123.09beta01 & newer's optional
 # geoip2 lite nginx module's database for geoip2 city
 ############################################################
+# Maxmind GeoLite2 database API Key
+# https://community.centminmod.com/posts/80656/
+# You can override this API key with your own Maxmind
+# account API key by setting MM_LICENSE_KEY variable 
+# in persistent config file /etc/centminmod/custom_config.inc
+MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
+############################################################
 if [ -f /etc/centminmod/custom_config.inc ]; then
   . /etc/centminmod/custom_config.inc
 fi
@@ -12,7 +19,7 @@ if [ ! -f /etc/centminmod/custom_config.inc ]; then
 else
   CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
 fi
-if [[ "$CHECK_CMM_MM_LICENSE_KEY" && "$MM_LICENSE_KEY" ]]; then
+if [[ "$MM_LICENSE_KEY" ]]; then
   echo
   maxmind_city_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
   maxmind_country_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=$MM_LICENSE_KEY&suffix=tar.gz"

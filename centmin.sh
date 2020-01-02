@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='391'
+SCRIPT_INCREMENTVER='392'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2019'
@@ -402,6 +402,14 @@ MARIADB_JEMALLOC='n'
 CCACHEINSTALL='y'
 CCACHE_VER="3.7.4"
 CCACHESIZE='2.5G'
+
+#####################################################
+# Maxmind GeoLite2 database API Key
+# https://community.centminmod.com/posts/80656/
+# You can override this API key with your own Maxmind
+# account API key by setting MM_LICENSE_KEY variable 
+# in persistent config file /etc/centminmod/custom_config.inc
+MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
 
 #####################################################
 # Networking
