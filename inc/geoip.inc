@@ -171,6 +171,23 @@ geoiptwolite_install() {
 
   geoiptwolite_phpext_install
 
+  if [ ! -f /etc/centminmod/custom_config.inc ]; then
+    CHECK_CMM_MM_LICENSE_KEY=''
+  else
+    CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+  fi
+  if [[ "$CHECK_CMM_MM_LICENSE_KEY" && "$MM_LICENSE_KEY" ]]; then
+    echo
+    maxmind_city_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-City&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
+    maxmind_country_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
+    maxmind_asn_url="https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-ASN&license_key=$MM_LICENSE_KEY&suffix=tar.gz"
+  else
+    echo
+    maxmind_city_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz'
+    maxmind_country_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz'
+    maxmind_asn_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz'
+  fi
+
   mkdir -p /usr/share/GeoIP
   pushd /usr/share/GeoIP
   echo "------------------------------------------------------"

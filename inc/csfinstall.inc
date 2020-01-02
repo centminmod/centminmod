@@ -30,7 +30,11 @@ csf_maxmind_rego() {
         # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
         # https://dev.maxmind.com/geoip/geoipupdate/#Direct_Downloads
         # check if MM_LICENSE_KEY variable is empty in /etc/csf/csf.conf
-        CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+        if [ ! -f /etc/centminmod/custom_config.inc ]; then
+            CHECK_CMM_MM_LICENSE_KEY=''
+        else
+            CHECK_CMM_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/centminmod/custom_config.inc | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
+        fi
         CHECK_CSF_MM_LICENSE_KEY=$(awk -F '=' '/MM_LICENSE_KEY/ {print $2}' /etc/csf/csf.conf | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
         CHECK_CSF_MM_LICENSE_KEY_VARCHECK=$(awk -F '=' '/MM_LICENSE_KEY/ {print $1}' /etc/csf/csf.conf | sed -e 's| ||g' | sed -e 's|"||g' -e "s|'||g")
         if [[ "$CHECK_CMM_MM_LICENSE_KEY" && "$CHECK_CSF_MM_LICENSE_KEY_VARCHECK" && ! "$CHECK_CSF_MM_LICENSE_KEY" ]]; then
