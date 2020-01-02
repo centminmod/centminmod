@@ -19,6 +19,9 @@ csf_maxmind_geolite_two_download() {
             tail -20 /var/log/lfd.log
             ls -lAh /var/lib/csf/Geo
         fi
+        if [[ "$(csf -l >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+            csf -ra >/dev/null 2>&1
+        fi
     fi
 }
 
