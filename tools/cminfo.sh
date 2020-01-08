@@ -17,6 +17,7 @@ USER='root'
 PASS=''
 MYSQLHOST='localhost'
 #####################################################
+CMINFO_SAR_DAYS='7'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
@@ -132,6 +133,16 @@ cmservice() {
       fi
     fi
   fi
+}
+
+sar_cpu_pc() {
+    echo
+    echo "------------------------------------------------------------------"
+    echo " CPU Utilisation % $CMINFO_SAR_DAYS Day Averages ($(nproc) CPU Threads):"
+    echo "------------------------------------------------------------------"
+    for t in $(seq 1 $CMINFO_SAR_DAYS); do
+        echo -n "$(date '+%b %d %Y' -d "$t day ago") %CPU "; if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then sar_u=$(sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago") | grep 'Average:' | tail -1); echo "$sar_u" | awk '{print $1, "%user:",$3, "%nice:",$4, "%system:",$5, "%iowait:",$6, "%steal:",$7, "%idle:",$8}'; fi
+    done
 }
 
 #####################################################
@@ -415,6 +426,8 @@ top_info() {
     echo "pidstat -durh 1 ${pidstat_sec} | sed -e \"s|\$(hostname)|hostname|g\""
     echo "..."
     pidstat -durh 1 ${pidstat_sec} | sed -e "s|$(hostname)|hostname|g"
+
+    sar_cpu_pc
     echo "------------------------------------------------------------------"
     echo "Stats saved at: ${CENTMINLOGDIR}/cminfo-top-${DT}.log"
     echo "------------------------------------------------------------------"
