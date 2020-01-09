@@ -68,6 +68,10 @@ if [ ! -f /usr/bin/smem ]; then
     yum -y -q install smem
 fi
 
+if [ ! -f /usr/bin/datamash ]; then
+    yum -y -q install datamash
+fi
+
 if [ -z $PASS ]; then
     MYSQLADMINOPT="-h $MYSQLHOST"
 else
@@ -141,7 +145,29 @@ sar_cpu_pc() {
     echo " CPU Utilisation % $CMINFO_SAR_DAYS Day Averages ($(nproc) CPU Threads):"
     echo "------------------------------------------------------------------"
     for t in $(seq 1 $CMINFO_SAR_DAYS); do
-        echo -n "$(date '+%b %d %Y' -d "$t day ago") %CPU "; if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then sar_u=$(sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago") | grep 'Average:' | tail -1); echo "$sar_u" | awk '{print $1, "%user:",$3, "%nice:",$4, "%system:",$5, "%iowait:",$6, "%steal:",$7, "%idle:",$8}'; fi
+        if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
+            sar_cpu_stats=$(sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago"))
+            sar_u=$(echo "$sar_cpu_stats" | grep 'Average:' | tail -1);
+            if [ -f /usr/bin/datamash ]; then
+                # display each day's cpu utilisation min, avg, max, 95% percentile numbers
+                # instead report datamash calculated ones
+                echo "$(date '+%b %d %Y' -d "$t day ago") %CPU";
+                sar_cpu_metrics=$(echo "$sar_cpu_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:95 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
+                sar_cpu_umin=$(echo "$sar_cpu_metrics" | sed -n 1p)
+                sar_cpu_uavg=$(echo "$sar_cpu_metrics" | sed -n 2p)
+                sar_cpu_umax=$(echo "$sar_cpu_metrics" | sed -n 3p)
+                sar_cpu_upc=$(echo "$sar_cpu_metrics" | sed -n 4p)
+                # echo "%CPU min: $sar_cpu_umin"
+                # echo "%CPU avg: $sar_cpu_uavg"
+                # echo "%CPU max: $sar_cpu_umax"
+                # echo "%CPU 95%: $sar_cpu_upc"
+                echo -e "%CPU min: $sar_cpu_umin\n%CPU avg: $sar_cpu_uavg\n%CPU max: $sar_cpu_umax\n%CPU 95%: $sar_cpu_upc" | column -t
+            else
+                # sar reported averages
+                echo -n "$(date '+%b %d %Y' -d "$t day ago") %CPU ";
+                echo "$sar_u" | awk '{print $1, "%user:",$3, "%nice:",$4, "%system:",$5, "%iowait:",$6, "%steal:",$7, "%idle:",$8}';
+            fi
+        fi
     done
 }
 
