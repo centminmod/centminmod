@@ -17,6 +17,7 @@ USER='root'
 PASS=''
 MYSQLHOST='localhost'
 #####################################################
+CMINFO_SAR_MEM='y'
 CMINFO_SAR_DAYS='7'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
@@ -169,6 +170,45 @@ sar_cpu_pc() {
             fi
         fi
     done
+}
+
+sar_mem_pc() {
+    # only display on centos 7 systems
+    if [[ "$CMINFO_SAR_MEM" = [yY] ]]; then
+        echo
+        echo "------------------------------------------------------------------"
+        echo " Memory Usage $CMINFO_SAR_DAYS Day Averages ($(nproc) CPU Threads):"
+        echo "------------------------------------------------------------------"
+        for t in $(seq 1 $CMINFO_SAR_DAYS); do
+            if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
+                sar_mem_stats=$(sar -r -f /var/log/sa/sa$(date +%d -d "$t day ago"))
+                sar_mem=$(echo "$sar_mem_stats" | grep 'Average:' | tail -1);
+                if [ -f /usr/bin/datamash ]; then
+                    # display each day's cpu utilisation min, avg, max, 95% percentile numbers
+                    # instead report datamash calculated ones
+                    echo "$(date '+%b %d %Y' -d "$t day ago") Memory";
+                    if [ -f /usr/bin/systemctl ]; then
+                        sar_mem_metrics=$(echo "$sar_mem_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | datamash -W -R 1 --no-strict --filler 0 min 1-10 mean 1-10 max 1-10 perc:95 1-10 | column -t | xargs -n10 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7, "kbactive:",$8, "kbinact:",$9, "kbdirty:",$10}')
+                    else
+                        sar_mem_metrics=$(echo "$sar_mem_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9}' | datamash -W -R 1 --no-strict --filler 0 min 1-7 mean 1-7 max 1-7 perc:95 1-7 | column -t | xargs -n7 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7')
+                    fi
+                    sar_mem_umin=$(echo "$sar_mem_metrics" | sed -n 1p)
+                    sar_mem_uavg=$(echo "$sar_mem_metrics" | sed -n 2p)
+                    sar_mem_umax=$(echo "$sar_mem_metrics" | sed -n 3p)
+                    sar_mem_upc=$(echo "$sar_mem_metrics" | sed -n 4p)
+                    echo -e "Memory min: $sar_mem_umin\nMemory avg: $sar_mem_uavg\nMemory max: $sar_mem_umax\nMemory 95%: $sar_mem_upc" | column -t
+                else
+                    # sar reported averages
+                    echo -n "$(date '+%b %d %Y' -d "$t day ago") Memory ";
+                    if [ -f /usr/bin/systemctl ]; then
+                        echo "$sar_mem" | awk '{print $1, "kbmemfree:",$2, "kbmemused:",$3, "%memused:",$4, "kbbuffers:",$5, "kbcached:",$6, "kbcommit:",$7, "%commit:",$8, "kbactive:",$9, "kbinact:",$10, "kbdirty:",$11}'
+                    else
+                        echo "$sar_mem" | awk '{print $1, "kbmemfree:",$2, "kbmemused:",$3, "%memused:",$4, "kbbuffers:",$5, "kbcached:",$6, "kbcommit:",$7, "%commit:",$8}'
+                    fi
+                fi
+            fi
+        done
+    fi
 }
 
 #####################################################
@@ -454,6 +494,7 @@ top_info() {
     pidstat -durh 1 ${pidstat_sec} | sed -e "s|$(hostname)|hostname|g"
 
     sar_cpu_pc
+    sar_mem_pc
     echo "------------------------------------------------------------------"
     echo "Stats saved at: ${CENTMINLOGDIR}/cminfo-top-${DT}.log"
     echo "------------------------------------------------------------------"
