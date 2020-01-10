@@ -186,17 +186,33 @@ sar_mem_pc() {
                 if [ -f /usr/bin/datamash ]; then
                     # display each day's cpu utilisation min, avg, max, 95% percentile numbers
                     # instead report datamash calculated ones
-                    echo "$(date '+%b %d %Y' -d "$t day ago") Memory";
+                    if [ -f /usr/bin/systemctl ]; then
+                        echo
+                        echo "$(date '+%b %d %Y' -d "$t day ago") Memory";
+                    else
+                        echo "$(date '+%b %d %Y' -d "$t day ago") Memory";
+                    fi
                     if [ -f /usr/bin/systemctl ]; then
                         sar_mem_metrics=$(echo "$sar_mem_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9,$10,$11,$12}' | datamash -W -R 1 --no-strict --filler 0 min 1-10 mean 1-10 max 1-10 perc:95 1-10 | column -t | xargs -n10 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7, "kbactive:",$8, "kbinact:",$9, "kbdirty:",$10}')
                     else
                         sar_mem_metrics=$(echo "$sar_mem_stats" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $3,$4,$5,$6,$7,$8,$9}' | datamash -W -R 1 --no-strict --filler 0 min 1-7 mean 1-7 max 1-7 perc:95 1-7 | column -t | xargs -n7 | awk '{print "kbmemfree:",$1, "kbmemused:",$2, "%memused:",$3, "kbbuffers:",$4, "kbcached:",$5, "kbcommit:",$6, "%commit:",$7')
                     fi
-                    sar_mem_umin=$(echo "$sar_mem_metrics" | sed -n 1p)
-                    sar_mem_uavg=$(echo "$sar_mem_metrics" | sed -n 2p)
-                    sar_mem_umax=$(echo "$sar_mem_metrics" | sed -n 3p)
-                    sar_mem_upc=$(echo "$sar_mem_metrics" | sed -n 4p)
-                    echo -e "Memory min: $sar_mem_umin\nMemory avg: $sar_mem_uavg\nMemory max: $sar_mem_umax\nMemory 95%: $sar_mem_upc" | column -t
+                    if [ -f /usr/bin/systemctl ]; then
+                        sar_mem_umin=$(echo "$sar_mem_metrics" | sed -n 1p | xargs -n10)
+                        sar_mem_uavg=$(echo "$sar_mem_metrics" | sed -n 2p | xargs -n10)
+                        sar_mem_umax=$(echo "$sar_mem_metrics" | sed -n 3p | xargs -n10)
+                        sar_mem_upc=$(echo "$sar_mem_metrics" | sed -n 4p | xargs -n10)
+                    else
+                        sar_mem_umin=$(echo "$sar_mem_metrics" | sed -n 1p)
+                        sar_mem_uavg=$(echo "$sar_mem_metrics" | sed -n 2p)
+                        sar_mem_umax=$(echo "$sar_mem_metrics" | sed -n 3p)
+                        sar_mem_upc=$(echo "$sar_mem_metrics" | sed -n 4p)
+                    fi
+                    if [ -f /usr/bin/systemctl ]; then
+                        echo -e "Memory min:\n$sar_mem_umin\nMemory avg:\n$sar_mem_uavg\nMemory max:\n$sar_mem_umax\nMemory 95%:\n$sar_mem_upc" | column -t
+                    else
+                        echo -e "Memory min: $sar_mem_umin\nMemory avg: $sar_mem_uavg\nMemory max: $sar_mem_umax\nMemory 95%: $sar_mem_upc" | column -t
+                    fi
                 else
                     # sar reported averages
                     echo -n "$(date '+%b %d %Y' -d "$t day ago") Memory ";
