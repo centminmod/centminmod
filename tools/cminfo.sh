@@ -141,10 +141,34 @@ cmservice() {
 }
 
 sar_cpu_pc() {
+    # cummulative period metrics
+    if [ -f /usr/bin/datamash ]; then
+        echo
+        echo "------------------------------------------------------------------"
+        echo " CPU Utilisation % Last $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
+        echo "------------------------------------------------------------------"
+        for t in $(seq 1 $CMINFO_SAR_DAYS); do
+            if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
+                sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago") >> "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
+            fi
+        done
+            sar_cpu_metrics_period=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:50 1-6 perc:75 1-6 perc:90 1-6 perc:95 1-6 perc:99 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
+            sar_cpu_umin_period=$(echo "$sar_cpu_metrics_period" | sed -n 1p)
+            sar_cpu_uavg_period=$(echo "$sar_cpu_metrics_period" | sed -n 2p)
+            sar_cpu_umax_period=$(echo "$sar_cpu_metrics_period" | sed -n 3p)
+            sar_cpu_upc_period_50=$(echo "$sar_cpu_metrics_period" | sed -n 4p)
+            sar_cpu_upc_period_75=$(echo "$sar_cpu_metrics_period" | sed -n 5p)
+            sar_cpu_upc_period_90=$(echo "$sar_cpu_metrics_period" | sed -n 6p)
+            sar_cpu_upc_period_95=$(echo "$sar_cpu_metrics_period" | sed -n 7p)
+            sar_cpu_upc_period_99=$(echo "$sar_cpu_metrics_period" | sed -n 8p)
+            echo -e "%CPU min: $sar_cpu_umin_period\n%CPU avg: $sar_cpu_uavg_period\n%CPU max: $sar_cpu_umax_period\n%CPU 50%: $sar_cpu_upc_period_50\n%CPU 75%: $sar_cpu_upc_period_75\n%CPU 90%: $sar_cpu_upc_period_90\n%CPU 95%: $sar_cpu_upc_period_95\n%CPU 99%: $sar_cpu_upc_period_99" | column -t
+        rm -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
+    fi
     echo
     echo "------------------------------------------------------------------"
-    echo " CPU Utilisation % $CMINFO_SAR_DAYS Day Averages ($(nproc) CPU Threads):"
+    echo " CPU Utilisation % Daily Last $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
     echo "------------------------------------------------------------------"
+    # daily metrics
     for t in $(seq 1 $CMINFO_SAR_DAYS); do
         if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
             sar_cpu_stats=$(sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago"))
@@ -177,7 +201,7 @@ sar_mem_pc() {
     if [[ "$CMINFO_SAR_MEM" = [yY] ]]; then
         echo
         echo "------------------------------------------------------------------"
-        echo " Memory Usage $CMINFO_SAR_DAYS Day Averages ($(nproc) CPU Threads):"
+        echo " Memory Usage Daily Last $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
         echo "------------------------------------------------------------------"
         for t in $(seq 1 $CMINFO_SAR_DAYS); do
             if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
@@ -948,6 +972,16 @@ case "$1" in
     top_info cron
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-cron-${DT}.log"
         ;;
+    sar-cpu)
+    {
+    sar_cpu_pc
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-cpu-${DT}.log"
+        ;;
+    sar-mem)
+    {
+    sar_mem_pc
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-mem-${DT}.log"
+        ;;
     listlogs)
     list_logs
         ;;
@@ -961,6 +995,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
