@@ -69,7 +69,7 @@ if [ ! -f /usr/bin/smem ]; then
     yum -y -q install smem
 fi
 
-if [ ! -f /usr/bin/datamash ]; then
+if [[ ! -f /usr/bin/datamash && -f /usr/bin/systemctl ]]; then
     yum -y -q install datamash
 fi
 
