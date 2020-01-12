@@ -140,6 +140,17 @@ cmservice() {
   fi
 }
 
+phpfpm_mem_stats() {
+    if [[ -f /usr/bin/systemctl && -f /usr/bin/smem && "$(smem -P 'php-fpm: pool' | egrep -v 'python|Command')" ]]; then
+        echo
+        f=$(free -wk | awk '/Mem:/ {print $8}')
+        smem -P 'php-fpm: pool' | egrep -v 'python|Command' | awk -v f=$f '{swap+=$6; uss+=$7; pss+=$8; rss+=$9} END {print "Current Free Memory (KB): "f"\n""PHP-FPM Available Memory (KB): "f+rss"\n""Estimated Max PHP Children: "(f+rss)/(rss/NR) "\nPHP-FPM Total Used Memory (KB): ""swap:"swap, "uss:"uss, "pss:"pss, "rss:"rss"\n""PHP-FPM Average Per Child (KB): ""swap:"swap/NR, "uss:"uss/NR, "pss:"pss/NR, "rss:"rss/NR}'
+        echo "uss = user set size"
+        echo "pss = process set size"
+        echo "rss = resident set size"
+    fi
+}
+
 sar_cpu_pc() {
     # cummulative period metrics
     if [ -f /usr/bin/datamash ]; then
@@ -404,12 +415,14 @@ top_info() {
         echo
         echo "------------------------------------------------------------------"
         echo "php-fpm stats"
+        phpfpm_mem_stats
         echo
         fpmstats
     elif [[ -f /usr/local/nginx/conf/conf.d/virtual.conf && "$(grep '^include /usr/local/nginx/conf/phpstatus.conf' /usr/local/nginx/conf/conf.d/virtual.conf)" && ! -f /usr/bin/fpmstats ]]; then
         echo
         echo "------------------------------------------------------------------"
         echo "php-fpm stats"
+        phpfpm_mem_stats
         echo
         curl -s "localhost/phpstatus"
     fi
@@ -982,6 +995,11 @@ case "$1" in
     sar_mem_pc
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-mem-${DT}.log"
         ;;
+    phpmem)
+    {
+    phpfpm_mem_stats
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-memory-${DT}.log"
+        ;;
     listlogs)
     list_logs
         ;;
@@ -995,6 +1013,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|phpmem|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
