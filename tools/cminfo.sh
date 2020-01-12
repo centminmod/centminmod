@@ -500,7 +500,7 @@ top_info() {
         mysqladmin var | tr -s ' ' | egrep -v '+-' 2>/dev/null
         echo
         echo "mysqladmin ext"
-        mysqladmin ext 2>/dev/null
+        mysqladmin ext  | tr -s ' ' | egrep -v '+-' 2>/dev/null
         echo
     fi
     if [[ "$CMINFO_MYSQL_PROCLIST" = [Yy] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
