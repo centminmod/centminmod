@@ -145,10 +145,31 @@ phpfpm_mem_stats() {
         echo
         f=$(free -wk | awk '/Mem:/ {print $8}')
         cpu_c=$(nproc)
-        smem -P 'php-fpm: pool' | egrep -v 'python|Command' | awk -v f=$f -v c=$cpu_c '{swap+=$6; uss+=$7; pss+=$8; rss+=$9} END {print "Current Free Memory (KB): "f"\n""PHP-FPM Available Memory (KB): "f+rss"\n""Estimated Max PHP Children: "(f+rss)/(rss/NR)"\n""Estimated Max PHP Children To CPU Thread Ratio: "((f+rss)/(rss/NR)/c)"\nPHP-FPM Total Used Memory (KB): ""swap:"swap, "uss:"uss, "pss:"pss, "rss:"rss"\n""PHP-FPM Average Per Child (KB): ""swap:"swap/NR, "uss:"uss/NR, "pss:"pss/NR, "rss:"rss/NR}'
+        count_php_masters=$(ps xao pid,ppid,command | grep 'php-fpm[:] master' | wc -l)
+        if [[ ! "$count_php_masters" ]]; then
+            count_php_masters=0
+            list_php_masters==
+        else
+            get_phppool_names=$(ps aux | grep "php-fpm" | grep -v ^root | grep -v grep | grep pool| awk '{print $13}' | sort -u)
+            map_pid_poolname=$(ps aux | grep "php-fpm" | grep -v ^root | grep -v grep | grep pool| awk '{print $2, $13}' | sort -n)
+            display_phppool_names="$(echo -e "PHP-FPM Pool Names:\n$get_phppool_names")"
+            count_php_masters=$count_php_masters
+            list_php_masters=$(ps xao pid,command | grep 'php-fpm[:] master' | sed -e 's|(||g' -e 's|)||g' -e 's|process ||g')
+        fi
+        echo "------------------------------------------------------------------"
+        echo "Total PHP-FPM Master Processes: $count_php_masters"
+        echo "$display_phppool_names"
+        echo "------------------------------------------------------------------"
+        echo "$list_php_masters"
+        echo "------------------------------------------------------------------"
+        smem -P 'php-fpm: pool' | egrep -v 'python|Command' | awk -v f=$f -v c=$cpu_c -v m=$count_php_masters '{swap+=$6; uss+=$7; pss+=$8; rss+=$9} END {print "Current Free Memory (KB): "f"\n""PHP-FPM Available Memory (KB): "f+rss"\n""Estimated Max PHP Children: "(f+rss)/(rss/NR)"\n""Estimated Max PHP Children To CPU Thread Ratio: "((f+rss)/(rss/NR)/c)"\nPHP-FPM Total Children: " NR " from "m" PHP-FPM master(s)" "\nPHP-FPM Total Used Memory (KB): ""swap:"swap, "uss:"uss, "pss:"pss, "rss:"rss"\n""PHP-FPM Average Per Child (KB): ""swap:"swap/NR, "uss:"uss/NR, "pss:"pss/NR, "rss:"rss/NR}'
         echo "uss = user set size"
         echo "pss = process set size"
         echo "rss = resident set size"
+    elif [ ! "$(smem -P 'php-fpm: pool' | egrep -v 'python|Command')" ]; then
+        getpm_value=$(awk -F '= ' '/^pm =/ {print $2}' /usr/local/etc/php-fpm.conf)
+        echo "PHP-FPM pm = $getpm_value in /usr/local/etc/php-fpm.conf"
+        echo "PHP-FPM memory usage only viewable when pm = static"
     fi
 }
 
@@ -1001,6 +1022,13 @@ case "$1" in
     phpfpm_mem_stats
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-memory-${DT}.log"
         ;;
+    phpstats)
+    {
+    phpfpm_mem_stats
+    echo
+    fpmstats
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-${DT}.log"
+        ;;
     listlogs)
     list_logs
         ;;
@@ -1014,6 +1042,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|phpmem|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|phpmem|phpstats|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
