@@ -1026,7 +1026,9 @@ case "$1" in
     {
     phpfpm_mem_stats
     echo
-    fpmstats
+    if [ -f /usr/bin/fpmstats ]; then
+        fpmstats
+    fi
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-${DT}.log"
         ;;
     listlogs)
