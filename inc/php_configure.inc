@@ -121,7 +121,22 @@ else
   FFI_OPT=""
 fi
 
-if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' ]]; then
+  # https://raw.githubusercontent.com/php/php-src/PHP-7.4/UPGRADING
+  ZIPOPT='--with-zip'
+  PHPGDOPT='--enable-gd'
+  PHPFREETYPEOPT='--with-freetype'
+  PHPJPEGOPT='--with-jpeg'
+  PHPXPMOPT='--with-xpm'
+else
+  ZIPOPT='--enable-zip'
+  PHPGDOPT='--with-gd'
+  PHPFREETYPEOPT="--with-freetype-dir=${PLIBDIR}"
+  PHPJPEGOPT="--with-jpeg-dir=${PLIBDIR}"
+  PHPXPMOPT="--with-xpm-dir=${PLIBDIR}"
+fi
+
+if [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
   # https://raw.githubusercontent.com/php/php-src/PHP-7.4/UPGRADING
   ZIPOPT='--with-zip'
   PHPGDOPT='--enable-gd'
