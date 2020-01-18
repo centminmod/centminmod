@@ -140,7 +140,34 @@ cmservice() {
   fi
 }
 
+pidstat_php() {
+    cron=$1
+    pidstat_interval=$2
+    if [[ "$cron" = 'cron' ]]; then
+        if [[ "$pidstat_interval" ]]; then
+            pidstat_sec=$pidstat_interval
+        else
+            pidstat_sec=20
+        fi
+    else
+        if [[ "$pidstat_interval" ]]; then
+            pidstat_sec=$pidstat_interval
+        else
+            pidstat_sec=10
+        fi
+    fi
+    echo "------------------------------------------------------------------"
+    echo "PHP-FPM pidstats"
+    echo "------------------------------------------------------------------"
+    echo "pidstat -durlh -C php-fpm | sed -e \"s|\$(hostname)|hostname|g\""
+    pidstat -durlh -C php-fpm | sed -e "s|$(hostname)|hostname|g"
+    echo
+    echo "pidstat -durlh -C php-fpm 1 ${pidstat_sec} | sed -e \"s|\$(hostname)|hostname|g\""
+    pidstat -durlh -C php-fpm 1 ${pidstat_sec} | sed -e "s|$(hostname)|hostname|g"
+}
+
 phpfpm_mem_stats() {
+    cron=$1
     if [[ -f /usr/bin/systemctl && -f /usr/bin/smem && "$(smem -P 'php-fpm: pool' | egrep -v 'python|Command')" ]]; then
         echo
         f=$(free -wk | awk '/Mem:/ {print $8}')
@@ -1029,7 +1056,20 @@ case "$1" in
     if [ -f /usr/bin/fpmstats ]; then
         fpmstats
     fi
+    echo
+    pidstat_php nocron $2
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-${DT}.log"
+        ;;
+    phpstats-cron)
+    {
+    phpfpm_mem_stats cron
+    echo
+    if [ -f /usr/bin/fpmstats ]; then
+        fpmstats
+    fi
+    echo
+    pidstat_php cron $2
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-php-stats-cron-${DT}.log"
         ;;
     listlogs)
     list_logs
@@ -1044,6 +1084,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|phpmem|phpstats|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
