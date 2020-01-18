@@ -3,7 +3,7 @@ default-character-set=utf8
 socket=/var/lib/mysql/mysql.sock
 
 [mysql]
-max_allowed_packet = 64M
+max_allowed_packet = 48M
 
 [mysqld]
 local-infile=0
@@ -26,8 +26,8 @@ innodb=ON
 #skip-archive
 #skip-name-resolve
 #old_passwords
-back_log = 256
-max_connections = 300
+back_log = 200
+max_connections = 200
 key_buffer_size = 32M
 myisam_sort_buffer_size = 64M
 myisam_max_sort_file_size = 2048M
@@ -41,11 +41,11 @@ wait_timeout = 1800
 connect_timeout = 10
 tmp_table_size = 128M
 max_heap_table_size = 128M
-max_allowed_packet = 64M
+max_allowed_packet = 48M
 #max_seeks_for_key = 4294967295
 #group_concat_max_len = 1024
 max_length_for_sort_data = 1024
-net_buffer_length = 16384
+net_buffer_length = 8192
 max_connect_errors = 100000
 concurrent_insert = 2
 read_rnd_buffer_size = 256K
@@ -136,7 +136,7 @@ open-files-limit = 8192
 
 [mysqldump]
 quick
-max_allowed_packet = 64M
+max_allowed_packet = 48M
 
 [myisamchk] 
 tmpdir=/home/mysqltmp

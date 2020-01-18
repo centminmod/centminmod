@@ -26,8 +26,8 @@ innodb=ON
 #skip-archive
 #skip-name-resolve
 #old_passwords
-back_log = 75
-max_connections = 300
+back_log = 100
+max_connections = 150
 key_buffer_size = 32M
 myisam_sort_buffer_size = 32M
 myisam_max_sort_file_size = 2048M
@@ -45,7 +45,7 @@ max_allowed_packet = 32M
 #max_seeks_for_key = 4294967295
 #group_concat_max_len = 1024
 max_length_for_sort_data = 1024
-net_buffer_length = 16384
+net_buffer_length = 8192
 max_connect_errors = 100000
 concurrent_insert = 2
 read_rnd_buffer_size = 256K
