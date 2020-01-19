@@ -207,7 +207,7 @@ sar_cpu_pc() {
         echo "------------------------------------------------------------------"
         echo " CPU Utilisation % Last $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
         echo "------------------------------------------------------------------"
-        for t in $(seq 1 $CMINFO_SAR_DAYS); do
+        for t in $(seq 0 $CMINFO_SAR_DAYS); do
             if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
                 sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago") >> "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
             fi
@@ -233,7 +233,7 @@ sar_cpu_pc() {
     echo " CPU Utilisation % Daily Last $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
     echo "------------------------------------------------------------------"
     # daily metrics
-    for t in $(seq 1 $CMINFO_SAR_DAYS); do
+    for t in $(seq 0 $CMINFO_SAR_DAYS); do
         if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
             sar_cpu_stats=$(sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago"))
             sar_u=$(echo "$sar_cpu_stats" | grep 'Average:' | tail -1);
@@ -267,7 +267,7 @@ sar_mem_pc() {
         echo "------------------------------------------------------------------"
         echo " Memory Usage Daily Last $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
         echo "------------------------------------------------------------------"
-        for t in $(seq 1 $CMINFO_SAR_DAYS); do
+        for t in $(seq 0 $CMINFO_SAR_DAYS); do
             if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
                 sar_mem_stats=$(sar -r -f /var/log/sa/sa$(date +%d -d "$t day ago"))
                 sar_mem=$(echo "$sar_mem_stats" | grep 'Average:' | tail -1);
