@@ -212,6 +212,7 @@ sar_cpu_pc() {
                 sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago") >> "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
             fi
         done
+        if [ -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" ]; then
             sar_cpu_metrics_period=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d' | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:50 1-6 perc:75 1-6 perc:90 1-6 perc:95 1-6 perc:99 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}')
             sar_cpu_umin_period=$(echo "$sar_cpu_metrics_period" | sed -n 1p)
             sar_cpu_uavg_period=$(echo "$sar_cpu_metrics_period" | sed -n 2p)
@@ -222,7 +223,10 @@ sar_cpu_pc() {
             sar_cpu_upc_period_95=$(echo "$sar_cpu_metrics_period" | sed -n 7p)
             sar_cpu_upc_period_99=$(echo "$sar_cpu_metrics_period" | sed -n 8p)
             echo -e "%CPU min: $sar_cpu_umin_period\n%CPU avg: $sar_cpu_uavg_period\n%CPU max: $sar_cpu_umax_period\n%CPU 50%: $sar_cpu_upc_period_50\n%CPU 75%: $sar_cpu_upc_period_75\n%CPU 90%: $sar_cpu_upc_period_90\n%CPU 95%: $sar_cpu_upc_period_95\n%CPU 99%: $sar_cpu_upc_period_99" | column -t
-        rm -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
+            rm -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
+        else
+            echo " Not enough sar data collected yet. Wait at least 24hrs."
+        fi
     fi
     echo
     echo "------------------------------------------------------------------"
