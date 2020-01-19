@@ -5,13 +5,13 @@ csf_maxmind_geolite_two_download() {
             wget -q -4 https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
-            sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "365"|' /etc/csf/csf.conf
+            sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf
             csf --profile backup cmm-after-maxmind-csf-database-download >/dev/null 2>&1
         else
             wget -4 https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xvf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
-            sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "365"|' /etc/csf/csf.conf
+            sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf
             csf --profile backup cmm-after-maxmind-csf-database-download >/dev/null 2>&1
             csf --profile list
             grep '^CC_INTERVAL' /etc/csf/csf.conf
@@ -27,6 +27,12 @@ csf_maxmind_geolite_two_download() {
 
 csf_maxmind_rego() {
     if [ -f /etc/csf/csf.conf ]; then
+        # Use maxmind Country database instead of db-ip more accurate identification of
+        # IP's geolocation
+        #
+        csf --profile backup before_cc_src_1_switch
+        sed -i 's|CC_SRC = "2"|CC_SRC = "1"|' /etc/csf/csf.conf
+        csf --profile backup after_cc_src_1_switch
         # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
         # https://dev.maxmind.com/geoip/geoipupdate/#Direct_Downloads
         # check if MM_LICENSE_KEY variable is empty in /etc/csf/csf.conf
@@ -163,7 +169,7 @@ sed -i "s/DROP_NOLOG = \"67,68,/DROP_NOLOG = \"/g" /etc/csf/csf.conf
     sed -i 's/TESTING = "1"/TESTING = "0"/g' /etc/csf/csf.conf
 
 csf_maxmind_rego
-csf_maxmind_geolite_two_download
+# csf_maxmind_geolite_two_download
 csftweaks
 
 #######################################################
