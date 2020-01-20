@@ -30,9 +30,19 @@ csf_maxmind_rego() {
         # Use maxmind Country database instead of db-ip more accurate identification of
         # IP's geolocation
         #
-        csf --profile backup before_cc_src_1_switch
-        sed -i 's|CC_SRC = "2"|CC_SRC = "1"|' /etc/csf/csf.conf
-        csf --profile backup after_cc_src_1_switch
+        if [[ "$MM_CSF_SRC" = [yY] ]]; then
+            if [[ ! "$(grep 'CC_SRC = "1"' /etc/csf/csf.conf)" ]]; then
+                csf --profile backup before_cc_src_1_switch
+                sed -i 's|CC_SRC = .*|CC_SRC = "1"|' /etc/csf/csf.conf
+                csf --profile backup after_cc_src_1_switch
+            fi
+        elif [[ "$MM_CSF_SRC" = [nN] ]]; then
+            if [[ ! "$(grep 'CC_SRC = "2"' /etc/csf/csf.conf)" ]]; then
+                csf --profile backup before_cc_src_2_switch
+                sed -i 's|CC_SRC = .*|CC_SRC = "2"|' /etc/csf/csf.conf
+                csf --profile backup after_cc_src_2_switch
+            fi
+        fi
         # https://blog.maxmind.com/2019/12/18/significant-changes-to-accessing-and-using-geolite2-databases/
         # https://dev.maxmind.com/geoip/geoipupdate/#Direct_Downloads
         # check if MM_LICENSE_KEY variable is empty in /etc/csf/csf.conf
