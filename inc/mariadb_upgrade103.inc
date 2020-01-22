@@ -232,6 +232,7 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
 # [mariadb]
 # name = MariaDB
 # baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+# module_hotfixes=1
 # gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 # gpgcheck=1
 # EOF
@@ -240,6 +241,7 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
 # [mariadb]
 # name = MariaDB
 # baseurl = http://yum.mariadb.org/10.1/centos8-amd64
+# module_hotfixes=1
 # gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 # gpgcheck=1
 # EOF
@@ -252,6 +254,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-aarch64
+module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -260,6 +263,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/10.3/centos8-aarch64
+module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -273,6 +277,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -281,6 +286,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/10.3/centos8-amd64
+module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -293,6 +299,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -301,6 +308,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
 baseurl = http://yum.mariadb.org/10.3/centos8-amd64
+module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
