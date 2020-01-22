@@ -377,7 +377,8 @@ echo "MariaDB 10.2 YUM install..."
 
 if [[ "$CENTOS_EIGHT" = '8' ]]; then
   yumpriorities_opt=""
-  yumdisable_appstream=' --disablerepo=AppStream'
+  # yumdisable_appstream=' --disablerepo=AppStream'
+  yumdisable_appstream=""
 else
   yumpriorities_opt=' --disableplugin=priorities'
   yumdisable_appstream=""
