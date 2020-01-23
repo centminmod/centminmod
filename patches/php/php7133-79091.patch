@@ -1,0 +1,99 @@
+From 35c8a53c098cd828413a80ed7964146d50161c6c Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Mon, 20 Jan 2020 18:05:00 +0100
+Subject: [PATCH] Fix #79091: heap use-after-free in session_create_id()
+
+If the `new_id` is released, we must not use it again.
+
+(cherry picked from commit f79c7742746907d676989cb7f97fb4f7cd26789f)
+---
+ ext/session/session.c           |  1 +
+ ext/session/tests/bug79091.phpt | 67 +++++++++++++++++++++++++++++++++
+ 2 files changed, 68 insertions(+)
+ create mode 100644 ext/session/tests/bug79091.phpt
+
+diff --git a/ext/session/session.c b/ext/session/session.c
+index 8d60ac249a..44ecb85f74 100644
+--- a/ext/session/session.c
++++ b/ext/session/session.c
+@@ -2049,6 +2049,7 @@ static PHP_FUNCTION(session_create_id)
+ 				/* Detect collision and retry */
+ 				if (PS(mod)->s_validate_sid(&PS(mod_data), new_id) == FAILURE) {
+ 					zend_string_release(new_id);
++					new_id = NULL;
+ 					continue;
+ 				}
+ 				break;
+diff --git a/ext/session/tests/bug79091.phpt b/ext/session/tests/bug79091.phpt
+new file mode 100644
+index 0000000000..1d14427159
+--- /dev/null
++++ b/ext/session/tests/bug79091.phpt
+@@ -0,0 +1,67 @@
++--TEST--
++Bug #79091 (heap use-after-free in session_create_id())
++--SKIPIF--
++<?php
++if (!extension_loaded('session')) die('skip session extension not available');
++?>
++--FILE--
++<?php
++class MySessionHandler implements SessionHandlerInterface, SessionIdInterface, SessionUpdateTimestampHandlerInterface
++{
++    public function close()
++    {
++        return true;
++    }
++
++    public function destroy($session_id)
++    {
++        return true;
++    }
++
++    public function gc($maxlifetime)
++    {
++        return true;
++    }
++
++    public function open($save_path, $session_name)
++    {
++        return true;
++    }
++
++    public function read($session_id)
++    {
++        return '';
++    }
++
++    public function write($session_id, $session_data)
++    {
++        return true;
++    }
++
++    public function create_sid()
++    {
++        return uniqid();
++    }
++
++    public function updateTimestamp($key, $val)
++    {
++        return true;
++    }
++
++    public function validateId($key)
++    {
++        return false;
++    }
++}
++
++ob_start();
++var_dump(session_set_save_handler(new MySessionHandler()));
++var_dump(session_start());
++ob_flush();
++session_create_id();
++?>
++--EXPECTF--
++bool(true)
++bool(true)
++
++Warning: session_create_id(): Failed to create new ID in %s on line %d

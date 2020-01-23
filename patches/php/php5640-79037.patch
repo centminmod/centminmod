@@ -1,0 +1,93 @@
+From 31b5f3736519f3cb1af875f22f70423934a636d6 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 20 Jan 2020 21:42:44 -0800
+Subject: [PATCH] Fix bug #79037 (global buffer-overflow in
+ `mbfl_filt_conv_big5_wchar`)
+
+(cherry picked from commit 2bcbc95f033c31b00595ed39f79c3a99b4ed0501)
+---
+ ext/mbstring/libmbfl/filters/mbfilter_big5.c | 17 ++++++++++++-----
+ ext/mbstring/tests/bug79037.phpt             | 10 ++++++++++
+ 2 files changed, 22 insertions(+), 5 deletions(-)
+ create mode 100644 ext/mbstring/tests/bug79037.phpt
+
+diff --git a/ext/mbstring/libmbfl/filters/mbfilter_big5.c b/ext/mbstring/libmbfl/filters/mbfilter_big5.c
+index 099f8e6af0..e04d81d220 100644
+--- a/ext/mbstring/libmbfl/filters/mbfilter_big5.c
++++ b/ext/mbstring/libmbfl/filters/mbfilter_big5.c
+@@ -138,6 +138,17 @@ static unsigned short cp950_pua_tbl[][4] = {
+ 	{0xf70f,0xf848,0xc740,0xc8fe},
+ };
+ 
++static inline int is_in_cp950_pua(int c1, int c) {
++	if ((c1 >= 0xfa && c1 <= 0xfe) || (c1 >= 0x8e && c1 <= 0xa0) ||
++			(c1 >= 0x81 && c1 <= 0x8d) || (c1 >= 0xc7 && c1 <= 0xc8)) {
++		return (c >=0x40 && c <= 0x7e) || (c >= 0xa1 && c <= 0xfe);
++	}
++	if (c1 == 0xc6) {
++		return c >= 0xa1 && c <= 0xfe;
++	}
++	return 0;
++}
++
+ /*
+  * Big5 => wchar
+  */
+@@ -186,11 +197,7 @@ mbfl_filt_conv_big5_wchar(int c, mbfl_convert_filter *filter)
+ 			
+ 			if (filter->from->no_encoding == mbfl_no_encoding_cp950) {
+ 				/* PUA for CP950 */
+-				if (w <= 0 && 
+-					(((c1 >= 0xfa && c1 <= 0xfe) || (c1 >= 0x8e && c1 <= 0xa0) ||
+-					  (c1 >= 0x81 && c1 <= 0x8d) ||(c1 >= 0xc7 && c1 <= 0xc8)) 
+-					 && ((c > 0x39 && c < 0x7f) || (c > 0xa0 && c < 0xff))) ||
+-					((c1 == 0xc6) && (c > 0xa0 && c < 0xff))) {
++				if (w <= 0 && is_in_cp950_pua(c1, c)) {
+ 					c2 = c1 << 8 | c;
+ 					for (k = 0; k < sizeof(cp950_pua_tbl)/(sizeof(unsigned short)*4); k++) {
+ 						if (c2 >= cp950_pua_tbl[k][2] && c2 <= cp950_pua_tbl[k][3]) {
+diff --git a/ext/mbstring/tests/bug79037.phpt b/ext/mbstring/tests/bug79037.phpt
+new file mode 100644
+index 0000000000..94ff01a4a1
+--- /dev/null
++++ b/ext/mbstring/tests/bug79037.phpt
+@@ -0,0 +1,10 @@
++--TEST--
++Bug #79037: global buffer-overflow in `mbfl_filt_conv_big5_wchar`
++--FILE--
++<?php
++
++var_dump(mb_convert_encoding("\x81\x3a", "UTF-8", "CP950"));
++
++?>
++--EXPECT--
++string(1) "?"
+From f90b183c1ff88efc6e499811dc008a90f32989f0 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 21 Jan 2020 10:12:44 +0100
+Subject: [PATCH] update NEWS
+
+---
+ NEWS | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index ee2fe2830b..c387fa8f86 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,15 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.27
++
++- Mbstring:
++  . Fixed bug #79037 (global buffer-overflow in `mbfl_filt_conv_big5_wchar`).
++    (CVE-2020-7060) (Nikita)
++
++- Standard:
++  . Fixed bug #79099 (OOB read in php_strip_tags_ex). (CVE-2020-7059). (cmb)
++
+ Backported from 7.2.26
+ 
+ - Bcmath:

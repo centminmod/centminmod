@@ -233,6 +233,26 @@ php_patches() {
         dos2unix php5640-78910.patch
         patch -p1 < php5640-78910.patch
       fi
+      # PHP 5.6 bug #79037 https://bugs.php.net/bug.php?id=79037
+      if [ ! -f php5640-79037.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #79037"
+        echo "https://bugs.php.net/bug.php?id=79037"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-79037.patch php5640-79037.patch
+        dos2unix php5640-79037.patch
+        patch -p1 < php5640-79037.patch
+      fi
+      # PHP 5.6 bug #79099 https://bugs.php.net/bug.php?id=79099
+      if [ ! -f php5640-79099.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #79099"
+        echo "https://bugs.php.net/bug.php?id=79099"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-79099.patch php5640-79099.patch
+        dos2unix php5640-79099.patch
+        patch -p1 < php5640-79099.patch
+      fi
     fi
 
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
@@ -295,7 +315,9 @@ php_patches() {
       # PHP bug #78793 https://bugs.php.net/bug.php?id=78793
       # PHP bug #78878 https://bugs.php.net/bug.php?id=78878
       # PHP bug #78910 https://bugs.php.net/bug.php?id=78910
-      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910'
+      # PHP bug #79037 https://bugs.php.net/bug.php?id=79037
+      # PHP bug #79099 https://bugs.php.net/bug.php?id=79099
+      phpseven_bugids='77369 77370 77371 77381 77418 77247 77242 77380 77540 77563 77396 77431 77630 76846 php-openssl-cert 77753 77831 sqlite3-defensive 77950 77967 77988 78069 77919 78222 78256 75457 78380 78599 78862 78863 78793 78878 78910 79037 79099'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7033-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7033-${bugid}.patch" ]]; then
           echo
@@ -321,7 +343,10 @@ php_patches() {
       # PHP bug #78793 https://bugs.php.net/bug.php?id=78793
       # PHP bug #78878 https://bugs.php.net/bug.php?id=78878
       # PHP bug #78910 https://bugs.php.net/bug.php?id=78910
-      phpseven_bugids='78862 78863 78793 78878 78910'
+      # PHP bug #79037 https://bugs.php.net/bug.php?id=79037
+      # PHP bug #79091 https://bugs.php.net/bug.php?id=79091
+      # PHP bug #79099 https://bugs.php.net/bug.php?id=79099
+      phpseven_bugids='78862 78863 78793 78878 78910 79037 79091 79099'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7133-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7133-${bugid}.patch" ]]; then
           echo

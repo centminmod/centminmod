@@ -1,0 +1,113 @@
+From f18f20c032482e34d5f94d747da16f8ae029a017 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 20 Jan 2020 21:33:17 -0800
+Subject: [PATCH] Fix #79099: OOB read in php_strip_tags_ex
+
+(cherry picked from commit 0f79b1bf301f455967676b5129240140c5c45b09)
+---
+ ext/standard/string.c                 |  6 ++---
+ ext/standard/tests/file/bug79099.phpt | 32 +++++++++++++++++++++++++++
+ 2 files changed, 35 insertions(+), 3 deletions(-)
+ create mode 100644 ext/standard/tests/file/bug79099.phpt
+
+diff --git a/ext/standard/string.c b/ext/standard/string.c
+index 922d4fceaf..c88135da6f 100644
+--- a/ext/standard/string.c
++++ b/ext/standard/string.c
+@@ -4781,7 +4781,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, size_t len, int *stateptr, const cha
+ 				if (state == 4) {
+ 					/* Inside <!-- comment --> */
+ 					break;
+-				} else if (state == 2 && *(p-1) != '\\') {
++				} else if (state == 2 && p >= buf + 1 && *(p-1) != '\\') {
+ 					if (lc == c) {
+ 						lc = '\0';
+ 					} else if (lc != '\\') {
+@@ -4808,7 +4808,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, size_t len, int *stateptr, const cha
+ 
+ 			case '!':
+ 				/* JavaScript & Other HTML scripting languages */
+-				if (state == 1 && *(p-1) == '<') {
++				if (state == 1 && p >= buf + 1 && *(p-1) == '<') {
+ 					state = 3;
+ 					lc = c;
+ 				} else {
+@@ -4835,7 +4835,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, size_t len, int *stateptr, const cha
+ 
+ 			case '?':
+ 
+-				if (state == 1 && *(p-1) == '<') {
++				if (state == 1 && p >= buf + 1 && *(p-1) == '<') {
+ 					br=0;
+ 					state=2;
+ 					break;
+diff --git a/ext/standard/tests/file/bug79099.phpt b/ext/standard/tests/file/bug79099.phpt
+new file mode 100644
+index 0000000000..7c842f4654
+--- /dev/null
++++ b/ext/standard/tests/file/bug79099.phpt
+@@ -0,0 +1,32 @@
++--TEST--
++Bug #79099 (OOB read in php_strip_tags_ex)
++--FILE--
++<?php
++$stream = fopen('php://memory', 'w+');
++fputs($stream, "<?\n\"\n");
++rewind($stream);
++var_dump(fgetss($stream));
++var_dump(fgetss($stream));
++fclose($stream);
++
++$stream = fopen('php://memory', 'w+');
++fputs($stream, "<\0\n!\n");
++rewind($stream);
++var_dump(fgetss($stream));
++var_dump(fgetss($stream));
++fclose($stream);
++
++$stream = fopen('php://memory', 'w+');
++fputs($stream, "<\0\n?\n");
++rewind($stream);
++var_dump(fgetss($stream));
++var_dump(fgetss($stream));
++fclose($stream);
++?>
++--EXPECT--
++string(0) ""
++string(0) ""
++string(0) ""
++string(0) ""
++string(0) ""
++string(0) ""
+From a9620f5c7f2d55ca90552d3eb44d0980f10deec3 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Wed, 22 Jan 2020 22:36:53 -0800
+Subject: [PATCH] More checks for php_strip_tags_ex
+
+(cherry picked from commit 2dc170e25d86a725fefd4c08f2bd8378820b28f5)
+---
+ ext/standard/string.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/standard/string.c b/ext/standard/string.c
+index c88135da6f..018e919cbf 100644
+--- a/ext/standard/string.c
++++ b/ext/standard/string.c
+@@ -4731,7 +4731,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, size_t len, int *stateptr, const cha
+ 				switch (state) {
+ 					case 1: /* HTML/XML */
+ 						lc = '>';
+-						if (is_xml && *(p -1) == '-') {
++						if (is_xml && p >= buf + 1 && *(p-1) == '-') {
+ 							break;
+ 						}
+ 						in_q = state = is_xml = 0;
+@@ -4752,7 +4752,7 @@ PHPAPI size_t php_strip_tags_ex(char *rbuf, size_t len, int *stateptr, const cha
+ 						break;
+ 
+ 					case 2: /* PHP */
+-						if (!br && lc != '\"' && *(p-1) == '?') {
++						if (!br && lc != '\"' && p >= buf + 1 && *(p-1) == '?') {
+ 							in_q = state = 0;
+ 							tp = tbuf;
+ 						}
