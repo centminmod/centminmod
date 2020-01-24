@@ -1154,45 +1154,53 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "#rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
     # fi
     if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
-        cecho "#rm -rf ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
+        cecho "#rm -f ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
     fi
     # if [ -f ${CONFIGSCANDIR}/redis.ini ]; then
-    #     cecho "#rm -rf ${CONFIGSCANDIR}/redis.ini" $boldyellow
+    #     cecho "#rm -f ${CONFIGSCANDIR}/redis.ini" $boldyellow
     # fi
     if [ -f "${CONFIGSCANDIR}/suhosin.ini" ]; then
-        cecho "rm -rf ${CONFIGSCANDIR}/suhosin.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/suhosin.ini" $boldyellow
     fi
     # if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/mailparse.ini" ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
-    #     cecho "rm -rf ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
     # fi
     if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
         # cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-        # cecho "rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+        # cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
         echo
     fi
     # if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcached.ini" ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcached.ini" $boldyellow
-    #     cecho "rm -rf ${CONFIGSCANDIR}/memcached.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     # fi
     if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/mcrypt.ini" ]]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
-        cecho "rm -rf ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
         echo
     fi
     if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/geoip.ini" ]]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
-        cecho "rm -rf ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         echo
     fi
     if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/imagick.ini" ]]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/imagick.ini" $boldyellow
-        cecho "rm -rf ${CONFIGSCANDIR}/imagick.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/imagick.ini" $boldyellow
         echo
     fi
     echo
     cecho "then restart PHP-FPM again..." $boldyellow
     echo
+fi
+# timezonedb php extension not compatible with PHP 5.6
+if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
+    check_timezonedb_installed=$(php -m 2>&1 | grep -v 'Unable to load dynamic library' | grep -o timezonedb)
+    if [[ "$check_timezonedb_installed" != 'timezonedb' ]]; then
+        rm -f "${CONFIGSCANDIR}/timezonedb.ini"
+        cmservice php-fpm restart >/dev/null 2>&1
+    fi
 fi
 
     php-config
