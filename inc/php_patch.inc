@@ -392,5 +392,11 @@ php_patches() {
     dos2unix reduce-fpm-event-wakeups.patch
     patch -p1 < reduce-fpm-event-wakeups.patch
   fi
+  if [[ "$PHPVER_ID" -eq '70402' ]]; then
+    echo
+    echo "revert PHP 7.4.2 main/php_variables.c to PHP 7.4.1 version"
+    echo "https://community.centminmod.com/posts/81184/"
+    wget -4 https://raw.githubusercontent.com/php/php-src/PHP-7.4.1/main/php_variables.c -O main/php_variables.c
+  fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"
 }
