@@ -1,0 +1,52 @@
+From addc3c92f2956b4efea9d78f34262403adc393ad Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 28 Jan 2020 15:11:59 +0100
+Subject: [PATCH] Fix #79174: cookie values with spaces fail to round-trip
+
+The fix for bug #78929 disabled the conversion of spaces in cookie
+values to plus signs, but failed to adapt `php_setcookie()`
+accordingly, so that it uses raw URL encoding as well.
+---
+ NEWS                                      | 1 +
+ ext/standard/head.c                       | 2 +-
+ ext/standard/tests/network/setcookie.phpt | 2 +-
+ 3 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index be17e672a621..c80597e6fdf5 100644
+--- a/NEWS
++++ b/NEWS
+@@ -9,6 +9,7 @@ PHP                                                                        NEWS
+   . Fixed bug #78323 (Code 0 is returned on invalid options). (Ivan Mikheykin)
+   . Fixed bug #78989 (Delayed variance check involving trait segfaults).
+     (Nikita)
++  . Fixed bug #79174 (cookie values with spaces fail to round-trip). (cmb)
+ 
+ - CURL:
+   . Fixed bug #79078 (Hypothetical use-after-free in curl_multi_add_handle()).
+diff --git a/ext/standard/head.c b/ext/standard/head.c
+index 91b12108bf32..4d1581507633 100644
+--- a/ext/standard/head.c
++++ b/ext/standard/head.c
+@@ -125,7 +125,7 @@ PHPAPI int php_setcookie(zend_string *name, zend_string *value, time_t expires,
+ 		smart_str_append(&buf, name);
+ 		smart_str_appendc(&buf, '=');
+ 		if (url_encode) {
+-			zend_string *encoded_value = php_url_encode(ZSTR_VAL(value), ZSTR_LEN(value));
++			zend_string *encoded_value = php_raw_url_encode(ZSTR_VAL(value), ZSTR_LEN(value));
+ 			smart_str_append(&buf, encoded_value);
+ 			zend_string_release_ex(encoded_value, 0);
+ 		} else {
+diff --git a/ext/standard/tests/network/setcookie.phpt b/ext/standard/tests/network/setcookie.phpt
+index d41bed01f4e9..1033b7bbbe76 100644
+--- a/ext/standard/tests/network/setcookie.phpt
++++ b/ext/standard/tests/network/setcookie.phpt
+@@ -24,7 +24,7 @@ $expected = array(
+ 	'Set-Cookie: name=deleted; expires='.date('D, d-M-Y H:i:s', 1).' GMT; Max-Age=0',
+ 	'Set-Cookie: name=deleted; expires='.date('D, d-M-Y H:i:s', 1).' GMT; Max-Age=0',
+ 	'Set-Cookie: name=value',
+-	'Set-Cookie: name=space+value',
++	'Set-Cookie: name=space%20value',
+ 	'Set-Cookie: name=value',
+ 	'Set-Cookie: name=value; expires='.date('D, d-M-Y H:i:s', $tsp).' GMT; Max-Age=5',
+ 	'Set-Cookie: name=value; expires='.date('D, d-M-Y H:i:s', $tsn).' GMT; Max-Age=0',

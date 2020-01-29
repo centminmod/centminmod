@@ -393,10 +393,27 @@ php_patches() {
     patch -p1 < reduce-fpm-event-wakeups.patch
   fi
   if [[ "$PHPVER_ID" -eq '70402' ]]; then
-    echo
-    echo "revert PHP 7.4.2 main/php_variables.c to PHP 7.4.1 version"
-    echo "https://community.centminmod.com/posts/81184/"
-    wget -4 https://raw.githubusercontent.com/php/php-src/PHP-7.4.1/main/php_variables.c -O main/php_variables.c
+    # echo
+    # echo "revert PHP 7.4.2 main/php_variables.c to PHP 7.4.1 version"
+    # echo "https://community.centminmod.com/posts/81184/"
+    # wget -4 https://raw.githubusercontent.com/php/php-src/PHP-7.4.1/main/php_variables.c -O main/php_variables.c
+
+    # backport security bug patch for php 7.4
+    # 79174 https://community.centminmod.com/posts/81231/
+    phpseven_bugids='79174'
+    for bugid in $phpseven_bugids; do
+      if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4.2 for bug #${bugid}"
+          echo "https://bugs.php.net/bug.php?id=${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/php742-${bugid}.patch php742-${bugid}.patch
+        dos2unix php742-${bugid}.patch
+        patch -p1 < php742-${bugid}.patch
+      fi
+    done
   fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"
 }
