@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.9'
+VER='0.1'
 ######################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -14,7 +14,7 @@ export LC_CTYPE=en_US.UTF-8
 ######################################################
 # switch to nodesource yum repo instead of source compile
 # specify version branch so set NODEJSVER to 4, 5, 6, 7 or 8
-NODEJSVER='12'
+NODEJSVER='13'
 NODEJS_SOURCEINSTALL='y'
 NODEJS_REINSTALL='y'
 
@@ -200,16 +200,16 @@ scl_install() {
         yum -y -q install centos-release-scl --disablerepo=rpmforge
       fi
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
         else
-          yum -y -q install devtoolset-4-gcc devtoolset-4-gcc-c++ devtoolset-4-binutils --disablerepo=rpmforge
+          yum -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
         fi
 
-			CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-4/root/usr/'
+			CCTOOLSET=' --gcc-toolchain=/opt/rh/devtoolset-6/root/usr/'
 			unset CC
 			unset CXX
-			# export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc ${CCTOOLSET}"
-			# export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
+			# export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc ${CCTOOLSET}"
+			# export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
 			CLANG_CCOPT=""
 			export CC="ccache /usr/bin/clang ${CCTOOLSET}${CLANG_CCOPT}"
 			export CXX="ccache /usr/bin/clang++ ${CCTOOLSET}${CLANG_CCOPT}"
@@ -284,7 +284,7 @@ elif [[ "$CENTOS_SIX" = '6' ]]; then
 	cecho "CentOS 6.x detected... " $boldgreen
 	cecho "nodesource YUM install currently only works on CentOS 7.x systems" $boldgreen
 	cecho "alternative is to compile node.js from source instead" $boldgreen
-	cecho "due to devtoolset-4 & source compilation method it may" $boldgreen
+	cecho "due to devtoolset-6 & source compilation method it may" $boldgreen
 	cecho "take between 10-45 minutes to compile depending on system" $boldgreen
 	cecho "--------------------------------------------------------------------" $boldyellow
 	echo
