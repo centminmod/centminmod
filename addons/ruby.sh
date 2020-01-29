@@ -13,7 +13,7 @@ export LC_CTYPE=en_US.UTF-8
 # written by George Liu (eva2000) centminmod.com
 # https://rvm.io/
 ######################################################
-RUBYVER='2.7.0'
+RUBYVER='2.6.3'
 RUBYBUILD=''
 
 DT=$(date +"%d%m%y-%H%M%S")

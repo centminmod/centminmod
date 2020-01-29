@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.1.1'
+VER='0.1.2'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -12,7 +12,7 @@ export LC_CTYPE=en_US.UTF-8
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
-RUBYVER='2.7.0'
+RUBYVER='2.6.3'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
@@ -310,8 +310,8 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo $GEM_HOME
   echo $GEM_PATH
   echo "--------------------------------"
-  echo "gem install rake rails sqlite3 mysql bundler --no-ri --no-rdoc"
-  echo "gem install passenger --no-ri --no-rdoc"
+  echo "gem install rake rails sqlite3"
+  echo "gem install passenger"
   
   echo "--------------------------------"
   # RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
@@ -336,8 +336,8 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo "--------------------------------"
   gem env
   echo "--------------------------------"
-  gem install rake rails sqlite3 mysql --no-ri --no-rdoc
-  gem install passenger --no-ri --no-rdoc
+  gem install rake rails sqlite3 mysql
+  gem install passenger
   echo "--------------------------------"
   
   echo "more checks..."
