@@ -336,7 +336,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo "--------------------------------"
   gem env
   echo "--------------------------------"
-  gem install rake rails sqlite3 mysql
+  gem install rake rails sqlite3
   gem install passenger
   echo "--------------------------------"
   
