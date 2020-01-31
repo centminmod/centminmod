@@ -104,11 +104,11 @@ starttime=$(TZ=UTC date +%s.%N)
 {
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
-    rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
-    yum -y install https://centos6.iuscommunity.org/ius-release.rpm
+    rpm --import https://repo.ius.io/RPM-GPG-KEY-IUS-6
+    yum -y install https://repo.ius.io/ius-release-el6.rpm
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-    rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
-    yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+    rpm --import https://repo.ius.io/RPM-GPG-KEY-IUS-7
+    yum -y install https://repo.ius.io/ius-release-el7.rpm
 fi
 
 # disable by default the ius.repo
