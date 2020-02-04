@@ -3104,8 +3104,8 @@ fi
 } 2>&1 | tee /tmp/setupwp.log
 if [ -f /usr/sbin/sendmail ]; then
 sendmail -i $WPADMINEMAIL <<END
-From: \$WPADMINEMAIL_FROM
-To: \$WPADMINEMAIL
+From: $WPADMINEMAIL_FROM
+To: $WPADMINEMAIL
 Subject: ${vhostname} Wordpress Installed \$(date)
 
 \$(cat /tmp/setupwp.log)
