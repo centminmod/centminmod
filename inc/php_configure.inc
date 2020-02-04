@@ -370,6 +370,7 @@ oniguruma_check
 # whether to switch from system used zlib to cloudflare zlib performance
 # fork for php conmpilations for cpus supporting SSE4.2 at least
 CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+CLOUDFLARE_ZLIBPHP='n'
 if [[ "$CLOUDFLARE_ZLIBPHP" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
   # check if static libz.a installed usually as result of compiling nginx with
   # CLOUDFLARE_ZLIB='y' set but if not installed run install function from inc/zlib.inc

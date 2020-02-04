@@ -892,7 +892,7 @@ fi
         if [ ! -f /usr/bin/makedepend ]; then
             time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
         fi
-
+        CLOUDFLARE_ZLIB_OPENSSL='n'
         if [[ "$CLOUDFLARE_ZLIB_OPENSSL" = [yY] && "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' && -d /usr/local/zlib-cf ]]; then
             OPENSSL_CFZLIB_OPT=' -I/usr/local/zlib-cf/include -L/usr/local/zlib-cf/lib'
             OPENSSL_CFZLIB_RPATH='/usr/local/zlib-cf:'
