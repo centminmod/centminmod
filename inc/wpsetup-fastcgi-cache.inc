@@ -2931,11 +2931,19 @@ fi
 if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install cache-enabler --activate --allow-root
+  chown nginx:nginx wp-content/advanced-cache.php
+  chown -R nginx:nginx wp-content/plugins/cache-enabler
   cecho "------------------------------------------------------------" $boldgreen 
   # \wp plugin install optimus --activate --allow-root
   echo "configure cache-enabler"
   \wp option update cache-enabler '{"expires":6,"new_post":1,"new_comment":1,"webp":0,"clear_on_upgrade":1,"compress":1,"excl_ids":"","excl_regexp":"","excl_cookies":"","excl_querystrings":"","minify_html":0}' --format=json --allow-root
   \wp option get cache-enabler --format=json --allow-root
+  # add define('WP_CACHE', true); to wp-config.php
+  if [ ! "$(grep -w 'WP_CACHE' wp-config.php)" ]; then
+  sed -i "/define( 'DB_HOST', 'localhost' );/ a\
+define('WP_CACHE', true);\
+" wp-config.php
+  fi
   cecho "------------------------------------------------------------" $boldgreen
   \wp plugin install autoptimize --activate --allow-root
   configure_autoptimize
