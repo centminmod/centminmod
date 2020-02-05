@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='424'
+SCRIPT_INCREMENTVER='425'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='29/02/2020'
@@ -1997,6 +1997,13 @@ fi
     PHPVER_ID=$(awk '/PHP_VERSION_ID/ {print $3}' ${DIR_TMP}/php-${PHP_VERSION}/main/php_version.h)
     echo "PHP VERSION ID: $PHPVER_ID"
 
+    # if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5, 5.6 or 5.7
+    # install Zend OpCache PECL extesnion otherwise if PHP_VERSION = 5.5
+    # then php_configure.inc routine will pick up PHP_VERSION 5.5 and install
+    # native Zend OpCache when ZOPCACHEDFT=yY
+    PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
+    echo "Initial Install PHPMVER: $PHPMVER"
+
     php_patches
 
     if [[ "$CENTOS_SIX" -eq '6' ]]; then
@@ -2160,12 +2167,6 @@ xcacheinstall_ask
 if [[ "$APCINSTALL" = [yY] && "$ZOPCACHEDFT" = [nN] ]]; then
   funct_apcsourceinstall
 fi
-
-# if ZOPCACHEDFT override enabled = yY and PHP_VERSION is not 5.5, 5.6 or 5.7
-# install Zend OpCache PECL extesnion otherwise if PHP_VERSION = 5.5
-# then php_configure.inc routine will pick up PHP_VERSION 5.5 and install
-# native Zend OpCache when ZOPCACHEDFT=yY
-PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 
 # ZOPCACHE_OVERRIDE=y allows you to override PHP 5.5-7.0's inbuilt included
 # Zend Opcache version with one available from pecl site
