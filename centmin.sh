@@ -2324,9 +2324,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$MDB_INSTALL" = [
     systemctl daemon-reload -q
     systemctl restart mariadb -q
     if [[ "$(systemctl is-active mariadb -q; echo $?)" -eq '0' ]]; then
-      Starting mariadb (via systemctl): [ OK ]
+      echo "Starting mariadb (via systemctl): [ OK ]"
     else
-      Starting mariadb (via systemctl): [ Failed ]
+      echo "Starting mariadb (via systemctl): [ Failed ]"
     fi
   fi
 elif [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
