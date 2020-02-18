@@ -1,0 +1,100 @@
+From 2ee92db814827e4484d997c91b75034995e6f99e Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Thu, 13 Feb 2020 15:13:26 +0100
+Subject: [PATCH] Fix #77569: Write Acess Violation in DomImplementation
+
+We must not assume that the zval IS_STRING.
+
+(cherry picked from commit cec8b24c848bab8562c82422f3692c193f0afcdb)
+---
+ NEWS                        |  6 ++++++
+ ext/dom/document.c          |  2 +-
+ ext/dom/tests/bug77569.phpt | 14 ++++++++++++++
+ 3 files changed, 21 insertions(+), 1 deletion(-)
+ create mode 100644 ext/dom/tests/bug77569.phpt
+
+diff --git a/NEWS b/NEWS
+index e311fc78cc..0743c78268 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.28
++
++- DOM:
++  . Fixed bug #77569: (Write Acess Violation in DomImplementation). (Nikita,
++    cmb)
++
+ Backported from 7.2.27
+ 
+ - Mbstring:
+diff --git a/ext/dom/document.c b/ext/dom/document.c
+index c9e1802f78..11ef4aa818 100644
+--- a/ext/dom/document.c
++++ b/ext/dom/document.c
+@@ -341,7 +341,7 @@ int dom_document_encoding_write(dom_object *obj, zval *newval)
+ 
+ 	str = zval_get_string(newval);
+ 
+-	handler = xmlFindCharEncodingHandler(Z_STRVAL_P(newval));
++	handler = xmlFindCharEncodingHandler(ZSTR_VAL(str));
+ 
+     if (handler != NULL) {
+ 		xmlCharEncCloseFunc(handler);
+diff --git a/ext/dom/tests/bug77569.phpt b/ext/dom/tests/bug77569.phpt
+new file mode 100644
+index 0000000000..f0f3566708
+--- /dev/null
++++ b/ext/dom/tests/bug77569.phpt
+@@ -0,0 +1,14 @@
++--TEST--
++Bug #77569 (Write Acess Violation in DomImplementation)
++--SKIPIF--
++<?php
++if (!extension_loaded('dom')) die('skip dom extension not available');
++?>
++--FILE--
++<?php
++$imp = new DOMImplementation;
++$dom = $imp->createDocument("", "");
++$dom->encoding = null;
++?>
++--EXPECTF--
++Warning: main(): Invalid Document Encoding in %s on line %d
+From 08374ddcc45940dc341afc68de505599f1839e64 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Fri, 14 Feb 2020 09:21:13 +0100
+Subject: [PATCH] Fix typo in recent bugfix
+
+(cherry picked from commit 8308196c97418ba4c8381bed0962ae160623027a)
+---
+ NEWS                        | 2 +-
+ ext/dom/tests/bug77569.phpt | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/NEWS b/NEWS
+index 0743c78268..7e220aae24 100644
+--- a/NEWS
++++ b/NEWS
+@@ -4,7 +4,7 @@ PHP                                                                        NEWS
+ Backported from 7.2.28
+ 
+ - DOM:
+-  . Fixed bug #77569: (Write Acess Violation in DomImplementation). (Nikita,
++  . Fixed bug #77569: (Write Access Violation in DomImplementation). (Nikita,
+     cmb)
+ 
+ Backported from 7.2.27
+diff --git a/ext/dom/tests/bug77569.phpt b/ext/dom/tests/bug77569.phpt
+index f0f3566708..9eef2af65a 100644
+--- a/ext/dom/tests/bug77569.phpt
++++ b/ext/dom/tests/bug77569.phpt
+@@ -1,5 +1,5 @@
+ --TEST--
+-Bug #77569 (Write Acess Violation in DomImplementation)
++Bug #77569 (Write Access Violation in DomImplementation)
+ --SKIPIF--
+ <?php
+ if (!extension_loaded('dom')) die('skip dom extension not available');

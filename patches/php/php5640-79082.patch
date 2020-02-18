@@ -1,0 +1,154 @@
+From ed163ca242932e7f60467fb32ec00166f4318a40 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 15 Feb 2020 22:17:14 -0800
+Subject: [PATCH 2/3] Fix bug #79082 - Files added to tar with
+ Phar::buildFromIterator have all-access permissions
+
+(cherry picked from commit e5c95234d87fcb8f6b7569a96a89d1e1544749a6)
+---
+ ext/phar/phar_object.c                       | 11 +++++
+ ext/phar/tests/bug79082.phpt                 | 52 ++++++++++++++++++++
+ ext/phar/tests/test79082/test79082-testfile  |  1 +
+ ext/phar/tests/test79082/test79082-testfile2 |  1 +
+ 4 files changed, 65 insertions(+)
+ create mode 100644 ext/phar/tests/bug79082.phpt
+ create mode 100644 ext/phar/tests/test79082/test79082-testfile
+ create mode 100644 ext/phar/tests/test79082/test79082-testfile2
+
+diff --git a/ext/phar/phar_object.c b/ext/phar/phar_object.c
+index d69837218f..5722828c37 100644
+--- a/ext/phar/phar_object.c
++++ b/ext/phar/phar_object.c
+@@ -1427,6 +1427,7 @@ static int phar_build(zend_object_iterator *iter, void *puser TSRMLS_DC) /* {{{
+ 	zend_class_entry *ce = p_obj->c;
+ 	phar_archive_object *phar_obj = p_obj->p;
+ 	char *str = "[stream]";
++	php_stream_statbuf ssb;
+ 
+ 	iter->funcs->get_current_data(iter, &value TSRMLS_CC);
+ 
+@@ -1709,6 +1710,16 @@ after_open_fp:
+ 		php_stream_copy_to_stream_ex(fp, p_obj->fp, PHP_STREAM_COPY_ALL, &contents_len);
+ 		data->internal_file->uncompressed_filesize = data->internal_file->compressed_filesize =
+ 			php_stream_tell(p_obj->fp) - data->internal_file->offset;
++		if (php_stream_stat(fp, &ssb) != -1) {
++			data->internal_file->flags = ssb.sb.st_mode & PHAR_ENT_PERM_MASK ;
++		} else {
++#ifndef _WIN32
++			mode_t mask;
++			mask = umask(0);
++			umask(mask);
++			data->internal_file->flags &= ~mask;
++#endif
++		}
+ 	}
+ 
+ 	if (close_fp) {
+diff --git a/ext/phar/tests/bug79082.phpt b/ext/phar/tests/bug79082.phpt
+new file mode 100644
+index 0000000000..ca453d1b57
+--- /dev/null
++++ b/ext/phar/tests/bug79082.phpt
+@@ -0,0 +1,52 @@
++--TEST--
++Phar: Bug #79082: Files added to tar with Phar::buildFromIterator have all-access permissions
++--SKIPIF--
++<?php 
++if (!extension_loaded("phar")) die("skip"); 
++if (defined("PHP_WINDOWS_VERSION_MAJOR")) die("skip not for Windows")
++?>
++--FILE--
++<?php
++umask(022);
++var_dump(decoct(umask()));
++chmod(__DIR__ . '/test79082/test79082-testfile', 0644);
++chmod(__DIR__ . '/test79082/test79082-testfile2', 0400);
++
++foreach([Phar::TAR => 'tar', Phar::ZIP => 'zip'] as $mode => $ext) {
++	clearstatcache();
++	$phar = new PharData(__DIR__ . '/test79082.' . $ext, null, null, $mode);
++	$phar->buildFromIterator(new \RecursiveDirectoryIterator(__DIR__ . '/test79082', \FilesystemIterator::SKIP_DOTS), __DIR__ . '/test79082');
++	$phar->extractTo(__DIR__);
++	var_dump(decoct(stat(__DIR__ . '/test79082-testfile')['mode']));
++	var_dump(decoct(stat(__DIR__ . '/test79082-testfile2')['mode']));
++	unlink(__DIR__ . '/test79082-testfile');
++	unlink(__DIR__ . '/test79082-testfile2');
++}
++foreach([Phar::TAR => 'tar', Phar::ZIP => 'zip'] as $mode => $ext) {
++	clearstatcache();
++	$phar = new PharData(__DIR__ . '/test79082-d.' . $ext, null, null, $mode);
++	$phar->buildFromDirectory(__DIR__ . '/test79082');
++	$phar->extractTo(__DIR__);
++	var_dump(decoct(stat(__DIR__ . '/test79082-testfile')['mode']));
++	var_dump(decoct(stat(__DIR__ . '/test79082-testfile2')['mode']));
++	unlink(__DIR__ . '/test79082-testfile');
++	unlink(__DIR__ . '/test79082-testfile2');
++}
++?>
++--CLEAN--
++<?
++unlink(__DIR__ . '/test79082.tar');
++unlink(__DIR__ . '/test79082.zip');
++unlink(__DIR__ . '/test79082-d.tar');
++unlink(__DIR__ . '/test79082-d.zip');
++?>
++--EXPECT--
++string(2) "22"
++string(6) "100644"
++string(6) "100400"
++string(6) "100644"
++string(6) "100400"
++string(6) "100644"
++string(6) "100400"
++string(6) "100644"
++string(6) "100400"
+diff --git a/ext/phar/tests/test79082/test79082-testfile b/ext/phar/tests/test79082/test79082-testfile
+new file mode 100644
+index 0000000000..9daeafb986
+--- /dev/null
++++ b/ext/phar/tests/test79082/test79082-testfile
+@@ -0,0 +1 @@
++test
+diff --git a/ext/phar/tests/test79082/test79082-testfile2 b/ext/phar/tests/test79082/test79082-testfile2
+new file mode 100644
+index 0000000000..9daeafb986
+--- /dev/null
++++ b/ext/phar/tests/test79082/test79082-testfile2
+@@ -0,0 +1 @@
++test
+-- 
+2.24.1
+
+From dbac37b3ea68d8a0ba7e4e519e1386bbe8eff400 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 18 Feb 2020 06:36:07 +0100
+Subject: [PATCH 3/3] NEWS
+
+---
+ NEWS | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index c387fa8f86..22e714e837 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,16 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.28
++
++- Phar:
++  . Fixed bug #79082 (Files added to tar with Phar::buildFromIterator have
++    all-access permissions). (CVE-2020-7063) (stas)
++
++- Session:
++  . Fixed bug #79221 (Null Pointer Dereference in PHP Session Upload Progress).
++    (CVE-2020-7062) (stas)
++
+ Backported from 7.2.27
+ 
+ - Mbstring:
+-- 
+2.24.1
+

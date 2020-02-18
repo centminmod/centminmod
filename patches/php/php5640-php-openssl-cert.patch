@@ -1,0 +1,147 @@
+Without binary patch
+
+
+From a5c09a204ec5716095f4cdfe1041563e7a8454f9 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 18 Feb 2020 09:57:50 +0100
+Subject: [PATCH] renew certs for openssl tests
+
+---
+ ext/openssl/tests/bug54992-ca.pem             |  54 +++++++++---------
+ ext/openssl/tests/bug54992.pem                |  28 ++++-----
+ ext/openssl/tests/bug65538.phar               | Bin 11278 -> 11278 bytes
+ .../tests/openssl_peer_fingerprint_basic.phpt |   4 +-
+ 4 files changed, 43 insertions(+), 43 deletions(-)
+
+diff --git a/ext/openssl/tests/bug54992-ca.pem b/ext/openssl/tests/bug54992-ca.pem
+index 743a11e8fd..dd075405a7 100644
+--- a/ext/openssl/tests/bug54992-ca.pem
++++ b/ext/openssl/tests/bug54992-ca.pem
+@@ -1,35 +1,35 @@
+ -----BEGIN CERTIFICATE-----
+-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
+-LJ7Q89hYAQ==
++KoZIhvcNAQEBBQADggIPADCCAgoCggIBALlJlfDasmObBQiQSsyDVRu0uwVmFFZ7
++fqFVHUMeKpWv0Y3dH5FtpBoMOh41XYI7E1Ex9UTNIYsRedESzEm1DIBsKHHODRsj
++gJVH3jxAEmDPaNQJ0x4zlNmmd7Zz74lo/eJ+oc2rLiJd3NVKCXEWtu2mO5FN/x3Z
++vG+QXkT04tGvwLn4oAdiU4zlf0ttO5xY5GjUXhT6XfZyveceLb4QFowtCTmS1IFf
++eUoybHvjCYyNm9m1B/x297VV73rDvWx7+ptkwG46L5UeG/lrLhnStzM1dxSlENUL
++OGmjFfk00jrRnftat8x31lAa0cFYXudkHpMLxFHprRgsQL+1URjl0nyVT2MLmcit
++kfIMXjRaScJsj+KgW1pymVlIO2qf16Wk4wLubW8/AkSmmSv9ilJeppn7Qh/OuZyj
++epsFX19VdERg42yI0/QIs4cgCvgddlnGuJBDGU5BVFPDYc2BevRvd/x48bDFHJ4w
++dhNrMa9jGDSc8niZ/spK4lE6d7JqFUHuQa2jL8PG5+NcYaftJQAlJt25ze1Km7QO
++pJgRNdEqOp8hcJmfgYbQxGb6s74nMTp+iKOjMLNf1n37QxTPYfKTWP4xnKiva9aA
++jGUMADNgtlFSZt5JaTnEk9m33Nh4FN/siX01+rX4FQ2csIIAQ42Xu/+PRUUYHqXe
++/xGgOhZE9YgZAgMBAAGjUzBRMB0GA1UdDgQWBBSr92+pGtY4Fc5beZWCSzf5FGf9
++mTAfBgNVHSMEGDAWgBSr92+pGtY4Fc5beZWCSzf5FGf9mTAPBgNVHRMBAf8EBTAD
++AQH/MA0GCSqGSIb3DQEBCwUAA4ICAQCwHTpBGbcnCZc+Y0DLN1mxPOKgcrIHUDQt
++kFaRt901sK9fxhjeOmtcMOxDsVg23BKZ7A+sGkRDa0pxtwqZzrk4r96htJB0mV2y
++zskRjDg8UEjgm2BFFc1ikqHOcidJ0WG6/LSpzR9w6QhAtMpbWLrfS0yIfr9MKywS
++7rOt82USg9Ca8qQxosIUkkatugVjJIjaBbVSREHtaRyDjGqVvB8P6EwESB2Ymltm
+++S6LDv0b6NNQyeOLp2fp8JcJmQh5liqcIp0yDVJI8oEppHHkFcROmq/w0cm0Ct/C
++XW+Us2nW5/tVdhm0X2HHN8IItmZEDdM2+AVDoYyKKy13twnClc/0imYoK0I+ARUv
++mF85OmJhODaYhsU8gXwTfnghI4b9Hg++jSRl+jwrvaxwBI+tDGrRCvWCr1T/xVrg
++G8w3MmtIY9MaEyiutK24TeYuR3bMlJqHaQaufm9YTT5vp5MjumUpC4FPM+2JQa1y
++wdAUWyBqHhJF5X4AdVFxcAOHqah1hoky9sUARYd50z85/PhgKH/P2zO5F37NwYSR
++n+DIZDP4AKZ6QEPL8QlteT0EPacZSucwNheSboHFJmT39gGntxSw1hdNcwQ5yaa6
++QMhMfo/w9/i2Yg55RBd5RZCWPb2IlA5RC3qbjPNMC8XrEvhSHOcWTXsfccYgXGeO
++XHgucRqlJg==
+ -----END CERTIFICATE-----
+diff --git a/ext/openssl/tests/bug54992.pem b/ext/openssl/tests/bug54992.pem
+index f207c30448..148d06deea 100644
+--- a/ext/openssl/tests/bug54992.pem
++++ b/ext/openssl/tests/bug54992.pem
+@@ -1,26 +1,26 @@
+ -----BEGIN CERTIFICATE-----
+-MIID7jCCAdYCFDw0rvm7q8y5HfispK5A2I2+RBqHMA0GCSqGSIb3DQEBCwUAMIGQ
++MIID7jCCAdYCFEG0vY25vkfkH6Jllbh6eAIsffxMMA0GCSqGSIb3DQEBCwUAMIGQ
+ MQswCQYDVQQGEwJQVDEPMA0GA1UECAwGTGlzYm9hMQ8wDQYDVQQHDAZMaXNib2Ex
+ FzAVBgNVBAoMDlBIUCBGb3VuZGF0aW9uMR4wHAYDVQQDDBVSb290IENBIGZvciBQ
+ SFAgVGVzdHMxJjAkBgkqhkiG9w0BCQEWF2ludGVybmFsc0BsaXN0cy5waHAubmV0
+-MB4XDTE4MTIzMTA4NDY0M1oXDTIwMDIwNDA4NDY0M1owWjEXMBUGA1UEAxMOYnVn
++MB4XDTIwMDIxODA4NTYwMVoXDTIxMDMyNDA4NTYwMVowWjEXMBUGA1UEAxMOYnVn
+ NTQ5OTIubG9jYWwxCzAJBgNVBAYTAlBUMQ8wDQYDVQQHEwZMaXNib2ExDzANBgNV
+ BAgTBkxpc2JvYTEQMA4GA1UEChMHcGhwLm5ldDCBnzANBgkqhkiG9w0BAQEFAAOB
+ jQAwgYkCgYEAtUAVQKTgpUPgtFOJ3w3kDJETS45tWeT96kUg1NeYLKW+jNbFhxPo
+ PJv7XhfemCaqh2tbq1cdYW906Wp1L+eNQvdTYA2IQG4EQBUlmfyIakOIMsN/RizV
+ kF09vlNQwTpaMpqTv7wB8vvwbxb9jbC2ZhQUBEg6PIn18dSstbM9FZ0CAwEAATAN
+-BgkqhkiG9w0BAQsFAAOCAgEAKtSMguV5ZQ2KpdZ9MAFa+GiHL0APb58OrvwNK4BF
+-6032UZLOWnsBZlo85WGLNnIT/GNzKKr7n9jHeuZcBVOFQLsebahSlfJZs9FPatlI
+-9Md1tRzVoTKohjG86HeFhhL+gZQ69SdIcK40wpH1qNv7KyMGA8gnx6rRKbOxZqsx
+-pkA/wS7CTqP9/DeOxh/MZPg7N/GZXW1QOz+SE537E9iyiRsbldNYFtwn5iaVfjpr
+-xz09wYYW3HJpR+QKPCfJ79JxDhuMHMoUOpIy8vGFnt5zVTcFLa378Sy3vCT1Qwvt
+-tTavFGHby4A7OqT6xu+9GTW37OaiV91UelLLV0+MoR4XiMVMX76mvqzmKCp6L9ae
+-7RYHrrCtNxkYUKUSkOEc2VHnT+sENkJIZu7zzN7/QNlc0yE9Rtsmgy4QAxo2m9u0
+-pUZLAulZ1lS7g/sr7/8Pp17RDvJiJh+oAPyVYZ7OoLF1IoHDHcZI0bqcqhDhiHZs
+-PXYqyMCxyYzHFOAOgvbrEkmp8z/E8ATVwdUbAYN1dMrYHre1P4HFEtJh2QiGG2KE
+-4jheuNhH1R25AizbwYbD33Kdp7ltCgBlfYqjl771SlgY45QYs0mUdc1Pv39SGIwf
+-ZUm7mOWjaTBdYANrkvGM5NNT9kESjKkWykyTg4UF5rHV6nlyexR4b3fjabroi4BS
+-v6w=
++BgkqhkiG9w0BAQsFAAOCAgEAmcDl/X+0murSKko+Arl6RFfOB+fpuGeKtS9UAZcH
++w/v7kCvBeRTKs+/BAWbdu3MPXFw4dqvHn+2De/7Fx5yN/KznZnn/aFkGaBWcevQC
++qdGxf9/4SoB+x0fGDuEuZZ/TGiT4V0l7xhx9HBsud5HYt9vFnJDEgSoxlOFDoR13
++6Jefe5kOnHX0dvPuJuZcXquV+5llTYp6clUQkcA8NOuegFEOoM/J5GAYfgHeRtrB
++vjbpIKgIixBUbOwPsrmb3btitPFDT7a1FWNtHmOb1Ij6r+ga6J60Iefr1AfMwnd5
++D6W3E4ztEL9N4RK+uBz5zRk1usFEHw+TaCA4x9xVUXdY8r6ei1xnO9nwA9C1062F
++EVy/HpyxZlrdzFsLWHEWyOnshCdozU14dlkNgc9LImKsMJ+T18GkrF5KtN6NB4tc
++8Zeo7usEWHkwlacKGOr0V3gflU6EfPkQHEsSBSvbzuJ2pej17mqVqdzaRsGliRsC
++P/2cEcxtmoig7rTrS0sBVXLgqxpwBNLEfOKkWVAzBpR86gfGNnJbt3GMPLxma2oP
++tfTUMW4OuUR2GsszDwMmkmNhc7EduJyhcu3BwHChmIW/kbbz32aAFTQnDGO/Dj0G
++f/cROxREv3wCOMZsk56JezZ4F1nWZYcQ2m6xrzyN6DBzc13dQ3Wq9lTJ2vZM8i5E
++jp0=
+ -----END CERTIFICATE-----
+ -----BEGIN RSA PRIVATE KEY-----
+ MIICXgIBAAKBgQC1QBVApOClQ+C0U4nfDeQMkRNLjm1Z5P3qRSDU15gspb6M1sWH
+diff --git a/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt b/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
+index 3bca7cb640..015c2918d2 100644
+--- a/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
++++ b/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
+@@ -36,13 +36,13 @@ $clientCode = <<<'CODE'
+     // openssl x509 -noout -fingerprint -md5 -inform pem -in ext/openssl/tests/bug54992.pem | cut -d '=' -f 2 | tr -d ':' | tr 'A-F' 'a-f'
+     // Currently it's 4edbbaf40a6a4b6af22b6d6d9818378f
+     // One below is intentionally broken (compare the last character):
+-    stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', '4edbbaf40a6a4b6af22b6d6d98183780');
++    stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', '8054dab6e0412bdd8190226fd213d190');
+     var_dump(stream_socket_client($serverUri, $errno, $errstr, 2, $clientFlags, $clientCtx));
+ 
+     // Run the following to get actual sha256 (from sources root):
+     // openssl x509 -noout -fingerprint -sha256 -inform pem -in ext/openssl/tests/bug54992.pem | cut -d '=' -f 2 | tr -d ':' | tr 'A-F' 'a-f'
+     stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', [
+-        'sha256' => 'b1d480a2f83594fa243d26378cf611f334d369e59558d87e3de1abe8f36cb997',
++        'sha256' => '06941b4f4f00523f6c81b69ad4424b3506320285a8b1bd084c112435a12ff487',
+     ]);
+     var_dump(stream_socket_client($serverUri, $errno, $errstr, 2, $clientFlags, $clientCtx));
+ CODE;

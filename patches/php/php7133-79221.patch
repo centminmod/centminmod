@@ -1,0 +1,83 @@
+From 4438b2844e80d9533587d558f4411f29d17de2c1 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 15 Feb 2020 20:52:19 -0800
+Subject: [PATCH] Fix bug #79221 - Null Pointer Dereference in PHP Session
+ Upload Progress
+
+(cherry picked from commit d76f7c6c636b8240e06a1fa29eebb98ad005008a)
+---
+ ext/session/session.c           |  8 +++---
+ ext/session/tests/bug79221.phpt | 45 +++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 3 deletions(-)
+ create mode 100644 ext/session/tests/bug79221.phpt
+
+diff --git a/ext/session/session.c b/ext/session/session.c
+index 44ecb85f74..ee52d24fcc 100644
+--- a/ext/session/session.c
++++ b/ext/session/session.c
+@@ -2999,9 +2999,11 @@ static int php_session_rfc1867_callback(unsigned int event, void *event_data, vo
+ 				if (PS(rfc1867_cleanup)) {
+ 					php_session_rfc1867_cleanup(progress);
+ 				} else {
+-					add_assoc_bool_ex(&progress->data, "done", sizeof("done") - 1, 1);
+-					Z_LVAL_P(progress->post_bytes_processed) = data->post_bytes_processed;
+-					php_session_rfc1867_update(progress, 1);
++					if (!Z_ISUNDEF(progress->data)) {
++						add_assoc_bool_ex(&progress->data, "done", sizeof("done") - 1, 1);
++						Z_LVAL_P(progress->post_bytes_processed) = data->post_bytes_processed;
++						php_session_rfc1867_update(progress, 1);
++					}
+ 				}
+ 				php_rshutdown_session_globals();
+ 			}
+diff --git a/ext/session/tests/bug79221.phpt b/ext/session/tests/bug79221.phpt
+new file mode 100644
+index 0000000000..b0972c4697
+--- /dev/null
++++ b/ext/session/tests/bug79221.phpt
+@@ -0,0 +1,45 @@
++--TEST--
++Null Pointer Dereference in PHP Session Upload Progress
++--INI--
++error_reporting=0
++file_uploads=1
++upload_max_filesize=1024
++session.save_path=
++session.name=PHPSESSID
++session.serialize_handler=php
++session.use_strict_mode=0
++session.use_cookies=1
++session.use_only_cookies=0
++session.upload_progress.enabled=1
++session.upload_progress.cleanup=0
++session.upload_progress.prefix=upload_progress_
++session.upload_progress.name=PHP_SESSION_UPLOAD_PROGRESS
++session.upload_progress.freq=1%
++session.upload_progress.min_freq=0.000000001
++--COOKIE--
++PHPSESSID=session-upload
++--POST_RAW--
++Content-Type: multipart/form-data; boundary=---------------------------20896060251896012921717172737
++-----------------------------20896060251896012921717172737
++Content-Disposition: form-data; name="PHPSESSID"
++
++session-upload
++-----------------------------20896060251896012921717172737
++Content-Disposition: form-data; name="PHP_SESSION_UPLOAD_PROGRESS"
++
++ryat
++-----------------------------20896060251896012921717172737
++Content-Disposition: form-data; file="file"; ryat="filename"
++
++1
++-----------------------------20896060251896012921717172737--
++--FILE--
++<?php
++
++session_start();
++var_dump($_SESSION);
++session_destroy();
++
++--EXPECTF--
++array(0) {
++}

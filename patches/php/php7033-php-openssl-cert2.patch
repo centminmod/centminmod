@@ -1,0 +1,351 @@
+Without binary patch
+
+
+
+From f51062523d03911cc141507112e3ce14b41f73a2 Mon Sep 17 00:00:00 2001
+From: Alexander Kurilo <alex@kurilo.me>
+Date: Mon, 31 Dec 2018 12:19:36 +0300
+Subject: [PATCH] Regenerate certs for openssl tests
+
+---
+ ext/openssl/tests/bug54992-ca.pem             |  54 +++++++++---------
+ ext/openssl/tests/bug54992.pem                |  28 ++++-----
+ ext/openssl/tests/bug54992.phpt               |  42 ++++++++++++++
+ ext/openssl/tests/bug65538.phar               | Bin 11278 -> 11278 bytes
+ .../tests/openssl_peer_fingerprint_basic.phpt |  11 +++-
+ 5 files changed, 91 insertions(+), 44 deletions(-)
+
+diff --git a/ext/openssl/tests/bug54992-ca.pem b/ext/openssl/tests/bug54992-ca.pem
+index ac139176aa53..743a11e8fde6 100644
+--- a/ext/openssl/tests/bug54992-ca.pem
++++ b/ext/openssl/tests/bug54992-ca.pem
+@@ -1,35 +1,35 @@
+ -----BEGIN CERTIFICATE-----
+-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
+-6hiK1Erl8g==
++KoZIhvcNAQEBBQADggIPADCCAgoCggIBAPVThsunmhda5hbNi+pXD3WF9ijryB9H
++JDnIbPW/vMffWcQgtiRzc+6aCykBygnhnN91NNRpxOsoLCb7OjUMM0TjhSE9DxKD
++aVLRoDcs5VSaddQjq3AwdkU6ek9InUOeDuZ8gatrpWlEyuQPwwnMAfR9NkcTajuF
++hGO0BlqkHg98GckQD0N5x6CrrDJt6RE6hf9gUZSGSWdPTiETBQUN8LTuxo/ybFSN
++hcpVNCF+r3eozATbSU8YvQU52RmPIZWHHmYb7KtMO3TEX4LnLJUOefUK4qk+ZJ0s
++f4JfnY7RhBlZGh2kIyE5jwqz8/KzKtxrutNaupdTFZO8nX09QSgmDCxVWVclrPaG
++q2ZFYpeauTy71pTm8DjF7PwQI/+PUrBdFIX0V6uxqUEG0pvPdb8zenVbaK4Jh39u
++w0V5tH/rbtd7zZX4vl3bmKo1Wk0SQxd83iXitxLiJnWNOsmrJcM/Hx91kE10+/ly
++zgL/w5A9HSA616kfPdNzny0laH1TXVLJsnyyV3DyfnU4O6VI0JG3WjhgRdMkgobn
++GvGJ2ZsZAxds9lBtT2y+gw5BU+jkSilPk3jM9MA7Kmyci93U9xxMuDNzyUzfcnXR
++UIq99dZWeMMy1LT3buZXrAWu1WRgPdQtDKcQHDIQaIkxlWsT8q2q/wIirb6fwxlw
++vXkFp+aEP35BAgMBAAGjUzBRMB0GA1UdDgQWBBR37F1+W1gcCp8bhZaFFi9JKQhu
++tTAfBgNVHSMEGDAWgBR37F1+W1gcCp8bhZaFFi9JKQhutTAPBgNVHRMBAf8EBTAD
++AQH/MA0GCSqGSIb3DQEBCwUAA4ICAQAYHqpISUI/x8UW33i35rYkFYNvXBMQDc8J
++v4G2eqEBNCOVmHg6P//lq1F2jrtAEr/saESN1uS1Q80sUsthlVsceV1z1isdpugG
++kMbfHxLe0QpthnP3PEChQw30TPB22BThuGVkteNSZKTCPGdzjSTPq2kOR6PCBZRd
++r0r/TW3lT/Ng3KgjT6g7E3ZUpAeFEQMlmNYr/eEOL7K+1jzQrbCLmXbs6rmtffr7
++n4p+wMPMPaSRqQoQ86ff9GPzxWuAQGlytVoiS5Xt3jotd/RWlOy0YQ2QSzOQvFUW
++4te5lwdOvOFnJTo43U3DqASqMcaazvIsN41zVlOyOyKEr9oZERju6FU1aZmuZtHQ
++wMCmXVj/Swj67Zp9tG+vVQenbEk314+8c2nenuOIFP1F2C/NG3vMLIpENRGxpmAm
++s5gIT6mXvJ4JCwWYc75zucOr2KVkDmEziJh/pARuOrOAPdc6NjKku8HBC9UI96+x
++Db4hG2SqXUzShkFX/px7vlCADvgO3FDk2aiyW02PFsItob2O6OB98VGsU26hgRO/
++Czz/jbjWTPHNOt6/fcL0m7XLwlJ+K9gRArY15DeJGumcHEq/Vd/Z8iPQKKdzgF4O
++9XFZvu+VHP82AS5TeiYHCddFJyzktQYcNu5/OBuxzO83d7rpqrLFETTEOL4cN8O7
++LJ7Q89hYAQ==
+ -----END CERTIFICATE-----
+diff --git a/ext/openssl/tests/bug54992.pem b/ext/openssl/tests/bug54992.pem
+index 1a64a4e5b8a1..f207c3044810 100644
+--- a/ext/openssl/tests/bug54992.pem
++++ b/ext/openssl/tests/bug54992.pem
+@@ -1,26 +1,26 @@
+ -----BEGIN CERTIFICATE-----
+-MIID7jCCAdYCFBDKe4ra5M5zJIb81D7zwFRmyHQGMA0GCSqGSIb3DQEBCwUAMIGQ
++MIID7jCCAdYCFDw0rvm7q8y5HfispK5A2I2+RBqHMA0GCSqGSIb3DQEBCwUAMIGQ
+ MQswCQYDVQQGEwJQVDEPMA0GA1UECAwGTGlzYm9hMQ8wDQYDVQQHDAZMaXNib2Ex
+ FzAVBgNVBAoMDlBIUCBGb3VuZGF0aW9uMR4wHAYDVQQDDBVSb290IENBIGZvciBQ
+ SFAgVGVzdHMxJjAkBgkqhkiG9w0BCQEWF2ludGVybmFsc0BsaXN0cy5waHAubmV0
+-MB4XDTE4MTIwMTIxNDU0MloXDTE4MTIzMTIxNDU0MlowWjEXMBUGA1UEAxMOYnVn
++MB4XDTE4MTIzMTA4NDY0M1oXDTIwMDIwNDA4NDY0M1owWjEXMBUGA1UEAxMOYnVn
+ NTQ5OTIubG9jYWwxCzAJBgNVBAYTAlBUMQ8wDQYDVQQHEwZMaXNib2ExDzANBgNV
+ BAgTBkxpc2JvYTEQMA4GA1UEChMHcGhwLm5ldDCBnzANBgkqhkiG9w0BAQEFAAOB
+ jQAwgYkCgYEAtUAVQKTgpUPgtFOJ3w3kDJETS45tWeT96kUg1NeYLKW+jNbFhxPo
+ PJv7XhfemCaqh2tbq1cdYW906Wp1L+eNQvdTYA2IQG4EQBUlmfyIakOIMsN/RizV
+ kF09vlNQwTpaMpqTv7wB8vvwbxb9jbC2ZhQUBEg6PIn18dSstbM9FZ0CAwEAATAN
+-BgkqhkiG9w0BAQsFAAOCAgEAid90+ulRK+4ifB2tKnt2MyuqXZexv2yQ4u15EYmE
+-NLOpP5ZWN8vSvRI3IGruNA00dX/F2EOT+u82ApOxzYyxceAx29Ytpt7PSd2nUqkN
+-TbDAsDTUZdoDLUa6dGPe5Faaai00nfNJ3lqmC9xPbBPKyJ3hjz0Uj6gi51Lfi410
+-4GZa4oIL3NEIKVtaK942EAYCjeWx1VT8AnsvK4Nqufo97sbZNHJhgY+ApM168kox
+-kFA/RNYp/pNS0FCc8b9DwMnu38n2n33iDl3P54chpAcyuWJE5wL/kN2gnS6iMsLP
+-14NtBg2mm++4XqBpt9glmWr56HZtvyFW0IhpDwQgRe4GSIwPES2g1s7iUs3T4VdJ
+-aHkF4v8Bdl6DWXSVdbqIq8CpVZLhf7vt6pV/22YpVCjQFmiLtc8a4gWaYvpn6j+L
+-nAajb9JpdkNeqNiBxmtfQwL7xtY+1goLd9OKtIO1b2517ZRgU9NkUfLKCTl2W2L8
+-sMY7FPVs6Z1jfaXw+vIWKCJKe0thf0HMV4q11ptsqpzyIzAAjAfma1b/MM5ATHsa
+-6h7Poh0yg+WMSdXurjhDWogOWrzPXSe0izUYpREkTVl1oLhzorxlEDh7vBLB2TS3
+-TPAEdNxEbsIutMjoz5ql5dYxgZQGW7HARXrXhMbk6cBU8khNcGGqz1uzX1x7Vb2d
+-hKs=
++BgkqhkiG9w0BAQsFAAOCAgEAKtSMguV5ZQ2KpdZ9MAFa+GiHL0APb58OrvwNK4BF
++6032UZLOWnsBZlo85WGLNnIT/GNzKKr7n9jHeuZcBVOFQLsebahSlfJZs9FPatlI
++9Md1tRzVoTKohjG86HeFhhL+gZQ69SdIcK40wpH1qNv7KyMGA8gnx6rRKbOxZqsx
++pkA/wS7CTqP9/DeOxh/MZPg7N/GZXW1QOz+SE537E9iyiRsbldNYFtwn5iaVfjpr
++xz09wYYW3HJpR+QKPCfJ79JxDhuMHMoUOpIy8vGFnt5zVTcFLa378Sy3vCT1Qwvt
++tTavFGHby4A7OqT6xu+9GTW37OaiV91UelLLV0+MoR4XiMVMX76mvqzmKCp6L9ae
++7RYHrrCtNxkYUKUSkOEc2VHnT+sENkJIZu7zzN7/QNlc0yE9Rtsmgy4QAxo2m9u0
++pUZLAulZ1lS7g/sr7/8Pp17RDvJiJh+oAPyVYZ7OoLF1IoHDHcZI0bqcqhDhiHZs
++PXYqyMCxyYzHFOAOgvbrEkmp8z/E8ATVwdUbAYN1dMrYHre1P4HFEtJh2QiGG2KE
++4jheuNhH1R25AizbwYbD33Kdp7ltCgBlfYqjl771SlgY45QYs0mUdc1Pv39SGIwf
++ZUm7mOWjaTBdYANrkvGM5NNT9kESjKkWykyTg4UF5rHV6nlyexR4b3fjabroi4BS
++v6w=
+ -----END CERTIFICATE-----
+ -----BEGIN RSA PRIVATE KEY-----
+ MIICXgIBAAKBgQC1QBVApOClQ+C0U4nfDeQMkRNLjm1Z5P3qRSDU15gspb6M1sWH
+diff --git a/ext/openssl/tests/bug54992.phpt b/ext/openssl/tests/bug54992.phpt
+index 878cb4a8725b..a3cb36deecbe 100644
+--- a/ext/openssl/tests/bug54992.phpt
++++ b/ext/openssl/tests/bug54992.phpt
+@@ -6,6 +6,48 @@ if (!extension_loaded("openssl")) die("skip openssl not loaded");
+ if (!function_exists("proc_open")) die("skip no proc_open");
+ --FILE--
+ <?php
++/*
++ How to generate bug54992.pem and bug54992-ca.pem and all dependants:
++
++ All the commands below assume you're in the root of php sources
++
++ Generate new key for CA:
++ $ openssl genrsa -out ./ext/openssl/tests/bug54992-ca.key 4096
++
++ Create new CA:
++ $ openssl req -new -x509 -key ./ext/openssl/tests/bug54992-ca.key \
++      -out ext/openssl/tests/bug54992-ca.pem \
++      -subj '/C=PT/ST=Lisboa/L=Lisboa/O=PHP Foundation/CN=Root CA for PHP Tests/emailAddress=internals@lists.php.net' \
++      -days 400
++
++ Extract private key from the bundle:
++ $ openssl rsa -in ext/openssl/tests/bug54992.pem > ext/openssl/tests/bug54992.key
++
++ Extract CSR from existing certificate:
++ $ openssl x509 -x509toreq -in ext/openssl/tests/bug54992.pem -out ext/openssl/tests/bug54992.csr -signkey ext/openssl/tests/bug54992.key
++
++ Sign the CSR:
++ $ openssl x509 -CA ext/openssl/tests/bug54992-ca.pem \
++        -CAcreateserial \
++        -CAkey ./ext/openssl/tests/bug54992-ca.key \
++        -req \
++        -in ext/openssl/tests/bug54992.csr \
++        -sha256 \
++        -days 400 \
++        -out ./ext/openssl/tests/bug54992.pem
++
++ Bundle certificate's private key with the certificate:
++ $ cat ext/openssl/tests/bug54992.key >> ext/openssl/tests/bug54992.pem\
++
++
++ Dependants:
++
++ 1. ext/openssl/tests/bug65538_003.phpt
++    Run the following to generate required phar:
++    php -d phar.readonly=Off -r '$phar = new Phar("ext/openssl/tests/bug65538.phar"); $phar->addFile("ext/openssl/tests/bug54992.pem", "bug54992.pem"); $phar->addFile("ext/openssl/tests/bug54992-ca.pem", "bug54992-ca.pem");'
++
++ 2. Update ext/openssl/tests/openssl_peer_fingerprint_basic.phpt (see instructions in there)
++ */
+ $serverCode = <<<'CODE'
+     $serverUri = "ssl://127.0.0.1:64321";
+     $serverFlags = STREAM_SERVER_BIND | STREAM_SERVER_LISTEN;
+diff --git a/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt b/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
+index 39d62b29c901..3bca7cb640c6 100644
+--- a/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
++++ b/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
+@@ -32,12 +32,17 @@ $clientCode = <<<'CODE'
+ 
+     phpt_wait();
+ 
+-    // should be: 3610606deda596b3ae3859d33c4ce1d9
+-    stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', '3610606deda596b3ae3859d33c4ce1da');
++    // Run the following to get actual md5 (from sources root):
++    // openssl x509 -noout -fingerprint -md5 -inform pem -in ext/openssl/tests/bug54992.pem | cut -d '=' -f 2 | tr -d ':' | tr 'A-F' 'a-f'
++    // Currently it's 4edbbaf40a6a4b6af22b6d6d9818378f
++    // One below is intentionally broken (compare the last character):
++    stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', '4edbbaf40a6a4b6af22b6d6d98183780');
+     var_dump(stream_socket_client($serverUri, $errno, $errstr, 2, $clientFlags, $clientCtx));
+ 
++    // Run the following to get actual sha256 (from sources root):
++    // openssl x509 -noout -fingerprint -sha256 -inform pem -in ext/openssl/tests/bug54992.pem | cut -d '=' -f 2 | tr -d ':' | tr 'A-F' 'a-f'
+     stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', [
+-        'sha256' => 'dffa72247ab7e44d94b2858528e3f67015925782148d2cf0b15cd82d1c931215',
++        'sha256' => 'b1d480a2f83594fa243d26378cf611f334d369e59558d87e3de1abe8f36cb997',
+     ]);
+     var_dump(stream_socket_client($serverUri, $errno, $errstr, 2, $clientFlags, $clientCtx));
+ CODE;
+From 4c49896e965358ecbceb95f0afbb26a0d03f8221 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 18 Feb 2020 09:53:18 +0100
+Subject: [PATCH] renew certs for openssl tests
+
+---
+ ext/openssl/tests/bug54992-ca.pem             |  54 +++++++++---------
+ ext/openssl/tests/bug54992.pem                |  28 ++++-----
+ ext/openssl/tests/bug65538.phar               | Bin 11278 -> 11278 bytes
+ .../tests/openssl_peer_fingerprint_basic.phpt |   4 +-
+ 4 files changed, 43 insertions(+), 43 deletions(-)
+
+diff --git a/ext/openssl/tests/bug54992-ca.pem b/ext/openssl/tests/bug54992-ca.pem
+index 743a11e8fd..266f08c907 100644
+--- a/ext/openssl/tests/bug54992-ca.pem
++++ b/ext/openssl/tests/bug54992-ca.pem
+@@ -1,35 +1,35 @@
+ -----BEGIN CERTIFICATE-----
+-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
+-LJ7Q89hYAQ==
++KoZIhvcNAQEBBQADggIPADCCAgoCggIBANDtiwpbgpWNthaPNRpgjvNagqaq1EjS
++19CNFq1+w5jRI8K130RvAWkDwnDcr70RSuNKhbJ2dEool3sUi8puNdvWLa8p95k9
++wg1HtCICixxIdLoYAzprkBJw7QUu/XH9SJeJRkYL7EUFoSDnQF9kbW1qMxZBRlFI
++JEacK1crUBGekudu1DjHCM6dumyObrH4FYZtDdKHLu3PVTO299J7ILsHlAJ31qOG
++zK96yBkjRomru/+Yr9ZjT915slvg19+PGLRSRLMXoolw+WEk5gc00/AsGqXQpavN
++njDu9uw+33Eimrj8KnVsCh9cBQFmrCdqOdJmv8VwD63lcYLruAXkfHIUgdyeVMVT
++Q8O+bgGQWaUrxRED4pJ932TicC23BhiZ/78/nyLwry473mHSIw4Y3M6kGSmEOs+3
++fDcsF8waqOeGXbgdOUjBTu92io+lGsCnUZBRe7sOus6aKHYDE1aBDeGtO4oALS+V
++kNrbCh/VpRIwO9Ah4PvxweqW0ZdloW3TRIXRgRxmGJ9NFe1Rkvv7FB7i2l8IeAKS
++ckuew31vxP6LgGUe5j/qt6xv6GOysefOCAAoHHeNEH+ZSlD1tiglvMVhsUmY9Rit
++XEnB+X8FtOAM3SFiX5tsgB6n4hRKue5WkZywnbkPx7sDu4LQCA00i55dzjP/39M0
++yPnsQrJfOnj5AgMBAAGjUzBRMB0GA1UdDgQWBBSHvApjxItCycV/u9J4Z3b6UAP7
++jzAfBgNVHSMEGDAWgBSHvApjxItCycV/u9J4Z3b6UAP7jzAPBgNVHRMBAf8EBTAD
++AQH/MA0GCSqGSIb3DQEBCwUAA4ICAQB6ffwQmqI9Rq3qiPspJiFLsAT9Um8A/kd0
++unYdMyBRl9T0llGXBeN3YYrJLVAd01UAOSSDV3Cf8L2J2zvKRT8YbC3/LxB/RLIM
++/eHVMGSxpy0S5U8HVChbYGEx/zC9p71HwL31Xj+NfOW1nFbEEPqSbGRmou+X2twZ
++Omwz4Vm4MEpIQLRdgV5bLMN1SETH3TGwdMmTE2S8iKrqeDGB8NEl2LcDvbHAvPNw
++KjitZRiicU99KzSSiGh7dsG/d9JsZqtCSmD+a2PesoUPSPsCaInLQG3aGkApt8Gl
++TtFTxJo9QW7YWxFr9Efb2eU6UIilPSsVj8tvIfS1PRTTJrOlBpJDI6TL5YYtFuw3
++Ij27ILbXSwqUM5MIDYoRDxschNiMRhkRjmnebir2KQdvbt43rW8czwooOzTkd1Bi
++RCAbUCAh1TqVu4vLGcoA8/Rf/1n4M8Zdgq19yfInmU4xs7kaiVvnnAxLSF1TmJl6
++8FCN7ONvHNNXciRkzIxw5Yn6GODa/e8Fzvaza/vkSvW4ry4Hu7T6ze10SuHagN3R
++wwBGBlEI5FEyEKFsTZeHdDMoYzv7Ls4OXZzAo7B/Lwa4OTql7ApVw7MwHEplN3SS
++1Qn4YhhmwJqiGvTGQZSA1gv6Ua/HPHjs1y1fSz+uRukUqlBemDhllmVjWHKJetOv
+++FMLf6DmBw==
+ -----END CERTIFICATE-----
+diff --git a/ext/openssl/tests/bug54992.pem b/ext/openssl/tests/bug54992.pem
+index f207c30448..a04c68cfa0 100644
+--- a/ext/openssl/tests/bug54992.pem
++++ b/ext/openssl/tests/bug54992.pem
+@@ -1,26 +1,26 @@
+ -----BEGIN CERTIFICATE-----
+-MIID7jCCAdYCFDw0rvm7q8y5HfispK5A2I2+RBqHMA0GCSqGSIb3DQEBCwUAMIGQ
++MIID7jCCAdYCFF2eDgBNSufPjQA1YmkSEu4tWGvTMA0GCSqGSIb3DQEBCwUAMIGQ
+ MQswCQYDVQQGEwJQVDEPMA0GA1UECAwGTGlzYm9hMQ8wDQYDVQQHDAZMaXNib2Ex
+ FzAVBgNVBAoMDlBIUCBGb3VuZGF0aW9uMR4wHAYDVQQDDBVSb290IENBIGZvciBQ
+ SFAgVGVzdHMxJjAkBgkqhkiG9w0BCQEWF2ludGVybmFsc0BsaXN0cy5waHAubmV0
+-MB4XDTE4MTIzMTA4NDY0M1oXDTIwMDIwNDA4NDY0M1owWjEXMBUGA1UEAxMOYnVn
++MB4XDTIwMDIxODA4NTA0N1oXDTIxMDMyNDA4NTA0N1owWjEXMBUGA1UEAxMOYnVn
+ NTQ5OTIubG9jYWwxCzAJBgNVBAYTAlBUMQ8wDQYDVQQHEwZMaXNib2ExDzANBgNV
+ BAgTBkxpc2JvYTEQMA4GA1UEChMHcGhwLm5ldDCBnzANBgkqhkiG9w0BAQEFAAOB
+ jQAwgYkCgYEAtUAVQKTgpUPgtFOJ3w3kDJETS45tWeT96kUg1NeYLKW+jNbFhxPo
+ PJv7XhfemCaqh2tbq1cdYW906Wp1L+eNQvdTYA2IQG4EQBUlmfyIakOIMsN/RizV
+ kF09vlNQwTpaMpqTv7wB8vvwbxb9jbC2ZhQUBEg6PIn18dSstbM9FZ0CAwEAATAN
+-BgkqhkiG9w0BAQsFAAOCAgEAKtSMguV5ZQ2KpdZ9MAFa+GiHL0APb58OrvwNK4BF
+-6032UZLOWnsBZlo85WGLNnIT/GNzKKr7n9jHeuZcBVOFQLsebahSlfJZs9FPatlI
+-9Md1tRzVoTKohjG86HeFhhL+gZQ69SdIcK40wpH1qNv7KyMGA8gnx6rRKbOxZqsx
+-pkA/wS7CTqP9/DeOxh/MZPg7N/GZXW1QOz+SE537E9iyiRsbldNYFtwn5iaVfjpr
+-xz09wYYW3HJpR+QKPCfJ79JxDhuMHMoUOpIy8vGFnt5zVTcFLa378Sy3vCT1Qwvt
+-tTavFGHby4A7OqT6xu+9GTW37OaiV91UelLLV0+MoR4XiMVMX76mvqzmKCp6L9ae
+-7RYHrrCtNxkYUKUSkOEc2VHnT+sENkJIZu7zzN7/QNlc0yE9Rtsmgy4QAxo2m9u0
+-pUZLAulZ1lS7g/sr7/8Pp17RDvJiJh+oAPyVYZ7OoLF1IoHDHcZI0bqcqhDhiHZs
+-PXYqyMCxyYzHFOAOgvbrEkmp8z/E8ATVwdUbAYN1dMrYHre1P4HFEtJh2QiGG2KE
+-4jheuNhH1R25AizbwYbD33Kdp7ltCgBlfYqjl771SlgY45QYs0mUdc1Pv39SGIwf
+-ZUm7mOWjaTBdYANrkvGM5NNT9kESjKkWykyTg4UF5rHV6nlyexR4b3fjabroi4BS
+-v6w=
++BgkqhkiG9w0BAQsFAAOCAgEAEhDpl41vWZF9lGSlxz5uwIGguibrbeBYn/1PYpw4
++jF0i/DxNWYmAh/9vM/ClXhL9rVtHev88eO6goIDjiU2W59ksffxxw0Xno6XOgElb
++8sdWBF4wLKiCuZrAYJ+N+CWKWkWFgsdBEHGktBk/UIh7Aw2LjVneMMj8lIgpDw9l
++PfMZ1SAajBEh5D4TrM6TR3ImT2x0t4Rb1LOrfdn34eHHp/K1wpsZfDwzQKXF1RNb
++XqQwzsB5kEMdOBC1ykOXcLqiUPxMakiVAfnt8w1UCdCB3TH63HkxATqoqZLXFYRX
++JZRLkAUvoqdDNVP2gOYRewInWJL+EaRNt3P5DR8tEgCOUyw0UYgpI7KDHV5cL3MB
++JKeLXmQu0o9ZviPk3saEdmhnSaPCGcVoF5E1vnSudcla7wz65U0w+bEX94DxGad/
++CrsGVS0VbdTV6lPQgcbP/IP4sxBUqZvpDlr20XzgsgdwCBgGwcJ47Y1zDQh17sAe
++rZxhtxHG6PJbCwdj7z9FNgsMPmfFXoqcLFyN+N3vbGMpOaO6KCoylmFvNSQCwFrm
++y/V+z5fQFe42trqLr04DEVw7rzGN6I8vyGPu7267FNDO5bdwuJ0FVjB88IW2mcRw
++S52CzP5H7wavwVsKQ9iZTsBWYwxiU2YCwjhx0v5WWZAnQfjjzA5vvFokWhrWDvca
++auw=
+ -----END CERTIFICATE-----
+ -----BEGIN RSA PRIVATE KEY-----
+ MIICXgIBAAKBgQC1QBVApOClQ+C0U4nfDeQMkRNLjm1Z5P3qRSDU15gspb6M1sWH
+diff --git a/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt b/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
+index 3bca7cb640..49ecaac7e6 100644
+--- a/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
++++ b/ext/openssl/tests/openssl_peer_fingerprint_basic.phpt
+@@ -36,13 +36,13 @@ $clientCode = <<<'CODE'
+     // openssl x509 -noout -fingerprint -md5 -inform pem -in ext/openssl/tests/bug54992.pem | cut -d '=' -f 2 | tr -d ':' | tr 'A-F' 'a-f'
+     // Currently it's 4edbbaf40a6a4b6af22b6d6d9818378f
+     // One below is intentionally broken (compare the last character):
+-    stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', '4edbbaf40a6a4b6af22b6d6d98183780');
++    stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', '9aa2c02d62358f2fa0db575806e37799');
+     var_dump(stream_socket_client($serverUri, $errno, $errstr, 2, $clientFlags, $clientCtx));
+ 
+     // Run the following to get actual sha256 (from sources root):
+     // openssl x509 -noout -fingerprint -sha256 -inform pem -in ext/openssl/tests/bug54992.pem | cut -d '=' -f 2 | tr -d ':' | tr 'A-F' 'a-f'
+     stream_context_set_option($clientCtx, 'ssl', 'peer_fingerprint', [
+-        'sha256' => 'b1d480a2f83594fa243d26378cf611f334d369e59558d87e3de1abe8f36cb997',
++        'sha256' => '62e70554daabf366ba9ada30d3af794ec421368e79b68f64dc9ed546d834ae7d',
+     ]);
+     var_dump(stream_socket_client($serverUri, $errno, $errstr, 2, $clientFlags, $clientCtx));
+ CODE;
