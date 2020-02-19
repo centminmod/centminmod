@@ -642,7 +642,29 @@ crypto_gcc() {
         unset CXX
         export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-9/enable
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-8/enable
+        CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
