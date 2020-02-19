@@ -130,6 +130,7 @@ scl_install() {
         /opt/rh/devtoolset-6/root/usr/bin/g++ --version
       fi
     fi
+  # centos 7
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         time $YUMDNFBIN -y -q install centos-release-scl
@@ -148,6 +149,33 @@ scl_install() {
         echo
         /opt/gcc8/bin/gcc --version
         /opt/gcc8/bin/g++ --version
+      elif [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+          fi
+          sar_call
+        else
+          if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils --disablerepo=rpmforge
+          fi
+          sar_call
+        fi
+        if [[ "$CLANG_FOUR" = [yY] && ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+          time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7-runtime devtoolset-7-libstdc++-devel llvm-toolset-7-clang llvm-toolset-7-llvm-libs llvm-toolset-7-llvm-static llvm-toolset-7-compiler-rt llvm-toolset-7-libomp llvm-toolset-7-clang-libs
+        fi
+        if [[ "$CLANG_FIVE" = [yY] && ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+          time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7-runtime devtoolset-7-libstdc++-devel llvm-toolset-7-clang llvm-toolset-7-llvm-libs llvm-toolset-7-llvm-static llvm-toolset-7-compiler-rt llvm-toolset-7-libomp llvm-toolset-7-clang-libs
+        fi
+        if [[ "$CLANG_SEVEN" = [yY] && ! -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+          time $YUMDNFBIN -y install devtoolset-7-runtime llvm-toolset-7.0-runtime llvm-toolset-7.0-llvm-devel llvm-toolset-7.0-clang llvm-toolset-7.0-clang-libs llvm-toolset-7.0-cmake llvm-toolset-7.0-llvm-libs llvm-toolset-7.0-llvm-static llvm-toolset-7.0-compiler-rt llvm-toolset-7.0-libomp
+        fi
+        echo
+        /opt/rh/devtoolset-9/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-9/root/usr/bin/g++ --version
+        if [[ "$CLANG_FOUR" = [yY] && -f /opt/rh/llvm-toolset-7/root/usr/bin/clang || "$CLANG_FIVE" = [yY] && -f /opt/rh/llvm-toolset-7/root/usr/bin/clang ]]; then
+          /opt/rh/llvm-toolset-7/root/usr/bin/clang -v
+        fi
       elif [[ "$DEVTOOLSETEIGHT" = [yY] && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
