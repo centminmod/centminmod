@@ -22,8 +22,20 @@ compgcc_seven() {
 
 compgcc_eight() {
   if [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
-    label='gcc7 built'
+    label='gcc8 built'
     source /opt/rh/devtoolset-8/enable
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+}
+
+compgcc_nine() {
+  if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    label='gcc9 built'
+    source /opt/rh/devtoolset-9/enable
     export CFLAGS="-Wimplicit-fallthrough=0"
     export CXXFLAGS="${CFLAGS}"
   else
@@ -70,6 +82,7 @@ compressmenu_notice() {
   echo
   compgcc_seven
   compgcc_eight
+  compgcc_nine
   pgo_export_compress
 }
 
