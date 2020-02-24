@@ -114,7 +114,7 @@ mcrypt_peclinstall() {
   if [ -f /usr/local/src/centminmod/centmin.sh ]; then
     PHP_MCRYPTPECLVER=$(awk -F "'" '/PHP_MCRYPTPECLVER=/ {print $2}' /usr/local/src/centminmod/centmin.sh)
   else
-    PHP_MCRYPTPECLVER='1.0.1'
+    PHP_MCRYPTPECLVER='1.0.3'
   fi
 
   echo
@@ -122,7 +122,7 @@ mcrypt_peclinstall() {
   echo
   pushd "$DIR_TMP"
   rm -rf mcrypt-*
-  wget "https://pecl.php.net/get/mcrypt-${PHP_MCRYPTPECLVER}.tgz"
+  wget -4 "https://pecl.php.net/get/mcrypt-${PHP_MCRYPTPECLVER}.tgz"
   tar xvzf "mcrypt-${PHP_MCRYPTPECLVER}.tgz"
   cd "mcrypt-${PHP_MCRYPTPECLVER}"
   make clean
