@@ -122,7 +122,7 @@ mcrypt_peclinstall() {
   echo
   pushd "$DIR_TMP"
   rm -rf mcrypt-*
-  wget -4 "https://pecl.php.net/get/mcrypt-${PHP_MCRYPTPECLVER}.tgz"
+  wget -4 "https://pecl.php.net/get/mcrypt-${PHP_MCRYPTPECLVER}.tgz" --tries=3
   tar xvzf "mcrypt-${PHP_MCRYPTPECLVER}.tgz"
   cd "mcrypt-${PHP_MCRYPTPECLVER}"
   make clean
