@@ -25,6 +25,7 @@ FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 # GCC options
 GCC_SEVEN='n'
 GCC_EIGHT='n'
+GCC_NINE='n'
 OPT_LEVEL='-O3'
 MARCH_TARGETNATIVE='n' # for intel 64bit only set march=native, if no set to x86-64
 ###############################################################################
@@ -208,6 +209,12 @@ fi
 
 if [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
   source /opt/rh/devtoolset-8/enable
+  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0"
+  export CXXFLAGS="${CFLAGS}"
+fi
+
+if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+  source /opt/rh/devtoolset-9/enable
   export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0"
   export CXXFLAGS="${CFLAGS}"
 fi
