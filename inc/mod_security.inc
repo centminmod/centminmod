@@ -10,8 +10,26 @@ modsecurity_install() {
     echo "build libmodsecurity..."
     # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
 
-    # force devtoolset-8 gcc 8+ usage
-      if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    # force devtoolset-9 gcc 8+ usage
+      if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-8/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
