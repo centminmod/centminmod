@@ -74,6 +74,11 @@ modsecurity_install() {
       yum -y install lmdb lmdb-devel
     fi
     pushd "$DIR_TMP"
+
+    if [[ ! "$(/usr/local/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/bin/mmdblookup ]; then
+      install_libmaxmindb
+    fi
+    
     rm -rf ModSecurity
     git clone --depth 1 -b v3/master --single-branch https://github.com/SpiderLabs/ModSecurity
     cd ModSecurity

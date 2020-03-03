@@ -1,3 +1,25 @@
+install_libmaxmindb() {
+  #wget -${ipv_forceopt} https://github.com/maxmind/libmaxminddb/releases/download/1.3.2/libmaxminddb-1.3.2.tar.gz
+  #tar xvzf libmaxminddb-1.3.2.tar.gz
+  #cd libmaxminddb-1.3.2
+  pushd "$DIR_TMP"
+  rm -rf libmaxminddb
+  git clone --recursive https://github.com/maxmind/libmaxminddb
+  cd libmaxminddb
+  ./bootstrap
+  make clean && make distclean
+  pushd t/libtap
+  make clean
+  make$MAKETHREADS
+  make install
+  popd
+  ./configure
+  make$MAKETHREADS
+  make install
+  ldconfig
+  popd
+}
+
 ngxgeoipmemtweak() {
   # on low memory systems <=768MB or when NGINX_GEOIPMEM=n
   # optimise nginx memory usage when nginx geoip module is 
@@ -151,23 +173,7 @@ geoipinstall() {
 geoiptwolite_install() {
   cecho "GeoIP2 Lite database and library install..." $boldyellow
   pushd $DIR_TMP
-  #wget -${ipv_forceopt} https://github.com/maxmind/libmaxminddb/releases/download/1.3.2/libmaxminddb-1.3.2.tar.gz
-  #tar xvzf libmaxminddb-1.3.2.tar.gz
-  #cd libmaxminddb-1.3.2
-  rm -rf libmaxminddb
-  git clone --recursive https://github.com/maxmind/libmaxminddb
-  cd libmaxminddb
-  ./bootstrap
-  make clean && make distclean
-  pushd t/libtap
-  make clean
-  make$MAKETHREADS
-  make install
-  popd
-  ./configure
-  make$MAKETHREADS
-  make install
-  ldconfig
+  install_libmaxmindb
 
   geoiptwolite_phpext_install
 
