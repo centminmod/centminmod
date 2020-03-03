@@ -21,7 +21,7 @@ modsecurity_install() {
         gcc --version
         g++ --version
       elif [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
-        source /opt/rh/devtoolset-8/enable
+        source /opt/rh/devtoolset-9/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
