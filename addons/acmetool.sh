@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.59'
+ACMEVER='1.0.60'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -344,10 +344,16 @@ checkdate() {
       epochToday=$(date +%s)
       secondsToExpire=$(echo ${epochExpirydate} - ${epochToday} | bc)
       daysToExpire=$(echo "${secondsToExpire} / 60 / 60 / 24" | bc)
+      certDomain=$(openssl x509 -subject -noout -in $c | sed -n '/^subject/s/^.*CN=//p')
+      checkRevokeCaa=$(curl --connect-timeout 1 -sX POST -d "fqdn=$certDomain" https://checkhost.unboundtest.com/checkhost | grep "because it is affected by" | wc -l)
       echo
       echo "$c"
       echo "SHA1 Fingerprint=${fingerprint}"
       echo "certificate expires in $daysToExpire days on $expiry"
+      if [[ "$checkRevokeCaa" -eq 1 ]]; then
+        echo "certificate should be renewed ASAP due to CAA bug"
+        echo "https://community.letsencrypt.org/t/2020-02-29-caa-rechecking-bug/114591"
+      fi
     fi
    done
    echo
@@ -362,6 +368,8 @@ checkdate() {
       epochToday=$(date +%s)
       secondsToExpire=$(echo ${epochExpirydate} - ${epochToday} | bc)
       daysToExpire=$(echo "${secondsToExpire} / 60 / 60 / 24" | bc)
+      certDomain=$(openssl x509 -subject -noout -in $c | sed -n '/^subject/s/^.*CN=//p')
+      checkRevokeCaa=$(curl --connect-timeout 1 -sX POST -d "fqdn=$certDomain" https://checkhost.unboundtest.com/checkhost | grep "because it is affected by" | wc -l)
       echo
       echo "$ca"
       echo "SHA1 Fingerprint=${fingerprint}"
@@ -371,6 +379,10 @@ checkdate() {
         echo "https://crt.sh/?sha1=${fingerprint}"
       fi
       echo "certificate expires in $daysToExpire days on $expiry"
+      if [[ "$checkRevokeCaa" -eq 1 ]]; then
+        echo "certificate should be renewed ASAP due to CAA bug"
+        echo "https://community.letsencrypt.org/t/2020-02-29-caa-rechecking-bug/114591"
+      fi
     fi
    done
   echo
