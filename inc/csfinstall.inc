@@ -1,3 +1,15 @@
+csfcron_setup() {
+    if [[ -f /usr/local/src/centminmod/tools/csfcf.sh && -f /etc/csf/csf.conf && "$(csf -l >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        # if CSF Firewall exists and running ensure Cloudflare IP updater cronjob
+        # is setup and whitelisted in CSF Firewall for new Centmin Mod initial installs
+        # https://community.centminmod.com/threads/6241/
+        crontab -l > cronjoblist
+        sed -i '/csfcf.sh/d' cronjoblist
+        echo "22 */12 * * * /usr/local/src/centminmod/tools/csfcf.sh auto >/dev/null 2>&1" >> cronjoblist
+        crontab cronjoblist
+    fi
+}
+
 csf_maxmind_geolite_two_download() {
     csf_maxmind_silent=$1
     if [[ -f /etc/csf/csf.conf && -d /var/lib/csf/ ]] && [[ ! -f /var/lib/csf/Geo/GeoLite2-Country-Blocks-IPv4.csv || ! -f /var/lib/csf/Geo/GeoLite2-Country-Blocks-IPv6.csv || ! -f GeoLite2-Country-Locations-en.csv ]]; then
