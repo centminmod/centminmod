@@ -34,9 +34,10 @@ iouring_patch() {
         patch -p1 < "$CUR_DIR/patches/nginx/nginx_io_uring.patch"
         echo
         sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
-        sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
+        sed -i '/^#aio on/d' /usr/local/nginx/conf/nginx.conf
         sed -i 's|^sendfile off;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
-        echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
+        sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
+        echo "patched nginx for Linux 5.1+ Kernel AIO io_ring"
         popd
         # raise nginx max memlock limits
         if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -59,6 +60,7 @@ iouring_patch() {
     fi
   else
     sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
+    sed -i '/^#aio on/d' /usr/local/nginx/conf/nginx.conf
     sed -i 's|^sendfile off;|sendfile on;|' /usr/local/nginx/conf/nginx.conf
   fi
 }
