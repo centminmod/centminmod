@@ -10,7 +10,7 @@ iouring_patch() {
   fi
   KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
   # for nginx 1.17.0+ and Linux Kernel 5.1+
-  if [[ "$NGINX_IOURING_PATCH" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
+  if [[ "$NGINX_IOURING_PATCH_BETA" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
     if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
       pushd "$DIR_TMP"
       rm -rf liburing

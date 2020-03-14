@@ -279,7 +279,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   #   NGX_HPACK_OPT=""
   # fi
 
-  if [[ "$NGINX_IOURING_PATCH" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
+  if [[ "$NGINX_IOURING_PATCH_BETA" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
     NGX_IORING_OPT=' --with-file-aio'
   fi
 
