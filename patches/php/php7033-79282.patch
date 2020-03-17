@@ -1,0 +1,110 @@
+From 59119490c9e2359ea720928b2e71b68e5c20f195 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 15 Mar 2020 17:26:00 -0700
+Subject: [PATCH] Fixed bug #79282
+
+(cherry picked from commit 41f66e2a2cfd611e35be5ac3bf747f0b56161216)
+(cherry picked from commit 8577fa5891220dac40d42b2f745fa159dcd871ad)
+---
+ ext/exif/exif.c              |  7 ++++++-
+ ext/exif/tests/bug79282.phpt | 15 +++++++++++++++
+ 2 files changed, 21 insertions(+), 1 deletion(-)
+ create mode 100644 ext/exif/tests/bug79282.phpt
+
+diff --git a/ext/exif/exif.c b/ext/exif/exif.c
+index 9e42a62812..4c38f17593 100644
+--- a/ext/exif/exif.c
++++ b/ext/exif/exif.c
+@@ -3242,6 +3242,11 @@ static void exif_process_TIFF_in_JPEG(image_info_type *ImageInfo, char *CharBuf,
+ {
+ 	unsigned exif_value_2a, offset_of_ifd;
+ 
++	if (length < 2) {
++		exif_error_docref(NULL EXIFERR_CC, ImageInfo, E_WARNING, "Missing TIFF alignment marker");
++		return;
++	}
++
+ 	/* set the thumbnail stuff to nothing so we can test to see if they get set up */
+ 	if (memcmp(CharBuf, "II", 2) == 0) {
+ 		ImageInfo->motorola_intel = 0;
+@@ -3394,7 +3399,7 @@ static int exif_scan_JPEG_header(image_info_type *ImageInfo)
+ 			return FALSE;
+ 		}
+ 
+-		sn = exif_file_sections_add(ImageInfo, marker, itemlen+1, NULL);
++		sn = exif_file_sections_add(ImageInfo, marker, itemlen, NULL);
+ 		Data = ImageInfo->file.list[sn].data;
+ 
+ 		/* Store first two pre-read bytes. */
+diff --git a/ext/exif/tests/bug79282.phpt b/ext/exif/tests/bug79282.phpt
+new file mode 100644
+index 0000000000..7b7e365657
+--- /dev/null
++++ b/ext/exif/tests/bug79282.phpt
+@@ -0,0 +1,15 @@
++--TEST--
++Bug #79282: Use-of-uninitialized-value in exif
++--FILE--
++<?php
++
++var_dump(exif_read_data('data://image/jpeg;base64,/9jhAAlFeGlmAAAg'));
++
++?>
++--EXPECTF--
++Warning: exif_read_data(): Invalid TIFF alignment marker in %s on line %d
++
++Warning: exif_read_data(): File structure corrupted in %s on line %d
++
++Warning: exif_read_data(): Invalid JPEG file in %s on line %d
++bool(false)
+From c1d08859cdac23aeff99953797231f6824d045c5 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 15 Mar 2020 17:55:28 -0700
+Subject: [PATCH] Fix test
+
+(cherry picked from commit 2c081b7e269d0f63cd9d60a40997f18b5cf793be)
+(cherry picked from commit ad05ad4dbafc29dd23828760d4bfa2be12ccbb1c)
+---
+ ext/exif/tests/bug79282.phpt | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/exif/tests/bug79282.phpt b/ext/exif/tests/bug79282.phpt
+index 7b7e365657..df91127c9c 100644
+--- a/ext/exif/tests/bug79282.phpt
++++ b/ext/exif/tests/bug79282.phpt
+@@ -7,7 +7,7 @@ var_dump(exif_read_data('data://image/jpeg;base64,/9jhAAlFeGlmAAAg'));
+ 
+ ?>
+ --EXPECTF--
+-Warning: exif_read_data(): Invalid TIFF alignment marker in %s on line %d
++Warning: exif_read_data(): Missing TIFF alignment marker in %s on line %d
+ 
+ Warning: exif_read_data(): File structure corrupted in %s on line %d
+ 
+From 51cc7a6225bbf1f7dfe0ffeb318fb0ff098780f9 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 17 Mar 2020 07:23:32 +0100
+Subject: [PATCH] fix test
+
+(cherry picked from commit b42b6d0ff774fdced1155cb0c721d91914d619f5)
+---
+ ext/exif/tests/bug79282.phpt | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/ext/exif/tests/bug79282.phpt b/ext/exif/tests/bug79282.phpt
+index df91127c9c..142cf28a6c 100644
+--- a/ext/exif/tests/bug79282.phpt
++++ b/ext/exif/tests/bug79282.phpt
+@@ -7,9 +7,9 @@ var_dump(exif_read_data('data://image/jpeg;base64,/9jhAAlFeGlmAAAg'));
+ 
+ ?>
+ --EXPECTF--
+-Warning: exif_read_data(): Missing TIFF alignment marker in %s on line %d
++Warning: exif_read_data(%s): Missing TIFF alignment marker in %s on line %d
+ 
+-Warning: exif_read_data(): File structure corrupted in %s on line %d
++Warning: exif_read_data(%s): File structure corrupted in %s on line %d
+ 
+-Warning: exif_read_data(): Invalid JPEG file in %s on line %d
++Warning: exif_read_data(%s): Invalid JPEG file in %s on line %d
+ bool(false)

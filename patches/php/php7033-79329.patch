@@ -1,0 +1,57 @@
+From b9a1e6bfd762d2bf7fa3c5bbcfbb6dcdfdfa982c Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 17 Mar 2020 07:25:12 +0100
+Subject: [PATCH] Fix bug #79329 - get_headers should not accept \0
+
+From 0d139c5b94a5f485a66901919e51faddb0371c43
+
+(cherry picked from commit b7b9302660a23a67285e204bc3d7fcf6ba7f6533)
+---
+ ext/standard/url.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/standard/url.c b/ext/standard/url.c
+index 9c42afbdea..2990bd96f6 100644
+--- a/ext/standard/url.c
++++ b/ext/standard/url.c
+@@ -659,7 +659,7 @@ PHP_FUNCTION(get_headers)
+ 	HashTable *hashT;
+ 	zend_long format = 0;
+ 
+-	if (zend_parse_parameters(ZEND_NUM_ARGS(), "s|l", &url, &url_len, &format) == FAILURE) {
++	if (zend_parse_parameters(ZEND_NUM_ARGS(), "p|l", &url, &url_len, &format) == FAILURE) {
+ 		return;
+ 	}
+ 	context = FG(default_context) ? FG(default_context) : (FG(default_context) = php_stream_context_alloc());
+From 4844343ac37e8e3ca4d995b1d91fc0f9daf03d5f Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 15 Mar 2020 19:35:26 -0700
+Subject: [PATCH] [ci skip] Update NEWS
+
+(cherry picked from commit c8d21d7728109b0f911033c098cfaeb7438ba1d5)
+(cherry picked from commit 03471e31c9b467d1d8d944e44fa009ef247e81bd)
+---
+ NEWS | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index 853e9b5341..f2f1d2ed2a 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,16 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.29
++
++- Core: 
++  . Fixed bug #79329 (get_headers() silently truncates after a null byte) 
++    (CVE-2020-7066) (cmb)
++
++- EXIF:
++  . Fixed bug #79282 (Use-of-uninitialized-value in exif) (CVE-2020-7064) 
++    (Nikita)
++
+ Backported from 7.2.28
+ 
+ - DOM:
