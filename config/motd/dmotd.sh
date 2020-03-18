@@ -174,8 +174,8 @@ phpver_checker() {
       cecho "* PHP Update May Be Available via centmin.sh menu option 5" $boldyellow
       cecho "* see https://community.centminmod.com/forums/18/" $boldyellow
       cecho "===============================================================================" $boldgreen
-      cecho "* Current PHP Version:           $CURRENT_PHPVERS" $boldyellow
-      cecho "* Latest PHP Mainline Available: $LASTEST_PHPVERS" $boldyellow
+      cecho "* Current PHP Version:        $CURRENT_PHPVERS" $boldyellow
+      cecho "* Latest PHP Branch Version:  $LASTEST_PHPVERS (github.com/php/php-src/releases)" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi
