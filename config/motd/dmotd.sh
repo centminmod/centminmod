@@ -166,6 +166,9 @@ phpver_checker() {
         wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
         chmod +x /usr/local/bin/getphpver
     fi
+    if [ ! -f /usr/bin/jq ]; then
+      yum -q -y install jq
+    fi
     LASTEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
     CURRENT_PHPVERS=$(php-config --version)
     if [[ "$CURRENT_PHPVERS" != "$LASTEST_PHPVERS" ]]; then
