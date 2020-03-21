@@ -1,3 +1,10 @@
+update_webp_inc() {
+  if [[ -f /usr/local/nginx/conf/webp.conf && "$(grep -q 'http_cf_connecting_ip' /usr/local/nginx/conf/webp.conf; echo $?)" -ne '0' ]] && [[ -f /usr/local/src/centminmod/config/nginx/webp.conf && "$(grep -q 'http_cf_connecting_ip' /usr/local/src/centminmod/config/nginx/webp.conf; echo $?)" -eq '0' ]]; then
+    \cp -af /usr/local/src/centminmod/config/nginx/webp.conf /usr/local/nginx/conf/webp.conf
+    chown nginx:nginx /usr/local/nginx/conf/webp.conf
+  fi
+}
+
 cfauthorigin_cronsetup() {
   if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/cf-authenticated-origin-cert-update.sh')" && -f "/usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh" ]]; then
     mkdir -p /etc/centminmod/cronjobs/
@@ -2958,6 +2965,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   pureftpd_symlink_fix
   cfauthorigin_cronsetup
   csf_maxmind_rego
+  update_webp_inc
 fi
 
 }
