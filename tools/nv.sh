@@ -367,6 +367,18 @@ cmchkconfig() {
   fi
 }
 
+run_letsdebug() {
+    letsdebug_domain=$1
+    if [ ! -f /usr/bin/jq ]; then
+        yum -q -y install jq
+    fi
+    letsdebug_id=$(curl -s --data "{\"method\":\"http-01\",\"domain\":\"$letsdebug_domain\"}" -H 'content-type: application/json' https://letsdebug.net | jq -r '.ID')
+    sleep 6
+    echo
+    curl -s -H 'accept: application/json' "https://letsdebug.net/$letsdebug_domain/${letsdebug_id}" | jq | tee "${CENTMINLOGDIR}/letsdebug-${letsdebug_domain}-${DT}.log"
+    echo
+}
+
 pureftpinstall() {
 	if [ ! -f /usr/bin/pure-pw ]; then
 		echo "pure-ftpd not installed"
@@ -1476,6 +1488,8 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "-------------------------------------------------------------" $boldyellow
     echo
   fi
+  # run lestdebug.net API check
+  run_letsdebug "$vhostname"
 fi
 
 echo 
@@ -1514,6 +1528,9 @@ if [[ "$vhostssl" = [yY] ]]; then
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
   cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
   cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
+  if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    cecho "letsdebug API check log: ${CENTMINLOGDIR}/letsdebug-${vhostname}-${DT}.log" $boldyellow
+  fi
 fi
 echo
 if [[ "$create_mainhostname_ssl" != [yY] ]]; then

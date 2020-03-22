@@ -1323,6 +1323,8 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
     cecho "-------------------------------------------------------------" $boldyellow
     echo
   fi
+  # run lestdebug.net API check
+  run_letsdebug "$vhostname"
 fi
 
 echo 
@@ -1352,6 +1354,9 @@ if [[ "$NGINX_VHOSTSSL" = [yY] && "$vhostssl" = [yY] ]] || [[ "$NGINX_VHOSTSSL" 
   cecho "SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr" $boldyellow
   cecho "Backup SSL Private Key: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.key" $boldyellow
   cecho "Backup SSL CSR File: /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-backup.csr" $boldyellow    
+  if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
+    cecho "letsdebug API check log: ${CENTMINLOGDIR}/letsdebug-${vhostname}-${DT}.log" $boldyellow
+  fi
 fi
 echo
 cecho "upload files to /home/nginx/domains/$vhostname/public" $boldwhite

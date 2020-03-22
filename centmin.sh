@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='465'
+SCRIPT_INCREMENTVER='466'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2020'
@@ -1069,6 +1069,7 @@ source "inc/mysqlsecure.inc"
 source "inc/pcre.inc"
 source "inc/jemalloc.inc"
 source "inc/zlib.inc"
+source "inc/letsdebug.inc"
 source "inc/google_perftools.inc"
 source "inc/updater_submenu.inc"
 source "inc/centminfinish.inc"
