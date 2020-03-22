@@ -433,14 +433,14 @@ if [[ "$NGINX_VHOSTSSL" = [yY] ]]; then
         vhostssl=invalidopt
       fi
       echo
-      if [[ "$vhostssl_opt" -eq '2' || "$vhostssl_opt" -eq '4' ]]; then
+      if [[ "$vhostssl_opt" -eq '2' || "$vhostssl_opt" -eq '4' ]] && [[ "$ISCF_ACHECK" = 'Cloudflare' || "$ISCF_ACHECK" = 'cloudflare' ]]; then
         echo "If using Cloudflare in front of site, disable CF option for"
         echo "Always Use HTTPS in CF Dashboard Crypto Tab as Nginx will do"
         echo "the non-https to https redirect on this end and not require"
         echo "Cloudflare's Always Use HTTPS. If enabled it will cause the"
         echo "error message: too many redirects"
         echo
-        echo "Also change Cloudflare SSL from Flexible to Full SSL mode"
+        echo "Also change Cloudflare Flexible SSL to Full SSL non-strict mode"
         echo
         sleep 1
       fi
@@ -3033,6 +3033,17 @@ cecho "-------------------------------------------------------------" $boldyello
 cecho "Current vhost ssl files listing at: /usr/local/nginx/conf/ssl/${vhostname}" $boldwhite
 echo
 ls -Alhrt /usr/local/nginx/conf/ssl/${vhostname} | awk '{ printf "%-4s%-4s%-8s%-6s %s\n", $6, $7, $8, $5, $9 }'
+fi
+
+if [[ "$vhostssl_opt" -eq '2' || "$vhostssl_opt" -eq '4' ]] && [[ "$ISCF_ACHECK" = 'Cloudflare' || "$ISCF_ACHECK" = 'cloudflare' ]]; then
+  cecho "-------------------------------------------------------------" $boldyellow
+  echo "If using Cloudflare in front of site, disable CF option for"
+  echo "Always Use HTTPS in CF Dashboard Crypto Tab as Nginx will do"
+  echo "the non-https to https redirect on this end and not require"
+  echo "Cloudflare's Always Use HTTPS. If enabled it will cause the"
+  echo "error message: too many redirects"
+  echo
+  echo "Also change Cloudflare Flexible SSL to Full SSL non-strict mode"
 fi
 
 echo
