@@ -380,7 +380,7 @@ pip_updates() {
           "${SCRIPT_DIR}/addons/python27_install.sh" install
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
-          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade glances
+          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade 'glances[cpuinfo,ip,raid]'
           echo
           echo "CentOS 6 python 2.7 compatibility updates completed"
           echo
@@ -434,7 +434,7 @@ pip_updates() {
       fi
       if [[ "$CHECK_GLANCESUPDATE" = 'Glances' || ! "$CHECK_GLANCEINSTALL" ]]; then
         export CC='gcc'
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade glances
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade 'glances[cpuinfo,ip,raid]'
       fi
     fi
     if [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 && -f /usr/bin/python2.7-config ]]; then
@@ -474,7 +474,7 @@ pip_updates() {
       fi
       if [[ "$CHECK_GLANCESUPDATE" = 'Glances' || ! "$CHECK_GLANCEINSTALL" ]]; then
         export CC='gcc'
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade glances
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade 'glances[cpuinfo,ip,raid]'
       fi
     fi
   fi
