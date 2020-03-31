@@ -1,3 +1,10 @@
+initial_pip_updates() {
+  initialpip=$1
+  if [ -f /usr/local/src/centminmod/tools/pip-updates.sh ]; then
+    /usr/local/src/centminmod/tools/pip-updates.sh update "$initialpip"
+  fi
+}
+
 update_webp_inc() {
   if [[ -f /usr/local/nginx/conf/webp.conf && "$(grep -q 'http_cf_cache_status' /usr/local/nginx/conf/webp.conf; echo $?)" -ne '0' ]] && [[ -f /usr/local/src/centminmod/config/nginx/webp.conf && "$(grep -q 'http_cf_cache_status' /usr/local/src/centminmod/config/nginx/webp.conf; echo $?)" -eq '0' ]]; then
     \cp -af /usr/local/src/centminmod/config/nginx/webp.conf /usr/local/nginx/conf/webp.conf
@@ -325,7 +332,7 @@ pip_updates() {
     if [[ ! -f /usr/bin/python-config ]]; then
       $YUMDNFBIN -q -y install python-devel
     fi
-    if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' && ! -d /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
         # $YUMDNFBIN -q -y install python-urllib3 >/dev/null 2>&1
         # yum -q -y versionlock python-urllib3 >/dev/null 2>&1
         if [[ ! "$(grep 'python-urllib3' /etc/yum.conf)" ]]; then
@@ -334,8 +341,9 @@ pip_updates() {
         fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade urllib3
-    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' && -d /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
         CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list -o --format columns)
+        CHECK_PIPALL_INSTALLED=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list --format columns)
         CHECK_PIPURLLIBUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o urllib3)
         if [[ "$(rpm -qa python-urllib3 | grep -o python-urllib3)" = 'python-urllib3' ]]; then
           yum -q -y remove python-urllib3 >/dev/null 2>&1
@@ -391,9 +399,12 @@ pip_updates() {
     fi
     if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
       CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list -o --format columns)
+      CHECK_PIPALL_INSTALLED=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list --format columns)
       CHECK_PIPUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o pip)
       CHECK_PSUTILUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o psutil)
       CHECK_GLANCESUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -io glances)
+      CHECK_PSUTILINSTALL=$(echo "$CHECK_PIPALL_INSTALLED" | grep -o psutil)
+      CHECK_GLANCEINSTALL=$(echo "$CHECK_PIPALL_INSTALLED" | grep -io glances)
       if [[ "$(yum versionlock list | grep 'python2-pip')" ]]; then
         if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
@@ -409,7 +420,7 @@ pip_updates() {
           sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
       fi
-      if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
+      if [[ "$CHECK_PSUTILUPDATE" = 'psutil' || ! "$CHECK_PSUTILINSTALL" ]]; then
         export CC='gcc'
         if [[ "$(rpm -qa python2-psutil | grep -o python2-psutil)" = 'python2-psutil' ]]; then
           yum -q -y remove python2-psutil >/dev/null 2>&1
@@ -421,16 +432,19 @@ pip_updates() {
         fi
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade psutil
       fi
-      if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
+      if [[ "$CHECK_GLANCESUPDATE" = 'Glances' || ! "$CHECK_GLANCEINSTALL" ]]; then
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade glances
       fi
     fi
     if [[ "$CENTOS_SIX" -eq '6' && -f /usr/bin/pip2.7 && -f /usr/bin/python2.7-config ]]; then
       CHECK_PIPALL_UPDATES=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 list -o --format columns)
+      CHECK_PIPALL_INSTALLED=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 list --format columns)
       CHECK_PIPUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o pip)
       CHECK_PSUTILUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o psutil)
       CHECK_GLANCESUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -io glances)
+      CHECK_PSUTILINSTALL=$(echo "$CHECK_PIPALL_INSTALLED" | grep -o psutil)
+      CHECK_GLANCEINSTALL=$(echo "$CHECK_PIPALL_INSTALLED" | grep -io glances)
       if [[ "$(yum versionlock list | grep 'python-pip')" ]]; then
         if [[ ! "$(grep 'python-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-pip")
@@ -446,7 +460,7 @@ pip_updates() {
           sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
       fi
-      if [[ "$CHECK_PSUTILUPDATE" = 'psutil' ]]; then
+      if [[ "$CHECK_PSUTILUPDATE" = 'psutil' || ! "$CHECK_PSUTILINSTALL" ]]; then
         export CC='gcc'
         if [[ "$(rpm -qa python-psutil | grep -o python-psutil)" = 'python-psutil' ]]; then
           yum -q -y remove python-psutil >/dev/null 2>&1
@@ -458,7 +472,7 @@ pip_updates() {
         fi
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
       fi
-      if [[ "$CHECK_GLANCESUPDATE" = 'Glances' ]]; then
+      if [[ "$CHECK_GLANCESUPDATE" = 'Glances' || ! "$CHECK_GLANCEINSTALL" ]]; then
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade glances
       fi
@@ -2863,6 +2877,7 @@ csf_portflood
 python_centossix_sclfix
 disable_avahi
 qrencode_setup
+initial_pip_updates initial
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
