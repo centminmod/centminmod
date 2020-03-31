@@ -225,23 +225,26 @@ pip_updates() {
 
 glances_aliascheck() {
   if [ -f /usr/bin/glances ]; then
-      # mkdir -p /etc/glances
+    if [ ! -f /etc/glances/glances.conf ]; then
+      mkdir -p /etc/glances
       # wget -O /etc/glances/glances.conf https://raw.githubusercontent.com/nicolargo/glances/master/conf/glances.conf
-      # sed -i 's|^disable=True|disable=False|g' /etc/glances/glances.conf
-      if [[ ! "$(grep -w 'glances' /root/.bashrc)" ]]; then
-          echo "alias top2=\"glances\"" >> /root/.bashrc
-          alias top2="glances"
-          echo "top2 alias configured"
-          echo "to use exit SSH session & relogin"
-      fi
-      if [[ "$(id -u)" -ne '0' ]]; then
-          if [[ ! "$(grep -w 'glances' $HOME/.bashrc)" ]]; then
-              echo "alias top2=\"glances\"" >> $HOME/.bashrc
-              alias top2="glances"
-              echo "top2 alias configured"
-              echo "to use exit SSH session & relogin"
-          fi
-      fi
+      wget -O /etc/glances/glances.conf https://github.com/centminmod/centminmod/raw/123.09beta01/config/glances/glances.conf
+      sed -i 's|^disable=True|disable=False|g' /etc/glances/glances.conf
+    fi
+    if [[ ! "$(grep -w 'glances' /root/.bashrc)" ]]; then
+        echo "alias top2=\"glances\"" >> /root/.bashrc
+        alias top2="glances"
+        echo "top2 alias configured"
+        echo "to use exit SSH session & relogin"
+    fi
+    if [[ "$(id -u)" -ne '0' ]]; then
+        if [[ ! "$(grep -w 'glances' $HOME/.bashrc)" ]]; then
+            echo "alias top2=\"glances\"" >> $HOME/.bashrc
+            alias top2="glances"
+            echo "top2 alias configured"
+            echo "to use exit SSH session & relogin"
+        fi
+    fi
   fi
 }
 
