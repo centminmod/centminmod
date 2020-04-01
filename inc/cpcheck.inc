@@ -332,6 +332,9 @@ pip_updates() {
     if [[ ! -f /usr/bin/python-config ]]; then
       $YUMDNFBIN -q -y install python-devel
     fi
+    if [[ -d /usr/local/lib/python3.6/site-packages/pip && "$(pip --version | grep -o 'python3.6')" && ! "$(rpm -qa python3-devel | grep -o 'python3-devel')" ]]; then
+      yum -q -y install python3-devel
+    fi
     if [[ "$CENTOS_SEVEN" -eq '7' && ! -d /usr/lib/python2.7/site-packages/urllib3/packages/ssl_match_hostname ]]; then
         # $YUMDNFBIN -q -y install python-urllib3 >/dev/null 2>&1
         # yum -q -y versionlock python-urllib3 >/dev/null 2>&1
