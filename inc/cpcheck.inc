@@ -6,7 +6,7 @@ initial_pip_updates() {
 }
 
 update_webp_inc() {
-  if [[ -f /usr/local/nginx/conf/webp.conf && "$(grep -q 'http_cf_cache_status' /usr/local/nginx/conf/webp.conf; echo $?)" -ne '0' ]] && [[ -f /usr/local/src/centminmod/config/nginx/webp.conf && "$(grep -q 'http_cf_cache_status' /usr/local/src/centminmod/config/nginx/webp.conf; echo $?)" -eq '0' ]]; then
+  if [[ -f /usr/local/nginx/conf/webp.conf && "$(grep -q 'webpok' /usr/local/nginx/conf/webp.conf; echo $?)" -ne '0' ]] && [[ -f /usr/local/src/centminmod/config/nginx/webp.conf && "$(grep -q 'webpok' /usr/local/src/centminmod/config/nginx/webp.conf; echo $?)" -eq '0' ]]; then
     \cp -af /usr/local/src/centminmod/config/nginx/webp.conf /usr/local/nginx/conf/webp.conf
     chown nginx:nginx /usr/local/nginx/conf/webp.conf
     service nginx restart >/dev/null 2>&1
