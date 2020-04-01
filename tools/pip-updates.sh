@@ -59,7 +59,9 @@ pip_updates() {
   chmod 1777 /home/piptmp
   export TMPDIR=/home/piptmp
   if [ -f /etc/centminmod-release ]; then
-    echo "pip updates..."
+    if [[ "$inital" = 'initial' ]]; then
+      echo "pip updates..."
+    fi
     # for glances and psutil as glances is installed via outdated EPEL
     # yum repo but there's a new version available
     if [[ ! -f /usr/bin/python-config ]]; then
