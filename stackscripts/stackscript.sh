@@ -352,7 +352,7 @@ yum -y install docker-ce
 mkdir -p /etc/systemd/system/docker.service.d
 touch /etc/systemd/system/docker.service.d/docker.conf
 mkdir -p /etc/docker
-wget -O /etc/docker/daemon.json https://gist.githubusercontent.com/centminmod/e79bca8d3ef56d4d7272663f755e830d/raw/daemon.json
+wget -4 -O /etc/docker/daemon.json https://gist.githubusercontent.com/centminmod/e3d1095c78b6e3b3ed02f5367e345d68/raw/daemon.json
 systemctl daemon-reload
 systemctl start docker
 systemctl enable docker
