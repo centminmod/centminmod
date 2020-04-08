@@ -3337,12 +3337,12 @@ fi
 rm -rf .wpcli-status
 } 2>&1 | tee /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log
 if [ -f /usr/sbin/sendmail ]; then
-sendmail -i $EMAIL <<END
+sendmail -i \$EMAIL <<END
 From: \$EMAILFROM
 To: \$EMAIL
 Subject: Wordpress WP-CLI Auto Update \$(date)
 
-\$(cat /home/nginx/domains/\${vhostname}/log/wp_updater-\${DT}.log)
+\$(cat /home/nginx/domains/${vhostname}/log/wp_updater-\${DT}.log)
 
 END
 else
