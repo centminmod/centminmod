@@ -1,3 +1,10 @@
+phpmyadmin_composer_fix() {
+  # https://github.com/centminmod/phpmyadmin/commit/fb0fe48d799fcc60b6a807c9dc9fb64412e127a2
+  if [ -f /root/tools/phpmyadmin_update.sh ]; then
+    sed -i 's/^php composer.phar update --no-dev/echo y | php composer.phar update --no-dev/g' /root/tools/phpmyadmin_update.sh
+  fi
+}
+
 initial_pip_updates() {
   initialpip=$1
   if [ -f /usr/local/src/centminmod/tools/pip-updates.sh ]; then
@@ -2985,6 +2992,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   cfauthorigin_cronsetup
   csf_maxmind_rego
   update_webp_inc
+  phpmyadmin_composer_fix
 fi
 
 }
