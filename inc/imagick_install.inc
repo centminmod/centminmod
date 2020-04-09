@@ -1,3 +1,65 @@
+libheif_install() {
+    echo "Install libheif routine"
+    echo "installing x265, libde265 & libheif"
+    enable_devtoolset
+    if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+        yum -q -y install cmake3 cmake3-data
+    fi
+    if [[ ! "$(rpm -qa mercurial)" ]]; then
+        yum -q -y install mercurial
+    fi 
+    echo "Install x265 for libheif"
+    pushd "$DIR_TMP"
+    rm -rf x265
+    hg clone https://bitbucket.org/multicoreware/x265
+    cd x265/build/linux
+    cmake -G "Unix Makefiles" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
+    make -s -j$(nproc)
+    make install
+    echo
+
+    echo "Install libde265 for libheif"
+    pushd "$DIR_TMP"
+    rm -rf libde265
+    git clone --depth=1 https://github.com/strukturag/libde265
+    cd libde265
+    # mkdir -p build
+    # cd build
+    # rm -rf CMakeCache.txt
+    # make clean
+    # cmake3 ..
+    ./autogen.sh
+    ./configure
+    make -s -j$(nproc)
+    make install
+    echo
+    echo "libde265 install completed"
+
+    export CC="gcc"
+    export CXX="g++"
+    echo "Install libheif for HEIF file format decoder/encoder"
+    pushd "$DIR_TMP"
+    rm -rf libheif
+    git clone --depth=1 https://github.com/strukturag/libheif
+    cd libheif
+    ./autogen.sh
+    make clean
+    # export libde265_CFLAGS='-I/usr/local/include'
+    # export libde265_LIBS='-L/usr/local/lib'
+    # export x265_CFLAGS='-I/usr/local/include'
+    # export x265_LIBS='-L/usr/local/lib'
+    # export LDFLAGS='-L/usr/local/lib'
+    PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib LDFLAGS="-L/usr/local/lib" CPPFLAGS="-I/usr/local/include" ./configure
+    make -s -j$(nproc)
+    make install
+    echo
+    echo "libheif install completed"
+    unset libde265_CFLAGS
+    unset libde265_LIBS
+    unset x265_CFLAGS
+    unset x265_LIBS
+}
+
 checkphpext() {
     cecho "Check for php extensions" $boldyellow
     if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" || ! -d "${DIR_TMP}/imagick-${IMAGICKPHP_VER}" ]]; then
@@ -16,6 +78,11 @@ checkimagicksys() {
         VERSIONLOCK_REPO=',versionlock'
     else
         VERSIONLOCK_REPO=""
+    fi
+    if [[ "$IMAGEMAGICK_HEIF" = [yY] ]]; then
+        IMG_HEIFOPT=' ImageMagick6-heic'
+    else
+        IMG_HEIFOPT=""
     fi
 
     if [ -f /usr/bin/re2c ]; then
@@ -67,7 +134,7 @@ checkimagicksys() {
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                             time $YUMDNFBIN -y install ImageMagick6-devel ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         fi
-                        time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time $YUMDNFBIN -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         sar_call
                     fi
                 else
@@ -75,13 +142,13 @@ checkimagicksys() {
                         # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
                         sar_call
                         # yum clean all >/dev/null 2>&1
-                        time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                     else
                         # yum clean all >/dev/null 2>&1
                         if [[ "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     fi
                 fi
             elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
@@ -109,13 +176,13 @@ checkimagicksys() {
                     sar_call                  
                     if [[ "$CENTOS_SIX" = '6' ]]; then
                         # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
-                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                         sar_call
                     else
                         if [[ "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         sar_call
                     fi
                     echo
@@ -133,13 +200,13 @@ checkimagicksys() {
                     sar_call
                     if [[ "$CENTOS_SIX" = '6' ]]; then
                         # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
-                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
+                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                         sar_call
                     else
                         if [[ "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time $YUMDNFBIN -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         sar_call
                     fi
                 fi
@@ -150,13 +217,13 @@ checkimagicksys() {
             # lock imagemagick system version from general yum updates
             # allowing only centmin.sh menu option 15 to update system
             # imagemagick version by doing an unlock of the version
-            yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs LibRaw
-            yum versionlock ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs LibRaw
+            yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} LibRaw
+            yum versionlock ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT} LibRaw
 
             # temp workaround for ImageMagick6 yum update .79 build causing imagick PHP extesnion to fail
-            #yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs
+            #yum versionlock delete ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT}
             #yum -y downgrade ImageMagick6-6.9.10.78-1.el7.remi ImageMagick6-c++-devel-6.9.10.78-1.el7.remi ImageMagick6-devel-6.9.10.78-1.el7.remi ImageMagick6-libs-6.9.10.78-1.el7.remi ImageMagick6-c++-6.9.10.78-1.el7.remi --enablerepo=remi
-            #yum versionlock ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs
+            #yum versionlock ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel ImageMagick6-libs${IMG_HEIFOPT}
         fi
         echo
     fi # whether to skip ImageMagick YUM updates

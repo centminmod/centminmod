@@ -1,3 +1,29 @@
+imagemagick_heif() {
+  if [[ "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+    echo
+    echo "Install ImageMagick6-heic one time only"
+    echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
+    libheif_install
+    yum -q -y install ImageMagick6-heic --enablerepo=remi
+    echo "ImageMagick6-heic installed"
+    if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+      yum -q versionlock delete ImageMagick6-heic
+      yum -q versionlock ImageMagick6-heic
+    fi
+  elif [[ "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SIX" = '6' && ! "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+    echo
+    echo "Install ImageMagick6-heic one time only"
+    echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
+    libheif_install
+    yum -q -y install ImageMagick6-heic --enablerepo=remi
+    echo "ImageMagick6-heic installed"
+    if [[ "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+      yum -q versionlock delete ImageMagick6-heic
+      yum -q versionlock ImageMagick6-heic
+    fi
+  fi
+}
+
 phpmyadmin_composer_fix() {
   # https://github.com/centminmod/phpmyadmin/commit/fb0fe48d799fcc60b6a807c9dc9fb64412e127a2
   if [ -f /root/tools/phpmyadmin_update.sh ]; then
@@ -2993,6 +3019,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   csf_maxmind_rego
   update_webp_inc
   phpmyadmin_composer_fix
+  imagemagick_heif
 fi
 
 }
