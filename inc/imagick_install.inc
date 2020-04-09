@@ -49,7 +49,7 @@ libheif_install() {
     # export x265_CFLAGS='-I/usr/local/include'
     # export x265_LIBS='-L/usr/local/lib'
     # export LDFLAGS='-L/usr/local/lib'
-    PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib LDFLAGS="-L/usr/local/lib" CPPFLAGS="-I/usr/local/include" ./configure
+    PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib LDFLAGS="-L/usr/local/lib" CPPFLAGS="-I/usr/local/include" ./configure --disable-examples
     make -s -j$(nproc)
     make install
     echo
