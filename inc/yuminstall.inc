@@ -131,7 +131,7 @@ yumcentosfivedownload
 
 ### smarter yum install update routine ###
 
-if [[ $(rpm -q ImageMagick6 >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ ! -f /etc/yum.repos.d/remi.repo ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
@@ -147,7 +147,7 @@ else
     echo
     PACKAGE='cracklib'
   else
-    PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
+    PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
   fi
 fi
 
@@ -185,7 +185,7 @@ sar_call
 fi # /usr/local/src/curlinstall_yum.txt
 
 ## grouped devels for faster install
-if [[ $(rpm -q ImageMagick6 >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ ! -f /etc/yum.repos.d/remi.repo ]]; then
   if [ -f /tmp/curlinstaller-yum ]; then
     echo
     echo "skip unneeded yum package check/installs for curl installer routines"
@@ -256,10 +256,16 @@ axelsetup
 geoipinstall
 customrpms
 
+      if [[ "$CENTOS_SIX" = '6' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME='6'
+      else
+        REMI_IMAGEMAGICK_PKGNAME=""
+      fi
+
 # use Remi's ImageMagicK 6.9.* package
 if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
-    if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
+    if [[ "$(rpm -qi ImageMagick | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' || "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
       echo
       echo "----------------------------------------------------------------------------------"
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
@@ -272,26 +278,26 @@ if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
   
       if [[ "$CENTOS_SIX" = '6' ]]; then
         # ${YUMDNFBIN} -y install libwebp libwebp-devel --skip-broken
-        ${YUMDNFBIN} -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken${DISABLEREPO_DNF}
+        ${YUMDNFBIN} -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken${DISABLEREPO_DNF}
         sar_call
       else
         if [[ "$(rpm -qa libwebp-devel)" ]]; then
             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
         fi
-        ${YUMDNFBIN} -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
+        ${YUMDNFBIN} -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
         sar_call
       fi
       
       echo
     fi
 
-    if [[ "$(rpm -qa ImageMagick6)" ]]; then
+    if [[ "$(rpm -qi ImageMagick | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' || "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]] && [[ -f /etc/yum.repos.d/remi.repo ]]; then
       if [[ "$CENTOS_SEVEN" = '7' ]]; then
         if [[ "$(rpm -qa libwebp-devel)" ]]; then
             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
         fi
       fi
-      ${YUMDNFBIN} -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
+      ${YUMDNFBIN} -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
       sar_call
     fi
   fi

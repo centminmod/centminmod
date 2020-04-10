@@ -269,7 +269,7 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
 
-IMAGEMAGICK_HEIF='n'         # experimental ImageMagick6 HEIF image format support
+IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
 ##################################
 ## Nginx SSL options
 
