@@ -1038,6 +1038,9 @@ fi
             cecho "* Fallback to standard zlib support in Nginx due to SSE4.2 not supported" $boldgreen
             echo
         fi
+        if [[ "$NGINX_STAPLE_CACHE_OVERRIDE" = [yY] ]]; then
+            cecho "* NGINX_STAPLE_CACHE_OVERRIDE='y' detected NGINX_STAPLE_CACHE_TTL='${NGINX_STAPLE_CACHE_TTL}' set" $boldgreen
+        fi
         cecho "* nginx updated" $boldgreen
         if [[ "$ngver" = 'master' ]]; then
             cecho "* nginx github master build" $boldgreen

@@ -1,3 +1,19 @@
+ocsp_ttl_override() {
+  if [[ "$NGINX_STAPLE_CACHE_OVERRIDE" = [yY] ]]; then
+    if [ "$ngver" ]; then
+      NGINX_VER_OCSP="$ngver"
+      echo "$NGINX_VER_OCSP"
+    else
+      NGINX_VER_OCSP="$NGINX_VERSION"
+      echo "$NGINX_VER_OCSP"
+    fi
+    echo "patching nginx OCSP stapling response cache time set to: $NGINX_STAPLE_CACHE_TTL"
+    grep 'staple->refresh = ngx_max' "/svr-setup/nginx-${NGINX_VER_OCSP}/src/event/ngx_event_openssl_stapling.c"
+    sed -i "s|staple->refresh = ngx_max(ngx_min(valid - 300, now + 3600), now + 300)|staple->refresh = ngx_max(ngx_min(valid - 300, now + $NGINX_STAPLE_CACHE_TTL), now + 300)|" "/svr-setup/nginx-${NGINX_VER_OCSP}/src/event/ngx_event_openssl_stapling.c"
+    grep 'staple->refresh = ngx_max' "/svr-setup/nginx-${NGINX_VER_OCSP}/src/event/ngx_event_openssl_stapling.c"
+  fi
+}
+
 iouring_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -601,6 +617,7 @@ patchnginx() {
     fi
   fi
   iouring_patch
+  ocsp_ttl_override
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
