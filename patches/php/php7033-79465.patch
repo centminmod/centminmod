@@ -1,0 +1,59 @@
+From 865342c94703cc5a1d0890b51b47a300c0d297ec Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 13 Apr 2020 21:07:04 -0700
+Subject: [PATCH] Fix bug #79465 - use unsigneds as indexes.
+
+(cherry picked from commit 9d6bf8221b05f86ce5875832f0f646c4c1f218be)
+---
+ ext/standard/url.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/standard/url.c b/ext/standard/url.c
+index 2990bd96f6..a9cc06b1c0 100644
+--- a/ext/standard/url.c
++++ b/ext/standard/url.c
+@@ -540,7 +540,7 @@ PHPAPI size_t php_url_decode(char *str, size_t len)
+ #ifndef CHARSET_EBCDIC
+ 			*dest = (char) php_htoi(data + 1);
+ #else
+-			*dest = os_toebcdic[(char) php_htoi(data + 1)];
++			*dest = os_toebcdic[(unsigned char) php_htoi(data + 1)];
+ #endif
+ 			data += 2;
+ 			len -= 2;
+@@ -632,7 +632,7 @@ PHPAPI size_t php_raw_url_decode(char *str, size_t len)
+ #ifndef CHARSET_EBCDIC
+ 			*dest = (char) php_htoi(data + 1);
+ #else
+-			*dest = os_toebcdic[(char) php_htoi(data + 1)];
++			*dest = os_toebcdic[(unsigned char) php_htoi(data + 1)];
+ #endif
+ 			data += 2;
+ 			len -= 2;
+From a83b195cb02e3b42c2fa9e0387922acba4fc7cce Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 14 Apr 2020 08:02:28 +0200
+Subject: [PATCH] NEWS
+
+(cherry picked from commit bd4a5ebe653f36ea7705fbc95a6ec4842d7f86fc)
+---
+ NEWS | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index f2f1d2ed2a..6310d94581 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.30
++
++- Standard:
++  . Fixed bug #79330 (shell_exec silently truncates after a null byte). (stas)
++  . Fixed bug #79465 (OOB Read in urldecode). (CVE-2020-7067) (stas)
++
+ Backported from 7.2.29
+ 
+ - Core: 

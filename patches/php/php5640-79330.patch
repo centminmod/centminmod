@@ -1,0 +1,58 @@
+From 258ad37fe3f91cf862c2870d18d53e5cdb3b3752 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 13 Apr 2020 21:00:44 -0700
+Subject: [PATCH] Fix bug #79330 - make all execution modes consistent in
+ rejecting \0
+
+(cherry picked from commit 14fcc813948254b84f382ff537247d8a7e5e0e62)
+---
+ ext/standard/exec.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/ext/standard/exec.c b/ext/standard/exec.c
+index 88a6b4ab79..a586b786ee 100644
+--- a/ext/standard/exec.c
++++ b/ext/standard/exec.c
+@@ -537,6 +537,15 @@ PHP_FUNCTION(shell_exec)
+ 		return;
+ 	}
+ 
++	if (!command_len) {
++		php_error_docref(NULL, E_WARNING, "Cannot execute a blank command");
++		RETURN_FALSE;
++	}
++	if (strlen(command) != command_len) {
++		php_error_docref(NULL, E_WARNING, "NULL byte detected. Possible attack");
++		RETURN_FALSE;
++	}
++
+ #ifdef PHP_WIN32
+ 	if ((in=VCWD_POPEN(command, "rt"))==NULL) {
+ #else
+From 6117c162636bfd7e981f7531dc4d48e358e62be4 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 14 Apr 2020 08:15:07 +0200
+Subject: [PATCH] ZTS
+
+---
+ ext/standard/exec.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/standard/exec.c b/ext/standard/exec.c
+index a586b786ee..40eca2b2c6 100644
+--- a/ext/standard/exec.c
++++ b/ext/standard/exec.c
+@@ -538,11 +538,11 @@ PHP_FUNCTION(shell_exec)
+ 	}
+ 
+ 	if (!command_len) {
+-		php_error_docref(NULL, E_WARNING, "Cannot execute a blank command");
++		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Cannot execute a blank command");
+ 		RETURN_FALSE;
+ 	}
+ 	if (strlen(command) != command_len) {
+-		php_error_docref(NULL, E_WARNING, "NULL byte detected. Possible attack");
++		php_error_docref(NULL TSRMLS_CC, E_WARNING, "NULL byte detected. Possible attack");
+ 		RETURN_FALSE;
+ 	}
+ 
