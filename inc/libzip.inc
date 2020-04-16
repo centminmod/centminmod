@@ -65,7 +65,7 @@ libzip_install() {
   cmake3 ..
   make${MAKETHREADS}
   make install
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
       if [[ "$(uname -m)" = 'x86_64' ]]; then
         LIBDIR_LIBZIP='lib64'
       else

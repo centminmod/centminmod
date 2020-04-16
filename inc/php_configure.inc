@@ -113,7 +113,7 @@ fi
 
 # Enable Foreign Function Interface FFI extension
 # for PHP 7.4+ https://wiki.php.net/rfc/ffi
-if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   if [[ -z "$(rpm -qa libffi-devel)" ]]; then
     yum -q -y install libffi-devel
   fi
@@ -122,7 +122,7 @@ else
   FFI_OPT=""
 fi
 
-if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' ]]; then
+if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   # https://raw.githubusercontent.com/php/php-src/PHP-7.4/UPGRADING
   ZIPOPT='--with-zip'
   PHPGDOPT='--enable-gd'
@@ -138,7 +138,7 @@ elif [[ "$INITIALINSTALL" = [yY] ]]; then
   PHPXPMOPT="--with-xpm-dir=${PLIBDIR}"
 fi
 
-if [[ "$INITIALINSTALL" != [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$INITIALINSTALL" != [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   # https://raw.githubusercontent.com/php/php-src/PHP-7.4/UPGRADING
   ZIPOPT='--with-zip'
   PHPGDOPT='--enable-gd'
@@ -156,7 +156,7 @@ fi
 # enable CentOS 7 systemd integration for PHP-FPM versions 5.5 and higher
 # http://www.php.net/ChangeLog-5.php#5.5.0
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-  if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5 ]]; then
+  if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5  || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
       yum -y -q install systemd-devel >/dev/null 2>&1
     fi
@@ -420,7 +420,7 @@ fi
 # disable temporarily for php 7.2.0 due to libzip compile errors
 # https://gist.github.com/centminmod/d1b48ef88bda29a7e352b90fd7111ac1
 
-if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   DEVTOOLSET_PHP='y'
   GCCINTEL_PHP='y'
   # kerberos / krb5 and krb5-gasspi YUM packages on CentOS 6 is missing .pc files
@@ -461,7 +461,7 @@ if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || 
   fi
 fi
 
-if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
   PHP_LIBZIP='y'
 fi
@@ -472,7 +472,7 @@ elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
   # alias for PHP 7.2 argon support
   PHP_LIBZIP='n'
 fi
-if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   ARGONTWO_OPT=' --with-password-argon2'
   LIBSODIUM_OPT=' --with-sodium'
   echo "libzip check PHPMVER = $PHPMVER"
@@ -482,7 +482,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
   else
     LIBDIR_LIBZIP='lib'
   fi
-  if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+  if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
     # https://bugs.php.net/bug.php?id=76483
     # PHP 7.4 not finding libzip paths
     export LIBZIP_CFLAGS='-I/usr/local/include'
@@ -539,7 +539,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
     make${MAKETHREADS}
     make install
     LIBSODIUM_OPT=' --with-sodium=/usr/local'
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
       # PHP 7.4 not finding sodium paths
       export LIBSODIUM_CFLAGS='-I/usr/local/include'
       export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
@@ -656,7 +656,7 @@ if [[ "$PHPMVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMVER" = '8.0' ]]; then
+if [[ "$PHPMVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
@@ -680,63 +680,91 @@ if [[ "$PHPUVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '8.0' ]]; then
+if [[ "$PHPUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
 
 if [[ ! -f /usr/bin/icu-config ]]; then
   if [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel"
     yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=rpmforge,epel
     sar_call
   elif [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel"
     yum -q -y install libicu62 libicu62-devel --enablerepo=remi --disablerepo=epel
     sar_call
   elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel"
     yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=rpmforge,epel
     sar_call
   elif [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && ! -f /etc/yum.repos.d/rpmforge.repo ]]; then
+    echo "yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel"
     yum -q -y install libicu-last libicu-last-devel --enablerepo=remi --disablerepo=epel
     sar_call
   elif [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    echo "yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel"
     yum -q -y install libicu libicu-devel --disablerepo=rpmforge,epel
     sar_call
   else
+    echo "yum -q -y install libicu libicu-devel --disablerepo=epel"
     yum -q -y install libicu libicu-devel --disablerepo=epel
     sar_call
   fi
 fi
 if [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '62' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
+  echo "yum -y install libicu62 --enablerepo=remi"
   yum -y install libicu62 --enablerepo=remi
+  echo "yum -y swap libicu-devel libicu62-devel --enablerepo=remi"
   yum -y swap libicu-devel libicu62-devel --enablerepo=remi
 fi
 # for PHP versions lower than 7.1 switch back to system libicu versions for compatibility
-if [[ "$NEWLIBICU" = [nN] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -gt '50' ]]; then
+if [[ "$NEWLIBICU" = [nN] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config ]] && [[ "$(/usr/bin/icu-config --version| cut -d . -f1)" -gt '50' ]]; then
+  echo "downgrade libicu back from $(/usr/bin/icu-config --version| cut -d . -f1) to earlier version"
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
   if [ "$(rpm -ql libicu62)" ]; then
+    echo "yum -y remove libicu62 --enablerepo=remi"
     yum -y remove libicu62 --enablerepo=remi
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      echo "yum -q -y install libicu-devel --disablerepo=rpmforge,epel"
       yum -q -y install libicu-devel --disablerepo=rpmforge,epel
     else
+      echo "yum -q -y install libicu-devel --disablerepo=epel"
       yum -q -y install libicu-devel --disablerepo=epel
     fi
   fi
   if [ "$(rpm -ql libicu62-devel)" ]; then
+    echo "yum -y swap libicu62-devel libicu-devel --enablerepo=remi"
     yum -y swap libicu62-devel libicu-devel --enablerepo=remi
   else
     if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+      echo "yum -q -y install libicu-devel --disablerepo=rpmforge,epel"
       yum -q -y install libicu-devel --disablerepo=rpmforge,epel
     else
+      echo "yum -q -y install libicu-devel --disablerepo=epel"
       yum -q -y install libicu-devel --disablerepo=epel
     fi
   fi
 fi
 if [[ "$CENTOS_SIX" = '6' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '50' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
+  echo "yum -y install libicu-last --enablerepo=remi"
   yum -y install libicu-last --enablerepo=remi
+  echo "yum -y remove libicu-devel"
   yum -y remove libicu-devel
+  echo "yum -y install libicu-last-devel --enablerepo=remi"
   yum -y install libicu-last-devel --enablerepo=remi
+fi
+
+if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    LIBDIR_LIBICU='lib64'
+  else
+    LIBDIR_LIBICU='lib'
+  fi
+  export ICU_CFLAGS='-I/usr/include'
+  export ICU_LIBS="-L/usr/${LIBDIR_LIBICU} -licuio -licui18n -licuuc -licudata"
 fi
 
 if [[ ! -f /usr/bin/pspell-config ]]; then
@@ -814,14 +842,14 @@ fi
 
 if [[ "$PHPMVER" > 7 || "$PHPMUVER" > 7 ]]; then
   if [[ "$(rpm -ql libwebp | grep libwebp.so >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
       LIBVPXOPT=' --with-webp'
     else
       LIBVPXOPT=' --with-webp-dir=/usr'
     fi
   else
     time yum${CACHESKIP} -y install libwebp libwebp-devel
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
       LIBVPXOPT=' --with-webp'
     else
       LIBVPXOPT=' --with-webp-dir=/usr'
@@ -985,7 +1013,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 fi
 
 # set_intelflags
-if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+if [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]] && [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
   # CLANG_PHP='y'
 
@@ -1005,7 +1033,7 @@ elif [[ "$(grep -c "processor" /proc/cpuinfo)" -lt '2' ]]; then
   # Disable php intel optimisation flags if less than 2 cpu threads
   # detected due to being very very slow for php compile times
   GCCINTEL_PHP='n'
-elif [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+elif [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   # Enable faster clang compiler for PHP if less than 2 cpu threads
   # CLANG_PHP='y'
 
@@ -1087,7 +1115,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # PGO PHP7 on CentOS 6 might have GCC too old 4.4.7 so use devtoolset=3 GCC 4.9
   # initial php install
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
@@ -1157,8 +1185,9 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       fi
     fi
   fi
+
   # php upgrades
-  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
@@ -1228,9 +1257,10 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       fi
     fi
   fi
+
   # CentOS 7 use devtoolset-4 GCC 5.2 if it's detected
   # initial php install
-  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
@@ -1320,8 +1350,9 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     fi
   fi
+
   # php upgrades
-  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
@@ -1799,7 +1830,7 @@ sar_call
     echo
     echo "php_configure.inc make${MAKETHREADS_PHP}"
     echo "PHP_PGO = $PHP_PGO"
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
         # get cpu core to fix for PGO training for optimal cpu cache access
         pgo_cpurange=$(echo $(($(nproc)-1)))
         pgo_cpulist=$(seq 1 $pgo_cpurange)

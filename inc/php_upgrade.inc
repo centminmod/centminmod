@@ -315,11 +315,11 @@ else
     echo
     # validate php version format is 7.3.x and not 7.3
     phpver_formatcheck="$(echo "$phpver" | grep '[0-9].[0-9].[0-9]')"
-    if [[ ! "$phpver_formatcheck" ]]; then
+    if [[ ! "$phpver_formatcheck" && "$phpver" != 'NGDEBUG' ]]; then
         echo
         echo "error: invalid php version format entered you entered: $phpver"
         echo
-        echo "correct exact format example is 7.3.12 not 7.3"
+        echo "correct exact format example is 7.3.17 not 7.3"
         echo "latest php versions are listed at https://php.net/"
         echo
         read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
@@ -612,7 +612,7 @@ fi
     fi
     echo "PHPMUVER = $PHPMUVER"
     echo "PHP_PGO = $PHP_PGO"
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
         echo "make${MAKETHREADS_PHP} prof-gen"
         time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
@@ -1020,7 +1020,7 @@ fi
 
 addmysql_legacyinstall
 
-if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' ]]; then
+if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
@@ -1175,19 +1175,33 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     #     cecho "rm -f ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     # fi
-    if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/mcrypt.ini" ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/mcrypt.ini" ]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
         cecho "rm -f ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
         echo
     fi
-    if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/geoip.ini" ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         cecho "rm -f ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         echo
     fi
-    if [[ "$PHPMUVER" = '8.0' && -f "${CONFIGSCANDIR}/imagick.ini" ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/imagick.ini" $boldyellow
         cecho "rm -f ${CONFIGSCANDIR}/imagick.ini" $boldyellow
+        echo
+    fi
+    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
+        # disable igbinary on PHP 8.0+ due to segfaulting
+        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/igbinary.ini" $boldyellow
+        rm -f ${CONFIGSCANDIR}/igbinary.ini
+        echo
+    fi
+    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/redis.ini" ]; then
+        # disable redis on PHP 8.0+ due to segfaulting
+        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/redis.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/redis.ini" $boldyellow
+        rm -f ${CONFIGSCANDIR}/redis.ini
         echo
     fi
     echo
@@ -1209,7 +1223,7 @@ fi
         cecho "* PHP compiled with CPU_MARCH=$CPU_MARCH" $boldgreen
     fi
     cecho "* PHP upgraded and auto reinstalled PHP extensions" $boldgreen
-    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' ]]; then
+    if [[ "$PHP_PGO" = [yY] ]] && [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
         cecho "* PHP_PGO='y' detected. PHP compiled with Profile Guided Optimizations" $boldgreen
         cecho "* https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php" $boldgreen
     fi
