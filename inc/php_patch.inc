@@ -302,7 +302,6 @@ php_patches() {
         dos2unix php5640-79329.patch
         patch -p1 < php5640-79329.patch
       fi
-    fi
       # PHP 5.6 bug #79330 https://bugs.php.net/bug.php?id=79330
       if [ ! -f php5640-79330.patch ]; then
         echo
@@ -313,7 +312,6 @@ php_patches() {
         dos2unix php5640-79330.patch
         patch -p1 < php5640-79330.patch
       fi
-    fi
       # PHP 5.6 bug #79465 https://bugs.php.net/bug.php?id=79465
       if [ ! -f php5640-79465.patch ]; then
         echo
