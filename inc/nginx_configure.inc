@@ -3558,7 +3558,14 @@ fi
     else
       CM_COMMIT_LAST=''
     fi
-    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}"
+    if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+      # if ngx_brotli modeule is enabled add it's commit tag to nginx build tag for easier tracking
+      BROTLI_COMMIT_LAST="$(git --git-dir=${DIR_TMP}/ngx_brotli/.git rev-parse --short HEAD)"
+      NGX_BROTLI_TAG="-br-${BROTLI_COMMIT_LAST}"
+    else
+      NGX_BROTLI_TAG=''
+    fi
+    SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}"
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then
           pwd
