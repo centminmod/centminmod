@@ -118,7 +118,7 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
   HTTPTWO_MAXREQUESTS='http2_max_requests 5000;'
 elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
-  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/ | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -o reuseport )" != 'reuseport' ]]; then
+  if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -o reuseport )" != 'reuseport' ]]; then
     # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
     NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
     if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
