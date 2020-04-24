@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='497'
+SCRIPT_INCREMENTVER='498'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2020'
@@ -2367,6 +2367,11 @@ if [[ "$(service postfix status >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
   sleep 2
   service postfix restart
 fi
+
+# if [[ "$PUREFTPD_DISABLED" != [yY] && "$(service pure-ftpd status >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+#   sleep 2
+#   service pure-ftpd restart
+# fi
 
 if [[ "$(service csf status >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
   sleep 2
