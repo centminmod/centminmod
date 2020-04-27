@@ -87,6 +87,16 @@ return
 
 ###########################################################
 
+if [ "$(id -u)" != 0 ]; then
+  echo "script needs to be run as root user" >&2
+  if [ "$(id -Gn | grep -o wheel)" ]; then
+    echo "if using a sudo user, use:" >&2
+    echo >&2
+    echo "sudo ${PWD}/$0" >&2
+  fi
+  exit 1
+fi
+
 shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
