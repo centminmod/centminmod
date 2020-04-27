@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='500'
+SCRIPT_INCREMENTVER='501'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/03/2020'
@@ -47,6 +47,18 @@ DISCLAIMER='This software is provided "as is" in the hope that it will be useful
 # PLEASE MODIFY VALUES BELOW THIS LINE ++++++++++++++++++++++++++++++++++++++
 # Note: Please enter y for yes or n for no.
 #####################################################
+SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
+
+if [ "$(id -u)" != 0 ]; then
+  echo "script needs to be run as root user" >&2
+  if [ "$(id -Gn | grep -o wheel)" ]; then
+    echo "if using a sudo user, switch to full root first:" >&2
+    echo >&2
+    echo "sudo -i" >&2
+  fi
+  exit 1
+fi
+
 shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
@@ -55,7 +67,6 @@ done
 HN=$(uname -n)
 # Pre-Checks to prevent screw ups
 DIR_TMP='/svr-setup'
-SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 
 source "inc/memcheck.inc"
 TMPFSLIMIT=2900000
