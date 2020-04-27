@@ -90,9 +90,9 @@ return
 if [ "$(id -u)" != 0 ]; then
   echo "script needs to be run as root user" >&2
   if [ "$(id -Gn | grep -o wheel)" ]; then
-    echo "if using a sudo user, use:" >&2
+    echo "if using a sudo user, switch to full root first:" >&2
     echo >&2
-    echo "sudo ${PWD}/$0" >&2
+    echo "sudo -i" >&2
   fi
   exit 1
 fi
