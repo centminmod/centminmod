@@ -513,6 +513,18 @@ sar_call() {
   $SARCALL 1 1
 }
 
+double_check_wget_bc() {
+  if [ ! -f /usr/bin/wget ]; then
+    yum -y -q install wget
+  fi
+  if [ ! -f /usr/bin/bc ]; then
+    yum -y -q install bc
+  fi
+  if [ ! -f /usr/bin/nano ]; then
+    yum -y -q install nano
+  fi
+}
+
 systemstats() {
   if [ -d /root/centminlogs ]; then
     sar -u > /root/centminlogs/sar-u-installstats.log
@@ -1409,6 +1421,7 @@ if [[ "$DEF" = 'novalue' ]]; then
         SYSTEMD_FACEBOOKRPM='y'
       fi
     fi
+    double_check_wget_bc
     source_pcreinstall
     source_wgetinstall
   fi
