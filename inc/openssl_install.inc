@@ -68,9 +68,11 @@ installopenssl() {
         if [[ "$CENTOS_SIX" -eq '6' ]]; then
             if [ ! -f /usr/bin/automake-1.5 ]; then
                 yum -y install automake15
+                autoreconf -f -i
             fi
             if [ ! -f /usr/bin/automake-1.6 ]; then
                 yum -y install automake16
+                autoreconf -f -i
             fi
         fi
         if [[ "$INITIALINSTALL" != [yY] ]]; then

@@ -40,15 +40,15 @@ checkimagicksys() {
     cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
     if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
         if [ -f /etc/yum.repos.d/remi.repo ]; then
-            if [[ $(rpm -q ImageMagick6 >/dev/null 2>&1; echo $?) = '0' ]] && [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) != '0' ]]; then
+            if [[ "$(rpm -qi ImageMagick | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' || "$(rpm -qi ImageMagick6 | grep 'Release' | grep -o remi >/dev/null 2>&1; echo $?)" = '0' ]]; then
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     yum clean all >/dev/null 2>&1
                     if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                         yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
-                        time yum -y install ImageMagick6-devel ImageMagick6-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time yum -y install ImageMagick-devel ImageMagick-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     fi
-                    yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y update ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             else
                 if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -60,7 +60,7 @@ checkimagicksys() {
                     if [[ "$(rpm -qa libwebp-devel)" ]]; then
                         yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                     fi
-                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
         elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
@@ -92,7 +92,7 @@ checkimagicksys() {
                     if [[ "$(rpm -qa libwebp-devel)" ]]; then
                         yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                     fi
-                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
                 echo
             else
@@ -113,7 +113,7 @@ checkimagicksys() {
                     if [[ "$(rpm -qa libwebp-devel)" ]]; then
                         yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                     fi
-                    yum -y install ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
         fi
@@ -159,10 +159,10 @@ if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '
         git log -3
     elif [[ -d "imagick-php7" && ! -d "imagick-php7/.git" ]]; then
         rm -rf imagick-php7
-        git clone -b phpseven https://github.com/mkoppanen/imagick.git imagick-php7
+        git clone https://github.com/mkoppanen/imagick.git imagick-php7
     else
         rm -rf imagick-php7
-        git clone -b phpseven https://github.com/mkoppanen/imagick.git imagick-php7
+        git clone https://github.com/mkoppanen/imagick.git imagick-php7
     fi
     echo
     echo "compiling imagick PHP extension for PHP 7.x ..."
@@ -180,7 +180,7 @@ else
         make clean
     fi
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
     make${MAKETHREADS}
     make install
 fi # php 7 or not

@@ -1,3 +1,9 @@
+fix_variables_hash_max_size() {
+  if [[ -f /usr/local/nginx/conf/nginx.conf && "$(grep 'variables_hash_max_size 64' /usr/local/nginx/conf/nginx.conf)" ]]; then
+    sed -i 's|variables_hash_max_size 64;|variables_hash_max_size 2048;|' /usr/local/nginx/conf/nginx.conf
+  fi
+}
+
 c7mariadb_tmpdir() {
   # fix for mariadb 10.1.16 introduced ProtecHome=true setting
   # https://jira.mariadb.org/browse/MDEV-10399
@@ -734,6 +740,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   libc_fix
   varnishfour_setup
   c7mariadb_tmpdir
+  fix_variables_hash_max_size
 fi
 
 }

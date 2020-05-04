@@ -263,7 +263,7 @@ if [[ "$UALL" = 'y' ]]; then
     recompileopenssl='n'
 else
     echo ""
-    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION}): " ngver
+    read -ep "Install which version of Nginx? (version i.e. $NGINX_VERSION): " ngver
 
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
@@ -382,6 +382,7 @@ then
     cd pcre-${PCRE_VERSION}
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
+        autoreconf -f -i
     fi
     ./configure
     make${MAKETHREADS}
@@ -438,6 +439,13 @@ if [[ "$NGINXPATCH" = [yY] ]]; then
 fi
 
 funct_nginxconfigure
+
+if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+    # workaround for pcre error
+    pushd "${DIR_TMP}/pcre-${PCRE_VERSION}"
+    autoreconf -f -i
+    popd
+fi
 
 ################
 # error check
