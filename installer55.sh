@@ -1438,7 +1438,7 @@ echo "--------------------------------------------------------------------------
 echo "---------------------------------------------------------------------------"
 } 2>&1 | tee "/root/centminlogs/install_time_stats_${DT}.log"
   cat "/root/centminlogs/install_time_stats_${DT}.log" >> "/root/centminlogs/installer_${DT}.log"
-  cat "/root/centminlogs/installer_${DT}.log" | egrep -v 'DOPENSSL_PIC|\/opt\/openssl\/share\/|fpm-build\/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]' > "/root/centminlogs/installer_${DT}_minimal.log"
+  cat "/root/centminlogs/installer_${DT}.log" | egrep -v '\*\*\*\*\*\*|csf: |Flushing chain  CC |and iptables DROP|The set with the given name does not exist|csf: IPSET adding|\.\.\.\.\.\.\.\.\.\.|DOPENSSL_PIC|\/opt\/openssl\/share\/|fpm-build\/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]' > "/root/centminlogs/installer_${DT}_minimal.log"
   systemstats
 fi
 
