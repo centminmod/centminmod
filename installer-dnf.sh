@@ -154,6 +154,17 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+  echo
+  echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
+  echo "To follow CentOS 8 compatibility progress read & subscribe to thread at:"
+  echo "https://community.centminmod.com/threads/centmin-mod-centos-8-compatibility-worklog.18372/"
+  echo "You can read CentOS 8 specific discussions via prefix tag link at:"
+  echo "https://community.centminmod.com/forums/centos-redhat-oracle-linux-news.31/?prefix_id=81"
+  exit 1
+  echo
+fi
+
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
