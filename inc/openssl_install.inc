@@ -1131,7 +1131,11 @@ fi
         if [ -f "${BORINGSSL_DIR}/boringssl/build/tool/bssl" ]; then
             echo "ln -sf ${BORINGSSL_DIR}/boringssl/build/tool/bssl /usr/local/bin/bssl"
             ln -sf "${BORINGSSL_DIR}/boringssl/build/tool/bssl" /usr/local/bin/bssl
+            mkdir -p /opt/boringssl/bin
+            echo "\cp -af ${BORINGSSL_DIR}/boringssl/build/tool/bssl /opt/boringssl/bin/bssl"
+            \cp -af "${BORINGSSL_DIR}/boringssl/build/tool/bssl" /opt/boringssl/bin/bssl
             ls -lah /usr/local/bin/bssl
+            ls -lah /opt/boringssl/bin/bssl
         fi
         unset TMPDIR
         boringsslinstallendtime=$(TZ=UTC date +%s.%N)
