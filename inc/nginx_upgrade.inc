@@ -798,7 +798,7 @@ if [[ "$NGINX_ZERODT" = [nN] ]]; then
   echo ""
   echo "nginx seems to be still running, trying to stop it again..."
   echo ""
-  # /etc/init.d/nginx stop and suppress any error messages
+  # service nginx stop and suppress any error messages
   /usr/local/sbin/nginx -s stop >/dev/null 2>&1
   sleep "$NGINXUPGRADESLEEP"
   fi
@@ -922,7 +922,7 @@ fi
        # zlibsymlink_fix
 
        if [[ "$NGINX_ZERODT" = [nN] ]]; then
-         /etc/init.d/nginx restart
+         service nginx restart
        elif [[ "$NGINX_ZERODT" = [yY] ]]; then
          echo "---------------------------------------------------------------------------"
          echo "nginx master id: $GETNGXPID"
@@ -1048,6 +1048,9 @@ fi
             cecho "* CLOUDFLARE_ZLIB='y' detected but cpu SSE4.2 or AES-NI support not available" $boldgreen
             cecho "* Fallback to standard zlib support in Nginx due to SSE4.2 not supported" $boldgreen
             echo
+        fi
+        if [[ "$NGINX_STAPLE_CACHE_OVERRIDE" = [yY] ]]; then
+            cecho "* NGINX_STAPLE_CACHE_OVERRIDE='y' detected NGINX_STAPLE_CACHE_TTL='${NGINX_STAPLE_CACHE_TTL}' set" $boldgreen
         fi
         cecho "* nginx updated" $boldgreen
         if [[ "$ngver" = 'master' ]]; then

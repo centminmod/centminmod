@@ -248,6 +248,8 @@ fi
 if [[ "$NGINX_ZLIBNG" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
   zlibng_install
   ZLIBNG_OPT=' --with-zlib=../zlib-ng'
+  CLOUDFLARE_ZLIB='n'
+  NGINX_ZLIBCUSTOM='n'
 else
   ZLIBNG_OPT=""
 fi
@@ -354,7 +356,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     echo > /usr/local/nginx/conf/listener_http3.conf
   fi
 
-  if [[ "$NGINX_IOURING_PATCH" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
+  if [[ "$NGINX_IOURING_PATCH_BETA" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
     NGX_IORING_OPT=' --with-file-aio'
   fi
 
@@ -367,7 +369,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015000' && "$DETECT_NGXVER" -le '1015007' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015008' && "$DETECT_NGXVER" -le '1017004' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015008' && "$DETECT_NGXVER" -le '1017010' ]]; then
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
     NGX_HPACK_OPT=""
@@ -894,7 +896,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     fi
     # disable clang compiler and switch to gcc compiler due to clang 3.4.2 errors when enabling
     # cloudflare zlib
-    if [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+    if [[ "$CLANG" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
+      if [[ "$CLANG" = [yY] || "$CLANG_FOUR" = [yY] || "$CLANG_FIVE" = [yY] || "$CLANG_SIX" = [yY] || "$CLANG_SEVEN" = [yY] || "$CLANG_EIGHT" = [yY] ]] && [ -f /usr/bin/clang ]; then
+        CLANG='y'
+      fi
+    elif [[ "$CLANG" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
       CLANG='y'
       if [[ "$CLANG_MASTER" = [yY] && -f /opt/sbin/llvm-release_master/bin/clang ]]; then
         CLANG_FOUR='n'
@@ -907,6 +913,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         CLANG_SIX='n'
         CLANG_SEVEN='n'
         CLANG_EIGHT='y'
+        CLANG_MASTER='n'
+      elif [[ "$CLANG_SEVEN" = [yY] && -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+        CLANG_FOUR='n'
+        CLANG_FIVE='n'
+        CLANG_SIX='n'
+        CLANG_SEVEN='y'
+        CLANG_EIGHT='n'
         CLANG_MASTER='n'
       elif [[ "$CLANG_SEVEN" = [yY] && -f /opt/sbin/llvm-release_70/bin/clang ]]; then
         CLANG_FOUR='n'
@@ -933,10 +946,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       fi
     elif [[ "$CLANG" = [yY] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
-      DEVTOOLSETSEVEN='y'
+      DEVTOOLSETEIGHT='y'
+      DEVTOOLSETSEVEN='n'
     elif [[ "$CLANG" = [nN] && "$CENTOS_SIX" -eq '6' ]]; then
       CLANG='n'
-      DEVTOOLSETSEVEN='y'
+      DEVTOOLSETEIGHT='y'
+      DEVTOOLSETSEVEN='n'
     fi
   fi
 
@@ -1303,6 +1318,15 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       echo "ls -lahR /usr/local/lib/lua/${BUILDLUA_VER}/resty/"
       ls -lahR /usr/local/lib/lua/${BUILDLUA_VER}/resty/
       echo
+      echo "setup lua_package_path include file"
+      echo "lua_package_path '/usr/local/lib/lua/?.lua;/usr/local/lib/lua/5.1/?.lua;/usr/local/lib/lua/ngx/?.lua;/usr/local/lib/lua/resty/?.lua;;';" > /usr/local/nginx/conf/lua-package-path-include.conf
+
+      LUAPACKAGEPATH_INCLUDECHECK=$(grep '\/usr\/local\/nginx\/conf\/lua-package-path-include.conf' /usr/local/nginx/conf/nginx.conf)
+      if [[ -z "$LUAPACKAGEPATH_INCLUDECHECK" ]]; then
+        sed -i 's|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;|\/usr\/local\/nginx\/conf\/fastcgi_param_https_map.conf;\ninclude \/usr\/local\/nginx\/conf\/lua-package-path-include.conf;|g' /usr/local/nginx/conf/nginx.conf
+        #service nginx restart >/dev/null 2>&1
+      fi
+      echo
       cd "${DIR_TMP}"
   else
     LUAOPT=""
@@ -1317,6 +1341,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       if [ -f /usr/local/nginx/modules/ngx_http_lua_module.so.old ]; then
         rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so.old
       fi
+    echo > /usr/local/nginx/conf/lua-package-path-include.conf
   fi
 
   if [[ "$NGINX_SPDY" = [yY] ]]; then
@@ -2659,6 +2684,11 @@ if [[ "$CLANG" = [yY] ]]; then
     time $YUMDNFBIN -q -y install clang clang-devel${DISABLEREPO_DNF}
   fi
   # ensure devtoolset gcc versions are installed
+  # if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+  #   if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
+  #     scl_install
+  #   fi
+  # fi
   if [[ "$DEVTOOLSETEIGHT" = [yY] && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
     if [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f1)" -ge '1' ]] && [[ "$(echo "$NGXPGSPEED_VER" | cut -d . -f2)" -ge '10' ]] && [[ "$NGINX_PAGESPEED" = [yY] ]] && [[ "$CENTOS_SIX" = '6' ]]; then
       scl_install
@@ -2701,7 +2731,12 @@ if [[ "$CLANG" = [yY] ]]; then
 #   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
 # fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' && "$CLANG" = [yY] ]]; then
+  if [[ ! -f /usr/bin/clang ]]; then
+    scl_install
+    CLANG_NEWBIN='/usr/bin/clang'
+  fi
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] ]]; then
   if [[ ! -f /opt/rh/llvm-toolset-7/root/usr/bin/clang && ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc ]]; then
     scl_install
     CLANG_NEWBIN='/opt/rh/llvm-toolset-7/root/usr/bin/clang'
@@ -2719,6 +2754,8 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f /opt/sbin/llvm-relea
   CLANG_NEWBIN='/opt/sbin/llvm-release_50/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f /opt/sbin/llvm-release_60/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_60/bin/clang'
+elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f /opt/rh/llvm-toolset-7.0/root/usr/bin/clang ]]; then
+  CLANG_NEWBIN='/opt/rh/llvm-toolset-7.0/root/usr/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f /opt/sbin/llvm-release_70/bin/clang ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_70/bin/clang'
 elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f /opt/sbin/llvm-release_80/bin/clang ]]; then
@@ -2727,7 +2764,7 @@ elif [[ "$CENTOS_SEVEN" = '7' && "$CLANG_MASTER" = [yY] ]]; then
   CLANG_NEWBIN='/opt/sbin/llvm-release_master/bin/clang'
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
+if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FOUR" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_FIVE" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SIX" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_SEVEN" = [yY] && -f "${CLANG_NEWBIN}" ]] || [[ "$CENTOS_SEVEN" = '7' && "$CLANG_EIGHT" = [yY] && -f "${CLANG_NEWBIN}" ]]; then
   # if [ -f /opt/sbin/llvm/lib/LLVMgold.so ]; then
   #   LLVMLTO_OPT=' -flto'
   #   # export AR="$BUILD_DIR/llvmgold.binutils/binutils/ar"
@@ -2883,6 +2920,35 @@ if [[ "$CENTOS_SIX" = '6' && "$CLANG" = [nN] && "$(uname -m)" = 'x86_64' ]]; the
       export CC="gcc"
       export CXX="g++"
     fi
+  elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    # update devtoolset-8 repo
+    # place holder if need to update devtoolset-8 in future
+    export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-8/root/usr/bin/gcc"
+    DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+    DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-format-extra-args'
+    DEVTOOLSETNINE_FALLTHROUGH=""
+    DEVTOOLSETNINE_EXTRAFLAGS=""
+    DEVTOOLSETSEVEN_FALLTHROUGH=""
+    DEVTOOLSETSEVEN_EXTRAFLAGS=""
+    # PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+    PS_FLAGS=""
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-8/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
   elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
     # update devtoolset-7 repo
     # place holder if need to update devtoolset-7 in future
@@ -2963,7 +3029,10 @@ fi
 
 # devtoolset-4 usage of GCC 4.9 even for CentOS7
 if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
-  if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+  if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]] || [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        scl_install
+    fi
     if [[ "$DEVTOOLSETEIGHT" = [yY] && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
     fi
@@ -3032,6 +3101,32 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       else
         source /opt/gcc8/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc ]]; then
+      DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETEIGHT_FALLTHROUGH=""
+      DEVTOOLSETEIGHT_EXTRAFLAGS=""
+      DEVTOOLSETSEVEN_FALLTHROUGH=""
+      DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/rh/devtoolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        source /opt/rh/devtoolset-9/enable
         which gcc
         which g++
         unset CC
@@ -3177,6 +3272,33 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       export CC="gcc"
       export CXX="g++"
     fi
+  elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-9/root/usr/bin/gcc"
+    DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+    DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting'
+    DEVTOOLSETEIGHT_FALLTHROUGH=""
+    DEVTOOLSETEIGHT_EXTRAFLAGS=""
+    DEVTOOLSETSEVEN_FALLTHROUGH=""
+    DEVTOOLSETSEVEN_EXTRAFLAGS=""
+    # PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
+    PS_FLAGS=""
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+      source /opt/rh/devtoolset-9/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache gcc"
+      export CXX="ccache g++"
+    else
+      source /opt/rh/devtoolset-9/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="gcc"
+      export CXX="g++"
+    fi
   elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-8/root/usr/bin/gcc"
     DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -3303,9 +3425,18 @@ egrep '\-march=|\-mtune|\-mavx|\-msse4|\-mpclmul' ${CENTMINLOGDIR}/gcc_diff_nati
   echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
   echo
 
+NGINX_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+if [[ "$GCC_FALIGN_FUNCTION" = [yY] ]] && [[ "$NGINX_CPU_MARCH" = 'nehalem' || "$NGINX_CPU_MARCH" = 'westmere' || "$NGINX_CPU_MARCH" = 'core2' || "$NGINX_CPU_MARCH" = 'bonnell' || "$NGINX_CPU_MARCH" = 'silvermont' ]]; then
+  NGINX_FALIGN_FUCTION_OPT=''
+elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -gt '40805' && "$GCC_FALIGN_FUNCTION" = [yY] ]]; then
+  NGINX_FALIGN_FUCTION_OPT=' -falign-functions=32'
+else
+  NGINX_FALIGN_FUCTION_OPT=''
+fi
+
 if [[ "$CLANG" = [nN] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
   CCM=64
-  MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GCC_NONNATIVEFLAGS}${NGX_FOPENOPT} "
+  MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${GCC_NONNATIVEFLAGS}${NGX_FOPENOPT}${NGINX_FALIGN_FUCTION_OPT} "
 elif [[ -f "${CLANG_NEWBIN}" && "$CLANG" = [yY] ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' ]] && [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
   CCM=64
   MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}${NGX_FOPENOPT} "
@@ -3321,10 +3452,6 @@ elif [[ "$(uname -m)" != 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' ]]; then
 else
   MTUNEOPT=""
 fi
-
-# fix no longer needed with libressl 2.3.3
-# https://community.centminmod.com/threads/libressl-2-3-3-released.6788/
-# libresslcompile_fix
 
 if [[ "$CLANG" = [yY] ]]; then
   if [[ "$NGINX_PASSENGER" = [yY] ]]; then
@@ -3524,13 +3651,26 @@ fi
       SETBUILD_ENV="-$(virt-what)"
       SETBUILD_ENV=$(echo $SETBUILD_ENV | tr -d '\n' | sed -e 's| |-|g')
     fi
+    # tag nginx builds with centmin mod latest commit for better troubleshooting
+    if [ -d "${CM_INSTALLDIR}/.git" ]; then
+      CM_COMMIT_LAST="-$(git --git-dir=${CM_INSTALLDIR}/.git rev-parse --short HEAD)"
+    else
+      CM_COMMIT_LAST=''
+    fi
+    if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+      # if ngx_brotli modeule is enabled add it's commit tag to nginx build tag for easier tracking
+      BROTLI_COMMIT_LAST="$(git --git-dir=${DIR_TMP}/ngx_brotli/.git rev-parse --short HEAD)"
+      NGX_BROTLI_TAG="-br-${BROTLI_COMMIT_LAST}"
+    else
+      NGX_BROTLI_TAG=''
+    fi
     if [[ "$NGINX_HTTP3" = [yY] ]]; then
       if [ -f "${DIR_TMP}/quiche/quiche_commit.log" ]; then
         quiche_commit=$(cat ${DIR_TMP}/quiche/quiche_commit.log)
       fi
-      SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}-quiche-${quiche_commit}"
+      SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}-quiche-${quiche_commit}"
     else
-      SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}"
+      SETBUILD_VALUE="${SETBUILD_DATE}-${SETBUILD_OS}${SETBUILD_ENV}${CM_COMMIT_LAST}${NGX_BROTLI_TAG}"
     fi
     if [[ "$NGXMODULE_ALTORDER" = [yY] ]]; then
       if [[ "$asknginxipv" = [yY] || "$NGINX_IPV" = [yY] ]]; then

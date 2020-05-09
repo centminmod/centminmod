@@ -1,3 +1,20 @@
+ocsp_ttl_override() {
+  if [[ "$NGINX_STAPLE_CACHE_OVERRIDE" = [yY] ]]; then
+    if [ "$ngver" ]; then
+      NGINX_VER_OCSP="$ngver"
+      echo "$NGINX_VER_OCSP"
+    else
+      NGINX_VER_OCSP="$NGINX_VERSION"
+      echo "$NGINX_VER_OCSP"
+    fi
+    echo "patching nginx OCSP stapling response cache time set to: $NGINX_STAPLE_CACHE_TTL"
+    grep 'staple->refresh = ngx_max' "/svr-setup/nginx-${NGINX_VER_OCSP}/src/event/ngx_event_openssl_stapling.c"
+    sed -i "s|staple->refresh = ngx_max(ngx_min(valid - 300, now + 3600), now + 300)|staple->refresh = ngx_max(ngx_min(valid - 300, now + $NGINX_STAPLE_CACHE_TTL), now + 300)|" "/svr-setup/nginx-${NGINX_VER_OCSP}/src/event/ngx_event_openssl_stapling.c"
+    grep 'staple->refresh = ngx_max' "/svr-setup/nginx-${NGINX_VER_OCSP}/src/event/ngx_event_openssl_stapling.c"
+  fi
+}
+
+
 nginx_httpthree_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -35,7 +52,7 @@ iouring_patch() {
   fi
   KERNEL_NUMERICVER=$(uname -r | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }')
   # for nginx 1.17.0+ and Linux Kernel 5.1+
-  if [[ "$NGINX_IOURING_PATCH" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
+  if [[ "$NGINX_IOURING_PATCH_BETA" = [yY] && "$DETECT_NGXVER" -gt '1017000' && "$KERNEL_NUMERICVER" -ge '5001000000' ]]; then
     if [[ -d "${DIR_TMP}/nginx-${NGINX_PUSHBASE}" ]]; then
       pushd "$DIR_TMP"
       rm -rf liburing
@@ -59,8 +76,10 @@ iouring_patch() {
         patch -p1 < "$CUR_DIR/patches/nginx/nginx_io_uring.patch"
         echo
         sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
+        sed -i '/^#aio on/d' /usr/local/nginx/conf/nginx.conf
+        sed -i 's|^sendfile off;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
         sed -i 's|^sendfile on;|sendfile off;\naio on;|' /usr/local/nginx/conf/nginx.conf
-        echo "patched nginx for Linux 5.1 Kernel AIO io_ring"
+        echo "patched nginx for Linux 5.1+ Kernel AIO io_ring"
         popd
         # raise nginx max memlock limits
         if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -83,6 +102,7 @@ iouring_patch() {
     fi
   else
     sed -i '/^aio on/d' /usr/local/nginx/conf/nginx.conf
+    sed -i '/^#aio on/d' /usr/local/nginx/conf/nginx.conf
     sed -i 's|^sendfile off;|sendfile on;|' /usr/local/nginx/conf/nginx.conf
   fi
 }
@@ -256,14 +276,14 @@ ngx_hpack_patch() {
     echo "patching nginx http/2 full HPACK encoding for nginx 1.15.4-1.15.7"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015008' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1017004' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1015008' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1017010' ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
     echo 
-    echo "patching nginx http/2 full HPACK encoding for nginx 1.17.4"
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.17.10"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
@@ -569,7 +589,7 @@ patchnginx() {
      elif [[ "$DETECT_NGXVER" -ge '1015008' && "$DETECT_NGXVER" -le '1015012' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
-     elif [[ "$DETECT_NGXVER" -ge '1017001' && "$DETECT_NGXVER" -le '1017004' ]]; then
+     elif [[ "$DETECT_NGXVER" -ge '1017001' && "$DETECT_NGXVER" -le '1017010' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
      fi
@@ -602,7 +622,7 @@ patchnginx() {
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
       fi
-     elif [[ "$DETECT_NGXVER" -ge '1017001' && "$DETECT_NGXVER" -le '1017004' ]]; then
+     elif [[ "$DETECT_NGXVER" -ge '1017001' && "$DETECT_NGXVER" -le '1017010' ]]; then
       if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
@@ -613,6 +633,7 @@ patchnginx() {
       rm -rf "${NGINXTLSPATCH_NAME}"
      fi
   fi
+  ngx_hpack_patch
   if [[ "$DETECT_NGXVER" -eq '1017002' ]]; then
     # fix gzip zero size buf alerts
     # https://github.com/nginx/nginx/commit/39c40428f93db246a9a27e7a109413fae46e195d
@@ -623,7 +644,7 @@ patchnginx() {
   fi
   nginx_httpthree_patch
   iouring_patch
-  ngx_hpack_patch
+  ocsp_ttl_override
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
