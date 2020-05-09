@@ -1,4 +1,7 @@
 cmake_alternatives() {
+    if [ ! -f /usr/bin/cmake3 ]; then
+        yum -q -y install cmake3
+    fi
     if [[ -f /usr/bin/cmake3 && ! "$(alternatives --display cmake | grep 'link currently points to /usr/bin/cmake3')" ]]; then
       echo
       echo "setup cmake to cmake3 alternatives mapping"    
@@ -1065,11 +1068,14 @@ fi
         fi
 
         pushd "$DIR_TMP"
+        cmake_alternatives
         rm -rf quiche
         rm -rf quiche-bin
         git clone --recursive https://github.com/cloudflare/quiche
         # cp -a quiche quiche-bin
         pushd quiche
+        # h3-27 hang rollback
+        # git checkout a46dffa
         quiche_commit=$(git log --pretty=format:'%h' -n 1)
         echo "$quiche_commit" | tee quiche_commit.log
         popd
