@@ -1,4 +1,7 @@
 cmake_alternatives() {
+    if [ ! -f /usr/bin/cmake3 ]; then
+        yum -q -y install cmake3
+    fi
     if [[ -f /usr/bin/cmake3 && ! "$(alternatives --display cmake | grep 'link currently points to /usr/bin/cmake3')" ]]; then
       echo
       echo "setup cmake to cmake3 alternatives mapping"    
