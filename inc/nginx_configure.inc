@@ -7,7 +7,7 @@ detect_tlsonethree() {
   if [ -f /usr/local/nginx/conf/ssl-include.conf ]; then
     if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'define NGX_SSL_TLSv1_3' "${NGINX_DIRINSTALL}/src/event/ngx_event_openssl.h")" ]]; then
       # Nginx supports TLS 1.3 ssl_protocols directive
-      if [ "$SSL_PROTOCOL_MODERN" = [yY] ]; then
+      if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
       elif [[ "$DISABLE_TLSONEZERO_PROTOCOL" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
@@ -15,7 +15,7 @@ detect_tlsonethree() {
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl-include.conf
       fi
     else
-      if [ "$SSL_PROTOCOL_MODERN" = [yY] ]; then
+      if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2;|' /usr/local/nginx/conf/ssl-include.conf
       elif [[ "$DISABLE_TLSONEZERO_PROTOCOL" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl-include.conf
@@ -26,7 +26,7 @@ detect_tlsonethree() {
   elif [ -f /usr/local/nginx/conf/ssl_include.conf ]; then
     if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'define NGX_SSL_TLSv1_3' "${NGINX_DIRINSTALL}/src/event/ngx_event_openssl.h")" ]]; then
       # Nginx supports TLS 1.3 ssl_protocols directive
-      if [ "$SSL_PROTOCOL_MODERN" = [yY] ]; then
+      if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$DISABLE_TLSONEZERO_PROTOCOL" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
@@ -34,7 +34,7 @@ detect_tlsonethree() {
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;|' /usr/local/nginx/conf/ssl_include.conf
       fi
     else
-      if [ "$SSL_PROTOCOL_MODERN" = [yY] ]; then
+      if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.2;|' /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$DISABLE_TLSONEZERO_PROTOCOL" = [yY] ]]; then
         sed -i 's|ssl_protocols .*|ssl_protocols  TLSv1.1 TLSv1.2;|' /usr/local/nginx/conf/ssl_include.conf
