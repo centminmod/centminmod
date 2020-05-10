@@ -243,7 +243,7 @@ redetect_tlsonethree() {
     if [[ "$OPENSSL_TLSONETHREE" = [yY] ]]; then
       # Nginx supports TLS 1.3 ssl_protocols directive
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
-        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$(grep -w "ssl_protocols  TLSv1 TLSv1.1 TLSv1.2 TLSv1.3;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
       elif [[ "$(grep -w "ssl_protocols  ${TLSONEONEPROTOCOL_OPT}TLSv1.1 TLSv1.2;" /usr/local/nginx/conf/ssl_include.conf)" ]]; then
