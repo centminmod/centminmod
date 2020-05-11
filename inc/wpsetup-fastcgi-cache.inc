@@ -222,7 +222,7 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
   SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
   HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
   HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
-  HTTPTWO_MAXREQUESTS='http2_max_requests 5000;'
+  HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
   if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -o reuseport )" != 'reuseport' ]]; then
@@ -241,7 +241,7 @@ elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_modu
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
   HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
   HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
-  HTTPTWO_MAXREQUESTS='http2_max_requests 5000;'
+  HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 else
   HTTPTWO=n
   LISTENOPT='ssl spdy'
