@@ -322,6 +322,17 @@ php_patches() {
         dos2unix php5640-79465.patch
         patch -p1 < php5640-79465.patch
       fi
+      # PHP 5.6 bug #78875 https://bugs.php.net/bug.php?id=78875
+      # PHP 5.6 bug #78875 https://bugs.php.net/bug.php?id=78876
+      if [ ! -f php5640-78875.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #78875"
+        echo "https://bugs.php.net/bug.php?id=78875"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-78875.patch php5640-78875.patch
+        dos2unix php5640-78875.patch
+        patch -p1 < php5640-78875.patch
+      fi
     fi
 
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
