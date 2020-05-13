@@ -125,13 +125,19 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
             redis_lzf_opt=''
         fi
         if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
-            if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]]; then
+            if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]]; then
                 # disable igbinary on PHP 8.0+ due to segfaulting
+                echo "redis php configure"
+                echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
                 ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
             else
+                echo "redis php configure"
+                echo "./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}"
                 ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
             fi
         else
+            echo "redis php configure"
+            echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
             ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
         fi
         make${MAKETHREADS}
@@ -168,11 +174,24 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
         fi
         if [[ -f "${PHPEXTDIRD}/igbinary.so" ]] && [ "$IGBINARY_INSTALL" == 'y' ]; then
             if [[ "$PHPMUVER" = '5.5' ]] || [[ "$INITIALINSTALL" = [yY] && "$(echo "$PHP_VERSION" | cut -d . -f1,2)" = '5.5' ]]; then
+                echo "php configure alt"
+                echo "./configure --with-php-config=/usr/local/bin/php-config"
                 ./configure --with-php-config=/usr/local/bin/php-config
             else
-                ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
+                if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]]; then
+                    # disable igbinary on PHP 8.0+ due to segfaulting
+                    echo "redis php configure alt"
+                    echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
+                    ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
+                else
+                    echo "redis php configure alt"
+                    echo "./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}"
+                    ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
+                fi
             fi
         else
+            echo "php configure alt"
+            echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
             ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
         fi
         make${MAKETHREADS}
