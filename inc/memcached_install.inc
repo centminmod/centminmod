@@ -592,7 +592,10 @@ fi
 sleep 2
 service memcached stop
 service memcached start
+echo
 service php-fpm restart
+echo
+journalctl -xe -u php-fpm --no-pager | tail -20
 echo
 echo "memcached -V"
 memcached -V

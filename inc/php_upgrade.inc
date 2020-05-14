@@ -403,7 +403,7 @@ funct_centos6check
 
     cd "$DIR_TMP"
 
-if [ "$(rpm -qa | grep '^php*' | grep -v 'phonon-backend-gstreamer')" ]; then
+if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80')" ]; then
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
     echo "yum -y erase php*"
     yum -y erase php*
@@ -563,7 +563,8 @@ fi
       exit
   else
       echo -e "\n`date`\nSuccess: PHP configure ok\n"
-        cmservice php-fpm restart
+        # cmservice php-fpm restart
+        # journalctl -xe -u php-fpm --no-pager | tail -20
   fi
 
 # error check
@@ -734,7 +735,8 @@ fi
       exit
   else
       echo -e "\n`date`\nSuccess: PHP make ok\n"
-        cmservice php-fpm restart
+      # cmservice php-fpm restart
+      # journalctl -xe -u php-fpm --no-pager | tail -20
   fi
 
 # error check
@@ -1124,6 +1126,7 @@ sar_call
       /usr/local/src/centminmod/tools/php-systemd.sh fpm-systemd
     fi
     cmservice php-fpm restart
+    journalctl -xe -u php-fpm --no-pager | tail -20
 
 phpiadmin
 

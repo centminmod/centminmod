@@ -664,23 +664,23 @@ if [[ "$PHPMUVER" = '7.0' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '7.1' ]]; then
+if [[ "$PHPMUVER" = '7.1' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '7.2' ]]; then
+if [[ "$PHPMUVER" = '7.2' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '7.3' ]]; then
+if [[ "$PHPMUVER" = '7.3' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '7.4' ]]; then
+if [[ "$PHPMUVER" = '7.4' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
+if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
@@ -712,6 +712,8 @@ if [[ ! -f /usr/bin/icu-config ]]; then
     sar_call
   fi
 fi
+# echo "NEWLIBICU=$NEWLIBICU PHPMVER=$PHPMVER PHPMUVER=$PHPMUVER sleep 60"
+# sleep 60
 if [[ "$NEWLIBICU" = [yY] && "$CENTOS_SEVEN" = '7' && -f /etc/yum.repos.d/remi.repo && -f /usr/bin/icu-config && "$(/usr/bin/icu-config --version| cut -d . -f1)" -lt '62' ]]; then
   # update centos 7 libicu 50.1 version to remi yum repo provided libicu 62.1 version
   echo "yum -y install libicu62 --enablerepo=remi"
