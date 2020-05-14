@@ -256,7 +256,7 @@ fi # FPMRPM_MEMCACHED
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 $(pidof memcached)
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-    systemctl kill memcached
+    kill -9 $(pidof memcached)
 fi
 sleep 2
 service memcached stop
@@ -587,7 +587,7 @@ fi # PHP_MEMCACHED = y
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 "$(pidof memcached)"
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
-    systemctl kill memcached
+    kill -9 $(pidof memcached)
 fi
 sleep 2
 service memcached stop
