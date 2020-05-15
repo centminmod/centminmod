@@ -33,6 +33,10 @@ nginx_httpthree_patch() {
     NGINX_HTTP2='n'
     NGINX_DYNAMICTLS='n'
     cecho "patching nginx for Cloudflare's Nginx HTTP/3 Patch Support" $boldyellow
+    # modify patch default for http3_max_requests from 1000 to 50000
+    sed -i 's|prev->max_requests, 1000|prev->max_requests, 50000|' ../quiche/extras/nginx/nginx-1.16.patch
+    # modify patch default for http3_max_header_size from 16KB to 32KB
+    sed -i 's|prev->max_header_size, 16384|prev->max_header_size, 32768|' ../quiche/extras/nginx/nginx-1.16.patch
     echo "patch -p1 < ../quiche/extras/nginx/nginx-1.16.patch"
     # sed -i 's|&& cmake |&& cmake3 |' ../quiche/extras/nginx/nginx-1.16.patch
     patch -p1 < ../quiche/extras/nginx/nginx-1.16.patch
