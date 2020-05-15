@@ -2288,7 +2288,12 @@ if [[ -d "/home/nginx/domains/${vhostname}/public" ]]; then
 
 cd /home/nginx/domains/${vhostname}/public${WPSUBDIR}
  
-\wp core download --allow-root
+n=0
+until [ "$n" -ge 10 ]
+do
+   \wp core download --allow-root && break
+   n=$((n+1)) 
+done
  
 \wp core config --dbname=$DB --dbuser=$DBUSER --dbpass=$DBPASS --allow-root
  
