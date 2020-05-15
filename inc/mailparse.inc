@@ -76,7 +76,7 @@ if [[ "$MAILPARSESOCHECK" = '1' || "$MAILPARSESOCHECKB" = '1' ]]; then
     echo "extension=mailparse.so" > ${CONFIGSCANDIR}/mailparse.ini
 fi #check if mailparse.so exists in php.ini
 
-    cmservice php-fpm restart
+    # cmservice php-fpm restart
     echo "*************************************************"
     cecho "* mailparse PHP installed" $boldgreen
     echo "*************************************************"

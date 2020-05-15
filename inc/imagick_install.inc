@@ -235,6 +235,7 @@ checkimagicksys() {
 }
 
 imagickinstall() {
+    imagick_submenu=$1
     if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPIMAGICK" = [yY] ]]; then
         checkphpext
@@ -330,7 +331,9 @@ if [[ "$IMAGICKSOCHECK" = '1' || "$IMAGICKSOCHECKB" = '1' ]]; then
     echo ";imagick.skip_version_check=1" >> "${CONFIGSCANDIR}/imagick.ini"
 fi #check if imagick.so exists in php.ini
 
-    cmservice php-fpm restart
+    if [[ "$imagick_submenu" = 'submenu' ]]; then
+        cmservice php-fpm restart
+    fi
     echo "*************************************************"
     cecho "* imagick PHP installed" $boldgreen
     echo "*************************************************"

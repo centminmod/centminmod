@@ -246,5 +246,8 @@ fi # redis.so check
         rm -f ${CONFIGSCANDIR}/redis.ini
         echo
     fi
+    if [[ "$REDIS_SUBMENU" = 'submenu' ]]; then
+        cmservice php-fpm restart
+    fi
     fi # PHP_INSTALL=y
 }
