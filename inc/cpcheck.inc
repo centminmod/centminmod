@@ -230,6 +230,8 @@ redetect_tlsonethree() {
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2;' /usr/local/nginx/conf/ssl-include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
       fi
+    elif [[ "$NGINX_HTTP3" = [yY] ]]; then
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl-include.conf
     else
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl-include.conf
@@ -255,6 +257,8 @@ redetect_tlsonethree() {
       elif [[ "$(grep -w 'ssl_protocols  TLSv1.2;' /usr/local/nginx/conf/ssl_include.conf)" ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
       fi
+    elif [[ "$NGINX_HTTP3" = [yY] ]]; then
+        sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2 TLSv1.3;|" /usr/local/nginx/conf/ssl_include.conf
     else
       if [[ "$SSL_PROTOCOL_MODERN" = [yY] ]]; then
         sed -i "s|ssl_protocols .*|ssl_protocols  TLSv1.2;|" /usr/local/nginx/conf/ssl_include.conf

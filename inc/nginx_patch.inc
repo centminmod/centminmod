@@ -14,6 +14,36 @@ ocsp_ttl_override() {
   fi
 }
 
+
+nginx_httpthree_patch() {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_PUSHBASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_PUSHBASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] && -f ../quiche/extras/nginx/nginx-1.16.patch ]]; then
+    BORINGSSL_SWITCH='n'
+    LIBRESSL_SWITCH='n'
+    NGINX_HPACK='n'
+    NGINX_HTTPPUSH='n'
+    NGINX_HTTP2='n'
+    NGINX_DYNAMICTLS='n'
+    cecho "patching nginx for Cloudflare's Nginx HTTP/3 Patch Support" $boldyellow
+    # modify patch default for http3_max_requests from 1000 to 50000
+    sed -i 's|prev->max_requests, 1000|prev->max_requests, 50000|' ../quiche/extras/nginx/nginx-1.16.patch
+    # modify patch default for http3_max_header_size from 16KB to 32KB
+    sed -i 's|prev->max_header_size, 16384|prev->max_header_size, 32768|' ../quiche/extras/nginx/nginx-1.16.patch
+    echo "patch -p1 < ../quiche/extras/nginx/nginx-1.16.patch"
+    # sed -i 's|&& cmake |&& cmake3 |' ../quiche/extras/nginx/nginx-1.16.patch
+    patch -p1 < ../quiche/extras/nginx/nginx-1.16.patch
+    cecho "patched nginx for Cloudflare's Nginx HTTP/3 Patch Support" $boldyellow
+  fi
+}
+
 iouring_patch() {
   if [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
@@ -616,6 +646,7 @@ patchnginx() {
       patch -p1 < "$CUR_DIR/patches/nginx/nginx-1.17.2-fix-zero-size-buf.patch"
     fi
   fi
+  nginx_httpthree_patch
   iouring_patch
   ocsp_ttl_override
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"

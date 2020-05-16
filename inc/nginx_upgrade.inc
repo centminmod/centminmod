@@ -401,6 +401,9 @@ else
         exit 0
     fi
 
+    CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
+    CUR_NGINXUPGRADEVER=$(echo "$ngver" |sed -e 's|\.|0|g' | head -n1)
+
     service nginx reload >/dev/null 2>&1
 
     # if user forgets to type in nginx version and hits
@@ -476,6 +479,14 @@ install_gperftools
 # echo ""
 
 if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]]; then
+    # determine if openssl or boringssl/quiche is installed if NGINX_HTTP3='y' is set
+    if [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -eq '101601' && "$NGINX_HTTP3" = [yY] ]]; then
+        NGINX_HTTP2='n'
+        NGINX_HTTP3='y'
+    else
+        NGINX_HTTP2='y'
+        NGINX_HTTP3='n'
+    fi
     installopenssl
 fi # recompileopenssl
 
@@ -519,13 +530,19 @@ check_requestscheme
     # Install nginx
     cd "$DIR_TMP"
 
-    CUR_NGINXVER=$(nginx -v 2>&1 | awk -F '\\/' '{print $2}' |sed -e 's|\.|0|g' | head -n1)
-    CUR_NGINXUPGRADEVER=$(echo "$ngver" |sed -e 's|\.|0|g' | head -n1)    
-
-if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN] ]]; then
+if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN] || "$NGINX_HTTP3" = [nN] ]]; then
     # if centmin.sh option NGINXPATCH=n then disable patches by 
     # wiping the nginx downloaded source and redownloading a fresh copy
     rm -rf nginx-${ngver}*
+fi
+
+if [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -eq '101601' && "$NGINX_HTTP3" = [yY] ]]; then
+    # if centmin.sh option NGINX_HTTP3='y' then disable other patches by 
+    # wiping the nginx downloaded source and redownloading a fresh copy
+    rm -rf nginx-${ngver}*
+else
+    NGINX_HTTP2='y'
+    NGINX_HTTP3='n'
 fi
 
 if [[ "$NGINX_SPDYPATCHED" = [nN] && "$(grep 'ngx_http_spdy_filter' $DIR_TMP/nginx-${ngver}/auto/modules)" ]]; then
@@ -533,13 +550,6 @@ if [[ "$NGINX_SPDYPATCHED" = [nN] && "$(grep 'ngx_http_spdy_filter' $DIR_TMP/ngi
     # wiping the nginx downloaded source and redownloading a fresh copy
     rm -rf nginx-${ngver}*
 fi
-
-# if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
-#     # if existing Nginx server is detected to have HTTP/2 patch compiled, then
-#     # wipe nginx download source and redownload a fresh copy to ensure you're
-#     # patching with latest patch http://nginx.org/patches/http2/ available
-#     rm -rf nginx-${ngver}*
-# fi
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Compile Nginx"
@@ -631,6 +641,7 @@ fi
             exit
         fi
     fi
+
     cd "nginx-${ngver}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
@@ -869,7 +880,7 @@ fi
             sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
         fi
-    elif [[ "$NGINX_HTTP2" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10903' ]]; then
+    elif [[ "$NGINX_HTTP2" = [yY] && "$NGX_VEREVAL" -ge '10903' ]] || [[ "$NGINX_HTTP3" = [yY] && "$DETECT_NGXVER" -ge '1016001' ]]; then
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then
