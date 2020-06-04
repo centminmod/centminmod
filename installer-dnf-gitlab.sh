@@ -641,7 +641,50 @@ scl_install() {
         fi
         sar_call
       fi
-      if [[ "$DEVTOOLSETSIX" = [yY] ]]; then
+      if [[ "$DEVTOOLSETNINE" = [yY] ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+          time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
+        else
+          time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
+        fi
+        echo
+        /opt/rh/devtoolset-9/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-9/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
+          sar_call
+        else
+          time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils --disablerepo=rpmforge
+          time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils --disablerepo=rpmforge
+          sar_call
+        fi
+        echo
+        /opt/rh/devtoolset-8/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-8/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils
+          sar_call
+        else
+          time $YUMDNFBIN -y -q install devtoolset-7-gcc devtoolset-7-gcc-c++ devtoolset-7-binutils --disablerepo=rpmforge
+          sar_call
+        fi
+        echo
+        /opt/rh/devtoolset-7/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-7/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           time $YUMDNFBIN -y -q install devtoolset-6-gcc devtoolset-6-gcc-c++ devtoolset-6-binutils
           sar_call
