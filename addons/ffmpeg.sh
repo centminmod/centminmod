@@ -406,7 +406,7 @@ make distclean
 
 cd ${OPT}/ffmpeg_sources
 rm -rf opus
-git clone https://git.xiph.org/opus.git
+git clone https://github.com/xiph/opus
 cd opus
 autoreconf -fiv
 ./configure --prefix="${OPT}/ffmpeg" --enable-static --enable-shared

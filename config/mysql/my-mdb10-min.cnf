@@ -1,5 +1,4 @@
 [client]
-default-character-set=utf8
 socket=/var/lib/mysql/mysql.sock
 
 [mysql]
