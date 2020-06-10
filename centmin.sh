@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='527'
+SCRIPT_INCREMENTVER='528'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2020'
@@ -2331,6 +2331,11 @@ source_pcreinstall
 
 echo
 shortcutsinstall
+
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
+  echo
+  "$CUR_DIR/tools/journald-set.sh" config
+fi
 
 echo
 cecho "**********************************************************************" $boldgreen
