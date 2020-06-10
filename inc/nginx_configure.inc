@@ -287,7 +287,60 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   #   NGX_HPACK_OPT=""
   # fi
 
-  if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -ge '1019000' && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+    # grab current Nginx Quic HTTP/3 protocol draft version & populate alt-svc include file
+    NGINX_H3_VER=$(awk '/define NGX_QUIC_DRAFT_VERSION/ {print $2}' src/event/ngx_event_quic.h)
+    NGINX_H3_VER_LENGTH=$(echo $NGINX_H3_VER | wc -c)
+    if [ "$NGINX_H3_VER_LENGTH" -le '2' ]; then
+      echo "add_header alt-svc '\$http3=\":443\"; ma=86400';" > /usr/local/nginx/conf/altsvc_http3.conf
+    fi
+    echo "listen 443 http3 reuseport;" > /usr/local/nginx/conf/listener_http3.conf
+    DEVTOOLSETSIX='n'
+    #DEVTOOLSETSEVEN='n'
+    #DEVTOOLSETEIGHT='n'
+    #DEVTOOLSETNINE='n'
+    # disable ccache use compatibility
+    export CCACHE_DISABLE=1
+    # disable for compatibility
+    NGXDYNAMIC_LUA='n'
+    NGXDYNAMIC_ECHO='n'
+    NGXDYNAMIC_HEADERSMORE='n'
+    NGXDYNAMIC_NJS='n'
+    NGXDYNAMIC_XSLT='n'
+    NGXDYNAMIC_PERL='n'
+    NGXDYNAMIC_IMAGEFILTER='n'
+    NGXDYNAMIC_GEOIP='n'
+    NGXDYNAMIC_GEOIPTWOLITE='n'
+    NGXDYNAMIC_STREAM='n'
+    NGXDYNAMIC_STREAMGEOIP='n'
+    NGXDYNAMIC_STREAMREALIP='n'
+    NGXDYNAMIC_SETMISC='n'
+    NGXDYNAMIC_DEVELKIT='n'
+    BORINGSSL_SWITCH='n'
+    LIBRESSL_SWITCH='n'
+    NGINX_HPACK='n'
+    NGINX_HTTPPUSH='n'
+    NGINX_HTTP2='n'
+    NGINX_HTTP3='n'
+    NGINX_DYNAMICTLS='n'
+    NGINX_NOFATLTO_OBJECTS='n'
+    NGX_LDGOLD='n'
+    NGX_GSPLITDWARF='n'
+    NGINX_OPENSSLOPT_EXTRAS=''
+    NGINX_HTTPTHREE_RPATH="${BORINGSSL_DIR}/boringssl/.openssl/lib:"
+    # NGINX_HTTPTHREE_RPATH='../quiche/deps/boringssl/.openssl/lib:'
+    # NGINX_HTTPTHREE_OPT='-L../quiche/deps/boringssl/.openssl/lib '
+    # NGINX_HTTPTHREEINC_OPT='-I../quiche/deps/boringssl/.openssl/include '
+    if [[ ! "$(alternatives --display cmake | grep 'link currently points to /usr/bin/cmake3')" ]]; then
+      # Nginx HTTP/3 + Quiche dependency library requires building with cmake version 3+ however
+      # CentOS uses cmake 2.8 and cmake3 3.x binaries which Quiche can't find so need to setup
+      # alternatives to change CentOS system cmake to link to cmake3
+      alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake 30 --slave /usr/local/bin/ctest ctest /usr/bin/ctest --slave /usr/local/bin/cpack cpack /usr/bin/cpack --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake --family cmake
+      alternatives --install /usr/local/bin/cmake cmake /usr/bin/cmake3 50 --slave /usr/local/bin/ctest ctest /usr/bin/ctest3 --slave /usr/local/bin/cpack cpack /usr/bin/cpack3 --slave /usr/local/bin/ccmake ccmake /usr/bin/ccmake3 --family cmake
+      alternatives --set cmake /usr/bin/cmake3
+      # alternatives --remove cmake /usr/bin/cmake3
+    fi
+  elif [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
     # grab current Cloudflare Quiche HTTP/3 protocol version & populate alt-svc include file
     QUICHE_H3_VER=$(awk '/QUICHE_H3_APPLICATION_PROTOCOL/ {print $3}' ../quiche/include/quiche.h | sed -e 's|\\x05||g' -e 's|\"||g')
     QUICHE_H3_VER_LENGTH=$(echo $QUICHE_H3_VER | wc -c)
@@ -339,6 +392,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     LIBRESSL_SWITCH='n'
     NGINX_HPACK='n'
     NGINX_HTTPPUSH='n'
+    NGINX_HTTP2_OFFICIAL='n'
     NGINX_HTTP2='n'
     NGINX_DYNAMICTLS='n'
     NGINX_NOFATLTO_OBJECTS='n'
@@ -359,6 +413,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     fi
   else
     NGINX_HTTP2='y'
+    NGINX_HTTP3_OFFICIAL='n'
     NGINX_HTTP3='n'
     echo > /usr/local/nginx/conf/altsvc_http3.conf
     echo > /usr/local/nginx/conf/listener_http3.conf
@@ -782,13 +837,23 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     AUTHREQOPT=""
   fi
 
-  if [[ "$LIBRESSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] ]]; then
+  if [[ "$LIBRESSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
     LIBRESSLDIR=$(tar -tzf "$DIR_TMP/${LIBRESSL_LINKFILE}" 2>&1 | head -1 | cut -f1 -d"/" | grep libressl)
     LIBRESSLOPT=" --with-openssl=../$LIBRESSLDIR"
     OPENSSLOPT=""
     BORINGSSLOPT=""
     LRT='-lrt '
-  elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] ]]; then
+  elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+    LIBRESSLOPT=""
+    OPENSSLOPT=' --with-debug --with-http_v2_module --with-http_v3_module'
+    TLSTHREEOPT='y'
+    OPENSSL_TLSONETHREE='n'
+    LRT='-lrt '
+    # https://hg.nginx.org/nginx-quic/file/tip/README
+    BORINGSSL_RPATH="${BORINGSSL_DIR}/boringssl/.openssl/lib:"
+    BORINGSSL_LIBOPT="-L${BORINGSSL_DIR}/boringssl/.openssl/lib -lcrypto -lssl "
+    BORINGSSLINC_OPT="-I${BORINGSSL_DIR}/boringssl/.openssl/include "
+  elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
     LIBRESSLOPT=""
     OPENSSLOPT=""
     # LRT=""
@@ -802,7 +867,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     #ORESTY_SETMISC='n'
     #NGINX_STREAM='n'
     #SETMISCOPT=""
-  elif [[ "$NGINX_HTTP3" = [yY] ]]; then
+  elif [[ "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
     OPENSSLOPT=' --with-http_v2_module --with-http_v3_module --with-openssl=../quiche/deps/boringssl --with-quiche=../quiche'
     TLSTHREEOPT='y'
     OPENSSL_TLSONETHREE='n'
@@ -1340,7 +1405,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       cd "${DIR_TMP}"
   else
     LUAOPT=""
-    if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -ge '1019000' && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+      LUALD_OPT="-Wl,-rpath,${NGINX_HTTPTHREE_RPATH}${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
+    elif [[ "$CENTOS_SEVEN" = '7' && "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
       LUALD_OPT="-Wl,-rpath,${NGINX_HTTPTHREE_RPATH}${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
     else
       LUALD_OPT="-Wl,-rpath,${NGINX_HTTPTHREE_RPATH}${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
@@ -3597,7 +3664,17 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
   fi
 fi
 
-if [[ "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] ]]; then
+if [[ "$DETECT_NGXVER" -ge '1019000' && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+  NGINX_OPENSSLOPT_EXTRAS=''
+  # strip ccache from build due to comptibility with boringssl + quiche
+  # builds for Nginx HTTP/3
+  NEWCC=$(echo $CC | sed -e 's|ccache ||g')
+  NEWCXX=$(echo $CXX | sed -e 's|ccache ||g')
+  export CC="$NEWCC"
+  export CXX="$NEWCXX"
+  echo "export CC=\"$NEWCC\""
+  echo "export CXX=\"$NEWCXX\""
+elif [[ "$DETECT_NGXVER" -eq '1016001' && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
   NGINX_OPENSSLOPT_EXTRAS=''
   # strip ccache from build due to comptibility with boringssl + quiche
   # builds for Nginx HTTP/3
@@ -3674,7 +3751,7 @@ fi
     else
       NGX_BROTLI_TAG=''
     fi
-    if [[ "$NGINX_HTTP3" = [yY] ]]; then
+    if [[ "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
       if [ -f "${DIR_TMP}/quiche/quiche_commit.log" ]; then
         quiche_commit=$(cat ${DIR_TMP}/quiche/quiche_commit.log)
       fi
@@ -3692,7 +3769,10 @@ fi
             echo
           fi
           echo "nginx configure options (alternate ordering):"
-        if [[ "$NGINX_HTTP3" = [yY] ]]; then
+        if [[ "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+           echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${ZLIBCF_OPT}${NGINX_HTTPTHREE_OPT}${LIBBROTLIENC_OPT}${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}\" --with-cc-opt=\"${NGINX_HTTPTHREEINC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${MTUNEOPT}${PIE_OPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${NGINX_OPENSSLOPT_EXTRAS}\"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+           ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${ZLIBCF_OPT}${NGINX_HTTPTHREE_OPT}${LIBBROTLIENC_OPT}${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}" --with-cc-opt="${NGINX_HTTPTHREEINC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${MTUNEOPT}${PIE_OPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${NGINX_OPENSSLOPT_EXTRAS}${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
+        elif [[ "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
            echo "./configure --with-ld-opt=\"${NGINX_EXPORTLD_OPT}${ZLIBCF_OPT}${NGINX_HTTPTHREE_OPT}${LIBBROTLIENC_OPT}${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}\" --with-cc-opt=\"${NGINX_HTTPTHREEINC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${MTUNEOPT}${PIE_OPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}\" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPTECHO}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${NGINX_OPENSSLOPT_EXTRAS}\"${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT}" | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
            ./configure --with-ld-opt="${NGINX_EXPORTLD_OPT}${ZLIBCF_OPT}${NGINX_HTTPTHREE_OPT}${LIBBROTLIENC_OPT}${LRT}${JEMALLOC_LD}${PCRE_LD} -Wl,-z,relro ${LUALD_OPT}${PCRE_LDOPT}${NGXEXTRA_LDGOLDCCOPT}" --with-cc-opt="${NGINX_HTTPTHREEINC_OPT}${ZLIBCFINC_OPT}${LIBBROTLIINC_OPT}${MTUNEOPT}${PIE_OPT}-g$GCC_OPTLEVEL $FSTACKPROTECT${NGXEXTRA_LDGOLDCCOPT} --param=ssp-buffer-size=4${FORMATSECURITY_OPT}${DEVTOOLSETSEVEN_FALLTHROUGH}${DEVTOOLSETSEVEN_EXTRAFLAGS}${DEVTOOLSETEIGHT_FALLTHROUGH}${DEVTOOLSETEIGHT_EXTRAFLAGS}${DEVTOOLSETNINE_FALLTHROUGH}${DEVTOOLSETNINE_EXTRAFLAGS} -Wp,-D_FORTIFY_SOURCE=2${CLANG_CCOPT}${BROTLI_CFLAG}${PCRE_CCOPT}${SET_NGXEXTRA_CCOPT}" --sbin-path=/usr/local/sbin/nginx --conf-path=/usr/local/nginx/conf/nginx.conf --build=${SETBUILD_VALUE}${WITHCOMPAT_OPT}${NGINX_DEBUGOPT}${IPVSIXOPT}${DYNAMICOPT_BEGIN}${STUBSTATUSOPT}${AUTHREQOPT}${SECURELINKOPT}${FLVOPT}${MPOPT}${RTMPOPT}${WITHOPENSSL_OPT}${VTSOPT}${LIBATOMICOPT}${DYNAMICOPT_MIDDLE} --with-http_gzip_static_module${HIDELENGTHOPT}${NGX_IORING_OPT}${BROTLIOPT}${TESTCOOKIEOPT}${DYNAMICOPT_AFTERGZIP}${GEOIPTWOLITEOPT}${PGSPEEDOPT}${SUBOPT}${ADDITIONOPT}${IMAGEFILTEROPT}${GEOIPOPT}${NGINX_NJSOPT}${STREAMGEOIPOPT}${STREAMREALIPOPT}${STREAM_SSLPREREADOPT}${THREADS}${STREAM}${NGXSLICEOPT}${REALIPOPT}${ACCESSKEYOPT}${HTTPCONCATOPT}${FANCYINDEXOPT}${CACHEPURGEOPT}${GPERFOPT}${WEBDAVOPT}${RUBYMODULE}${DEVELKITOPT}${SETMISCOPT}${ECHOOPT}${REDISOPT}${HTTPREDISOPT}${LUAOPT}${STICKYOPT}${UPSTREAMOPT}${MEMCOPT}${SRCCACHEOPT}${HEADERSMOREOPT}${NGXPERLOPT}${NGXXSLTOPT}${PCREJITOPT}${ZLIBNG_OPT}${ZLIBCUSTOM_OPT} --with-http_ssl_module${SPDYOPT}${HTTPTWOOPT}${NGX_HPACK_OPT}${HTTP_PUSHOPT}${OPENSSLOPT}${NGINX_OPENSSLOPT_EXTRAS}${LIBRESSLOPT}${BORINGSSLOPT}${MODSEC_OPT}${RDNSOPT}${DYNAMICOPT_END}${LUAJIT_XCFLAGOPT} | tee -a "${CENTMINLOGDIR}/nginx-configure-${DT}.log"
         elif [[ "$TLSTHREEOPT" = [yY] && "$OPENSSL_TLSONETHREE" = [yY] ]]; then

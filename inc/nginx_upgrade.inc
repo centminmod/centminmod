@@ -480,9 +480,14 @@ install_gperftools
 
 if [[ "$recompileopenssl" = [yY] || "$LIBRESSL_SWITCH" = [yY] ]]; then
     # determine if openssl or boringssl/quiche is installed if NGINX_HTTP3='y' is set
-    if [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -eq '101601' && "$NGINX_HTTP3" = [yY] ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -eq '101601' && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
         NGINX_HTTP2='n'
+        NGINX_HTTP3_OFFICIAL='n'
         NGINX_HTTP3='y'
+    elif [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -ge '101900' && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+        NGINX_HTTP2='n'
+        NGINX_HTTP3_OFFICIAL='y'
+        NGINX_HTTP3='n'
     else
         NGINX_HTTP2='y'
         NGINX_HTTP3='n'
@@ -536,12 +541,17 @@ if [[ "$NGINXPATCH" = [nN] || "$NGINX_HTTP2" = [nN] || "$NGINX_DYNAMICTLS" = [nN
     rm -rf nginx-${ngver}*
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -eq '101601' && "$NGINX_HTTP3" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -eq '101601' && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
     # if centmin.sh option NGINX_HTTP3='y' then disable other patches by 
     # wiping the nginx downloaded source and redownloading a fresh copy
     rm -rf nginx-${ngver}*
+elif [[ "$CENTOS_SEVEN" = '7' && "$CUR_NGINXUPGRADEVER" -ge '101900' && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY] ]]; then
+    NGINX_HTTP2='n'
+    NGINX_HTTP3_OFFICIAL='y'
+    NGINX_HTTP3='n'
 else
     NGINX_HTTP2='y'
+    NGINX_HTTP3_OFFICIAL='n'
     NGINX_HTTP3='n'
 fi
 
@@ -556,6 +566,11 @@ fi
     fi
 
     echo "Compiling nginx..."
+    if [[ "$ngver" = 'nginx-quic' ]]; then
+        rm -rf nginx-${ngver}*
+        hg clone -b quic https://hg.nginx.org/nginx-quic
+        mv nginx-quic/auto/configure nginx-quic/configure
+    fi
     if [[ "$ngver" = 'master' ]]; then
         rm -rf nginx-${ngver}*
         git clone --depth=1 https://github.com/nginx/nginx nginx-master
@@ -880,7 +895,7 @@ fi
             sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
         fi
-    elif [[ "$NGINX_HTTP2" = [yY] && "$NGX_VEREVAL" -ge '10903' ]] || [[ "$NGINX_HTTP3" = [yY] && "$DETECT_NGXVER" -ge '1016001' ]]; then
+    elif [[ "$NGINX_HTTP2" = [yY] && "$NGX_VEREVAL" -ge '10903' ]] || [[ "$NGINX_HTTP3" = [yY] && "$DETECT_NGXVER" -ge '1016001' ]] || [[ "$NGINX_HTTP3_OFFICIAL" = [yY] && "$DETECT_NGXVER" -ge '1019000' ]]; then
         # only apply auto vhost changes forNginx HTTP/2 
         # if Nginx version is >= 1.9.3 and <1.9.5 OR >= 1.9.5
         if [[ "$NGX_VEREVAL" -ge '10903' && "$NGX_VEREVAL" -lt '10905' ]] || [[ "$NGX_VEREVAL" -ge '10905' ]]; then

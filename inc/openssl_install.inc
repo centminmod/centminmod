@@ -940,7 +940,7 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
-    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]] && [[ "$NGINX_HTTP3" = [nN] ]]; then
+    elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]] && [[ "$NGINX_HTTP3" = [nN] ]] && [[ "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
@@ -1066,7 +1066,7 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
-    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [yY] ]] || [[ "$BORINGSSL_SWITCH" = [nN] && "$NGINX_HTTP3" = [yY] ]]; then
+    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]] || [[ "$BORINGSSL_SWITCH" = [nN] && "$NGINX_HTTP3" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         crypto_gcc
         if [ -f "$(which figlet)" ]; then
@@ -1168,7 +1168,89 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_borgingssl_quiche_http3_${DT}.log
         echo "BoringSSL + Quiche For HTTP/3 Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_borgingssl_quiche_http3_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_borgingssl_quiche_http3_${DT}.log
-    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] ]]; then
+    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3_OFFICIAL" = [yY]  && "$NGINX_HTTP3" = [nN] ]] || [[ "$BORINGSSL_SWITCH" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [yY]  && "$NGINX_HTTP3" = [nN] ]]; then
+        boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
+        crypto_gcc
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling BoringSSL Nginx official HTTP/3 QUIC Preview"
+        fi
+
+        if [ ! -f /usr/local/go/bin/go ]; then
+            # if golang is not detected BoringSSL switch will be disabled
+            # and default to using OpenSSL 1.0.2+
+            # BORINGSSL_SWITCH='n'
+            if [ -f /usr/local/src/centminmod/addons/golang.sh ]; then
+                /usr/local/src/centminmod/addons/golang.sh install
+                . /root/.bashrc
+                if [[ "$(id -u)" -ne '0' ]]; then
+                    . $HOME/.bashrc
+                fi
+            fi
+        fi
+
+        echo "Compiling BoringSSL For Nginx official HTTP/3 QUIC Preview..."
+        cmake_alternatives
+        # cd $DIR_TMP
+        pushd "${BORINGSSL_DIR}"
+        rm -rf ${BORINGSSL_DIR}/boringssl
+        time git clone https://boringssl.googlesource.com/boringssl
+        # time git clone https://github.com/google/boringssl.git
+        cd boringssl
+        mkdir -p build
+        cd build
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            rm -rf CMakeCache.txt
+        fi
+        unset CC
+        unset CXX
+        unset CFLAGS
+        export CMAKE_C_COMPILER="gcc"
+        export CMAKE_CXX_COMPILER="g++"
+        export CC="gcc"
+        export CXX="g++"
+        export GO_EXECUTABLE="/usr/local/go/bin/go"
+        mkdir -p /home/buildtmp
+        chmod 1777 /home/buildtmp
+        export TMPDIR=/home/buildtmp
+        # sed -i 's|set(GO_EXECUTABLE "go")|set(GO_EXECUTABLE "\/usr\/local\/go\/bin\/go")|' ${BORINGSSL_DIR}/boringssl/CMakeLists.txt
+        ln -s /usr/local/go/bin/go /usr/local/bin/go
+        if [[ "$BORINGSSL_SHARED" = [yY] ]]; then
+            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE -DBUILD_SHARED_LIBS=1 ..
+        else
+            cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_POSITION_INDEPENDENT_CODE=TRUE ..
+        fi
+        # cmake -DCMAKE_BUILD_TYPE=Release ..
+        # re-enable TLS 1.3 draft 23 /28 support
+        # sed -i 's|tls13_rfc = 0|tls13_all = 0|' ${BORINGSSL_DIR}/boringssl/include/openssl/ssl.h
+        # sed -i 's|  tls13_all,|  tls13_rfc,|' ${BORINGSSL_DIR}/boringssl/include/openssl/ssl.h
+        sed -i 's|tls13_variant_t tls13_variant = tls13_rfc;|tls13_variant_t tls13_variant = tls13_all;|g' ${BORINGSSL_DIR}/boringssl/ssl/internal.h
+        make${MAKETHREADS}
+        mkdir -p ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        cd ${BORINGSSL_DIR}/boringssl/.openssl
+        ln -s ../include
+        cp ${BORINGSSL_DIR}/boringssl/build/crypto/libcrypto.a ${BORINGSSL_DIR}/boringssl/build/ssl/libssl.a ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        cp ${BORINGSSL_DIR}/boringssl/build/crypto/libcrypto.so ${BORINGSSL_DIR}/boringssl/build/ssl/libssl.so ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        ls -lah ${BORINGSSL_DIR}/boringssl/.openssl/lib
+        ls -lah ${BORINGSSL_DIR}/boringssl/.openssl
+        # symlink boringssl bssl binary for ease of use
+        if [ -f "${BORINGSSL_DIR}/boringssl/build/tool/bssl" ]; then
+            echo "ln -sf ${BORINGSSL_DIR}/boringssl/build/tool/bssl /usr/local/bin/bssl"
+            ln -sf "${BORINGSSL_DIR}/boringssl/build/tool/bssl" /usr/local/bin/bssl
+            mkdir -p /opt/boringssl/bin
+            echo "\cp -af ${BORINGSSL_DIR}/boringssl/build/tool/bssl /opt/boringssl/bin/bssl"
+            \cp -af "${BORINGSSL_DIR}/boringssl/build/tool/bssl" /opt/boringssl/bin/bssl
+            ls -lah /usr/local/bin/bssl
+            ls -lah /opt/boringssl/bin/bssl
+        fi
+        unset TMPDIR
+        boringsslinstallendtime=$(TZ=UTC date +%s.%N)
+        BORINGSSLINSTALLTIME=$(echo "scale=2;$boringsslinstallendtime - $boringsslinstallstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_boringssl_nginx_quic_installtime_${DT}.log
+        echo "BoringSSL Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_boringssl_nginx_quic_installtime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_boringssl_nginx_quic_installtime_${DT}.log
+        popd
+    elif [[ "$BORINGSSL_SWITCH" = [yY] && "$NGINX_HTTP3" = [nN] && "$NGINX_HTTP3_OFFICIAL" = [nN] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         crypto_gcc
         if [ -f "$(which figlet)" ]; then
@@ -1249,6 +1331,6 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
         echo "BoringSSL Install Time: $BORINGSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_boringsslinstalltime_${DT}.log
-        popd 
+        popd
     fi
 }

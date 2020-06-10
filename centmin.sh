@@ -535,7 +535,8 @@ NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by 
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
-NGINX_HTTP3='y'              # Nginx http/3 patch with Google BoringSSL & Cloudflare Quiche Patched Nginx https://github.com/cloudflare/quiche
+NGINX_HTTP3_OFFICIAL='y'     # Early Nginx alpha tech preview HTTP/3 nginx-quic branch https://www.nginx.com/blog/introducing-technology-preview-nginx-support-for-quic-http-3/
+NGINX_HTTP3='n'              # Nginx http/3 patch with Google BoringSSL & Cloudflare Quiche Patched Nginx https://github.com/cloudflare/quiche
 NGINX_HTTPPUSH='n'           # Nginx http/2 push patch https://community.centminmod.com/threads/11910/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
@@ -1233,6 +1234,7 @@ else
 fi
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
   # only allow NGINX_HTTP3 patch for CentOS 7
+  NGINX_HTTP3_OFFICIAL='n'
   NGINX_HTTP3='n'
   NGINX_HTTP2='y'
 fi
