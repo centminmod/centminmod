@@ -33,11 +33,21 @@ pgophpbench() {
 }
 
 oniguruma_check() {
-  if [[ "$(rpm -qa oniguruma5 oniguruma5-devel | wc -l)" -lt '2' ]]; then
+  if [[ "$(rpm -qa oniguruma5 oniguruma5-devel | wc -l)" -eq '2' ]]; then
     echo
-    echo "install oniguruma5 oniguruma5-devel"
+    echo "swap oniguruma5 oniguruma5php"
     echo
-    yum -y install oniguruma5 oniguruma5-devel --enablerepo=remi
+    yum -y swap oniguruma5 oniguruma5php --enablerepo=remi
+    echo
+    echo "swap oniguruma5-devel oniguruma5php-devel"
+    echo
+    yum -y swap oniguruma5-devel oniguruma5php-devel --enablerepo=remi
+  fi
+  if [[ "$(rpm -qa oniguruma5php oniguruma5php-devel | wc -l)" -lt '2' ]]; then
+    echo
+    echo "install oniguruma5php oniguruma5php-devel"
+    echo
+    yum -y install oniguruma5php oniguruma5php-devel --enablerepo=remi
   fi
 }
 

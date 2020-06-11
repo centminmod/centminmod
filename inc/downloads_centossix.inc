@@ -354,7 +354,7 @@ if [[ "$(uname -m)" != 'aarch64' ]]; then
 fi
 
 # CentOS 6 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-PACKAGEEXTRA='figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy axel bash-completion bash-completion-extras mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
+PACKAGEEXTRA='oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libJudy axel bash-completion bash-completion-extras mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake28'
 
 declare -a arrays
 arrays=(${PACKAGEEXTRA})
