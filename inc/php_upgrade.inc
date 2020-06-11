@@ -1126,7 +1126,9 @@ sar_call
       /usr/local/src/centminmod/tools/php-systemd.sh fpm-systemd
     fi
     cmservice php-fpm restart
-    journalctl -xe -u php-fpm --no-pager | tail -20
+    if [ -f /usr/bin/journalctl ]; then
+        journalctl -xe -u php-fpm --no-pager | tail -20
+    fi
 
 phpiadmin
 
