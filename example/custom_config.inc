@@ -451,3 +451,11 @@ PORTFLOOD_INTERVAL=300
 MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
 MARIADB_INSTALLTENTHREE='n' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
+###############################################################
+# centmin.sh menu trigger settings
+SKIP_INITIAL_PIP_UPDATES='n'
+SKIP_PIP_UPDATES='n'
+SKIP_FIXPHPFPM_HTTPPROXY='n'
+SKIP_FIXWP_UPDATER='n'
+SKIP_CSF_MAXMIND_REGO='n'
+###############################################################

@@ -33,7 +33,8 @@ phpmyadmin_composer_fix() {
 
 initial_pip_updates() {
   initialpip=$1
-  if [ -f /usr/local/src/centminmod/tools/pip-updates.sh ]; then
+  if [[ -z "$SKIP_INITIAL_PIP_UPDATES" || "$SKIP_INITIAL_PIP_UPDATES" = 'n' ]] && [ -f /usr/local/src/centminmod/tools/pip-updates.sh ]; then
+    # skip initial_pip_updates    
     /usr/local/src/centminmod/tools/pip-updates.sh update "$initialpip"
   fi
 }
@@ -2985,7 +2986,10 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   check_jemstatsfile
   nginx_mutexoff
   #fixphpfpm_includes
-  fixphpfpm_httpproxy
+  if [[ -z "$SKIP_FIXPHPFPM_HTTPPROXY" || "$SKIP_FIXPHPFPM_HTTPPROXY" = 'n' ]]; then
+    # skip fixphpfpm_httpproxy
+    fixphpfpm_httpproxy
+  fi
   fixlibmysqlclient_symlink
   fixnodejs_epel
   fixnginx_epel
@@ -2998,7 +3002,10 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   nano_highlight
   checkwoff
   checkipvsix
-  fixwp_updater
+  if [[ -z "$SKIP_FIXWP_UPDATER" || "$SKIP_FIXWP_UPDATER" = 'n' ]]; then
+    # skip fixwp_updater    
+    fixwp_updater
+  fi
   update_nginxconf
   update_cmdshortcuts
   update_initphpfpm
@@ -3010,7 +3017,10 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   nginxlargefile_fix
   fix_phperrorlogperm
   crontabdisable_r
-  pip_updates
+  if [[ -z "$SKIP_PIP_UPDATES" || "$SKIP_PIP_UPDATES" = 'n' ]]; then
+    # skip pip_updates    
+    pip_updates
+  fi
   ngx_gzipbuffersfix
   ngx_brotlibuffersfix
   ngxmaster_openfiles
@@ -3031,7 +3041,10 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   symlink_setup_mariadb
   pureftpd_symlink_fix
   cfauthorigin_cronsetup
-  csf_maxmind_rego
+  if [[ -z "$SKIP_CSF_MAXMIND_REGO" || "$SKIP_CSF_MAXMIND_REGO" = 'n' ]]; then
+    # skip csf_maxmind_rego    
+    csf_maxmind_rego
+  fi
   update_webp_inc
   phpmyadmin_composer_fix
   imagemagick_heif
