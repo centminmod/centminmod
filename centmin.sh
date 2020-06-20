@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='534'
+SCRIPT_INCREMENTVER='535'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2020'
@@ -928,6 +928,8 @@ SKIP_PIP_UPDATES='n'
 SKIP_FIXPHPFPM_HTTPPROXY='n'
 SKIP_FIXWP_UPDATER='n'
 SKIP_CSF_MAXMIND_REGO='n'
+SKIP_CHECKIPVSIX='n'
+SKIP_LIBC_FIX='n'
 ###############################################################
 
 MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.

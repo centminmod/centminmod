@@ -458,4 +458,6 @@ SKIP_PIP_UPDATES='n'
 SKIP_FIXPHPFPM_HTTPPROXY='n'
 SKIP_FIXWP_UPDATER='n'
 SKIP_CSF_MAXMIND_REGO='n'
+SKIP_CHECKIPVSIX='n'
+SKIP_LIBC_FIX='n'
 ###############################################################

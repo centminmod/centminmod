@@ -3001,7 +3001,10 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   #fixclamav_epel
   nano_highlight
   checkwoff
-  checkipvsix
+  if [[ -z "$SKIP_CHECKIPVSIX" || "$SKIP_CHECKIPVSIX" = 'n' ]]; then
+    # skip checkipvsix    
+    checkipvsix
+  fi
   if [[ -z "$SKIP_FIXWP_UPDATER" || "$SKIP_FIXWP_UPDATER" = 'n' ]]; then
     # skip fixwp_updater    
     fixwp_updater
@@ -3011,7 +3014,10 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_initphpfpm
   update_phpfpmconfg
   cityfan_fix
-  libc_fix
+  if [[ -z "$SKIP_LIBC_FIX" || "$SKIP_LIBC_FIX" = 'n' ]]; then
+    # skip libc_fix    
+    libc_fix
+  fi
   varnishfour_setup
   disablelogs
   nginxlargefile_fix
