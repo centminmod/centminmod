@@ -3703,9 +3703,9 @@ if [ -f /usr/sbin/sendmail ]; then
 sendmail -i $WPADMINEMAIL <<END
 From: $WPADMINEMAIL_FROM
 To: $WPADMINEMAIL
-Subject: ${vhostname} Wordpress Installed \$(date)
+Subject: ${vhostname} Wordpress Installed $(date)
 
-\$(cat /tmp/setupwp.log)
+$(cat /tmp/setupwp.log)
 
 END
 else
