@@ -2,7 +2,7 @@
 checkmongodbtar() {
 
 cecho "Check if ${PHPEXT_MONGODBLINKFILE} exists" $boldyellow
-if [ ! -f "${DIR_TMP}/${PHPEXT_MONGODBLINKFILE}" ]; then
+if [[ ! -f "${DIR_TMP}/${PHPEXT_MONGODBLINKFILE}" || ! -d "${DIR_TMP}/mongodb-${MONGODBPHP_VER}" ]]; then
 
     cecho "Downloading MongoDB PHP extension.." $boldgreen
 
@@ -27,7 +27,7 @@ if [[ "$PHPMONGODB" = [yY] ]]; then
     
     checkmongodbtar
     
-        cecho "Compiling PHP mongo-php-${MONGODBPHP_VER} extension..." $boldgreen
+        cecho "Compiling PHP mongo ${MONGODBPHP_VER} PHP extension..." $boldgreen
     
         pwd
         echo "cd $DIR_TMP"
