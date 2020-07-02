@@ -1,3 +1,9 @@
+fix_nasm() {
+  if [[ -f /etc/yum.repos.d/nasm.repo && -f /usr/bin/nasm && "$(yum versionlock list | grep -o nasm)" != 'nasm' ]]; then
+    yum -q versionlock nasm >/dev/null 2>&1
+  fi
+}
+
 imagemagick_heif() {
   if [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick-heic | grep -o 'ImageMagick-heic')" ]]; then
     echo
@@ -3054,6 +3060,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_webp_inc
   phpmyadmin_composer_fix
   imagemagick_heif
+  fix_nasm
 fi
 
 }
