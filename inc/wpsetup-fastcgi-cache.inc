@@ -630,7 +630,8 @@ read -ep "Enter email address for Admin User for Wordpress Installation: " WPADM
 # otherwise hide redis cache option if nginx server is missing 
 # required redis related nginx modules
 CHECKFOR_REDISMODULES=$(nginx -V 2>&1 | egrep -o 'ngx_http_redis|redis2-nginx-module|ngx_cache_purge|set-misc-nginx-module' | xargs)
-if [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_cache_purge')" = 'ngx_cache_purge' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'set-misc-nginx-module')" = 'set-misc-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'redis2-nginx-module')" = 'redis2-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_http_redis')" = 'ngx_http_redis' ]]; then  redis_ngx_exists='y'
+if [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_cache_purge')" = 'ngx_cache_purge' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'set-misc-nginx-module')" = 'set-misc-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'redis2-nginx-module')" = 'redis2-nginx-module' ]] && [[ "$(echo $CHECKFOR_REDISMODULES | grep -o 'ngx_http_redis')" = 'ngx_http_redis' ]]; then
+  redis_ngx_exists='y'
 else
   redis_ngx_exists='n'
 fi
@@ -925,6 +926,7 @@ if (\$wpfcgi_cache_mobile = 1) { set \$no_wpfastcgicache 1; }
 
 # bypass cache for woocommerce
 if (\$arg_add-to-cart != "") { set \$no_wpfastcgicache 1; set \$skip_reason "\${skip_reason}-Woocommerce"; }
+if (\$arg_wc-api != "") { set \$no_wpfastcgicache 1; set \$skip_reason "\${skip_reason}-Woocommerce"; }
 
 ## bypass cache for empty woocommerce carts
 #if (\$cookie_woocommerce_items_in_cart != "0") { 
@@ -1017,6 +1019,7 @@ map \$http_cookie \$wpfcgi_nocachecookie {
     ~*xf_style_id                            1;
     ~*xf_tfa_trust                           1;
     ~*xf_user                                1;
+    ~*wc-api                                 1;
 }
 
 map \$request_uri \$wpfcgi_nocacheuri {
@@ -1069,7 +1072,7 @@ map \$request_uri \$wpfcgi_nocacheuri {
     ~^/wp-links-opml.php             1;
     ~^/wp-locations.php              1;
     ~^/wp-login.php                  1;
-    ~^/wp-mail.php                       1;
+    ~^/wp-mail.php                   1;
     ~^/wp-register.php               1;
     ~^/xmlrpc.php                    1;
 }
@@ -1154,17 +1157,18 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     }
 
     # bypass cache if URLs containing the following strings
-    if (\$request_uri ~* "(\?add-to-cart=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
+    if (\$request_uri ~* "(\?add-to-cart=|\?wc-api=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
         set \$cache_uri 'nullcache';
     }
 
     # bypass cache if the cookies containing the following strings
-    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wp_woocommerce_session_|wptouch_switch_toggle") {
+    if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|wc-api|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wp_woocommerce_session_|wptouch_switch_toggle") {
         set \$cache_uri 'nullcache';
     }
 
     # bypass cache for woocommerce
     if (\$arg_add-to-cart != "") { set \$cache_uri 'nullcache'; }
+    if (\$arg_wc-api != "") { set \$cache_uri 'nullcache'; }
 
     ## bypass cache for empty woocommerce carts
     #if (\$cookie_woocommerce_items_in_cart != "0") { 
@@ -2644,15 +2648,16 @@ if (\$request_method = POST) { set \$cache_uri 'null cache'; }
 
 if (\$query_string != "") { set \$cache_uri 'null cache'; }
 
-if (\$request_uri ~* "/(\?add-to-cart=|cart/|my-account/|checkout/|shop/checkout/|store/checkout/|wp-json/|customer-dashboard/|addons/|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
+if (\$request_uri ~* "/(\?add-to-cart=|\?wc-api=|cart/|my-account/|checkout/|shop/checkout/|store/checkout/|wp-json/|customer-dashboard/|addons/|wp-admin/.*|xmlrpc\.php|wp-.*\.php|index\.php|feed/|sitemap(_index)?\.xml|[a-z0-9_-]+-sitemap([0-9]+)?\.xml)") { set \$cache_uri 'null cache'; }
 
 # bypass cache for woocommerce
 if ( \$arg_add-to-cart != "" ) { set \$cache_uri 'null cache'; }
+if ( \$arg_wc-api != "" ) { set \$cache_uri 'null cache'; }
 
 ## bypass cache for empty woocommerce carts
 #if ( \$cookie_woocommerce_items_in_cart != "0" ) { set \$cache_uri 'null cache'; }
 
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wp_woocommerce_session_|wptouch_switch_toggle") { set \$cache_uri 'null cache'; }
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_logged_in|wc-api|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wp_woocommerce_session_|wptouch_switch_toggle") { set \$cache_uri 'null cache'; }
 EFF
 
 # for nginx level redis cache
@@ -2675,17 +2680,18 @@ if (\$query_string != "") {
 }
 
 # Don't cache uris containing the following segments
-if (\$request_uri ~* "\?add-to-cart=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") {
+if (\$request_uri ~* "\?add-to-cart=|\?wc-api=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|wp-.*.php|/feed/|index.php|sitemap(_index)?.xml") {
   set \$skip_cache 1;
 }
 
 # Don't use the cache for logged in users or recent commenters
-if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wp_woocommerce_session_|wptouch_switch_toggle") {
+if (\$http_cookie ~* "comment_author|wordpress_[a-f0-9]+|wp-postpass|wordpress_no_cache|wordpress_logged_in|wc-api|edd_items_in_cart|woocommerce_items_in_cart|woocommerce_cart_hash|woocommerce_recently_viewed|wc_session_cookie_HASH|wp_woocommerce_session_|wptouch_switch_toggle") {
   set \$skip_cache 1;
 }
 
 # bypass cache for woocommerce
 if (\$arg_add-to-cart != "") { set \$skip_cache 1; }
+if (\$arg_wc-api != "") { set \$skip_cache 1; }
 
 ## bypass cache for empty woocommerce carts
 #if (\$cookie_woocommerce_items_in_cart != "0") { 

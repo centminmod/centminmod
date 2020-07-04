@@ -1202,13 +1202,13 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
         rm -f ${CONFIGSCANDIR}/igbinary.ini
         echo
     fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/redis.ini" ]; then
-        # disable redis on PHP 8.0+ due to segfaulting
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/redis.ini" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/redis.ini" $boldyellow
-        rm -f ${CONFIGSCANDIR}/redis.ini
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/redis.ini" ]; then
+    #     # disable redis on PHP 8.0+ due to segfaulting
+    #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/redis.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/redis.ini" $boldyellow
+    #     rm -f ${CONFIGSCANDIR}/redis.ini
+    #     echo
+    # fi
     echo
     cecho "then restart PHP-FPM again..." $boldyellow
     echo
