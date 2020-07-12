@@ -891,8 +891,8 @@ location ~ [^/]\.php(/|\$) {
 fastcgi_connect_timeout 60s;
 fastcgi_send_timeout 180s;
 fastcgi_read_timeout 300s;
-fastcgi_buffer_size 16k;
-fastcgi_buffers 512 16k;
+fastcgi_buffer_size 32k;
+fastcgi_buffers 512 32k;
 fastcgi_busy_buffers_size 1m;
 fastcgi_temp_file_write_size 4m;
 fastcgi_max_temp_file_size 4m;
@@ -994,8 +994,8 @@ location ~ [^/]\.php(/|\$) {
 fastcgi_connect_timeout 60s;
 fastcgi_send_timeout 180s;
 fastcgi_read_timeout 300s;
-fastcgi_buffer_size 16k;
-fastcgi_buffers 512 16k;
+fastcgi_buffer_size 32k;
+fastcgi_buffers 512 32k;
 fastcgi_busy_buffers_size 1m;
 fastcgi_temp_file_write_size 4m;
 fastcgi_max_temp_file_size 4m;
