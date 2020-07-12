@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.1.2'
+VER='0.1.3'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -16,7 +16,7 @@ RUBYVER='2.6.3'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='13'
+NODEJSVER='14'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'

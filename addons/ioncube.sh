@@ -29,7 +29,7 @@ fi
 
 echo
 echo "ioncube loader installation started"
-echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6 & 7.0"
+echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6 & 7.x"
 # echo "ioncube loader PHP 7 currently beta supported"
 echo "http://blog.ioncube.com/2016/09/15/php-7-ioncube-loaders/"
 echo
@@ -132,7 +132,8 @@ if [ -f "${PHPEXTDIRD}/ioncube.so" ]; then
   echo
   echo "ioncube loader installation completed"
   echo "you'll need to rerun ioncube.sh after each major PHP version upgrades"
-  echo "PHP 5.3 to 5.4 or PHP 5.4 to PHP 5.5 to PHP 5.6 to PHP 7.0 etc"
+  echo "PHP 5.3 to 5.4 or PHP 5.4 to PHP 5.5 to PHP 5.6 to PHP 7.0"
+  echo "7.1 to 7.2, 7.2 to 7.3, 7.3 to 7.4 etc"
   echo
 else
   echo ""
