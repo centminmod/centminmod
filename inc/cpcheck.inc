@@ -430,6 +430,7 @@ pip_updates() {
         if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
           "${SCRIPT_DIR}/addons/python27_install.sh" install
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
+          PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade setuptools
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade 'glances[cpuinfo,ip,raid]'
           echo
@@ -481,6 +482,7 @@ pip_updates() {
             sed -i "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
           fi
         fi
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade setuptools
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade psutil
       fi
       if [[ "$CHECK_GLANCESUPDATE" = 'Glances' || ! "$CHECK_GLANCEINSTALL" ]]; then
@@ -521,6 +523,7 @@ pip_updates() {
             sed -i "s|^exclude=.*|$NEW_PYTHONPSUTIL_EXCLUDES|" /etc/yum.conf
           fi
         fi
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade setuptools
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade psutil
       fi
       if [[ "$CHECK_GLANCESUPDATE" = 'Glances' || ! "$CHECK_GLANCEINSTALL" ]]; then
