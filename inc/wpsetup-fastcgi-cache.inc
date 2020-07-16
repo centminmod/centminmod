@@ -1177,13 +1177,20 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
 
     # custom sub directory e.g. /blog
     set \$custom_subdir '${WPSUBDIR}';
+    #if (\$args ~* s=(.*)) {
+    #  set \$cache_uri \$request_uri;
+    #  set \$check_surl \$cache_uri;
+    #  set \$cache_uri /search/\$1;
+    #}
+    #add_header Check-Uri "\$check_surl";
+    #add_header Set-Uri "\$cache_uri";
 
     # default html file
     set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index.html';
 
     # webp html file
     if (\$http_accept ~* "image/webp") {
-        set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index-webp.html';
+        set \$cache_enabler_uri_webp '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}index-webp.html';
     }
 HFA
 
@@ -1730,7 +1737,7 @@ server {
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
-  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;
+  #try_files \$cache_enabler_uri_webp \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;
 
   # Wordpress fastcgi_cache
     #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
@@ -1877,7 +1884,7 @@ server {
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
-  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;  
+  #try_files \$cache_enabler_uri_webp \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;  
 
   # Wordpress fastcgi_cache
     #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
@@ -2002,7 +2009,7 @@ server {
   try_files /wp-content/cache/supercache/\$http_host/\$cache_uri/index.html \$uri \$uri/ ${WPSUBDIR}/index.php?q=\$uri&\$args;
 
   # for wp cache enabler plugin
-  #try_files \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;   
+  #try_files \$cache_enabler_uri_webp \$cache_enabler_uri \$uri \$uri/ \$custom_subdir/index.php?\$args;   
 
   # Wordpress fastcgi_cache
     #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;
@@ -3128,7 +3135,7 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
-        sed -i "s|^  try_files \$cache_enabler_uri|  #try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|^  try_files \$cache_enabler_uri_webp \$cache_enabler_uri|  #try_files \$cache_enabler_uri_webp \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|    try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|include /usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         # insert /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf include file
@@ -3138,7 +3145,7 @@ if [[ "$wpscache" = 'fastcgicache' ]]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-        sed -i "s|^  try_files \$cache_enabler_uri|  #try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|^  try_files \$cache_enabler_uri_webp \$cache_enabler_uri|  #try_files \$cache_enabler_uri_webp \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|    #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|    try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|include /usr/local/nginx/conf/wpincludes/${vhostname}/php-fastcgicache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         # insert /usr/local/nginx/conf/wpincludes/${vhostname}/wpfastcgicache_include_${vhostname}.conf include file
@@ -3151,13 +3158,13 @@ if [[ "$wpscache" = [nN] ]]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
-        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|#try_files \$cache_enabler_uri_webp \$cache_enabler_uri|try_files \$cache_enabler_uri_webp \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
     fi
     if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-        sed -i "s|#try_files \$cache_enabler_uri|try_files \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|#try_files \$cache_enabler_uri_webp \$cache_enabler_uri|try_files \$cache_enabler_uri_webp \$cache_enabler_uri|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
     fi
 fi
 
