@@ -270,7 +270,11 @@ if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
       echo "----------------------------------------------------------------------------------"
       cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
       echo "----------------------------------------------------------------------------------"
-      ${YUMDNFBIN} -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        ${YUMDNFBIN} -y install lcms2-devel libwebp7 libwebp7-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+      else
+        ${YUMDNFBIN} -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+      fi
       sar_call
   
       ${YUMDNFBIN} -y remove ImageMagick${DISABLEREPO_DNF}
