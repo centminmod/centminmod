@@ -1,0 +1,62 @@
+From 849eea1e486b64530235f03a91079337851f2d85 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 21 Jul 2020 11:07:43 +0200
+Subject: [PATCH] Fix #79877: getimagesize function silently truncates after a
+ null byte
+
+We have to check for NUL bytes if `getimagesize()` has been called.
+
+(cherry picked from commit ff577b04c0d250473a0ef46f8e332960fec3ca2c)
+---
+ NEWS                                   | 4 ++++
+ ext/standard/image.c                   | 5 +++++
+ ext/standard/tests/image/bug79877.phpt | 9 +++++++++
+ 3 files changed, 18 insertions(+)
+ create mode 100644 ext/standard/tests/image/bug79877.phpt
+
+diff --git a/NEWS b/NEWS
+index 2655a1747f..d826960c11 100644
+--- a/NEWS
++++ b/NEWS
+@@ -3,6 +3,10 @@ PHP                                                                        NEWS
+ 
+ Backported from 7.2.33
+ 
++- Core:
++  . Fixed bug #79877 (getimagesize function silently truncates after a null 
++    byte) (cmb)
++
+ - Phar:
+   . Fixed bug #79797 (Use of freed hash key in the phar_parse_zipfile
+     function). (CVE-2020-7068) (cmb)
+diff --git a/ext/standard/image.c b/ext/standard/image.c
+index 2074d289df..c2f40923ad 100644
+--- a/ext/standard/image.c
++++ b/ext/standard/image.c
+@@ -1403,6 +1403,11 @@ static void php_getimagesize_from_any(INTERNAL_FUNCTION_PARAMETERS, int mode) {
+ 			return;
+ 	}
+ 
++	if (mode == FROM_PATH && CHECK_NULL_PATH(input, input_len)) {
++		php_error_docref(NULL, E_WARNING, "Invalid path");
++		return;
++	}
++
+ 	if (argc == 2) {
+ 		zval_dtor(info);
+ 		array_init(info);
+diff --git a/ext/standard/tests/image/bug79877.phpt b/ext/standard/tests/image/bug79877.phpt
+new file mode 100644
+index 0000000000..92e93e59e5
+--- /dev/null
++++ b/ext/standard/tests/image/bug79877.phpt
+@@ -0,0 +1,9 @@
++--TEST--
++Bug #79877 (getimagesize function silently truncates after a null byte)
++--FILE--
++<?php
++var_dump(getimagesize("/tmp/a.png\0xx"));
++?>
++--EXPECTF--
++Warning: getimagesize(): Invalid path in %s on line %d
++NULL

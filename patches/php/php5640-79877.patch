@@ -1,0 +1,84 @@
+From 5389b1e6bb048369715aba73473625d760a39e89 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 21 Jul 2020 11:07:43 +0200
+Subject: [PATCH] Fix #79877: getimagesize function silently truncates after a
+ null byte
+
+We have to check for NUL bytes if `getimagesize()` has been called.
+
+(cherry picked from commit ff577b04c0d250473a0ef46f8e332960fec3ca2c)
+---
+ NEWS                                   | 4 ++++
+ ext/standard/image.c                   | 5 +++++
+ ext/standard/tests/image/bug79877.phpt | 9 +++++++++
+ 3 files changed, 18 insertions(+)
+ create mode 100644 ext/standard/tests/image/bug79877.phpt
+
+diff --git a/NEWS b/NEWS
+index 501283aabe..cf34011622 100644
+--- a/NEWS
++++ b/NEWS
+@@ -3,6 +3,10 @@ PHP                                                                        NEWS
+ 
+ Backported from 7.2.33
+ 
++- Core:
++  . Fixed bug #79877 (getimagesize function silently truncates after a null 
++    byte) (cmb)
++
+ - Phar:
+   . Fixed bug #79797 (Use of freed hash key in the phar_parse_zipfile
+     function). (CVE-2020-7068) (cmb)
+diff --git a/ext/standard/image.c b/ext/standard/image.c
+index d58d543abd..f663e7c0c2 100644
+--- a/ext/standard/image.c
++++ b/ext/standard/image.c
+@@ -1398,6 +1398,11 @@ static void php_getimagesize_from_any(INTERNAL_FUNCTION_PARAMETERS, int mode) {
+ 			return;
+ 	}
+ 
++	if (mode == FROM_PATH && CHECK_NULL_PATH(input, input_len)) {
++		php_error_docref(NULL, E_WARNING, "Invalid path");
++		return;
++	}
++
+ 	if (argc == 2) {
+ 			zval_dtor(*info);
+ 			array_init(*info);
+diff --git a/ext/standard/tests/image/bug79877.phpt b/ext/standard/tests/image/bug79877.phpt
+new file mode 100644
+index 0000000000..92e93e59e5
+--- /dev/null
++++ b/ext/standard/tests/image/bug79877.phpt
+@@ -0,0 +1,9 @@
++--TEST--
++Bug #79877 (getimagesize function silently truncates after a null byte)
++--FILE--
++<?php
++var_dump(getimagesize("/tmp/a.png\0xx"));
++?>
++--EXPECTF--
++Warning: getimagesize(): Invalid path in %s on line %d
++NULL
+From bcec8f78b57189a654524b737562d1da235c6553 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 4 Aug 2020 07:40:22 +0200
+Subject: [PATCH] ZTS fix
+
+---
+ ext/standard/image.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/standard/image.c b/ext/standard/image.c
+index f663e7c0c2..db64b3a48e 100644
+--- a/ext/standard/image.c
++++ b/ext/standard/image.c
+@@ -1399,7 +1399,7 @@ static void php_getimagesize_from_any(INTERNAL_FUNCTION_PARAMETERS, int mode) {
+ 	}
+ 
+ 	if (mode == FROM_PATH && CHECK_NULL_PATH(input, input_len)) {
+-		php_error_docref(NULL, E_WARNING, "Invalid path");
++		php_error_docref(NULL TSRMLS_CC, E_WARNING, "Invalid path");
+ 		return;
+ 	}
+ 

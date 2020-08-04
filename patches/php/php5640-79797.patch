@@ -1,0 +1,52 @@
+Partial, without binary part
+
+
+
+From d7980cd5ef5862d9a01a0f34ee44bec07be88096 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 14 Jul 2020 17:04:24 +0200
+Subject: [PATCH] Fix #79797: Use of freed hash key in the phar_parse_zipfile
+ function
+
+We must not use heap memory after we freed it.
+
+(cherry picked from commit 7355ab81763a3d6a04ac11660e6a16d58838d187)
+---
+ NEWS                         |   6 ++++++
+ ext/phar/tests/bug79797.phar | Bin 0 -> 274 bytes
+ ext/phar/tests/bug79797.phpt |  14 ++++++++++++++
+ ext/phar/zip.c               |   2 +-
+ 4 files changed, 21 insertions(+), 1 deletion(-)
+ create mode 100644 ext/phar/tests/bug79797.phar
+ create mode 100644 ext/phar/tests/bug79797.phpt
+
+diff --git a/NEWS b/NEWS
+index b53c9e28cb..501283aabe 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.33
++
++- Phar:
++  . Fixed bug #79797 (Use of freed hash key in the phar_parse_zipfile
++    function). (CVE-2020-7068) (cmb)
++
+ Backported from 7.2.31
+ 
+ - Core:
+diff --git a/ext/phar/zip.c b/ext/phar/zip.c
+index ed156a2d00..3ab02ab35a 100644
+--- a/ext/phar/zip.c
++++ b/ext/phar/zip.c
+@@ -682,7 +682,7 @@ int phar_parse_zipfile(php_stream *fp, char *fname, int fname_len, char *alias,
+ 			efree(actual_alias);
+ 		}
+ 
+-		zend_hash_add(&(PHAR_GLOBALS->phar_alias_map), actual_alias, mydata->alias_len, (void*)&mydata, sizeof(phar_archive_data*), NULL);
++		zend_hash_add(&(PHAR_GLOBALS->phar_alias_map), mydata->alias, mydata->alias_len, (void*)&mydata, sizeof(phar_archive_data*), NULL);
+ 	} else {
+ 		phar_archive_data **fd_ptr;
+ 
