@@ -4,7 +4,7 @@ phpng_download() {
     PHPNG_YES='y'
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
-    REMIURL='https://downloads.php.net/~derick'
+    REMIURL='https://downloads.php.net/~carusogabriel'
     curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
