@@ -1195,6 +1195,11 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
         cecho "rm -f ${CONFIGSCANDIR}/imagick.ini" $boldyellow
         echo
     fi
+    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/memcache.ini" ]; then
+        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+        echo
+    fi
     if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
         # disable igbinary on PHP 8.0+ due to segfaulting
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
