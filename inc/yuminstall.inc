@@ -276,9 +276,18 @@ if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
         ${YUMDNFBIN} -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
       fi
       sar_call
-  
-      ${YUMDNFBIN} -y remove ImageMagick${DISABLEREPO_DNF}
+      
+      if [[ "$CENTOS_SIX" = '6' ]]; then
+        # only applies to CentOS 6 and CentOS 7 remi ImageMagick yum package has been renamed from ImageMagick6 to ImageMagick
+        ${YUMDNFBIN} -y remove ImageMagick${DISABLEREPO_DNF}
+      fi
       sar_call
+
+      if [ -f /etc/yum/pluginconf.d/versionlock.conf ]; then
+          VERSIONLOCK_REPO=',versionlock'
+      else
+          VERSIONLOCK_REPO=""
+      fi
   
       if [[ "$CENTOS_SIX" = '6' ]]; then
         # ${YUMDNFBIN} -y install libwebp libwebp-devel --skip-broken
@@ -288,7 +297,8 @@ if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
         if [[ "$(rpm -qa libwebp-devel)" ]]; then
             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
         fi
-        ${YUMDNFBIN} -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
+        # disable base as CentOS 7.8+ has ImageMagick packages of their own which may conflict with Remi's ImageMagick versions
+        ${YUMDNFBIN} -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities${VERSIONLOCK_REPO}${DISABLEREPO_DNF} --disablerepo=base
         sar_call
       fi
       
@@ -301,7 +311,11 @@ if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
         fi
       fi
-      ${YUMDNFBIN} -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities${DISABLEREPO_DNF}
+      if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        ${YUMDNFBIN} -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities${VERSIONLOCK_REPO}${DISABLEREPO_DNF} --disablerepo=base
+      else
+        ${YUMDNFBIN} -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities${VERSIONLOCK_REPO}${DISABLEREPO_DNF}
+      fi
       sar_call
     fi
   fi

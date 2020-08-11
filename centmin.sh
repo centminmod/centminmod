@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='555'
+SCRIPT_INCREMENTVER='556'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2020'
@@ -2922,7 +2922,7 @@ EOF
         ccacheinstall
         fi
         
-        yumskipinstall
+        #yumskipinstall
         if [[ "$yuminstallrun" == [yY] ]]; then
         yuminstall
         fi
@@ -2963,7 +2963,7 @@ EOF
         ccacheinstall
         fi
         
-        yumskipinstall
+        #yumskipinstall
         if [[ "$yuminstallrun" == [yY] ]]; then
         yuminstall
         fi
@@ -3505,7 +3505,7 @@ EOF
         UALL='y'
         cecho "Updating Nginx, PHP-FPM & Siege versions" $boldyellow
         echo
-        yumskipinstall
+        #yumskipinstall
 
         if [[ "$yuminstallrun" == [yY] ]]; then
             yuminstall
