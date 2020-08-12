@@ -371,7 +371,7 @@ PHPMU_ALPHAVER=$(echo "$phpver")
     phpng_download
     autodetectextensions
     zopcacheupgrade
-    addmysql_legacy
+    #addmysql_legacy
 
     echo "*************************************************"
     cecho "* Upgrading PHP" $boldgreen
@@ -1020,7 +1020,7 @@ if [[ "$IGBINARY_INSTALL" = [yY] ]]; then
     fi
 fi
 
-addmysql_legacyinstall
+#addmysql_legacyinstall
 
 if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
