@@ -598,7 +598,7 @@ NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
 NGINX_HEADERSMORE='0.33'
-NGINX_CACHEPURGEVER='2.5'
+NGINX_CACHEPURGEVER='2.5.1'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
 NGINX_UPSTREAMCHECK='n'      # nginx upstream check https://github.com/yaoweibin/nginx_upstream_check_module
