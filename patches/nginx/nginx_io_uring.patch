@@ -1,16 +1,16 @@
-From 3d0a234264dfe061a14d7167f1750ddd91a4fe2e Mon Sep 17 00:00:00 2001
+From a052b2d1adf583233454a6d7f89963544714ff58 Mon Sep 17 00:00:00 2001
 From: =?UTF-8?q?=E6=9D=8E=E9=80=9A=E6=B4=B2?= <carter.li@eoitek.com>
-Date: Thu, 13 Aug 2020 10:08:04 +0800
-Subject: [PATCH] [PATCH] Add io_uring support
+Date: Fri, 14 Aug 2020 10:44:44 +0800
+Subject: [PATCH] Add io_uring support
 
 ---
  auto/unix                            |  39 ++---
  src/core/ngx_open_file_cache.c       |   6 +-
- src/event/modules/ngx_epoll_module.c | 224 +++++----------------------
+ src/event/modules/ngx_epoll_module.c | 225 ++++++---------------------
  src/event/ngx_event.h                |   4 +-
- src/os/unix/ngx_linux_aio_read.c     |  46 +++---
+ src/os/unix/ngx_linux_aio_read.c     |  63 +++++---
  src/os/unix/ngx_linux_config.h       |   4 -
- 6 files changed, 80 insertions(+), 243 deletions(-)
+ 6 files changed, 98 insertions(+), 243 deletions(-)
 
 diff --git a/auto/unix b/auto/unix
 index ff9697a..2e2f63a 100644
@@ -98,7 +98,7 @@ index b23ee78..682d48c 100644
  
      } else {
 diff --git a/src/event/modules/ngx_epoll_module.c b/src/event/modules/ngx_epoll_module.c
-index 98e3ce7..7ae28d2 100644
+index 98e3ce7..09dda1d 100644
 --- a/src/event/modules/ngx_epoll_module.c
 +++ b/src/event/modules/ngx_epoll_module.c
 @@ -9,6 +9,10 @@
@@ -145,11 +145,12 @@ index 98e3ce7..7ae28d2 100644
  #endif
  
  static void *ngx_epoll_create_conf(ngx_cycle_t *cycle);
-@@ -141,13 +128,10 @@ static ngx_connection_t     notify_conn;
+@@ -141,13 +128,11 @@ static ngx_connection_t     notify_conn;
  #endif
  
  #if (NGX_HAVE_FILE_AIO)
 +struct io_uring             ngx_ring;
++struct io_uring_params      ngx_ring_params;
  
 -int                         ngx_eventfd = -1;
 -aio_context_t               ngx_aio_ctx = 0;
@@ -162,7 +163,7 @@ index 98e3ce7..7ae28d2 100644
  #endif
  
  #if (NGX_HAVE_EPOLLRDHUP)
-@@ -217,102 +201,40 @@ ngx_module_t  ngx_epoll_module = {
+@@ -217,102 +202,40 @@ ngx_module_t  ngx_epoll_module = {
  
  #if (NGX_HAVE_FILE_AIO)
  
@@ -225,10 +226,10 @@ index 98e3ce7..7ae28d2 100644
 -    }
 -
 -    if (io_setup(epcf->aio_requests, &ngx_aio_ctx) == -1) {
-+    if (io_uring_queue_init(64, &ngx_ring, 0) < 0) {
++    if (io_uring_queue_init_params(64, &ngx_ring, &ngx_ring_params) < 0) {
          ngx_log_error(NGX_LOG_EMERG, cycle->log, ngx_errno,
 -                      "io_setup() failed");
-+                      "io_uring_queue_init() failed");
++                      "io_uring_queue_init_params() failed");
          goto failed;
      }
  
@@ -278,7 +279,7 @@ index 98e3ce7..7ae28d2 100644
      ngx_file_aio = 0;
  }
  
-@@ -549,23 +471,11 @@ ngx_epoll_done(ngx_cycle_t *cycle)
+@@ -549,23 +472,11 @@ ngx_epoll_done(ngx_cycle_t *cycle)
  
  #if (NGX_HAVE_FILE_AIO)
  
@@ -305,7 +306,7 @@ index 98e3ce7..7ae28d2 100644
  #endif
  
      ngx_free(event_list);
-@@ -939,84 +849,36 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
+@@ -939,84 +850,36 @@ ngx_epoll_process_events(ngx_cycle_t *cycle, ngx_msec_t timer, ngx_uint_t flags)
  #if (NGX_HAVE_FILE_AIO)
  
  static void
@@ -425,10 +426,10 @@ index 97f9673..eb17346 100644
  };
  
 diff --git a/src/os/unix/ngx_linux_aio_read.c b/src/os/unix/ngx_linux_aio_read.c
-index 9f0a6c1..d5a1685 100644
+index 9f0a6c1..033bd56 100644
 --- a/src/os/unix/ngx_linux_aio_read.c
 +++ b/src/os/unix/ngx_linux_aio_read.c
-@@ -9,20 +9,15 @@
+@@ -9,19 +9,15 @@
  #include <ngx_core.h>
  #include <ngx_event.h>
  
@@ -436,23 +437,23 @@ index 9f0a6c1..d5a1685 100644
  
 -extern int            ngx_eventfd;
 -extern aio_context_t  ngx_aio_ctx;
-+
-+extern struct io_uring  ngx_ring;
  
++extern struct io_uring          ngx_ring;
++extern struct io_uring_params   ngx_ring_params;
  
- static void ngx_file_aio_event_handler(ngx_event_t *ev);
+-static void ngx_file_aio_event_handler(ngx_event_t *ev);
  
++static void ngx_file_aio_event_handler(ngx_event_t *ev);
  
 -static int
 -io_submit(aio_context_t ctx, long n, struct iocb **paiocb)
 -{
 -    return syscall(SYS_io_submit, ctx, n, paiocb);
 -}
--
+ 
  
  ngx_int_t
- ngx_file_aio_init(ngx_file_t *file, ngx_pool_t *pool)
-@@ -50,10 +45,10 @@ ssize_t
+@@ -50,10 +46,10 @@ ssize_t
  ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
      ngx_pool_t *pool)
  {
@@ -467,7 +468,7 @@ index 9f0a6c1..d5a1685 100644
  
      if (!ngx_file_aio) {
          return ngx_read_file(file, buf, size, offset);
-@@ -93,22 +88,25 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
+@@ -93,22 +89,41 @@ ngx_file_aio_read(ngx_file_t *file, u_char *buf, size_t size, off_t offset,
          return NGX_ERROR;
      }
  
@@ -490,10 +491,26 @@ index 9f0a6c1..d5a1685 100644
 +    }
  
 -    ev->handler = ngx_file_aio_event_handler;
-+    /* We must store iov into heap to prevent kernel from returning -EFAULT */
-+    aio->iov.iov_base = buf;
-+    aio->iov.iov_len = size;
-+    io_uring_prep_readv(sqe, file->fd, &aio->iov, 1, offset);
++    if (__builtin_expect(!!(ngx_ring_params.features & IORING_FEAT_CUR_PERSONALITY), 1)) {
++        /*
++         * `io_uring_prep_read` is faster than `io_uring_prep_readv`, because the kernel
++         * doesn't need to import iovecs in advance.
++         *
++         * If the kernel supports `IORING_FEAT_CUR_PERSONALITY`, it should support
++         * non-vectored read/write commands too.
++         *
++         * It's not perfect, but avoids an extra feature-test syscall.
++         */
++        io_uring_prep_read(sqe, file->fd, buf, size, offset);
++    } else {
++        /*
++         * We must store iov into heap to prevent kernel from returning -EFAULT
++         * in case `IORING_FEAT_SUBMIT_STABLE` is not supported
++         */
++        aio->iov.iov_base = buf;
++        aio->iov.iov_len = size;
++        io_uring_prep_readv(sqe, file->fd, &aio->iov, 1, offset);
++    }
 +    io_uring_sqe_set_data(sqe, ev);
  
 -    piocb[0] = &aio->aiocb;
