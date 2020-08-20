@@ -1356,6 +1356,14 @@ fi # sslconfig = yd
 
 else
 
+# set web root differently if it's main hostname
+
+if [[ "$create_mainhostname_ssl" = [yY] ]]; then
+  PUBLIC_WEBROOT='root   html;'
+else
+  PUBLIC_WEBROOT="root /home/nginx/domains/$vhostname/public;"
+fi
+
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # Centmin Mod Getting Started Guide
 # must read http://centminmod.com/getstarted.html
