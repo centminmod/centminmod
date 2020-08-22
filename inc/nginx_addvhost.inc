@@ -1280,6 +1280,9 @@ if [ -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]; then
 fi
 
 cmservice nginx reload
+echo
+nginx -t
+echo
 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart

@@ -2863,6 +2863,9 @@ if [ -f "${SCRIPT_DIR}/tools/autoprotect.sh" ]; then
 fi
 
 cmservice nginx reload
+echo
+nginx -t
+echo
 
 cmservice php-fpm restart
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
