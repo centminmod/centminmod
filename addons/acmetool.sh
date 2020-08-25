@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.63'
+ACMEVER='1.0.64'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -68,8 +68,16 @@ pushover_email=''
 # /etc/centminmod/acmetool-config.ini
 # set to CF_DNSAPI='y' and fill in CF_KEY and CF_EMAIL settings
 CF_DNSAPI='n'
+# global CF API Key
 CF_KEY=''
 CF_EMAIL=''
+# new CF API Tokens
+# need read access to Zone.Zone, and write access to Zone.DNS
+# across all Zones
+# Cloudflare Account ID from any of your Cloudflare domain's
+# main dashboard's right side column listing
+CF_Token=''
+CF_Account_ID=''
 ###############################################################
 UNATTENDED='n'
 NOTICE='y'
@@ -296,6 +304,34 @@ listlogs() {
   echo "log files saved at ${CENTMINLOGDIR}"
   ls -lAhrt "${CENTMINLOGDIR}" | grep "${DT%??}"
   echo
+}
+
+#####################
+check_cfdns_api() {
+  echo "Verifying working Cloudflare DNS API Credentials"
+  if [[ ! -z "$CF_KEY" && ! -z "$CF_Email" ]] && [[ -z "$CF_Token" && -z "$CF_Account_ID" ]]; then
+    echo "CF Global API Key detected"
+    cfapi_check=$(curl -4sX GET "https://api.cloudflare.com/client/v4/zones" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r '.success')
+    if [[ "$cfapi_check" = 'true' ]]; then
+      echo "Ok: CF Global API works"
+      cflist_zones=$(curl -4sX GET "https://api.cloudflare.com/client/v4/zones" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r '.result[] | "\(.name) \(.id) \(.status) \(.paused)"')
+      # get specific zone details
+      # curl -4sX GET "https://api.cloudflare.com/client/v4/zones/$CF_Zone_ID" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r
+    else
+      echo "Error: CF Global API not working"
+    fi
+
+  elif [[ -z "$CF_KEY" && -z "$CF_Email" ]] && [[ ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]]; then
+    echo "CF API Tokens detected"
+    cfapi_check=$(curl -4sX GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CF_Token" -H "Content-Type:application/json" | jq -r '.success')
+    if [[ "$cfapi_check" = 'true' ]]; then
+      echo "Ok: CF API Token works"
+    else
+      echo "Error: CF API Token not working"
+    fi
+  else
+    echo "No Cloudflare Global API Key or API Token detected"
+  fi
 }
 
 #####################
@@ -4047,13 +4083,30 @@ issue_acmedns() {
     echo "-----------------------------------------------------------"
     # if CF_DNSAPI enabled for Cloudflare DNS mode, use Cloudflare API for setting
     # up DNS mode validation via TXT DNS record creation
-    if [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_KEY" ]]; then
+    if [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_Email" ]] && [[ -z "$CF_Token" && -z "$CF_Account_ID" ]]; then
+      # if global api set and token not set
       export CF_Key="$CF_KEY"
       export CF_Email="$CF_EMAIL"
       DNSAPI_OPT=' dns_cf'
       sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
       sed -i "s|CF_Key=\".*|CF_Key=\"$CF_KEY\"|" "$ACMECERTHOME"account.conf
       sed -i "s|CF_Email=\".*|CF_Email=\"$CF_EMAIL\"|" "$ACMECERTHOME"account.conf
+    elif [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]] && [[ -z "$CF_KEY" && -z "$CF_Email" ]]; then
+      # if token set and global api not set
+      export CF_Token="$CF_Token"
+      export CF_Account_ID="$CF_Account_ID"
+      DNSAPI_OPT=' dns_cf'
+      sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
+      sed -i "s|CF_Token=\".*|CF_Token=\"$CF_Token\"|" "$ACMECERTHOME"account.conf
+      sed -i "s|CF_Account_ID=\".*|CF_Account_ID=\"$CF_Account_ID\"|" "$ACMECERTHOME"account.conf
+    elif [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_Email" ]]; then
+      # if both global api key and token set, prefer token api method
+      export CF_Token="$CF_Token"
+      export CF_Account_ID="$CF_Account_ID"
+      DNSAPI_OPT=' dns_cf'
+      sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
+      sed -i "s|CF_Token=\".*|CF_Token=\"$CF_Token\"|" "$ACMECERTHOME"account.conf
+      sed -i "s|CF_Account_ID=\".*|CF_Account_ID=\"$CF_Account_ID\"|" "$ACMECERTHOME"account.conf
     else
       DNSAPI_OPT=""
     fi
@@ -4099,7 +4152,7 @@ issue_acmedns() {
       "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
      LECHECK=$?
     fi
-    if [[ "$CF_DNSAPI" != [yY] ]] && [[ -z "$CF_KEY" && -z "$CF_KEY" ]]; then
+    if [[ "$CF_DNSAPI" != [yY] && -z "$CF_KEY" && -z "$CF_Email" ]] || [[ "$CF_DNSAPI" != [yY] && -z "$CF_Token" && -z "$CF_Account_ID" ]]; then
       if [ -f "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log" ]; then
         # echo " Final Step to complete SSL Certificate Issuance" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo " Once DNS updated for $vhostname, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
@@ -4184,7 +4237,7 @@ issue_acmedns() {
       echo
     fi  # reloadcmd_setup
     elif [[ "$CERTONLY_DNS" = '1' ]]; then
-      if [[ "$CF_DNSAPI" != [yY] ]] && [[ -z "$CF_KEY" && -z "$CF_KEY" ]]; then
+      if [[ "$CF_DNSAPI" != [yY] && -z "$CF_KEY" && -z "$CF_Email" ]] || [[ "$CF_DNSAPI" != [yY] && -z "$CF_Token" && -z "$CF_Account_ID" ]]; then
         echo
         echo "---------------------------------"
         echo " DNS mode requires manual steps below"
@@ -4194,7 +4247,7 @@ issue_acmedns() {
         # backup_acme $vhostname
         echo
         echo
-      elif [[ "$CF_DNSAPI" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_KEY" ]]; then
+      elif [[ "$CF_DNSAPI" = [yY] && ! -z "$CF_KEY" && ! -z "$CF_Email" ]] || [[ "$CF_DNSAPI" = [yY] && ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]]; then
         echo
         echo "---------------------------------"
         echo " DNS mode via Cloudflare DNS API"
@@ -4206,7 +4259,7 @@ issue_acmedns() {
         echo " If want to install cert into Nginx vhost, run SSH command: " >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         # echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
-      echo "  "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}. key"${ECCFLAG}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+        echo "  "$ACMEBINARY" --installcert $DOMAINOPT --certpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --keypath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.key" --capath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-acme${ECC_SUFFIX}.cer" --reloadCmd /usr/bin/ngxreload --fullchainpath "/usr/local/nginx/conf/ssl/${vhostname}/${vhostname}-fullchain-acme${ECC_SUFFIX}. key"${ECCFLAG}" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "---------------------------------" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo " SSL certs will be installed at (requires manual configuration in intended Nginx vhost config files community.centminmod.com/posts/35135/): /usr/local/nginx/conf/ssl/${vhostname}/" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
         echo "" >> "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
@@ -5106,6 +5159,9 @@ checkdates )
 checkdomains )
   check_domains
 ;;
+check_cfapi )
+  check_cfdns_api
+;;
   certonly-issue )
 { 
 nvcheck
@@ -5122,7 +5178,7 @@ fi
 ;;
   * )
   echo
-  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|manual|issue|reissue|reissue-only|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates|checkdomains}"
+  echo " $0 {acme-menu|acmeinstall|acmeupdate|acmesetup|manual|issue|reissue|reissue-only|renew|certonly-issue|s3issue|s3reissue|s3renew|renewall|checkdates|checkdomains|check_cfapi}"
   echo "
  Usage Commands: 
  $0 acme-menu
@@ -5175,6 +5231,7 @@ fi
  $0 renewall lived
  $0 checkdates
  $0 checkdomains
+ $0 check_cfapi
   "
     ;;
 esac
