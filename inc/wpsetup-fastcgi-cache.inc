@@ -1156,6 +1156,12 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
         set \$cache_uri 'nullcache';
     }
 
+    # include query strings fbclid, gclid, utm in cache via stripping them with
+    # 302 redirect via mapping in /usr/local/nginx/conf/wpcacheenabler_map.conf
+    if (\$q_ignorearg) {
+      rewrite ^ \$uri? redirect;
+    }
+
     # bypass cache if URLs containing the following strings
     if (\$request_uri ~* "(\?add-to-cart=|\?wc-api=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
         set \$cache_uri 'nullcache';
@@ -1206,6 +1212,13 @@ map \$http_user_agent \$cmwpcache_device {
     "~*Tablet"                                  'mobile';
     "~*Kindle"                                  'mobile';
     "~*Windows\ Phone"                          'mobile';
+}
+
+map \$args \$q_ignorearg {
+  default             0;
+  ~*fbclid            1;
+  ~*gclid             1;
+  ~*utm               1;
 }
 HFB
 
