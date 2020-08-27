@@ -397,13 +397,22 @@ pip_updates() {
         CHECK_PIPALL_INSTALLED=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip list --format columns)
         CHECK_PIPURLLIBUPDATE=$(echo "$CHECK_PIPALL_UPDATES" | grep -o urllib3)
         if [[ "$(rpm -qa python-urllib3 | grep -o python-urllib3)" = 'python-urllib3' ]]; then
-          yum -q -y remove python-urllib3 >/dev/null 2>&1
-          yum versionlock delete python-urllib3 >/dev/null 2>&1
+          #yum -q -y remove python-urllib3 >/dev/null 2>&1
+          #yum versionlock delete python-urllib3 >/dev/null 2>&1
+          yum versionlock python-urllib3 cloud-init python-requests >/dev/null 2>&1
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq urllib3
         fi
         if [[ ! "$(grep 'python-urllib3' /etc/yum.conf)" ]]; then
           NEW_PYTHONURLLIB_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-urllib3")
           sed -i "s|^exclude=.*|$NEW_PYTHONURLLIB_EXCLUDES|" /etc/yum.conf
+        fi
+        if [[ ! "$(grep 'cloud-init' /etc/yum.conf)" ]]; then
+          CLOUDINIT_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) cloud-init")
+          sed -i "s|^exclude=.*|$CLOUDINIT_EXCLUDES|" /etc/yum.conf
+        fi
+        if [[ ! "$(grep 'python-requests' /etc/yum.conf)" ]]; then
+          PYTHONREQUESTS_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python-requests")
+          sed -i "s|^exclude=.*|$PYTHONREQUESTS_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
         PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade urllib3
