@@ -1192,11 +1192,11 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     #add_header Set-Uri "\$cache_uri";
 
     # default html file
-    set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}${scheme}-index.html';
+    set \$cache_enabler_uri '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}\${scheme}-index.html';
 
     # webp html file
     if (\$http_accept ~* "image/webp") {
-        set \$cache_enabler_uri_webp '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}${scheme}-index-webp.html';
+        set \$cache_enabler_uri_webp '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}\${scheme}-index-webp.html';
     }
 HFA
 
