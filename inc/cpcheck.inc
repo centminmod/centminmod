@@ -18,9 +18,10 @@ update_cache_enabler_schemefix() {
           {
           ce_count=$((${ce_count} + 1))
           getce_domain=$(echo $f | awk -F '/' '{print $7}')
-          if [ -f "/home/nginx/domains/${getce_domain}/public/wp-content/plugins/cache-enabler/cache-enabler.php" ]; then
-              getce_ver=$(awk -F ': ' '/Version/ {print $2}' /home/nginx/domains/${getce_domain}/public/wp-content/plugins/cache-enabler/cache-enabler.php)
-              getce_verf=$(awk -F ': ' '/Version/ {print $2}' /home/nginx/domains/${getce_domain}/public/wp-content/plugins/cache-enabler/cache-enabler.php | awk -F '.' '{print $1"00"$2"00"$3}')
+          getce_plugin_phpfile=$(find /home/nginx/domains/${getce_domain}/public -type f -name "*cache-enabler.php" | grep 'plugins/cache-enabler/cache-enabler.php')
+          if [ -f "${getce_plugin_phpfile}" ]; then
+              getce_ver=$(awk -F ': ' '/Version/ {print $2}' "${getce_plugin_phpfile}")
+              getce_verf=$(awk -F ': ' '/Version/ {print $2}' "${getce_plugin_phpfile}" | awk -F '.' '{print $1"00"$2"00"$3}')
           fi
           echo
           echo "cache enabler plugin $getce_ver ($getce_verf)"
