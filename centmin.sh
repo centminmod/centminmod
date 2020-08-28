@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='567'
+SCRIPT_INCREMENTVER='568'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2020'
@@ -67,6 +67,7 @@ done
 HN=$(uname -n)
 # Pre-Checks to prevent screw ups
 DIR_TMP='/svr-setup'
+CENTMINLOGDIR='/root/centminlogs'
 
 source "inc/memcheck.inc"
 TMPFSLIMIT=2900000

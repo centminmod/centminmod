@@ -1,3 +1,53 @@
+update_cache_enabler_schemefix() {
+  if [[ -d /usr/local/nginx/conf/wpincludes && $(grep 'cache-enabler/\${http_host}\${cache_uri}index' /usr/local/nginx/conf/wpincludes/*/wpcacheenabler_*.conf) ]]; then
+    touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
+    {
+    echo "#########################################################################"
+    echo "Starting Automatic Wordpress Cache Enabler Advanced Cache Config Update"
+    echo "https://community.centminmod.com/threads/20256/"
+    echo
+    } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
+    getce_includes=$(ls /usr/local/nginx/conf/wpincludes/*/wpcacheenabler_*.conf)
+    ce_count=0
+    for f in $getce_includes; do
+      ce_chkold=$(grep 'cache-enabler/\${http_host}\${cache_uri}index' "$f")
+      ce_chknew=$(grep 'cache-enabler/\${http_host}\${cache_uri}\${scheme}-index' "$f")
+      ce_search_chkold=$(grep 'cache-enabler/\${http_host}\${cache_uri_search}index' "$f")
+      ce_search_chknew=$(grep 'cache-enabler/\${http_host}\${cache_uri_search}\${scheme}-index' "$f")
+      if [[ "$ce_chkold" && ! "$ce_chknew" ]] || [[ "$ce_search_chkold" ]]; then
+          {
+          ce_count=$((${ce_count} + 1))
+          getce_domain=$(echo $f | awk -F '/' '{print $7}')
+          if [ -f "/home/nginx/domains/${getce_domain}/public/wp-content/plugins/cache-enabler/cache-enabler.php" ]; then
+              getce_ver=$(awk -F ': ' '/Version/ {print $2}' /home/nginx/domains/${getce_domain}/public/wp-content/plugins/cache-enabler/cache-enabler.php)
+              getce_verf=$(awk -F ': ' '/Version/ {print $2}' /home/nginx/domains/${getce_domain}/public/wp-content/plugins/cache-enabler/cache-enabler.php | awk -F '.' '{print $1"00"$2"00"$3}')
+          fi
+          echo
+          echo "cache enabler plugin $getce_ver ($getce_verf)"
+          echo "cache enabler v1.4.0+ cache format update for $f";
+          echo "backup $f"
+          echo "to ${f}-autobackup"
+          \cp -af "$f" "${f}-autobackup"
+          sed -i 's|cache-enabler/\${http_host}\${cache_uri}index|cache-enabler/\${http_host}\${cache_uri}\${scheme}-index|g' $f;
+          sed -i 's|cache-enabler/\${http_host}\${cache_uri_search}index.html|cache-enabler/\${http_host}\${cache_uri_search}\${scheme}-index.html|g' $f;
+          sed -i 's|cache-enabler/\${http_host\}${check_surl}index.html|cache-enabler/\${http_host\}${check_surl}\${scheme}-index.html|g' $f;
+          grep '\${scheme}' "$f"
+          } 2>&1 >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
+      fi
+      echo "ce_count=$ce_count updated: $getce_domain"
+      if [[ "$ce_count" -gt '1' && "$(ps aufx | grep nginx | grep -v grep | grep nginx  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        service nginx reload >/dev/null 2>&1
+      fi
+    done
+    {
+    echo
+    echo "Completed Automatic Wordpress Cache Enabler Advanced Cache Config Update"
+    echo "saved log at ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
+    echo "#########################################################################"
+    } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
+  fi
+}
+
 fix_nasm() {
   if [[ -f /etc/yum.repos.d/nasm.repo && -f /usr/bin/nasm && "$(yum versionlock list | grep -o nasm)" != 'nasm' ]]; then
     yum -q versionlock nasm >/dev/null 2>&1
@@ -3073,6 +3123,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   phpmyadmin_composer_fix
   imagemagick_heif
   fix_nasm
+  update_cache_enabler_schemefix
 fi
 
 }

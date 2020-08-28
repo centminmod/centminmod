@@ -1159,8 +1159,12 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     # include query strings fbclid, gclid, utm in cache via stripping them with
     # 302 redirect via mapping in /usr/local/nginx/conf/wpcacheenabler_map.conf
     if (\$q_ignorearg) {
-      rewrite ^ \$uri? redirect;
+      set \$check_qurl \$request_uri;
+      set \$check_surl \$request_uri;
+      set \$cache_uri \$uri;
+      #rewrite ^ \$uri? redirect;
     }
+    add_header Check-Querystring-Uri "\$check_qurl";
 
     # bypass cache if URLs containing the following strings
     if (\$request_uri ~* "(\?add-to-cart=|\?wc-api=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
@@ -1216,9 +1220,18 @@ map \$http_user_agent \$cmwpcache_device {
 
 map \$args \$q_ignorearg {
   default             0;
-  ~*fbclid            1;
-  ~*gclid             1;
-  ~*utm               1;
+  ~*"fbclid"            1;
+  ~*"gclid"             1;
+  ~*"utm"               1;
+  ~*"fb_action_ids"     1;
+  ~*"fb_action_types"   1;
+  ~*"fb_source"         1;
+  ~*"age-verified"      1;
+  ~*"ao_noptimize"      1;
+  ~*"usqp"              1;
+  ~*"cn-reloaded"       1;
+  ~*"_ga"               1;
+  ~*"_ke"               1;
 }
 HFB
 
