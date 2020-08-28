@@ -1,5 +1,5 @@
 update_cache_enabler_schemefix() {
-  if [[ -d /usr/local/nginx/conf/wpincludes && $(grep 'cache-enabler/\${http_host}\${cache_uri}index' /usr/local/nginx/conf/wpincludes/*/wpcacheenabler_*.conf) ]]; then
+  if [[ -d /usr/local/nginx/conf/wpincludes && $(grep 'cache-enabler/\${http_host}\${cache_uri}index' /usr/local/nginx/conf/wpincludes/*/wpcacheenabler_*.conf >/dev/null 2>&1; echo $?) -eq '0' ]]; then
     touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
     {
     echo "#########################################################################"
