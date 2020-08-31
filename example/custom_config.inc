@@ -404,6 +404,7 @@ SELFSIGNEDSSL_OU=''
 ###############################################################
 # centmin.sh menu option 22 specific options
 WPPLUGINS_ALL='n'           # do not install additional plugins
+WPCLI_CE_QUERYSTRING_INCLUDED='n' # https://community.centminmod.com/posts/85893/
 WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 ###############################################################
 # php configured --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock

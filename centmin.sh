@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='572'
+SCRIPT_INCREMENTVER='573'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/07/2020'
@@ -912,6 +912,7 @@ SELFSIGNEDSSL_OU=''
 ###############################################################
 # centmin.sh menu option 22 specific options
 WPPLUGINS_ALL='n'           # do not install additional plugins
+WPCLI_CE_QUERYSTRING_INCLUDED='n' # https://community.centminmod.com/posts/85893/
 WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
 ###############################################################
 # php configured --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock
