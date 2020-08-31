@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.64'
+ACMEVER='1.0.65'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -1211,9 +1211,9 @@ server {
     #try_files \$uri \$uri/ /index.php?q=\$uri&\$args;
   }
 
+  include /usr/local/nginx/conf/php.conf;
   include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/include_opcache.conf;
-  include /usr/local/nginx/conf/php.conf;
   #include /usr/local/nginx/conf/phpstatus.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
@@ -1549,8 +1549,8 @@ server {
 
   }
 
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -1659,8 +1659,8 @@ server {
 
   }
 
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;

@@ -1038,10 +1038,10 @@ server {
 
   }
 
-  ${PRESTATIC_INCLUDES}
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -1146,10 +1146,10 @@ server {
 
   }
 
-  ${PRESTATIC_INCLUDES}
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -1246,10 +1246,10 @@ server {
 
   }
 
-  ${PRESTATIC_INCLUDES}
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -1343,10 +1343,10 @@ server {
 
   }
 
-  ${PRESTATIC_INCLUDES}
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;
@@ -1422,10 +1422,10 @@ server {
 
   }
 
-  ${PRESTATIC_INCLUDES}
-  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/php.conf;
   ${MULTIPHP_INCLUDES}
+  ${PRESTATIC_INCLUDES}
+  include /usr/local/nginx/conf/staticfiles.conf;
   include /usr/local/nginx/conf/drop.conf;
   #include /usr/local/nginx/conf/errorpage.conf;
   include /usr/local/nginx/conf/vts_server.conf;

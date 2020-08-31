@@ -21,8 +21,9 @@ change yourusername and yourpassword to unique values of your own.
 location ~ ^/${N}_myapc\.php$ {
 auth_basic "Private";
 auth_basic_user_file /usr/local/nginx/conf/htpasswd;
-include /usr/local/nginx/conf/staticfiles.conf;
 include /usr/local/nginx/conf/php.conf;
+include /usr/local/nginx/conf/staticfiles.conf;
+
 }
 
 End result for first server{} entry looks like below:
@@ -51,12 +52,14 @@ server {
 location ~ ^/${N}_myapc\.php$ {
 auth_basic "Private";
 auth_basic_user_file /usr/local/nginx/conf/htpasswd;
-include /usr/local/nginx/conf/staticfiles.conf;
 include /usr/local/nginx/conf/php.conf;
+include /usr/local/nginx/conf/staticfiles.conf;
+
 }
 
-include /usr/local/nginx/conf/staticfiles.conf;
 include /usr/local/nginx/conf/php.conf;
+include /usr/local/nginx/conf/staticfiles.conf;
+
 include /usr/local/nginx/conf/drop.conf;
 #include /usr/local/nginx/conf/errorpage.conf;
 
