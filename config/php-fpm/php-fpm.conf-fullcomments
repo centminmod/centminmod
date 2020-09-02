@@ -17,7 +17,7 @@ pid = /var/run/php-fpm/php-fpm.pid
 ;   '/path/to/unix/socket' - to listen on a unix socket.
 ; Note: This value is mandatory.
 listen = 127.0.0.1:9000
-;listen = /tmp/php5-fpm.sock
+;listen = /var/run/php-fpm/php-fpm.sock
 
 ; Set listen(2) backlog. A value of '-1' means unlimited.
 ; Default Value: -1
