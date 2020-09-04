@@ -662,8 +662,16 @@ nginxlargefile_fix() {
       sed -i 's|client_body_timeout 60s;|client_body_timeout 10s;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
     fi
+    if [[ "$(grep -w 'client_body_timeout 10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_body_timeout 10s;|client_body_timeout 30s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
     if [[ "$(grep -w 'client_header_timeout  5s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
       sed -i 's|client_header_timeout  5s;|client_header_timeout  10s;|' /usr/local/nginx/conf/nginx.conf
+      nginxfix_count=$(($nginxfix_count+1))
+    fi
+    if [[ "$(grep -w 'client_header_timeout  10s;' /usr/local/nginx/conf/nginx.conf)" ]]; then
+      sed -i 's|client_header_timeout  10s;|client_header_timeout  30s;|' /usr/local/nginx/conf/nginx.conf
       nginxfix_count=$(($nginxfix_count+1))
     fi
     HOME_DISKTYPE=$(df -T /home | tail -1 | awk '{print $2}')
