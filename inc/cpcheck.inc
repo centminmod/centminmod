@@ -1,3 +1,15 @@
+update_wpce_map() {
+  if [ -f /usr/local/nginx/conf/wpcacheenabler_map.conf ]; then
+    # fix improper escapped entries
+    if [[ "$(grep -q '\"' /usr/local/nginx/conf/wpcacheenabler_map.conf)" ]]; then
+      sed -i 's|\\"|"|g' /usr/local/nginx/conf/wpcacheenabler_map.conf
+      if [[ "$(ps aufx | grep nginx | grep -v grep | grep nginx  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        service nginx reload >/dev/null 2>&1
+      fi
+    fi
+  fi
+}
+
 update_cache_enabler_schemefix() {
   if [[ -d /usr/local/nginx/conf/wpincludes && $(grep 'cache-enabler/\${http_host}\${cache_uri}index' /usr/local/nginx/conf/wpincludes/*/wpcacheenabler_*.conf >/dev/null 2>&1; echo $?) -eq '0' ]]; then
     touch "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_cache_enabler_scheme_fix.log"
@@ -3133,6 +3145,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   imagemagick_heif
   fix_nasm
   update_cache_enabler_schemefix
+  update_wpce_map
 fi
 
 }
