@@ -1,7 +1,7 @@
 update_wpce_map() {
   if [ -f /usr/local/nginx/conf/wpcacheenabler_map.conf ]; then
     # fix improper escapped entries
-    if [[ "$(grep -q '\"' /usr/local/nginx/conf/wpcacheenabler_map.conf)" ]]; then
+    if [[ "$(grep '\"' /usr/local/nginx/conf/wpcacheenabler_map.conf)" ]]; then
       sed -i 's|\\"|"|g' /usr/local/nginx/conf/wpcacheenabler_map.conf
       if [[ "$(ps aufx | grep nginx | grep -v grep | grep nginx  >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         service nginx reload >/dev/null 2>&1
