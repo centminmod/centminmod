@@ -861,19 +861,21 @@ map \$http_user_agent \$cmwpcache_device {
 }
 
 map \$args \$q_ignorearg {
-  default                 0;
-  \"~*fbclid\"            1;
-  \"~*gclid\"             1;
-  \"~*utm\"               1;
-  \"~*fb_action_ids\"     1;
-  \"~*fb_action_types\"   1;
-  \"~*fb_source\"         1;
-  \"~*age-verified\"      1;
-  \"~*ao_noptimize\"      1;
-  \"~*usqp\"              1;
-  \"~*cn-reloaded\"       1;
-  \"~*_ga\"               1;
-  \"~*_ke\"               1;
+  default               0;
+  "~*fbclid"            1;
+  "~*gclid"             1;
+  "~*utm"               1;
+  "~*fb_action_ids"     1;
+  "~*fb_action_types"   1;
+  "~*fb_source"         1;
+  "~*age-verified"      1;
+  "~*ao_noptimize"      1;
+  "~*usqp"              1;
+  "~*cn-reloaded"       1;
+  "~*_ga"               1;
+  "~*_ke"               1;
+  "~*mc_cid"            1;
+  "~*mc_eid"            1;
 }
 HFB
 
@@ -908,7 +910,7 @@ location ~ [^/]\.php(/|\$) {
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
     fastcgi_pass   127.0.0.1:9000;
-    #fastcgi_pass   unix:/tmp/php5-fpm.sock;
+    #fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
     fastcgi_param  SCRIPT_FILENAME    \$request_filename;
@@ -922,9 +924,9 @@ location ~ [^/]\.php(/|\$) {
 #tcp_nopush off;
 #keepalive_requests 0;
 
-fastcgi_connect_timeout 60s;
-fastcgi_send_timeout 180s;
-fastcgi_read_timeout 300s;
+fastcgi_connect_timeout 360s;
+fastcgi_send_timeout 360s;
+fastcgi_read_timeout 360s;
 fastcgi_buffer_size 32k;
 fastcgi_buffers 512 32k;
 fastcgi_busy_buffers_size 1m;
@@ -1011,7 +1013,7 @@ location ~ [^/]\.php(/|\$) {
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
     fastcgi_pass   127.0.0.1:9000;
-    #fastcgi_pass   unix:/tmp/php5-fpm.sock;
+    #fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
     fastcgi_param  SCRIPT_FILENAME    \$request_filename;
@@ -1025,9 +1027,9 @@ location ~ [^/]\.php(/|\$) {
 #tcp_nopush off;
 #keepalive_requests 0;
 
-fastcgi_connect_timeout 60s;
-fastcgi_send_timeout 180s;
-fastcgi_read_timeout 300s;
+fastcgi_connect_timeout 360s;
+fastcgi_send_timeout 360s;
+fastcgi_read_timeout 360s;
 fastcgi_buffer_size 32k;
 fastcgi_buffers 512 32k;
 fastcgi_busy_buffers_size 1m;
@@ -2435,7 +2437,7 @@ if [[ "$wpscache" = [nN] ]]; then
   echo "configure cache-enabler"
   \wp option update cache-enabler '{"expires":6,"clear_on_upgrade":1,"new_post":1,"new_comment":1,"update_product_stock":0,"webp":0,"compress":1,"excl_ids":"","excl_paths":"","excl_cookies":"","incl_parameters":"","minify_html":0}' --format=json --allow-root
   if [[ "$WPCLI_CE_QUERYSTRING_INCLUDED" = [yY] ]]; then
-    \wp option patch update cache-enabler incl_parameters '/^fbclid|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+    \wp option patch update cache-enabler incl_parameters '/^fbclid|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
     \wp option pluck cache-enabler incl_parameters --format=json --allow-root
   fi
   \wp option get cache-enabler --format=json --allow-root
