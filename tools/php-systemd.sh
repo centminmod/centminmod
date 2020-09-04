@@ -103,7 +103,30 @@ fi
   rm -rf /usr/bin/fpmconfigtest
   echo "systemctl daemon-reload; systemctl status php-fpm" >/usr/bin/fpmstatus ; chmod 700 /usr/bin/fpmstatus
   if [[ "$fpm_systemd" = 'yes' && "$CHECK_FPMSYSTEMD" = 'with-fpm-systemd' ]]; then
-    echo "systemctl daemon-reload; systemctl show php-fpm -p StatusText --no-pager | awk -F '=' '{print \$2}'; phpstatuscheck=\$(curl -sI localhost/phpstatus 2>&1 | head -n1 | grep -o 200); if [[ \"\$phpstatuscheck\" -eq '200' ]]; then curl -s localhost/phpstatus; fi" >/usr/bin/fpmstats ; chmod 700 /usr/bin/fpmstats
+cat > /usr/bin/fpmstats <<EOF
+systemctl daemon-reload;
+systemctl show php-fpm -p StatusText --no-pager | awk -F '=' '{print \$2}';
+phpstatuscheck=\$(curl -sI localhost/phpstatus 2>&1 | head -n1 | grep -o 200);
+phpstatusuds1check=\$(curl -sI localhost/phpstatus-pool1-uds 2>&1 | head -n1 | grep -o 200);
+phpstatusuds2check=\$(curl -sI localhost/phpstatus-pool2-uds 2>&1 | head -n1 | grep -o 200);
+phpstatusuds3check=\$(curl -sI localhost/phpstatus-pool3-uds 2>&1 | head -n1 | grep -o 200);
+if [[ "\$phpstatuscheck" -eq '200' ]]; then
+  curl -s localhost/phpstatus;
+fi
+if [[ "\$phpstatusuds1check" -eq '200' ]]; then
+  echo
+  curl -s localhost/phpstatus-pool1-uds;
+fi
+if [[ "\$phpstatusuds2check" -eq '200' ]]; then
+  echo
+  curl -s localhost/phpstatus-pool2-uds;
+fi
+if [[ "\$phpstatusuds3check" -eq '200' ]]; then
+  echo
+  curl -s localhost/phpstatus-pool3-uds;
+fi
+EOF
+    chmod 700 /usr/bin/fpmstats
   fi
 
   echo "systemctl daemon-reload; service nginx stop; systemctl stop php-fpm; echo \"Stopping php-fpm (via systemctl) [  OK  ]\"" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
