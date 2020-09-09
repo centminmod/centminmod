@@ -881,6 +881,7 @@ map \$args \$q_ignorearg {
   "~*_ke"               1;
   "~*mc_cid"            1;
   "~*mc_eid"            1;
+  "~*ref"               1;
 }
 HFB
 
@@ -2442,7 +2443,7 @@ if [[ "$wpscache" = [nN] ]]; then
   echo "configure cache-enabler"
   \wp option update cache-enabler '{"expires":6,"clear_on_upgrade":1,"new_post":1,"new_comment":1,"update_product_stock":0,"webp":0,"compress":1,"excl_ids":"","excl_paths":"","excl_cookies":"","incl_parameters":"","minify_html":0}' --format=json --allow-root
   if [[ "$WPCLI_CE_QUERYSTRING_INCLUDED" = [yY] ]]; then
-    \wp option patch update cache-enabler incl_parameters '/^fbclid|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+    \wp option patch update cache-enabler incl_parameters '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
     \wp option pluck cache-enabler incl_parameters --format=json --allow-root
   fi
   \wp option get cache-enabler --format=json --allow-root
