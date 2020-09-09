@@ -844,6 +844,11 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     if (\$http_accept ~* "image/webp") {
         set \$cache_enabler_uri_webp '\${custom_subdir}/wp-content/cache/cache-enabler/\${http_host}\${cache_uri}\${scheme}-index-webp.html';
     }
+
+    #if (-f \$document_root\$cache_enabler_uri) {
+    #set \$cttls "120s";
+    #}
+    #expires \$cttls;
 HFA
 
 cat > "/usr/local/nginx/conf/wpcacheenabler_map.conf"<<HFB
