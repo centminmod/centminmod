@@ -2167,8 +2167,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/seo-by-rank-math/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for amp
@@ -2178,8 +2178,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/amp/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for async-javascript
@@ -2189,8 +2189,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/async-javascript/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for autoptimize
@@ -2200,8 +2200,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/autoptimize/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for autoptimize-gzip
@@ -2211,8 +2211,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Security for wp-cloudflare-page-cache debug.log which is exposed to public access
@@ -2228,8 +2228,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/wp-cloudflare-page-cache/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for cloudflare
@@ -2239,8 +2239,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/cloudflare/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for post-grid
@@ -2250,8 +2250,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/post-grid/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 # Whitelist Exception for breadcrumb-navxt
@@ -2261,8 +2261,8 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/breadcrumb-navxt/ {
   # below include file needs to be manually created at that path and to be uncommented
   # by removing the hash # in front of below line to take effect. This wpwhitelist_common.conf
   # allows you to add commonly shared settings to all wp plugin location matches which
-  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
-  #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+  # whitelist php processing access at /usr/local/nginx/conf/wpincludes/${vhostname}/wpsecure_${vhostname}.conf
+  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpwhitelist_common.conf;
 }
 
 location ~ ^${WPSUBDIR}/(wp-includes/js/tinymce/wp-tinymce.php) {
