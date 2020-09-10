@@ -315,6 +315,12 @@ location ~ /.well-known {
     }
 }
 
+location ~* ${WPSUBDIR}/wp-content/cache/autoptimize/.*\.(js|css)\$ {
+  include /usr/local/nginx/conf/php.conf;
+  add_header AO-Fallback 1;
+  try_files \$uri \$uri/ ${WPSUBDIR}/wp-content/autoptimize_404_handler.php;
+}
+
 # allow AJAX requests in themes and plugins
 location ~ ^${WPSUBDIR}/wp-admin/admin-ajax.php$ { allow all; include /usr/local/nginx/conf/php.conf; }
 
@@ -394,6 +400,12 @@ location ~ ^${WPSUBDIR}/wp-content/plugins/autoptimize-gzip/ {
   # allows you to add commonly shared settings to all wp plugin location matches which
   # whitelist php processing access at /usr/local/nginx/conf/wpincludes/servermanager.guide/wpsecure_servermanager.guide.conf
   #include /usr/local/nginx/conf/wpincludes/servermanager.guide/wpwhitelist_common.conf;
+}
+
+# Security for wp-cloudflare-page-cache debug.log which is exposed to public access
+# /wp-content/wp-cloudflare-super-page-cache/yourdomain.com/debug.log
+location ~ ^${WPSUBDIR}/wp-content/wp-cloudflare-super-page-cache/${vhostname}/(debug.log)\$ {
+  deny all;
 }
 
 # Whitelist Exception for wp-cloudflare-page-cache
