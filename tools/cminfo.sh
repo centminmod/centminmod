@@ -65,6 +65,10 @@ if [ ! -f /usr/bin/tree ]; then
     yum -y -q install tree
 fi
 
+if [ ! -f /usr/bin/jq ]; then
+    yum -y -q install jq
+fi
+
 if [ ! -f /usr/bin/smem ]; then
     yum -y -q install smem
 fi
@@ -964,6 +968,11 @@ php -m
 echo
 }
 
+sar_json() {
+    int=${1:-1}
+    sadf -j 1 "$int" -- -qurSbdw | jq -r '.sysstat.hosts[] | .statistics[]'
+}
+
 debug_menuexit() {
     echo
     echo "------------------------------------------------------------------"
@@ -1038,6 +1047,11 @@ case "$1" in
     top_info cron
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-cron-${DT}.log"
         ;;
+    sar-json)
+    {
+    sar_json $2
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-json-${DT}.log"
+        ;;
     sar-cpu)
     {
     sar_cpu_pc
@@ -1088,6 +1102,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-cpu||sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu||sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
