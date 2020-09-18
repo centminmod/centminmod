@@ -109,12 +109,12 @@ send_ses_mail() {
   email_date=$(date)
   SES_FROM_DOMAIN=$(echo "$EMAILNOTIFY_SES_FROM_EMAIL" | awk -F '@' '{print $2}')
   if [ "$EMAILNOTIFY_SES_CC_EMAIL" ]; then
-    ses_cc="Cc: $EMAILNOTIFY_SES_CC_EMAIL"
+    ses_cc="\nCc: $EMAILNOTIFY_SES_CC_EMAIL"
   else
     ses_cc=
   fi
   if [ "$EMAILNOTIFY_SES_BCC_EMAIL" ]; then
-    ses_bcc="Bcc: $EMAILNOTIFY_SES_BCC_EMAIL"
+    ses_bcc="\nBcc: $EMAILNOTIFY_SES_BCC_EMAIL"
   else
     ses_bcc=
   fi
@@ -127,9 +127,7 @@ MAIL FROM: ${EMAILNOTIFY_SES_FROM_EMAIL}
 RCPT TO: ${EMAILNOTIFY_SES_TO_EMAIL}
 DATA
 From: $EMAILNOTIFY_SES_FROM_EMAIL <${EMAILNOTIFY_SES_FROM_EMAIL}>
-To: ${EMAILNOTIFY_SES_TO_EMAIL}
-$ses_cc
-$ses_bcc
+To: ${EMAILNOTIFY_SES_TO_EMAIL}${ses_cc}${ses_bcc}
 Subject: $subject $email_date
 
 $body
