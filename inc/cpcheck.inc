@@ -369,6 +369,12 @@ csf_loadalert() {
         sed -i "s|^PT_LOAD_ACTION = \"\"|PT_LOAD_ACTION = \"\/etc\/csf\/load.sh\"|" /etc/csf/csf.conf
         sed -i "s/^PT_LOAD_LEVEL .*/PT_LOAD_LEVEL = \"$(nproc)\"/g" /etc/csf/csf.conf
     fi
+    if [[ -f /etc/csf/load.sh && -f "${SCRIPT_DIR}/config/csf/load.sh" ]]; then
+      if [ ! "$(grep 'EMAILNOTIFY_SES' /etc/csf/load.sh)" ]; then
+        # updated load.sh with AWS SES supported tools/emailnotify.sh routine
+        \cp -fa "${SCRIPT_DIR}/config/csf/load.sh" /etc/csf/load.sh
+      fi
+    fi
 }
 
 disable_varnishrepo() {
