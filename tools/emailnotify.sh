@@ -100,7 +100,13 @@ send_ses_mail() {
   # send email using native openssl client
   bodyget=$1
   subject=$2
+  toemail=$3
   send_ses_credential_encode
+  if [ "$toemail" ]; then
+    EMAILNOTIFY_SES_TO_EMAIL="$toemail"
+  else
+    EMAILNOTIFY_SES_TO_EMAIL="$EMAILNOTIFY_SES_TO_EMAIL"
+  fi
   if [ -f "$bodyget" ]; then
     body=$(cat "$bodyget")
   else
@@ -128,7 +134,7 @@ RCPT TO: ${EMAILNOTIFY_SES_TO_EMAIL}
 DATA
 From: $EMAILNOTIFY_SES_FROM_EMAIL <${EMAILNOTIFY_SES_FROM_EMAIL}>
 To: ${EMAILNOTIFY_SES_TO_EMAIL}${ses_cc}${ses_bcc}
-Subject: $subject $email_date
+Subject: $subject $(hostname) $email_date
 
 $body
 .
@@ -311,6 +317,12 @@ send_mail() {
     secondary_email=$(head -n1 /etc/centminmod/email-secondary.ini)
     body=$1
     subject=$2
+    toemail=$3
+    if [ "$toemail" ]; then
+      to_email="$toemail"
+    else
+      to_email=$primary_email
+    fi
     if [ -f "$body" ]; then
       if [[ "$failipv4" = [yY] && -f /tmp/check_fail_msg.log ]]; then
         # append check_fail_msg to body of email so user is aware of issue
@@ -321,31 +333,31 @@ send_mail() {
         bodyfile=/tmp/emailnotify_temp.log
         echo "$body" > "$bodyfile"
         if [ -f /usr/sbin/sendmail ]; then
-(cat - $bodyfile)<<END | sendmail -t $primary_email
+(cat - $bodyfile)<<END | sendmail -t $to_email
 From: $primary_email
-To: $primary_email
+To: $to_email
 Subject:  ${subject} - $(hostname) ${email_date}
 
 END
           rm -f "$bodyfile"
         else
-          echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+          echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $to_email"
+          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $to_email
         fi
       else
         bodyfile=/tmp/emailnotify_temp.log
         cat "$body" > "$bodyfile"
         if [ -f /usr/sbin/sendmail ]; then
-(cat - $bodyfile)<<END | sendmail -t $primary_email
+(cat - $bodyfile)<<END | sendmail -t $to_email
 From: $primary_email
-To: $primary_email
+To: $to_email
 Subject:  ${subject} - $(hostname) ${email_date}
 
 END
           rm -f "$bodyfile"
         else
-          echo "cat \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-          cat "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+          echo "cat \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $to_email"
+          cat "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $to_email
         fi
       fi
       get_mailid
@@ -359,31 +371,31 @@ END
         bodyfile=/tmp/emailnotify_temp.log
         echo "$body" > "$bodyfile"
         if [ -f /usr/sbin/sendmail ]; then
-(cat - $bodyfile)<<END | sendmail -t $primary_email
+(cat - $bodyfile)<<END | sendmail -t $to_email
 From: $primary_email
-To: $primary_email
+To: $to_email
 Subject:  ${subject} - $(hostname) ${email_date}
 
 END
           rm -f "$bodyfile"
         else
-          echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+          echo "echo \"$bodyecho\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $to_email"
+          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $to_email
         fi
       else
         bodyfile=/tmp/emailnotify_temp.log
         echo "$body" > "$bodyfile"
         if [ -f /usr/sbin/sendmail ]; then
-(cat - $bodyfile)<<END | sendmail -t $primary_email
+(cat - $bodyfile)<<END | sendmail -t $to_email
 From: $primary_email
-To: $primary_email
+To: $to_email
 Subject:  ${subject} - $(hostname) ${email_date}
 
 END
           rm -f "$bodyfile"
         else
-          echo "echo \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $primary_email"
-          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $primary_email
+          echo "echo \"$body\" | mail -s \" ${subject} - $(hostname) ${email_date}\" $to_email"
+          echo "$body" | mail -s " ${subject} - $(hostname) ${email_date}" $to_email
         fi
       fi
       get_mailid
@@ -401,6 +413,7 @@ usage() {
   echo "Usage:"
   echo
   echo "$0 send emailbody emailsubject"
+  echo "$0 send emailbody emailsubject toemail-address"
   echo
 }
 
@@ -412,9 +425,9 @@ case "$1" in
       usage
     else
       if [[ "$EMAILNOTIFY_SES" = [yY] ]]; then
-        send_ses_mail "${2}" "${3}"
+        send_ses_mail "${2}" "${3}" "${4}"
       else
-        send_mail "${2}" "${3}"
+        send_mail "${2}" "${3}" "${4}"
       fi
     fi
     ;;
