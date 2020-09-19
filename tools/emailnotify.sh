@@ -134,6 +134,12 @@ $body
 .
 QUIT
 EOF
+  if [ -f /usr/bin/systemctl ]; then
+    # centos 7 and higher openssl supported option
+    brief_opt=' -brief'
+  else
+    brief_opt=
+  fi
   if [[ "$EMAILNOTIFY_SES_SMTP_PORT" = '587' ]]; then
     echo "----------------------------------------------------"
     echo "Send email via SES using openssl client"
@@ -142,7 +148,7 @@ EOF
     echo "and return to command prompt after 10 seconds"
     echo "----------------------------------------------------"
     echo
-    openssl s_client -crlf -quiet -brief -starttls smtp -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < /tmp/email_body_template.txt
+    openssl s_client -crlf -quiet${brief_opt} -starttls smtp -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < /tmp/email_body_template.txt
     # rm -f /tmp/email_body_template.txt
   elif [[ "$EMAILNOTIFY_SES_SMTP_PORT" = '465' ]]; then
     echo "----------------------------------------------------"
@@ -152,7 +158,7 @@ EOF
     echo "and return to command prompt after 10 seconds"
     echo "----------------------------------------------------"
     echo
-    openssl s_client -crlf -quiet -brief -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < /tmp/email_body_template.txt
+    openssl s_client -crlf -quiet${brief_opt} -connect ${EMAILNOTIFY_SES_SMTP_SERVER}:${EMAILNOTIFY_SES_SMTP_PORT} < /tmp/email_body_template.txt
     # rm -f /tmp/email_body_template.txt
   fi
 }

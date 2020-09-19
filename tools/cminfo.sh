@@ -970,7 +970,11 @@ echo
 
 sar_json() {
     int=${1:-1}
-    sadf -j 1 "$int" -- -qurSbdw | jq -r '.sysstat.hosts[] | .statistics[]'
+    if [ -f /usr/bin/systemctl ]; then
+        sadf -j 1 "$int" -- -qurSbdw | jq -r '.sysstat.hosts[] | .statistics[]'
+    else
+        echo "sar-json only supported in CentOS 7+ and higher"
+    fi
 }
 
 debug_menuexit() {
