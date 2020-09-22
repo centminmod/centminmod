@@ -114,6 +114,15 @@ update_webp_inc() {
     chown nginx:nginx /usr/local/nginx/conf/webp.conf
     service nginx restart >/dev/null 2>&1
   fi
+  if [[ ! "$(grep webp.conf /usr/local/nginx/conf/nginx.conf)" ]] && [[ -f /usr/local/nginx/conf/webp.conf && -f /usr/local/src/centminmod/config/nginx/webp.conf ]]; then
+    sed -i 's|\/usr\/local\/nginx\/conf\/geoip.conf;|\/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/webp.conf;|g' /usr/local/nginx/conf/nginx.conf
+    service nginx restart >/dev/null 2>&1
+  elif [[ ! "$(grep webp.conf /usr/local/nginx/conf/nginx.conf)" ]] && [[ ! -f /usr/local/nginx/conf/webp.conf && -f /usr/local/src/centminmod/config/nginx/webp.conf ]]; then
+    \cp -af /usr/local/src/centminmod/config/nginx/webp.conf /usr/local/nginx/conf/webp.conf
+    chown nginx:nginx /usr/local/nginx/conf/webp.conf
+    sed -i 's|\/usr\/local\/nginx\/conf\/geoip.conf;|\/usr\/local\/nginx\/conf\/geoip.conf;\ninclude \/usr\/local\/nginx\/conf\/webp.conf;|g' /usr/local/nginx/conf/nginx.conf
+    service nginx restart >/dev/null 2>&1
+  fi
 }
 
 cfauthorigin_cronsetup() {
