@@ -1,0 +1,217 @@
+From 3528f51fe33944ba7bab263a47c49dd1d7dd12e3 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sat, 26 Sep 2020 22:08:52 -0700
+Subject: [PATCH] Fix bug #79601 (Wrong ciphertext/tag in AES-CCM encryption
+ for a 12 bytes IV)
+
+(cherry picked from commit 0216630ea2815a5789a24279a1211ac398d4de79)
+---
+ ext/openssl/openssl.c                      | 10 ++++-----
+ ext/openssl/tests/cipher_tests.inc         | 21 +++++++++++++++++
+ ext/openssl/tests/openssl_decrypt_ccm.phpt | 22 +++++++++++-------
+ ext/openssl/tests/openssl_encrypt_ccm.phpt | 26 ++++++++++++++--------
+ 4 files changed, 57 insertions(+), 22 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 39b6a20473..21c5367f72 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -6216,11 +6216,6 @@ static int php_openssl_validate_iv(char **piv, size_t *piv_len, size_t iv_requir
+ {
+ 	char *iv_new;
+ 
+-	/* Best case scenario, user behaved */
+-	if (*piv_len == iv_required_len) {
+-		return SUCCESS;
+-	}
+-
+ 	if (mode->is_aead) {
+ 		if (EVP_CIPHER_CTX_ctrl(cipher_ctx, mode->aead_ivlen_flag, *piv_len, NULL) != 1) {
+ 			php_error_docref(NULL, E_WARNING, "Setting of IV length for AEAD mode failed");
+@@ -6229,6 +6224,11 @@ static int php_openssl_validate_iv(char **piv, size_t *piv_len, size_t iv_requir
+ 		return SUCCESS;
+ 	}
+ 
++	/* Best case scenario, user behaved */
++	if (*piv_len == iv_required_len) {
++		return SUCCESS;
++	}
++
+ 	iv_new = ecalloc(1, iv_required_len + 1);
+ 
+ 	if (*piv_len == 0) {
+diff --git a/ext/openssl/tests/cipher_tests.inc b/ext/openssl/tests/cipher_tests.inc
+index b1e46b411e..779bfa8515 100644
+--- a/ext/openssl/tests/cipher_tests.inc
++++ b/ext/openssl/tests/cipher_tests.inc
+@@ -1,5 +1,26 @@
+ <?php
+ $php_openssl_cipher_tests = array(
++    'aes-128-ccm' => array(
++        array(
++            'key' => '404142434445464748494a4b4c4d4e4f',
++            'iv'  => '1011121314151617',
++            'aad' => '000102030405060708090a0b0c0d0e0f',
++            'tag' => '1fc64fbfaccd',
++            'pt'  => '202122232425262728292a2b2c2d2e2f',
++            'ct'  => 'd2a1f0e051ea5f62081a7792073d593d',
++        ),
++        array(
++            'key' => '404142434445464748494a4b4c4d4e4f',
++            'iv'  => '101112131415161718191a1b',
++            'aad' => '000102030405060708090a0b0c0d0e0f' .
++                     '10111213',
++            'tag' => '484392fbc1b09951',
++            'pt'  => '202122232425262728292a2b2c2d2e2f' .
++                     '3031323334353637',
++            'ct'  => 'e3b201a9f5b71a7a9b1ceaeccd97e70b' .
++                     '6176aad9a4428aa5',
++        ),
++    ),
+     'aes-256-ccm' => array(
+         array(
+             'key' => '1bde3251d41a8b5ea013c195ae128b21' .
+diff --git a/ext/openssl/tests/openssl_decrypt_ccm.phpt b/ext/openssl/tests/openssl_decrypt_ccm.phpt
+index 87b6d4b264..479114719a 100644
+--- a/ext/openssl/tests/openssl_decrypt_ccm.phpt
++++ b/ext/openssl/tests/openssl_decrypt_ccm.phpt
+@@ -10,14 +10,16 @@ if (!in_array('aes-256-ccm', openssl_get_cipher_methods()))
+ --FILE--
+ <?php
+ require_once __DIR__ . "/cipher_tests.inc";
+-$method = 'aes-256-ccm';
+-$tests = openssl_get_cipher_tests($method);
++$methods = ['aes-128-ccm', 'aes-256-ccm'];
+ 
+-foreach ($tests as $idx => $test) {
+-    echo "TEST $idx\n";
+-    $pt = openssl_decrypt($test['ct'], $method, $test['key'], OPENSSL_RAW_DATA,
+-        $test['iv'], $test['tag'], $test['aad']);
+-    var_dump($test['pt'] === $pt);
++foreach ($methods as $method) {
++    $tests = openssl_get_cipher_tests($method);
++    foreach ($tests as $idx => $test) {
++        echo "$method - TEST $idx\n";
++        $pt = openssl_decrypt($test['ct'], $method, $test['key'], OPENSSL_RAW_DATA,
++            $test['iv'], $test['tag'], $test['aad']);
++        var_dump($test['pt'] === $pt);
++    }
+ }
+ 
+ // no IV
+@@ -32,7 +34,11 @@ var_dump(openssl_decrypt($test['ct'], $method, $test['key'], OPENSSL_RAW_DATA,
+ 
+ ?>
+ --EXPECTF--
+-TEST 0
++aes-128-ccm - TEST 0
++bool(true)
++aes-128-ccm - TEST 1
++bool(true)
++aes-256-ccm - TEST 0
+ bool(true)
+ 
+ Warning: openssl_decrypt(): Setting of IV length for AEAD mode failed in %s on line %d
+diff --git a/ext/openssl/tests/openssl_encrypt_ccm.phpt b/ext/openssl/tests/openssl_encrypt_ccm.phpt
+index c8610bc96b..64a3b758e2 100644
+--- a/ext/openssl/tests/openssl_encrypt_ccm.phpt
++++ b/ext/openssl/tests/openssl_encrypt_ccm.phpt
+@@ -10,15 +10,17 @@ if (!in_array('aes-256-ccm', openssl_get_cipher_methods()))
+ --FILE--
+ <?php
+ require_once __DIR__ . "/cipher_tests.inc";
+-$method = 'aes-256-ccm';
+-$tests = openssl_get_cipher_tests($method);
++$methods = ['aes-128-ccm', 'aes-256-ccm'];
+ 
+-foreach ($tests as $idx => $test) {
+-    echo "TEST $idx\n";
+-    $ct = openssl_encrypt($test['pt'], $method, $test['key'], OPENSSL_RAW_DATA,
+-        $test['iv'], $tag, $test['aad'], strlen($test['tag']));
+-    var_dump($test['ct'] === $ct);
+-    var_dump($test['tag'] === $tag);
++foreach ($methods as $method) {
++    $tests = openssl_get_cipher_tests($method);
++    foreach ($tests as $idx => $test) {
++        echo "$method - TEST $idx\n";
++        $ct = openssl_encrypt($test['pt'], $method, $test['key'], OPENSSL_RAW_DATA,
++            $test['iv'], $tag, $test['aad'], strlen($test['tag']));
++        var_dump($test['ct'] === $ct);
++        var_dump($test['tag'] === $tag);
++    }
+ }
+ 
+ // Empty IV error
+@@ -29,7 +31,13 @@ var_dump(openssl_encrypt('data', $method, 'password', 0, str_repeat('x', 10), $t
+ var_dump(strlen($tag));
+ ?>
+ --EXPECTF--
+-TEST 0
++aes-128-ccm - TEST 0
++bool(true)
++bool(true)
++aes-128-ccm - TEST 1
++bool(true)
++bool(true)
++aes-256-ccm - TEST 0
+ bool(true)
+ bool(true)
+ 
+From 74495ac743e1896c3b33c954fcef54b412f87ac9 Mon Sep 17 00:00:00 2001
+From: Jakub Zelenka <bukka@php.net>
+Date: Sun, 2 Jun 2019 19:10:56 +0100
+Subject: [PATCH] Fix bug #78079 (openssl_encrypt_ccm.phpt fails with OpenSSL
+ 1.1.1c)
+
+It also fixes invalid setting of tag length
+
+(cherry picked from commit 2e025794745e09f7d0c72822ad0238bf6d67b2e8)
+---
+ ext/openssl/openssl.c                      |  5 ++++-
+ ext/openssl/tests/openssl_encrypt_ccm.phpt | 12 +++++++++---
+ 2 files changed, 13 insertions(+), 4 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 21c5367f72..72db9941d4 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -6289,7 +6289,10 @@ static int php_openssl_cipher_init(const EVP_CIPHER *cipher_type,
+ 		return FAILURE;
+ 	}
+ 	if (mode->is_single_run_aead && enc) {
+-		EVP_CIPHER_CTX_ctrl(cipher_ctx, mode->aead_set_tag_flag, tag_len, NULL);
++		if (!EVP_CIPHER_CTX_ctrl(cipher_ctx, mode->aead_set_tag_flag, tag_len, NULL)) {
++			php_error_docref(NULL, E_WARNING, "Setting tag length for AEAD cipher failed");
++			return FAILURE;
++		}
+ 	} else if (!enc && tag && tag_len > 0) {
+ 		if (!mode->is_aead) {
+ 			php_error_docref(NULL, E_WARNING, "The tag cannot be used because the cipher method does not support AEAD");
+diff --git a/ext/openssl/tests/openssl_encrypt_ccm.phpt b/ext/openssl/tests/openssl_encrypt_ccm.phpt
+index 64a3b758e2..8c4c41f818 100644
+--- a/ext/openssl/tests/openssl_encrypt_ccm.phpt
++++ b/ext/openssl/tests/openssl_encrypt_ccm.phpt
+@@ -26,9 +26,12 @@ foreach ($methods as $method) {
+ // Empty IV error
+ var_dump(openssl_encrypt('data', $method, 'password', 0, NULL, $tag, ''));
+ 
+-// Test setting different IV length and unlimeted tag
+-var_dump(openssl_encrypt('data', $method, 'password', 0, str_repeat('x', 10), $tag, '', 1024));
++// Test setting different IV length and tag length
++var_dump(openssl_encrypt('data', $method, 'password', 0, str_repeat('x', 10), $tag, '', 14));
+ var_dump(strlen($tag));
++
++// Test setting invalid tag length
++var_dump(openssl_encrypt('data', $method, 'password', 0, str_repeat('x', 16), $tag, '', 1024));
+ ?>
+ --EXPECTF--
+ aes-128-ccm - TEST 0
+@@ -44,4 +47,7 @@ bool(true)
+ Warning: openssl_encrypt(): Setting of IV length for AEAD mode failed in %s on line %d
+ bool(false)
+ string(8) "p/lvgA=="
+-int(1024)
++int(14)
++
++Warning: openssl_encrypt(): Setting of IV length for AEAD mode failed in %s on line %d
++bool(false)

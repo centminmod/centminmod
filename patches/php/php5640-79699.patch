@@ -1,0 +1,142 @@
+From 21babd0059d6661573b44349d5ee5589677b9645 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 20 Sep 2020 18:08:55 -0700
+Subject: [PATCH] Do not decode cookie names anymore
+
+(cherry picked from commit 6559fe912661ca5ce5f0eeeb591d928451428ed0)
+---
+ main/php_variables.c      |  8 ++++++--
+ tests/basic/022.phpt      | 10 +++++++---
+ tests/basic/023.phpt      |  4 +++-
+ tests/basic/bug79699.phpt | 22 ++++++++++++++++++++++
+ 4 files changed, 38 insertions(+), 6 deletions(-)
+ create mode 100644 tests/basic/bug79699.phpt
+
+diff --git a/main/php_variables.c b/main/php_variables.c
+index 6da79bddc3..084b10fa56 100644
+--- a/main/php_variables.c
++++ b/main/php_variables.c
+@@ -472,7 +472,9 @@ SAPI_API SAPI_TREAT_DATA_FUNC(php_default_treat_data)
+ 			unsigned int new_val_len;
+ 
+ 			*val++ = '\0';
+-			php_url_decode(var, strlen(var));
++			if (arg != PARSE_COOKIE) {
++				php_url_decode(var, strlen(var));
++			}
+ 			val_len = php_url_decode(val, strlen(val));
+ 			val = estrndup(val, val_len);
+ 			if (sapi_module.input_filter(arg, var, &val, val_len, &new_val_len TSRMLS_CC)) {
+@@ -483,7 +485,9 @@ SAPI_API SAPI_TREAT_DATA_FUNC(php_default_treat_data)
+ 			int val_len;
+ 			unsigned int new_val_len;
+ 
+-			php_url_decode(var, strlen(var));
++			if (arg != PARSE_COOKIE) {
++				php_url_decode(var, strlen(var));
++			}
+ 			val_len = 0;
+ 			val = estrndup("", val_len);
+ 			if (sapi_module.input_filter(arg, var, &val, val_len, &new_val_len TSRMLS_CC)) {
+diff --git a/tests/basic/022.phpt b/tests/basic/022.phpt
+index 0ab70d4be7..bd1db13701 100644
+--- a/tests/basic/022.phpt
++++ b/tests/basic/022.phpt
+@@ -10,7 +10,7 @@ cookie1=val1  ; cookie2=val2%20; cookie3=val 3.; cookie 4= value 4 %3B; cookie1=
+ var_dump($_COOKIE);
+ ?>
+ --EXPECT--
+-array(10) {
++array(12) {
+   ["cookie1"]=>
+   string(6) "val1  "
+   ["cookie2"]=>
+@@ -19,11 +19,15 @@ array(10) {
+   string(6) "val 3."
+   ["cookie_4"]=>
+   string(10) " value 4 ;"
++  ["%20cookie1"]=>
++  string(6) "ignore"
++  ["+cookie1"]=>
++  string(6) "ignore"
+   ["cookie__5"]=>
+   string(7) "  value"
+-  ["cookie_6"]=>
++  ["cookie%206"]=>
+   string(3) "þæö"
+-  ["cookie_7"]=>
++  ["cookie+7"]=>
+   string(0) ""
+   ["$cookie_8"]=>
+   string(0) ""
+diff --git a/tests/basic/023.phpt b/tests/basic/023.phpt
+index ca5f1dcfbb..0e2e0ac669 100644
+--- a/tests/basic/023.phpt
++++ b/tests/basic/023.phpt
+@@ -10,9 +10,11 @@ c o o k i e=value; c o o k i e= v a l u e ;;c%20o+o k+i%20e=v;name="value","valu
+ var_dump($_COOKIE);
+ ?>
+ --EXPECT--
+-array(3) {
++array(4) {
+   ["c_o_o_k_i_e"]=>
+   string(5) "value"
++  ["c%20o+o_k+i%20e"]=>
++  string(1) "v"
+   ["name"]=>
+   string(24) ""value","value",UEhQIQ=="
+   ["UEhQIQ"]=>
+diff --git a/tests/basic/bug79699.phpt b/tests/basic/bug79699.phpt
+new file mode 100644
+index 0000000000..fc3d3fedb0
+--- /dev/null
++++ b/tests/basic/bug79699.phpt
+@@ -0,0 +1,22 @@
++--TEST--
++Cookies Security Bug
++--INI--
++max_input_vars=1000
++filter.default=unsafe_raw
++--COOKIE--
++__%48ost-evil=evil; __Host-evil=good; %66oo=baz;foo=bar
++--FILE--
++<?php
++var_dump($_COOKIE);
++?>
++--EXPECT--
++array(4) {
++  ["__%48ost-evil"]=>
++  string(4) "evil"
++  ["__Host-evil"]=>
++  string(4) "good"
++  ["%66oo"]=>
++  string(3) "baz"
++  ["foo"]=>
++  string(3) "bar"
++}
+From a9195bc602c7df0c569731bb1a7ddc72cdabfed1 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 29 Sep 2020 09:20:11 +0200
+Subject: [PATCH] NEWS
+
+---
+ NEWS | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index cf34011622..7ca1c46721 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.2.34
++
++- Core:
++  . Fixed bug #79699 (PHP parses encoded cookie names so malicious `__Host-`
++    cookies can be sent). (CVE-2020-7070) (Stas)
++
+ Backported from 7.2.33
+ 
+ - Core:
