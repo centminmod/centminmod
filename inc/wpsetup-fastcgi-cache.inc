@@ -3099,13 +3099,21 @@ if [[ "$wpscache" = [nN] ]]; then
   chown -R nginx:nginx wp-content/plugins/cache-enabler
   cecho "------------------------------------------------------------" $boldgreen 
   # \wp plugin install optimus --activate --allow-root
-  echo "configure cache-enabler"
-  \wp option update cache-enabler '{"expires":6,"clear_on_upgrade":1,"new_post":1,"new_comment":1,"update_product_stock":0,"webp":0,"compress":1,"excl_ids":"","excl_paths":"","excl_cookies":"","incl_parameters":"","minify_html":0}' --format=json --allow-root
+  echo "configure cache-enabler 1.5.1+ or higher"
+  \wp option patch update cache_enabler cache_expiry_time '7' --allow-root
+  \wp option patch update cache_enabler clear_complete_cache_on_saved_post '1' --allow-root
+  \wp option patch update cache_enabler clear_complete_cache_on_new_comment '1' --allow-root
+  \wp option patch update cache_enabler clear_complete_cache_on_changed_plugin '1' --allow-root
+  \wp option patch update cache_enabler compress_cache '1' --allow-root
   if [[ "$WPCLI_CE_QUERYSTRING_INCLUDED" = [yY] ]]; then
-    \wp option patch update cache-enabler incl_parameters '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
-    \wp option pluck cache-enabler incl_parameters --format=json --allow-root
+    \wp option patch update cache_enabler excluded_query_strings '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+    \wp option pluck cache_enabler excluded_query_strings --format=json --allow-root
   fi
-  \wp option get cache-enabler --format=json --allow-root
+  if [ -f /usr/bin/jq ]; then
+    \wp option get cache_enabler --format=json --allow-root | jq
+  else
+    \wp option get cache_enabler --format=json --allow-root
+  fi
   # add define('WP_CACHE', true); to wp-config.php
   if [ ! "$(grep -w 'WP_CACHE' wp-config.php)" ]; then
   sed -i "/define( 'DB_HOST', 'localhost' );/ a\
