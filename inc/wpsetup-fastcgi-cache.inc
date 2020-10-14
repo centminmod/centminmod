@@ -3106,7 +3106,8 @@ if [[ "$wpscache" = [nN] ]]; then
   \wp option patch update cache_enabler clear_complete_cache_on_changed_plugin '1' --allow-root
   \wp option patch update cache_enabler compress_cache '1' --allow-root
   if [[ "$WPCLI_CE_QUERYSTRING_INCLUDED" = [yY] ]]; then
-    \wp option patch update cache_enabler excluded_query_strings '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+    # \wp option patch update cache_enabler excluded_query_strings '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+    \wp option patch update cache_enabler excluded_query_strings '' --allow-root
     \wp option pluck cache_enabler excluded_query_strings --format=json --allow-root
   fi
   if [ -f /usr/bin/jq ]; then
