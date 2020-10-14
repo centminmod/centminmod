@@ -3094,21 +3094,43 @@ fi
 # wp cache enabler
 if [[ "$wpscache" = [nN] ]]; then
   cecho "------------------------------------------------------------" $boldgreen
-  \wp plugin install cache-enabler --activate --allow-root
+  if [[ "$CACHE_ENABLER_LEGACY_CACHE" = [yY] ]]; then
+    \wp plugin install cache-enabler --version=1.4.9 --force --activate --allow-root
+    \wp plugin install block-specific-plugin-updates --activate --allow-root
+    if [ "$(\wp option get bpu_update_blocked_plugins --allow-root >/dev/null 2>&1; echo $?)" -ne '0' ]; then
+      \wp option update bpu_update_blocked_plugins cache-enabler/cache-enabler.php --allow-root;
+    else
+      \wp option add bpu_update_blocked_plugins cache-enabler/cache-enabler.php --allow-root;
+    fi
+  else
+    \wp plugin install cache-enabler --activate --allow-root
+  fi
   chown nginx:nginx wp-content/advanced-cache.php
   chown -R nginx:nginx wp-content/plugins/cache-enabler
   cecho "------------------------------------------------------------" $boldgreen 
   # \wp plugin install optimus --activate --allow-root
-  echo "configure cache-enabler 1.5.1+ or higher"
-  \wp option patch update cache_enabler cache_expiry_time '7' --allow-root
-  \wp option patch update cache_enabler clear_complete_cache_on_saved_post '1' --allow-root
-  \wp option patch update cache_enabler clear_complete_cache_on_new_comment '1' --allow-root
-  \wp option patch update cache_enabler clear_complete_cache_on_changed_plugin '1' --allow-root
-  \wp option patch update cache_enabler compress_cache '1' --allow-root
+
+  # get cache enabler version
+  get_ce_version=$(wp plugin get cache-enabler --format=json --allow-root | jq -r '.version' | sed -e 's|\.|00|g')
+  if [[ "$get_ce_version" -le '1004009' ]]; then
+    echo "configure cache-enabler 1.4.9"
+    \wp option update cache-enabler '{"expires":6,"clear_on_upgrade":1,"new_post":1,"new_comment":1,"update_product_stock":0,"webp":0,"compress":1,"excl_ids":"","excl_paths":"","excl_cookies":"","incl_parameters":"","minify_html":0}' --format=json --allow-root
+  else
+    echo "configure cache-enabler 1.5.1+ or higher"
+    \wp option patch update cache_enabler cache_expiry_time '7' --allow-root
+    \wp option patch update cache_enabler clear_complete_cache_on_saved_post '1' --allow-root
+    \wp option patch update cache_enabler clear_complete_cache_on_new_comment '1' --allow-root
+    \wp option patch update cache_enabler clear_complete_cache_on_changed_plugin '1' --allow-root
+    \wp option patch update cache_enabler compress_cache '1' --allow-root
+  fi
   if [[ "$WPCLI_CE_QUERYSTRING_INCLUDED" = [yY] ]]; then
-    # \wp option patch update cache_enabler excluded_query_strings '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
-    \wp option patch update cache_enabler excluded_query_strings '' --allow-root
-    \wp option pluck cache_enabler excluded_query_strings --format=json --allow-root
+    if [[ "$get_ce_version" -le '1004009' ]]; then
+      \wp option patch update cache-enabler incl_parameters '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+      \wp option pluck cache-enabler incl_parameters --format=json --allow-root
+    else
+      \wp option patch update cache_enabler excluded_query_strings '/^s=.+$/' --allow-root
+      \wp option pluck cache_enabler excluded_query_strings --format=json --allow-root
+    fi
   fi
   if [ -f /usr/bin/jq ]; then
     \wp option get cache_enabler --format=json --allow-root | jq

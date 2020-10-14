@@ -406,6 +406,9 @@ SELFSIGNEDSSL_OU=''
 WPPLUGINS_ALL='n'           # do not install additional plugins
 WPCLI_CE_QUERYSTRING_INCLUDED='n' # https://community.centminmod.com/posts/85893/
 WPCLI_SUPERCACHEPLUGIN='n'  # https://community.centminmod.com/threads/5102/
+# choose Cache Enabler 1.4.9 cache query string inclusion set to 'y'
+# choose Cache Enabler 1.5.1 cache query string exclusion set to 'n'
+CACHE_ENABLER_LEGACY_CACHE='y'
 ###############################################################
 # php configured --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock
 PHP_MYSQLSOCKPATH='/var/lib/mysql'
