@@ -100,6 +100,15 @@ phpmyadmin_composer_fix() {
   fi
 }
 
+phpmyadmin_updater_fix() {
+  if [ -f /root/tools/phpmyadmin_update.sh ]; then
+    if [[ ! "$(grep 'git stash' /root/tools/phpmyadmin_update.sh)" ]]; then
+      # https://community.centminmod.com/threads/phpmyadmin-doesnt-auto-update.20537/#post-86677
+      sed -i 's|^echo "git pull"|echo "git stash"\ngit stash\necho "git pull"|' /root/tools/phpmyadmin_update.sh
+    fi
+  fi
+}
+
 initial_pip_updates() {
   initialpip=$1
   if [[ -z "$SKIP_INITIAL_PIP_UPDATES" || "$SKIP_INITIAL_PIP_UPDATES" = 'n' ]] && [ -f /usr/local/src/centminmod/tools/pip-updates.sh ]; then
@@ -3157,6 +3166,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fi
   update_webp_inc
   phpmyadmin_composer_fix
+  phpmyadmin_updater_fix
   imagemagick_heif
   fix_nasm
   update_cache_enabler_schemefix
