@@ -7,6 +7,40 @@ ENABLE_MARIADBTENTHREEUPGRADE='n'
 ENABLE_MARIADBTENFOURUPGRADE='n'
 SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
+mariadb_upgrade_check_versionlock() {
+  # Function for centmin.sh menu option 11 based major MariaDB server version
+  # upgrades to check if MariaDB yum packages are yum version locked by system
+  # administrator. If yum versionlock is in place, it will prevent centmin.sh
+  # menu option 11 based MariaDB major version upgrades as yum will not be able
+  # to find the MariaDB yum packages to update to the new version.
+  # This function checks if MariaDB and Galera yum packages are version locked
+  # and if so, version unlock them to allow for upgrades. This function will not
+  # re-lock them after update though due to the updated yum packages maybe having
+  # a different yum package name which may not properly lock the package or only
+  # lock some of the updated yum packages - leading to some packages being locked
+  # and others being unlocked which will make yum update command probably fail
+  # otherwise. So leave it to system admin to determine what yum packages they
+  # want to re-lock after updates via centmin.sh menu option 11
+  # check for version locked MariaDB & Galera yum packages
+
+  # only run if yum versionlock plugin is installed
+  if [[ "$(yum --help | grep -co versionlock)" -ge '1' ]]; then
+    check_mdb_versionlock_pkgs=$(yum versionlock list | egrep -i 'mariadb|galera' | awk -F '0:' '{print $2}' | sed -e 's|\.\*||g')
+    if [[ ! -z "$check_mdb_versionlock_pkgs" ]]; then
+      echo "*************************************************"
+      echo -e "\ndetected the following MariaDB server yum package yum versionlocks:\n"
+      echo "*************************************************"
+      echo "$check_mdb_versionlock_pkgs"
+      echo "*************************************************"
+      echo -e "\nremoving MariaDB yum versionlocks for updates...\n"
+      echo "*************************************************"
+      yum versionlock delete $check_mdb_versionlock_pkgs
+    else
+      echo -e "\n no MariaDB / Galera yum packages version locked packages detected\n"
+    fi
+  fi
+}
+
 mariadbsubmenu() {
   if [ -f /etc/my.cnf ]; then
     DT=$(date +"%d%m%y-%H%M%S")

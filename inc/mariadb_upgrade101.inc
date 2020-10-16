@@ -339,6 +339,8 @@ MYSQLDATADIR=$(mysqladmin var | grep 'datadir' | awk '{ print $4}')
 backupmsg101
 #mariadb101uninstall
 
+mariadb_upgrade_check_versionlock
+
 # shutdown existing mysql server
 echo
 echo "shut down existing MariaDB server for upgrade.."

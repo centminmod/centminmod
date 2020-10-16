@@ -391,6 +391,8 @@ MYSQLDATADIR=$(mysqladmin var | grep 'datadir' | awk '{ print $4}')
 backupmsg104
 #mariadb103uninstall
 
+mariadb_upgrade_check_versionlock
+
 # shutdown existing mysql server
 echo
 echo "shut down existing MariaDB server for upgrade.."
@@ -435,6 +437,7 @@ fi
 if [ -f /etc/my.cnf ]; then
 cp /etc/my.cnf /etc/my.cnf-original_before_mariadb102upgrade
 fi
+
 echo ""
     echo "*************************************************"
 cecho "MariaDB 10.4.x check available packages" $boldgreen
