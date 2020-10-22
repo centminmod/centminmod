@@ -310,6 +310,45 @@ else
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')"
+    # display latest PHP version available for current detected
+    # PHP major version branch
+    if [ ! -f /usr/local/bin/get-php-ver ]; then
+        wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
+        chmod +x /usr/local/bin/getphpver
+    elif [ -f /usr/local/bin/get-php-ver ]; then
+        wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
+        chmod +x /usr/local/bin/getphpver
+    fi
+    if [ -f /usr/local/bin/getphpver ]; then
+        getlatest_phpbranch=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}' | awk  -F '.' '{print $1$2}')
+        if [[ "$getlatest_phpbranch" = '80' ]]; then
+            getlatest_phpbranchver=$(getphpver 80)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '74' ]]; then
+            getlatest_phpbranchver=$(getphpver 74)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '73' ]]; then
+            getlatest_phpbranchver=$(getphpver 73)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '72' ]]; then
+            getlatest_phpbranchver=$(getphpver 72)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '71' ]]; then
+            getlatest_phpbranchver=$(getphpver 71)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '70' ]]; then
+            getlatest_phpbranchver=$(getphpver 70)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '56' ]]; then
+            getlatest_phpbranchver=$(getphpver 56)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '55' ]]; then
+            getlatest_phpbranchver=$(getphpver 55)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        else
+            echo "Can Not Determine Latest PHP Version Installable: $getlatest_phpbranchver"
+        fi
+    fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo
