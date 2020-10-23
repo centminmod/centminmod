@@ -388,7 +388,7 @@ make distclean
 
 cd ${OPT}/ffmpeg_sources
 rm -rf x265
-hg clone https://bitbucket.org/multicoreware/x265
+git clone https://bitbucket.org/multicoreware/x265_git x265
 cd ${OPT}/ffmpeg_sources/x265/build/linux
 cmake -G "Unix Makefiles" -DCMAKE_INSTALL_PREFIX:PATH="${OPT}/ffmpeg" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
 # cmake -DCMAKE_INSTALL_PREFIX:PATH=${OPT}/ffmpeg -DENABLE_SHARED:bool=off ../../source
