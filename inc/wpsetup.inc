@@ -2283,6 +2283,11 @@ return 444;
 }
 
 location ~* ${WPSUBDIR}/(\.|wp-config\.php|wp-config\.txt|changelog\.txt|readme\.txt|readme\.html|license\.txt) { deny all; }
+
+location ${WPSUBDIR}/wp-content/uploads/wp-personal-data-exports/ {
+  location ~ ^${WPSUBDIR}/wp-content/uploads/wp-personal-data-exports/(.+/)?(.+)\.(zip)\$ { allow all; expires 30d; }
+}
+
 location ~* ${WPSUBDIR}/(wp-content)/(.*?)\.(zip|gz|tar|bzip2|7z|txt)\$ { deny all; }
 EEF
 
