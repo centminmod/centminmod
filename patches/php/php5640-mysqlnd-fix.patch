@@ -1,0 +1,22 @@
+--- a/ext/mysqlnd/mysqlnd_ps_codec.c	2019-01-09 09:54:13.000000000 +0000
++++ b/ext/mysqlnd/mysqlnd_ps_codec.c	2020-11-05 15:21:00.238585270 +0000
+@@ -911,7 +911,7 @@
+ 	zend_uchar	*p = stmt->execute_cmd_buffer.buffer,
+ 				*cmd_buffer = stmt->execute_cmd_buffer.buffer;
+ 	size_t cmd_buffer_length = stmt->execute_cmd_buffer.length;
+-	enum_func_status ret;
++	enum_func_status ret = PASS;
+ 
+ 	DBG_ENTER("mysqlnd_stmt_execute_generate_request");
+ 
+@@ -928,7 +928,9 @@
+ 	int1store(p, 1); /* and send 1 for iteration count */
+ 	p+= 4;
+ 
+-	ret = mysqlnd_stmt_execute_store_params(s, &cmd_buffer, &p, &cmd_buffer_length TSRMLS_CC);
++	if (stmt->param_count != 0) {
++		ret = mysqlnd_stmt_execute_store_params(s, &cmd_buffer, &p, &cmd_buffer_length TSRMLS_CC);
++	}
+ 
+ 	*free_buffer = (cmd_buffer != stmt->execute_cmd_buffer.buffer);
+ 	*request_len = (p - cmd_buffer);
