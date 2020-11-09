@@ -57,18 +57,38 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
   fi
 
   if [[ ! -f /usr/local/bin/ccache ]] || [[ -f /usr/local/bin/ccache && -d "${DIR_TMP}/ccache-${CCACHE_VER}" && "$CCACHE_VER" != "$(ccache -V | head -n 1 | awk '{print $3}')" ]]; then
-    echo "install ccache $CCACHE_VER"
-    sleep 2
-    # echo "cd ${DIR_TMP}/ccache-${CCACHE_VER}/"
-    cd ${DIR_TMP}/ccache-${CCACHE_VER}/
-    make clean -s
-    ./configure -q
-    sar_call
-    make${MAKETHREADS} -s
-    sar_call
-    make install -s
-    sar_call
-    echo
+    if [[ "$CCACHE_VER_FOUR" = [yY] ]]; then
+      echo "install ccache $CCACHE_VER"
+      sleep 2
+      if [ -f /opt/rh/devtoolset-8/enable ]; then
+        source /opt/rh/devtoolset-8/enable
+      fi
+      cd ${DIR_TMP}/ccache-${CCACHE_VER}/
+      rm -rf build
+      mkdir -p build
+      cd build
+      export CC=gcc
+      time cmake3 -DCMAKE_BUILD_TYPE=Release -DZSTD_FROM_INTERNET=ON ..
+      sar_call
+      make -j${MAKETHREADS}
+      sar_call
+      make install
+      sar_call
+      export CC='ccache gcc'
+      echo
+    else
+      echo "install ccache $CCACHE_VER"
+      sleep 2
+      cd ${DIR_TMP}/ccache-${CCACHE_VER}/
+      make clean -s
+      ./configure -q
+      sar_call
+      make${MAKETHREADS} -s
+      sar_call
+      make install -s
+      sar_call
+      echo
+    fi
     if [ -f /usr/local/bin/ccache ]; then
       echo "completed update to ccache $CCACHE_VER"
       CCUPDATESTATUS=ok
