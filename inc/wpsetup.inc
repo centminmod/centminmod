@@ -1624,6 +1624,7 @@ location ~* ${WPSUBDIR}/wp-content/cache/autoptimize/.*\.(js|css)\$ {
   include /usr/local/nginx/conf/php.conf;
   add_header AO-Fallback 1;
   try_files \$uri \$uri/ ${WPSUBDIR}/wp-content/autoptimize_404_handler.php;
+  expires 30d;
 }
 
 # allow AJAX requests in themes and plugins
