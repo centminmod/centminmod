@@ -9,6 +9,19 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 
+jetpack_ip_whitelist_cronsetup() {
+  if [[ -f /usr/local/src/centminmod/tools/jetpackips.sh && -f /usr/local/nginx/conf/jetpack_whitelist_ip.conf && ! "$(crontab -l | grep -w jetpackips)" ]]; then
+      # block xml-rpc.php completely with whitelist exception for
+      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/hosting-faq/
+      mkdir -p /etc/centminmod/cronjobs/
+      crontab -l > /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      sed -i '/jetpack_whitelist_ip/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      echo "11 */12 * * * /usr/local/src/centminmod/tools/jetpackips.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      crontab /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+  fi
+}
+jetpack_ip_whitelist_cronsetup
+
 jetpackallowips=$(curl -4sk https://jetpack.com/ips-v4.txt | awk '{print "allow "$1";"}')
 echo "populating include file /usr/local/nginx/conf/jetpack_whitelist_ip.conf with:"
 echo
