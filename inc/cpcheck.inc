@@ -1,3 +1,16 @@
+jetpack_ip_whitelist_cronsetup() {
+  if [[ -f /usr/local/src/centminmod/tools/jetpackips.sh && ! -f /usr/local/nginx/conf/jetpack_whitelist_ip.conf ]]; then
+      # block xml-rpc.php completely with whitelist exception for
+      # jetpack wordpress plugin's IP addresses https://jetpack.com/support/hosting-faq/
+      mkdir -p /etc/centminmod/cronjobs/
+      crontab -l > /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      sed -i '/jetpack_whitelist_ip/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      echo "11 */12 * * * /usr/local/src/centminmod/tools/jetpackips.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      crontab /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      /usr/local/src/centminmod/tools/jetpackips.sh >/dev/null 2>&1
+  fi
+}
+
 update_wpce_map() {
   if [ -f /usr/local/nginx/conf/wpcacheenabler_map.conf ]; then
     # fix improper escapped entries
@@ -3043,6 +3056,7 @@ python_centossix_sclfix
 disable_avahi
 qrencode_setup
 initial_pip_updates initial
+jetpack_ip_whitelist_cronsetup
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -3171,6 +3185,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fix_nasm
   update_cache_enabler_schemefix
   update_wpce_map
+  jetpack_ip_whitelist_cronsetup
 fi
 
 }
