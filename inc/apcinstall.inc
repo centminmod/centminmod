@@ -31,7 +31,7 @@ function funct_apcsourceinstall {
 
     cd $DIR_TMP
 
-PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 
 #download apc tarball
 if [ -z "$APCINSTALL" ]; then

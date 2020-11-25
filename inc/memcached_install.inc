@@ -265,10 +265,14 @@ service memcached start
 #############################################
     if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [ "$PHP_MEMCACHE" == 'y' ]; then
-    PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+    PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
     if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
         echo
-        echo "Compiling memcache PHP extension for PHP 7.x ..."
+        if [[ "$PHPVER_ID" -ge '80000' ]]; then
+            echo "Compiling memcache PHP extension for PHP 8.x ..."
+        else
+            echo "Compiling memcache PHP extension for PHP 7.x ..."
+        fi
     
         if [ -f /usr/bin/re2c ]; then
             if [[ "$(/usr/bin/re2c -v | awk '{print $2}')" != '0.14.3' ]]; then
@@ -276,9 +280,15 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
             fi
         fi
         pushd "$DIR_TMP"
-        rm -rf memcache-php7
-        time git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
-        cd memcache-php7
+        if [[ "$PHPVER_ID" -ge '80000' ]]; then
+            rm -rf memcache-php8
+            time git clone -b NON_BLOCKING_IO_php8 https://github.com/websupport-sk/pecl-memcache.git memcache-php8
+            cd memcache-php8
+        else
+            rm -rf memcache-php7
+            time git clone -b NON_BLOCKING_IO_php7 https://github.com/websupport-sk/pecl-memcache.git memcache-php7
+            cd memcache-php7
+        fi
         if [[ "$INITIALINSTALL" != [yY] ]]; then
             make clean
         fi
@@ -427,7 +437,7 @@ if [ -f /usr/bin/re2c ]; then
     fi
 fi
 
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0'
+php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
@@ -437,7 +447,11 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     PHPEXT_MEMCACHEDLINK="https://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
     PHPEXT_MEMCACHEDLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
     echo
-    echo "compiling memcached PHP extension for PHP 7.x ..."
+    if [[ "$PHPVER_ID" -ge '80000' ]]; then
+        echo "compiling memcached PHP extension for PHP 8.x ..."
+    else
+        echo "compiling memcached PHP extension for PHP 7.x ..."
+    fi
     echo "PHPMUVER = $PHPMUVER"
     if [[ "$CENTOS_SIX" -eq '6' ]]; then
         # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
@@ -452,10 +466,10 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     fi
     if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
       pushd "$DIR_TMP"
-      rm -rf memcached-php7
-      time git clone --depth=1 https://github.com/php-memcached-dev/php-memcached.git memcached-php7
+      rm -rf memcached-php8
+      time git clone --depth=1 https://github.com/php-memcached-dev/php-memcached.git memcached-php8
       popd
-      cd "${DIR_TMP}/memcached-php7"
+      cd "${DIR_TMP}/memcached-php8"
     else
       if [ ! -d "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}" ]; then
           rm -rf "${DIR_TMP}/memcached-${MEMCACHEDPHP_VER}*"

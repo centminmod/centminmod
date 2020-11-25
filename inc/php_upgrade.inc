@@ -403,7 +403,7 @@ fi # UALL
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
-PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
@@ -1178,7 +1178,7 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
+php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
@@ -1224,28 +1224,28 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
         cecho "rm -f ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
         echo
     fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+    if [[ "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80100' ]] && [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
+        cecho "PHP 8.1 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         cecho "rm -f ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         echo
     fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/imagick.ini" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/imagick.ini" $boldyellow
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
+    #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/imagick.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/imagick.ini" $boldyellow
+    #     echo
+    # fi
     if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/memcache.ini" ]; then
         cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
         cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
         echo
     fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
-        # disable igbinary on PHP 8.0+ due to segfaulting
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/igbinary.ini" $boldyellow
-        rm -f ${CONFIGSCANDIR}/igbinary.ini
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
+    #     # disable igbinary on PHP 8.0+ due to segfaulting
+    #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/igbinary.ini" $boldyellow
+    #     rm -f ${CONFIGSCANDIR}/igbinary.ini
+    #     echo
+    # fi
     # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/redis.ini" ]; then
     #     # disable redis on PHP 8.0+ due to segfaulting
     #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/redis.ini" $boldyellow

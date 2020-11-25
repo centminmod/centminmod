@@ -254,9 +254,12 @@ imagickinstall() {
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
+php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
+php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '8.0'
+PHPEIGHT_CHECKVER=$?
+echo $PHPEIGHT_CHECKVER
 
 if [[ "$CENTOS_SIX" -eq '6' ]]; then
     # PHP 7.3.0 + centos 6 issue https://community.centminmod.com/posts/69561/
@@ -270,8 +273,42 @@ if [[ "$CENTOS_SIX" -eq '6' ]]; then
     fi
 fi
 
-#if [[ "$PHPMUVER" = '8.0' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
-if [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
+if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPEIGHT_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '34' ]]; then
+    IMAGICKGITLINK='https://github.com/Imagick/imagick'
+    # fallback mirror if official github is down, use gitlab mirror
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    IMAGICKGITCURLCHECK=$?
+    if [[ "$IMAGICKGITCURLCHECK" != '0' ]]; then
+        IMAGICKGITLINK='https://gitlab.com/centminmod-github-mirror/imagick.git'
+    fi
+
+    if [[ -d "imagick-php8" && -d "imagick-php8/.git" ]]; then       
+        rm -rf imagick-php8
+        git clone "$IMAGICKGITLINK" imagick-php8
+        sar_call
+    elif [[ -d "imagick-php8" && ! -d "imagick-php8/.git" ]]; then
+        rm -rf imagick-php8
+        git clone "$IMAGICKGITLINK" imagick-php8
+        sar_call
+    else
+        rm -rf imagick-php8
+        git clone "$IMAGICKGITLINK" imagick-php8
+        sar_call
+    fi
+    echo
+    echo "compiling imagick PHP extension for PHP 8.x ..."
+    cd imagick-php8
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
+    /usr/local/bin/phpize
+    ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    sar_call
+    make${MAKETHREADS}
+    sar_call
+    make install
+    sar_call
+elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]] && [[ "$(echo $IMAGICKPHP_VER | cut -d . -f1,2 | sed -e 's|\.||')" -le '33' ]]; then
     IMAGICKGITLINK='https://github.com/Imagick/imagick'
     # fallback mirror if official github is down, use gitlab mirror
     curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $IMAGICKGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1

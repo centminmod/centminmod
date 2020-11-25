@@ -6,7 +6,7 @@ if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP
 
-    php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
+    php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
     PHPSEVEN_CHECKVER=$?
     echo $PHPSEVEN_CHECKVER
 

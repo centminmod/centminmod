@@ -49,7 +49,7 @@ redisinstall() {
     REDIS_SUBMENU=$1
 
     if [[ "$REDIS_SUBMENU" = 'submenu' ]]; then
-        REDIS_PHPCURRENTVER=$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+        REDIS_PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
     fi
 
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
