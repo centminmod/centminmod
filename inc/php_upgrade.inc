@@ -1065,9 +1065,10 @@ if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
-    if [ -f /usr/local/src/centminmod/addons/php74-mcrypt.sh ]; then
-        /usr/local/src/centminmod/addons/php74-mcrypt.sh menu
-    fi
+    # if [ -f /usr/local/src/centminmod/addons/php74-mcrypt.sh ]; then
+    #     /usr/local/src/centminmod/addons/php74-mcrypt.sh menu
+    # fi
+    rm -f ${CONFIGSCANDIR}/mcrypt.ini
 elif [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' ]]; then
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
@@ -1219,11 +1220,12 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     #     cecho "rm -f ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     # fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/mcrypt.ini" ]; then
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/mcrypt.ini" ]; then
+    #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/mcrypt.ini" $boldyellow
+    #     rm -f ${CONFIGSCANDIR}/mcrypt.ini
+    #     echo
+    # fi
     if [[ "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80100' ]] && [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
         cecho "PHP 8.1 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
         cecho "rm -f ${CONFIGSCANDIR}/geoip.ini" $boldyellow
