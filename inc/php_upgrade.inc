@@ -1065,9 +1065,9 @@ if [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"
     echo "PHPMVER=$PHPMVER"
     echo "PHPMUVER=$PHPMUVER"
-    # if [ -f /usr/local/src/centminmod/addons/php74-mcrypt.sh ]; then
-    #     /usr/local/src/centminmod/addons/php74-mcrypt.sh menu
-    # fi
+    if [ -f /usr/local/src/centminmod/addons/php80-mcrypt.sh ]; then
+        /usr/local/src/centminmod/addons/php80-mcrypt.sh menu
+    fi
     rm -f ${CONFIGSCANDIR}/mcrypt.ini
 elif [[ "$PHP_MCRYPTPECL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' ]]; then
     echo "PHP_MCRYPTPECL=$PHP_MCRYPTPECL"

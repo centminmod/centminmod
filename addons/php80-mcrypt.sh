@@ -7,7 +7,7 @@ export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
 #############################################################
-# mcrypt PECL extension for PHP 7.4+ for
+# mcrypt PECL extension for PHP 8.0+ for
 # Centmin Mod centminmod.com
 # written by George Liu (eva2000)
 #############################################################
@@ -103,9 +103,9 @@ fi
 mcrypt_peclinstall() {
   checkmenu="$1"
 
-  if [[ "${PHPCURRENTVER}" != '7.4' && "$checkmenu" != 'menu' ]]; then
-    echo "Your current PHP version $PHPCURRENTVER is not PHP 7.4 branch"
-    echo "this addon is only for PHP 7.4 users"
+  if [[ "${PHPCURRENTVER}" != '8.0' && "$checkmenu" != 'menu' ]]; then
+    echo "Your current PHP version $PHPCURRENTVER is not PHP 8.0 branch"
+    echo "this addon is only for PHP 8.0 users"
     echo "aborting installation"
     exit
   fi
@@ -176,4 +176,4 @@ endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
 echo "" >> ${CENTMINLOGDIR}/mcrypt-php74-pecl-install_${DT}.log
-echo "Total PHP 7.4 mcrypt PECL Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/mcrypt-php74-pecl-install_${DT}.log
+echo "Total PHP 8.0 mcrypt PECL Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/mcrypt-php74-pecl-install_${DT}.log
