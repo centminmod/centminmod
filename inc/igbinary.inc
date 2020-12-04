@@ -155,13 +155,13 @@ if [[ "$DISABLESESSION" = [yY] ]]; then
     sed -i 's|^session.serialize_handler=igbinary|;session.serialize_handler=igbinary|' "${CONFIGSCANDIR}/igbinary.ini"
 fi
 
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
-        # disable igbinary on PHP 8.0+ due to segfaulting
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/igbinary.ini" $boldyellow
-        rm -f ${CONFIGSCANDIR}/igbinary.ini
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
+    #     # disable igbinary on PHP 8.0+ due to segfaulting
+    #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/igbinary.ini" $boldyellow
+    #     rm -f ${CONFIGSCANDIR}/igbinary.ini
+    #     echo
+    # fi
 
 cmservice php-fpm reload
     fi # PHP_INSTALL=y
