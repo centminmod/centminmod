@@ -15,7 +15,7 @@ jetpack_ip_whitelist_cronsetup() {
       # jetpack wordpress plugin's IP addresses https://jetpack.com/support/hosting-faq/
       mkdir -p /etc/centminmod/cronjobs/
       crontab -l > /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
-      sed -i '/jetpack_whitelist_ip/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
+      sed -i '/jetpackips/d' /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
       echo "11 */12 * * * /usr/local/src/centminmod/tools/jetpackips.sh >/dev/null 2>&1" >> /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
       crontab /etc/centminmod/cronjobs/before_jetpack_ip_whitelist_cronjoblist
   fi
