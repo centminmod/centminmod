@@ -114,6 +114,15 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
         else
             redis_zstd_opt=''
         fi
+        redis_check_lz4=$(grep -o 'enable-redis-lz4' config.m4)
+        if [[ "$redis_check_lz4" = 'enable-redis-lz4' ]]; then
+            if [[ ! "$(rpm -qa lz4-devel)" ]]; then
+                yum -q -y install lz4 lz4-devel
+            fi
+            redis_lzfour_opt=' --enable-redis-lz4 --with-liblz4'
+        else
+            redis_lzfour_opt=''
+        fi
         redis_check_lzf=$(grep -o 'enable-redis-lzf' config.m4)
         if [[ "$redis_check_lzf" = 'enable-redis-lzf' ]]; then
             if [[ ! "$(rpm -qa liblzf)" ]]; then
@@ -128,17 +137,17 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
             if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]]; then
                 # disable igbinary on PHP 8.0+ due to segfaulting
                 echo "redis php configure"
-                echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
-                ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
+                echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
+                ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
             else
                 echo "redis php configure"
-                echo "./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}"
-                ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
+                echo "./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
+                ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
             fi
         else
             echo "redis php configure"
-            echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
-            ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
+            echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
+            ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
         fi
         make${MAKETHREADS}
         make install
@@ -162,6 +171,15 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
         else
             redis_zstd_opt=''
         fi
+        redis_check_lz4=$(grep -o 'enable-redis-lz4' config.m4)
+        if [[ "$redis_check_lz4" = 'enable-redis-lz4' ]]; then
+            if [[ ! "$(rpm -qa lz4-devel)" ]]; then
+                yum -q -y install lz4 lz4-devel
+            fi
+            redis_lzfour_opt=' --enable-redis-lz4 --with-liblz4'
+        else
+            redis_lzfour_opt=''
+        fi
         redis_check_lzf=$(grep -o 'enable-redis-lzf' config.m4)
         if [[ "$redis_check_lzf" = 'enable-redis-lzf' ]]; then
             if [[ ! "$(rpm -qa liblzf)" ]]; then
@@ -181,18 +199,18 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
                 if [[ "$REDIS_PHPCURRENTVER" = '7.4' || "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]]; then
                     # disable igbinary on PHP 8.0+ due to segfaulting
                     echo "redis php configure alt"
-                    echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
-                    ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
+                    echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
+                    ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
                 else
                     echo "redis php configure alt"
-                    echo "./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}"
-                    ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzf_opt}
+                    echo "./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
+                    ./configure --with-php-config=/usr/local/bin/php-config --enable-redis-igbinary${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
                 fi
             fi
         else
             echo "php configure alt"
-            echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}"
-            ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzf_opt}
+            echo "./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}"
+            ./configure --with-php-config=/usr/local/bin/php-config${redis_zstd_opt}${redis_lzfour_opt}${redis_lzf_opt}
         fi
         make${MAKETHREADS}
         make install   
