@@ -83,7 +83,7 @@ sshdtweaks
     free -m
     echo
     echo "create 1GB swap file"; 
-    if [ "$(df -hT | grep -w xfs)" ]; then
+    if [[ "$(df -hT | grep -w xfs)" || "$CHECK_LXD" = [yY] ]]; then
         dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
     else
         fallocate -l 1G /swapfile
@@ -102,12 +102,12 @@ sshdtweaks
   fi
 
 if [ ! -f /etc/ld.so.preload ]; then
-touch /etc/ld.so.preload
+  touch /etc/ld.so.preload
 fi
 
-MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
+MACHINE_TYPE=$(uname -m) # Used to detect if OS is 64bit or not.
 
-    if [ ${MACHINE_TYPE} == 'x86_64' ];
+    if [ "${MACHINE_TYPE}" == 'x86_64' ];
     then
         ARCH='x86_64'
     else
@@ -115,17 +115,17 @@ MACHINE_TYPE=`uname -m` # Used to detect if OS is 64bit or not.
     fi
 
 # Set LIBDIR
-if [ ${ARCH} == 'x86_64' ];
+if [ "${ARCH}" == 'x86_64' ];
 then
     LIBDIR='lib64'
 else
     LIBDIR='lib'
 fi
 
-if [ -f /usr/${LIBDIR}/sa/sa2 ]; then
+if [ -f "/usr/${LIBDIR}/sa/sa2" ]; then
 
   # SAR extend log from 7 to 21 days
-  SARDAYCHECK=`awk -F "=" '/^HISTORY/ { print $2 }' /usr/${LIBDIR}/sa/sa2`
+  SARDAYCHECK=$(awk -F "=" '/^HISTORY/ { print $2 }' /usr/${LIBDIR}/sa/sa2)
 
   if [ "$SARDAYCHECK" == '7' ]; then
   sed -i 's/HISTORY=7/HISTORY=21/g' /usr/${LIBDIR}/sa/sa2
@@ -133,7 +133,7 @@ if [ -f /usr/${LIBDIR}/sa/sa2 ]; then
 fi
 
 if [[ -f /root/.bash_profile ]]; then
-    NANOCHECK=`grep nano /root/.bash_profile`
+    NANOCHECK=$(grep nano /root/.bash_profile)
     if [ -z "$NANOCHECK" ]; then
     sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' /root/.bash_profile
     fi
@@ -159,13 +159,13 @@ EOF
 fi
 
 if [[ "$(id -u)" -ne '0' ]]; then
-if [[ -f $HOME/.bash_profile ]]; then
-    NANOCHECK=`grep nano $HOME/.bash_profile`
+if [[ -f "$HOME/.bash_profile" ]]; then
+    NANOCHECK=$(grep nano $HOME/.bash_profile)
     if [ -z "$NANOCHECK" ]; then
-    sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' $HOME/.bash_profile
+    sed -i 's/export PATH/export PATH\nexport EDITOR=nano/g' "$HOME/.bash_profile"
     fi
 else
-    cat > $HOME/.bash_profile <<EOF
+    cat > "$HOME/.bash_profile" <<EOF
 # .bash_profile
 
 # Get the aliases and functions
@@ -187,7 +187,7 @@ fi
 fi
 
 if [ -f /root/.screenrc ]; then
-  DEFSCROLLCHECK=`grep defscrollback /root/.screenrc`
+  DEFSCROLLCHECK=$(grep defscrollback /root/.screenrc)
   if [ -z "$DEFSCROLLCHECK" ]; then
   echo "defscrollback 200000" >> /root/.screenrc
   fi
@@ -195,13 +195,13 @@ else
   echo "defscrollback 200000" >> /root/.screenrc
 fi
 if [[ "$(id -u)" -ne '0' ]]; then
-  if [ -f $HOME/.screenrc ]; then
-    DEFSCROLLCHECK=`grep defscrollback $HOME/.screenrc`
+  if [ -f "$HOME/.screenrc" ]; then
+    DEFSCROLLCHECK=$(grep defscrollback $HOME/.screenrc)
     if [ -z "$DEFSCROLLCHECK" ]; then
-    echo "defscrollback 200000" >> $HOME/.screenrc
+    echo "defscrollback 200000" >> "$HOME/.screenrc"
     fi
   else
-    echo "defscrollback 200000" >> $HOME/.screenrc
+    echo "defscrollback 200000" >> "$HOME/.screenrc"
   fi
 fi
 

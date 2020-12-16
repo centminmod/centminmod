@@ -133,7 +133,7 @@ phpsededit() {
     CUSTOMPHPINIFILE="${CONFIGSCANDIR}/${PHPINICUSTOM}"
 
     # php-fpm backlog tweak
-    if [[ ! -f /proc/user_beancounters && -f /usr/local/etc/php-fpm.conf ]]; then
+    if [[ ! -f /proc/user_beancounters && -f /usr/local/etc/php-fpm.conf && "$CHECK_LXD" != [yY] ]]; then
         GETSOMAXCON_VALUE=$(sysctl net.core.somaxconn | awk -F  '= ' '{print $2}')
         SET_PHPFPMBACKLOG=$GETSOMAXCON_VALUE
         SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/16))

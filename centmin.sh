@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='632'
+SCRIPT_INCREMENTVER='633'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/12/2020'
@@ -1151,7 +1151,7 @@ else
     TCMALLOC_PAGESIZE='8'
 fi
 
-if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ "$INITIALINSTALL" = [yY] && -f $(which virt-what) && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then
+if [[ "$INITIALINSTALL" = [yY] && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ "$INITIALINSTALL" = [yY] && -f "$(which virt-what)" && "$(virt-what | xargs | grep -o lxc)" = 'lxc' ]]; then
   CHECK_LXD='y'
   if [ -d /etc/profile.d ]; then
     echo "export LANG=en_US.UTF-8" >> /etc/profile.d/locale.sh
