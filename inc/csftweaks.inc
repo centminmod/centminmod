@@ -143,7 +143,7 @@ if [ -f /etc/csf/csf.conf ]; then
 
     csf_loadalert
 
-    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset')" ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset' >/dev/null 2>&1; echo $?)" -eq '0' ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
         if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
             # from iptables so uses less server resources to handle many IPs

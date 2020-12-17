@@ -8,7 +8,7 @@
 DT=$(date +"%d%m%y-%H%M%S")
 
 denyiplimits() {
-if [[ ! -f /proc/user_beancounters && -f /usr/sbin/ipset ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset')" ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+if [[ ! -f /proc/user_beancounters && -f /usr/sbin/ipset ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset' >/dev/null 2>&1; echo $?)" -eq '0' ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
   echo
   echo "CSF Firewall dynamically optimise DENY_IP_LIMIT"
   echo "and DENY_TEMP_IP_LIMIT based on system resources"
