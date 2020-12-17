@@ -146,11 +146,13 @@ if [[ ! -f /proc/user_beancounters ]]; then
     if [[ "$CENTOS_SEVEN" = '7' ]]; then
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
-            if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
-              echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
-            fi
-            if [[ ! -z "$NF_CTHASHSIZE" && "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-                echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+            if [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+              if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
+                echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+              fi
+              if [[ ! -z "$NF_CTHASHSIZE" && "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+                  echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+              fi
             fi
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
@@ -218,12 +220,14 @@ EOF
         # centos 6
         if [[ "$(grep 'centminmod added' /etc/sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
             if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
-              # raise hashsize for conntrack entries
-              if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
-                echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
-              fi
-              if [[ ! -z "$NF_CTHASHSIZE" && "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
-                  echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+              if [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+                # raise hashsize for conntrack entries
+                if [ -f /sys/module/nf_conntrack/parameters/hashsize ]; then
+                  echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
+                fi
+                if [[ ! -z "$NF_CTHASHSIZE" && "$(grep 'hashsize' /etc/rc.local >/dev/null 2>&1; echo $?)" != '0' ]]; then
+                    echo "echo $NF_CTHASHSIZE > /sys/module/nf_conntrack/parameters/hashsize" >> /etc/rc.local
+                fi
               fi
             fi
 cat >> "/etc/sysctl.conf" <<EOF

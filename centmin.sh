@@ -2490,8 +2490,8 @@ bookmark
 
 sync 
 
-if [ ! -f /proc/user_beancounters ]; then
-echo 3 > /proc/sys/vm/drop_caches
+if [[ ! -f /proc/user_beancounters && "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+  echo 3 > /proc/sys/vm/drop_caches
 fi
 
 }
