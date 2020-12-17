@@ -519,10 +519,12 @@ top_info() {
         top -bHn1
     fi
     echo
-    echo "------------------------------------------------------------------"
-    echo "iotop -bton1 -P"
-    iotop -bton1 -P
-    echo
+    if [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
+        echo "------------------------------------------------------------------"
+        echo "iotop -bton1 -P"
+        iotop -bton1 -P
+        echo
+    fi
     # ensure mysql server is running before triggering mysqlreport output
     if [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         echo "------------------------------------------------------------------"
