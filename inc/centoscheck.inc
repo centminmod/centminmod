@@ -83,7 +83,7 @@ sshdtweaks
     free -m
     echo
     echo "create 1GB swap file"; 
-    if [[ "$(df -hT | grep -w xfs)" || "$CHECK_LXD" = [yY] ]]; then
+    if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
         dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
     else
         fallocate -l 1G /swapfile
