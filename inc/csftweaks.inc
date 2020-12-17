@@ -143,7 +143,7 @@ if [ -f /etc/csf/csf.conf ]; then
 
     csf_loadalert
 
-    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset')" ]]; then
+    if [[ ! -f /proc/user_beancounters ]] && [[ "$(uname -r | grep linode)" || "$(find /lib/modules/`uname -r` -name 'ipset')" ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
         if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
             # from iptables so uses less server resources to handle many IPs
@@ -155,7 +155,7 @@ if [ -f /etc/csf/csf.conf ]; then
             sed -i 's/LF_IPSET = \"0\"/LF_IPSET = \"1\"/' /etc/csf/csf.conf
             setiplimits
         fi
-    elif [[ -f /proc/user_beancounters && "$KERNEL_NUMERICVER" -ge '3000000000' ]]; then
+    elif [[ -f /proc/user_beancounters && "$KERNEL_NUMERICVER" -ge '3000000000' ]] && [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
         # openvz7's 3.10 linux kernels support IPSET
         if [[ ! -f /usr/sbin/ipset ]]; then
             # CSF now has ipset support to offload large IP address numbers 
