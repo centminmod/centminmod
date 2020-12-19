@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.67'
+ACMEVER='1.0.68'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -862,6 +862,7 @@ echo "sed -i \"s|#x# server {| server {|\" \"/usr/local/nginx/conf/conf.d/${vhos
 echo "sed -i \"s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x# }| }|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 
@@ -870,6 +871,7 @@ sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ss
 sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   return 302 https:\/\/\$server_name\$request_uri;|   return 302 https:\/\/\$server_name\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|   include \/usr\/local\/nginx\/conf\/staticfiles.conf;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
@@ -1424,6 +1426,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
+#x#   root /home/nginx/domains/$vhostname/public;
 #x#   include /usr/local/nginx/conf/staticfiles.conf;
 #x# }
 ESU
@@ -1479,6 +1482,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
+#x#   root /home/nginx/domains/$vhostname/public;
 #x#   include /usr/local/nginx/conf/staticfiles.conf;
 #x# }
 ESV
@@ -1509,6 +1513,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 #x#   $DEDI_LISTEN
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
+#x#   root /home/nginx/domains/$vhostname/public;
 #x#   include /usr/local/nginx/conf/staticfiles.conf;
 #x# }
 
