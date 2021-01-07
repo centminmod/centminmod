@@ -1,0 +1,196 @@
+From 2d3d72412a6734e19a38ed10f385227a6238e4a6 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Wed, 13 May 2020 09:36:52 +0200
+Subject: [PATCH] Fix #77423: parse_url() will deliver a wrong host to user
+
+To avoid that `parse_url()` returns an erroneous host, which would be
+valid for `FILTER_VALIDATE_URL`, we make sure that only userinfo which
+is valid according to RFC 3986 is treated as such.
+
+For consistency with the existing url parsing code, we use ctype
+functions, although that is not necessarily correct.
+---
+ ext/standard/tests/strings/url_t.phpt         |  6 ++--
+ ext/standard/tests/url/bug77423.phpt          | 30 +++++++++++++++++++
+ .../tests/url/parse_url_basic_001.phpt        |  6 ++--
+ .../tests/url/parse_url_basic_003.phpt        |  2 +-
+ .../tests/url/parse_url_basic_005.phpt        |  2 +-
+ .../tests/url/parse_url_unterminated.phpt     |  6 ++--
+ ext/standard/url.c                            | 21 +++++++++++++
+ 7 files changed, 59 insertions(+), 14 deletions(-)
+ create mode 100644 ext/standard/tests/url/bug77423.phpt
+
+diff --git a/ext/standard/tests/strings/url_t.phpt b/ext/standard/tests/strings/url_t.phpt
+index 79ff3bc4a8e3..f564f59f0632 100644
+--- a/ext/standard/tests/strings/url_t.phpt
++++ b/ext/standard/tests/strings/url_t.phpt
+@@ -575,15 +575,13 @@ $sample_urls = array (
+   string(16) "some_page_ref123"
+ }
+ 
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(7) {
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(6) {
+   ["scheme"]=>
+   string(4) "http"
+   ["host"]=>
+-  string(11) "www.php.net"
++  string(26) "secret@hideout@www.php.net"
+   ["port"]=>
+   int(80)
+-  ["user"]=>
+-  string(14) "secret@hideout"
+   ["path"]=>
+   string(10) "/index.php"
+   ["query"]=>
+diff --git a/ext/standard/tests/url/bug77423.phpt b/ext/standard/tests/url/bug77423.phpt
+new file mode 100644
+index 000000000000..be03fe95e24e
+--- /dev/null
++++ b/ext/standard/tests/url/bug77423.phpt
+@@ -0,0 +1,30 @@
++--TEST--
++Bug #77423 (parse_url() will deliver a wrong host to user)
++--FILE--
++<?php
++$urls = array(
++    "http://php.net\@aliyun.com/aaa.do",
++    "https://example.com\uFF03@bing.com",
++);
++foreach ($urls as $url) {
++    var_dump(filter_var($url, FILTER_VALIDATE_URL));
++    var_dump(parse_url($url));
++}
++?>
++--EXPECT--
++bool(false)
++array(3) {
++  ["scheme"]=>
++  string(4) "http"
++  ["host"]=>
++  string(19) "php.net\@aliyun.com"
++  ["path"]=>
++  string(7) "/aaa.do"
++}
++bool(false)
++array(2) {
++  ["scheme"]=>
++  string(5) "https"
++  ["host"]=>
++  string(26) "example.com\uFF03@bing.com"
++}
+diff --git a/ext/standard/tests/url/parse_url_basic_001.phpt b/ext/standard/tests/url/parse_url_basic_001.phpt
+index 4606849c5781..51010991326c 100644
+--- a/ext/standard/tests/url/parse_url_basic_001.phpt
++++ b/ext/standard/tests/url/parse_url_basic_001.phpt
+@@ -506,15 +506,13 @@ echo "Done";
+   string(16) "some_page_ref123"
+ }
+ 
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(7) {
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(6) {
+   ["scheme"]=>
+   string(4) "http"
+   ["host"]=>
+-  string(11) "www.php.net"
++  string(26) "secret@hideout@www.php.net"
+   ["port"]=>
+   int(80)
+-  ["user"]=>
+-  string(14) "secret@hideout"
+   ["path"]=>
+   string(10) "/index.php"
+   ["query"]=>
+diff --git a/ext/standard/tests/url/parse_url_basic_003.phpt b/ext/standard/tests/url/parse_url_basic_003.phpt
+index 3d5a4a344afd..7968fd3f09fd 100644
+--- a/ext/standard/tests/url/parse_url_basic_003.phpt
++++ b/ext/standard/tests/url/parse_url_basic_003.phpt
+@@ -68,7 +68,7 @@ echo "Done";
+ --> http://secret:@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> http://:hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> http://secret:hideout@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(26) "secret@hideout@www.php.net"
+ --> http://secret:hid:out@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> nntp://news.php.net   : string(12) "news.php.net"
+ --> ftp://ftp.gnu.org/gnu/glic/glibc.tar.gz   : string(11) "ftp.gnu.org"
+diff --git a/ext/standard/tests/url/parse_url_basic_005.phpt b/ext/standard/tests/url/parse_url_basic_005.phpt
+index aefb33964bc4..ba778bf9035d 100644
+--- a/ext/standard/tests/url/parse_url_basic_005.phpt
++++ b/ext/standard/tests/url/parse_url_basic_005.phpt
+@@ -68,7 +68,7 @@ echo "Done";
+ --> http://secret:@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(6) "secret"
+ --> http://:hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(0) ""
+ --> http://secret:hideout@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(6) "secret"
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(14) "secret@hideout"
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : NULL
+ --> http://secret:hid:out@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(6) "secret"
+ --> nntp://news.php.net   : NULL
+ --> ftp://ftp.gnu.org/gnu/glic/glibc.tar.gz   : NULL
+diff --git a/ext/standard/tests/url/parse_url_unterminated.phpt b/ext/standard/tests/url/parse_url_unterminated.phpt
+index 912b6a5641e8..875d93a10948 100644
+--- a/ext/standard/tests/url/parse_url_unterminated.phpt
++++ b/ext/standard/tests/url/parse_url_unterminated.phpt
+@@ -508,15 +508,13 @@ echo "Done";
+   string(16) "some_page_ref123"
+ }
+ 
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(7) {
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(6) {
+   ["scheme"]=>
+   string(4) "http"
+   ["host"]=>
+-  string(11) "www.php.net"
++  string(26) "secret@hideout@www.php.net"
+   ["port"]=>
+   int(80)
+-  ["user"]=>
+-  string(14) "secret@hideout"
+   ["path"]=>
+   string(10) "/index.php"
+   ["query"]=>
+diff --git a/ext/standard/url.c b/ext/standard/url.c
+index 1dd073e2bb42..8d155bb9846c 100644
+--- a/ext/standard/url.c
++++ b/ext/standard/url.c
+@@ -92,6 +92,22 @@ PHPAPI php_url *php_url_parse(char const *str)
+ 	return php_url_parse_ex(str, strlen(str));
+ }
+ 
++static int is_userinfo_valid(const char *str, size_t len)
++{
++	char *valid = "-._~!$&'()*+,;=:";
++	char *p = str;
++	while (p - str < len) {
++		if (isalpha(*p) || isdigit(*p) || strchr(valid, *p)) {
++			p++;
++		} else if (*p == '%' && p - str <= len - 3 && isdigit(*(p+1)) && isxdigit(*(p+2))) {
++			p += 3;
++		} else {
++			return 0;
++		}
++	}
++	return 1;
++}
++
+ /* {{{ php_url_parse
+  */
+ PHPAPI php_url *php_url_parse_ex(char const *str, size_t length)
+@@ -235,13 +251,18 @@ PHPAPI php_url *php_url_parse_ex(char const *str, size_t length)
+ 			ret->pass = estrndup(pp, (p-pp));
+ 			php_replace_controlchars_ex(ret->pass, (p-pp));
+ 		} else {
++			if (!is_userinfo_valid(s, p-s)) {
++				goto check_port;
++			}
+ 			ret->user = estrndup(s, (p-s));
+ 			php_replace_controlchars_ex(ret->user, (p-s));
++
+ 		}
+ 
+ 		s = p + 1;
+ 	}
+ 
++check_port:
+ 	/* check for port */
+ 	if (s < ue && *s == '[' && *(e-1) == ']') {
+ 		/* Short circuit portscan,
