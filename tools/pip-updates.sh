@@ -115,7 +115,7 @@ pip_updates() {
           sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip==20.3.4
       else
         $YUMDNFBIN -q -y install python-pip >/dev/null 2>&1
         yum -q -y versionlock python-pip >/dev/null 2>&1
@@ -124,7 +124,7 @@ pip_updates() {
           sed -i "s|^exclude=.*|$NEW_PYTHONPIP_EXCLUDES|" /etc/yum.conf
         fi
         export CC='gcc'
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip==20.3.4
         if [[ "$CENTOS_SIX" -eq '6' && -f "${SCRIPT_DIR}/addons/python27_install.sh" && ! -f /usr/bin/pip2.7 ]]; then
           "${SCRIPT_DIR}/addons/python27_install.sh" install
           PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip2.7 install -qqq --upgrade pip
@@ -144,7 +144,7 @@ pip_updates() {
     elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip ]]; then
       CHECK_PIPVER=$(PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip show pip 2>&1 | awk '/^Version: / {print $2}' | sed -e 's|\.||g')
       if [[ "$CHECK_PIPVER" -lt '901' ]]; then
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip==20.3.4
       fi
     fi
     if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/bin/pip && -f /usr/bin/python-config ]]; then
@@ -167,7 +167,7 @@ pip_updates() {
       fi
       if [[ "$CHECK_PIPUPDATE" = 'pip' || ! "$initial" ]]; then
         export CC='gcc'
-        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip
+        PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install -qqq --upgrade pip==20.3.4
         yum -q -y versionlock python2-pip >/dev/null 2>&1
         if [[ ! "$(grep 'python2-pip' /etc/yum.conf)" ]]; then
           NEW_PYTHONPIP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.conf) python2-pip")
