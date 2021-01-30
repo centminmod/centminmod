@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.69'
+ACMEVER='1.0.70'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -28,6 +28,10 @@ ACME_MUSTSTAPLE='n'
 KEYLENGTH='2048'
 # every 60 days for auto renewal of SSL certificate
 RENEWDAYS='60'
+
+# https://community.letsencrypt.org/t/the-acme-sh-will-change-default-ca-to-zerossl-on-august-1st-2021/144052
+# set to default CA letsencrypt always
+ACME_DEFAULT_CA='letsencrypt'
 
 # if set to yes, will issue and setup both RSA 2048bit +
 # ECDSA 256bit SSL certificates as outlined at
@@ -640,6 +644,13 @@ vhostsetup() {
     echo
   fi
 }
+#####################
+set_default_ca() {
+  cecho "-----------------------------------------------------" $boldgreen
+  echo "set default acme.sh CA to $ACME_DEFAULT_CA:"
+  echo "acme.sh --set-default-ca --server $ACME_DEFAULT_CA"
+  acme.sh --set-default-ca --server "$ACME_DEFAULT_CA"
+}
 
 #####################
 install_acme() {
@@ -675,6 +686,7 @@ install_acme() {
   fi
   "$ACMEBINARY" -h
   echo
+  set_default_ca
   cecho "-----------------------------------------------------" $boldgreen
   echo "check acme auto renew cronjob setup: "
   cecho "-----------------------------------------------------" $boldgreen
@@ -720,6 +732,7 @@ update_acme() {
   "$ACMEBINARY" -v
   if [[ "$QUITEOUTPUT" != 'quite' ]]; then
     echo
+    set_default_ca
     cecho "-----------------------------------------------------" $boldgreen
     echo "check acme auto renew cronjob setup: "
     cecho "-----------------------------------------------------" $boldgreen
