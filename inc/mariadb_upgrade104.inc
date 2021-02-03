@@ -726,7 +726,7 @@ echo "MariaDB 10.4.x Upgrade completed"
 echo "------------------------------------------------"
 
     if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "MariaDB 10.3.x Upgraded"
+        figlet -ckf standard "MariaDB 10.4.x Upgraded"
     fi
 
 fi
