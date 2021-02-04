@@ -1850,8 +1850,8 @@ sar_call
         time make${MAKETHREADS_PHP} prof-gen
         if [ ! -d "$DIR_TMP/php_pgo_training_scripts" ]; then
             pushd "$DIR_TMP"
-            # time git clone -b cmm https://github.com/centminmod/php_pgo_training_scripts php_pgo_training_scripts
-            time git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
+            time git clone -b cmm https://github.com/centminmod/php_pgo_training_scripts php_pgo_training_scripts
+            #time git clone https://github.com/01org/php_pgo_training_scripts php_pgo_training_scripts
             popd
             GET_ROOT_PASS=$(awk -F "=" '/password/ {print $2}' /root/.my.cnf | sed -e "s|'||g")
             echo "ls -lah $DIR_TMP/php_pgo_training_scripts"
@@ -1915,6 +1915,12 @@ sar_call
               fi
             fi
         elif [ -d "$DIR_TMP/php_pgo_training_scripts" ]; then
+            if [[ ! "$(git --git-dir=$DIR_TMP/php_pgo_training_scripts/.git/ log -1 2>&1 | grep -o 'php 8 support fix')" ]]; then
+              rm -rf "$DIR_TMP/php_pgo_training_scripts"
+              pushd "$DIR_TMP"
+              time git clone -b cmm https://github.com/centminmod/php_pgo_training_scripts php_pgo_training_scripts
+              popd
+            fi
             pushd "$DIR_TMP/php_pgo_training_scripts"
             git stash
             git pull
