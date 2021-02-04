@@ -207,3 +207,225 @@ index 47848d24b7..e328fd39c0 100644
 -- 
 2.29.2
 
+From efb6c49f08314aca84733b0e83d72cd20c8e0015 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 19 Jan 2021 11:23:25 +0100
+Subject: [PATCH] Alternative fix for bug 77423
+
+That bug report originally was about `parse_url()` misbehaving, but the
+security aspect was actually only regarding `FILTER_VALIDATE_URL`.
+Since the changes to `parse_url_ex()` apparently affect userland code
+which is relying on the sloppy URL parsing[1], this alternative
+restores the old parsing behavior, but ensures that the userinfo is
+checked for correctness for `FILTER_VALIDATE_URL`.
+
+[1] <https://github.com/php/php-src/commit/5174de7cd33c3d4fa591c9c93859ff9989b07e8c#commitcomment-45967652>
+
+(cherry picked from commit 4a89e726bd4d0571991dc22a9a1ad4509e8fe347)
+(cherry picked from commit 9c673083cd46ee2a954a62156acbe4b6e657c048)
+(cherry picked from commit 356f7008f36da60ec9794d48c55d117f1dd31903)
+(cherry picked from commit b5d4f109bab648c0d07273d2a52a5f2560e7832b)
+---
+ ext/filter/logical_filters.c                  | 25 +++++++++++++++++++
+ .../tests/url => filter/tests}/bug77423.phpt  | 15 -----------
+ ext/standard/tests/strings/url_t.phpt         |  6 +++--
+ .../tests/url/parse_url_basic_001.phpt        |  6 +++--
+ .../tests/url/parse_url_basic_003.phpt        |  2 +-
+ .../tests/url/parse_url_basic_005.phpt        |  2 +-
+ ext/standard/url.c                            | 21 ----------------
+ 7 files changed, 35 insertions(+), 42 deletions(-)
+ rename ext/{standard/tests/url => filter/tests}/bug77423.phpt (53%)
+
+diff --git a/ext/filter/logical_filters.c b/ext/filter/logical_filters.c
+index a0fed76fce..22868fd8c1 100644
+--- a/ext/filter/logical_filters.c
++++ b/ext/filter/logical_filters.c
+@@ -514,6 +514,24 @@ void php_filter_validate_domain(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
+ }
+ /* }}} */
+ 
++static int is_userinfo_valid(char *str)
++{
++	const char *valid = "-._~!$&'()*+,;=:";
++	const char *p = str;
++	size_t len = strlen(str);
++
++	while (p - str < len) {
++		if (isalpha(*p) || isdigit(*p) || strchr(valid, *p)) {
++			p++;
++		} else if (*p == '%' && p - str <= len - 3 && isdigit(*(p+1)) && isxdigit(*(p+2))) {
++			p += 3;
++		} else {
++			return 0;
++		}
++	}
++	return 1;
++}
++
+ void php_filter_validate_url(PHP_INPUT_FILTER_PARAM_DECL) /* {{{ */
+ {
+ 	php_url *url;
+@@ -568,6 +586,13 @@ bad_url:
+ 		php_url_free(url);
+ 		RETURN_VALIDATION_FAILED
+ 	}
++
++	if (url->user != NULL && !is_userinfo_valid(url->user)) {
++		php_url_free(url);
++		RETURN_VALIDATION_FAILED
++
++	}
++
+ 	php_url_free(url);
+ }
+ /* }}} */
+diff --git a/ext/standard/tests/url/bug77423.phpt b/ext/filter/tests/bug77423.phpt
+similarity index 53%
+rename from ext/standard/tests/url/bug77423.phpt
+rename to ext/filter/tests/bug77423.phpt
+index be03fe95e2..761c7c359a 100644
+--- a/ext/standard/tests/url/bug77423.phpt
++++ b/ext/filter/tests/bug77423.phpt
+@@ -8,23 +8,8 @@ $urls = array(
+ );
+ foreach ($urls as $url) {
+     var_dump(filter_var($url, FILTER_VALIDATE_URL));
+-    var_dump(parse_url($url));
+ }
+ ?>
+ --EXPECT--
+ bool(false)
+-array(3) {
+-  ["scheme"]=>
+-  string(4) "http"
+-  ["host"]=>
+-  string(19) "php.net\@aliyun.com"
+-  ["path"]=>
+-  string(7) "/aaa.do"
+-}
+ bool(false)
+-array(2) {
+-  ["scheme"]=>
+-  string(5) "https"
+-  ["host"]=>
+-  string(26) "example.com\uFF03@bing.com"
+-}
+diff --git a/ext/standard/tests/strings/url_t.phpt b/ext/standard/tests/strings/url_t.phpt
+index 80e164a08e..e172061ec2 100644
+--- a/ext/standard/tests/strings/url_t.phpt
++++ b/ext/standard/tests/strings/url_t.phpt
+@@ -575,13 +575,15 @@ $sample_urls = array (
+   string(16) "some_page_ref123"
+ }
+ 
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(6) {
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(7) {
+   ["scheme"]=>
+   string(4) "http"
+   ["host"]=>
+-  string(26) "secret@hideout@www.php.net"
++  string(11) "www.php.net"
+   ["port"]=>
+   int(80)
++  ["user"]=>
++  string(14) "secret@hideout"
+   ["path"]=>
+   string(10) "/index.php"
+   ["query"]=>
+diff --git a/ext/standard/tests/url/parse_url_basic_001.phpt b/ext/standard/tests/url/parse_url_basic_001.phpt
+index c9e9d32de0..e468066a42 100644
+--- a/ext/standard/tests/url/parse_url_basic_001.phpt
++++ b/ext/standard/tests/url/parse_url_basic_001.phpt
+@@ -507,13 +507,15 @@ echo "Done";
+   string(16) "some_page_ref123"
+ }
+ 
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(6) {
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123: array(7) {
+   ["scheme"]=>
+   string(4) "http"
+   ["host"]=>
+-  string(26) "secret@hideout@www.php.net"
++  string(11) "www.php.net"
+   ["port"]=>
+   int(80)
++  ["user"]=>
++  string(14) "secret@hideout"
+   ["path"]=>
+   string(10) "/index.php"
+   ["query"]=>
+diff --git a/ext/standard/tests/url/parse_url_basic_003.phpt b/ext/standard/tests/url/parse_url_basic_003.phpt
+index 431de27009..70dc4bb90b 100644
+--- a/ext/standard/tests/url/parse_url_basic_003.phpt
++++ b/ext/standard/tests/url/parse_url_basic_003.phpt
+@@ -68,7 +68,7 @@ echo "Done";
+ --> http://secret:@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> http://:hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> http://secret:hideout@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(26) "secret@hideout@www.php.net"
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> http://secret:hid:out@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(11) "www.php.net"
+ --> nntp://news.php.net   : string(12) "news.php.net"
+ --> ftp://ftp.gnu.org/gnu/glic/glibc.tar.gz   : string(11) "ftp.gnu.org"
+diff --git a/ext/standard/tests/url/parse_url_basic_005.phpt b/ext/standard/tests/url/parse_url_basic_005.phpt
+index b2c1a1d6dd..b2ca06ff96 100644
+--- a/ext/standard/tests/url/parse_url_basic_005.phpt
++++ b/ext/standard/tests/url/parse_url_basic_005.phpt
+@@ -68,7 +68,7 @@ echo "Done";
+ --> http://secret:@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(6) "secret"
+ --> http://:hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(0) ""
+ --> http://secret:hideout@www.php.net/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(6) "secret"
+---> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : NULL
++--> http://secret@hideout@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(14) "secret@hideout"
+ --> http://secret:hid:out@www.php.net:80/index.php?test=1&test2=char&test3=mixesCI#some_page_ref123   : string(6) "secret"
+ --> nntp://news.php.net   : NULL
+ --> ftp://ftp.gnu.org/gnu/glic/glibc.tar.gz   : NULL
+diff --git a/ext/standard/url.c b/ext/standard/url.c
+index 3bb62c7da3..a9cc06b1c0 100644
+--- a/ext/standard/url.c
++++ b/ext/standard/url.c
+@@ -92,22 +92,6 @@ PHPAPI php_url *php_url_parse(char const *str)
+ 	return php_url_parse_ex(str, strlen(str));
+ }
+ 
+-static int is_userinfo_valid(const char *str, size_t len)
+-{
+-	char *valid = "-._~!$&'()*+,;=:";
+-	char *p = str;
+-	while (p - str < len) {
+-		if (isalpha(*p) || isdigit(*p) || strchr(valid, *p)) {
+-			p++;
+-		} else if (*p == '%' && p - str <= len - 3 && isdigit(*(p+1)) && isxdigit(*(p+2))) {
+-			p += 3;
+-		} else {
+-			return 0;
+-		}
+-	}
+-	return 1;
+-}
+-
+ /* {{{ php_url_parse
+  */
+ PHPAPI php_url *php_url_parse_ex(char const *str, size_t length)
+@@ -251,18 +235,13 @@ PHPAPI php_url *php_url_parse_ex(char const *str, size_t length)
+ 			ret->pass = estrndup(pp, (p-pp));
+ 			php_replace_controlchars_ex(ret->pass, (p-pp));
+ 		} else {
+-			if (!is_userinfo_valid(s, p-s)) {
+-				goto check_port;
+-			}
+ 			ret->user = estrndup(s, (p-s));
+ 			php_replace_controlchars_ex(ret->user, (p-s));
+-
+ 		}
+ 
+ 		s = p + 1;
+ 	}
+ 
+-check_port:
+ 	/* check for port */
+ 	if (s < ue && *s == '[' && *(e-1) == ']') {
+ 		/* Short circuit portscan,
+-- 
+2.29.2
+

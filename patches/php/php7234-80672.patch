@@ -1,0 +1,237 @@
+From f1e2cfa008d1596251968d13eb9a8539dba6879f Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 31 Jan 2021 21:15:23 -0800
+Subject: [PATCH 1/2] Fix bug #80672 - Null Dereference in SoapClient
+
+(cherry picked from commit 3c939e3f69955d087e0bb671868f7267dfb2a502)
+---
+ NEWS                         |  5 +++++
+ ext/soap/php_sdl.c           | 26 ++++++++++++++------------
+ ext/soap/php_xml.c           |  4 ++--
+ ext/soap/tests/bug80672.phpt | 15 +++++++++++++++
+ ext/soap/tests/bug80672.xml  |  6 ++++++
+ 5 files changed, 42 insertions(+), 14 deletions(-)
+ create mode 100644 ext/soap/tests/bug80672.phpt
+ create mode 100644 ext/soap/tests/bug80672.xml
+
+diff --git a/NEWS b/NEWS
+index 7f2d588c4d..884285f05f 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,11 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.3.27
++
++- SOAP:
++  . Fixed bug #80672 (Null Dereference in SoapClient). (CVE-2021-21702) (cmb, Stas)
++
+ Backported from 7.3.26
+ 
+ - Standard:
+diff --git a/ext/soap/php_sdl.c b/ext/soap/php_sdl.c
+index d16056e4a3..b8d40f0cfe 100644
+--- a/ext/soap/php_sdl.c
++++ b/ext/soap/php_sdl.c
+@@ -314,6 +314,8 @@ void sdl_restore_uri_credentials(sdlCtx *ctx)
+ 	ctx->context = NULL;
+ }
+ 
++#define SAFE_STR(a) ((a)?a:"")
++
+ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include)
+ {
+ 	sdlPtr tmpsdl = ctx->sdl;
+@@ -375,7 +377,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include)
+ 				if (node_is_equal_ex(trav2, "schema", XSD_NAMESPACE)) {
+ 					load_schema(ctx, trav2);
+ 				} else if (is_wsdl_element(trav2) && !node_is_equal(trav2,"documentation")) {
+-					soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav2->name);
++					soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", SAFE_STR(trav2->name));
+ 				}
+ 				trav2 = trav2->next;
+ 			}
+@@ -436,7 +438,7 @@ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include)
+ 				soap_error0(E_ERROR, "Parsing WSDL: <service> has no name attribute");
+ 			}
+ 		} else if (!node_is_equal(trav,"documentation")) {
+-			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
++			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav->name));
+ 		}
+ 		trav = trav->next;
+ 	}
+@@ -546,7 +548,7 @@ static sdlSoapBindingFunctionHeaderPtr wsdl_soap_binding_header(sdlCtx* ctx, xml
+ 				}
+ 				smart_str_free(&key);
+ 			} else if (is_wsdl_element(trav) && !node_is_equal(trav,"documentation")) {
+-				soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
++				soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav->name));
+ 			}
+ 			trav = trav->next;
+ 		}
+@@ -648,7 +650,7 @@ static void wsdl_soap_binding_body(sdlCtx* ctx, xmlNodePtr node, char* wsdl_soap
+ 			}
+ 			smart_str_free(&key);
+ 		} else if (is_wsdl_element(trav) && !node_is_equal(trav,"documentation")) {
+-			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
++			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav->name));
+ 		}
+ 		trav = trav->next;
+ 	}
+@@ -680,14 +682,14 @@ static HashTable* wsdl_message(sdlCtx *ctx, xmlChar* message_name)
+ 		sdlParamPtr param;
+ 
+ 		if (trav->ns != NULL && strcmp((char*)trav->ns->href, WSDL_NAMESPACE) != 0) {
+-			soap_error1(E_ERROR, "Parsing WSDL: Unexpected extensibility element <%s>", trav->name);
++			soap_error1(E_ERROR, "Parsing WSDL: Unexpected extensibility element <%s>",  SAFE_STR(trav->name));
+ 		}
+ 		if (node_is_equal(trav,"documentation")) {
+ 			trav = trav->next;
+ 			continue;
+ 		}
+ 		if (!node_is_equal(trav,"part")) {
+-			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
++			soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav->name));
+ 		}
+ 		part = trav;
+ 		param = emalloc(sizeof(sdlParam));
+@@ -696,7 +698,7 @@ static HashTable* wsdl_message(sdlCtx *ctx, xmlChar* message_name)
+ 
+ 		name = get_attribute(part->properties, "name");
+ 		if (name == NULL) {
+-			soap_error1(E_ERROR, "Parsing WSDL: No name associated with <part> '%s'", message->name);
++			soap_error1(E_ERROR, "Parsing WSDL: No name associated with <part> '%s'",  SAFE_STR(message->name));
+ 		}
+ 
+ 		param->paramName = estrdup((char*)name->children->content);
+@@ -765,7 +767,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri)
+ 					continue;
+ 				}
+ 				if (!node_is_equal(trav,"port")) {
+-					soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
++					soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav->name));
+ 				}
+ 
+ 				port = trav;
+@@ -804,7 +806,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri)
+ 						}
+ 					}
+ 					if (trav2 != address && is_wsdl_element(trav2) && !node_is_equal(trav2,"documentation")) {
+-						soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav2->name);
++						soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav2->name));
+ 					}
+ 				  trav2 = trav2->next;
+ 				}
+@@ -906,7 +908,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri)
+ 						continue;
+ 					}
+ 					if (!node_is_equal(trav2,"operation")) {
+-						soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav2->name);
++						soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav2->name));
+ 					}
+ 
+ 					operation = trav2;
+@@ -925,7 +927,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri)
+ 						           !node_is_equal(trav3,"output") &&
+ 						           !node_is_equal(trav3,"fault") &&
+ 						           !node_is_equal(trav3,"documentation")) {
+-							soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav3->name);
++							soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav3->name));
+ 						}
+ 						trav3 = trav3->next;
+ 					}
+@@ -1103,7 +1105,7 @@ static sdlPtr load_wsdl(zval *this_ptr, char *struri)
+ 												}
+ 											}
+ 										} else if (is_wsdl_element(trav) && !node_is_equal(trav,"documentation")) {
+-											soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>", trav->name);
++											soap_error1(E_ERROR, "Parsing WSDL: Unexpected WSDL element <%s>",  SAFE_STR(trav->name));
+ 										}
+ 										trav = trav->next;
+ 									}
+diff --git a/ext/soap/php_xml.c b/ext/soap/php_xml.c
+index bf76e237a9..1ac684eb81 100644
+--- a/ext/soap/php_xml.c
++++ b/ext/soap/php_xml.c
+@@ -204,7 +204,7 @@ xmlNsPtr node_find_ns(xmlNodePtr node)
+ 
+ int attr_is_equal_ex(xmlAttrPtr node, char *name, char *ns)
+ {
+-	if (name == NULL || strcmp((char*)node->name, name) == 0) {
++	if (name == NULL || ((node->name) && strcmp((char*)node->name, name) == 0)) {
+ 		if (ns) {
+ 			xmlNsPtr nsPtr = attr_find_ns(node);
+ 			if (nsPtr) {
+@@ -220,7 +220,7 @@ int attr_is_equal_ex(xmlAttrPtr node, char *name, char *ns)
+ 
+ int node_is_equal_ex(xmlNodePtr node, char *name, char *ns)
+ {
+-	if (name == NULL || strcmp((char*)node->name, name) == 0) {
++	if (name == NULL || ((node->name) && strcmp((char*)node->name, name) == 0)) {
+ 		if (ns) {
+ 			xmlNsPtr nsPtr = node_find_ns(node);
+ 			if (nsPtr) {
+diff --git a/ext/soap/tests/bug80672.phpt b/ext/soap/tests/bug80672.phpt
+new file mode 100644
+index 0000000000..71e2b1d841
+--- /dev/null
++++ b/ext/soap/tests/bug80672.phpt
+@@ -0,0 +1,15 @@
++--TEST--
++Bug #80672 Null Dereference in SoapClient
++--SKIPIF--
++<?php require_once('skipif.inc'); ?>
++--FILE--
++<?php
++try {
++    $client = new SoapClient(__DIR__ . "/bug80672.xml");
++    $query = $soap->query(array('sXML' => 'something'));
++} catch(SoapFault $e) {
++    print $e->getMessage();
++}
++?>
++--EXPECTF--
++SOAP-ERROR: Parsing WSDL: Unexpected WSDL element <>
+\ No newline at end of file
+diff --git a/ext/soap/tests/bug80672.xml b/ext/soap/tests/bug80672.xml
+new file mode 100644
+index 0000000000..0fa185bf1e
+--- /dev/null
++++ b/ext/soap/tests/bug80672.xml
+@@ -0,0 +1,6 @@
++<?xml version="1.0" encoding="ISO-8859-1"?>
++<soap:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
++  xmlns:xsd="http://www.w3.org/2001/XMLSchema"
++  xmlns:soap="http://schemas.xmlsoap.org/wsdl/">
++<![CDATA[test]]>
++</soap:definitions>
+-- 
+2.29.2
+
+From 02352d5acc1896756dcb4645f54689ffdcc4ca52 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Mon, 1 Feb 2021 09:46:17 +0100
+Subject: [PATCH 2/2] Fix build
+
+(cherry picked from commit e5d767d27f94895e09f0321562fd3774d4656164)
+---
+ ext/soap/php_sdl.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/ext/soap/php_sdl.c b/ext/soap/php_sdl.c
+index b8d40f0cfe..522db1c979 100644
+--- a/ext/soap/php_sdl.c
++++ b/ext/soap/php_sdl.c
+@@ -314,7 +314,7 @@ void sdl_restore_uri_credentials(sdlCtx *ctx)
+ 	ctx->context = NULL;
+ }
+ 
+-#define SAFE_STR(a) ((a)?a:"")
++#define SAFE_STR(a) ((a)?((const char *)a):"")
+ 
+ static void load_wsdl_ex(zval *this_ptr, char *struri, sdlCtx *ctx, int include)
+ {
+-- 
+2.29.2
+
