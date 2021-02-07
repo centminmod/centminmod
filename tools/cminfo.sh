@@ -683,6 +683,10 @@ netstat_info() {
         csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_sshlogins"
 
+        echo -e "\nTop CSF Firewall Failed SSH Logins IPs:"
+        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | awk '{print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_sshlogins"
+
         echo -e "\nLast 24hrs Top CSF Firewall Denied Country Codes:"
         csfdeny_country=$(grep "$(date -d "1 day ago"  +"%a %b  %-d")" /etc/csf/csf.deny | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_country"
@@ -697,6 +701,18 @@ netstat_info() {
 
         echo -e "\nLast 24hrs Top CSF Firewall Failed SSH Logins:"
         csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep "$(date -d "1 day ago"  +"%a %b  %-d")" | grep -oP '(?<=\()[^\)]+' | awk -F "/" 'length($1)<=2 {print $1,$2,$3}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_sshlogins"
+
+        echo -e "\nLast 24hrs Top CSF Firewall Failed SSH Logins IPs:"
+        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep "$(date -d "1 day ago"  +"%a %b  %-d")" | awk '{print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_sshlogins"
+
+        echo -e "\nLast 3hrs Top CSF Firewall Failed SSH Logins IPs:"
+        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | egrep "$(date -d "1 hour ago"  +"%a %b  %-d %H")|$(date -d "2 hour ago"  +"%a %b  %-d %H")|$(date -d "3 hour ago"  +"%a %b  %-d %H")" | awk '{print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
+        echo "$csfdeny_sshlogins"
+
+        echo -e "\nLast 1hr Top CSF Firewall Failed SSH Logins IPs:"
+        csfdeny_sshlogins=$(grep 'Failed SSH login from' /etc/csf/csf.deny | grep "$(date -d "1 hour ago"  +"%a %b  %-d")" | awk '{print $1}' | sort | uniq -c | sort -rn | head -n10 | column -t)
         echo "$csfdeny_sshlogins"
 
         # STARTD=$(date -d "1440 mins ago"  +"%a %b  %-d %H:%M")
