@@ -3141,7 +3141,7 @@ if [[ "$wpscache" = [nN] ]]; then
   fi
   if [[ "$WPCLI_CE_QUERYSTRING_INCLUDED" = [yY] ]]; then
     if [[ "$get_ce_version" -le '1004009' ]]; then
-      \wp option patch update cache-enabler incl_parameters '/^fbclid|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
+      \wp option patch update cache-enabler incl_parameters '/^fbclid|epik|klaviyo|ref|mc_(cid|eid)|utm_(source|medium|campaign|term|content|expid)|gclid|fb_(action_ids|action_types|source)|age-verified|ao_noptimize|usqp|cn-reloaded|_ga|_ke$/' --allow-root
       \wp option pluck cache-enabler incl_parameters --format=json --allow-root
     else
       \wp option patch update cache_enabler excluded_query_strings '/^s=.+$/' --allow-root
