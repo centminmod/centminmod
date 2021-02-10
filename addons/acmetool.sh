@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.70'
+ACMEVER='1.0.71'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -649,7 +649,7 @@ set_default_ca() {
   cecho "-----------------------------------------------------" $boldgreen
   echo "set default acme.sh CA to $ACME_DEFAULT_CA:"
   echo "acme.sh --set-default-ca --server $ACME_DEFAULT_CA"
-  acme.sh --set-default-ca --server "$ACME_DEFAULT_CA"
+  "$ACMEBINARY" --set-default-ca --server "$ACME_DEFAULT_CA"
 }
 
 #####################
