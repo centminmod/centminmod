@@ -900,7 +900,30 @@ fi
             sed -i 's|ssl http2|ssl spdy|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#spdy_headers_comp|spdy_headers_comp|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
             sed -i 's|#add_header Alternate-Protocol|add_header Alternate-Protocol|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
-        fi        
+        fi  
+    fi
+    if [[ "$DETECT_NGXVER" -ge '1019007' ]]; then
+        # removed in nginx 1.19.7+
+        # http://hg.nginx.org/nginx/rev/827202ca1269
+        # http://hg.nginx.org/nginx/rev/f790816a0e87
+        echo
+        echo "remove deprecated HTTP/2 variables in Nginx 1.19.7+"
+        echo
+        for v in "$(ls /usr/local/nginx/conf/conf.d/*.conf)"; do
+            echo "$v";
+            egrep -n 'http2_max_field_size|http2_max_header_size|http2_max_requests' $v;
+            echo "---";
+            sed -i 's|^  http2_max_field_size|  #http2_max_field_size|g' $v;
+            sed -i 's|^  http2_max_header_size|  #http2_max_header_size|g' $v;
+            sed -i 's|^  http2_max_requests|  #http2_max_requests|g' $v;
+            egrep -n 'http2_max_field_size|http2_max_header_size|http2_max_requests' $v;
+        done
+        if [ -f /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf ]; then
+            sed -i 's|^  http2_max_field_size|  #http2_max_field_size|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|^  http2_max_header_size|  #http2_max_header_size|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+            sed -i 's|^  http2_max_requests|  #http2_max_requests|g' /usr/local/nginx/conf/conf.d/phpmyadmin_ssl.conf
+        fi
+        echo
     fi
         if [[ "$CENTOS_SEVEN" = '7' ]]; then
             systemctl daemon-reload

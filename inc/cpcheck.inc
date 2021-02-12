@@ -988,6 +988,10 @@ update_nginxconf() {
     if [[ "$NGX_KEEPALIVEREQUESTS" -eq '1000' ]]; then
       sed -i 's|keepalive_requests .*|keepalive_requests  5000;|' /usr/local/nginx/conf/nginx.conf
     fi
+    if [[ "$NGX_KEEPALIVEREQUESTS" -eq '5000' ]]; then
+      # http://hg.nginx.org/nginx/rev/f790816a0e87
+      sed -i 's|keepalive_requests .*|keepalive_requests  50000;|' /usr/local/nginx/conf/nginx.conf
+    fi
     if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' ]]; then
       sed -i 's|worker_connections .*|worker_connections  100000;|' /usr/local/nginx/conf/nginx.conf
     fi

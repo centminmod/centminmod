@@ -918,9 +918,12 @@ if [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module
   LISTENOPT='ssl spdy http2'
   COMP_HEADER='spdy_headers_comp 5'
   SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
-  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
-  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
-  HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
+  # removed in nginx 1.19.7+
+  # http://hg.nginx.org/nginx/rev/827202ca1269
+  # http://hg.nginx.org/nginx/rev/f790816a0e87
+  #HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  #HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
+  #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_module' ]]; then
   HTTPTWO=y
     # check if backlogg directive is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
@@ -946,9 +949,12 @@ elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_modu
     fi
   COMP_HEADER='#spdy_headers_comp 5'
   SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
-  HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
-  HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
-  HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
+  # removed in nginx 1.19.7+
+  # http://hg.nginx.org/nginx/rev/827202ca1269
+  # http://hg.nginx.org/nginx/rev/f790816a0e87
+  #HTTPTWO_MAXFIELDSIZE='http2_max_field_size 16k;'
+  #HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
+  #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 else
   HTTPTWO=n
   LISTENOPT='ssl spdy'
