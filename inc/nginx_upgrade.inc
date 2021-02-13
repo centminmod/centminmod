@@ -335,7 +335,7 @@ clear_ps() {
 }
 
 function funct_nginxupgrade {
-
+    CLI_NGINX_VER=$1
     checkmap
     # if [ ! -f /usr/local/bin/pcretest ]; then
     #     wgetver_check
@@ -359,7 +359,7 @@ if [ -f /usr/local/lib/libz.so ]; then
     echo "zlib shared library"
 fi
 echo
-if [[ "$UALL" = 'y' ]]; then 
+if [[ "$UALL" = 'y' || "$CLI_NGINX_VER" ]]; then 
     nukey=y
 else
     read -ep "Nginx Upgrade - Would you like to continue? [y/n] " nukey
@@ -389,6 +389,41 @@ fi # CENTOS_SEVEN != 7
 if [[ "$UALL" = 'y' ]]; then 
     ngver=$NGINX_VERSION
     recompileopenssl='n'
+elif [[ "$CLI_NGINX_VER" ]]; then 
+    ngver=$CLI_NGINX_VER
+    service nginx reload >/dev/null 2>&1
+
+    # if user forgets to type in nginx version and hits
+    # enter, ngxver will be empty so should fall back to
+    # the nginx version defined by NGINX_VERSION variable
+    if [ -z "$ngver" ]; then
+        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n 1 2>&1)
+        ngver="$LASTEST_NGINXVERS"
+    fi
+
+    # if you set /etc/centminmod/custom_config.inc file to
+    # NGINX_UPDATEMAINTENANCE=y
+    # then whenever you run nginx upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus off
+        fi
+    fi
+
+    # auto check if static compiled Nginx openssl version matches
+    # the one defined in centmin.sh OPENSSL_VERSION variable
+    # if doesn't match then auto recompile the statically set
+    # OPENSSL_VERSION
+    AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
+    if [[ "$AUTOOPENSSLCHECK" ]]; then
+        recompileopenssl='y'
+    else
+        recompileopenssl='y'
+    fi
+    echo ""
+    checkgeoip
 else
     echo
     echo "Current Nginx Version: $(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)"
@@ -1097,30 +1132,5 @@ fi
 
 echo " "
 
-if [[ "$ENABLE_MENU" != [yY] ]]; then
-
-ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    rm -rf /svr-setup
-    echo "Temporary files/folders removed"
-fi
-
-ASK "Do you want to delete this script ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    echo "*************************************************"
-    cecho "* Deleting Centmin script... " $boldgreen
-    echo "*************************************************"
-    echo "Removing..."
-
-rm -f $0
-
-    echo "*************************************************"
-    cecho "* Centmin script deleted" $boldgreen
-    echo "*************************************************"
-fi
-
-fi
 
 }

@@ -53,30 +53,5 @@ cecho "`cat ${CONFIGSCANDIR}/xcache.ini | grep xcache.admin.pass`" $boldgreen
     cecho "* XCache installed" $boldgreen
     echo "*************************************************"
     
-if [[ "$ENABLE_MENU" != [yY] ]]; then
-
-ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    rm -rf /svr-setup
-    echo "Temporary files/folders removed"
-fi
-
-ASK "Do you want to delete this script ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    echo "*************************************************"
-    cecho "* Deleting Centmin script... " $boldgreen
-    echo "*************************************************"
-    echo "Removing..."
-
-rm -f $0
-
-    echo "*************************************************"
-    cecho "* Centmin script deleted" $boldgreen
-    echo "*************************************************"
-fi
-
-fi
     fi # PHP_INSTALL=y
 }

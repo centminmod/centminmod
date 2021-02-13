@@ -378,7 +378,7 @@ TIME_REDIS='n'
 
 #####################################################
 # Enable or disable menu mode
-ENABLE_MENU='y'
+ENABLE_MENU='n'
 
 #####################################################
 # CentOS 7 specific
@@ -2419,35 +2419,6 @@ echo
 
 cd
 
-if [[ "$ENABLE_MENU" != [yY] ]]; then
-
-ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    rm -rf "$DIR_TMP"
-    rm -rf "$CUR_DIR/config"
-    rm -rf "$CUR_DIR/init"
-    rm -rf "$CUR_DIR/sysconfig"
-    echo "Temporary files/folders removed"
-fi
-
-ASK "Do you want to delete this script ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    echo "*************************************************"
-    cecho "* Deleting Centmin script... " $boldgreen
-    echo "*************************************************"
-    echo "Removing..."
-
-rm -f "$0"
-
-    echo "*************************************************"
-    cecho "* Centmin script deleted" $boldgreen
-    echo "*************************************************"
-fi
-
-fi
-
 funct_openvz_stacksize
 checkxcacheadmin
 
@@ -3414,20 +3385,88 @@ EOF
         funct_nsdsetup
         
         ;;
-        nginxupgrade)
+        nginxupgrade|nginx-update)
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_nginx_upgrade.log"
+        fi
+        # set_logdate
+        CM_MENUOPT=4
+        starttime=$(TZ=UTC date +%s.%N)
         
+        centminlog
         diskalert
         csftweaks
+        
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
+        
+        #yumskipinstall
+        if [[ "$yuminstallrun" == [yY] ]]; then
         yuminstall
-        funct_nginxupgrade
+        fi
+        funct_nginxupgrade "$2"
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+            fi
+        fi
+        
+        endtime=$(TZ=UTC date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        echo "Total Nginx Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_nginx_upgrade.log"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'nginx_upgrade.log' | tail -1)"
         
         ;;
-        phpupgrade)
+        phpupgrade|php-update)
         
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_php_upgrade.log"
+        fi
+        # set_logdate
+        CM_MENUOPT=5
+        starttime=$(TZ=UTC date +%s.%N)
+        
+        centminlog
         diskalert
         csftweaks
+        
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
+        
+        #yumskipinstall
+        if [[ "$yuminstallrun" == [yY] ]]; then
         yuminstall
-        funct_phpupgrade
+        fi
+        funct_phpupgrade "$2"
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+            fi
+        fi
+        
+        endtime=$(TZ=UTC date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log" | egrep -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_minimal.log"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
         xcachereinstall)
@@ -3485,7 +3524,22 @@ EOF
         funct_sshd
         
         ;;
-        multithreadcomp)
+        multithreadcomp|compress-update)
+        
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_multithread_compression-install.log"
+        fi
+        # set_logdate
+        CM_MENUOPT=17
+        starttime=$(TZ=UTC date +%s.%N)
+        
+        centminlog
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
         
         compressmenu_notice
         funct_pigzinstall
@@ -3493,9 +3547,23 @@ EOF
         # funct_lbzip2install
         funct_lzipinstall
         funct_plzipinstall
-        #funct_p7zipinstall
         zstdinstall
         lzfourinstall
+        #funct_p7zipinstall
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
+            fi
+        fi
+        
+        endtime=$(TZ=UTC date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
+        echo "Total Multi-Threaded Compression Tools Install Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_multithread_compression-install.log"
         
         ;;
         suhosininstall)
@@ -3551,27 +3619,31 @@ EOF
         ;;
         *)
         
-        echo "$0 install"
-        echo "$0 addvhost"
-        echo "$0 nsdsetup"
-        echo "$0 nginxupgrade"
-        echo "$0 phpupgrade"
-        echo "$0 xcachereinstall"
-        echo "$0 apcreinstall"
-        echo "$0 installxcache"
-        echo "$0 installapac"
-        echo "$0 memcachedreinstall"
-        echo "$0 mariadbupgrade"
-        echo "$0 installioping"
-        echo "$0 selinux"
-        echo "$0 logrotate"
-        echo "$0 phplogrotate"
-        echo "$0 sshdport"
-        echo "$0 multithreadcomp"
-        echo "$0 suhosininstall"
-        echo "$0 ffmpeginstall"
-        echo "$0 nsdreinstall"
-        echo "$0 update"
+        # echo "$0 install"
+        # echo "$0 addvhost"
+        # echo "$0 nsdsetup"
+        # echo "$0 nginxupgrade"
+        # echo "$0 phpupgrade"
+        # echo "$0 xcachereinstall"
+        # echo "$0 apcreinstall"
+        # echo "$0 installxcache"
+        # echo "$0 installapac"
+        # echo "$0 memcachedreinstall"
+        # echo "$0 mariadbupgrade"
+        # echo "$0 installioping"
+        # echo "$0 selinux"
+        # echo "$0 logrotate"
+        # echo "$0 phplogrotate"
+        # echo "$0 sshdport"
+        # echo "$0 multithreadcomp"
+        # echo "$0 suhosininstall"
+        # echo "$0 ffmpeginstall"
+        # echo "$0 nsdreinstall"
+        # echo "$0 update"
+
+        echo "$0 nginx-update 1.19.7"
+        echo "$0 php-update 7.4.15"
+        echo "$0 compress-update"
         
         ;;
         esac

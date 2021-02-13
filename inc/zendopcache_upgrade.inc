@@ -95,7 +95,7 @@ if [[ "$PHPMUVER" > 5.5 ]]; then
   # echo "installed, you will have to use menu option #10 or #15 to"
   # echo "reinstall after upgrading to PHP 5.5.0 with Zend OPcache."
   echo "-----------------------------------------------------------------------------------------"
-  if [[ "$UALL" = 'y' ]]; then
+  if [[ "$UALL" = 'y' || "$CLI_PHP_VER" ]]; then
     zendopcacheon='y'  
   else
     read -ep "Do you want to use Zend OPcache [y/n] ? " -i y zendopcacheon

@@ -258,6 +258,7 @@ done
 
 ########################################################################
 funct_phpupgrade() {
+    CLI_PHP_VER="$1"
     axelsetup
 
     if [ -f "$(which figlet)" ]; then
@@ -280,7 +281,7 @@ else
 fi
 
 echo " "
-if [[ "$UALL" = 'y' ]]; then 
+if [[ "$UALL" = 'y' || "$CLI_PHP_VER" ]]; then 
     key='y'
 else
     read -ep "PHP Upgrade/Downgrade - Would you like to continue? [y/n] " key
@@ -301,6 +302,10 @@ if [[ "$UALL" = 'y' ]]; then
     phpver=$(php-config --version)
     overwritephpfpmconf='n'
     lessphpmem='y'
+elif [[ "$CLI_PHP_VER" ]]; then
+    phpver="$CLI_PHP_VER"
+    overwritephpfpmconf='n'
+    # lessphpmem='y'
 else
     echo
     echo "----------------------------------------------------------------"
@@ -1305,32 +1310,5 @@ fi
 
 # error check
 ################
-
-
-if [[ "$ENABLE_MENU" != [yY] ]]; then
-
-ASK "Do would you like to run script cleanup (Highly recommended) ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    rm -rf "$DIR_TMP"
-    echo "Temporary files/folders removed"
-fi
-
-ASK "Do you want to delete this script ? [y/n] "
-if [[ "$key" = [yY] ]];
-then
-    echo "*************************************************"
-    cecho "* Deleting Centmin script... " $boldgreen
-    echo "*************************************************"
-    echo "Removing..."
-
-rm -f "$0"
-
-    echo "*************************************************"
-    cecho "* Centmin script deleted" $boldgreen
-    echo "*************************************************"
-fi
-
-fi
 
 }
