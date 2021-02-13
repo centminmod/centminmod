@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='653'
+SCRIPT_INCREMENTVER='654'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='03/03/2021'
@@ -3469,6 +3469,49 @@ EOF
         tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade.log' | tail -1)"
         
         ;;
+        php-update-all)
+        
+        if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log" ]; then
+            NEWDT=$(date +"%d%m%y-%H%M%S")
+            mv "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log" "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${NEWDT}_php_upgrade_all.log"
+        fi
+        # set_logdate
+        CM_MENUOPT=5
+        starttime=$(TZ=UTC date +%s.%N)
+        
+        centminlog
+        diskalert
+        csftweaks
+        
+        {
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        ccacheinstall
+        fi
+        
+        #yumskipinstall
+        if [[ "$yuminstallrun" == [yY] ]]; then
+        yuminstall
+        fi
+        funct_phpupgrade "$2" all
+        } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        
+        if [ "$CCACHEINSTALL" == 'y' ]; then
+        
+            # check if ccache installed first
+            if [ -f /usr/bin/ccache ]; then
+        { echo ""; source ~/.bashrc; echo "ccache stats:"; ccache -s; echo ""; } 2>&1 | tee -a "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+            fi
+        fi
+        
+        endtime=$(TZ=UTC date +%s.%N)
+        INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+        echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        echo "Total PHP Upgrade Time: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log"
+        cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all.log" | egrep -v 'checking for|checking if|checking how|checking the|checking sys|checking whether|^checking |/fpm-build/main -I|/fpm-build/libtool |/fpm-build/include -I' > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade_all_minimal.log"
+        tail -1 "${CENTMINLOGDIR}/$(ls -Art ${CENTMINLOGDIR}/ | grep 'php_upgrade_all.log' | tail -1)"
+        
+        ;;
         xcachereinstall)
         
         funct_xcachereinstall
@@ -3608,7 +3651,7 @@ EOF
 
         ;;
         exit)
-        
+          
         echo ""
         echo "exit"
         
@@ -3643,6 +3686,7 @@ EOF
 
         echo "$0 nginx-update 1.19.7"
         echo "$0 php-update 7.4.15"
+        echo "$0 php-update-all 7.4.15"
         echo "$0 compress-update"
         
         ;;

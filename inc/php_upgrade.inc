@@ -259,8 +259,12 @@ done
 ########################################################################
 funct_phpupgrade() {
     CLI_PHP_VER="$1"
+    ENABLE_EXT_OVERRIDE="$2"
     axelsetup
 
+    if [[ "$ENABLE_EXT_OVERRIDE" = 'all' ]]; then
+        AUTODETECPHP_OVERRIDE='y'
+    fi
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Upgrade"
     fi
