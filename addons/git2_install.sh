@@ -93,12 +93,12 @@ fi
 if [[ "$CENTOS_SIX" = '6' ]]; then
     if [ ! -f /etc/yum.repos.d/ius.repo ]; then
         rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
-        yum -y install https://centos6.iuscommunity.org/ius-release.rpm
+        yum -y install https://repo.ius.io/ius-release-el6.rpm
     fi
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     if [ ! -f /etc/yum.repos.d/ius.repo ]; then
         rpm --import https://dl.iuscommunity.org/pub/ius/IUS-COMMUNITY-GPG-KEY
-        yum -y install https://centos7.iuscommunity.org/ius-release.rpm
+        yum -y install https://repo.ius.io/ius-release-el7.rpm
     fi
 fi
 
@@ -148,7 +148,7 @@ cecho "*************************************************" $boldgreen
 # install Git 2.16+ package to replace Git 1.8 package
 yum -y install yum-plugin-replace --enablerepo=ius
 yum -y update git
-yum -y replace git --replace-with git2u --enablerepo=ius
+yum -y replace git --replace-with git222 --enablerepo=ius
 
 echo
 yum versionlock git perl-Git
@@ -161,10 +161,10 @@ fi
 echo
 git --version
 
-} 2>&1 | tee ${CENTMINLOGDIR}/git2u-install_${DT}.log
+} 2>&1 | tee ${CENTMINLOGDIR}/git222-install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/git2u-install_${DT}.log
-echo "Git 2.16+ Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/git2u-install_${DT}.log
+echo "" >> ${CENTMINLOGDIR}/git222-install_${DT}.log
+echo "Git 2.16+ Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/git222-install_${DT}.log
