@@ -2608,9 +2608,17 @@ if [[ "$wpscache" = [nN] ]]; then
     fi
   fi
   if [ -f /usr/bin/jq ]; then
-    \wp option get cache_enabler --format=json --allow-root | jq
+    if [[ "$get_ce_version" -le '1004009' ]]; then
+      \wp option get cache-enabler --format=json --allow-root | jq
+    else
+      \wp option get cache_enabler --format=json --allow-root | jq
+    fi
   else
-    \wp option get cache_enabler --format=json --allow-root
+    if [[ "$get_ce_version" -le '1004009' ]]; then
+      \wp option get cache-enabler --format=json --allow-root
+    else
+      \wp option get cache_enabler --format=json --allow-root
+    fi
   fi
   # add define('WP_CACHE', true); to wp-config.php
   if [ ! "$(grep -w 'WP_CACHE' wp-config.php)" ]; then
