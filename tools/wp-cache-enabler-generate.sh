@@ -343,7 +343,7 @@ location ~ ^${WPSUBDIR}/wp-content/uploads/ {
   location ~* ^${WPSUBDIR}/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
     expires 30d;
     add_header Vary "Accept";
-    add_header Cache-Control "public, no-transform";
+    add_header Cache-Control "public";
     try_files \$uri\$webp_extension \$uri =404;
   }
 }
