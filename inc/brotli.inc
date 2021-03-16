@@ -141,7 +141,21 @@ scl_install() {
         fi
         sar_call
       fi
-      if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
+      if [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          if [[ "$(rpm -ql devtoolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
+          fi
+          sar_call
+        else
+          if [[ "$(rpm -ql devtoolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils --disablerepo=rpmforge
+          fi
+          sar_call
+        fi
+        /opt/rh/devtoolset-10/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-10/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
         echo
         /opt/gcc9/bin/gcc --version
         /opt/gcc9/bin/g++ --version
