@@ -36,7 +36,19 @@ compgcc_nine() {
   if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
     label='gcc9 built'
     source /opt/rh/devtoolset-9/enable
-    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+}
+
+compgcc_ten() {
+  if [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    label='gcc10 built'
+    source /opt/rh/devtoolset-10/enable
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
     export CXXFLAGS="${CFLAGS}"
   else
     label=""
@@ -83,6 +95,7 @@ compressmenu_notice() {
   compgcc_seven
   compgcc_eight
   compgcc_nine
+  compgcc_ten
   pgo_export_compress
 }
 

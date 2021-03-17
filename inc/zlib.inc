@@ -46,6 +46,67 @@ zlibng_install() {
   if [[ "$NGINX_ZLIBNG" = [yY] ]]; then
     CLOUDFLARE_ZLIB='n'
     NGINX_ZLIBCUSTOM='n'
+
+    if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/devtoolset-7/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/devtoolset-8/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/gcc8/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/gcc9/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/devtoolset-9/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/devtoolset-10/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
     echo
     echo "install zlib-ng..."
     echo
@@ -53,11 +114,15 @@ zlibng_install() {
     if [ -d zlib-ng ]; then
       rm -rf zlib-ng
     fi
-    time git clone https://github.com/Dead2/zlib-ng
+    time git clone https://github.com/zlib-ng/zlib-ng
     cd zlib-ng
-    ./configure --zlib-compat
-    #make${MAKETHREADS}
-    # make install
+    ./configure --zlib-compat --prefix=/usr/local/zlib-ng
+    make${MAKETHREADS}
+    make -d install
+    zlibng_check=$?
+    if [[ "$(uname -m)" = 'x86_64' ]]; then
+        ln -sf /usr/local/zlib-ng/lib /usr/local/zlib-ng/lib64
+    fi
     popd
     echo
     echo "zlib-ng installed"
@@ -114,6 +179,26 @@ install_cfzlib() {
 
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
         source /opt/gcc9/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/devtoolset-9/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/devtoolset-10/enable
         unset CC
         unset CXX
         export CC="ccache gcc"
@@ -382,6 +467,12 @@ nginxzlib_install() {
     CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
     if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
         install_cfzlib
+        if [[ "$cfzlib_check" -ne '0' ]]; then
+            CLOUDFLARE_ZLIB='n'
+            install_stdzlib
+        fi
+    elif [[ "$NGINX_ZLIBNG" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
+        zlibng_install
         if [[ "$cfzlib_check" -ne '0' ]]; then
             CLOUDFLARE_ZLIB='n'
             install_stdzlib

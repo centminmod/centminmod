@@ -795,6 +795,14 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
   fi
 
   CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
+
+  if [[ "$NGINX_ZLIBNG" = [yY] && "$CLOUDFLARE_ZLIB" = [nN] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
+    ZLIBCF_RPATH='/usr/local/zlib-ng/lib:'
+    ZLIBCF_OPT='-L/usr/local/zlib-ng/lib '
+    ZLIBCFINC_OPT='-I/usr/local/zlib-ng/include '
+    ZLIBCUSTOM_OPT=" --with-zlib=../zlib-ng"
+  fi
+
   if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' ]]; then
     ZLIBCUSTOM_DIR="zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
     ZLIBCUSTOM_OPT=" --with-zlib=../zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
@@ -815,7 +823,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         sed -i 's|gzip_comp_level .*|gzip_comp_level 5;|' /usr/local/src/centminmod/config/nginx/nginx.conf
       fi
     fi
-    if [[ "$CLOUDFLARE_ZLIB_DYNAMIC" = [yY] ]]; then
+    if [[ "$CLOUDFLARE_ZLIB" = [yY] && "$CLOUDFLARE_ZLIB_DYNAMIC" = [yY] ]]; then
       ZLIBCF_RPATH='/usr/local/zlib-cf/lib:'
       ZLIBCF_OPT='-L/usr/local/zlib-cf/lib '
       ZLIBCFINC_OPT='-I/usr/local/zlib-cf/include '
@@ -2997,7 +3005,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     # PS_FLAGS=$(echo " $PS_NGX_EXTRA_FLAGS")
     PS_FLAGS=""
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
-      DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
       DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETEIGHT_FALLTHROUGH=""
       DEVTOOLSETEIGHT_EXTRAFLAGS=""
@@ -3049,7 +3057,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       fi
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc ]]; then
-      DEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
       DEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETNINE_FALLTHROUGH=""
       DEVTOOLSETNINE_EXTRAFLAGS=""
@@ -3077,7 +3085,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       fi
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc ]]; then
-      DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
       DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
       DEVTOOLSETEIGHT_FALLTHROUGH=""
       DEVTOOLSETEIGHT_EXTRAFLAGS=""
@@ -3185,7 +3193,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     fi
   elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/gcc9/bin/gcc"
-    DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+    DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
     DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
     DEVTOOLSETEIGHT_FALLTHROUGH=""
     DEVTOOLSETEIGHT_EXTRAFLAGS=""
@@ -3241,7 +3249,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     fi
   elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-10/root/usr/bin/gcc"
-    DEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+    DEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
     DEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting'
     DEVTOOLSETNINE_FALLTHROUGH=""
     DEVTOOLSETNINE_EXTRAFLAGS=""
@@ -3270,7 +3278,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
     fi
   elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
     export PS_NGX_EXTRA_FLAGS="--with-cc=/opt/rh/devtoolset-9/root/usr/bin/gcc"
-    DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+    DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
     DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting'
     DEVTOOLSETEIGHT_FALLTHROUGH=""
     DEVTOOLSETEIGHT_EXTRAFLAGS=""
@@ -3505,7 +3513,11 @@ else
 fi
 
 if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$NGX_GSPLITDWARF" = [yY] ]]; then
-  SET_NGXEXTRA_CCOPT=" -gsplit-dwarf${NGXEXTRA_CCOPT}"
+  if [[ "$DEVTOOLSETTEN" = [yY] ]]; then
+    SET_NGXEXTRA_CCOPT="${NGXEXTRA_CCOPT}"
+  else
+    SET_NGXEXTRA_CCOPT=" -gsplit-dwarf${NGXEXTRA_CCOPT}"
+  fi
 else
   SET_NGXEXTRA_CCOPT="${NGXEXTRA_CCOPT}"
 fi

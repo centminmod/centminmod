@@ -61,17 +61,24 @@ enable_devtoolset() {
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 ]]; then
-         if [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETNINE" = [yY] && -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
+        if [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETTEN" = [yY] ]]; then
+            if [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+               scl_install
+            fi       
+            source /opt/rh/devtoolset-10/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+         elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETNINE" = [yY] && -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
             source /opt/gcc9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
          elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETNINE" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
          elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETEIGHT" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
                scl_install

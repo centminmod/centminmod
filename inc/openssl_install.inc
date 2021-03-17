@@ -643,7 +643,7 @@ crypto_gcc() {
       if [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
-        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
         CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -653,7 +653,7 @@ crypto_gcc() {
         export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
         source /opt/gcc9/enable
-        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -674,7 +674,7 @@ crypto_gcc() {
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
-        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -685,7 +685,7 @@ crypto_gcc() {
       elif [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
-        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
         CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -696,7 +696,7 @@ crypto_gcc() {
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
-        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
