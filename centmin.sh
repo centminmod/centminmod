@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='659'
+SCRIPT_INCREMENTVER='660'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -709,7 +709,7 @@ PHP_ZSTD='n'                # zstd php extension https://github.com/kjdev/php-ex
 SHORTCUTS='y'                # shortcuts
 
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
-POSTGRESQL_BRANCHVER='11'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
+POSTGRESQL_BRANCHVER='13'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
 ########################################################
