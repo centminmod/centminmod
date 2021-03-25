@@ -103,7 +103,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
-NGINX_VERSION='1.19.6'      # Use this version of Nginx
+NGINX_VERSION='1.19.8'      # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_STAPLE_CACHE_OVERRIDE='n' # Enable will override Nginx OCSP stapling cache refresh time of 3600 seconds
@@ -287,9 +287,9 @@ VHOSTCTRL_AUTOPROTECTINC='y'
 NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1i'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1i'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1i' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_VERSION='1.1.1k'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1k'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1k' # override version if persist config OPENSSL_VERSION variable is out of date
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
