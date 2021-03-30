@@ -651,5 +651,12 @@ php_patches() {
       fi
     done
   fi
+  if [[ "$FPM_MAX_SPAWN_RATE" -ge '32' && -f sapi/fpm/fpm/fpm_process_ctl.h ]]; then
+    echo
+    echo "adjust FPM_MAX_SPAWN_RATE for PHP-FPM"
+    sed -i "s|FPM_MAX_SPAWN_RATE .*|FPM_MAX_SPAWN_RATE ($FPM_MAX_SPAWN_RATE)|" sapi/fpm/fpm/fpm_process_ctl.h
+    grep -in 'FPM_MAX_SPAWN_RATE' sapi/fpm/fpm/fpm_process_ctl.h
+    echo
+  fi
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_php_${DT}.log"
 }
