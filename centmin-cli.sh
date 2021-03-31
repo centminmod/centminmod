@@ -1261,7 +1261,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install dnf-utils
+    yum -q -y install yum-utils
     yum-config-manager --enable PowerTools
   elif [ -f /usr/bin/yum-config-manager ]; then
     yum-config-manager --enable PowerTools
