@@ -88,6 +88,12 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [ -f /etc/almalinux-release ]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
+  CENTOS_EIGHT='8'
+  ALMALINUX_EIGHT='8'
+fi
+
 if [[ "$CENTOS_SIX" = '6' ]]; then
   IFREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')
   CACHEDMEM=$(cat /proc/meminfo | grep '^Cached' | awk '{print $2}')
