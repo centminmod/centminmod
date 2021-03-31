@@ -226,6 +226,99 @@ else
 fi
 
 ###############################################################################
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+
+#     if [ "$(uname -m)" == 'aarch64' ]; then
+
+# if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.4/centos8-amd64
+# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# else
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = http://yum.mariadb.org/10.1/centos8-amd64
+# module_hotfixes=1
+# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# fi
+
+    if [ "$(uname -m)" == 'aarch64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.4/centos8-aarch64
+module_hotfixes=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos8-aarch64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+    fi
+
+    if [ "$(uname -m)" == 'x86_64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.4/centos8-amd64
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos8-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    else
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.4/centos8-amd64
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.4/centos8-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    fi # centos 8 uname -m
+
+fi
+
+###############################################################################
 if [[ "$CENTOS_SEVEN" = '7' ]]; then
 
     if [ "$(uname -m)" == 'aarch64' ]; then
