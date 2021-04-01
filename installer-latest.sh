@@ -161,12 +161,19 @@ if [ -f /etc/almalinux-release ]; then
 fi
 
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+    label_os=AlmaLinux
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  else
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  fi
   echo
-  echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
-  echo "To follow CentOS 8 compatibility progress read & subscribe to thread at:"
-  echo "https://community.centminmod.com/threads/centmin-mod-centos-8-compatibility-worklog.18372/"
+  echo "$label_os 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL8 compatibility for CentOS 8 / AlmaLinux 8 read thread at:"
+  echo "https://community.centminmod.com/threads/18372/"
   echo "You can read CentOS 8 specific discussions via prefix tag link at:"
-  echo "https://community.centminmod.com/forums/centos-redhat-oracle-linux-news.31/?prefix_id=81"
+  echo "$label_prefix"
   exit 1
   echo
 fi
