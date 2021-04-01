@@ -1260,15 +1260,20 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 
   # enable CentOS 8 PowerTools repo for -devel packages
+  if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
+    reponame_powertools=powertools
+  else
+    reponame_powertools=PowerTools
+  fi
   if [ ! -f /usr/bin/yum-config-manager ]; then
     yum -q -y install yum-utils
-    yum-config-manager --enable PowerTools
+    yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
-    yum-config-manager --enable PowerTools
+    yum-config-manager --enable $reponame_powertools
   fi
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mysql php:7.2
+  yum -q -y module disable nginx mysql php glpi composer
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs
