@@ -103,6 +103,8 @@ echo "--------------------------------------------------------------------------
         yum -y module enable php:remi-7.4
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
         yum -y module disable php:remi-7.4
+      else
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
       fi
         # ${YUMDNFBIN}${CACHESKIP} -q list $pkgs
 echo "----------------------------------------------------------------------------------"
