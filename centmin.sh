@@ -1274,7 +1274,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   fi
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mariadb mysql php glpi composer
+  yum -q -y module disable nginx mariadb mysql php glpi composer redis:5
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs

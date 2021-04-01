@@ -10,7 +10,9 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     CCREMICHECK="$ERR"
     if [ "$CCREMICHECK" == '0' ]; then
       yumpriorremi_eight
-      echo ""
+      echo
+      # set remi redis 6.2 default
+      yum -y module enable redis:remi-6.2
     else
       cecho "Error: problem with Remi repo install." $boldgreen
     fi
@@ -78,7 +80,7 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
   fi
 
   # CentOS 8 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-  PACKAGEEXTRA='oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel bash-completion bash-completion-extras mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake'
+  PACKAGEEXTRA='oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake'
 
   declare -a arrays
   arrays=(${PACKAGEEXTRA})
