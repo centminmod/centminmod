@@ -172,7 +172,7 @@ mytop_setup() {
 pureftpd_symlink_fix() {
   # workaround for too many levels of symbolic links
   # messages on openvz vpses
-  if [[ "$CENTOS_SEVEN" = '7' && -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]; then
     echo
     # echo "create /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
     mkdir -p /etc/systemd/system/pure-ftpd.service.d
@@ -434,7 +434,7 @@ ngxmaster_openfiles() {
   # raise nginx process' open files limit from 1024
   if [[ -f /etc/init.d/nginx && ! "$(grep -w 'ulimit -n 524288' /etc/init.d/nginx)" ]]; then
     sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nulimit -n 524288\n/' /etc/init.d/nginx
-    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]]; then
       systemctl daemon-reload -q
     fi
     service nginx restart >/dev/null 2>&1
@@ -805,7 +805,9 @@ varnishfour_setup() {
     fi
     if [ ! -f "$VARNISH_REPOFILE" ]; then
       os=centos
-      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+          dist=8
+      elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
           dist=7
       else
           dist=6
@@ -843,7 +845,10 @@ varnishfour_setup() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
@@ -856,7 +861,7 @@ libc_fix() {
     yum -y -q install yum-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
     cd "$INIT_DIR"
-   elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' && -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
     INIT_DIR=$(echo $PWD)
     cd /svr-setup
     wget -q https://centminmod.com/centminmodparts/uw-imap/libc-client-2007f-16.el7.x86_64.rpm
@@ -879,7 +884,7 @@ update_initphpfpm() {
   if [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
     \cp -f "${SCRIPT_DIR}/init/php-fpm" /etc/init.d/php-fpm
     chmod +x /etc/init.d/php-fpm
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
       systemctl daemon-reload
     fi
   fi
@@ -1039,7 +1044,7 @@ checkipvsix() {
     fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
-    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
       # rpcbind.socket is active so needs restart
       mkdir -p /etc/systemd/system/rpcbind.socket.d
 cat > "/etc/systemd/system/rpcbind.socket.d/no-ipv6.conf" <<ROF
@@ -1051,7 +1056,7 @@ ROF
       systemctl daemon-reload -q
       systemctl stop rpcbind.socket rpcbind.service -q
       systemctl start rpcbind.socket rpcbind.service -q
-    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
       # rpcbind.socket is not active so does not needs restart
       mkdir -p /etc/systemd/system/rpcbind.socket.d
 cat > "/etc/systemd/system/rpcbind.socket.d/no-ipv6.conf" <<ROF
@@ -1093,7 +1098,7 @@ ROF
     fi
     # address centos 7.4+ rpcbind failure to start if IPv6 is disabled
     # https://community.centminmod.com/threads/13353/
-    if [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -eq '0' ]]; then
       # rpcbind.socket is active so needs restart
       if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
         rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
@@ -1101,7 +1106,7 @@ ROF
       systemctl daemon-reload -q
       systemctl stop rpcbind.socket rpcbind.service -q
       systemctl start rpcbind.socket rpcbind.service -q
-    elif [[ "$CENTOS_SEVEN" -eq '7' && -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /usr/lib/systemd/system/rpcbind.socket && "$(systemctl is-active rpcbind.socket -q; echo $?)" -ne '0' ]]; then
       # rpcbind.socket is not active so does not needs restart
       if [ -f /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf ]; then
         rm -rf /etc/systemd/system/rpcbind.socket.d/no-ipv6.conf
@@ -1265,7 +1270,7 @@ fixclamav_epel() {
 c7mariadb_tmpdir() {
   # fix for mariadb 10.1.16 introduced ProtecHome=true setting
   # https://jira.mariadb.org/browse/MDEV-10399
-  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Update MariaDB 10 setting for ProtectHome=false"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]
@@ -1274,7 +1279,7 @@ ProtectHome=false
 TDF
   systemctl daemon-reload
   systemctl restart mysql
- elif [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
+ elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -z "$(grep 'ProtectSystem=false' /etc/systemd/system/mariadb.service.d/protecthome.conf)" ]]; then
     # fix https://community.centminmod.com/posts/54571/ CentOS 7.4 changes
     echo "Update MariaDB 10 setting for ProtectSystem=false addition"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
@@ -1288,7 +1293,7 @@ TDF
 }
 
 mariadb_openfilesfix() {
-  if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]
@@ -1463,6 +1468,9 @@ gitenv_askupdate() {
 wgetver_check() {
   if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     WGET_VERSION=$WGET_VERSION_SEVEN
+  fi
+  if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    WGET_VERSION=$WGET_VERSION_EIGHT
   fi
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -1786,14 +1794,15 @@ reuseportchecks() {
 }
 
 rclocalchecks() {
-  if [[ "$CENTOS_SEVEN" = '7' && ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]; then
     echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
   fi
 
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
 # This unit gets pulled automatically into multi-user.target by
 # systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
@@ -1808,6 +1817,35 @@ ExecStart=/etc/rc.d/rc.local start
 TimeoutSec=0
 RemainAfterExit=yes
 EOF
+fi
+
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+cat > /usr/lib/systemd/system/rc-local.service <<EOF
+#  SPDX-License-Identifier: LGPL-2.1+
+#
+#  This file is part of systemd.
+#
+#  systemd is free software; you can redistribute it and/or modify it
+#  under the terms of the GNU Lesser General Public License as published by
+#  the Free Software Foundation; either version 2.1 of the License, or
+#  (at your option) any later version.
+
+# This unit gets pulled automatically into multi-user.target by
+# systemd-rc-local-generator if /etc/rc.d/rc.local is executable.
+[Unit]
+Description=/etc/rc.d/rc.local Compatibility
+Documentation=man:systemd-rc-local-generator(8)
+ConditionFileIsExecutable=/etc/rc.d/rc.local
+After=network.target
+
+[Service]
+Type=forking
+ExecStart=/etc/rc.d/rc.local start
+TimeoutSec=0
+RemainAfterExit=yes
+GuessMainPID=no
+EOF
+fi
 
 cat > /etc/rc.d/rc.local <<EOF
 #!/bin/bash
@@ -2069,7 +2107,7 @@ fixlogrotate() {
   if [ -f /etc/logrotate.d/nginx ]; then
   if [[ -z "$(grep 'maxsize' /etc/logrotate.d/nginx)" || "$(grep -w 'su nginx' /etc/logrotate.d/nginx)" ]]; then
     # sed -i "s|kill.*|kill -SIGUSR1 \$(cat \/usr\/local\/nginx\/logs\/nginx.pid 2>\/dev\/null) 2>\/dev\/null \|\| true|g" /etc/logrotate.d/nginx
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -2112,7 +2150,7 @@ fi
   if [ -f /etc/logrotate.d/php-fpm ]; then
   if [[ -z "$(grep '\$' /etc/logrotate.d/php-fpm)" || -z "$(grep 'maxsize' /etc/logrotate.d/php-fpm)" ]]; then
 
-  if [[ "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
     VARDFSIZE=$(df --output=avail /var | tail -1)
   else
     VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
@@ -2348,7 +2386,7 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
-              if [[ "$CENTOS_SEVEN" = '7' ]]; then
+              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
                 systemctl daemon-reload
               fi
               if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -2364,7 +2402,7 @@ memcachedupdatechecks() {
               pushd /etc/init.d/
               patch -s < memcached-socketfix.patch >/dev/null 2>&1
               rm -rf memcached-socketfix.patch
-              if [[ "$CENTOS_SEVEN" = '7' ]]; then
+              if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
                 systemctl daemon-reload
               fi
               if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -2553,7 +2591,7 @@ wpcompfix() {
 }
 
 entropy_centosseven() {
-if [[ -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [ -f /usr/lib/systemd/system/haveged.service ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
   if [[ ! -d /etc/systemd/system/haveged.service.d || ! -f /etc/systemd/system/haveged.service.d/haveged.conf ]]; then
     mkdir -p /etc/systemd/system/haveged.service.d
 cat > "/etc/systemd/system/haveged.service.d/haveged.conf" <<EFF
@@ -2658,7 +2696,7 @@ tcpcheck_centos() {
 
 if [[ ! -f /proc/user_beancounters ]]; then
     # create /etc/sysctl.d/101-sysctl.conf if doesn't exist on centos 7
-    if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/sysctl.d/101-sysctl.conf ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ ! -f /etc/sysctl.d/101-sysctl.conf ]; then
         if [ -d /etc/sysctl.d ]; then
             if [[ ! -z "$NF_CTHASHSIZE" && -f /sys/module/nf_conntrack/parameters/hashsize ]]; then
               echo "$NF_CTHASHSIZE" > /sys/module/nf_conntrack/parameters/hashsize
@@ -2770,7 +2808,7 @@ fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/34527/
   # CVE-2016-5696
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'tcp_challenge_ack_limit' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_challenge_ack_limit = 999999999" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -2790,7 +2828,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'net.ipv4.tcp_mtu_probing' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_mtu_probing = 1" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -2805,7 +2843,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # https://blog.cloudflare.com/path-mtu-discovery-in-practice/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ -z "$(grep 'net.ipv4.tcp_base_mss' /etc/sysctl.d/101-sysctl.conf)" ]]; then
       echo "net.ipv4.tcp_base_mss = 1024" >> /etc/sysctl.d/101-sysctl.conf
       /sbin/sysctl --system >/dev/null 2>&1
@@ -2820,7 +2858,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35910/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_recycle/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_recycle.*|net.ipv4.tcp_tw_recycle = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -2838,7 +2876,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
 fi
 if [[ ! -f /proc/user_beancounters ]]; then
   # fix for https://community.centminmod.com/posts/35922/
-  if [[ "$CENTOS_SEVEN" = '7' && -f /etc/sysctl.d/101-sysctl.conf ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /etc/sysctl.d/101-sysctl.conf ]; then
     if [[ "$(sysctl -a 2>&1 | awk '/net.ipv4.tcp_tw_reuse/ {print $3}')" = '1' ]]; then
       sed -i 's|net.ipv4.tcp_tw_reuse.*|net.ipv4.tcp_tw_reuse = 0|' /etc/sysctl.d/101-sysctl.conf
       if [ -f /etc/sysctl.conf ]; then
@@ -2911,7 +2949,7 @@ yumfastmirror_check() {
   # disable yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
   if [ -f /etc/yum/pluginconf.d/fastestmirror.conf ]; then
-    if [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' && "$CENTOS_SEVEN" = '7' ]]; then
+    if [ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '1018000' ] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
       sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
     elif [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -lt '263000' ]]; then
       sed -i 's|enabled = 1|enabled = 0|' /etc/yum/pluginconf.d/fastestmirror.conf
@@ -3006,7 +3044,7 @@ echo "aborting script..."
 exit
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] &&  [[ "$DNF_ENABLE" = [yY] ]]; then
   # yum -y -q install epel-release
   if [[ "$DNF_COPR" = [yY] ]]; then
 cat > "/etc/yum.repos.d/dnf-centos.repo" <<EOF
