@@ -284,7 +284,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
   AXEL_VER='2.16.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
@@ -336,7 +336,7 @@ elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -896,7 +896,10 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y install yum-plugin-versionlock uw-imap-devel
     yum versionlock libc-client uw-imap-devel
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
@@ -931,7 +934,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -1022,7 +1025,7 @@ EOF
     fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
         if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf

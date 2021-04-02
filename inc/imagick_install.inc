@@ -110,7 +110,7 @@ checkimagicksys() {
     fi
 
 
-    if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
         # yum -y -q install epel-release
         if [[ ! -f /usr/bin/dnf ]]; then
             yum -y -q install dnf
