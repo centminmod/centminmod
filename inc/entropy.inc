@@ -1,6 +1,6 @@
 entropyup() {
 
-  if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]  && [[ "$DNF_ENABLE" = [yY] ]]; then
       if [[ ! -f /usr/bin/dnf ]]; then
         yum -y -q install dnf
       fi
@@ -32,7 +32,7 @@ if [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
       cmservice haveged restart
     fi
     
-  elif [[ ! -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" = '7' ]]; then
+  elif [[ ! -f /usr/lib/systemd/system/haveged.service ]] && [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
     echo "*************************************************"
     cecho "* Increase system Entropy pool availability" $boldgreen
     echo "*************************************************"
