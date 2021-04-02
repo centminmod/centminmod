@@ -157,7 +157,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
         sar_call
     fi
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
         if [[ $(rpm -q perl-LWP-Protocol-https >/dev/null 2>&1; echo $?) != '0' ]]; then
             yum${CACHESKIP} -y install perl-LWP-Protocol-https
             sar_call
