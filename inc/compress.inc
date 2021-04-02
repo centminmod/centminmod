@@ -30,6 +30,14 @@ compgcc_eight() {
     label=""
   fi
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+    label='gcc8 built'
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
 compgcc_nine() {
@@ -42,12 +50,30 @@ compgcc_nine() {
     label=""
   fi
   COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+  if [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+    label='gcc9 built'
+    source /opt/rh/gcc-toolset-9/enable
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
 }
 
 compgcc_ten() {
   if [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
     label='gcc10 built'
     source /opt/rh/devtoolset-10/enable
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+  if [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+    label='gcc10 built'
+    source /opt/rh/gcc-toolset-10/enable
     export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
     export CXXFLAGS="${CFLAGS}"
   else
