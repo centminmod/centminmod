@@ -105,6 +105,8 @@ echo "--------------------------------------------------------------------------
         yum -y module enable php:remi-7.4
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
         yum -y module disable php:remi-7.4
+      elif [[ "$pkgs" = 'oniguruma5php' || "$pkgs" = 'oniguruma5php-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
       else
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
       fi
