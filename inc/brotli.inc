@@ -130,6 +130,24 @@ scl_install() {
         /opt/rh/devtoolset-7/root/usr/bin/g++ --version
       fi
     fi
+  # centos 8
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+      if [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc ]]; then
+        if [[ "$(rpm -ql gcc-toolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
+        fi
+        sar_call
+        /opt/rh/gcc-toolset-10/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-10/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc ]]; then
+        if [[ "$(rpm -ql gcc-toolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
+        fi
+        sar_call
+      fi
+        echo
+        /opt/rh/gcc-toolset-9/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-9/root/usr/bin/g++ --version
   # centos 7
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
