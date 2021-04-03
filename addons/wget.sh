@@ -318,6 +318,19 @@ sar_call() {
   $SARCALL 1 1
 }
 
+libmetalink_install() {
+  echo
+  pushd "$DIR_TMP"
+  rm -rf libmetalink
+  git clone https://github.com/metalink-dev/libmetalink
+  ./buildconf
+  ./configure
+  make -j$(nproc)
+  make install
+  echo
+  popd
+}
+
 patch_wget() {
   if [[ "$WGET_VERSION" = '1.20.2' && -f /usr/local/src/centminmod/patches/wget/x509_v_flag_partial_chain.patch ]]; then
     if [ ! -f x509_v_flag_partial_chain.patch ]; then
@@ -502,7 +515,7 @@ gccdevtools() {
 }
 
 source_pcreinstall() {
-  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+  if [[ ! "$CENTOS_EIGHT" ]] && [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
   if [ -s "$ALTPCRELINKFILE" ]; then
@@ -548,9 +561,20 @@ source_pcreinstall() {
 }
 
 source_wgetinstall() {
-  if [[ "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$WGET_REBUILD_ALWAYS" = [yY] || "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+    libmetalink_install
+    export METALINK_CFLAGS='-I/usr/local/include'
+    export METALINK_LIBS='-L/usr/local/lib -lmetalink'
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/idn2.h ]]; then
+    yum -q -y install libidn2-devel libidn2
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/libpsl.h ]]; then
+    yum -q -y install libpsl libpsl-devel
+  fi
   cd "$DIR_TMP"
   cecho "Download $WGET_FILENAME ..." $boldyellow
   if [ -s "$WGET_FILENAME" ]; then
@@ -616,7 +640,7 @@ source_wgetinstall() {
     fi
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
-  ./configure --with-ssl=openssl
+  ./configure --with-ssl=openssl --with-metalink
   sar_call
   if [[ "$WGET_STRACE" = [yY] ]]; then
     make check
