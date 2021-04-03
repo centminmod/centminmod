@@ -135,6 +135,9 @@ checkimagicksys() {
                     # skip for initial installs to speed up install
                     if [[ "$INITIALINSTALL" != [yY] ]]; then
                         # yum clean all >/dev/null 2>&1
+                        if [[ "$CENTOS_EIGHT" = '8' ]]; then
+                            time $YUMDNFBIN -y install ImageMagick-devel ImageMagick-c++-devel --disablerepo=epel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        fi
                         if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                             time $YUMDNFBIN -y install ImageMagick-devel ImageMagick-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
@@ -151,7 +154,7 @@ checkimagicksys() {
                         time yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                     else
                         # yum clean all >/dev/null 2>&1
-                        if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
                         time yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
@@ -163,14 +166,26 @@ checkimagicksys() {
                     remisixyum
                 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
                     remisevenyum
+                elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+                    remieightyum
                 fi
                 if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
                     echo
                     echo "----------------------------------------------------------------------------------"
                     cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
                     echo "----------------------------------------------------------------------------------"
-                    if [[ "$CENTOS_SEVEN" = '7' ]]; then
-                        if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                    if [[ "$CENTOS_EIGHT" = '8' ]]; then
+                        time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                    fi
+                    sar_call
+                    if [[ "$CENTOS_EIGHT" != '8' ]]; then
+                        yum -y remove ImageMagick${DISABLEREPO_DNF}
+                    fi
+                    sar_call
+                    if [[ "$CENTOS_EIGHT" = '8' ]]; then
+                        time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
+                    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+                        if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
                         time $YUMDNFBIN -y install lcms2-devel libwebp7 libwebp7-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
@@ -178,14 +193,16 @@ checkimagicksys() {
                         time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
                     fi
                     sar_call
-                    yum -y remove ImageMagick${DISABLEREPO_DNF}
+                    if [[ "$CENTOS_EIGHT" != '8' ]]; then
+                        yum -y remove ImageMagick${DISABLEREPO_DNF}
+                    fi
                     sar_call                  
                     if [[ "$CENTOS_SIX" = '6' ]]; then
                         # time $YUMDNFBIN -y install libwebp libwebp-devel --skip-broken
                         time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                         sar_call
                     else
-                        if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
                         time $YUMDNFBIN -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
@@ -200,6 +217,8 @@ checkimagicksys() {
                             remisixyum
                         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
                             remisevenyum
+                        elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+                            remieightyum
                         fi
                     fi
                     time $YUMDNFBIN -y install lcms2-devel libwebp libwebp-devel OpenEXR-devel ilmbase-devel libGLU-devel libGL-devel mesa-libGL mesa-libGL-devel libXxf86vm libXxf86vm-devel --enablerepo=remi${DISABLEREPO_DNF}
@@ -209,7 +228,7 @@ checkimagicksys() {
                         time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} --skip-broken
                         sar_call
                     else
-                        if [[ "$(rpm -qa libwebp-devel)" ]]; then
+                        if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
                         time $YUMDNFBIN -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}

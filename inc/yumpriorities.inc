@@ -452,6 +452,7 @@ PRIOREXISTS=1
 :/\[epel\]/ , /gpgkey/
 :a
 priority=3
+exclude=ImageMagick*
 .
 :w
 :q
