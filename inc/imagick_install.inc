@@ -2,7 +2,7 @@ libheif_install() {
     echo "Install libheif routine"
     echo "installing x265, libde265 & libheif"
     enable_devtoolset
-    if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
         yum -q -y install cmake3 cmake3-data
     fi
     if [[ ! "$(rpm -qa mercurial)" ]]; then

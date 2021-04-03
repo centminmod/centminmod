@@ -180,7 +180,7 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     if [[ -f /bin/systemctl && "$(rpm -qa python36u)" ]]; then
       # remove ius community python36u
       yum -y remove python36u python36u-devel python36u-pip python36u-setuptools python36u-tools python36u-libs python36u-tkinter
-      if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+      if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
         check_pythonthree_six
         # reinstall removed dependencies from above removed ius community packages
         yum -y install cmake3 cmake3-data
@@ -189,7 +189,7 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     if [[ -f /bin/systemctl && "$(rpm -qa python36)" ]]; then
       # remove epel python36
       yum -y remove python36 python36-devel python36-pip python36-setuptools python36-tools python36-libs python36-tkinter
-      if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+      if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
         check_pythonthree_six
         # reinstall removed dependencies from above removed ius community packages
         yum -y install cmake3 cmake3-data
@@ -197,7 +197,7 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     fi
     yum -y install python3 python3-devel python3-pip python3-setuptools python3-tools python3-libs python3-tkinter
     rpm -ql python3 python3-devel python3-pip python3-setuptools python3-tools python3-tkinter | grep bin
-    if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
       # reinstall removed dependencies from above removed ius community packages
       yum -y install cmake3 cmake3-data
     fi
@@ -226,7 +226,7 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
 #     yum -y install python36 python36-devel python36-pip python36-setuptools python36-tools python36-libs python36-tkinter
 #     rpm -ql python36 python36-devel python36-pip python36-setuptools python36-tools python36-tkinter | grep bin
 #   fi
-#   if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+#   if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
 #     check_pythonthree_six
 #     # reinstall removed dependencies from above removed ius community packages
 #     yum -y install cmake3 cmake3-data

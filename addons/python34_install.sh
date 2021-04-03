@@ -175,7 +175,7 @@ if [[ "$(rpm -qa python34u)" ]]; then
   # install epel python34
   yum -y install python34 python34-devel python34-pip python34-setuptools python34-tools python34-libs python34-tkinter
 fi
-if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
   # reinstall removed dependencies from above removed ius community packages
   yum -y install cmake3 cmake3-data
 fi
