@@ -31,6 +31,7 @@ WGET_VERSION_EIGHT='1.21.1'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+WGET_OPENSSL='n'
 WGET_STRACE='n'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
@@ -575,6 +576,12 @@ source_wgetinstall() {
   if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/libpsl.h ]]; then
     yum -q -y install libpsl libpsl-devel
   fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/gpgme.h ]]; then
+    yum -q -y install gpgme gpgme-devel
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/gnutls/gnutls.h ]]; then
+    yum -q -y install gnutls gnutls-devel
+  fi
   cd "$DIR_TMP"
   cecho "Download $WGET_FILENAME ..." $boldyellow
   if [ -s "$WGET_FILENAME" ]; then
@@ -640,7 +647,13 @@ source_wgetinstall() {
     fi
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
-  ./configure --with-ssl=openssl --with-metalink
+  if [[ "$CENTOS_EIGHT" = '8' && "$WGET_OPENSSL" = [yY] ]]; then
+    ./configure --with-ssl=openssl --with-metalink
+  elif [[ "$CENTOS_EIGHT" = '8' && "$WGET_OPENSSL" != [yY] ]]; then
+    ./configure --with-ssl=gnutls --with-metalink
+  else
+    ./configure --with-ssl=openssl
+  fi
   sar_call
   if [[ "$WGET_STRACE" = [yY] ]]; then
     make check
