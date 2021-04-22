@@ -270,6 +270,26 @@ ngx_hpack_patch() {
     echo "patching nginx http/2 full HPACK encoding for nginx 1.19.10"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1017011' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1019010' ]]; then
+    pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+    cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
+    cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
+    cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
+    patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
+    echo 
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.19.10"
+    popd
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1020000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1020001' ]]; then
+    pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
+    cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
+    cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
+    cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
+    patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
+    echo 
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.20.0"
+    popd
+    NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
@@ -579,6 +599,9 @@ patchnginx() {
      elif [[ "$DETECT_NGXVER" -ge '1017011' && "$DETECT_NGXVER" -le '1019010' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
+     elif [[ "$DETECT_NGXVER" -ge '1020000' && "$DETECT_NGXVER" -le '1020001' ]]; then
+      NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
+      ngx_dynamic_tls_message
      fi
      rm -rf "${NGINXTLSPATCH_NAME}"
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
@@ -615,6 +638,11 @@ patchnginx() {
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
       fi
      elif [[ "$DETECT_NGXVER" -ge '1017011' && "$DETECT_NGXVER" -le '1019010' ]]; then
+      if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
+        echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
+        patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
+      fi
+     elif [[ "$DETECT_NGXVER" -ge '1020000' && "$DETECT_NGXVER" -le '1020001' ]]; then
       if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
