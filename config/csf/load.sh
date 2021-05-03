@@ -41,7 +41,7 @@ if [[ "$CHECK_LFEMAIL" && "$EMAILNOTIFY_SES" = [yY] && "$EMAILNOTIFY_SES_FROM_EM
   # https://community.centminmod.com/threads/20407/
   /usr/local/src/centminmod/tools/emailnotify.sh send /etc/csf/csf.report "lfd on $(hostname) Centmin Mod Extended Load Report $(date)"
 elif [[ "$CHECK_LFEMAIL" ]]; then
-  mail -s "lfd on $(hostname) Centmin Mod Extended Load Report $(date)" "$CHECK_LFEMAIL" -r "$CHECK_LFEMAIL" < /etc/csf/csf.report
+  mail -s "lfd on $(hostname) Centmin Mod Extended Load Report $(date)" -r "$CHECK_LFEMAIL" "$CHECK_LFEMAIL" < /etc/csf/csf.report
 elif [[ -z "$CHECK_LFEMAIL" ]]; then
   mail -s "lfd on $(hostname) Centmin Mod Extended Load Report $(date)" root < /etc/csf/csf.report
 fi
