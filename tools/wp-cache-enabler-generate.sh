@@ -90,7 +90,7 @@ cat > "/usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}
     #add_header Q-Ignore-Arg "\$q_ignorearg";
 
     # bypass cache if URLs containing the following strings
-    if (\$request_uri ~* "(\?add-to-cart=|\?wc-api=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
+    if (\$request_uri ~* "(\?add-to-cart=|\?wc-ajax=|\?wc-api=|/cart/|/my-account/|/checkout/|/shop/checkout/|/wp-json/|/store/checkout/|/customer-dashboard/|/addons/|/wp-admin/|/xmlrpc.php|/wp-(app|cron|login|register|mail).php|wp-.*.php|/feed/|index.php|wp-comments-popup.php|wp-links-opml.php|wp-locations.php|sitemap(_index)?.xml|[a-z0-9_-]+-sitemap([0-9]+)?.xml)") {
         set \$cache_uri 'nullcache';
     }
 
