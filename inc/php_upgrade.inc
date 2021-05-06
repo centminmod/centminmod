@@ -463,14 +463,21 @@ fi
             figlet -ckf standard "PHP: Download"
         fi
     
-        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | grep '404'
+        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
         PHPGEO_CURLCHECK=$?
         curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
         PHPGEO_CURLCHECKOK=$?
         # check if download url is 404 not found but also 
         # check for valid status header 200, 301 or 302
-        if [[ "$PHPGEO_CURLCHECK" = '0' || "$PHPGEO_CURLCHECKOK" != '0' ]]; then
-            PHP_MIRRORURL="https://www.php.net"
+        echo $PHPGEO_CURLCHECK
+        echo $PHPGEO_CURLCHECKOK
+        if [[ "$PHPGEO_CURLCHECK" = '0' && "$PHPGEO_CURLCHECKOK" != '0' ]]; then
+            #PHP_MIRRORURL="https://www.php.net"
+            PHP_MIRRORURL="https://centminmod.com"
+            PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+        elif [[ "$PHPGEO_CURLCHECKOK" != '0' ]]; then
+            #PHP_MIRRORURL="https://www.php.net"
+            PHP_MIRRORURL="https://centminmod.com"
             PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
         fi
         if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
@@ -479,9 +486,23 @@ fi
             $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ $WGETRETRY
             ERROR=$?
             if [[ "$ERROR" != '0' ]]; then
-                cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
-                checklogdetails
-                exit
+                # retry with local mirror
+                echo
+                echo "retrying local mirror download"
+                echo
+                PHP_MIRRORURL="https://centminmod.com"
+                PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
+                if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
+                    cecho "php ${phpver} Archive found, skipping download..." $boldgreen
+                else
+                    $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ $WGETRETRY
+                    ERROR=$?
+                    if [[ "$ERROR" != '0' ]]; then
+                        cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen
+                        checklogdetails
+                        exit        
+                    fi
+                fi
             else 
                 cecho "Download done." $boldyellow
                 echo ""
