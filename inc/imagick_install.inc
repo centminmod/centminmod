@@ -82,7 +82,7 @@ checkimagicksys() {
       if [[ "$CENTOS_SIX" = '6' ]]; then
         REMI_IMAGEMAGICK_PKGNAME='6'
       else
-        REMI_IMAGEMAGICK_PKGNAME=""
+        REMI_IMAGEMAGICK_PKGNAME="6"
       fi
     if [[ "$IMAGEMAGICK_HEIF" = [yY] ]]; then
         IMG_HEIFOPT=' ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic'
@@ -137,10 +137,29 @@ checkimagicksys() {
                         # yum clean all >/dev/null 2>&1
                         if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
-                            time $YUMDNFBIN -y install ImageMagick-devel ImageMagick-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         fi
-                        echo "$YUMDNFBIN -y update ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
-                        time $YUMDNFBIN -y update ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                        if [[ "$(convert --version | grep -q '6.9.11'; echo $?)" -eq '0' ]]; then
+                            echo "time $YUMDNFBIN -y swap ImageMagick ImageMagick${REMI_IMAGEMAGICK_PKGNAME} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y swap ImageMagick ImageMagick${REMI_IMAGEMAGICK_PKGNAME} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            # echo "time $YUMDNFBIN -y swap ImageMagick-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            # time $YUMDNFBIN -y swap ImageMagick-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            echo "time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            echo "time $YUMDNFBIN -y swap ImageMagick-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y swap ImageMagick-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            # echo "time $YUMDNFBIN -y swap ImageMagick-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            # time $YUMDNFBIN -y swap ImageMagick-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            echo "time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            echo "time $YUMDNFBIN -y swap ImageMagick-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y swap ImageMagick-libs${IMG_HEIFOPT} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                            echo "time $YUMDNFBIN -y update LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y update LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                        else
+                            echo "$YUMDNFBIN -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base"
+                            time $YUMDNFBIN -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO} -x ImageMagick7* --disablerepo=base
+                        fi
                         sar_call
                     fi
                 else
@@ -188,7 +207,7 @@ checkimagicksys() {
                         if [[ "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time $YUMDNFBIN -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         sar_call
                     fi
                     echo
@@ -212,7 +231,7 @@ checkimagicksys() {
                         if [[ "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time $YUMDNFBIN -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time $YUMDNFBIN -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                         sar_call
                     fi
                 fi
@@ -228,7 +247,7 @@ checkimagicksys() {
             if [[ "$CENTOS_SIX" = '6' ]]; then
                 yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw
             else
-                yum versionlock ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} LibRaw
+                yum versionlock ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw
             fi
         fi
         echo

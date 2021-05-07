@@ -66,6 +66,12 @@ if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
     fi
   fi
 
+  if [[ "$CENTOS_SIX" = '6' ]]; then
+    REMI_IMAGEMAGICK_PKGNAME='6'
+  else
+    REMI_IMAGEMAGICK_PKGNAME="6"
+  fi
+
 if [[ $(rpm -q yum-plugin-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-plugin-priorities${DISABLEREPO_DNF}
   sar_call
@@ -147,7 +153,7 @@ else
     echo
     PACKAGE='cracklib'
   else
-    PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
+    PACKAGE='virt-what gawk deltarpm ca-certificates yum-plugin-security yum-utils bash mlocate subversion rsyslog dos2unix net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel perl-Test-Simple perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop'
   fi
 fi
 
@@ -256,12 +262,6 @@ axelsetup
 geoipinstall
 customrpms
 
-      if [[ "$CENTOS_SIX" = '6' ]]; then
-        REMI_IMAGEMAGICK_PKGNAME='6'
-      else
-        REMI_IMAGEMAGICK_PKGNAME=""
-      fi
-
 # use Remi's ImageMagicK 6.9.* package
 if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
   if [ -f /etc/yum.repos.d/remi.repo ]; then
@@ -298,7 +298,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] &&  "$(uname -m)" != 'aarch64' ]]; then
             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
         fi
         # disable base as CentOS 7.8+ has ImageMagick packages of their own which may conflict with Remi's ImageMagick versions
-        ${YUMDNFBIN} -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities${VERSIONLOCK_REPO}${DISABLEREPO_DNF} --disablerepo=base
+        ${YUMDNFBIN} -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities${VERSIONLOCK_REPO}${DISABLEREPO_DNF} --disablerepo=base
         sar_call
       fi
       
