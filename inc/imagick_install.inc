@@ -173,7 +173,7 @@ checkimagicksys() {
                         if [[ "$(rpm -qa libwebp-devel)" ]]; then
                             yum -y swap libwebp-devel libwebp7-devel --enablerepo=remi
                         fi
-                        time yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel ImageMagick-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
+                        time yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-libs${IMG_HEIFOPT} LibRaw --enablerepo=remi${DISABLEREPO_DNF} --disableplugin=priorities${VERSIONLOCK_REPO}
                     fi
                 fi
             elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
