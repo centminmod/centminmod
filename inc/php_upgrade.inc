@@ -483,7 +483,7 @@ fi
         if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
             cecho "php ${phpver} Archive found, skipping download..." $boldgreen
         else
-            $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ $WGETRETRY
+            $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ_PHP $WGETRETRY_PHP
             ERROR=$?
             if [[ "$ERROR" != '0' ]]; then
                 # retry with local mirror
@@ -495,7 +495,7 @@ fi
                 if [ -s "php-${phpver}.tar.${PHPEXTSION}" ]; then
                     cecho "php ${phpver} Archive found, skipping download..." $boldgreen
                 else
-                    $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ $WGETRETRY
+                    $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" $AXELPHPUPGRADETARGZ_PHP $WGETRETRY_PHP
                     ERROR=$?
                     if [[ "$ERROR" != '0' ]]; then
                         cecho "Error: php-${phpver}.tar.${PHPEXTSION} download failed." $boldgreen

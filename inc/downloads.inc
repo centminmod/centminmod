@@ -38,20 +38,20 @@ phpxz_detect() {
   fi
   
   if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP='axel -4'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
+    DOWNLOADAPP_PHP="wget ${WGETOPT} --progress=bar"
+    WGETRETRY_PHP='--tries=3'
+    AXELPHPTARGZ_PHP=''
+    AXELPHPUPGRADETARGZ_PHP="-O php-${phpver}.tar.${PHPEXTSION}"
   elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP='axel'
-    WGETRETRY=''
-    AXELPHPTARGZ="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
-    AXELPHPUPGRADETARGZ="-o php-${phpver}.tar.${PHPEXTSION}"
+    DOWNLOADAPP_PHP="wget ${WGETOPT} --progress=bar"
+    WGETRETRY_PHP='--tries=3'
+    AXELPHPTARGZ_PHP=''
+    AXELPHPUPGRADETARGZ_PHP="-O php-${phpver}.tar.${PHPEXTSION}"
   else
-    DOWNLOADAPP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY='--tries=3'
-    AXELPHPTARGZ=''
-    AXELPHPUPGRADETARGZ="-O php-${phpver}.tar.${PHPEXTSION}"
+    DOWNLOADAPP_PHP="wget ${WGETOPT} --progress=bar"
+    WGETRETRY_PHP='--tries=3'
+    AXELPHPTARGZ_PHP=''
+    AXELPHPUPGRADETARGZ_PHP="-O php-${phpver}.tar.${PHPEXTSION}"
   fi   
 }
 
@@ -660,8 +660,8 @@ then
     if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
     else
-        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY"
-        $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY
+        echo "$DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP"
+        $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           # retry with local mirror
@@ -673,8 +673,8 @@ then
           if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
               cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
           else
-              echo "$DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY"
-              $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY
+              echo "$DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP"
+              $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP
               ERROR=$?
               if [[ "$ERROR" != '0' ]]; then
                 cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download failed." $boldgreen
@@ -702,8 +702,8 @@ ERROR=$?
       if [ -s "php-${PHP_VERSION}.tar.${PHPEXTSION}" ]; then
         cecho "php-${PHP_VERSION}.tar.${PHPEXTSION} found, skipping download..." $boldgreen
       else
-        echo "$DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY"
-        $DOWNLOADAPP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ $WGETRETRY
+        echo "$DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP"
+        $DOWNLOADAPP_PHP "${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.${PHPEXTSION}" $AXELPHPTARGZ_PHP $WGETRETRY_PHP
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
           cecho "Error: php-${PHP_VERSION}.tar.${PHPEXTSION} download again failed." $boldgreen
