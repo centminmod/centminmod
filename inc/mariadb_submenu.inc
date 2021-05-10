@@ -5,6 +5,7 @@ ENABLE_MARIADBTENUPGRADE='y'
 ENABLE_MARIADBTENTWOUPGRADE='n'
 ENABLE_MARIADBTENTHREEUPGRADE='n'
 ENABLE_MARIADBTENFOURUPGRADE='n'
+ENABLE_MARIADBTENFIVEUPGRADE='n'
 SKIP_INNODBFASTSHUTDOWNDISABLE='y'   # no longer needed as of MariaDB 10.2.5 https://mariadb.com/kb/en/library/upgrading-from-mariadb-101-to-mariadb-102/
 
 mariadb_upgrade_check_versionlock() {
@@ -55,19 +56,20 @@ do
   cecho "--------------------------------------------------------" $boldyellow
   cecho "     MariaDB MySQL Upgrade & Management Sub-Menu        " $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "0). Regenerate New MySQL Root User Password (local server)" $boldgreen
-  cecho "1). MariaDB 5.2.x Branch Upgrade Only" $boldgreen
-  cecho "2). MariaDB 5.2.x to MariaDB 5.5 YUM upgrade" $boldgreen
-  cecho "3). MariaDB 5.5 to MariaDB 10.x YUM upgrade" $boldgreen
-  cecho "4). MariaDB 5.5 to MariaDB 10.1.x YUM upgrade" $boldgreen
-  cecho "5). MariaDB 10.x to MariaDB 10.1.x YUM upgrade" $boldgreen
-  cecho "6). MariaDB 10.1.x to MariaDB 10.2.x YUM upgrade" $boldgreen
-  cecho "7). MariaDB 10.2.x to MariaDB 10.3.x YUM upgrade" $boldgreen
-  cecho "8). MariaDB 10.3.x to MariaDB 10.4.x YUM upgrade" $boldgreen
-  cecho "9). Back to Main menu" $boldgreen
+  cecho "0).  Regenerate New MySQL Root User Password (local server)" $boldgreen
+  cecho "1).  MariaDB 5.2.x Branch Upgrade Only" $boldgreen
+  cecho "2).  MariaDB 5.2.x to MariaDB 5.5 YUM upgrade" $boldgreen
+  cecho "3).  MariaDB 5.5 to MariaDB 10.x YUM upgrade" $boldgreen
+  cecho "4).  MariaDB 5.5 to MariaDB 10.1.x YUM upgrade" $boldgreen
+  cecho "5).  MariaDB 10.x to MariaDB 10.1.x YUM upgrade" $boldgreen
+  cecho "6).  MariaDB 10.1.x to MariaDB 10.2.x YUM upgrade" $boldgreen
+  cecho "7).  MariaDB 10.2.x to MariaDB 10.3.x YUM upgrade" $boldgreen
+  cecho "8).  MariaDB 10.3.x to MariaDB 10.4.x YUM upgrade" $boldgreen
+  cecho "9).  MariaDB 10.4.x to MariaDB 10.5.x YUM upgrade" $boldgreen
+  cecho "10). Back to Main menu" $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
 
-  read -ep "Enter option [ 0 - 9 ] " mmoption
+  read -ep "Enter option [ 0 - 10 ] " mmoption
   cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
@@ -371,7 +373,7 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
   if [[ "$MARIADBVERCHECK" = '10.4' ]]; then
 
     echo ""
-    cecho "MariaDB 10.3.x server already detected" $boldyellow
+    cecho "MariaDB 10.4.x server already detected" $boldyellow
 
   elif [ "$MARIADBVERCHECK" == '10.3' ]; then
 
@@ -393,6 +395,38 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-3-to-10-4_upgrade.log
 ;;
 9)
+  if [ -f /etc/my.cnf ]; then
+    DT=$(date +"%d%m%y-%H%M%S")
+    cp -a /etc/my.cnf "/etc/my.cnf-menu11-submenu9-autobackup-$DT"
+  fi
+centminlog
+{
+MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4`
+  if [[ "$MARIADBVERCHECK" = '10.5' ]]; then
+
+    echo ""
+    cecho "MariaDB 10.5.x server already detected" $boldyellow
+
+  elif [ "$MARIADBVERCHECK" == '10.4' ]; then
+
+    if [[ "$ENABLE_MARIADBTENFIVEUPGRADE" = [nN] ]]; then
+      echo "Place holder for now until MariaDB 10.5.x is ready to be added"
+    else
+      # echo "Place holder for now until MariaDB 10.4.x is ready to be added"
+      c7tmpsetup
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        mariadbtenfourtotenfiveupgrade
+      else
+        echo "currently only tested on CentOS 7 systems"
+      fi
+    fi
+  elif [ "$MARIADBVERCHECK" != '10.4' ]; then
+    echo "Need to be on MariaDB 10.4 before updating to MariaDB 10.5"
+    exit
+  fi
+} 2>&1 | tee ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb_10-4-to-10-5_upgrade.log
+;;
+10)
   break
 ;;
 esac

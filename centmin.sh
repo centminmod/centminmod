@@ -727,6 +727,7 @@ MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
 MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
 MARIADB_INSTALLTENTHREE='y' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENFIVE='n'  # MariaDB 10.5 YUM default install if set to yes
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -2010,7 +2011,9 @@ echo "" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 echo "Total Nginx First Time Install Time: $NGXINSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 ls -lah "${CENTMINLOGDIR}/centminmod_ngxinstalltime_${DT}.log"
 
-if [[ "$MARIADB_INSTALLTENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+if [[ "$MARIADB_INSTALLTENFIVE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
+  mariadbtenfive_installfunct
+elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtenthree_installfunct
