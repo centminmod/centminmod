@@ -560,6 +560,7 @@ sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startu
 sed -i '/^innodb_thread_concurrency/d' /etc/my.cnf
 sed -i '/^innodb_log_files_in_group/d' /etc/my.cnf
 sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
+sed -i '/^innodb_support_xa/d' /etc/my.cnf
 
 echo ""
 
