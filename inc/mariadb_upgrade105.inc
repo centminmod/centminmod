@@ -413,6 +413,18 @@ OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
 rpm -e $OLDMARIADBSERVER
 rpm -e $OLDGALERA
 
+# MariaDB 10.5 client package includes mytop
+# client already so no longer need EPEL version
+yum -y remove mytop
+if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
+fi
+if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
+fi
+
 mariadb105install
 
 if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then

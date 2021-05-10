@@ -307,6 +307,18 @@ sed -i '/^innodb_thread_concurrency/d' /etc/my.cnf
 sed -i '/^innodb_log_files_in_group/d' /etc/my.cnf
 sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
 
+# MariaDB 10.5 client package includes mytop
+# client already so no longer need EPEL version
+yum -y remove mytop
+if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
+fi
+if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
+fi
+
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
     echo ""
