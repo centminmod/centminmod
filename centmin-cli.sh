@@ -2386,6 +2386,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$MDB_INSTALL" = [
     systemctl daemon-reload -q
     systemctl restart mariadb -q
     if [[ "$(systemctl is-active mariadb -q; echo $?)" -eq '0' ]]; then
+      echo "... please wait ..."
       echo "Starting mariadb (via systemctl): [ OK ]"
     else
       echo "Starting mariadb (via systemctl): [ Failed ]"
