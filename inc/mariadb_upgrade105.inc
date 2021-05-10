@@ -561,6 +561,8 @@ sed -i '/^innodb_thread_concurrency/d' /etc/my.cnf
 sed -i '/^innodb_log_files_in_group/d' /etc/my.cnf
 sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
 sed -i '/^innodb_support_xa/d' /etc/my.cnf
+sed -i '/^innodb_file_format/d' /etc/my.cnf
+sed -i '/^innodb_large_prefix/d' /etc/my.cnf
 
 echo ""
 
