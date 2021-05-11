@@ -60,9 +60,13 @@ YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
 ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
 -----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
 fi
-  param_file=$(awk '/^  ssl_dhparam/ {print $2}' "$vhostconfig" | sed -e 's|;||g')
-  echo "replace: $param_file"
-  \cp -af /usr/local/nginx/conf/ssl/dhparam.pem "$param_file"
+  param_file=$(grep 'ssl_dhparam' /usr/local/nginx/conf/conf.d/test.com.ssl.conf | grep -v '#' | sed -e 's|;||g' | awk -F 'ssl_dhparam ' '{print $2}' | tr -d '[:space:]')
+  if [[ -f /usr/local/nginx/conf/ssl/dhparam.pem && -f "$param_file" ]]; then 
+    echo "replace: $param_file"
+    \cp -af /usr/local/nginx/conf/ssl/dhparam.pem "$param_file"
+  else
+    echo "skip replacement for: ssl_dhparam file"
+  fi
 }
 
 switch_ciphers_bulk() {
@@ -82,31 +86,33 @@ switch_ciphers() {
   reload="$3"
   if [ -f "$vhostconfig" ]; then
     if [[ "$choice" = 'int' ]]; then
+      source_ciphers=$(grep 'ssl_ciphers ' $vhostconfig | grep -v '#')
       ciphers='  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;'
       echo
       echo "switched off: ssl_prefer_server_ciphers"
-      sed -i "s|^  ssl_prefer_server_ciphers .*|  ssl_prefer_server_ciphers   off;|g" "$vhostconfig"
+      sed -i "s|^\([^#]*\)ssl_prefer_server_ciphers .*|  ssl_prefer_server_ciphers   off;|g" "$vhostconfig"
       echo -n "set: "
-      grep 'ssl_prefer_server_ciphers' "$vhostconfig"
+      grep 'ssl_prefer_server_ciphers' "$vhostconfig" | grep -v '#'
     elif [[ "$choice" = 'def' ]]; then
+      source_ciphers=$(grep 'ssl_ciphers ' $vhostconfig | grep -v '#')
       ciphers='  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-RSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA:ECDHE-ECDSA-DES-CBC3-SHA:ECDHE-RSA-DES-CBC3-SHA:EDH-RSA-DES-CBC3-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:DES-CBC3-SHA:!DSS;'
       echo
       echo "switched on: ssl_prefer_server_ciphers"
-      sed -i "s|^  ssl_prefer_server_ciphers .*|  ssl_prefer_server_ciphers   on;|g" "$vhostconfig"
+      sed -i "s|^\([^#]*\)ssl_prefer_server_ciphers .*|  ssl_prefer_server_ciphers   on;|g" "$vhostconfig"
       echo -n "set: "
-      grep 'ssl_prefer_server_ciphers' "$vhostconfig"
+      grep 'ssl_prefer_server_ciphers' "$vhostconfig" | grep -v '#'
     fi
-    sed -i "s|^  ssl_ciphers .*|${ciphers}|g" "$vhostconfig"
+    sed -i "s|^\([^#]*\)ssl_ciphers .*|${ciphers}|g" "$vhostconfig"
     dhparam_setup "$vhostconfig"
     echo
     echo "switched off ssl_session_tickets"
-    sed -i "s|^  ssl_session_tickets .*|  ssl_session_tickets off;|g" "$vhostconfig"
+    sed -i "s|^\([^#]*\)ssl_session_tickets .*|  ssl_session_tickets off;|g" "$vhostconfig"
     echo -n "set: "
-    grep 'ssl_session_tickets' "$vhostconfig"
+    grep 'ssl_session_tickets' "$vhostconfig" | grep -v '#'
     echo
     echo "switched ssl_ciphers"
     echo -n "set: "
-    grep 'ssl_ciphers' "$vhostconfig"
+    grep 'ssl_ciphers' "$vhostconfig" | grep -v '#'
     if [[ "$reload" != 'quiet' ]]; then
       echo
       service nginx reload
