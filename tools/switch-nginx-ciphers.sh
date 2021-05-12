@@ -89,8 +89,8 @@ switch_ciphers() {
       source_ciphers=$(grep 'ssl_ciphers ' $vhostconfig | grep -v '#')
       ciphers='  ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;'
       echo
-      echo "switched off: ssl_prefer_server_ciphers"
-      sed -i "s|^\([^#]*\)ssl_prefer_server_ciphers .*|  ssl_prefer_server_ciphers   off;|g" "$vhostconfig"
+      echo "switched on: ssl_prefer_server_ciphers"
+      sed -i "s|^\([^#]*\)ssl_prefer_server_ciphers .*|  ssl_prefer_server_ciphers   on;|g" "$vhostconfig"
       echo -n "set: "
       grep 'ssl_prefer_server_ciphers' "$vhostconfig" | grep -v '#'
     elif [[ "$choice" = 'def' ]]; then
