@@ -60,7 +60,7 @@ YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
 ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
 -----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
 fi
-  param_file=$(grep 'ssl_dhparam' /usr/local/nginx/conf/conf.d/test.com.ssl.conf | grep -v '#' | sed -e 's|;||g' | awk -F 'ssl_dhparam ' '{print $2}' | tr -d '[:space:]')
+  param_file=$(grep 'ssl_dhparam' "$vhostconfig" | grep -v '#' | sed -e 's|;||g' | awk -F 'ssl_dhparam ' '{print $2}' | tr -d '[:space:]')
   if [[ -f /usr/local/nginx/conf/ssl/dhparam.pem && -f "$param_file" ]]; then 
     echo "replace: $param_file"
     \cp -af /usr/local/nginx/conf/ssl/dhparam.pem "$param_file"
