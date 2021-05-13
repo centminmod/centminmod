@@ -33,7 +33,15 @@ testssl_run() {
 }
 
 dhparam_setup() {
-  vhostconfig="$1"
+  vhostconfig_dhparam="$1"
+  vhost_name=$(cat "$vhostconfig_dhparam" | grep '^\([^#]*\)server_name' | awk '{print $2}' | head -n1)
+  if [ -f "/usr/local/nginx/conf/ssl/${vhost_name}/${vhost_name}.crt.key.conf" ]; then
+    letsencrypt_dhparam_file="/usr/local/nginx/conf/ssl/${vhost_name}/${vhost_name}.crt.key.conf"
+    dhparam_dir="$(dirname "$letsencrypt_dhparam_file")"
+  else
+    letsencrypt_dhparam_file=
+    dhparam_dir=
+  fi
   if [ -f /usr/local/nginx/conf/ssl/dhparam.pem ]; then
     \cp -af /usr/local/nginx/conf/ssl/dhparam.pem /usr/local/nginx/conf/ssl/dhparam.pem-backup-${DT}
   fi
@@ -60,9 +68,16 @@ YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
 ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
 -----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
 fi
-  param_file=$(grep 'ssl_dhparam' "$vhostconfig" | grep -v '#' | sed -e 's|;||g' | awk -F 'ssl_dhparam ' '{print $2}' | tr -d '[:space:]')
+  if [ -f "$letsencrypt_dhparam_file" ]; then
+    param_file=$(grep 'ssl_dhparam' "/usr/local/nginx/conf/ssl/${vhost_name}/${vhost_name}.crt.key.conf" | grep -v '#' | sed -e 's|;||g' | awk -F 'ssl_dhparam ' '{print $2}' | tr -d '[:space:]')
+    param_msg="referenced in $letsencrypt_dhparam_file"
+  else
+    param_file=$(grep 'ssl_dhparam' "$vhostconfig_dhparam" | grep -v '#' | sed -e 's|;||g' | awk -F 'ssl_dhparam ' '{print $2}' | tr -d '[:space:]')
+    dhparam_dir="$(dirname "$param_file")"
+    param_msg=
+  fi
   if [[ -f /usr/local/nginx/conf/ssl/dhparam.pem && -f "$param_file" ]]; then 
-    echo "replace: $param_file"
+    echo "replace: $param_file $param_msg"
     \cp -af /usr/local/nginx/conf/ssl/dhparam.pem "$param_file"
   else
     echo "skip replacement for: ssl_dhparam file"
