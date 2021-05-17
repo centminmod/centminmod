@@ -81,62 +81,84 @@ cmservice() {
 }
 
 switch_malloc() {
-  if [[ "$JEMALLOC" = [yY] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
-    echo
-    cecho "check existing mysqld memory usage" $boldyellow
-    pidstat -rh -C mysqld | sed -e "s|$(hostname)|hostname|g"
-
-    echo
-    cecho "check listing at /etc/systemd/system/mariadb.service.d" $boldyellow
-    ls -lah /etc/systemd/system/mariadb.service.d
-
-    echo
-    cecho "inspect MariaDB MySQL server version_malloc_library value before switch" $boldyellow
-    mysqladmin var | grep 'version_malloc_library' | tr -s ' '
-
-    if [[ ! "$(lsof -p $(pidof mysqld) | grep 'jemalloc')" && "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' && -f /usr/lib64/libjemalloc.so.1 && ! -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]]; then
+  switchback=$1
+  JEMALLOC_MARIADBVER=$(mysqladmin -V | awk '{print $5}' | sed -e 's|,||g' -e 's|-||g' -e 's|MariaDB||' | cut -d . -f1,2)
+  if [[ "$JEMALLOC_MARIADBVER" = 10.[56] ]]; then
+    jemalloc_mariadb_bin='mariadbd'
+  elif [[ "$JEMALLOC_MARIADBVER" = 10.4 ]]; then
+    jemalloc_mariadb_bin='mysqld'
+  fi
+  if [[ "$JEMALLOC_MARIADBVER" = 10.[456] ]]; then
+    if [[ "$JEMALLOC" = [yY] && "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -eq '0' && "$switchback" != 'back' ]]; then
       echo
-      cecho "switch malloc from glibc system to jemalloc" $boldyellow
-      echo -e "[Service]\nEnvironment=\"LD_PRELOAD=/usr/lib64/libjemalloc.so.1\"" > /etc/systemd/system/mariadb.service.d/jemalloc.conf
-    else
-      skip='y'
-    fi
-    if [[ "$skip" = [yY] ]]; then
+      cecho "check existing $jemalloc_mariadb_bin memory usage" $boldyellow
+      pidstat -rh -C $jemalloc_mariadb_bin | sed -e "s|$(hostname)|hostname|g"
+  
       echo
-      cecho "criteria for switching to jemalloc was not met" $boldyellow
-      if [[ "$(lsof -p $(pidof mysqld) | grep 'jemalloc')" || "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" = 'jemalloc' ]]; then
-        if [ -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]; then
-          echo
-          echo "jemalloc malloc already in use by MariaDB MySQL"
-          echo "via /etc/systemd/system/mariadb.service.d/jemalloc.conf"
-        fi
+      cecho "check listing at /etc/systemd/system/mariadb.service.d" $boldyellow
+      ls -lah /etc/systemd/system/mariadb.service.d
+  
+      echo
+      cecho "inspect MariaDB MySQL server version_malloc_library value before switch" $boldyellow
+      mysqladmin var | grep 'version_malloc_library' | tr -s ' '
+  
+      if [[ ! "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" && "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' && -f /usr/lib64/libjemalloc.so.1 && ! -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]]; then
+        echo
+        cecho "switch malloc from glibc system to jemalloc" $boldyellow
+        echo -e "[Service]\nEnvironment=\"LD_PRELOAD=/usr/lib64/libjemalloc.so.1\"" > /etc/systemd/system/mariadb.service.d/jemalloc.conf
+      else
+        skip='y'
       fi
+      if [[ "$skip" = [yY] ]]; then
+        echo
+        cecho "criteria for switching to jemalloc was not met" $boldyellow
+        if [[ "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" || "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" = 'jemalloc' ]]; then
+          if [ -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]; then
+            echo
+            echo "jemalloc malloc already in use by MariaDB MySQL"
+            echo "via /etc/systemd/system/mariadb.service.d/jemalloc.conf"
+          fi
+        fi
+        echo
+        cecho "no changes were made" $boldyellow
+        cecho "aborting run..." $boldyellow
+        exit 1
+      else
+        echo
+        cecho "contents of /etc/systemd/system/mariadb.service.d/jemalloc.conf" $boldyellow
+        cat /etc/systemd/system/mariadb.service.d/jemalloc.conf
+  
+        echo
+        cecho "restarting MariaDB MySQL server for changes" $boldyellow
+        systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb
+  
+        echo
+        cecho "inspect MariaDB MySQL server version_malloc_library value after switch" $boldyellow
+        mysqladmin var | grep 'version_malloc_library' | tr -s ' '
+  
+        echo
+        cecho "check existing $jemalloc_mariadb_bin memory usage after switch" $boldyellow
+        pidstat -rh -C $jemalloc_mariadb_bin | sed -e "s|$(hostname)|hostname|g"
+      fi
+    elif [[ "$(mysqladmin ping -s >/dev/null 2>&1; echo $?)" -ne '0' && "$switchback" != 'back' ]]; then
       echo
-      cecho "no changes were made" $boldyellow
+      cecho "MariaDB MySQL server is not running" $boldyellow
       cecho "aborting run..." $boldyellow
       exit 1
-    else
-      echo
-      cecho "contents of /etc/systemd/system/mariadb.service.d/jemalloc.conf" $boldyellow
-      cat /etc/systemd/system/mariadb.service.d/jemalloc.conf
-
+    fi
+    if [[ "$switchback" = 'back' && -f /etc/systemd/system/mariadb.service.d/jemalloc.conf ]]; then
+      echo "Switching MariaDB from jemalloc to system glibc malloc default method"
+      rm -f /etc/systemd/system/mariadb.service.d/jemalloc.conf
       echo
       cecho "restarting MariaDB MySQL server for changes" $boldyellow
       systemctl daemon-reload; systemctl restart mariadb; systemctl status mariadb
-
       echo
       cecho "inspect MariaDB MySQL server version_malloc_library value after switch" $boldyellow
       mysqladmin var | grep 'version_malloc_library' | tr -s ' '
-
       echo
-      cecho "check existing mysqld memory usage after switch" $boldyellow
-      pidstat -rh -C mysqld | sed -e "s|$(hostname)|hostname|g"
+      cecho "check existing $jemalloc_mariadb_bin memory usage after switch" $boldyellow
+      pidstat -rh -C $jemalloc_mariadb_bin | sed -e "s|$(hostname)|hostname|g"
     fi
-  else
-    echo
-    cecho "MariaDB MySQL server is not running" $boldyellow
-    cecho "aborting run..." $boldyellow
-    exit 1
   fi
 }
 
@@ -145,7 +167,7 @@ numa_opt() {
     echo
     cecho "apply numa optimisation if required" $boldyellow
     if [[ -f /usr/bin/numactl && "$(numactl --hardware | awk '/available:/ {print $2}')" -gt '2' && ! -f /etc/systemd/system/mariadb.service.d/numa.conf ]]; then
-      echo -e "[Service]\nExecStart=\nExecStart=/usr/bin/numactl --interleave=all /usr/sbin/mysqld \$MYSQLD_OPTS \$_WSREP_NEW_CLUSTER \$_WSREP_START_POSITION\"" > /etc/systemd/system/mariadb.service.d/numa.conf
+      echo -e "[Service]\nExecStart=\nExecStart=/usr/bin/numactl --interleave=all /usr/sbin/${jemalloc_mariadb_bin} \$MYSQLD_OPTS \$_WSREP_NEW_CLUSTER \$_WSREP_START_POSITION\"" > /etc/systemd/system/mariadb.service.d/numa.conf
     else
       skip='y'
     fi
@@ -185,6 +207,9 @@ case "$1" in
   switch )
     switch_malloc
     ;;
+  switch-back )
+    switch_malloc back
+    ;;
   numa )
     numa_opt
     ;;
@@ -192,7 +217,7 @@ case "$1" in
     echo
     echo "Usage:"
     echo
-    echo "$0 {switch|numa}"
+    echo "$0 {switch|switch-back|numa}"
     echo
     ;;
 esac

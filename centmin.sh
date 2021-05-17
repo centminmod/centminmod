@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='682'
+SCRIPT_INCREMENTVER='683'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -406,7 +406,8 @@ PORTFLOOD_INTERVAL=300
 
 #####################################################
 # MariaDB Jemalloc
-# doh forgot MariaDB already uses jemalloc by default
+# for MariaDB 10.4+ and higher to switch from sytem
+# glibc to jemalloc memory allocator
 MARIADB_JEMALLOC='n'
 
 #####################################################
