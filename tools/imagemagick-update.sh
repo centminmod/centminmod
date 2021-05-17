@@ -274,7 +274,7 @@ checkimagicksys() {
       if [[ "$CENTOS_SIX" = '6' ]]; then
         REMI_IMAGEMAGICK_PKGNAME='6'
       else
-        REMI_IMAGEMAGICK_PKGNAME=""
+        REMI_IMAGEMAGICK_PKGNAME="6"
       fi
 
     cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
@@ -284,7 +284,7 @@ checkimagicksys() {
                 # skip for initial installs to speed up install
                 if [[ "$INITIALINSTALL" != [yY] ]]; then
                     yum clean all >/dev/null 2>&1
-                    yum -y update ImageMagick6 ImageMagick6-devel ImageMagick6-c++ ImageMagick6-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y update ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             else
                 if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -293,7 +293,7 @@ checkimagicksys() {
                     yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
                     yum clean all >/dev/null 2>&1
-                    yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
         elif [ ! -f /etc/yum.repos.d/remi.repo ]; then
@@ -303,7 +303,7 @@ checkimagicksys() {
             elif [[ "$CENTOS_SEVEN" = '7' ]]; then
                 remisevenyum
             fi
-            if [[ $(rpm -q ImageMagick >/dev/null 2>&1; echo $?) = '0' ]]; then
+            if [[ $(rpm -q ImageMagick${REMI_IMAGEMAGICK_PKGNAME} >/dev/null 2>&1; echo $?) = '0' ]]; then
                 echo
                 echo "----------------------------------------------------------------------------------"
                 cecho "Using Remi YUM repo ImageMagicK version" $boldyellow
@@ -315,7 +315,7 @@ checkimagicksys() {
                     # yum -y install libwebp libwebp-devel --skip-broken
                     yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
-                    yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
                 echo
             else
@@ -333,7 +333,7 @@ checkimagicksys() {
                     # yum -y install libwebp libwebp-devel --skip-broken
                     yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities --skip-broken
                 else
-                    yum -y install ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel --enablerepo=remi --disableplugin=priorities
+                    yum -y install ImageMagick${REMI_IMAGEMAGICK_PKGNAME} ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-devel ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++ ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-c++-devel --enablerepo=remi --disableplugin=priorities
                 fi
             fi
         fi

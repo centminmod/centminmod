@@ -1651,9 +1651,9 @@ yumupdatechecker() {
       if [[ "$CENTOS_SIX" = '6' ]]; then
         REMI_IMAGEMAGICK_PKGNAME='6'
       else
-        REMI_IMAGEMAGICK_PKGNAME=""
+        REMI_IMAGEMAGICK_PKGNAME="6"
       fi
-      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 ]]; then
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 ]]; then
         yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
         IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
         rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
@@ -1671,7 +1671,7 @@ yumupdatechecker() {
       cecho "-------------------------------------------------------------" $boldgreen
       cecho "  To update type these commands: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
-      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 ]]; then
+      if [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 ]]; then
         if [ "$IMAGEMAGICK_UPDATECHECK" -eq '0' ]; then
           echo "  run centmin.sh menu option 15 to update imagick PHP ext then run: "
           echo
@@ -2095,12 +2095,36 @@ multiphpcheck() {
 }
 
 mjemalloc() {
-    if [[ "$MARIADB_JEMALLOC" = [yY] && ! "$(grep libjemalloc /usr/bin/mysqld_safe)" && -f /usr/lib64/libjemalloc.so.1 ]]; then
-        # echo "switching MariaDB to jemalloc malloc method"
-        sed -i 's|^mysqld_ld_preload=|mysqld_ld_preload=/usr/lib64/libjemalloc.so.1|' /usr/bin/mysqld_safe
-        # service mysql restart
-        # pmap `pidof mysqld` | grep jemalloc
-    fi    
+    if [ -f /usr/bin/mysqladmin ]; then
+      JEMALLOC_MARIADBVER=$(mysqladmin -V | awk '{print $5}' | sed -e 's|,||g' -e 's|-||g' -e 's|MariaDB||' | cut -d . -f1,2)
+    fi
+    if [[ "$JEMALLOC_MARIADBVER" = 10.[56] ]]; then
+      jemalloc_mariadb_bin='mariadbd'
+    elif [[ "$JEMALLOC_MARIADBVER" = 10.4 ]]; then
+      jemalloc_mariadb_bin='mysqld'
+    fi
+    if [[ "$MARIADB_JEMALLOC" = [yY] && -f /usr/lib64/libjemalloc.so.1 && "$(mysqladmin var | grep 'version_malloc_library' | tr -s ' ' | grep -o 'jemalloc')" != 'jemalloc' ]]; then
+      if [[ "$JEMALLOC_MARIADBVER" = 10.[456] ]]; then
+        echo "MariaDB ver: $JEMALLOC_MARIADBVER"
+        # only for MariaDB 10.4, 10.5 and 10.6 or higher as they switched back to system glibc
+        # MariaDB 10.3 and early used jemalloc by default
+        if [[ ! "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" ]]; then
+          echo "Switching MariaDB to jemalloc malloc method"
+          echo -e "[Service]\nEnvironment=\"LD_PRELOAD=/usr/lib64/libjemalloc.so.1\"" > /etc/systemd/system/mariadb.service.d/jemalloc.conf
+        # else
+        #   echo "jemalloc malloc method already detected"
+        #   lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc'
+          echo
+          echo "You need to manually restart MariaDB MySQL service"
+          echo "for changes to take effect"
+        fi
+      fi
+    elif [[ "$MARIADB_JEMALLOC" != [yY] && -f /etc/systemd/system/mariadb.service.d/jemalloc.conf && "$(lsof -p $(pidof $jemalloc_mariadb_bin) | grep 'jemalloc')" ]]; then
+      echo "Switching MariaDB from jemalloc to system glibc malloc default method"
+      rm -f /etc/systemd/system/mariadb.service.d/jemalloc.conf
+      echo "You need to manually restart MariaDB MySQL service"
+      echo "for changes to take effect"
+    fi
 }
 
 fixlogrotate() {

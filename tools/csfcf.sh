@@ -193,6 +193,12 @@ csfadd() {
 	# auto fix previous bug
 	# https://community.centminmod.com/posts/45907/
 	sed -i '/^ip/d' /etc/csf/csf.ignore
+
+	# remove changed CF IPs from https://www.cloudflare.com/ips/
+	sed -i '/^104.16.0.0\/12/d' /etc/csf/csf.ignore
+	sed -i '/^199.27.128.0\/21/d' /etc/csf/csf.ignore
+	sed -i '/^104.16.0.0\/12/d' /etc/csf/csf.allow
+	sed -i '/^199.27.128.0\/21/d' /etc/csf/csf.allow
 }
 
 ###############################

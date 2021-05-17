@@ -1,4 +1,4 @@
-ZSTD_VER='1.4.8'
+ZSTD_VER='1.5.0'
 LZFOUR_VER='1.9.2'
 PIGZ_VER='2.4'
 PBZIP_VER='1.1.13'
@@ -137,7 +137,14 @@ zstdinstall() {
     tar xvzf zstd-${ZSTD_VER}.tar.gz
     cd zstd-${ZSTD_VER}
     make clean
-    make -j$(nproc)
+    if [[ "$(grep 'lib-mt' Makefile)" ]]; then
+      echo
+      echo "make lib-mt"
+      echo
+      make lib-mt -j$(nproc)
+    else
+      make -j$(nproc)
+    fi
     make install
     if [ -f /usr/local/bin/zstd ]; then
       cecho "zstd installed" $boldyellow
