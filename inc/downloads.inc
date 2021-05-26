@@ -30,7 +30,7 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: php-${PHP_VERSION}.tar.gz download failed." $boldgreen
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2118,7 +2118,7 @@ ERROR=$?
 	if [[ "$ERROR" != '0' ]]; then
 	cecho "Error: ${OPENSSL_LINKFILE} download failed." $boldgreen
 checklogdetails
-	exit #$ERROR
+	# exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -2789,7 +2789,9 @@ mongodbphptarball
 
 gperftools
 
-openssldownload
+  if [[ "$LIBRESSL_SWITCH" = 'n' ]]; then
+    openssldownload
+  fi
 
 libressldownload
 
