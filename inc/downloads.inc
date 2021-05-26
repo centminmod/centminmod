@@ -38,20 +38,20 @@ phpxz_detect() {
   fi
   
   if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP_PHP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY_PHP='--tries=3'
+    DOWNLOADAPP_PHP="curl -4"
+    WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP=''
-    AXELPHPUPGRADETARGZ_PHP="-O php-${phpver}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP_PHP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY_PHP='--tries=3'
+    DOWNLOADAPP_PHP="curl -4"
+    WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP=''
-    AXELPHPUPGRADETARGZ_PHP="-O php-${phpver}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   else
-    DOWNLOADAPP_PHP="wget ${WGETOPT} --progress=bar"
-    WGETRETRY_PHP='--tries=3'
+    DOWNLOADAPP_PHP="curl -4"
+    WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP=''
-    AXELPHPUPGRADETARGZ_PHP="-O php-${phpver}.tar.${PHPEXTSION}"
+    AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   fi   
 }
 
