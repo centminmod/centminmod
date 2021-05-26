@@ -19,11 +19,11 @@ branchname='123.08stable'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='08'
 SCRIPT_VERSION="${SCRIPT_MAJORVER}-eva2000.${SCRIPT_MINORVER}"
-SCRIPT_DATE='31/07/2015'
+SCRIPT_DATE='26/05/2021'
 SCRIPT_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (vbtechsupport.com)'
 SCRIPT_URL='http://centminmod.com'
-COPYRIGHT="Copyright 2011-2019 CentminMod.com"
+COPYRIGHT="Copyright 2011-2021 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -386,7 +386,7 @@ MYSQL_INSTALL=n              # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL=n           # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.17.10'        # Use this version of Nginx
+NGINX_VERSION='1.21.0'        # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINXDIR='/usr/local/nginx'

@@ -507,7 +507,7 @@ fi
 # http://nginx.org/en/docs/stream/ngx_stream_core_module.html
 NGXINSTALL_VER=$(echo $NGINX_VERSION | cut -d . -f1,2)
 NGXUPGRADE_VER=$(echo $ngver | cut -d . -f1,2)
-if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.14' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.15' ]]; then
+if [[ "$ngver" && "$NGXUPGRADE_VER" = '1.9' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.10' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.11' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.12' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.13' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.14' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.15' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.16' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.17' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.18' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.19' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.20' ]] || [[ "$ngver" && "$NGXUPGRADE_VER" = '1.21' ]]; then
 	if [[ "$NGINX_STREAM" = [yY] ]]; then
 		STREAM=' --with-stream --with-stream_ssl_module'
 	else
