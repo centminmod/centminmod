@@ -151,6 +151,9 @@ installopenssl() {
         export BPATH=$DIR_TMP
         export STATICLIBSSL="${BPATH}/staticlibssl"
     
+        if [ ! -f "${OPENSSL_LINKFILE}" ]; then
+            wget -4 "${OPENSSL_LINK}" -O "${DIR_TMP}/${OPENSSL_LINKFILE}"
+        fi
         tar xzf ${OPENSSL_LINKFILE}
         #-- Build static openssl
         cd ${DIR_TMP}/openssl-${OPENSSL_VERSION}
