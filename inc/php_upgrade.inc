@@ -253,8 +253,8 @@ fi
     if [ -s php-${phpver}.tar.gz ]; then
         cecho "php ${phpver} Archive found, skipping download..." $boldgreen
     else
-        echo "$DOWNLOADAPP ${PHP_MIRRORURL}/distributions/php-${phpver}.tar.gz $AXELPHPUPGRADETARGZ $WGETRETRY"
-        $DOWNLOADAPP ${PHP_MIRRORURL}/distributions/php-${phpver}.tar.gz $AXELPHPUPGRADETARGZ $WGETRETRY
+        echo "curl -4 ${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.gz -o php-${PHP_VERSION}.tar.gz"
+        curl -4 ${PHP_MIRRORURL}/distributions/php-${PHP_VERSION}.tar.gz -o php-${PHP_VERSION}.tar.gz
     fi
 
     tar xzvf php-${phpver}.tar.gz
