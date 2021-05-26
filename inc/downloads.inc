@@ -40,17 +40,17 @@ phpxz_detect() {
   if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP_PHP="curl -4"
     WGETRETRY_PHP=''
-    AXELPHPTARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
+    AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP_PHP="curl -4"
     WGETRETRY_PHP=''
-    AXELPHPTARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
+    AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   else
     DOWNLOADAPP_PHP="curl -4"
     WGETRETRY_PHP=''
-    AXELPHPTARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
+    AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   fi   
 }
