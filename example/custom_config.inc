@@ -103,7 +103,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
-NGINX_VERSION='1.19.10'      # Use this version of Nginx
+NGINX_VERSION='1.21.0'      # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_STAPLE_CACHE_OVERRIDE='n' # Enable will override Nginx OCSP stapling cache refresh time of 3600 seconds
@@ -346,7 +346,7 @@ LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.2'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.4'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.4'      # MongoDB PHP version

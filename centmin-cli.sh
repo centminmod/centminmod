@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='683'
+SCRIPT_INCREMENTVER='689'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -692,7 +692,7 @@ SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.2'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.4'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.4'      # MongoDB PHP version
@@ -753,7 +753,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.19.10'       # Use this version of Nginx
+NGINX_VERSION='1.21.0'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'            # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_STAPLE_CACHE_OVERRIDE='n' # Enable will override Nginx OCSP stapling cache refresh time of 3600 seconds
@@ -894,7 +894,7 @@ WGET_VERSION_EIGHT='1.21.1'
 ###############################################################
 # cloudflare authenticated origin pull cert
 # setup https://community.centminmod.com/threads/13847/
-CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/360044928032/origin-pull-ca.pem'
+CLOUDFLARE_AUTHORIGINPULLCERT='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 VHOST_CFAUTHORIGINPULL='y'
 ###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
