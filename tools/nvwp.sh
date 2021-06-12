@@ -27,7 +27,7 @@ OPENSSL_VERSION=$(awk -F "'" /'^OPENSSL_VERSION=/ {print $2}' $CUR_DIR/centmin.s
 SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nvwp.log"
 USE_NGINXMAINEXTLOGFORMAT='n'
-CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/360044928032/origin-pull-ca.pem'
+CLOUDFLARE_AUTHORIGINPULLCERT='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 ###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
 # the details of the self-signed SSL certificate that is auto 

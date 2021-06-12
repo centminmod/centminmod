@@ -28,7 +28,7 @@ SCRIPT_DIR=$(readlink -f $(dirname ${BASH_SOURCE[0]}))
 LOGPATH="${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv.log"
 USE_NGINXMAINEXTLOGFORMAT='n'
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
-CLOUDFLARE_AUTHORIGINPULLCERT='https://support.cloudflare.com/hc/en-us/article_attachments/360044928032/origin-pull-ca.pem'
+CLOUDFLARE_AUTHORIGINPULLCERT='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 VHOST_CFAUTHORIGINPULL='y'
 ###############################################################
 # Letsencrypt integration via addons/acmetool.sh auto detection
