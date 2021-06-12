@@ -6,7 +6,7 @@
 ###################################################
 DT=$(date +"%d%m%y-%H%M%S")
 cf_auth_origin_cert_dir='/usr/local/nginx/conf/ssl/cloudflare'
-cf_auth_origin_cert='https://support.cloudflare.com/hc/en-us/article_attachments/360044928032/origin-pull-ca.pem'
+cf_auth_origin_cert='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 
 cfauthorigin_cronsetup() {
   if [[ -z "$(crontab -l 2>&1 | grep '\/usr\/local\/src\/centminmod\/tools\/cf-authenticated-origin-cert-update.sh')" && -f "/usr/local/src/centminmod/tools/cf-authenticated-origin-cert-update.sh" ]]; then
