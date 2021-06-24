@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.73'
+ACMEVER='1.0.75'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -42,7 +42,7 @@ ECC_ACMEHOMESUFFIXDUAL='_ecc'
 ECC_SUFFIXDUAL='-ecc'
 ECCFLAG_DUAL=' --ecc'
 
-STAGING_OPT=' --staging'
+STAGING_OPT=' --staging --server letsencrypt_test'
 CENTMINLOGDIR='/root/centminlogs'
 USE_NGINXMAINEXTLOGFORMAT='n'
 DIR_TMP='/svr-setup'
@@ -84,7 +84,7 @@ CF_Token=''
 CF_Account_ID=''
 ###############################################################
 UNATTENDED='n'
-NOTICE='y'
+NOTICE='n'
 CHECKVERSION='y'
 SCRIPTCHECKURL='https://acmetool.centminmod.com'
 ###############################################################
@@ -131,6 +131,8 @@ checkver( ){
     echo "!!!  there maybe a newer version of $0 available  !!!"
     echo "https://community.centminmod.com/posts/34492/"
     echo "update using centmin.sh menu option 23 submenu option 2"
+    echo
+    echo "or via command: cmupdate"
     echo
     echo "Always ensure Current Version is higher or equal to Latest Version"
     echo "------------------------------------------------------------------------------"
@@ -271,13 +273,13 @@ else
 fi
 
 if [[ "$ACMETWO_API" = [yY] ]]; then
-  ACME_APIENDPOINTTEST=' --server https://acme-staging-v02.api.letsencrypt.org/directory'
+  ACME_APIENDPOINTTEST=""
   ACME_APIENDPOINT=""
-  STAGING_OPT=' --server https://acme-staging-v02.api.letsencrypt.org/directory'
+  STAGING_OPT=' --staging --server letsencrypt_test'
 else
   ACME_APIENDPOINTTEST=""
   ACME_APIENDPOINT=""
-  STAGING_OPT=' --staging'
+  STAGING_OPT=' --staging --server letsencrypt_test'
 fi
 
 if [[ "$ACME_MUSTSTAPLE" = [yY] ]]; then
@@ -338,6 +340,30 @@ fi
   else
     NGX_LOGFORMAT='combined'
   fi
+
+#####################
+fix_acme_endpoint() {
+  if [ -d /root/.acme.sh/ ]; then
+    find /root/.acme.sh/ -type f -name "*.csr" | while read f; do
+      configname=$(echo "$f" | sed -e 's|\.csr|\.conf|g')
+      if [[ -f "$configname" && "$(grep "Le_API='https://acme-v01.api" $configname)" ]]; then
+        echo "-------------------------------------------------------------"
+        echo "Check Le_API variable in $configname"
+        echo "-------------------------------------------------------------"
+        echo
+        grep '\.api' "$configname"
+        echo
+        echo "-------------------------------------------------------------"
+        echo "Update Le_API in $configname"
+        echo "-------------------------------------------------------------"
+        echo
+        sed -i "s|Le_API='https:\/\/acme-v01.api|Le_API='https:\/\/acme-v02.api|" "$configname"
+        grep 'Le_API=' "$configname"
+        echo
+      fi
+    done
+  fi
+}
 
 #####################
 listlogs() {
@@ -693,6 +719,7 @@ install_acme() {
   "$ACMEBINARY" -h
   echo
   set_default_ca
+  fix_acme_endpoint
   cecho "-----------------------------------------------------" $boldgreen
   echo "check acme auto renew cronjob setup: "
   cecho "-----------------------------------------------------" $boldgreen
@@ -739,10 +766,14 @@ update_acme() {
   if [[ "$QUITEOUTPUT" != 'quite' ]]; then
     echo
     set_default_ca
+    fix_acme_endpoint
     cecho "-----------------------------------------------------" $boldgreen
     echo "check acme auto renew cronjob setup: "
     cecho "-----------------------------------------------------" $boldgreen
-   crontab -l | grep acme.sh
+    crontab -l | grep acme.sh
+  else
+    set_default_ca
+    fix_acme_endpoint
   fi
   cecho "-----------------------------------------------------" $boldgreen
   echo "acme.sh updated"
