@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.74'
+ACMEVER='1.0.75'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -770,7 +770,10 @@ update_acme() {
     cecho "-----------------------------------------------------" $boldgreen
     echo "check acme auto renew cronjob setup: "
     cecho "-----------------------------------------------------" $boldgreen
-   crontab -l | grep acme.sh
+    crontab -l | grep acme.sh
+  else
+    set_default_ca
+    fix_acme_endpoint
   fi
   cecho "-----------------------------------------------------" $boldgreen
   echo "acme.sh updated"
