@@ -1,0 +1,209 @@
+From dea5f0e827021b24581e735e2998fed07036acb7 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Wed, 5 May 2021 12:42:17 +0200
+Subject: [PATCH 3/7] Fix #76452: Crash while parsing blob data in
+ firebird_fetch_blob
+
+We need to prevent integer overflow when calling `erealloc()` with
+`len+1`.
+
+(cherry picked from commit 286162e9b03071c4308e7e92597bca4239f49d89)
+---
+ ext/pdo_firebird/firebird_statement.c |   5 +++++
+ ext/pdo_firebird/tests/bug_76452.data | Bin 0 -> 856 bytes
+ ext/pdo_firebird/tests/bug_76452.phpt |  31 ++++++++++++++++++++++++++
+ 3 files changed, 36 insertions(+)
+ create mode 100644 ext/pdo_firebird/tests/bug_76452.data
+ create mode 100644 ext/pdo_firebird/tests/bug_76452.phpt
+
+diff --git a/ext/pdo_firebird/firebird_statement.c b/ext/pdo_firebird/firebird_statement.c
+index 1c0f5b6071..c5e6b684c3 100644
+--- a/ext/pdo_firebird/firebird_statement.c
++++ b/ext/pdo_firebird/firebird_statement.c
+@@ -294,6 +294,11 @@ static int firebird_fetch_blob(pdo_stmt_t *stmt, int colno, char **ptr, /* {{{ *
+ 		unsigned short seg_len;
+ 		ISC_STATUS stat;
+ 
++		/* prevent overflow */
++		if (*len == ZEND_ULONG_MAX) {
++			result = 0;
++			goto fetch_blob_end;
++		}
+ 		*ptr = S->fetch_buf[colno] = erealloc(S->fetch_buf[colno], *len+1);
+ 
+ 		for (cur_len = stat = 0; (!stat || stat == isc_segment) && cur_len < *len; cur_len += seg_len) {
+
+From 9543fdf49a36d4d7d341dd8065b341c55680acc6 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Fri, 30 Apr 2021 14:10:50 +0200
+Subject: [PATCH 4/7] Fix #76450: SIGSEGV in firebird_stmt_execute
+
+We need to verify that the `result_size` is not larger than our buffer,
+and also should make sure that the `len` which is passed to
+`isc_vax_integer()` has a permissible value; otherwise we bail out.
+
+(cherry picked from commit bcbf8aa0c96d8d9e81ec3428232485555fae0b37)
+---
+ ext/pdo_firebird/firebird_statement.c |   7 +++++++
+ ext/pdo_firebird/tests/bug_76450.data | Bin 0 -> 464 bytes
+ ext/pdo_firebird/tests/bug_76450.phpt |  29 ++++++++++++++++++++++++++
+ 3 files changed, 36 insertions(+)
+ create mode 100644 ext/pdo_firebird/tests/bug_76450.data
+ create mode 100644 ext/pdo_firebird/tests/bug_76450.phpt
+
+diff --git a/ext/pdo_firebird/firebird_statement.c b/ext/pdo_firebird/firebird_statement.c
+index c5e6b684c3..bdde6c7cf2 100644
+--- a/ext/pdo_firebird/firebird_statement.c
++++ b/ext/pdo_firebird/firebird_statement.c
+@@ -133,8 +133,14 @@ static int firebird_stmt_execute(pdo_stmt_t *stmt) /* {{{ */
+ 				}
+ 				if (result[0] == isc_info_sql_records) {
+ 					unsigned i = 3, result_size = isc_vax_integer(&result[1], 2);
++					if (result_size > sizeof(result)) {
++						goto error;
++					}
+ 					while (result[i] != isc_info_end && i < result_size) {
+ 						short len = (short) isc_vax_integer(&result[i + 1], 2);
++						if (len != 1 && len != 2 && len != 4) {
++							goto error;
++						}
+ 						if (result[i] != isc_info_req_select_count) {
+ 							affected_rows += isc_vax_integer(&result[i + 3], len);
+ 						}
+@@ -158,6 +164,7 @@ static int firebird_stmt_execute(pdo_stmt_t *stmt) /* {{{ */
+ 		return 1;
+ 	} while (0);
+ 
++error:
+ 	RECORD_ERROR(stmt);
+ 
+ 	return 0;
+
+From bced1923e48355048fd6a05484244b7163467342 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Fri, 30 Apr 2021 13:53:21 +0200
+Subject: [PATCH 5/7] Fix #76449: SIGSEGV in firebird_handle_doer
+
+We need to verify that the `result_size` is not larger than our buffer,
+and also should make sure that the `len` which is passed to
+`isc_vax_integer()` has a permissible value; otherwise we bail out.
+
+(cherry picked from commit 08da7c73726f7b86b67d6f0ff87c73c585a7834a)
+---
+ ext/pdo_firebird/firebird_driver.c    |   9 +++++++++
+ ext/pdo_firebird/tests/bug_76449.data | Bin 0 -> 464 bytes
+ ext/pdo_firebird/tests/bug_76449.phpt |  23 +++++++++++++++++++++++
+ 3 files changed, 32 insertions(+)
+ create mode 100644 ext/pdo_firebird/tests/bug_76449.data
+ create mode 100644 ext/pdo_firebird/tests/bug_76449.phpt
+
+diff --git a/ext/pdo_firebird/firebird_driver.c b/ext/pdo_firebird/firebird_driver.c
+index 3b39cc6c8b..62caf86631 100644
+--- a/ext/pdo_firebird/firebird_driver.c
++++ b/ext/pdo_firebird/firebird_driver.c
+@@ -253,8 +253,17 @@ static zend_long firebird_handle_doer(pdo_dbh_t *dbh, const char *sql, size_t sq
+ 	if (result[0] == isc_info_sql_records) {
+ 		unsigned i = 3, result_size = isc_vax_integer(&result[1],2);
+ 
++		if (result_size > sizeof(result)) {
++			ret = -1;
++			goto free_statement;
++		}
+ 		while (result[i] != isc_info_end && i < result_size) {
+ 			short len = (short)isc_vax_integer(&result[i+1],2);
++			/* bail out on bad len */
++			if (len != 1 && len != 2 && len != 4) {
++				ret = -1;
++				goto free_statement;
++			}
+ 			if (result[i] != isc_info_req_select_count) {
+ 				ret += isc_vax_integer(&result[i+3],len);
+ 			}
+
+From eec3aaecf00b5a418a03c0531351a34260e11427 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Thu, 29 Apr 2021 15:26:22 +0200
+Subject: [PATCH 6/7] Fix #76448: Stack buffer overflow in firebird_info_cb
+
+We ensure not to overflow the stack allocated buffer by using `strlcat`.
+
+(cherry picked from commit 67afa32541ebc4abbf633cb1e7e879b2fbb616ad)
+---
+ ext/pdo_firebird/firebird_driver.c    |   8 +++++---
+ ext/pdo_firebird/tests/bug_76448.data | Bin 0 -> 749 bytes
+ ext/pdo_firebird/tests/bug_76448.phpt |  23 +++++++++++++++++++++++
+ 3 files changed, 28 insertions(+), 3 deletions(-)
+ create mode 100644 ext/pdo_firebird/tests/bug_76448.data
+ create mode 100644 ext/pdo_firebird/tests/bug_76448.phpt
+
+diff --git a/ext/pdo_firebird/firebird_driver.c b/ext/pdo_firebird/firebird_driver.c
+index 62caf86631..f9ec0eb847 100644
+--- a/ext/pdo_firebird/firebird_driver.c
++++ b/ext/pdo_firebird/firebird_driver.c
+@@ -556,14 +556,16 @@ static int firebird_handle_set_attribute(pdo_dbh_t *dbh, zend_long attr, zval *v
+ }
+ /* }}} */
+ 
++#define INFO_BUF_LEN 512
++
+ /* callback to used to report database server info */
+ static void firebird_info_cb(void *arg, char const *s) /* {{{ */
+ {
+ 	if (arg) {
+ 		if (*(char*)arg) { /* second call */
+-			strcat(arg, " ");
++			strlcat(arg, " ", INFO_BUF_LEN);
+ 		}
+-		strcat(arg, s);
++		strlcat(arg, s, INFO_BUF_LEN);
+ 	}
+ }
+ /* }}} */
+@@ -574,7 +576,7 @@ static int firebird_handle_get_attribute(pdo_dbh_t *dbh, zend_long attr, zval *v
+ 	pdo_firebird_db_handle *H = (pdo_firebird_db_handle *)dbh->driver_data;
+ 
+ 	switch (attr) {
+-		char tmp[512];
++		char tmp[INFO_BUF_LEN];
+ 
+ 		case PDO_ATTR_AUTOCOMMIT:
+ 			ZVAL_LONG(val,dbh->auto_commit);
+
+From 21368561ec3949872822e4f24659d91ab590ec69 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 20 Jun 2021 22:20:38 -0700
+Subject: [PATCH 7/7] Update NEWS
+
+(cherry picked from commit c68a687566591e2268f35d124a90c7d556ce968b)
+(cherry picked from commit 7598733c51af30611aa64e456c9a777069d2efb9)
+---
+ NEWS | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index 63295d3b76..b1b31e5dd0 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,19 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.3.29
++
++- Core:
++  . Fixed #81122: SSRF bypass in FILTER_VALIDATE_URL. (CVE-2021-21705) (cmb)
++
++- PDO_Firebird:
++  . Fixed #76448: Stack buffer overflow in firebird_info_cb. (CVE-2021-21704)
++    (cmb)
++  . Fixed #76449: SIGSEGV in firebird_handle_doer. (CVE-2021-21704) (cmb)
++  . Fixed #76450: SIGSEGV in firebird_stmt_execute. (CVE-2021-21704) (cmb)
++  . Fixed #76452: Crash while parsing blob data in firebird_fetch_blob.
++    (CVE-2021-21704) (cmb)
++
+ Backported from 7.3.28
+ 
+ - Imap:
+-- 
+2.31.1
+
