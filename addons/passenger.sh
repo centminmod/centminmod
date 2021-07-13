@@ -12,7 +12,7 @@ export LC_CTYPE=en_US.UTF-8
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
-RUBYVER='2.6.3'
+RUBYVER='3.0.1'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile

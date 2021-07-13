@@ -1,0 +1,88 @@
+From 881c7026fb530c247bf66cfefe8c800877a5be61 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Mon, 14 Jun 2021 13:22:27 +0200
+Subject: [PATCH 1/2] Fix #81122: SSRF bypass in FILTER_VALIDATE_URL
+
+We need to ensure that the password detected by parse_url() is actually
+a valid password; we can re-use is_userinfo_valid() for that.
+
+(cherry picked from commit a5538c62293fa782fcc382d0635cfc0c8b9190e3)
+---
+ ext/filter/logical_filters.c   |  4 +++-
+ ext/filter/tests/bug81122.phpt | 21 +++++++++++++++++++++
+ 2 files changed, 24 insertions(+), 1 deletion(-)
+ create mode 100644 ext/filter/tests/bug81122.phpt
+
+diff --git a/ext/filter/logical_filters.c b/ext/filter/logical_filters.c
+index 9e1daffaab..f89e26471b 100644
+--- a/ext/filter/logical_filters.c
++++ b/ext/filter/logical_filters.c
+@@ -515,7 +515,9 @@ bad_url:
+ 		RETURN_VALIDATION_FAILED
+ 	}
+ 
+-	if (url->user != NULL && !is_userinfo_valid(url->user)) {
++	if (url->user != NULL && !is_userinfo_valid(url->user)
++		|| url->pass != NULL && !is_userinfo_valid(url->pass)
++	) {
+ 		php_url_free(url);
+ 		RETURN_VALIDATION_FAILED
+ 
+diff --git a/ext/filter/tests/bug81122.phpt b/ext/filter/tests/bug81122.phpt
+new file mode 100644
+index 0000000000..d89d4114a5
+--- /dev/null
++++ b/ext/filter/tests/bug81122.phpt
+@@ -0,0 +1,21 @@
++--TEST--
++Bug #81122 (SSRF bypass in FILTER_VALIDATE_URL)
++--SKIPIF--
++<?php
++if (!extension_loaded('filter')) die("skip filter extension not available");
++?>
++--FILE--
++<?php
++$urls = [
++    "https://example.com:\\@test.com/",
++    "https://user:\\epass@test.com",
++    "https://user:\\@test.com",
++];
++foreach ($urls as $url) {
++    var_dump(filter_var($url, FILTER_VALIDATE_URL));
++}
++?>
++--EXPECT--
++bool(false)
++bool(false)
++bool(false)
+-- 
+2.31.1
+
+From c02b9243c4c62bccb97483654d530ed4ab148719 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Sun, 27 Jun 2021 21:57:58 -0700
+Subject: [PATCH 2/2] Fix warning
+
+(cherry picked from commit 190013787bbc424c240413d914e3a038f974ccef)
+---
+ ext/filter/logical_filters.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/filter/logical_filters.c b/ext/filter/logical_filters.c
+index f89e26471b..92a37f88ee 100644
+--- a/ext/filter/logical_filters.c
++++ b/ext/filter/logical_filters.c
+@@ -515,8 +515,8 @@ bad_url:
+ 		RETURN_VALIDATION_FAILED
+ 	}
+ 
+-	if (url->user != NULL && !is_userinfo_valid(url->user)
+-		|| url->pass != NULL && !is_userinfo_valid(url->pass)
++	if ((url->user != NULL && !is_userinfo_valid(url->user))
++		|| (url->pass != NULL && !is_userinfo_valid(url->pass))
+ 	) {
+ 		php_url_free(url);
+ 		RETURN_VALIDATION_FAILED
+-- 
+2.31.1
+
