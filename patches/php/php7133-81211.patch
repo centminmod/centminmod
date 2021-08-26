@@ -1,0 +1,164 @@
+From 44cd62fa4427934a511f9d0c6423e9dc471009c5 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Mon, 23 Aug 2021 13:42:17 +0200
+Subject: [PATCH 1/3] Fix #81211: Symlinks are followed when creating PHAR
+ archive
+
+It is insufficient to check whether the `base` is contained in `fname`;
+we also need to ensure that `fname` is properly separated.  And of
+course, `fname` has to start with `base`.
+
+(cherry picked from commit 2ff853aa113e52637c85e28d1a03df1aa2d747b5)
+---
+ ext/phar/phar_object.c                        |  3 +-
+ ext/phar/tests/bug81211.phpt                  | 45 +++++++++++++++++++
+ .../tests/file/windows_links/common.inc       |  9 +++-
+ 3 files changed, 55 insertions(+), 2 deletions(-)
+ create mode 100644 ext/phar/tests/bug81211.phpt
+
+diff --git a/ext/phar/phar_object.c b/ext/phar/phar_object.c
+index b22a6acf90..d639c3b1bd 100644
+--- a/ext/phar/phar_object.c
++++ b/ext/phar/phar_object.c
+@@ -1440,6 +1440,7 @@ static int phar_build(zend_object_iterator *iter, void *puser) /* {{{ */
+ 	zend_class_entry *ce = p_obj->c;
+ 	phar_archive_object *phar_obj = p_obj->p;
+ 	php_stream_statbuf ssb;
++	char ch;
+ 
+ 	value = iter->funcs->get_current_data(iter);
+ 
+@@ -1569,7 +1570,7 @@ phar_spl_fileinfo:
+ 		base = temp;
+ 		base_len = (int)strlen(base);
+ 
+-		if (strstr(fname, base)) {
++		if (fname_len >= base_len && strncmp(fname, base, base_len) == 0 && ((ch = fname[base_len - IS_SLASH(base[base_len - 1])]) == '\0' || IS_SLASH(ch))) {
+ 			str_key_len = fname_len - base_len;
+ 
+ 			if (str_key_len <= 0) {
+diff --git a/ext/phar/tests/bug81211.phpt b/ext/phar/tests/bug81211.phpt
+new file mode 100644
+index 0000000000..43d82143f2
+--- /dev/null
++++ b/ext/phar/tests/bug81211.phpt
+@@ -0,0 +1,45 @@
++--TEST--
++Bug #81211 (Symlinks are followed when creating PHAR archive)
++--SKIPIF--
++<?php
++if (!extension_loaded('phar')) die('skip phar extension is not available');
++if (PHP_OS_FAMILY === 'Windows') {
++    if (false === include __DIR__ . '/../../standard/tests/file/windows_links/common.inc') {
++        die('skip windows_links/common.inc is not available');
++    }
++    skipIfSeCreateSymbolicLinkPrivilegeIsDisabled(__FILE__);
++}
++?>
++--FILE--
++<?php
++mkdir(__DIR__ . '/bug81211');
++mkdir(__DIR__ . '/bug81211/foobar');
++mkdir(__DIR__ . '/bug81211/foo');
++
++file_put_contents(__DIR__ . '/bug81211/foobar/file', 'this file should NOT be included in the archive!');
++symlink(__DIR__ . '/bug81211/foobar/file', __DIR__ . '/bug81211/foo/symlink');
++
++$archive = new PharData(__DIR__ . '/bug81211/archive.tar');
++try {
++    $archive->buildFromDirectory(__DIR__ . '/bug81211/foo');
++} catch (UnexpectedValueException $ex) {
++    echo $ex->getMessage(), PHP_EOL;
++}
++try {
++    $archive->buildFromIterator(new RecursiveDirectoryIterator(__DIR__ . '/bug81211/foo', FilesystemIterator::SKIP_DOTS), __DIR__ . '/bug81211/foo');
++} catch (UnexpectedValueException $ex) {
++    echo $ex->getMessage(), PHP_EOL;
++}
++?>
++--CLEAN--
++<?php
++@unlink(__DIR__ . '/bug81211/archive.tar');
++@unlink(__DIR__ . '/bug81211/foo/symlink');
++@unlink(__DIR__ . '/bug81211/foobar/file');
++@rmdir(__DIR__ . '/bug81211/foo');
++@rmdir(__DIR__ . '/bug81211/foobar');
++@rmdir(__DIR__ . '/bug81211');
++?>
++--EXPECTF--
++Iterator RecursiveIteratorIterator returned a path "%s%ebug81211\foobar\file" that is not in the base directory "%s%ebug81211\foo"
++Iterator RecursiveDirectoryIterator returned a path "%s%ebug81211\foobar\file" that is not in the base directory "%s%ebug81211\foo"
+diff --git a/ext/standard/tests/file/windows_links/common.inc b/ext/standard/tests/file/windows_links/common.inc
+index 505368b8b0..caa3758d44 100644
+--- a/ext/standard/tests/file/windows_links/common.inc
++++ b/ext/standard/tests/file/windows_links/common.inc
+@@ -20,4 +20,11 @@ function get_mountvol() {
+ 	return "$sysroot\\System32\\mountvol.exe";
+ }
+ 
+-?>
++function skipIfSeCreateSymbolicLinkPrivilegeIsDisabled(string $filename) {
++	$ln = "$filename.lnk";
++	$ret = exec("mklink $ln " . __FILE__ .' 2>&1', $out);
++	@unlink($ln);
++	if (strpos($ret, 'privilege') !== false) {
++		die('skip SeCreateSymbolicLinkPrivilege not enabled');
++	}
++}
+-- 
+2.31.1
+
+From 072295b550665a57bc4dd7e7a0bd7511c5ba3631 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <stas@php.net>
+Date: Mon, 23 Aug 2021 23:43:32 -0700
+Subject: [PATCH 2/3] Fix test
+
+(cherry picked from commit b815645aac76b494dc119fa6b88de32fa9bcccf1)
+---
+ ext/phar/tests/bug81211.phpt | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/phar/tests/bug81211.phpt b/ext/phar/tests/bug81211.phpt
+index 43d82143f2..96b1401b40 100644
+--- a/ext/phar/tests/bug81211.phpt
++++ b/ext/phar/tests/bug81211.phpt
+@@ -41,5 +41,5 @@ try {
+ @rmdir(__DIR__ . '/bug81211');
+ ?>
+ --EXPECTF--
+-Iterator RecursiveIteratorIterator returned a path "%s%ebug81211\foobar\file" that is not in the base directory "%s%ebug81211\foo"
+-Iterator RecursiveDirectoryIterator returned a path "%s%ebug81211\foobar\file" that is not in the base directory "%s%ebug81211\foo"
++Iterator RecursiveIteratorIterator returned a path "%s%ebug81211%efoobar%efile" that is not in the base directory "%s%ebug81211%efoo"
++Iterator RecursiveDirectoryIterator returned a path "%s%ebug81211%efoobar%efile" that is not in the base directory "%s%ebug81211%efoo"
+-- 
+2.31.1
+
+From 655929a3b7a876d00b7e3dea04592e56332727c5 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Wed, 25 Aug 2021 15:23:50 +0200
+Subject: [PATCH 3/3] NEWS
+
+(cherry picked from commit 5539cefcda6aca7af220e7be7760a682abb88200)
+---
+ NEWS | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index b1b31e5dd0..0c1a77167c 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,11 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.3.30
++
++- Phar:
++  . Fixed bug #81211: Symlinks are followed when creating PHAR archive (cmb)
++
+ Backported from 7.3.29
+ 
+ - Core:
+-- 
+2.31.1
+
