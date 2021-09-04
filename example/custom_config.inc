@@ -187,7 +187,7 @@ NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
-NGINX_PCREVER='8.44'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
@@ -327,7 +327,7 @@ GPERFTOOLS_VERSION='2.6.3'        # Use this version of google-perftools
 
 # Choose whether to compile PCRE from source. Note PHP 5.3.8 already includes PCRE
 PCRE_SOURCEINSTALL='n'     
-PCRE_VERSION='8.44'          # PCRE version
+PCRE_VERSION='8.45'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.4'        # PHP extension for imagick
