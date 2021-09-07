@@ -290,14 +290,14 @@ ngx_hpack_patch() {
     echo "patching nginx http/2 full HPACK encoding for nginx 1.20.0"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1021002' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1021003' ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
     echo 
-    echo "patching nginx http/2 full HPACK encoding for nginx 1.21.2"
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.21.3"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
@@ -612,7 +612,7 @@ patchnginx() {
      elif [[ "$DETECT_NGXVER" -ge '1020000' && "$DETECT_NGXVER" -le '1020001' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
-     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le '1021002' ]]; then
+     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le '1021003' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
      fi
@@ -660,7 +660,7 @@ patchnginx() {
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
       fi
-     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le '1021002' ]]; then
+     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le '1021003' ]]; then
       if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
