@@ -108,6 +108,34 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
   mkdir -p $CENTMINLOGDIR
 fi
 
+lets_dst_root_ca_fix() {
+  if [ "$(/usr/bin/openssl version | grep '1.0.2')" ] && [ ! "$(trust list | grep -C3 'DST Root CA X3' | grep 'blacklisted')" ]; then
+    echo
+    echo "Update workaround to blacklist expiring Letsencrypt DST Root CA X3 certificate..."
+    echo "https://community.centminmod.com/threads/21965/"
+    echo
+    mkdir -p /root/tools/backup-ca-certs
+    if [ -f /etc/pki/tls/certs/ca-bundle.crt ]; then
+      \cp -f /etc/pki/tls/certs/ca-bundle.crt /root/tools/backup-ca-certs/ca-bundle.crt-backup
+    fi
+    if [[ ! -f /usr/bin/trust || ! -f /usr/bin/update-ca-trust ]]; then
+      yum -q -y install ca-certificates p11-kit-trust
+    fi
+    if [[ -f /usr/bin/trust && -f /usr/bin/update-ca-trust ]]; then
+      trust dump --filter "pkcs11:id=%c4%a7%b1%a4%7b%2c%71%fa%db%e1%4b%90%75%ff%c4%15%60%85%89%10" | openssl x509 > /etc/pki/ca-trust/source/blacklist/DST-Root-CA-X3.pem
+      update-ca-trust extract
+      diff /root/tools/backup-ca-certs/ca-bundle.crt-backup /etc/pki/tls/certs/ca-bundle.crt > /root/tools/backup-ca-certs/diff-ca-bundle.crt.diff
+      echo "Diff check file at /root/tools/backup-ca-certs/diff-ca-bundle.crt.diff"
+      echo
+      echo "Check to see if DST Root CA X3 is blacklisted"
+      echo "trust list | grep -C3 'DST Root CA X3' | grep -B1 'blacklisted'"
+      echo
+      trust list | grep -C3 'DST Root CA X3' | grep -B1 'blacklisted'
+    fi
+  fi
+}
+lets_dst_root_ca_fix
+
 # sudo adjustment
   if [ -d /etc/sudoers.d ]; then
     if [ ! -f /etc/sudoers.d/addpaths ]; then
