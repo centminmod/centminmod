@@ -944,6 +944,7 @@ fi
         cp -a /etc/pki/tls/openssl.cnf /etc/pki/tls/openssl.cnf-bakb4libressl
         ln -s /etc/pki/tls/openssl.cnf /etc/ssl/openssl.cnf
         \cp -Rpf /etc/ssl/certs/* /opt/libressl/etc/ssl/certs/
+        \cp -Pf /etc/pki/tls/cert.pem /opt/libressl/etc/ssl/
 
         if [[ "$CLANG" = [yY] ]]; then
             unset CC
@@ -1081,6 +1082,7 @@ fi
         fi
         mkdir -p /opt/openssl/certs/
         \cp -Rpf /etc/ssl/certs/* /opt/openssl/certs/
+        \cp -Pf /etc/pki/tls/cert.pem /opt/openssl/
         crypto_gccunset
         opensslinstallendtime=$(TZ=UTC date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
