@@ -34,11 +34,11 @@ lets_dst_root_ca_fix() {
       yum -q -y update ca-certificates
       echo "Updated ca-certificates"
       yum -q history list ca-certificates
-    elif [ "$(/usr/bin/openssl version | grep '1.0.2')" ] && [ -z "$(grep -i 'DST Root CA X3' /etc/pki/tls/certs/ca-bundle.crt)" ]; then
+    fi
+  elif [ "$(/usr/bin/openssl version | grep '1.0.2')" ] && [ -z "$(grep -i 'DST Root CA X3' /etc/pki/tls/certs/ca-bundle.crt)" ]; then
       echo
       echo "Expiring DST Root CA X3 certificate not detected in /etc/pki/tls/certs/ca-bundle.crt"
       echo "System is good to go :)"
-    fi
   fi
 }
 lets_dst_root_ca_fix
