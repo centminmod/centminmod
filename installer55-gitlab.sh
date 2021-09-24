@@ -109,7 +109,7 @@ if [ ! -d "$CENTMINLOGDIR" ]; then
 fi
 
 lets_dst_root_ca_fix() {
-  if [ "$(/usr/bin/openssl version | grep '1.0.2')" ] && [ ! "$(trust list | grep -C3 'DST Root CA X3' | grep 'blacklisted')" ]; then
+  if [ "$(/usr/bin/openssl version | grep '1.0.2')" ] && [ ! -z "$(grep -i 'DST Root CA X3' /etc/pki/tls/certs/ca-bundle.crt)" ]; then
     echo
     echo "Update workaround to blacklist expiring Letsencrypt DST Root CA X3 certificate..."
     echo "https://community.centminmod.com/threads/21965/"
@@ -131,6 +131,11 @@ lets_dst_root_ca_fix() {
       echo "trust list | grep -C3 'DST Root CA X3' | grep -B1 'blacklisted'"
       echo
       trust list | grep -C3 'DST Root CA X3' | grep -B1 'blacklisted'
+      echo
+      echo "Update ca-certificates YUM package for permanent fix"
+      yum -q -y update ca-certificates
+      echo "Updated ca-certificates"
+      yum -q history list ca-certificates
     fi
   fi
 }
