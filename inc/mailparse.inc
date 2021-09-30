@@ -22,23 +22,23 @@ fi
         mailparsephpexttarball
     fi
     echo
-    if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
-        # mailparse PHP 7.3 compatibility
-        # https://git.php.net/?p=pecl/mail/mailparse.git;a=commit;h=13c2c425e519b22660a03d566c35e76b3d4751dc
-        PHPSEVENTHREE_MAILPARSE='y'
-        pushd "${DIR_TMP}"
-        rm -rf mailparse-git
-        echo "git clone --depth=1 https://git.php.net/repository/pecl/mail/mailparse.git mailparse-git"
-        git clone --depth=1 https://git.php.net/repository/pecl/mail/mailparse.git mailparse-git
-        popd
-    fi
+    # if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
+    #     # mailparse PHP 7.3 compatibility
+    #     # https://git.php.net/?p=pecl/mail/mailparse.git;a=commit;h=13c2c425e519b22660a03d566c35e76b3d4751dc
+    #     PHPSEVENTHREE_MAILPARSE='y'
+    #     pushd "${DIR_TMP}"
+    #     rm -rf mailparse-git
+    #     echo "git clone --depth=1 https://git.php.net/repository/pecl/mail/mailparse.git mailparse-git"
+    #     git clone --depth=1 https://git.php.net/repository/pecl/mail/mailparse.git mailparse-git
+    #     popd
+    # fi
 }
 
 mailparseinstall() {
     if [[ "$PHP_INSTALL" = [yY] ]]; then
     if [[ "$PHPMAILPARSE" = [yY] ]]; then
 
-        checkphpextmailparse
+      checkphpextmailparse
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset

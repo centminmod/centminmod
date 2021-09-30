@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='705'
+SCRIPT_INCREMENTVER='706'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -816,7 +816,7 @@ PCRE_VERSION='8.45'          # PCRE version
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.4'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
-MAILPARSEPHP_COMPATVER='3.0.4' # For PHP 7
+MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
 MEMCACHED_INSTALL='y'          # Install Memcached
 LIBEVENT_VERSION='2.1.8'      # Use this version of Libevent
 MEMCACHED_VERSION='1.6.5'    # Use this version of Memcached server
