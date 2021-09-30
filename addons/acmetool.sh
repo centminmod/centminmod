@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.75'
+ACMEVER='1.0.76'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -32,6 +32,7 @@ RENEWDAYS='60'
 # https://community.letsencrypt.org/t/the-acme-sh-will-change-default-ca-to-zerossl-on-august-1st-2021/144052
 # set to default CA letsencrypt always
 ACME_DEFAULT_CA='letsencrypt'
+ACME_PREFERRED_CHAIN=' --preferred-chain  "ISRG"'
 
 # if set to yes, will issue and setup both RSA 2048bit +
 # ECDSA 256bit SSL certificates as outlined at
@@ -222,6 +223,10 @@ if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
 else
   ipv_forceopt='4'
+fi
+
+if [[ "$ACME_DEFAULT_CA" != 'letsencrypt' ]]; then
+  ACME_PREFERRED_CHAIN=''
 fi
 
 ###############################################################
@@ -1896,8 +1901,8 @@ issue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1914,8 +1919,8 @@ issue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -1937,8 +1942,8 @@ issue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -1955,8 +1960,8 @@ issue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -1978,8 +1983,8 @@ issue_acme() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -1987,8 +1992,8 @@ issue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2213,8 +2218,8 @@ reissue_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2231,8 +2236,8 @@ reissue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2254,8 +2259,8 @@ reissue_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine"
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2272,8 +2277,8 @@ reissue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2295,8 +2300,8 @@ reissue_acme() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -2304,8 +2309,8 @@ reissue_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2487,8 +2492,8 @@ reissue_acme_only() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2505,8 +2510,8 @@ reissue_acme_only() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2522,8 +2527,8 @@ reissue_acme_only() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -2531,8 +2536,8 @@ reissue_acme_only() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2745,8 +2750,8 @@ renew_acme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' ]] && [[ "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2763,8 +2768,8 @@ renew_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2786,8 +2791,8 @@ renew_acme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
       echo "wp routine detected use reissue instead via --force"
-     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -2804,8 +2809,8 @@ renew_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -2827,8 +2832,8 @@ renew_acme() {
       fi
     else
      testcert_dual=y
-     echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+     echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -2836,8 +2841,8 @@ renew_acme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$WEBROOTPATH_OPT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3108,8 +3113,8 @@ webroot_issueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3126,8 +3131,8 @@ webroot_issueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3149,8 +3154,8 @@ webroot_issueacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3167,8 +3172,8 @@ webroot_issueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3190,8 +3195,8 @@ webroot_issueacme() {
       fi
     else
       testcert_dual=y
-      echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -3199,8 +3204,8 @@ webroot_issueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3473,8 +3478,8 @@ webroot_reissueacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3491,8 +3496,8 @@ webroot_reissueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3514,8 +3519,8 @@ webroot_reissueacme() {
       fi
     else
       testcert_dual=y
-      echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -3523,8 +3528,8 @@ webroot_reissueacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY" --force${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3791,8 +3796,8 @@ webroot_renewacme() {
     # staging test ssl certificates
     echo "testcert value = $testcert"
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" != 'wplive' && "$testcert" != 'wplived' && "$testcert" != 'wptestd' ]] && [[ ! -z "$testcert" ]]; then
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3809,8 +3814,8 @@ webroot_renewacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT}${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3832,8 +3837,8 @@ webroot_renewacme() {
       fi
     elif [[ "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ "$testcert" != 'd' ]] && [[ ! -z "$testcert" ]]; then
        echo "wp routine detected use reissue instead via --force"
-      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       # only enable resolver and ssl_stapling for live ssl certificate deployments
       if [[ -f "$SSLVHOST_CONFIG" && "$LECHECK" = '0' ]]; then
@@ -3850,8 +3855,8 @@ webroot_renewacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${ACME_APIENDPOINT} --force${ACMEOCSP}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -3873,8 +3878,8 @@ webroot_renewacme() {
       fi
     else
       testcert_dual=y
-      echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+      echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
       LECHECK=$?
       if [[ "$LECHECK" = '0' ]]; then
         # dual cert routine start
@@ -3882,8 +3887,8 @@ webroot_renewacme() {
             echo
             echo "get 2nd SSL cert issued for dual ssl cert config"
             echo
-          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT
+          echo ""$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+          "$ACMEBINARY"${STAGING_OPT}${DNSAPI_OPT_GLOBAL} --issue $DOMAINOPT --days $RENEWDAYS -w "$CUSTOM_WEBROOT" -k "$KEYLENGTH_DUAL" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}
           DUAL_LECHECK=$?
           if [[ "$DUAL_LECHECK" = '0' ]]; then
             echo
@@ -4216,8 +4221,8 @@ issue_acmedns() {
       DNS_ISSUEOPT='--issue --force'
     fi
     if [[ "$testcert" = 'live' || "$testcert" = 'lived' || "$testcert" != 'd' || "$testcert" = 'wplive' || "$testcert" = 'wplived' || "$testcert" != 'wptestd' ]] && [[ "$testcert" != 'wptest' ]] && [[ ! -z "$testcert" ]]; then
-     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN} 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
       LECHECK=$?
       ############################################
       # DNS mode cert only don't touch nginx vhosts
@@ -4236,12 +4241,12 @@ issue_acmedns() {
         fi
       fi # DNS Mode certonly 2
     elif [[ "$CERTONLY_DNS" = '1' && "$STAGE_DNS" = 'live' ]]; then
-     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     echo ""$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN} 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
       LECHECK=$?
     else
-     echo ""$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
-      "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
+     echo ""$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+      "$ACMEBINARY" --staging ${DNS_ISSUEOPT} --dns${DNSAPI_OPT} $DOMAINOPT -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN} 2>&1 | tee "${CENTMINLOGDIR}/acme.sh-dnslog-${vhostname}${ECC_SUFFIX}-${DT}.log"
      LECHECK=$?
     fi
     if [[ "$CF_DNSAPI" != [yY] && -z "$CF_KEY" && -z "$CF_Email" ]] || [[ "$CF_DNSAPI" != [yY] && -z "$CF_Token" && -z "$CF_Account_ID" ]]; then
@@ -4395,7 +4400,7 @@ manual_mode() {
   echo
   getuseragent
   echo "$0 acmeupdate"
-  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT"
+  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
 
   echo
   cecho "---------------------------------------------------------------------------" $boldgreen
