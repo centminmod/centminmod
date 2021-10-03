@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.76'
+ACMEVER='1.0.77'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -225,7 +225,10 @@ else
   ipv_forceopt='4'
 fi
 
-if [[ "$ACME_DEFAULT_CA" != 'letsencrypt' ]]; then
+if [[ "$ACME_DEFAULT_CA" = 'buypass' ]]; then
+  ACME_PREFERRED_CHAIN=''
+  RENEWDAYS='160'
+elif [[ "$ACME_DEFAULT_CA" != 'letsencrypt' ]]; then
   ACME_PREFERRED_CHAIN=''
 fi
 
