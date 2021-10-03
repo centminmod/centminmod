@@ -295,7 +295,7 @@ phpsededit() {
     #echo "cgi.fix_pathinfo=0" >> ${CUSTOMPHPINIFILE}
     #echo "disable_functions=exec,passthru,shell_exec,system,proc_open,popen" >> ${CUSTOMPHPINIFILE}
 
-    # https://curl.haxx.se/docs/caextract.html
+    # https://curl.se/docs/caextract.html
     # http://php.net/manual/en/curl.configuration.php#ini.curl.cainfo
     if [ ! -f /etc/ssl/certs/cacert.pem ]; then
         wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL

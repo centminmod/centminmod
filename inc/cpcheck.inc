@@ -1,3 +1,13 @@
+check_php_cainfo_file() {
+  # https://curl.se/docs/caextract.html
+  if [ ! -f /etc/ssl/certs/cacert.pem ]; then
+      wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
+  elif [[ "$(find /etc/ssl/certs/cacert.pem -mtime +90 >/dev/null 2>&1; echo $?)" = '0' && -f /etc/ssl/certs/cacert.pem ]]; then
+      # redownload if older than 90 days
+      wget -q -O /etc/ssl/certs/cacert.pem $CURL_CACERTURL
+  fi
+}
+
 lets_dst_root_ca_fix() {
   if [ "$(/usr/bin/openssl version | grep '1.0.2')" ] && [ ! -z "$(grep -i 'DST Root CA X3' /etc/pki/tls/certs/ca-bundle.crt)" ]; then
     echo
@@ -3247,6 +3257,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   update_wpce_map
   jetpack_ip_whitelist_cronsetup
   lets_dst_root_ca_fix
+  check_php_cainfo_file
 fi
 
 }
