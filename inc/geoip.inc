@@ -153,14 +153,17 @@ geoipinstall() {
   fi
   curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCOUNTRYDATA_CURLCHECK=$?
+  echo "GEOIPCOUNTRYDATA_CURLCHECK=$GEOIPCOUNTRYDATA_CURLCHECK"
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCOUNTRYDATA_CURLCHECK" = '0' ]]; then
     wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
+  
   curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
+  echo "GEOIPCITYDATA_CURLCHECK=$GEOIPCITYDATA_CURLCHECK"
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
@@ -168,6 +171,19 @@ geoipinstall() {
   fi
   gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
+  # double check if /usr/share/GeoIP/GeoIPCity.dat exists
+  if [ ! -f /usr/share/GeoIP/GeoIPCity.dat ]; then
+    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+    GEOIPCITYDATA_CURLCHECK=$?
+    echo "GEOIPCITYDATA_CURLCHECK=$GEOIPCITYDATA_CURLCHECK"
+    # only overwrite existing downloaded file if the download url is working
+    # if download doesn't work, do not overwrite existing downloaded file
+    if [[ "$GEOIPCITYDATA_CURLCHECK" = '0' ]]; then
+      wget -${ipv_forceopt} https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz -O /usr/share/GeoIP/GeoLiteCity.dat.gz
+    fi
+    gzip -d -f /usr/share/GeoIP/GeoLiteCity.dat.gz
+    cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
+  fi
 }
 
 geoiptwolite_install() {
