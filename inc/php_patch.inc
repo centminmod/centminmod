@@ -683,14 +683,14 @@ php_patches() {
         fi
       done
     fi
-    if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70331' ]]; then
+    if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -le '70331' ]]; then
       # backport security bug patch for php 7.3
       phpseven_bugids='81026'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
           if [[ "$bugid" != 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.3.31+ for bug #${bugid}"
+            echo "patching PHP 7.3.31 for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           fi
           echo
