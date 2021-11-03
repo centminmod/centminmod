@@ -640,7 +640,18 @@ fi # CLOUDFLARE_PATCHSSL
 
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
-      if [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+      if [[ "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-11/enable
+        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
         CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
@@ -682,6 +693,17 @@ crypto_gcc() {
         unset CXX
         export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+      elif [[ "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-11/enable
+        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
@@ -799,7 +821,7 @@ crypto_gcc() {
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
-            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}"
+            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}${CRYPTODEVTOOLSETELEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS}"
             # if only 1 cpu thread use -O2 to keep compile times sane
             if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"

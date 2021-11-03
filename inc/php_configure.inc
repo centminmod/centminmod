@@ -1115,6 +1115,9 @@ fi
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # ensure devtoolset-7 and devtoolset-8 and devtoolset-9 are installed
+  if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+      scl_install
+  fi
   if [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
       scl_install
   fi
@@ -1277,7 +1280,21 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # initial php install
   if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-11/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-11"
+        echo $CC
+        echo $CXX
+    elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -1383,7 +1400,21 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # php upgrades
   if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-11/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        echo "centos 7 set devtoolset-11"
+        echo $CC
+        echo $CXX
+    elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -1487,27 +1518,38 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   fi
 
   if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
-    if [[ -f /opt/rh/devtoolset-10/enable && "$DEVTOOLSETTEN" = [yY] ]] && [[ "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+    if [[ -f /opt/rh/devtoolset-11/enable && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ "$DEVTOOLSETTEN" = [yY] && "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETELEVEN='y'
+      DEVTOOLSETTEN='n'
+      DEVTOOLSETNINE='n'
+      DEVTOOLSETEIGHT='n'
+      DEVTOOLSETSEVEN='n'    
+    elif [[ -f /opt/rh/devtoolset-10/enable && "$DEVTOOLSETTEN" = [yY] ]] && [[ "$DEVTOOLSETNINE" = [yY] && "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETELEVEN='n'
       DEVTOOLSETTEN='y'
       DEVTOOLSETNINE='n'
       DEVTOOLSETEIGHT='n'
       DEVTOOLSETSEVEN='n'
     elif [[ -f /opt/gcc9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETELEVEN='n'
       DEVTOOLSETTEN='n'
       DEVTOOLSETNINE='y'
       DEVTOOLSETEIGHT='n'
       DEVTOOLSETSEVEN='n'
     elif [[ ! -f /opt/gcc9/enable || "$DEVTOOLSETNINE" != [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETELEVEN='n'
       DEVTOOLSETTEN='n'
       DEVTOOLSETNINE='n'
       DEVTOOLSETEIGHT='y'
       DEVTOOLSETSEVEN='n'
     elif [[ -f /opt/rh/devtoolset-9/enable && "$DEVTOOLSETNINE" = [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETELEVEN='n'
       DEVTOOLSETTEN='n'
       DEVTOOLSETNINE='y'
       DEVTOOLSETEIGHT='n'
       DEVTOOLSETSEVEN='n'
     elif [[ ! -f /opt/rh/devtoolset-9/enable || "$DEVTOOLSETNINE" != [yY] ]] && [[ "$DEVTOOLSETEIGHT" = [yY] && "$DEVTOOLSETSEVEN" = [yY] ]]; then
+      DEVTOOLSETELEVEN='n'
       DEVTOOLSETTEN='n'
       DEVTOOLSETNINE='n'
       DEVTOOLSETEIGHT='y'
@@ -1541,6 +1583,17 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       unset CXX
       export CC="ccache gcc"
       export CXX="ccache g++"
+    elif [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+      GENERAL_DEVTOOLSETGCC='y'
+      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
+      source /opt/rh/devtoolset-11/enable
+      which gcc
+      which g++
+      unset CC
+      unset CXX
+      export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+      export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
