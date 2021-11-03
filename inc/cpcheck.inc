@@ -855,7 +855,7 @@ varnishfour_setup() {
       yum_repo_path=$VARNISH_REPOFILE
       yum_repo_config_url="https://packagecloud.io/install/repositories/varnishcache/varnish41/config_file.repo?os=${os}&dist=${dist}&source=script"
       if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]]; then
-          curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${yum_repo_config_url}" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+          curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${yum_repo_config_url}" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
           VARNISHFOUR_CURLCHECK=$?
           if [[ "$VARNISHFOUR_CURLCHECK" = '0' ]]; then
             echo "update varnish cache 4.1 yum repo config"

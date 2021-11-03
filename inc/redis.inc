@@ -80,7 +80,7 @@ if [[ "$REDIS_PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge 
     
         PHPREDISGITLINK='https://github.com/phpredis/phpredis'
         # fallback mirror if official github is down, use gitlab mirror
-        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $PHPREDISGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $PHPREDISGITLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
         PHPREDISGITCURLCHECK=$?
         if [[ "$PHPREDISGITCURLCHECK" != '0' ]]; then
             PHPREDISGITLINK='https://gitlab.com/centminmod-github-mirror/phpredis.git'

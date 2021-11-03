@@ -38,7 +38,7 @@ geoiptwo_updater() {
   echo "GeoLite2 City database download ..."
   echo "------------------------------------------------------"
   echo
-  GEOIPTWOCITYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 "$maxmind_city_url" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)  
+  GEOIPTWOCITYDATA_CURLCHECK=$(curl -4Is --connect-timeout 30 --max-time 30 "$maxmind_city_url" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)  
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
@@ -54,7 +54,7 @@ geoiptwo_updater() {
   echo "------------------------------------------------------"
   echo "GeoLite2 Country database download ..."
   echo "------------------------------------------------------"
-  GEOIPTWOCOUNTRYDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 "$maxmind_country_url" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
+  GEOIPTWOCOUNTRYDATA_CURLCHECK=$(curl -4Is --connect-timeout 30 --max-time 30 "$maxmind_country_url" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
@@ -70,7 +70,7 @@ geoiptwo_updater() {
   echo "------------------------------------------------------"
   echo "GeoLite2 ASN database download ..."
   echo "------------------------------------------------------"
-  GEOIPTWOASNDATA_CURLCHECK=$(curl -4Is --connect-timeout 5 --max-time 5 "$maxmind_asn_url" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
+  GEOIPTWOASNDATA_CURLCHECK=$(curl -4Is --connect-timeout 30 --max-time 30 "$maxmind_asn_url" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1; echo $?)
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOASNDATA_CURLCHECK" = '0' ]]; then

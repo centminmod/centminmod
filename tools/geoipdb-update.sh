@@ -77,7 +77,7 @@ cecho "Updating GeoIP databases..." $boldyellow
     # backup existing database in case maxmind end downloads
     \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
   fi
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -85,7 +85,7 @@ cecho "Updating GeoIP databases..." $boldyellow
     wget -${ipv_forceopt}cnv https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz -O /usr/share/GeoIP/GeoIP.dat.gz
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -117,7 +117,7 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
   mkdir -p /usr/share/GeoIP
   pushd /usr/share/GeoIP
   cecho "GeoLite2 City database download ..." $boldyellow
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$maxmind_city_url" | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$maxmind_city_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -129,7 +129,7 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
   rm -rf GeoLite2-City_*
 
   cecho "GeoLite2 Country database download ..." $boldyellow
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$maxmind_country_url" | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$maxmind_country_url" | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file

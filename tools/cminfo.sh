@@ -733,7 +733,7 @@ rm -rf /usr/bin/cminfo
 CMINFOLINK='https://raw.githubusercontent.com/centminmod/centminmod/master/tools/cminfo.sh'
 
 # fallback mirror
-curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 \$CMINFOLINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
 CMINFO_CURLCHECK=\$?
 if [[ "\$CMINFO_CURLCHECK" != '0' ]]; then
     CMINFOLINK='https://gitlab.com/centminmod-github-mirror/centminmod/raw/master/tools/cminfo.sh'

@@ -463,9 +463,9 @@ fi
             figlet -ckf standard "PHP: Download"
         fi
     
-        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '404|503'
         PHPGEO_CURLCHECK=$?
-        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${PHP_MIRRORURL}/distributions/php-${phpver}.tar.${PHPEXTSION}" | grep 'HTTP\/' | egrep '200|301|302'
         PHPGEO_CURLCHECKOK=$?
         # check if download url is 404 not found but also 
         # check for valid status header 200, 301 or 302

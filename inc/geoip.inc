@@ -71,7 +71,7 @@ if [[ -d /usr/share/GeoIP ]]; then
   # fallback mirror if official php svn repo is down, use local centmin mod mirror
   # each php recompile will check again so if php svn repo is backup, the source
   # code will switch back to official php svn repo again
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://svn.php.net/repository/pecl/geoip/trunk/ | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://svn.php.net/repository/pecl/geoip/trunk/ | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
   SVNGEOIP_CURLCHECK=$?
   if [[ "$SVNGEOIP_CURLCHECK" != '0' ]]; then
     if [ -d geoip ]; then
@@ -151,7 +151,7 @@ geoipinstall() {
     # backup existing database in case maxmind end downloads
     \cp -af /usr/share/GeoIP/GeoIP.dat.gz /usr/share/GeoIP/GeoIP.dat-backup.gz
   fi
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoIP.dat.gz | grep 'HTTP\/' | grep '200'
   GEOIPCOUNTRYDATA_CURLCHECK=$?
   echo "GEOIPCOUNTRYDATA_CURLCHECK=$GEOIPCOUNTRYDATA_CURLCHECK"
   # only overwrite existing downloaded file if the download url is working
@@ -161,7 +161,7 @@ geoipinstall() {
   fi
   gzip -df /usr/share/GeoIP/GeoIP.dat.gz
   
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
   GEOIPCITYDATA_CURLCHECK=$?
   echo "GEOIPCITYDATA_CURLCHECK=$GEOIPCITYDATA_CURLCHECK"
   # only overwrite existing downloaded file if the download url is working
@@ -173,7 +173,7 @@ geoipinstall() {
   cp -a /usr/share/GeoIP/GeoLiteCity.dat /usr/share/GeoIP/GeoIPCity.dat
   # double check if /usr/share/GeoIP/GeoIPCity.dat exists
   if [ ! -f /usr/share/GeoIP/GeoIPCity.dat ]; then
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://centminmod.com/centminmodparts/geoip-legacy/GeoLiteCity.gz | grep 'HTTP\/' | grep '200'
     GEOIPCITYDATA_CURLCHECK=$?
     echo "GEOIPCITYDATA_CURLCHECK=$GEOIPCITYDATA_CURLCHECK"
     # only overwrite existing downloaded file if the download url is working
@@ -215,7 +215,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 City database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $maxmind_city_url | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $maxmind_city_url | grep 'HTTP\/' | grep '200'
   GEOIPTWOCITYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -229,7 +229,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 Country database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $maxmind_country_url | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $maxmind_country_url | grep 'HTTP\/' | grep '200'
   GEOIPTWOCOUNTRYDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
@@ -243,7 +243,7 @@ geoiptwolite_install() {
   echo "------------------------------------------------------"
   cecho "GeoLite2 ASN database download ..." $boldyellow
   echo "------------------------------------------------------"
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $maxmind_asn_url | grep 'HTTP\/' | grep '200'
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $maxmind_asn_url | grep 'HTTP\/' | grep '200'
   GEOIPTWOASNDATA_CURLCHECK=$?
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
