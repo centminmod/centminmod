@@ -142,6 +142,7 @@ scl_install() {
         sar_call
       fi
       if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc ]]; then
+        echo "installing devtoolset-11 for GCC 11..."
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-11-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-11-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-11-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
             time $YUMDNFBIN -y -q install devtoolset-11-runtime devtoolset-11-toolchain devtoolset-11-binutils devtoolset-11-binutils-devel devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-libatomic-devel devtoolset-11-libstdc++-devel devtoolset-11-ltrace devtoolset-11-make devtoolset-11-make-devel devtoolset-11-annobin-plugin-gcc devtoolset-11-annobin-annocheck devtoolset-11-gdb devtoolset-11-dwz devtoolset-11-elfutils devtoolset-11-elfutils-devel devtoolset-11-elfutils-libs devtoolset-11-strace devtoolset-11-gcc-gfortran devtoolset-11-memstomp devtoolset-11-elfutils-libelf devtoolset-11-elfutils-libelf-devel devtoolset-11-libasan-devel devtoolset-11-libgccjit-devel devtoolset-11-libitm-devel devtoolset-11-liblsan-devel devtoolset-11-libquadmath-devel devtoolset-11-libtsan-devel devtoolset-11-libubsan-devel devtoolset-11-elfutils-debuginfod-client devtoolset-11-elfutils-debuginfod-client-devel devtoolset-11-elfutils-libs devtoolset-11-annobin-docs devtoolset-11-libgccjit devtoolset-11-libgccjit-devel devtoolset-11-libgccjit-docs liblsan-11.2.1 libtsan-11.2.1
@@ -156,6 +157,7 @@ scl_install() {
         /opt/rh/devtoolset-11/root/usr/bin/gcc --version
         /opt/rh/devtoolset-11/root/usr/bin/g++ --version
       elif [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc ]]; then
+        echo "installing devtoolset-10 for GCC 10..."
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
             time $YUMDNFBIN -y -q install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
