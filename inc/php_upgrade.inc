@@ -1249,11 +1249,11 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
     #     cecho "rm -f ${CONFIGSCANDIR}/mailparse.ini" $boldyellow
     # fi
-    if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
-        # cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-        # cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcache.ini" ]]; then
+    #     # cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+    #     # cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+    #     echo
+    # fi
     # if [[ "$PHPMUVER" = '7.3' && -f "${CONFIGSCANDIR}/memcached.ini" ]]; then
     #     cecho "PHP 7.3 detected removing incompatible ${CONFIGSCANDIR}/memcached.ini" $boldyellow
     #     cecho "rm -f ${CONFIGSCANDIR}/memcached.ini" $boldyellow
@@ -1264,21 +1264,21 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     rm -f ${CONFIGSCANDIR}/mcrypt.ini
     #     echo
     # fi
-    if [[ "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80100' ]] && [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
-        cecho "PHP 8.1 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/geoip.ini" $boldyellow
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80100' ]] && [ -f "${CONFIGSCANDIR}/geoip.ini" ]; then
+    #     cecho "PHP 8.1 detected removing incompatible ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/geoip.ini" $boldyellow
+    #     echo
+    # fi
     # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/imagick.ini" ]; then
     #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/imagick.ini" $boldyellow
     #     cecho "rm -f ${CONFIGSCANDIR}/imagick.ini" $boldyellow
     #     echo
     # fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/memcache.ini" ]; then
-        cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-        cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
-        echo
-    fi
+    # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]] && [ -f "${CONFIGSCANDIR}/memcache.ini" ]; then
+    #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+    #     cecho "rm -f ${CONFIGSCANDIR}/memcache.ini" $boldyellow
+    #     echo
+    # fi
     # if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' ]] && [ -f "${CONFIGSCANDIR}/igbinary.ini" ]; then
     #     # disable igbinary on PHP 8.0+ due to segfaulting
     #     cecho "PHP 8.0 detected removing incompatible ${CONFIGSCANDIR}/igbinary.ini due to segfaults" $boldyellow
