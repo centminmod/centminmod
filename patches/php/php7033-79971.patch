@@ -1,0 +1,208 @@
+From 9e9a4876bb9cafe4d4ef20a469ffd4124d8f0ef1 Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 1 Sep 2020 10:04:28 +0200
+Subject: [PATCH 1/3] Fix #79971: special character is breaking the path in xml
+ function
+
+The libxml based XML functions accepting a filename actually accept
+URIs with possibly percent-encoded characters.  Percent-encoded NUL
+bytes lead to truncation, like non-encoded NUL bytes would.  We catch
+those, and let the functions fail with a respective warning.
+
+(cherry picked from commit f15f8fc573eb38c3c73e23e0930063a6f6409ed4)
+---
+ ext/dom/domimplementation.c         |  5 +++++
+ ext/dom/tests/bug79971_2.phpt       | 20 ++++++++++++++++++++
+ ext/libxml/libxml.c                 |  9 +++++++++
+ ext/simplexml/tests/bug79971_1.phpt | 27 +++++++++++++++++++++++++++
+ ext/simplexml/tests/bug79971_1.xml  |  2 ++
+ 5 files changed, 63 insertions(+)
+ create mode 100644 ext/dom/tests/bug79971_2.phpt
+ create mode 100644 ext/simplexml/tests/bug79971_1.phpt
+ create mode 100644 ext/simplexml/tests/bug79971_1.xml
+
+diff --git a/ext/dom/domimplementation.c b/ext/dom/domimplementation.c
+index ee050e21fd..486a49d52b 100644
+--- a/ext/dom/domimplementation.c
++++ b/ext/dom/domimplementation.c
+@@ -114,6 +114,11 @@ PHP_METHOD(domimplementation, createDocumentType)
+ 		pch2 = (xmlChar *) systemid;
+ 	}
+ 
++	if (strstr(name, "%00")) {
++		php_error_docref(NULL, E_WARNING, "URI must not contain percent-encoded NUL bytes");
++		RETURN_FALSE;
++	}
++
+ 	uri = xmlParseURI(name);
+ 	if (uri != NULL && uri->opaque != NULL) {
+ 		localname = xmlStrdup((xmlChar *) uri->opaque);
+diff --git a/ext/dom/tests/bug79971_2.phpt b/ext/dom/tests/bug79971_2.phpt
+new file mode 100644
+index 0000000000..c4e6b1e4e0
+--- /dev/null
++++ b/ext/dom/tests/bug79971_2.phpt
+@@ -0,0 +1,20 @@
++--TEST--
++Bug #79971 (special character is breaking the path in xml function)
++--SKIPIF--
++<?php
++if (!extension_loaded('dom')) die('skip dom extension not available');
++?>
++--FILE--
++<?php
++$imp = new DOMImplementation;
++if (PHP_OS_FAMILY === 'Windows') {
++    $path = '/' . str_replace('\\', '/', __DIR__);
++} else {
++    $path = __DIR__;
++}
++$uri = "file://$path/bug79971_2.xml";
++var_dump($imp->createDocumentType("$uri%00foo"));
++?>
++--EXPECTF--
++Warning: DOMImplementation::createDocumentType(): URI must not contain percent-encoded NUL bytes in %s on line %d
++bool(false)
+diff --git a/ext/libxml/libxml.c b/ext/libxml/libxml.c
+index da30004f36..f481353683 100644
+--- a/ext/libxml/libxml.c
++++ b/ext/libxml/libxml.c
+@@ -308,6 +308,10 @@ static void *php_libxml_streams_IO_open_wrapper(const char *filename, const char
+ 	int isescaped=0;
+ 	xmlURI *uri;
+ 
++	if (strstr(filename, "%00")) {
++		php_error_docref(NULL, E_WARNING, "URI must not contain percent-encoded NUL bytes");
++		return NULL;
++	}
+ 
+ 	uri = xmlParseURI(filename);
+ 	if (uri && (uri->scheme == NULL ||
+@@ -438,6 +442,11 @@ php_libxml_output_buffer_create_filename(const char *URI,
+ 	if (URI == NULL)
+ 		return(NULL);
+ 
++	if (strstr(URI, "%00")) {
++		php_error_docref(NULL, E_WARNING, "URI must not contain percent-encoded NUL bytes");
++		return NULL;
++	}
++
+ 	puri = xmlParseURI(URI);
+ 	if (puri != NULL) {
+ 		if (puri->scheme != NULL)
+diff --git a/ext/simplexml/tests/bug79971_1.phpt b/ext/simplexml/tests/bug79971_1.phpt
+new file mode 100644
+index 0000000000..197776d82d
+--- /dev/null
++++ b/ext/simplexml/tests/bug79971_1.phpt
+@@ -0,0 +1,27 @@
++--TEST--
++Bug #79971 (special character is breaking the path in xml function)
++--SKIPIF--
++<?php
++if (!extension_loaded('simplexml')) die('skip simplexml extension not available');
++?>
++--FILE--
++<?php
++if (PHP_OS_FAMILY === 'Windows') {
++    $path = '/' . str_replace('\\', '/', __DIR__);
++} else {
++    $path = __DIR__;
++}
++$uri = "file://$path/bug79971_1.xml";
++var_dump(simplexml_load_file("$uri%00foo"));
++
++$sxe = simplexml_load_file($uri);
++var_dump($sxe->asXML("$uri.out%00foo"));
++?>
++--EXPECTF--
++Warning: simplexml_load_file(): URI must not contain percent-encoded NUL bytes in %s on line %d
++
++Warning: simplexml_load_file(): I/O warning : failed to load external entity "%s/bug79971_1.xml%00foo" in %s on line %d
++bool(false)
++
++Warning: SimpleXMLElement::asXML(): URI must not contain percent-encoded NUL bytes in %s on line %d
++bool(false)
+diff --git a/ext/simplexml/tests/bug79971_1.xml b/ext/simplexml/tests/bug79971_1.xml
+new file mode 100644
+index 0000000000..912bb76d9d
+--- /dev/null
++++ b/ext/simplexml/tests/bug79971_1.xml
+@@ -0,0 +1,2 @@
++<?xml version="1.0"?>
++<root></root>
+-- 
+2.31.1
+
+From 927082f30d8bfb1434df25494e804bdc3d13ca5b Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Mon, 15 Nov 2021 09:05:33 +0100
+Subject: [PATCH 2/3] NEWS
+
+(cherry picked from commit c032381da0bfb6457aa9cfa7a430790f6eab8178)
+---
+ NEWS | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/NEWS b/NEWS
+index fe2c75f2cf..0207f4caed 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,7 +1,13 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
+-Backported from 7.4.25
++Backported from 7.3.33
++
++- XML:
++  . Fix #79971: special character is breaking the path in xml function.
++    (CVE-2021-21707) (cmb)
++
++Backported from 7.3.32
+ 
+ - FPM:
+   . Fixed bug #81026 (PHP-FPM oob R/W in root process leading to privilege
+-- 
+2.31.1
+
+From 271e8b9203ba752de436cb090e3fe8f27c792de4 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Mon, 15 Nov 2021 09:57:10 +0100
+Subject: [PATCH 3/3] fix new tests
+
+(cherry picked from commit b21524ff3db15da5a7779cba73e3774eb5404d40)
+---
+ ext/dom/tests/bug79971_2.phpt       | 2 +-
+ ext/simplexml/tests/bug79971_1.phpt | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/ext/dom/tests/bug79971_2.phpt b/ext/dom/tests/bug79971_2.phpt
+index c4e6b1e4e0..01cd123541 100644
+--- a/ext/dom/tests/bug79971_2.phpt
++++ b/ext/dom/tests/bug79971_2.phpt
+@@ -7,7 +7,7 @@ if (!extension_loaded('dom')) die('skip dom extension not available');
+ --FILE--
+ <?php
+ $imp = new DOMImplementation;
+-if (PHP_OS_FAMILY === 'Windows') {
++if (DIRECTORY_SEPARATOR !== '/') {
+     $path = '/' . str_replace('\\', '/', __DIR__);
+ } else {
+     $path = __DIR__;
+diff --git a/ext/simplexml/tests/bug79971_1.phpt b/ext/simplexml/tests/bug79971_1.phpt
+index 197776d82d..464112c99e 100644
+--- a/ext/simplexml/tests/bug79971_1.phpt
++++ b/ext/simplexml/tests/bug79971_1.phpt
+@@ -6,7 +6,7 @@ if (!extension_loaded('simplexml')) die('skip simplexml extension not available'
+ ?>
+ --FILE--
+ <?php
+-if (PHP_OS_FAMILY === 'Windows') {
++if (DIRECTORY_SEPARATOR !== '/') {
+     $path = '/' . str_replace('\\', '/', __DIR__);
+ } else {
+     $path = __DIR__;
+-- 
+2.31.1
+
