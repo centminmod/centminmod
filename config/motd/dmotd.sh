@@ -166,6 +166,10 @@ phpver_checker() {
         wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
         chmod +x /usr/local/bin/getphpver
     fi
+    if [[ ! "$(grep '81' /usr/local/bin/getphpver)" ]]; then
+        wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
+        chmod +x /usr/local/bin/getphpver
+    fi
     if [ ! -f /usr/bin/jq ]; then
       yum -q -y install jq
     fi
