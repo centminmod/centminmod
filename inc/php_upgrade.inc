@@ -311,11 +311,16 @@ elif [[ "$CLI_PHP_VER" ]]; then
     overwritephpfpmconf='n'
     # lessphpmem='y'
 else
+    if [ -f /usr/local/bin/getphpver ]; then
+      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81)"
+    else
+      display_phpver="7.3.33, 7.4.26, 8.0.13"
+    fi
     echo
     echo "----------------------------------------------------------------"
-    echo "Install which version of PHP? (version i.e. ${PHP_VERSION}, 7.0.33, NGDEBUG)"
+    echo "Install which version of PHP? (i.e. $display_phpver, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 8.0 dev builds minus incompatible PHP extensions"
+    echo "NGDEBUG is PHP 8.1 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')"
