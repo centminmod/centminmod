@@ -656,14 +656,14 @@ php_patches() {
         if [[ ! -f "php7234-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7234-${bugid}.patch" ]]; then
           echo
           if [[ "$bugid" != 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.1.33+ for bug #${bugid}"
+            echo "patching PHP 7.2.34+ for bug #${bugid}"
             echo "https://bugs.php.net/bug.php?id=${bugid}"
           elif [[ "$bugid" = 'sqlite3-defensive' ]]; then
-            echo "patching PHP 7.1.33+ sqlite3-defensive patch"
+            echo "patching PHP 7.2.34+ sqlite3-defensive patch"
           elif [[ "$bugid" = 'php-openssl-cert' ]]; then
-            echo "patching PHP 7.1.33+ php-openssl-cert patch"
+            echo "patching PHP 7.2.34+ php-openssl-cert patch"
           elif [[ "$bugid" = 'mysqlnd-fix' && "$PHP_MYSQLND_PATCH_FIX" = [yY] ]]; then
-            echo "patching PHP 7.1.33 backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
+            echo "patching PHP 7.2.34 backport mysqlnd fix from PHP 7.3 for MariaDB issue https://jira.mariadb.org/browse/MDEV-24121"
             echo
             cp -a $CUR_DIR/patches/php/php7234-${bugid}.patch php7234-${bugid}.patch
             dos2unix php7234-${bugid}.patch
