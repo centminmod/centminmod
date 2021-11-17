@@ -481,7 +481,7 @@ php_patches() {
         patch --ignore-whitespace -p1 < 77275fix.patch
       fi
     fi
-    if [[ "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.0' ]] && [[ "$PHPVER_ID" -le '7033' ]]; then
+    if [[ "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.0' ]] && [[ "$PHPVER_ID" -le '70000' && "$PHPVER_ID" -le '70033' ]]; then
       # backport security bug patch from PHP 7.1. to 7.0.33
       # PHP bug #77369 https://bugs.php.net/bug.php?id=77369
       # PHP bug #77370 https://bugs.php.net/bug.php?id=77370
@@ -562,7 +562,7 @@ php_patches() {
         fi
       done
     fi
-    if [[ "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.1' ]] && [[ "$PHPVER_ID" -le '7133' ]]; then
+    if [[ "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.1' ]] && [[ "$PHPVER_ID" -ge '70100' && "$PHPVER_ID" -le '70133' ]]; then
       # backport security bug patch from PHP 7.3. to 7.1.33
       # PHP bug #78862 https://bugs.php.net/bug.php?id=78862
       # PHP bug #78863 https://bugs.php.net/bug.php?id=78863
@@ -641,7 +641,7 @@ php_patches() {
         fi
       done
     fi
-    if [[ "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.2' ]] && [[ "$PHPVER_ID" -le '7234' ]]; then
+    if [[ "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.2' ]] && [[ "$PHPVER_ID" -le '70200' && "$PHPVER_ID" -le '70234' ]]; then
       # backport security bug patch from PHP 7.3. to 7.2.34
       # PHP bug #77423 https://bugs.php.net/bug.php?id=77423
       # PHP bug #80672 https://bugs.php.net/bug.php?id=80672
@@ -696,7 +696,7 @@ php_patches() {
         fi
       done
     fi
-    if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -le '70331' ]]; then
+    if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70331' ]]; then
       # backport security bug patch for php 7.3
       phpseven_bugids='81026'
       for bugid in $phpseven_bugids; do
