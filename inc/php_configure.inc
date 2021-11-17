@@ -457,17 +457,23 @@ if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || 
   # PHP 7.4 sqlite requires >3.7 but centos 6 only has sqlite 3.6.20
   if [[ "$(uname -m)" = 'x86_64' && ! -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm" ]]; then
     wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm"
-    yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm
+    # yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm
   elif [[ "$(uname -m)" != 'x86_64' && ! -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm" ]]; then
     wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm"
-    yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm
+    # yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm
   fi
   if [[ "$(uname -m)" = 'x86_64' && ! -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm" ]]; then
     wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm"
-    yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm
+    # yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm
   elif [[ "$(uname -m)" != 'x86_64' && ! -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm" ]]; then
     wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm"
-    yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm
+    # yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm
+  fi
+  if [[ "$(uname -m)" = 'x86_64' && -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm" && -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm" ]]; then
+    yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm
+  fi
+  if [[ "$(uname -m)" != 'x86_64' && -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm" && -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm" ]]; then
+    yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm
   fi
 fi
 
@@ -1142,7 +1148,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # initial php install
   if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        scl_install
+        source /opt/rh/devtoolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+      elif [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -1214,7 +1243,30 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # php upgrades
   if [[ "$PHP_PGO_CENTOSSIX" = [yY] && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SIX" = '6' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SIX" = '6' && "$DEVTOOLSET_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
-      if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+      if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        scl_install
+        source /opt/rh/devtoolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+      elif [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/devtoolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+      elif [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'

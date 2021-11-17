@@ -6,6 +6,18 @@ scl_install() {
   if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
     # centos 6 make sure devtoolset-8-gcc is available now
     if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+      if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+        time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+      fi
+      sar_call
+    else
+      if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+        time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils --disablerepo=rpmforge
+      fi
+      sar_call
+    fi
+    # centos 6 make sure devtoolset-8-gcc is available now
+    if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
       if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
         time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
       fi
@@ -17,7 +29,11 @@ scl_install() {
       sar_call
     fi
     # if devtoolset exists, enable it first before checking gcc versions
-    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+      if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-9/enable
+      fi
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       if [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
       fi
