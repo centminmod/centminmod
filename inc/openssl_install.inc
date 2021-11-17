@@ -640,7 +640,7 @@ fi # CLOUDFLARE_PATCHSSL
 
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
-      if [[ "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+      if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-11/enable
         CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
@@ -651,7 +651,7 @@ crypto_gcc() {
         unset CXX
         export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
-      elif [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
         CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
@@ -693,7 +693,7 @@ crypto_gcc() {
         unset CXX
         export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
-      elif [[ "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-11/enable
         CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
@@ -704,7 +704,7 @@ crypto_gcc() {
         unset CXX
         export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
         export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
-      elif [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
         CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'

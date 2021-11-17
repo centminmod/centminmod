@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='731'
+SCRIPT_INCREMENTVER='732'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -1307,8 +1307,8 @@ fi
 if [[ "$CENTOS_SIX" -eq '6' && "$BORINGSSL_SWITCH" = [yY] ]]; then
   # centos 6 gcc 4.4.7 too low for boringssl compiles so need
   # devtoolset-8 gcc 8.3.1+ compiler
-  DEVTOOLSETNINE='n'
-  DEVTOOLSETEIGHT='y'
+  DEVTOOLSETNINE='y'
+  DEVTOOLSETEIGHT='n'
   DEVTOOLSETSEVEN='n'
   CRYPTO_DEVTOOLSETGCC='y'
 fi

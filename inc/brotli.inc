@@ -71,6 +71,21 @@ scl_install() {
         echo
         /opt/gcc8/bin/gcc --version
         /opt/gcc8/bin/g++ --version
+      elif [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+          fi
+          sar_call
+        else
+          if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils --disablerepo=rpmforge
+          fi
+          sar_call
+        fi
+        echo
+        /opt/rh/devtoolset-9/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-9/root/usr/bin/g++ --version
       elif [[ "$DEVTOOLSETEIGHT" = [yY] && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
