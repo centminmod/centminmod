@@ -148,7 +148,7 @@ echo ""
 read -ep "Enter the SSH port number you want to change to: " PORTNUM
 
 if [ -f /etc/csf/csf.conf ]; then
-  CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | egrep '^TCP_IN|^UDP_IN' | grep -w $PORTNUM)
+  CHECKNEWPORTNUM=$(cat /etc/csf/csf.conf | egrep '^TCP_IN|^UDP_IN|^TCP6_IN|^UDP6_IN' | grep -w $PORTNUM)
   if [[ "$CHECKNEWPORTNUM" ]]; then
     echo "the new port $PORTNUM is already in use by other software defined by CSF Firewall"
     echo "please re-run menu option 16 and try a different port"
@@ -193,13 +193,20 @@ fi
 if [[ "$CURRENTSSHDPORT" = "$EXISTPORTNUM" ]]; then
   if [ -f /etc/csf/csf.conf ]; then
   #check if portnum already exists
-  EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '(TCP_IN)' | grep ",${PORTNUM},")
+  EXISTPORTCHECK=$(cat /etc/csf/csf.conf | egrep '^TCP_IN' | grep ",${PORTNUM},")
   EXISTPORTCHECKED=${EXISTPORTCHECK:-novalue}
+  EXISTPORTCHECK_SIX=$(cat /etc/csf/csf.conf | egrep '^TCP6_IN' | grep ",${PORTNUM},")
+  EXISTPORTCHECKED_SIX=${EXISTPORTCHECK_SIX:-novalue}
     
-    if [[ "$EXISTPORTCHECKED" = 'novalue' ]]; then
+    if [[ "$EXISTPORTCHECKED" = 'novalue' && "$EXISTPORTCHECKED_SIX" = 'novalue' ]]; then
+      # IPv4
       TCPIN=$(cat /etc/csf/csf.conf | grep ^TCP_IN)
       TCPINNEW=$(cat /etc/csf/csf.conf | grep ^TCP_IN | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
       sed -i "s/$TCPIN/$TCPINNEW/g" /etc/csf/csf.conf
+      # IPv6
+      TCPINSIX=$(cat /etc/csf/csf.conf | grep ^TCP6_IN)
+      TCPINSIXNEW=$(cat /etc/csf/csf.conf | grep ^TCP6_IN | sed -e "s/,${EXISTPORTNUM},/,${PORTNUM},/")
+      sed -i "s/$TCPINSIX/$TCPINSIXNEW/g" /etc/csf/csf.conf
       # don't need to change TCP_OUT or you would have problems connecting to remote ssh servers
       # on port 22
       # TCPOUT=$(cat /etc/csf/csf.conf | grep ^TCP_OUT)
