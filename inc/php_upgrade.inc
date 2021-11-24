@@ -337,6 +337,7 @@ else
         getlatest_phpbranch=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}' | awk  -F '.' '{print $1$2}')
         if [[ "$getlatest_phpbranch" = '81' ]]; then
             getlatest_phpbranchver=$(getphpver 81)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '80' ]]; then
             getlatest_phpbranchver=$(getphpver 80)
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
