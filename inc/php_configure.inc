@@ -567,6 +567,12 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
       export LIBSODIUM_CFLAGS='-I/usr/local/include'
       export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
     fi
+    # clean up older libsodium versions if they are detected
+    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/local/lib/libsodium.so || -f /usr/local/lib/libsodium.so.23 || -f /usr/local/lib/libsodium.so.23.0.0 ]]; then
+      rm -f /usr/local/lib/libsodium.so.23
+      rm -f /usr/local/lib/libsodium.so
+      rm -f /usr/local/lib/libsodium.so.23.0.0
+    fi
     popd
   fi
   if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
