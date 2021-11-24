@@ -182,7 +182,7 @@ phpver_checker() {
       cecho "* see https://community.centminmod.com/forums/18/" $boldyellow
       cecho "===============================================================================" $boldgreen
       cecho "* Current PHP Version:        $CURRENT_PHPVERS" $boldyellow
-      cecho "* Latest PHP Branch Version:  $LASTEST_PHPVERS (github.com/php/php-src/releases)" $boldyellow
+      cecho "* Latest PHP Branch Version:  $LASTEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi
