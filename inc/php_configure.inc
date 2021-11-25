@@ -1,3 +1,29 @@
+max_spawn_rate_check() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMVER" = '8.1' && "$INITIALINSTALL" = [yY] ]]; then  
+    if [[ "$FPM_MAX_SPAWN_RATE" -ge '32' && -f /usr/local/etc/php-fpm.conf ]]; then
+      echo
+      echo "adjust PHP 8.1.x pm.max_spawn_rate for /usr/local/etc/php-fpm.conf"
+      sed -i "s|^pm.max_children|pm.max_spawn_rate = $FPM_MAX_SPAWN_RATE\npm.max_children|" /usr/local/etc/php-fpm.conf
+      grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf
+      echo
+    fi
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" = '8.1' && "$INITIALINSTALL" != [yY] ]]; then  
+    if [[ "$FPM_MAX_SPAWN_RATE" -ge '32' && -f /usr/local/etc/php-fpm.conf ]]; then
+      echo
+      echo "adjust PHP 8.1.x pm.max_spawn_rate for /usr/local/etc/php-fpm.conf"
+      sed -i "s|^pm.max_children|pm.max_spawn_rate = $FPM_MAX_SPAWN_RATE\npm.max_children|" /usr/local/etc/php-fpm.conf
+      grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf
+      echo
+    fi
+  elif [[ "$CENTOS_SEVEN" -eq '7' && "$(grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf)" ]] && [[ "$PHPMUVER" != '8.1' && "$INITIALINSTALL" != [yY] ]]; then 
+    echo
+    echo "remove unsupported pm.max_spawn_rate from /usr/local/etc/php-fpm.conf"
+    sed -i "/pm.max_spawn_rate/d" /usr/local/etc/php-fpm.conf
+    grep 'pm.max_spawn_rate' /usr/local/etc/php-fpm.conf
+    echo
+  fi
+}
+
 pgo_version_edit() {
   if [[ "$PHP_PGO_APPEND_LABEL" = [yY] ]]; then
     echo "---------------------------"

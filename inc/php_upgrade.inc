@@ -832,6 +832,7 @@ fi
 
 echo "make install"
     time make install
+    ERR=$?
 
 if [[ "$STRIPPHP" = [yY] ]]; then
     echo
@@ -858,7 +859,6 @@ fi
 ################
 # error check
 
-  ERR=$?
     sar_call
   if [ $ERR != 0 ]; then
     echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
@@ -888,6 +888,7 @@ fi
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset
+      max_spawn_rate_check
 
         # read -ep "Do you want to update to latest php-fpm.conf ? It will overwrite your existing php-fpm.conf [y/n]: " overwritephpfpmconf
 
