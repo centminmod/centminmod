@@ -1312,7 +1312,10 @@ if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
     fi
 fi
 
+    echo "***************************************************"
     php-config
+    echo "***************************************************"
+    php -v
     echo "***************************************************"
     if [ "$CPU_MARCH" ]; then
         cecho "* PHP compiled with CPU_MARCH=$CPU_MARCH" $boldgreen

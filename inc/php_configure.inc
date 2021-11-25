@@ -1,3 +1,66 @@
+pgo_version_edit() {
+  if [[ "$PHP_PGO_APPEND_LABEL" = [yY] ]]; then
+    echo "---------------------------"
+    echo "PGO binary labelling"
+    echo "---------------------------"
+    if [[ "$PHP_PGO" = [yY] ]]; then
+      # modifying php -v command to add PGO indicator
+      # allowing end users to easily see if PHP-FPM
+      # was built with PGO or not
+      if [ -f ../sapi/cgi/cgi_main.c ]; then
+        echo "append PGO label to php-cgi binary version"
+        sed -i 's|PHP %s (%s) (built: %s %s)|PHP %s (%s) (built: %s %s) PGO|g' ../sapi/cgi/cgi_main.c
+      else
+        echo "../sapi/cgi/cgi_main.c not found"
+        pwd
+        ls -lah ../sapi/cgi/cgi_main.c
+      fi
+      if [ -f ../sapi/cli/php_cli.c ]; then
+        echo "append PGO label to php cli binary version"
+        sed -i 's|PHP %s (%s) (built: %s %s)|PHP %s (%s) (built: %s %s) PGO|g' ../sapi/cli/php_cli.c
+      else
+        echo "../sapi/cli/php_cli.c not found"
+        pwd
+        ls -lah ../sapi/cli/php_cli.c
+      fi
+      if [ -f ../sapi/fpm/fpm/fpm_main.c ]; then
+        echo "append PGO label to php-fpm binary version"
+        sed -i 's|PHP %s (%s) (built: %s %s)|PHP %s (%s) (built: %s %s) PGO|g' ../sapi/fpm/fpm/fpm_main.c
+      else
+        echo "../sapi/fpm/fpm/fpm_main.c not found"
+        pwd
+        ls -lah ../sapi/fpm/fpm/fpm_main.c
+      fi
+    else
+      if [ -f ../sapi/cgi/cgi_main.c ]; then
+        echo "remove PGO label to php-cgi binary version"
+        sed -i 's|PHP %s (%s) (built: %s %s) PGO|PHP %s (%s) (built: %s %s)|g' ../sapi/cgi/cgi_main.c
+      else
+        echo "../sapi/cgi/cgi_main.c not found"
+        pwd
+        ls -lah ../sapi/cgi/cgi_main.c
+      fi
+      if [ -f ../sapi/cli/php_cli.c ]; then
+        echo "remove PGO label to php cli binary version"
+        sed -i 's|PHP %s (%s) (built: %s %s) PGO|PHP %s (%s) (built: %s %s)|g' ../sapi/cli/php_cli.c
+      else
+        echo "../sapi/cli/php_cli.c not found"
+        pwd
+        ls -lah ../sapi/cli/php_cli.c
+      fi
+      if [ -f ../sapi/fpm/fpm/fpm_main.c ]; then
+        echo "remove PGO label to php-fpm binary version"
+        sed -i 's|PHP %s (%s) (built: %s %s) PGO|PHP %s (%s) (built: %s %s)|g' ../sapi/fpm/fpm/fpm_main.c
+      else
+        echo "../sapi/fpm/fpm/fpm_main.c not found"
+        pwd
+        ls -lah ../sapi/fpm/fpm/fpm_main.c
+      fi
+    fi
+    echo
+  fi
+}
+
 php_pcrejit_stacksize() {
   if [[ "$PHP_PCREJIT_STACKSIZE_ADJUST" = [yY] ]]; then
     pushd ../
@@ -1156,8 +1219,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-9/enable
         which gcc
@@ -1168,8 +1231,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-9/enable
         which gcc
         which g++
@@ -1179,8 +1242,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
       elif [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-8/enable
         which gcc
@@ -1191,8 +1254,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
@@ -1202,8 +1265,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
       elif [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-7/enable
         which gcc
@@ -1214,8 +1277,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-7/enable
         which gcc
@@ -1251,8 +1314,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     if [[ "$CENTOS_SIX" = '6' ]]; then
       if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-9/enable
         which gcc
@@ -1263,8 +1326,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-9/enable
         which gcc
         which g++
@@ -1274,8 +1337,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
       elif [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-8/enable
         which gcc
@@ -1286,8 +1349,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
       elif [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
@@ -1297,8 +1360,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
       elif [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-7/enable
         which gcc
@@ -1309,8 +1372,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
       elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         scl_install
         source /opt/rh/devtoolset-7/enable
         which gcc
@@ -1348,7 +1411,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-11/enable
         which gcc
         which g++
@@ -1362,7 +1425,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-10/enable
         which gcc
         which g++
@@ -1376,7 +1439,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc9/enable
       which gcc
       which g++
@@ -1386,8 +1449,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CXX="ccache g++"
     elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+      DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc8/enable
       which gcc
       which g++
@@ -1398,7 +1461,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-9/enable
         which gcc
         which g++
@@ -1411,8 +1474,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
@@ -1425,8 +1488,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-7/enable
         which gcc
         which g++
@@ -1468,7 +1531,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-11/enable
         which gcc
         which g++
@@ -1482,7 +1545,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-10/enable
         which gcc
         which g++
@@ -1496,7 +1559,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc9/enable
       which gcc
       which g++
@@ -1506,8 +1569,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CXX="ccache g++"
     elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+      DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc8/enable
       which gcc
       which g++
@@ -1518,7 +1581,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-9/enable
         which gcc
         which g++
@@ -1531,8 +1594,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-8/enable
         which gcc
         which g++
@@ -1545,8 +1608,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo $CXX
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
-        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+        DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
         source /opt/rh/devtoolset-7/enable
         which gcc
         which g++
@@ -1629,7 +1692,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
-      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc9/enable
       which gcc
       which g++
@@ -1639,8 +1702,8 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CXX="ccache g++"
     elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-      DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+      DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
+      DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
       source /opt/gcc8/enable
       which gcc
       which g++
@@ -1683,7 +1746,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
     elif [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
       DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
       source /opt/rh/devtoolset-8/enable
       which gcc
@@ -1694,7 +1757,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
     elif [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
-      DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
       DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting'
       source /opt/rh/devtoolset-7/enable
       which gcc
@@ -1989,6 +2052,7 @@ else
 fi
 
 php_pcrejit_stacksize
+pgo_version_edit
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
@@ -2165,7 +2229,7 @@ sar_call
 
     sar_call
     echo
-    
+
     if [[ "$PHPMAKETEST" = [yY] ]]; then
       time make test
       sar_call
@@ -2174,7 +2238,7 @@ sar_call
     echo "php_configure.inc make install"
     time make install
     sar_call
-    
+   
     if [[ "$STRIPPHP" = [yY] ]]; then
         echo
         echo "strip PHP binary..."
