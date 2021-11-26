@@ -36,9 +36,10 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
     cd "${DIR_TMP}/swoole-${PHPSWOOLE_VER}"
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
+        /usr/local/bin/phpize clean
     fi
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    ./configure --with-php-config=/usr/local/bin/php-config --enable-mysqlnd --enable-swoole-json --enable-swoole-curl --enable-sockets --enable-openssl
 
     make${MAKETHREADS}
     make install
@@ -59,6 +60,38 @@ if [[ "$PHPSWOOLE" = [yY] ]]; then
         echo "$SWOOLESOCHECK"
         echo ""
     fi # swoole.so check
+
+    # async client & APIs
+    pushd "$DIR_TMP"
+    rm -rf "${DIR_TMP}/ext-async"
+    git clone https://github.com/swoole/ext-async.git
+    cd "${DIR_TMP}/ext-async"
+    if [[ "$INITIALINSTALL" != [yY] ]]; then
+        make clean
+    fi
+    /usr/local/bin/phpize
+    ./configure
+    make${MAKETHREADS}
+    make install
+    ASYNC_SWOOLE_ERR=$?
+
+    if [[ "$ASYNC_SWOOLE_ERR" -eq '0' ]]; then
+        SWOOLE_ASYNC_SOCHECK=`grep 'swoole_async.so' /usr/local/lib/php.ini`
+        SWOOLE_ASYNC_SOCHECKB=$(grep 'swoole_async.so' ${CONFIGSCANDIR}/swoole_async.ini)
+        PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
+        
+        if [[ -z "$SWOOLE_ASYNC_SOCHECK" || -z "$SWOOLE_ASYNC_SOCHECKB" ]]; then
+            echo "extension=swoole_async.so" > "${CONFIGSCANDIR}/swoole_async.ini"
+        else
+            echo ""
+            echo "swoole_async.so already loaded in ${CONFIGSCANDIR}/swoole_async.ini"
+            echo "$SWOOLE_ASYNC_SOCHECK"
+            echo ""
+        fi # swoole_async.so check
+    else
+        rm -f "${CONFIGSCANDIR}/swoole_async.ini"
+    fi
+    popd
 fi # PHPSWOOLE=y
     fi # PHP_INSTALL=y
 }
