@@ -73,6 +73,12 @@ elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
     DETECTMONGODB=y
 fi
 
+if [[ -f "${CONFIGSCANDIR}/swoole.ini" || "$PHPSWOOLE" = [yY] ]]; then
+    DETECTSWOOLE=y
+elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
+    DETECTSWOOLE=y
+fi
+
 if [[ -f "${CONFIGSCANDIR}/zopfli.ini" || "$PHPZOPFLI" = [yY] ]]; then
     DETECTZOPFLI=y
 elif [[ "$AUTODETECPHP_OVERRIDE" = [yY] ]]; then
@@ -190,6 +196,11 @@ fi
 if [[ "$DETECTMONGODB" = [yY] ]] || [[ "$DETECTMONGODB" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/mongodb.so" ]]; then
     cecho "Auto reinstalling previously detected MongoDB PHP extension" $boldyellow
     mongodbinstall
+fi
+
+if [[ "$DETECTSWOOLE" = [yY] ]] || [[ "$DETECTSWOOLE" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/swoole.so" ]]; then
+    cecho "Auto reinstalling previously detected swoole PHP extension" $boldyellow
+    swooleinstall
 fi
 
 if [[ "$DETECTZOPFLI" = [yY] ]] || [[ "$DETECTZOPFLI" = [yY] && ! -f "$PHPEXTDIR_AUTODETECT/zopfli.so" ]]; then

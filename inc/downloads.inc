@@ -2590,6 +2590,79 @@ echo ""
 }
 
 ###############################################
+swoolephplocaltarball() {
+
+    cd "$DIR_TMP"
+    rm -rf mongo*
+
+        cecho "Download local ${PHPEXT_SWOOLELINKFILE} ..." $boldyellow
+if [[ -s "${PHPEXT_SWOOLELINKFILE}" && "$(tar -tzf ${PHPEXT_SWOOLELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  cecho "${PHPEXT_SWOOLELINKFILE} local found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_SWOOLELINKFILE} not found !!! Downloading now......" $boldgreen
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_SWOOLELINKLOCAL} -O ${PHPEXT_SWOOLELINKFILE} --tries=3"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_SWOOLELINKLOCAL}" -O "${PHPEXT_SWOOLELINKFILE}" --tries=3
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_SWOOLELINKFILE} local download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download local done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf "${PHPEXT_SWOOLELINKFILE}"
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_SWOOLELINKFILE} local extraction failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "${PHPEXT_SWOOLELINKFILE} local valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
+swoolephptarball() {
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${PHPEXT_SWOOLELINKFILE} ..." $boldyellow
+if [[ -s "${PHPEXT_SWOOLELINKFILE}" && "$(tar -tzf ${PHPEXT_SWOOLELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+  cecho "${PHPEXT_SWOOLELINKFILE} found, skipping download..." $boldgreen
+  else
+  echo "Error: ${PHPEXT_SWOOLELINKFILE} not found !!! Downloading now......" $boldgreen
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_SWOOLELINK} -O ${PHPEXT_SWOOLELINKFILE} --tries=3"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_SWOOLELINK}" -O "${PHPEXT_SWOOLELINKFILE}" --tries=3
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_SWOOLELINKFILE} download failed." $boldgreen
+checklogdetails
+    exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+    fi
+fi
+
+tar xzf "${PHPEXT_SWOOLELINKFILE}"
+ERROR=$?
+    if [[ "$ERROR" != '0' ]]; then
+    cecho "Error: ${PHPEXT_SWOOLELINKFILE} extraction failed." $boldgreen
+    cecho "trying local mirror download..." $boldgreen
+    swoolephplocaltarball
+# checklogdetails
+#   exit #$ERROR
+else 
+         cecho "${PHPEXT_SWOOLELINKFILE} valid file." $boldyellow
+echo ""
+    fi
+}
+
+###############################################
 libmemcachedlocaltarball() {
 
 if [[ "$LIBMEMCACHED_YUM" = [nN] ]]; then
@@ -3834,12 +3907,14 @@ if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -g
   imagickphpexttarball &
   redisphptarball &
   mongodbphptarball &
+  swoolephptarball &
   wait
 else
   memcachetarball
   imagickphpexttarball
   redisphptarball
   mongodbphptarball
+  swoolephptarball
 fi
 
 if [[ "$PARALLEL_MODE" = [yY] ]] && [[ "$(grep -c "processor" /proc/cpuinfo)" -gt '1' ]]; then

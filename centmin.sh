@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='741'
+SCRIPT_INCREMENTVER='742'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -681,6 +681,9 @@ PHPTIMEZONEDB_VER='2021.5'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
+PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
+PHPSWOOLE_VER='4.8.2'
+
 PHP_FTPEXT='y'              # ftp PHP extension
 PHP_MEMCACHE='y'            # memcache PHP extension 
 PHP_MEMCACHED='y'           # memcached PHP extension
@@ -1037,6 +1040,7 @@ source "inc/memcached_install.inc"
 source "inc/redis_submenu.inc"
 source "inc/redis.inc"
 source "inc/mongodb.inc"
+source "inc/swoole.inc"
 source "inc/zopfli.inc"
 source "inc/php_mssql.inc"
 source "inc/mysql_proclimit.inc"
@@ -2274,6 +2278,9 @@ fi
 
 echo "mongodbinstall"
 mongodbinstall
+
+echo "swooleinstall"
+swooleinstall
 
 echo "zopfliinstall"
 zopfliinstall

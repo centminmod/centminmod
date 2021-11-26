@@ -273,6 +273,8 @@ PHPTIMEZONEDB_VER='2019.3'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
+PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
+PHPSWOOLE_VER='4.8.2'
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
 ##################################
