@@ -619,7 +619,7 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
   else
     LIBDIR_ARGONSODIUM='lib'
   fi
-  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
         cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
@@ -664,13 +664,17 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
     fi
     popd
   fi
-  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+    export LIBSODIUM_CFLAGS='-I/usr/local/include'
+    export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
+  fi
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
     pushd "$DIR_TMP"
     if [ -s "${LIBARGON_VER}.tar.gz" ]; then
         cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
     else
-        echo "wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/${LIBARGON_VER}.tar.gz" --tries=3"
-        wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/${LIBARGON_VER}.tar.gz" --tries=3
+        echo "wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${LIBARGON_VER}.tar.gz" --tries=3"
+        wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${LIBARGON_VER}.tar.gz" --tries=3
         ERROR=$?
         if [[ "$ERROR" != '0' ]]; then
             cecho "Error: ${LIBARGON_VER}.tar.gz download failed." $boldgreen
@@ -685,8 +689,32 @@ if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' ||
     make clean
     make${MAKETHREADS}
     make install PREFIX=/usr/local LIBRARY_REL=${LIBDIR_ARGONSODIUM}
-    ARGONTWO_OPT=' --with-password-argon2=/usr/local'
+    #ARGONTWO_OPT=' --with-password-argon2=/usr/local'
+    ARGONTWO_OPT=' --with-password-argon2'
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+      # PHP 7.4 not finding sodium paths
+      export ARGON2_CFLAGS='-I/usr/local/include'
+      export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
+    fi
+    # clean up older libargon2 versions if they are detected
+    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/local/lib/libargon2.so.0 || -f /usr/local/lib/libargon2.so || -f /usr/local/lib/libargon2.a ]]; then
+      rm -f /usr/local/lib/libargon2.so
+      rm -f /usr/local/lib/libargon2.so.0
+      rm -f /usr/local/lib/libargon2.a
+    fi
+    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/lib/libargon2.so || -f /usr/lib/libargon2.so.0 ]]; then
+      rm -f /usr/lib/libargon2.so.0
+      rm -f /usr/lib/libargon2.so
+    fi
+    # if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -q libargon2-devel | grep -o libargon2-devel)" = 'libargon2-devel' ]]; then
+    #   # remove ancient libargon EPEL package
+    #   yum -y remove libargon2-devel libargon2
+    # fi
     popd
+  fi
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]]; then
+    export ARGON2_CFLAGS='-I/usr/local/include'
+    export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
   fi
   # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
   if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f /usr/local/include/zip.h ]]; then
@@ -2093,6 +2121,7 @@ else
 ../configure --enable-fpm${OPCACHEOPT}${PHPINTLOPT}${PCNTLOPT}${MCRYPT}${RECODEOPT}${SNMPOPT}${PHPEMBEDOPT}${PHPLTOOPT} --with-mhash ${ZLIBPHP_OPT} --with-gettext --enable-exif ${ZIPOPT}${LIBZIP_OPT} --with-bz2 --enable-soap --enable-sockets --enable-sysvmsg --enable-sysvsem --enable-sysvshm --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --with-mysql-sock=${PHP_MYSQLSOCKPATH}/mysql.sock --with-curl ${PHPGDOPT} --with-xmlrpc --enable-bcmath --enable-calendar${FTPEXTOPT} --enable-gd-native-ttf ${PHPFREETYPEOPT} ${PHPJPEGOPT} --with-png-dir=${PLIBDIR} ${PHPXPMOPT}${LIBVPXOPT}${TLIBOPT} --enable-shmop --with-pear --enable-mbstring $PHP_OPENSSLOPT --with-mysql=mysqlnd --with-libdir=${LIBDIR} --with-mysqli=mysqlnd --enable-pdo${PDOSQLLITE_OPT} --with-pdo-mysql=mysqlnd${MSSQLOPT} --enable-inline-optimization${IMAPOPT} --with-kerberos --with-readline --with-libedit --with-gmp --with-pspell --with-tidy --with-enchant --with-fpm-user=nginx --with-fpm-group=nginx${FILEINFOOPT}${SQLLITEOPT}${LDAPOPT}${PDOPGSQL_OPT}${OPCACHEHUGEPAGES_OPT}${ARGONTWO_OPT}${LIBSODIUM_OPT} --with-config-file-scan-dir=${CONFIGSCANDIR}${PHPDEBUGOPT}${FPMSYSTEMD_INTEGRATEOPT}${FFI_OPT}${PHP_EXTRAOPTS}
 
 fi
+PHPCONFIGURE_ERR=$?
 sar_call
   # only initial install needs to run make, make install
   # via funct_phpconfigure function otherwise upgrade php

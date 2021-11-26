@@ -616,8 +616,8 @@ fi
 ################
 # error check
 
-  ERR=$?
-  if [ $ERR != 0 ]; then
+  # PHPCONFIGURE_ERR=$?
+  if [ $PHPCONFIGURE_ERR != 0 ]; then
       echo -e "\n`date`\nError: $ERR, PHP configure failed ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"

@@ -358,7 +358,7 @@ PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_
 LIBZIP_VER='1.7.3'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.18'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
-LIBARGON_VER='20171227'     # https://github.com/P-H-C/phc-winner-argon2
+LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
 PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
 PHP_MCRYPTPECLVER='1.0.4'   # https://pecl.php.net/package/mcrypt
 PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli
