@@ -3004,9 +3004,9 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     # only insert cronjob if one doesn't already exist
     if [[ -z $(grep "${vhostname}\/wp-cron.php" cronjoblist) ]]; then
       if [[ "$wpcli_ssldefault" = '1' ]]; then
-        echo "#*/15 * * * * sleep ${DELAY}s ; curl -skD - -H \"Cookie: wordpress_logged_in\" \"https://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
+        echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"https://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
       else
-        echo "#*/15 * * * * sleep ${DELAY}s ; curl -skD - -H \"Cookie: wordpress_logged_in\" \"http://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
+        echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"http://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
       fi
     fi
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cron.txt
@@ -3407,7 +3407,7 @@ if [[ "$wpscache" = [nN] ]]; then
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cacheenabler.txt
     # only insert cronjob if one doesn't already exist
     if [[ -z $(grep "$vhostname cacheenabler cron" cronjoblist) ]]; then
-      echo "16 23 * * * echo \"$vhostname cacheenabler cron\"; sleep ${DELAY}s ; rm -rf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/cache/cache-enabler/* > /dev/null 2>&1" >> cronjoblist
+      echo "16 23 * * * echo \"$vhostname cacheenabler cron\" > /dev/null 2>&1; sleep ${DELAY}s > /dev/null 2>&1; rm -rf /home/nginx/domains/${vhostname}/public${WPSUBDIR}/wp-content/cache/cache-enabler/* > /dev/null 2>&1" >> cronjoblist
     fi
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-cacheenabler.txt
     crontab cronjoblist
@@ -3618,7 +3618,7 @@ if [[ -z "$(crontab -l 2>&1 | grep wp_updater_${vhostname}.sh)" ]]; then
 
     mkdir -p /home/nginx/domains/${vhostname}/cronjobs
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-updater.txt
-    echo "0 */8 * * * sleep ${DELAY}s ;/root/tools/wp_updater_${vhostname}.sh >/dev/null 2>&1" >> cronjoblist
+    echo "0 */8 * * * sleep ${DELAY}s > /dev/null 2>&1;/root/tools/wp_updater_${vhostname}.sh >/dev/null 2>&1" >> cronjoblist
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-after-wp-updater.txt
     crontab cronjoblist
     rm -rf cronjoblist
