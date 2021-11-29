@@ -1477,8 +1477,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-11/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-11/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-11"
         echo $CC
         echo $CXX
@@ -1491,8 +1496,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-10"
         echo $CC
         echo $CXX
@@ -1505,8 +1515,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       which g++
       unset CC
       unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+      else
+        export CC="gcc"
+        export CXX="g++"
+      fi
     elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
@@ -1516,8 +1531,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       which g++
       unset CC
       unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+      else
+        export CC="gcc"
+        export CXX="g++"
+      fi
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
@@ -1527,8 +1547,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-9"
         echo $CC
         echo $CXX
@@ -1541,8 +1566,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-8/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-8/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-8"
         echo $CC
         echo $CXX
@@ -1555,8 +1585,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-7/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-7"
         echo $CC
         echo $CXX
@@ -1566,8 +1601,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-6"
         echo $CC
         echo $CXX
@@ -1577,8 +1617,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-4"
         echo $CC
         echo $CXX
@@ -1597,8 +1642,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-11/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-11/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-11"
         echo $CC
         echo $CXX
@@ -1611,8 +1661,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-10"
         echo $CC
         echo $CXX
@@ -1625,8 +1680,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       which g++
       unset CC
       unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+      else
+        export CC="gcc"
+        export CXX="g++"
+      fi
     elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       GENERAL_DEVTOOLSETGCC='y'
       DEVTOOLSETPHP_FALLTHROUGH=" -Wimplicit-fallthrough=0"
@@ -1636,8 +1696,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       which g++
       unset CC
       unset CXX
-      export CC="ccache gcc"
-      export CXX="ccache g++"
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+      else
+        export CC="gcc"
+        export CXX="g++"
+      fi
     elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
@@ -1647,8 +1712,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-9"
         echo $CC
         echo $CXX
@@ -1661,8 +1731,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-8/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-8/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-8"
         echo $CC
         echo $CXX
@@ -1675,8 +1750,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-7/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-7"
         echo $CC
         echo $CXX
@@ -1686,8 +1766,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-6"
         echo $CC
         echo $CXX
@@ -1697,8 +1782,13 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+          export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        else
+          export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
+          export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
+        fi
         echo "centos 7 set devtoolset-4"
         echo $CC
         echo $CXX

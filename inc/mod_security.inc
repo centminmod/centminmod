@@ -10,13 +10,46 @@ modsecurity_install() {
     echo "build libmodsecurity..."
     # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
 
-    # force devtoolset-9 gcc 8+ usage
-      if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    # force devtoolset-10 gcc usage
+      if [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
@@ -24,8 +57,13 @@ modsecurity_install() {
         source /opt/rh/devtoolset-9/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
@@ -33,8 +71,13 @@ modsecurity_install() {
         scl_install
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
@@ -42,8 +85,13 @@ modsecurity_install() {
         source /opt/rh/devtoolset-8/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
@@ -51,8 +99,13 @@ modsecurity_install() {
         source /opt/rh/devtoolset-7/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
