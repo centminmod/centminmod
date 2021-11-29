@@ -88,15 +88,38 @@ sshdtweaks
     else
         fallocate -l 1G /swapfile
     fi
-    ls -lah /swapfile; 
-    mkswap /swapfile; 
-    swapon /swapfile; 
-    chown root:root /swapfile; 
-    chmod 0600 /swapfile; 
-    swapon -s; 
-    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab; 
+    ls -lah /swapfile;
+    mkswap /swapfile;
+    swapon /swapfile;
+    chown root:root /swapfile;
+    chmod 0600 /swapfile;
+    swapon -s;
+    echo "/swapfile swap swap defaults 0 0" >> /etc/fstab;
     mount -a;
     free -m
+    echo
+    } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_${DT}.log"
+  elif [[ "$FINDSWAPSIZE" -eq '0' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && -f /swapfile && "$(grep '/swapfile' /etc/fstab)" ]] || [[ "$(awk '/MemTotal/ {print $2}' /proc/meminfo)" -le '1048576' && "$FINDSWAPSIZE" -le '512' && ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] && -f /swapfile && "$(grep '/swapfile' /etc/fstab)" ]]; then
+    {
+    echo
+    free -mlt
+    echo
+    echo "re-create 1GB swap file";
+    swapoff -a
+    if [[ "$(df -hT | grep -w xfs)" || "$(virt-what | grep -o lxc)" = 'lxc' ]]; then
+        dd if=/dev/zero of=/swapfile bs=1024 count=1024k;
+    else
+        fallocate -l 1G /swapfile
+    fi
+    ls -lah /swapfile;
+    mkswap /swapfile;
+    swapon /swapfile;
+    chown root:root /swapfile;
+    chmod 0600 /swapfile;
+    swapon -s;
+    # echo "/swapfile swap swap defaults 0 0" >> /etc/fstab;
+    mount -a;
+    free -mlt
     echo
     } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_swapsetup_${DT}.log"
   fi
