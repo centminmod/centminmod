@@ -51,8 +51,13 @@ zlibng_install() {
         source /opt/rh/devtoolset-7/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -61,8 +66,13 @@ zlibng_install() {
         source /opt/rh/devtoolset-8/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -71,8 +81,13 @@ zlibng_install() {
         source /opt/gcc8/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -81,8 +96,13 @@ zlibng_install() {
         source /opt/gcc9/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -91,8 +111,13 @@ zlibng_install() {
         source /opt/rh/devtoolset-9/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -101,8 +126,13 @@ zlibng_install() {
         source /opt/rh/devtoolset-10/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -151,8 +181,13 @@ install_cfzlib() {
         source /opt/rh/devtoolset-7/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -161,8 +196,13 @@ install_cfzlib() {
         source /opt/rh/devtoolset-8/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -171,8 +211,13 @@ install_cfzlib() {
         source /opt/gcc8/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -181,8 +226,13 @@ install_cfzlib() {
         source /opt/gcc9/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -191,8 +241,13 @@ install_cfzlib() {
         source /opt/rh/devtoolset-9/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -201,8 +256,13 @@ install_cfzlib() {
         source /opt/rh/devtoolset-10/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
@@ -211,8 +271,13 @@ install_cfzlib() {
         source /opt/rh/devtoolset-11/enable
         unset CC
         unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
         gcc --version
         g++ --version
     fi
