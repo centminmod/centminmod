@@ -198,7 +198,8 @@ CHECKLOWMEMPHP=`expr $TOTALMEM \< $ISLOWMEMPHP`
 #############################################################
 PLIBDIR='/usr'
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
-echo "php_configure.inc PHPMVER: $PHPMVER"
+echo "PHP configure stage"
+echo
 
 # compiling PHP with LTO support takes 2-4x times the memory
 # and cpu resources to do and takes 2-4x times longer to compile
@@ -580,171 +581,6 @@ if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || 
   if [[ "$(uname -m)" != 'x86_64' && -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm" && -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm" ]]; then
     yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm
   fi
-fi
-
-if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
-  # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
-  PHP_LIBZIP='y'
-fi
-if [[ "$PHP_ARGON" = [yY] ]]; then
-  # alias for PHP 7.2 argon support
-  PHP_LIBZIP='y'
-elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
-  # alias for PHP 7.2 argon support
-  PHP_LIBZIP='n'
-fi
-if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
-  ARGONTWO_OPT=' --with-password-argon2'
-  LIBSODIUM_OPT=' --with-sodium'
-  echo "libzip check PHPMVER = $PHPMVER"
-  echo "libzip check PHPMUVER = $PHPMUVER"
-  if [[ "$(uname -m)" = 'x86_64' ]]; then
-    LIBDIR_LIBZIP='lib64'
-  else
-    LIBDIR_LIBZIP='lib'
-  fi
-  if [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
-    # https://bugs.php.net/bug.php?id=76483
-    # PHP 7.4 not finding libzip paths
-    export LIBZIP_CFLAGS='-I/usr/local/include'
-    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
-    echo "php 8.x libzip"
-    LIBZIP_OPT=' --with-libzip'
-  elif [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
-    # https://bugs.php.net/bug.php?id=76483
-    # PHP 7.4 not finding libzip paths
-    export LIBZIP_CFLAGS='-I/usr/local/include'
-    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
-    echo "php 7.4 libzip"
-    LIBZIP_OPT=' --with-libzip'
-  else
-    # PHP 7.4 not finding libzip paths
-    export LIBZIP_CFLAGS='-I/usr/local/include'
-    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
-    echo "non php 7.4 libzip"
-    LIBZIP_OPT=' --with-libzip'
-  fi
-  # if [[ ! -f /usr/include/zip.h ]]; then
-  #   time $YUMDNFBIN${CACHESKIP} -q -y install libzip5 libzip5-devel --enablerepo=remi
-  # fi
-  if [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
-    libzip_install
-  fi
-  if [[ "$(uname -m)" = 'x86_64' ]]; then
-    LIBDIR_ARGONSODIUM='lib64'
-  else
-    LIBDIR_ARGONSODIUM='lib'
-  fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
-    pushd "$DIR_TMP"
-    if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
-        cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
-    else
-        if [[ "$LIBSODIUM_VER" = '1.0.17' ]]; then
-          echo "wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
-          wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
-        else
-          echo "wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}-RELEASE/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
-          wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}-RELEASE/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
-        fi
-        # echo "wget -c${ipv_forceopt} "https://pecl.php.net/get/libsodium-${LIBSODIUM_VER}.tgz" --tries=3"
-        # wget -c${ipv_forceopt} "https://pecl.php.net/get/libsodium-${LIBSODIUM_VER}.tgz" --tries=3
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: libsodium-${LIBSODIUM_VER}.tar.gz download failed." $boldgreen
-        else 
-            cecho "Download done." $boldyellow
-        fi
-    fi
-    tar xzf libsodium-${LIBSODIUM_VER}.tar.gz
-    cd libsodium-${LIBSODIUM_VER}
-    make clean
-    if [[ "$LIBSODIUM_NATIVE" = [nN] ]]; then
-      ./configure --prefix=/usr/local --libdir=/usr/local/${LIBDIR_ARGONSODIUM}
-    elif [[ "$LIBSODIUM_NATIVE" = [yY] ]]; then
-      ./configure --prefix=/usr/local --enable-opt --libdir=/usr/local/${LIBDIR_ARGONSODIUM}
-    fi
-    make${MAKETHREADS}
-    make install
-    LIBSODIUM_OPT=' --with-sodium=/usr/local'
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
-      # PHP 7.4 not finding sodium paths
-      export LIBSODIUM_CFLAGS='-I/usr/local/include'
-      export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
-    fi
-    # clean up older libsodium versions if they are detected
-    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/local/lib/libsodium.so || -f /usr/local/lib/libsodium.so.23 || -f /usr/local/lib/libsodium.so.23.0.0 ]]; then
-      rm -f /usr/local/lib/libsodium.so.23
-      rm -f /usr/local/lib/libsodium.so
-      rm -f /usr/local/lib/libsodium.so.23.0.0
-    fi
-    popd
-  fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
-    export LIBSODIUM_CFLAGS='-I/usr/local/include'
-    export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
-  fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
-    pushd "$DIR_TMP"
-    if [ -s "${LIBARGON_VER}.tar.gz" ]; then
-        cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
-    else
-        echo "wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${LIBARGON_VER}.tar.gz" --tries=3"
-        wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${LIBARGON_VER}.tar.gz" --tries=3
-        ERROR=$?
-        if [[ "$ERROR" != '0' ]]; then
-            cecho "Error: ${LIBARGON_VER}.tar.gz download failed." $boldgreen
-        else 
-            cecho "Download done." $boldyellow
-        fi
-    fi
-    # rm -rf phc-winner-argon2-${LIBARGON_VER}
-    rm -rf "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so"
-    tar xzf ${LIBARGON_VER}.tar.gz
-    cd phc-winner-argon2-${LIBARGON_VER}
-    make clean
-    make${MAKETHREADS}
-    make install PREFIX=/usr/local LIBRARY_REL=${LIBDIR_ARGONSODIUM}
-    #ARGONTWO_OPT=' --with-password-argon2=/usr/local'
-    ARGONTWO_OPT=' --with-password-argon2'
-    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
-      # PHP 7.4 not finding sodium paths
-      export ARGON2_CFLAGS='-I/usr/local/include'
-      export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
-    fi
-    # clean up older libargon2 versions if they are detected
-    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/local/lib/libargon2.so.0 || -f /usr/local/lib/libargon2.so || -f /usr/local/lib/libargon2.a ]]; then
-      rm -f /usr/local/lib/libargon2.so
-      rm -f /usr/local/lib/libargon2.so.0
-      rm -f /usr/local/lib/libargon2.a
-    fi
-    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/lib/libargon2.so || -f /usr/lib/libargon2.so.0 ]]; then
-      rm -f /usr/lib/libargon2.so.0
-      rm -f /usr/lib/libargon2.so
-    fi
-    # if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -q libargon2-devel | grep -o libargon2-devel)" = 'libargon2-devel' ]]; then
-    #   # remove ancient libargon EPEL package
-    #   yum -y remove libargon2-devel libargon2
-    # fi
-    popd
-  fi
-  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]]; then
-    export ARGON2_CFLAGS='-I/usr/local/include'
-    export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
-  fi
-  # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
-  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f /usr/local/include/zip.h ]]; then
-    echo
-    echo "disable libzip, libsodium or libargon2 libraries"
-    echo
-    ARGONTWO_OPT=""
-    LIBSODIUM_OPT=""
-    LIBZIP_OPT=""
-  fi
-else
-  ARGONTWO_OPT=""
-  LIBSODIUM_OPT=""
-  LIBZIP_OPT=""
 fi
 
 if [[ "$PHPDEBUGMODE" = [yY] ]]; then
@@ -2211,6 +2047,171 @@ else
   PHP_OPENSSLOPT='--with-openssl'
 fi
 
+if [[ "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  # seems PHP 7.3 must use libzip unlike PHP 7.2 which can compile without it
+  PHP_LIBZIP='y'
+fi
+if [[ "$PHP_ARGON" = [yY] ]]; then
+  # alias for PHP 7.2 argon support
+  PHP_LIBZIP='y'
+elif [[ "$PHP_ARGON" = [nN] && "$PHP_LIBZIP" = [nN] ]]; then
+  # alias for PHP 7.2 argon support
+  PHP_LIBZIP='n'
+fi
+if [[ "$PHP_LIBZIP" = [yY] ]] && [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  ARGONTWO_OPT=' --with-password-argon2'
+  LIBSODIUM_OPT=' --with-sodium'
+  echo "libzip check PHPMVER = $PHPMVER"
+  echo "libzip check PHPMUVER = $PHPMUVER"
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    LIBDIR_LIBZIP='lib64'
+  else
+    LIBDIR_LIBZIP='lib'
+  fi
+  if [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # https://bugs.php.net/bug.php?id=76483
+    # PHP 7.4 not finding libzip paths
+    export LIBZIP_CFLAGS='-I/usr/local/include'
+    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+    echo "php 8.x libzip"
+    LIBZIP_OPT=' --with-libzip'
+  elif [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    # https://bugs.php.net/bug.php?id=76483
+    # PHP 7.4 not finding libzip paths
+    export LIBZIP_CFLAGS='-I/usr/local/include'
+    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+    echo "php 7.4 libzip"
+    LIBZIP_OPT=' --with-libzip'
+  else
+    # PHP 7.4 not finding libzip paths
+    export LIBZIP_CFLAGS='-I/usr/local/include'
+    export LIBZIP_LIBS="-L/usr/local/${LIBDIR_LIBZIP} -lzip"
+    echo "non php 7.4 libzip"
+    LIBZIP_OPT=' --with-libzip'
+  fi
+  # if [[ ! -f /usr/include/zip.h ]]; then
+  #   time $YUMDNFBIN${CACHESKIP} -q -y install libzip5 libzip5-devel --enablerepo=remi
+  # fi
+  if [[ ! -f /usr/local/include/zip.h || ! -d "${DIR_TMP}/libzip-${LIBZIP_VER}" ]]; then
+    libzip_install
+  fi
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    LIBDIR_ARGONSODIUM='lib64'
+  else
+    LIBDIR_ARGONSODIUM='lib'
+  fi
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f "libsodium-${LIBSODIUM_VER}.tar.gz" ]]; then
+    pushd "$DIR_TMP"
+    if [ -s "libsodium-${LIBSODIUM_VER}.tar.gz" ]; then
+        cecho "libsodium-${LIBSODIUM_VER}.tar.gz found, skipping download..." $boldgreen
+    else
+        if [[ "$LIBSODIUM_VER" = '1.0.17' ]]; then
+          echo "wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
+          wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
+        else
+          echo "wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}-RELEASE/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3"
+          wget -c${ipv_forceopt} "https://github.com/jedisct1/libsodium/releases/download/${LIBSODIUM_VER}-RELEASE/libsodium-${LIBSODIUM_VER}.tar.gz" --tries=3
+        fi
+        # echo "wget -c${ipv_forceopt} "https://pecl.php.net/get/libsodium-${LIBSODIUM_VER}.tgz" --tries=3"
+        # wget -c${ipv_forceopt} "https://pecl.php.net/get/libsodium-${LIBSODIUM_VER}.tgz" --tries=3
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+            cecho "Error: libsodium-${LIBSODIUM_VER}.tar.gz download failed." $boldgreen
+        else 
+            cecho "Download done." $boldyellow
+        fi
+    fi
+    tar xzf libsodium-${LIBSODIUM_VER}.tar.gz
+    cd libsodium-${LIBSODIUM_VER}
+    make clean
+    if [[ "$LIBSODIUM_NATIVE" = [nN] ]]; then
+      ./configure --prefix=/usr/local --libdir=/usr/local/${LIBDIR_ARGONSODIUM}
+    elif [[ "$LIBSODIUM_NATIVE" = [yY] ]]; then
+      ./configure --prefix=/usr/local --enable-opt --libdir=/usr/local/${LIBDIR_ARGONSODIUM}
+    fi
+    make${MAKETHREADS}
+    make install
+    LIBSODIUM_OPT=' --with-sodium=/usr/local'
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+      # PHP 7.4 not finding sodium paths
+      export LIBSODIUM_CFLAGS='-I/usr/local/include'
+      export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
+    fi
+    # clean up older libsodium versions if they are detected
+    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/local/lib/libsodium.so || -f /usr/local/lib/libsodium.so.23 || -f /usr/local/lib/libsodium.so.23.0.0 ]]; then
+      rm -f /usr/local/lib/libsodium.so.23
+      rm -f /usr/local/lib/libsodium.so
+      rm -f /usr/local/lib/libsodium.so.23.0.0
+    fi
+    popd
+  fi
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" ]]; then
+    export LIBSODIUM_CFLAGS='-I/usr/local/include'
+    export LIBSODIUM_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -lsodium"
+  fi
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "${LIBARGON_VER}.tar.gz" ]]; then
+    pushd "$DIR_TMP"
+    if [ -s "${LIBARGON_VER}.tar.gz" ]; then
+        cecho "${LIBARGON_VER}.tar.gz found, skipping download..." $boldgreen
+    else
+        echo "wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${LIBARGON_VER}.tar.gz" --tries=3"
+        wget -c${ipv_forceopt} "https://github.com/P-H-C/phc-winner-argon2/archive/refs/tags/${LIBARGON_VER}.tar.gz" --tries=3
+        ERROR=$?
+        if [[ "$ERROR" != '0' ]]; then
+            cecho "Error: ${LIBARGON_VER}.tar.gz download failed." $boldgreen
+        else 
+            cecho "Download done." $boldyellow
+        fi
+    fi
+    # rm -rf phc-winner-argon2-${LIBARGON_VER}
+    rm -rf "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so"
+    tar xzf ${LIBARGON_VER}.tar.gz
+    cd phc-winner-argon2-${LIBARGON_VER}
+    make clean
+    make${MAKETHREADS}
+    make install PREFIX=/usr/local LIBRARY_REL=${LIBDIR_ARGONSODIUM}
+    #ARGONTWO_OPT=' --with-password-argon2=/usr/local'
+    ARGONTWO_OPT=' --with-password-argon2'
+    if [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+      # PHP 7.4 not finding sodium paths
+      export ARGON2_CFLAGS='-I/usr/local/include'
+      export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
+    fi
+    # clean up older libargon2 versions if they are detected
+    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/local/lib/libargon2.so.0 || -f /usr/local/lib/libargon2.so || -f /usr/local/lib/libargon2.a ]]; then
+      rm -f /usr/local/lib/libargon2.so
+      rm -f /usr/local/lib/libargon2.so.0
+      rm -f /usr/local/lib/libargon2.a
+    fi
+    if [[ "$(uname -m)" = 'x86_64' ]] && [[ -f /usr/lib/libargon2.so || -f /usr/lib/libargon2.so.0 ]]; then
+      rm -f /usr/lib/libargon2.so.0
+      rm -f /usr/lib/libargon2.so
+    fi
+    # if [[ "$CENTOS_SEVEN" = '7' && "$(rpm -q libargon2-devel | grep -o libargon2-devel)" = 'libargon2-devel' ]]; then
+    #   # remove ancient libargon EPEL package
+    #   yum -y remove libargon2-devel libargon2
+    # fi
+    popd
+  fi
+  if [[ "$PHP_LIBZIP" = [yY] ]] && [[ -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" ]]; then
+    export ARGON2_CFLAGS='-I/usr/local/include'
+    export ARGON2_LIBS="-L/usr/local/${LIBDIR_ARGONSODIUM} -largon2"
+  fi
+  # if libzip, libsodium or libargon2 libraries still don't exit, disable from php configuration
+  if [[ ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libargon2.so" || ! -f "/usr/local/${LIBDIR_ARGONSODIUM}/libsodium.so" || ! -f /usr/local/include/zip.h ]]; then
+    echo
+    echo "disable libzip, libsodium or libargon2 libraries"
+    echo
+    ARGONTWO_OPT=""
+    LIBSODIUM_OPT=""
+    LIBZIP_OPT=""
+  fi
+else
+  ARGONTWO_OPT=""
+  LIBSODIUM_OPT=""
+  LIBZIP_OPT=""
+fi
+
 if [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
   LIBGD_EXT_OPT=' --with-external-gd'
   install_libgd_external
@@ -2254,6 +2255,9 @@ fi
 
 php_pcrejit_stacksize
 pgo_version_edit
+echo
+echo "Using GCC $(gcc -dumpversion)"
+echo
 
 if [[ "$MDB_INSTALL" == [yY] || "$MYSQL_INSTALL" == [yY] ]]; then
 
