@@ -275,6 +275,8 @@ PHPEMBED='y'                 # built php with php embed SAPI library support --e
 SHORTCUTS='y'                # shortcuts
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
 PHPSWOOLE_VER='4.8.2'
+PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
+LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
 ##################################

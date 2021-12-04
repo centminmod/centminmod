@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='750'
+SCRIPT_INCREMENTVER='751'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='30/06/2021'
@@ -683,6 +683,8 @@ PHPEMBED='y'                 # built php with php embed SAPI library support --e
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
 PHPSWOOLE_VER='4.8.2'
+PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
+LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 PHP_FTPEXT='y'              # ftp PHP extension
 PHP_MEMCACHE='y'            # memcache PHP extension 
