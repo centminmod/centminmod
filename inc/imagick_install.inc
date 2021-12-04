@@ -1,7 +1,27 @@
 libheif_install() {
+    if [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETELEVEN" = [yY] ]]; then
+        if [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+            source /opt/rh/devtoolset-11/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETTEN" = [yY] ]]; then
+        if [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+            source /opt/rh/devtoolset-10/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    else
+        export CFLAGS="-fPIC"
+        export CXXFLAGS="-fPIC"
+    fi
     echo "Install libheif routine"
     echo "installing x265, libde265 & libheif"
-    enable_devtoolset
+    # enable_devtoolset
     if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
         yum -q -y install cmake3 cmake3-data
     fi
@@ -11,9 +31,9 @@ libheif_install() {
     echo "Install x265 for libheif"
     pushd "$DIR_TMP"
     rm -rf x265
-    hg clone https://bitbucket.org/multicoreware/x265
+    git clone https://bitbucket.org/multicoreware/x265_git x265
     cd x265/build/linux
-    cmake -G "Unix Makefiles" -DENABLE_SHARED:bool=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
+    cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
     make -s -j$(nproc)
     make install
     echo
@@ -21,7 +41,7 @@ libheif_install() {
     echo "Install libde265 for libheif"
     pushd "$DIR_TMP"
     rm -rf libde265
-    git clone --depth=1 https://github.com/strukturag/libde265
+    git clone --depth=1 -b frame-parallel https://github.com/strukturag/libde265
     cd libde265
     # mkdir -p build
     # cd build
@@ -47,7 +67,7 @@ libheif_install() {
     # export libde265_CFLAGS='-I/usr/local/include'
     # export libde265_LIBS='-L/usr/local/lib'
     # export x265_CFLAGS='-I/usr/local/include'
-    # export x265_LIBS='-L/usr/local/lib'
+    # export x265_LIBS='-L/usr/local/lib'   
     # export LDFLAGS='-L/usr/local/lib'
     PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib LDFLAGS="-L/usr/local/lib" CPPFLAGS="-I/usr/local/include" ./configure --disable-examples
     make -s -j$(nproc)
