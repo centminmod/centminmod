@@ -49,6 +49,7 @@ GCCINTEL_PHP='y'              # enable PHP-FPM GCC compiler with Intel cpu optim
 PHP_PGO='n'                   # Profile Guided Optimization https://software.intel.com/en-us/blogs/2015/10/09/pgo-let-it-go-php
 PHP_PGO_ALWAYS='n'            # override for PHP_PGO enable for 1 cpu thread servers too
 PHP_PGO_TRAINRUNS='10'        # number of runs done during PGO PHP 7 training runs
+PHP_PGO_APPEND_LABEL='y'          # appen PGO label to PHP binaries built with Profile Guided Optimizations
 PHP_PGO_CENTOSSIX='n'         # CentOS 6 may need GCC >4.4.7 fpr PGO so use lastest devtoolset
 DEVTOOLSET_PHP='n'            # use devtoolset GCC for GCCINTEL_PHP='y'
 DEVTOOLSETSIX='n'             # Enable or disable devtoolset-6 GCC 6.2 support instead of lastest devtoolset support
@@ -103,7 +104,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 
 # Nginx
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
-NGINX_VERSION='1.21.3'      # Use this version of Nginx
+NGINX_VERSION='1.21.4'      # Use this version of Nginx
 NGINX_VHOSTSSL='y'           # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_STAPLE_CACHE_OVERRIDE='n' # Enable will override Nginx OCSP stapling cache refresh time of 3600 seconds
@@ -272,6 +273,10 @@ PHPTIMEZONEDB_VER='2019.3'   # timezonedb PHP extension version
 PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompiles
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
+PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
+PHPSWOOLE_VER='4.8.2'
+PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
+LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
 ##################################
@@ -357,7 +362,7 @@ PHP_ARGON='n'               # alias for PHP_LIBZIP, when PHP_ARGON='y' then PHP_
 LIBZIP_VER='1.7.3'          # required for PHP 7.2 + with libsodium & argon2
 LIBSODIUM_VER='1.0.18'      # https://github.com/jedisct1/libsodium/releases
 LIBSODIUM_NATIVE='n'        # optimise for specific cpu not portable between different cpu modules
-LIBARGON_VER='20171227'     # https://github.com/P-H-C/phc-winner-argon2
+LIBARGON_VER='20190702'     # https://github.com/P-H-C/phc-winner-argon2
 PHP_MCRYPTPECL='y'          # PHP 7.2 deprecated mcrypt support so this adds it back as PECL extension
 PHP_MCRYPTPECLVER='1.0.4'   # https://pecl.php.net/package/mcrypt
 PHPZOPFLI='n'               # enable zopfli php extension https://github.com/kjdev/php-ext-zopfli

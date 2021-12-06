@@ -456,12 +456,6 @@ elif [ -f /usr/bin/sar ]; then
   fi
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
-  # set ld.gold linker as system default
-  /usr/sbin/alternatives --set ld /usr/bin/ld.gold
-  ld -v
-fi
-
 if [ -f /proc/user_beancounters ]; then
     echo "OpenVZ system detected, NTP not installed"
 elif [[ "$CHECK_LXD" = [yY] ]]; then
@@ -1300,8 +1294,8 @@ fi
 
 yumupdater() {
   yum clean all
-  yum -y update
-  #yum -y install expect imake bind-utils readline readline-devel libedit libedit-devel libxslt libxslt-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel vim-minimal nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-ExtUtils-MakeMaker perl-Time-HiRes cyrus-sasl cyrus-sasl-devel strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git
+  time $YUMDNFBIN -y update
+  #time $YUMDNFBIN -y install expect imake bind-utils readline readline-devel libedit libedit-devel libxslt libxslt-devel libatomic_ops-devel time yum-downloadonly coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake openssl openssl-devel curl curl-devel openldap openldap-devel libtool make libXext-devel unzip patch sysstat zlib zlib-devel libc-client-devel openssh gd gd-devel pcre pcre-devel flex bison file gettext gettext-devel e2fsprogs-devel libtool-libs libtool-ltdl-devel libidn libidn-devel krb5-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel libXpm-devel glib2 glib2-devel bzip2 bzip2-devel vim-minimal nano ncurses ncurses-devel e2fsprogs gmp-devel pspell-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils libc-client libc-client-devel which ImageMagick ImageMagick-devel ImageMagick-c++ ImageMagick-c++-devel perl-ExtUtils-MakeMaker perl-Time-HiRes cyrus-sasl cyrus-sasl-devel strace pam pam-devel cmake libaio libaio-devel libevent libevent-devel git
 }
 
 install_axel() {
@@ -1417,9 +1411,9 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '7.3' | head -n1)
-PHPVERLATEST=${PHPVERLATEST:-"7.4.26"}
+PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.1' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
+PHPVERLATEST=${PHPVERLATEST:-"8.1.0"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
@@ -1427,39 +1421,6 @@ sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # bypass initial setup email prompt
 mkdir -p /etc/centminmod/
-echo "NGINX_PAGESPEED=y" > /etc/centminmod/custom_config.inc
-echo "NGINX_ZLIBCUSTOM='y'" >> /etc/centminmod/custom_config.inc
-echo "ORESTY_LUANGINX=n" >> /etc/centminmod/custom_config.inc
-echo "NGINX_XSLT='n'" >> /etc/centminmod/custom_config.inc
-echo "NGINX_LIBBROTLI='y'" >> /etc/centminmod/custom_config.inc
-# Nginx Dynamic Module Switches
-echo "NGXDYNAMIC_XSLT='n'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_IMAGEFILTER='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_GEOIP='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_STREAM='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_HEADERSMORE='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_SETMISC='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_ECHO='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_SRCCACHE='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_MEMC='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_REDISTWO='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_NGXPAGESPEED='y'" >> /etc/centminmod/custom_config.inc
-echo "NGXDYNAMIC_BROTLI='y'" >> /etc/centminmod/custom_config.inc
-echo "PHPMSSQL='y'" >> /etc/centminmod/custom_config.inc
-echo "PHP_PGO='y'" >> /etc/centminmod/custom_config.inc
-echo "PHP_PGO_CENTOSSIX='y'" >> /etc/centminmod/custom_config.inc
-echo "NGINX_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
-echo "GENERAL_DEVTOOLSETGCC='y'" >> /etc/centminmod/custom_config.inc
-echo "CLANG='n'" >> /etc/centminmod/custom_config.inc
-echo "LIBRESSL_SWITCH='n'" >> /etc/centminmod/custom_config.inc
-# echo "NGX_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
-# echo "PHP_GSPLITDWARF='y'" >> /etc/centminmod/custom_config.inc
-# echo "NGX_LDGOLD='y'" >> /etc/centminmod/custom_config.inc
-# echo "ORESTY_LUANGINXVER='0.10.4'" >> /etc/centminmod/custom_config.inc
-
-# mariadb 10.3 default install
-echo "MARIADB_INSTALLTENTHREE='y'" >> /etc/centminmod/custom_config.inc
-
 if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
   echo "LOWMEM_INSTALL='y'" >> /etc/centminmod/custom_config.inc
 fi

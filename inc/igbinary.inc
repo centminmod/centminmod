@@ -6,7 +6,7 @@ if [ "$IGBINARY_INSTALL" == 'y' ]; then
 if [ "$IGBINARYGIT" == 'y' ]; then
     cd $DIR_TMP
 
-    php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0'
+    php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
     PHPSEVEN_CHECKVER=$?
     echo $PHPSEVEN_CHECKVER
 
@@ -14,7 +14,7 @@ if [ "$IGBINARYGIT" == 'y' ]; then
 
         IGBINARYSEVEN_LINK='https://github.com/igbinary/igbinary'
         # fallback mirror if official github is down, use gitlab mirror
-        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $IGBINARYSEVEN_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
         IGBINARYSEVEN_CURLCHECK=$?
         if [[ "$IGBINARYSEVEN_CURLCHECK" != '0' ]]; then
             IGBINARYSEVEN_LINK='https://gitlab.com/centminmod-github-mirror/igbinary.git'

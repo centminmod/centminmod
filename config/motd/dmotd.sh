@@ -166,6 +166,10 @@ phpver_checker() {
         wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
         chmod +x /usr/local/bin/getphpver
     fi
+    if [[ ! "$(grep '81' /usr/local/bin/getphpver)" ]]; then
+        wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
+        chmod +x /usr/local/bin/getphpver
+    fi
     if [ ! -f /usr/bin/jq ]; then
       yum -q -y install jq
     fi
@@ -178,7 +182,7 @@ phpver_checker() {
       cecho "* see https://community.centminmod.com/forums/18/" $boldyellow
       cecho "===============================================================================" $boldgreen
       cecho "* Current PHP Version:        $CURRENT_PHPVERS" $boldyellow
-      cecho "* Latest PHP Branch Version:  $LASTEST_PHPVERS (github.com/php/php-src/releases)" $boldyellow
+      cecho "* Latest PHP Branch Version:  $LASTEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi

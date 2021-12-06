@@ -390,6 +390,10 @@ PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
 PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
 PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
 
+PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+
 TWEMPERF_LINKFILE="twemperf-${TWEMPERF_VER}.tar.gz"
 TWEMPERF_LINK="https://github.com/twitter/twemperf/archive/v${TWEMPERF_VER}.tar.gz"
 TWEMPERF_LINKGITLAB="https://gitlab.com/centminmod-github-mirror/twemperf/repository/archive.tar.gz?ref=v${TWEMPERF_VER}"

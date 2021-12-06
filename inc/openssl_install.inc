@@ -569,7 +569,7 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.0' ]]; then
         fi
         
         # fallback mirror if github down, use gitlab mirror
-        curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
+        curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${OPENSSLCFPATCHLINK}" | grep 'HTTP\/' | egrep '200' >/dev/null 2>&1
         OPENSSLCFPATCH_CURLCHECK=$?
         if [[ "$OPENSSLCFPATCH_CURLCHECK" != '0' ]]; then
             if [[ "$AVXTWO_CHECK" = '0' ]]; then
@@ -640,7 +640,23 @@ fi # CLOUDFLARE_PATCHSSL
 
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
-      if [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+      if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-11/enable
+        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-11/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-11/root/usr/bin/g++"
+        fi
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
         CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
@@ -649,9 +665,30 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
-      elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
+        fi
+      elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-10/enable
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
+        fi
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
         source /opt/gcc9/enable
         CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
@@ -659,9 +696,14 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/gcc9/bin/gcc"
-        export CXX="ccache /opt/gcc9/bin/g++"
-      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/gcc9/bin/gcc"
+            export CXX="ccache /opt/gcc9/bin/g++"
+        else
+            export CC="/opt/gcc9/bin/gcc"
+            export CXX="/opt/gcc9/bin/g++"
+        fi
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
         CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
@@ -669,8 +711,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/gcc8/bin/gcc"
-        export CXX="ccache /opt/gcc8/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/gcc8/bin/gcc"
+            export CXX="ccache /opt/gcc8/bin/g++"
+        else
+            export CC="/opt/gcc8/bin/gcc"
+            export CXX="/opt/gcc8/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
@@ -680,9 +727,30 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
-      elif [[ "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
+        fi
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-11/enable
+        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-11/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-11/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-11/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-11/root/usr/bin/g++"
+        fi
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
         CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
@@ -691,8 +759,29 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
+        fi
+      elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/devtoolset-10/enable
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-10/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
@@ -702,8 +791,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-9/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-9/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-8/enable
@@ -713,8 +807,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-8/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-8/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-8/enable
@@ -724,8 +823,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-8/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-8/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-8/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-8/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-7/enable
@@ -735,8 +839,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-7/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc || -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-7/enable
@@ -746,8 +855,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-7/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-7/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-7/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETSIX" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-6/enable
@@ -755,8 +869,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETSIX" != [yY] ]] && [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-4/enable
@@ -764,8 +883,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
         scl_install
@@ -773,8 +897,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-6/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-6/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
+        fi
       elif [[ "$DEVTOOLSETSIX" != [yY] ]] && [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-4/enable
         scl_install
@@ -782,8 +911,13 @@ crypto_gcc() {
         which g++
         unset CC
         unset CXX
-        export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
-        export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/devtoolset-4/root/usr/bin/gcc"
+            export CXX="ccache /opt/rh/devtoolset-4/root/usr/bin/g++"
+        else
+            export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
+            export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
+        fi
       fi
     fi
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
@@ -799,7 +933,7 @@ crypto_gcc() {
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
-            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}"
+            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}${CRYPTODEVTOOLSETELEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS}"
             # if only 1 cpu thread use -O2 to keep compile times sane
             if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"

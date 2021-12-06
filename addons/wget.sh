@@ -480,7 +480,7 @@ source_wgetinstall() {
     cecho "$WGET_FILENAME Archive found, skipping download..." $boldgreen
   else
 
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
     WGET_CURLCHECK=$?
     if [[ "$WGET_CURLCHECK" = '0' ]]; then
       wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3

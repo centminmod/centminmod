@@ -1,14 +1,14 @@
 ########################################################################
 phpng_download() {
-  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.0.0RC'  ]]; then
+  if [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" = '8.1.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" = '8.1.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" = '8.1.0RC'  ]]; then
     PHPNG_YES='y'
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
-    REMIURL='https://downloads.php.net/~carusogabriel'
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
+    REMIURL='https://downloads.php.net/~ramsey'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
-      REMIURL='https://downloads.php.net/~cmb'
+      REMIURL='https://downloads.php.net/~patrickallaert'
     fi
     cecho "Downloading PHP $PHPNGVER from ${REMIURL}/" $boldyellow
     cd $DIR_TMP
@@ -51,7 +51,7 @@ phpng_download() {
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
     REMIURL='https://downloads.php.net/~derick'
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
       REMIURL='https://downloads.php.net/~cmb'
@@ -98,7 +98,7 @@ phpng_download() {
     PHPNGVER=$PHPMU_ALPHAVER
     # curl check as download url keeps changing between releases
     REMIURL='https://downloads.php.net/~remi'
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "${REMIURL}/php-${PHPNGVER}.tar.xz" | grep 'HTTP\/' | grep '200'
     REMIURL_CURLCHECK=$?
     if [[ "$REMIURL_CURLCHECK" != '0' ]]; then
       REMIURL='https://downloads.php.net/~pollita'
@@ -179,7 +179,7 @@ phpng_download() {
         echo ""
       fi    
 ####################################################################    
-  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.1' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
+  elif [[ "$PHPMUVER" = 'NGDEBUG' || "$PHPMUVER" = '5.7' || "$PHPMUVER" = '8.2' ]] && [[ "$(echo $PHPMU_ALPHAVER | cut -c1-10)" != '7.0.0alpha' || "$(echo $PHPMU_ALPHAVER | cut -c1-9)" != '7.0.0beta' || "$(echo $PHPMU_ALPHAVER | cut -c1-7)" != '7.0.0RC' ]]; then
     if [[ "$PHPMUVER" = 'NGDEBUG' ]]; then
       PHPNGVER='NGDEBUG'
     elif [[ "$PHPMUVER" = '5.7' ]]; then

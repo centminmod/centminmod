@@ -6,6 +6,18 @@ scl_install() {
   if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
     # centos 6 make sure devtoolset-8-gcc is available now
     if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+      if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+        time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+      fi
+      sar_call
+    else
+      if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+        time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils --disablerepo=rpmforge
+      fi
+      sar_call
+    fi
+    # centos 6 make sure devtoolset-8-gcc is available now
+    if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
       if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
         time $YUMDNFBIN -y -q install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
       fi
@@ -17,7 +29,11 @@ scl_install() {
       sar_call
     fi
     # if devtoolset exists, enable it first before checking gcc versions
-    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+      if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-9/enable
+      fi
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
       if [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]]; then
         source /opt/gcc8/enable
       fi
@@ -55,6 +71,21 @@ scl_install() {
         echo
         /opt/gcc8/bin/gcc --version
         /opt/gcc8/bin/g++ --version
+      elif [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc ]]; then
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+          fi
+          sar_call
+        else
+          if [[ "$(rpm -ql devtoolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils --disablerepo=rpmforge
+          fi
+          sar_call
+        fi
+        echo
+        /opt/rh/devtoolset-9/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-9/root/usr/bin/g++ --version
       elif [[ "$DEVTOOLSETEIGHT" = [yY] && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc ]]; then
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-8-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-8-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
@@ -141,7 +172,23 @@ scl_install() {
         fi
         sar_call
       fi
-      if [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc ]]; then
+      if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc ]]; then
+        echo "installing devtoolset-11 for GCC 11..."
+        if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
+          if [[ "$(rpm -ql devtoolset-11-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-11-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-11-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-11-runtime devtoolset-11-toolchain devtoolset-11-binutils devtoolset-11-binutils-devel devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-libatomic-devel devtoolset-11-libstdc++-devel devtoolset-11-ltrace devtoolset-11-make devtoolset-11-make-devel devtoolset-11-annobin-plugin-gcc devtoolset-11-annobin-annocheck devtoolset-11-gdb devtoolset-11-dwz devtoolset-11-elfutils devtoolset-11-elfutils-devel devtoolset-11-elfutils-libs devtoolset-11-strace devtoolset-11-gcc-gfortran devtoolset-11-memstomp devtoolset-11-elfutils-libelf devtoolset-11-elfutils-libelf-devel devtoolset-11-libasan-devel devtoolset-11-libgccjit-devel devtoolset-11-libitm-devel devtoolset-11-liblsan-devel devtoolset-11-libquadmath-devel devtoolset-11-libtsan-devel devtoolset-11-libubsan-devel devtoolset-11-elfutils-debuginfod-client devtoolset-11-elfutils-debuginfod-client-devel devtoolset-11-elfutils-libs devtoolset-11-annobin-docs devtoolset-11-libgccjit devtoolset-11-libgccjit-devel devtoolset-11-libgccjit-docs liblsan-11.2.1 libtsan-11.2.1
+          fi
+          sar_call
+        else
+          if [[ "$(rpm -ql devtoolset-11-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-11-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-11-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+            time $YUMDNFBIN -y -q install devtoolset-11-runtime devtoolset-11-toolchain devtoolset-11-binutils devtoolset-11-binutils-devel devtoolset-11-gcc devtoolset-11-gcc-c++ devtoolset-11-libatomic-devel devtoolset-11-libstdc++-devel devtoolset-11-ltrace devtoolset-11-make devtoolset-11-make-devel devtoolset-11-annobin-plugin-gcc devtoolset-11-annobin-annocheck devtoolset-11-gdb devtoolset-11-dwz devtoolset-11-elfutils devtoolset-11-elfutils-devel devtoolset-11-elfutils-libs devtoolset-11-strace devtoolset-11-gcc-gfortran devtoolset-11-memstomp devtoolset-11-elfutils-libelf devtoolset-11-elfutils-libelf-devel devtoolset-11-libasan-devel devtoolset-11-libgccjit-devel devtoolset-11-libitm-devel devtoolset-11-liblsan-devel devtoolset-11-libquadmath-devel devtoolset-11-libtsan-devel devtoolset-11-libubsan-devel devtoolset-11-elfutils-debuginfod-client devtoolset-11-elfutils-debuginfod-client-devel devtoolset-11-elfutils-libs devtoolset-11-annobin-docs devtoolset-11-libgccjit devtoolset-11-libgccjit-devel devtoolset-11-libgccjit-docs liblsan-11.2.1 libtsan-11.2.1 --disablerepo=rpmforge
+          fi
+          sar_call
+        fi
+        /opt/rh/devtoolset-11/root/usr/bin/gcc --version
+        /opt/rh/devtoolset-11/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc ]]; then
+        echo "installing devtoolset-10 for GCC 10..."
         if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
           if [[ "$(rpm -ql devtoolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql devtoolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
             time $YUMDNFBIN -y -q install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
@@ -349,7 +396,7 @@ libbroti_install() {
 
     LIBBROTLI_LINK='https://github.com/bagder/libbrotli'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $LIBBROTLI_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $LIBBROTLI_LINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
     LIBBROTLI_CURLCHECK=$?
     if [[ "$LIBBROTLI_CURLCHECK" != '0' ]]; then
       LIBBROTLI_LINK='https://gitlab.com/centminmod-github-mirror/libbrotli.git'
@@ -417,53 +464,143 @@ ngxbrotli_download() {
   if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
 
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        source /opt/rh/devtoolset-7/enable
-        unset CC
-        unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
-        gcc --version
-        g++ --version
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/rh/devtoolset-7/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/rh/devtoolset-7/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
     fi
 
     if [[ "$DEVTOOLSETEIGHT" = [yY] && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        source /opt/rh/devtoolset-8/enable
-        unset CC
-        unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
-        gcc --version
-        g++ --version
-    fi
-
-    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        source /opt/rh/devtoolset-9/enable
-        unset CC
-        unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
-        gcc --version
-        g++ --version
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/rh/devtoolset-8/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/rh/devtoolset-8/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
     fi
 
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        source /opt/gcc8/enable
-        unset CC
-        unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
-        gcc --version
-        g++ --version
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/gcc8/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/gcc8/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
     fi
 
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-        source /opt/gcc9/enable
-        unset CC
-        unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
-        gcc --version
-        g++ --version
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/gcc9/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/gcc9/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
+    fi
+
+    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/rh/devtoolset-9/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/rh/devtoolset-9/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
+    fi
+
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/rh/devtoolset-10/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/rh/devtoolset-10/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
+    fi
+
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          source /opt/rh/devtoolset-11/enable
+          unset CC
+          unset CXX
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+          gcc --version
+          g++ --version
+        else
+          source /opt/rh/devtoolset-11/enable
+          unset CC
+          unset CXX
+          export CC="gcc"
+          export CXX="g++"
+          gcc --version
+          g++ --version
+        fi
     fi
 
     # only if GCC used to compile nginx with ngx_brotli
@@ -479,7 +616,7 @@ ngxbrotli_download() {
 
     NGXBROTLILINK='https://github.com/google/ngx_brotli'
     # fallback mirror if official github is down, use gitlab mirror
-    curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+    curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 $NGXBROTLILINK | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
     NGXBROTLICURLCHECK=$?
     if [[ "$NGXBROTLICURLCHECK" != '0' ]]; then
       NGXBROTLILINK='https://gitlab.com/centminmod-github-mirror/ngx_brotli.git'
@@ -509,11 +646,6 @@ ngxbrotli_download() {
       unset CXX
     fi
 
-    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-      unset CC
-      unset CXX
-    fi
-
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
       unset CC
       unset CXX 
@@ -521,6 +653,21 @@ ngxbrotli_download() {
     if [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
       unset CC
       unset CXX 
+    fi
+
+    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+      unset CC
+      unset CXX
+    fi
+
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+      unset CC
+      unset CXX
+    fi
+
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+      unset CC
+      unset CXX
     fi
 
     echo

@@ -71,7 +71,7 @@ fi
 
 kernelchecker_get() {
   mkdir -p /root/tools
-  curl -${ipv_forceopt}Is --connect-timeout 5 --max-time 5 "$KERNELWGET_LINK" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$KERNELWGET_LINK" | grep 'HTTP\/' | grep '200' >/dev/null 2>&1
   WGET_CURLCHECK=$?
   if [[ "$WGET_CURLCHECK" = '0' ]]; then
     rm -rf /root/tools/kernelchecker.py

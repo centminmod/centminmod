@@ -48,7 +48,19 @@ compgcc_ten() {
   if [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
     label='gcc10 built'
     source /opt/rh/devtoolset-10/enable
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
+    export CXXFLAGS="${CFLAGS}"
+  else
+    label=""
+  fi
+  COMP_CPU_MARCH=$(gcc -c -Q -march=native --help=target | awk '/  -march/ {print $2}' | head -n1 )
+}
+
+compgcc_eleven() {
+  if [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+    label='gcc10 built'
+    source /opt/rh/devtoolset-11/enable
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
     export CXXFLAGS="${CFLAGS}"
   else
     label=""
@@ -96,6 +108,7 @@ compressmenu_notice() {
   compgcc_eight
   compgcc_nine
   compgcc_ten
+  compgcc_eleven
   pgo_export_compress
 }
 
