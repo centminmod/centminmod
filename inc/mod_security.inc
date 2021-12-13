@@ -10,8 +10,36 @@ modsecurity_install() {
     echo "build libmodsecurity..."
     # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
 
-    # force devtoolset-10 gcc usage
-      if [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    # force devtoolset gcc usage
+      if [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
