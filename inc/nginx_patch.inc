@@ -337,6 +337,39 @@ ngx_httppush_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
+ngx_fingerprint_patch() {
+  {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_FINGERPRINT_BASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_FINGERPRINT_BASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]]; then
+      NGX_FINGERPRINT_DIR='nginx-ssl-fingerprint'
+      if [[ -d "${DIR_TMP}/${NGX_FINGERPRINT_DIR}" || ! -d "${DIR_TMP}/${NGX_FINGERPRINT_DIR}" ]]; then
+        rm -rf "${DIR_TMP}/${NGX_FINGERPRINT_DIR}"
+        pushd "${DIR_TMP}"
+        git clone https://github.com/centminmod/nginx-ssl-fingerprint
+        popd
+      fi
+      if [ ! -f nginx_fingerprint.patch ]; then
+          wget -4 https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/nginx.patch -O nginx_fingerprint.patch
+      fi
+      if [ -f nginx_fingerprint.patch ]; then
+        cecho "patching nginx for nginx-ssl-fingerprint module" $boldyellow
+        cecho "patch -p1 < nginx_fingerprint.patch" $boldyellow
+        patch -p1 < nginx_fingerprint.patch
+        echo 
+        echo "patching nginx for nginx-ssl-fingerprint module 1.21.x"
+      fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
 ngx_cachepurge_patch() {
   {
   if [ "$ngver" ]; then

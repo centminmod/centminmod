@@ -635,6 +635,33 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[
         echo "######################################################################"
     fi
 fi # CLOUDFLARE_PATCHSSL
+
+if [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+    if [ -f "$(which figlet)" ]; then
+         figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module Patch"
+     fi
+     echo "######################################################################"
+     echo "Patching OpenSSL 1.1.1 branch"
+     echo "######################################################################"
+     echo "patching OpenSSL for nginx-ssl-fingerprint module"
+     echo "######################################################################"
+     NGX_FINGERPRINT_DIR='nginx-ssl-fingerprint'
+     if [ ! -f openssl_nginx_fingerprint.patch ]; then
+        wget -4 https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/openssl.1_1_1.patch -O openssl_nginx_fingerprint.patch
+     fi
+     if [ -f openssl_nginx_fingerprint.patch ]; then
+         cecho "patching OpenSSL for nginx-ssl-fingerprint module" $boldyellow
+         cecho "patch -p1 < openssl_nginx_fingerprint.patch" $boldyellow
+         patch -p1 < openssl_nginx_fingerprint.patch
+         echo  "######################################################################"
+         echo  "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
+         echo  "######################################################################"
+         if [ -f "$(which figlet)" ]; then
+             figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
+         fi
+     fi
+fi
+
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
