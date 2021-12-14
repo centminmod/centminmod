@@ -260,6 +260,22 @@ EOF
       sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
+  if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
+cat > /etc/logrotate.d/modsecurity <<EOF
+/var/log/modsec_audit.log
+{
+  daily
+  dateext
+  missingok
+  rotate 10
+  maxsize 500M
+  missingok
+  compress
+  delaycompress
+  notifempty
+}
+EOF
+  fi
   MODSEC_INSTALLED=y
   # DEVTOOLSETSEVEN='y'
   NGINX_DEVTOOLSETGCC='y'
