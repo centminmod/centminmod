@@ -206,7 +206,18 @@ modsecurity_install() {
       wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/modsecurity.conf-recommended
       wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/unicode.mapping
       mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
-      # sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
+      if [[ "$NGINX_MODSECURITY_JSONLOGS" = [yY] ]]; then
+        # switch to ModSecurity JSON formatted logs
+        if [ ! "$(grep 'SecAuditLogFormat JSON' /usr/local/nginx/modsec/modsecurity.conf)" ]; then
+          sed -i 's|^SecRuleEngine DetectionOnly|SecRuleEngine On\nSecAuditLogFormat JSON|' /usr/local/nginx/modsec/modsecurity.conf
+          sed -i 's|^SecRuleEngine On|SecRuleEngine On\nSecAuditLogFormat JSON|' /usr/local/nginx/modsec/modsecurity.conf
+        fi
+      fi
+      # if [[ "$NGINX_MODSECURITY_DETECTONLY" = [nN] ]]; then
+      #   sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
+      # elif [[ "$NGINX_MODSECURITY_DETECTONLY" = [yY] ]]; then
+      #   sed -i 's/SecRuleEngine On/SecRuleEngine DetectionOnly/' /usr/local/nginx/modsec/modsecurity.conf
+      # fi
     fi
     if [ ! -f "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf" ]; then
       newowaspver='y'
@@ -214,9 +225,15 @@ modsecurity_install() {
       wget -4 "https://github.com/coreruleset/coreruleset/archive/v${MODSECURITY_OWASPVER}.tar.gz"
       tar xvzf "v${MODSECURITY_OWASPVER}.tar.gz"
       mv "coreruleset-${MODSECURITY_OWASPVER}" /usr/local/nginx
+      echo
       ls -lah "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}"
+      echo
       cp "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf.example" "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf"
+      cp "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example" "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf"
+      cp "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example" "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf"
+      echo
       ls -lah "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/"
+      echo
       popd
     fi
     if [[ ! -f /usr/local/nginx/modsec/main.conf || "$newowaspver" = [yY] ]]; then
