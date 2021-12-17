@@ -292,6 +292,7 @@ VHOSTCTRL_AUTOPROTECTINC='y'
 
 # OpenSSL
 NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
+SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
 OPENSSL_VERSION='1.1.1l'   # Use this version of OpenSSL http://openssl.org/
