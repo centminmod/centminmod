@@ -6,11 +6,11 @@ echo ""
   cecho "--------------------------------------------------------" $boldyellow
 cat <<EOF
 ###############################################################
-* Getting Started Guide - http://centminmod.com/getstarted.html
-* Find the latest Centmin Mod version - http://centminmod.com
-* Centmin Mod FAQ - http://centminmod.com/faq.html
-* Change Log - http://centminmod.com/changelog.html 
-* Google+ Page latest news http://centminmod.com/gpage
+* Getting Started Guide - https://centminmod.com/getstarted.html
+* Find the latest Centmin Mod version - https://centminmod.com
+* Centmin Mod FAQ - https://centminmod.com/faq.html
+* Change Log - https://centminmod.com/changelog.html 
+* Google+ Page latest news https://centminmod.com/gpage
 * Community Forums https://community.centminmod.com (signup)
 ###############################################################
 # Cheap VPS Hosting at Digitalocean 

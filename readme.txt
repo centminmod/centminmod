@@ -2,7 +2,7 @@
 Centmin Mod Menu based Nginx Auto Installer 
 ##################################
 * Getting Started Guide - https://centminmod.com/getstarted.html
-* Latest Centmin Mod version - http://centminmod.com       
+* Latest Centmin Mod version - https://centminmod.com       
 * Centmin Mod FAQ - https://centminmod.com/faq.html
 * Change Log - https://centminmod.com/changelog.html
 * Google+ Page latest news https://centminmod.com/gpage
@@ -69,7 +69,7 @@ Centmin Mod will be releasing official addons which are standalone scripts which
 Please bookmark:
 --------------------------
 * Getting Started Guide - https://centminmod.com/getstarted.html
-* Latest Centmin Mod version - http://centminmod.com       
+* Latest Centmin Mod version - https://centminmod.com       
 * Centmin Mod FAQ - https://centminmod.com/faq.html
 * Change Log - https://centminmod.com/changelog.html
 * Google+ Page latest news https://centminmod.com/gpage

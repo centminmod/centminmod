@@ -551,7 +551,7 @@ pureftpinstall
 # generated will use the defined SECOND_IP=111.222.333.444 where
 # the IP is a secondary IP addressed added to the server.
 # You define SECOND_IP variable is centmin mod persistent config
-# file outlined at http://centminmod.com/upgrade.html#persistent
+# file outlined at https://centminmod.com/upgrade.html#persistent
 # you manually creat the file at /etc/centminmod/custom_config.inc
 # and add SECOND_IP=yoursecondary_IPaddress variable to it which
 # will be registered with nginx vhost generator routine so that 
@@ -1029,7 +1029,7 @@ fi
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable
@@ -1103,9 +1103,9 @@ ENSS
 # separate ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1201,7 +1201,7 @@ else
 
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable

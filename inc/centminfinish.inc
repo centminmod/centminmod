@@ -183,7 +183,7 @@ if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Check ngx_pagespeed Control Script:" $boldyellow
-  cecho "http://centminmod.com/nginx_ngx_pagespeed.html" $boldyellow
+  cecho "https://centminmod.com/nginx_ngx_pagespeed.html" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
 /usr/bin/pscontrol
 letswait

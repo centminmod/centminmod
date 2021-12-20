@@ -17,7 +17,7 @@ echo ""
 cecho "---------------------------------------------" $boldyellow
 echo ""
 cecho "New to NSD DNS setup ? Be sure to read NSD setup guide:" $boldgreen
-cecho "http://centminmod.com/nginx_domain_dns_setup.html#dns" $boldgreen
+cecho "https://centminmod.com/nginx_domain_dns_setup.html#dns" $boldgreen
 echo ""
 
 read -ep "Enter domain name you want to add to NSD (without www. prefix): " vhostdomainname
@@ -57,7 +57,7 @@ echo "For vanity or custom name servers using your own domain name, ensure you"
 echo "have created them first with your domain registrar. You can see tutorial guides"
 echo "for Namecheap and Godaddy domain registrars for creating domain names'"
 echo "private name servers on web site Part #1 at "
-cecho "http://centminmod.com/nginx_domain_dns_setup.html#dns" $boldyellow
+cecho "https://centminmod.com/nginx_domain_dns_setup.html#dns" $boldyellow
 echo ""
 
 echo ""

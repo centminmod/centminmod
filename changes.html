@@ -79,10 +79,10 @@
 	<li>Improvements to speed up install process - up to 40-60% faster install time than previous versions.</li>
 	<li>Added back the return of an optional cli install method which bypasses the menu option #1 install method. If you run ./centmin.sh install, you can bypass the shell based menu for fully unattended installation.</li>
 	<li>Added SELINUX check</li>
-	<li>Added new menu <strong>option #21 update</strong> - it upgrades Nginx, PHP-FPM and Siege benchmark versions based on versions defined in <strong>centmin.sh</strong>. Useful for Centmin Mod version updates as defined in FAQ #4 at <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a>.</li>
+	<li>Added new menu <strong>option #21 update</strong> - it upgrades Nginx, PHP-FPM and Siege benchmark versions based on versions defined in <strong>centmin.sh</strong>. Useful for Centmin Mod version updates as defined in FAQ #4 at <a href="https://centminmod.com/faq.html" target="_blank">https://centminmod.com/faq.html</a>.</li>
 	<li>Added routine to inc/openssl_install.inc to allow for OpenSSL source code patching for Nginx OpenSSL recompiles. Includes OpenSSL 1.0.1g CVE-2010-5298 Release Buffer patch.</li>
 	<li>Added Axivo YUM repository <a href="https://www.axivo.com/resources/repository-setup.1/" target="_blank">https://www.axivo.com/resources/repository-setup.1/</a> for access to packages such as mydumper, elasticsearch etc</li>
-	<li>Removed the memcache admin stats page user/password prompt and initial MariaDB MySQL root user setting/security prompts in favour of auto generating the user/passwords which will be shown at end of initial install i.e. <a href="http://centminmod.com/screenshots/centminmod/v123_07/centminmod07_new_memcacheadmin_mysqlsecurity_setup_fullunattended.png" target="_blank">screenshot</a>.</li>
+	<li>Removed the memcache admin stats page user/password prompt and initial MariaDB MySQL root user setting/security prompts in favour of auto generating the user/passwords which will be shown at end of initial install i.e. <a href="https://centminmod.com/screenshots/centminmod/v123_07/centminmod07_new_memcacheadmin_mysqlsecurity_setup_fullunattended.png" target="_blank">screenshot</a>.</li>
 	<li>Added ZOPCACHEDFT='n' variable to centmin.sh. This variable if enabled ZOPCACHEDFT='y' can override the defaults and install Zend OpCache by default instead of APC Cache defaults.</li>
 	<li>Added new POSTFIX_INSTALL=y variable to centmin.sh change from sendmail to postfix as default</li>
 	<li>Revised menu options - changing menu options #11 and #12. Number #11 is now a MariaDB 5.2, 5.5 and 10 upgrade sub menu option. #12 is now a dedicated menu option to install and reinstall Zend OpCache PHP opcode caching for PHP versions</li>
@@ -125,7 +125,7 @@ nginx: configuration file /usr/local/nginx/conf/nginx.conf test failed
   <li>Updated Nginx from v1.5.7 to v1.5.8 release http://nginx.org/en/CHANGES</li>
   <li>Updated PCRE version compiled for Nginx 8.33 to 8.34 http://www.pcre.org/changelog.txt</li>
   <li>Updated Memcached server from 1.4.15 to 1.4.17 http://code.google.com/p/memcached/wiki/ReleaseNotes1417</li>
-  <li>Updated default ngx_pagespeed module from 1.6.29.5 beta to 1.7.30.1 beta using Github master branch to workaround Nginx 1.5.8 + ngx_pagespeed bug at <a href="https://github.com/pagespeed/ngx_pagespeed/issues/578" target="_blank">https://github.com/pagespeed/ngx_pagespeed/issues/578</a>. How to upgrade ngx_pagespeed module http://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade</li>
+  <li>Updated default ngx_pagespeed module from 1.6.29.5 beta to 1.7.30.1 beta using Github master branch to workaround Nginx 1.5.8 + ngx_pagespeed bug at <a href="https://github.com/pagespeed/ngx_pagespeed/issues/578" target="_blank">https://github.com/pagespeed/ngx_pagespeed/issues/578</a>. How to upgrade ngx_pagespeed module https://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade</li>
   <li>Added pflogsumm (Postfix Log Entry Summarizer) at /usr/bin/pflogsumm if Postfix install detected http://linxnet.com/downloads/ChangeLog-1.1.5</li>
 </ul>
 
@@ -149,7 +149,7 @@ nginx: configuration file /usr/local/nginx/conf/nginx.conf test failed
   <li> Updated PHP upgrade routine for PHP 5.5 and Zend OPCode cache ini file check</li>
   <li> Updated php-fpm conf at /usr/local/etc/php-fpm.conf and added proper error log definition to default pool php_admin_value[error_log] = /var/log/php-fpm/www-php.error.log.</li>
   <li> Updated php.ini default settings</li>
-  <li> Updated default ngx_pagespeed module from 1.6.29.3 beta to 1.6.29.5 beta. How to upgrade ngx_pagespeed module http://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade</li>
+  <li> Updated default ngx_pagespeed module from 1.6.29.3 beta to 1.6.29.5 beta. How to upgrade ngx_pagespeed module https://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade</li>
   <li> Updated Nginx mime.types file for proper eot, ttf, ott, woff webfont support</li>
   <li> Updated Nginx add vhost function</li>
   <li> Updated NSD v3.2.15 to v3.2.16 http://www.nlnetlabs.nl/projects/nsd/index.html#releases</li>
@@ -212,9 +212,9 @@ varnish.x86_64	3.0.4-1.el6	varnish-3.0
 <b>v1.2.3-eva2000.03 19/07/2013</b>
 <ul>
   <li> Updated Nginx from v1.4.1 to v1.4.2 stable release <a href="http://nginx.org/en/CHANGES" target="_blank">http://nginx.org/en/CHANGES</a></li>
-  <li> Updated default ngx_pagespeed module from 1.5.27.3 beta to 1.6.29.3 beta. <a href="http://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade" target="_blank">How to upgrade ngx_pagespeed module</a></li>
+  <li> Updated default ngx_pagespeed module from 1.5.27.3 beta to 1.6.29.3 beta. <a href="https://centminmod.com/nginx_ngx_pagespeed.html#howtoupgrade" target="_blank">How to upgrade ngx_pagespeed module</a></li>
   <li> Updated ngx_pagespeed pscontrol file, pagespeed.conf and pagespeedhandler.conf files.</li>
-  <li> Added pagespeedstatslog.conf file for ngx_pagespeed 1.6.29.3 added PageSpeed console stats <a href="https://developers.google.com/speed/pagespeed/module/console" target="_blank">https://developers.google.com/speed/pagespeed/module/console</a>. Example <a href="http://centminmod.com/nginx_ngx_pagespeed.html#pagespeedconsole" target="_blank">http://centminmod.com/nginx_ngx_pagespeed.html#pagespeedconsole</a></li>
+  <li> Added pagespeedstatslog.conf file for ngx_pagespeed 1.6.29.3 added PageSpeed console stats <a href="https://developers.google.com/speed/pagespeed/module/console" target="_blank">https://developers.google.com/speed/pagespeed/module/console</a>. Example <a href="https://centminmod.com/nginx_ngx_pagespeed.html#pagespeedconsole" target="_blank">https://centminmod.com/nginx_ngx_pagespeed.html#pagespeedconsole</a></li>
   <li> Updated WP-CLI from 0.10.0 to 0.10.2 changed /addons/wpcli.sh addon paths.</li>
   <li> Updated Memcached server install/reinstall configure option to correct the libevent version used to the newer <a href="https://raw.github.com/libevent/libevent/release-2.0.21-stable/ChangeLog" target="_blank">libevent 2.0.x branch</a> as opposed to system older libevent 1.4.x branch. For existing users, running menu option #10 will recompile Memcached server to use the correct version.</li>
 </ul>
@@ -223,7 +223,7 @@ varnish.x86_64	3.0.4-1.el6	varnish-3.0
 <ul>
   <li> Updated PHP from v5.3.26 to v5.3.27 <a href="http://php.net/ChangeLog-5.php" target="_blank">http://php.net/ChangeLog-5.php</a></li>
   <li>Updated rpmforge repo download RPM</li>
-  <li>Updated MariaDB 5.5 my.cnf templates with optional MySQL variable to switch from default character set and collation latin1 to utf8 which you can enable following guide at <a href="http://centminmod.com/mysql.html#charset" target="_blank">http://centminmod.com/mysql.html#charset</a></li>
+  <li>Updated MariaDB 5.5 my.cnf templates with optional MySQL variable to switch from default character set and collation latin1 to utf8 which you can enable following guide at <a href="https://centminmod.com/mysql.html#charset" target="_blank">https://centminmod.com/mysql.html#charset</a></li>
   <li>Added preliminary support for PHP 5.5 and Zend OPCache (Zend Optimizer+ opcode cache) for PHP upgrades only via menu option #5. Not fully tested yet.</li>
   <li>AVG Anti-Virus Add on included at /addons/avginstall.sh</li>
 </ul>
@@ -236,7 +236,7 @@ varnish.x86_64	3.0.4-1.el6	varnish-3.0
   <li>MariaDB my.cnf templates added default mysql.sock to settings for some servers i.e. Amazon EC2</li>
   <li>Lower the minimum memory requirements for install on CentOS server from 256MB min to 128MB min. Full details on my test Wordpress blog at Google SPDY enabled https version at <a href="https://blog.centminmod.com/" target="_blank">https://blog.centminmod.com/</a></li>
   <li> Add Google SPDY module support <a href="http://nginx.org/en/docs/http/ngx_http_spdy_module.html" target="_blank">http://nginx.org/en/docs/http/ngx_http_spdy_module.html</a></li>
-  <li> Add ngx_pagespeed module support <a href="http://centminmod.com/nginx_ngx_pagespeed.html">http://centminmod.com/nginx_ngx_pagespeed.html</a></li>
+  <li> Add ngx_pagespeed module support <a href="https://centminmod.com/nginx_ngx_pagespeed.html">https://centminmod.com/nginx_ngx_pagespeed.html</a></li>
   <li> Add Nginx custom server string = nginx centminmod. Can be disabled in centmin.sh</li>
   <li> Updated Nginx from v1.2.4 to v1.4.1 stable release http://nginx.org/en/CHANGES</li>
   <li> Switched default install from MariaDB 5.2.12 115 RPM install to MariaDB official YUM repo for MariaDB 5.5.x branch with MariaDB 5.5.30 <a href="https://kb.askmonty.org/en/mariadb-5530-release-notes/" target="_blank">https://kb.askmonty.org/en/mariadb-5530-release-notes/</a></li>
@@ -261,7 +261,7 @@ varnish.x86_64	3.0.4-1.el6	varnish-3.0
   <li> Add imagick PHP extension https://pecl.php.net/package/imagick</li>
   <li> Add memcached PHP extension https://pecl.php.net/package/memcached</li>
   <li> Add twemperf - twitter memcached benchmarking tool <a href="https://github.com/twitter/twemperf" target="_blank">https://github.com/twitter/twemperf</a></li>
-  <li> Added ccache <a href="http://ccache.samba.org/" target="_blank">http://ccache.samba.org/</a> - compiler caching support to speed up source recompiles by as much as 60%  for recompiling Nginx or PHP i.e. when upgrading or downgrading a previously installed Nginx (from 170 seconds reduced to 67 seconds) or PHP version (from 350 seconds reduced to 158 seconds). By default cache directory is located at /home/.ccache and with a 2 Gigabyte disk cache size set. Automated logging of Centmin Mod menu options <a href="http://centminmod.com/faq.html#loginstall" target="_blank">http://centminmod.com/faq.html#loginstall</a> now also includes ccache stats output for each menu option run as well as run time stats outlining how many seconds the option took to complete. For example, if you run menu option to upgrade PHP, the automated log saved at /root/centminlogs/ will include how many seconds it took to run PHP upgrade and the ccache statistics.</li>
+  <li> Added ccache <a href="http://ccache.samba.org/" target="_blank">http://ccache.samba.org/</a> - compiler caching support to speed up source recompiles by as much as 60%  for recompiling Nginx or PHP i.e. when upgrading or downgrading a previously installed Nginx (from 170 seconds reduced to 67 seconds) or PHP version (from 350 seconds reduced to 158 seconds). By default cache directory is located at /home/.ccache and with a 2 Gigabyte disk cache size set. Automated logging of Centmin Mod menu options <a href="https://centminmod.com/faq.html#loginstall" target="_blank">https://centminmod.com/faq.html#loginstall</a> now also includes ccache stats output for each menu option run as well as run time stats outlining how many seconds the option took to complete. For example, if you run menu option to upgrade PHP, the automated log saved at /root/centminlogs/ will include how many seconds it took to run PHP upgrade and the ccache statistics.</li>
   <li> Added /etc/centminmod-release & /etc/centminmod-versionlog files. From v1.2.3-eva2000.01 onwards, each install and upgrade will have it's version numbers written to these files so as to be able to keep track of installed versions. This will make future major feature additions easier to handle for compatibility with older Centmin Mod versions. For example, when MariaDB 5.5 support is added.</li>
   <li> Faster Centmin Mod installation - up to 40% faster than v1.2.2. Migrating code almost to fully unattented install mode.</li>
   <li> Rewritten source download file functions. Moving majority of the download process to the top of the script before actual Centmin Mod Install routine. This allows for broken download links to be detected and compressed tarball downloads to be validated before installation proceeds. Failed downloads or invalid compressed tarball downloads (incomplete downloads) will abort the the script allowing you to correct the download links before re-running install. When failed download or invalid compressed tarball package errors occur, you can check Centmin Mod log for specific details at /root/centminlogs/. Download routines have been moved to inc/downloads.inc file.</li>
@@ -467,7 +467,7 @@ varnish.x86_64	3.0.4-1.el6	varnish-3.0
 
 <h3>v1.2.2-eva2000.02 - 08/10/2011</h3>
 <ul>
-  <li>Centmin Mod project gets own domain name: <a href="http://centminmod.com/" target="_blank"><b>centminmod.com</b></a> (runs on 3x load balanced Centmin Mod Nginx based web servers :) )</li>
+  <li>Centmin Mod project gets own domain name: <a href="https://centminmod.com/" target="_blank"><b>centminmod.com</b></a> (runs on 3x load balanced Centmin Mod Nginx based web servers :) )</li>
   <li>Included Centmin Mod logo (I used the same Denmark font type :) )</li>
   <li>Updated Nginx from v1.1.4 to v1.1.5</li>
   <li>Updated Memcached server from v1.4.7 to v1.4.8</li>

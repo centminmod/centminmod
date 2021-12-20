@@ -4,7 +4,7 @@
 # https://centminmod.com
 # Creating a custom_config.inc file it will override default setting for 
 # upgrades and software installs set in centmin.sh.
-# Persistent config outlined at http://centminmod.com/upgrade.html#persistent
+# Persistent config outlined at https://centminmod.com/upgrade.html#persistent
 # Location:  /etc/centminmod/custom_config.inc
 
 EMAIL=''          # Server notification email address enter only 1 address
@@ -433,7 +433,7 @@ LETSENCRYPT_DETECT='n'
 # by default. The service is still installed but disabled
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
-# From http://centminmod.com/faq.html Question #25
+# From https://centminmod.com/faq.html Question #25
 CMSDEBUG='n'                  # leave as CMSDEBUG='n' so the below 5 services actually get disabled
 NSD_DISABLED='n'              # when set to ='y'NSD disabled by default with chkconfig off
 MEMCACHED_DISABLED='n'        # when set to ='y' Memcached server disabled by default via chkconfig off
