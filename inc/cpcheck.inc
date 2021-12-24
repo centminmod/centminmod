@@ -1,3 +1,9 @@
+disable_rpmforge() {
+  if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
+    sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
+  fi
+}
+
 check_php_cainfo_file() {
   # https://curl.se/docs/caextract.html
   if [ ! -f /etc/ssl/certs/cacert.pem ]; then
@@ -3167,6 +3173,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   figletcheck
   maintenance_confcheck
   axivo_remove
+  disable_rpmforge
   forgefix
   ngxmodule_cleanups
   wpcompfix
