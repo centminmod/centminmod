@@ -196,6 +196,16 @@ if [ -f /etc/csf/csf.conf ]; then
         # https://whois.arin.net/rest/org/CENSY/nets
         csf -d 198.108.66.0/23 censys
         csf -d 198.108.204.216/29 censys
+        csf -d 162.142.125.0/24 censys
+        csf -d 167.248.133.0/24 censys
+        csf -d 167.94.138.0/24 censys
+        csf -d 167.94.145.0/24 censys
+        csf -d 167.94.146.0/24 censys
+        csf -d 192.35.168.0/23 censys
+        csf -d 198.108.204.216/29 censys
+        csf -d 2602:80D:1000::/44 censys
+        csf -d 2620:96:E000::/48 censys
+        csf -d 74.120.14.0/24 censys
 
         csf --profile backup cmm-b4-shodan-block
         # block shodan scans

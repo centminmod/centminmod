@@ -110,10 +110,34 @@ echo ""
   echo "PHP_INSTALL='n' set"
   fi
 
+  if [ -f /usr/bin/php81 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 8.1 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php81 -v
+letswait
+  fi
+  if [ -f /usr/bin/php80 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 8.0 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php80 -v
+letswait
+  fi
+  if [ -f /usr/bin/php74 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 7.4 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php74 -v
+letswait
+  fi
   if [ -f /usr/bin/php73 ]; then
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "Check PHP-FPM 7.2 Version:" $boldyellow
+  cecho "Check PHP-FPM 7.3 Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   /usr/bin/php73 -v
 letswait
@@ -369,7 +393,7 @@ echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.l
     echo "*************************************************"
 
 if [[ "$TS_INSTALL" = [yY] ]]; then
-  curl -s "${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
+  curl -4s "${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
 fi
 
 }

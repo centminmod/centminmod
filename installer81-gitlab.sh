@@ -1413,7 +1413,7 @@ cd $INSTALLDIR
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.1' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
-PHPVERLATEST=${PHPVERLATEST:-"8.1.0"}
+PHPVERLATEST=${PHPVERLATEST:-"8.1.1"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
