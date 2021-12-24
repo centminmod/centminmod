@@ -54,7 +54,7 @@ Description=PHP FastCGI Process Manager
 After=syslog.target network.target
 
 [Service]
-Type=notify
+Type=forking
 PIDFile=/var/run/php-fpm/php-fpm.pid
 ExecStart=/usr/local/sbin/php-fpm --daemonize --fpm-config /usr/local/etc/php-fpm.conf --pid /var/run/php-fpm/php-fpm.pid
 ExecReload=/bin/kill -USR2 \$MAINPID
@@ -77,7 +77,7 @@ Description=PHP FastCGI Process Manager
 After=syslog.target network.target
 
 [Service]
-Type=notify
+Type=forking
 PIDFile=/var/run/php-fpm/php-fpm.pid
 ExecStart=/usr/local/sbin/php-fpm --daemonize --fpm-config /usr/local/etc/php-fpm.conf --pid /var/run/php-fpm/php-fpm.pid
 ExecReload=/bin/kill -USR2 \$MAINPID
