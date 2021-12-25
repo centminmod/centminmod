@@ -1565,6 +1565,8 @@ echo "--------------------------------------------------------------------------
 echo "---------------------------------------------------------------------------"
   echo "$CPUMODEL"; echo "$CPUSPEED"
 echo "---------------------------------------------------------------------------"
+  echo "Install summary logs: /root/centminlogs/installer_summary_links.log"
+echo "---------------------------------------------------------------------------"
 } 2>&1 | tee "/root/centminlogs/install_time_stats_${DT}.log"
   cat "/root/centminlogs/install_time_stats_${DT}.log" >> "/root/centminlogs/installer_${DT}.log"
   cat "/root/centminlogs/installer_${DT}.log" | egrep -v '\*\*\*\*\*\*|shell-init:|csf: |Flushing chain  CC |and iptables DROP|The set with the given name does not exist|csf: IPSET adding|\.\.\.\.\.\.\.\.\.\.|DOPENSSL_PIC|\/opt\/openssl\/share\/|fpm-build\/libtool|checking for |checking whether |make -f |make\[1\]|make\[2\]|make\[3\]|make\[4\]|make\[5\]|--noexecstack -O3 -m64 -march=native -Wimplicit-fallthrough=0 |install .\/include\/openssl' > "/root/centminlogs/installer_${DT}_minimal.log"
