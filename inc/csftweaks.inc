@@ -202,7 +202,6 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 167.94.145.0/24 censys
         csf -d 167.94.146.0/24 censys
         csf -d 192.35.168.0/23 censys
-        csf -d 198.108.204.216/29 censys
         csf -d 2602:80D:1000::/44 censys
         csf -d 2620:96:E000::/48 censys
         csf -d 74.120.14.0/24 censys
@@ -219,7 +218,7 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 104.236.198.48 blog.shodan.io
         csf -d 185.163.109.66 goldfish.census.shodan.io
         csf -d 185.181.102.18 turtle.census.shodan.io
-        csf -d 188.138.9.50 atlantic.census.shodan.io
+
         csf -d 198.20.69.72 census1.shodan.io
         csf -d 198.20.69.73 census1.shodan.io
         csf -d 198.20.69.74 census1.shodan.io
@@ -276,7 +275,6 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 93.174.95.106 battery.census.shodan.io
         csf -d 198.20.87.96 border.census.shodan.io
         csf -d 198.20.87.97 border.census.shodan.io
-        csf -d 198.20.87.98 border.census.shodan.io
         csf -d 198.20.87.99 border.census.shodan.io
         csf -d 198.20.87.100 border.census.shodan.io
         csf -d 198.20.87.101 border.census.shodan.io
@@ -290,10 +288,7 @@ if [ -f /etc/csf/csf.conf ]; then
         csf -d 80.82.77.33 sky.census.shodan.io
         csf -d 80.82.77.139 dojo.census.shodan.io
         csf -d 66.240.205.34 malware-hunter.census.shodan.io
-        csf -d 93.120.27.62 lavender.mrtaggy.com
         csf -d 188.138.9.50 atlantic481.serverprofi24.com
-        csf -d 85.25.43.94 atlantic756.dedicatedpanel.com
-        csf -d 85.25.103.50 atlantic836.serverprofi24.com
         # https://isc.sans.edu/api/threatcategory/research/?json
         # cat other-nov2018.txt  | jq -r '.[] | "\(.ipv4) \(.type)"' | grep -v shodan| sort
         # csf --profile backup cmm-b4-other-scanners-block
