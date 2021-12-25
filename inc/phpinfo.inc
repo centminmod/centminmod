@@ -3,9 +3,9 @@ phpiadmin() {
         # Randomize phpi.php filename
         NPHP=$(od -vAn -N4 -tx < /dev/urandom)
         NPHP=$(echo ${NPHP} | sed -e 's/\s//')
-        PHPISALT=$(openssl rand 11 -base64 | tr -dc 'a-zA-Z0-9')
+        PHPISALT=$(/usr/bin/openssl rand 11 -base64 | tr -dc 'a-zA-Z0-9')
         PHPIUSER=$(echo "phpiadmin${PHPISALT}")
-        PHPIPASS=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
+        PHPIPASS=$(/usr/bin/openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
         echo ""
         mv /usr/local/nginx/html/phpi.php "/usr/local/nginx/html/${NPHP}_phpi.php"
         # cecho "Insert Username/Password into /usr/local/nginx/html/${NPHP}_phpi.php file itself" $boldyellow

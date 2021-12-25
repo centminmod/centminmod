@@ -54,9 +54,9 @@ sed -i "s/mymemcache-server2:11211/localhost:11212/g" /usr/local/nginx/html/memc
 
 fi
 
-CSALT=$(openssl rand 8 -base64 | tr -dc 'a-zA-Z0-9')
+CSALT=$(/usr/bin/openssl rand 8 -base64 | tr -dc 'a-zA-Z0-9')
 memcacheduser=$(echo "memadmin${CSALT}")
-memcachedpassword=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
+memcachedpassword=$(/usr/bin/openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
 echo ""
 
 cecho "Setup Memcached Server Admin Login Details for /usr/local/nginx/html/memcache_${N}.php" $boldgreen
