@@ -281,6 +281,9 @@ PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PH
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+
+# Redis server
+REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
 ##################################
 ## Nginx SSL options
 
@@ -352,6 +355,7 @@ MEMCACHEDPHP_SEVENVER='3.1.5' # Memcached PHP 7 only extension version
 LIBMEMCACHED_YUM='y'          # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
+
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
 REDISPHPSEVEN_VER='5.3.4'   # redis PHP version for PHP =>7.x

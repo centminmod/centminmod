@@ -279,6 +279,21 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
   cecho "--------------------------------------------------------" $boldyellow
 fi
 
+if [[ "$REDIS_DISABLED" = [yY] ]]; then
+
+  echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Stopping Redis server service:" $boldyellow
+  cmservice redis stop
+  cecho "Disabling Redis server service:" $boldyellow
+  cmchkconfig redis stop
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "In future to re-enable Redis server service type these 2 commands:" $boldyellow
+  echo "service redis start"
+  echo "chkconfig redis on"
+  cecho "--------------------------------------------------------" $boldyellow
+fi
+
 if [[ "$PHP_DISABLED" = [yY] ]]; then
 
   echo ""

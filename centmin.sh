@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='768'
+SCRIPT_INCREMENTVER='769'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/12/2021'
@@ -481,10 +481,11 @@ NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
 NSD_DISABLED='n'              # when set to =y, NSD disabled by default with chkconfig off
-MEMCACHED_DISABLED='n'        # when set to =y,  Memcached server disabled by default via chkconfig off
-PHP_DISABLED='n'              # when set to =y,  PHP-FPM disabled by default with chkconfig off
-MYSQLSERVICE_DISABLED='n'     # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
+MEMCACHED_DISABLED='n'        # when set to =y, Memcached server disabled by default via chkconfig off
+PHP_DISABLED='n'              # when set to =y, PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED='n'     # when set to =y, MariaDB MySQL service disabled by default with chkconfig off
 PUREFTPD_DISABLED='n'         # when set to =y, Pure-ftpd service disabled by default with chkconfig off
+REDIS_DISABLED='n'            # when set to =y, Redis server disabled by default via chkconfig off
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
@@ -723,6 +724,9 @@ POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel
 POSTGRESQL_BRANCHVER='13'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+
+# Redis server
+REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
 # If MDB_YUMREPOINSTALL=y and MDB_INSTALL=n then MDB_VERONLY version 
@@ -2279,6 +2283,11 @@ geoipphpext
 if [[ "$PHPREDIS" = [yY] ]]; then
     echo "redisinstall"
     redisinstall
+fi
+
+if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
+  echo "redis_server_install"
+  redis_server_install
 fi
 
 echo "mongodbinstall"
