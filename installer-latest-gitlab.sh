@@ -1580,8 +1580,8 @@ echo "--------------------------------------------------------------------------
   echo "Minimal initial install log: /root/centminlogs/installer_${DT}_minimal.log" >> /root/centminlogs/installer_summary_links.log
   echo "Initial install time stats: /root/centminlogs/install_time_stats_${DT}.log" >> /root/centminlogs/installer_summary_links.log
   echo "Initial install nginx configure options: /root/centminlogs/$(ls -t /root/centminlogs/ | grep 'nginx-configure-' | tail -1)" >> /root/centminlogs/installer_summary_links.log
-  echo -e "Initial install sar stats: \n$(ls -t /root/centminlogs/ | awk '/^sar-/ {print "/root/centminlogs/"$0}')" >> /root/centminlogs/installer_summary_links.log
   systemstats
+  echo -e "Initial install sar stats: \n$(ls -t /root/centminlogs/ | awk '/^sar-/ {print "/root/centminlogs/"$0}')" >> /root/centminlogs/installer_summary_links.log
 fi
 
 if [ -f "${INSTALLDIR}/curlinstall_yum.txt" ]; then
