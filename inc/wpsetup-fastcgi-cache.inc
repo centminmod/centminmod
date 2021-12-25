@@ -146,7 +146,7 @@ fc_installredisserver() {
 }
 
 fc_dbsetup() {
-  SALT=$(/usr/bin/openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
+  SALT=$(/usr/bin/openssl rand -base64 14 | tr -dc 'a-zA-Z0-9')
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
@@ -445,8 +445,8 @@ elif [[ "$SECOND_IP" ]]; then
 fi
 
 fc_wpinstall
-  WPSALT=$(/usr/bin/openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
-  WPSALTB=$(/usr/bin/openssl rand 11 -base64 | tr -dc 'a-zA-Z0-9')
+  WPSALT=$(/usr/bin/openssl rand -base64 21 | tr -dc 'a-zA-Z0-9')
+  WPSALTB=$(/usr/bin/openssl rand -base64 14 | tr -dc 'a-zA-Z0-9')
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
@@ -852,8 +852,8 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 if [[ "$disablepwdprotect" != [yY] ]]; then
   # wp-login.php password protection
   if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-    HTWPLOGINSALT=$(/usr/bin/openssl rand 14 -base64 | tr -dc 'a-zA-Z0-9')
-    HTWPLOGINSALTB=$(/usr/bin/openssl rand 20 -base64 | tr -dc 'a-zA-Z0-9')
+    HTWPLOGINSALT=$(/usr/bin/openssl rand -base64 16 | tr -dc 'a-zA-Z0-9')
+    HTWPLOGINSALTB=$(/usr/bin/openssl rand -base64 23 | tr -dc 'a-zA-Z0-9')
     HTWPLOGIN=$RANDOM
     HTWPLOGINB=$RANDOM
     HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"

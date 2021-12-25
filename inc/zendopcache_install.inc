@@ -12,9 +12,9 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(/usr/bin/openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
+OPSALT=$(/usr/bin/openssl rand -base64 11 | tr -dc 'a-zA-Z0-9')
 OPUSER=$(echo "opadmin${OPSALT}")
-OPPASS=$(/usr/bin/openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
+OPPASS=$(/usr/bin/openssl rand -base64 23 | tr -dc 'a-zA-Z0-9')
 
   echo ""
   cecho "Creating htpasswd_opcache user/pass..." $boldyellow

@@ -115,9 +115,9 @@ rm -rf ${LINFOPATH}/config.inc.php
 ###########################################
 passp() {
 
-CSALT=$(/usr/bin/openssl rand 6 -base64 | tr -dc 'a-zA-Z0-9')
+CSALT=$(/usr/bin/openssl rand -base64 7 | tr -dc 'a-zA-Z0-9')
 CUSER=$(echo "admin${CSALT}")
-CPASS=$(/usr/bin/openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
+CPASS=$(/usr/bin/openssl rand -base64 21 | tr -dc 'a-zA-Z0-9')
 
     if [[ "$(hostname -f 2>&1 | grep -w 'Unknown host')" || "$(hostname -f 2>&1 | grep -w 'service not known')" ]]; then
       hname=$(hostname)
