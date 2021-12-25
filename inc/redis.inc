@@ -7,7 +7,7 @@ redis_server_install() {
     # chmod +x redis-server-install.sh
     if [ -f "${SCRIPT_DIR}/addons/redis-server-install.sh" ]; then
       echo "Run redis installer ${SCRIPT_DIR}/addons/redis-server-install.sh"
-      ./redis-install.sh install
+      ${SCRIPT_DIR}/addons/redis-server-install.sh install
       echo
       echo "Redis Info"
       redis-cli info server
