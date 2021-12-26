@@ -81,6 +81,16 @@ libheif_install() {
 }
 
 checkphpext() {
+
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
+    # PHP 5.x requires imagick <=3.4.4
+    IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
+    PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
+    PHPEXT_IMAGICKLINK="https://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
+    PHPEXT_IMAGICKLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
+  fi
+  
     cecho "Check for php extensions" $boldyellow
     if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" || ! -d "${DIR_TMP}/imagick-${IMAGICKPHP_VER}" ]]; then
         echo "Downloading imagick extension"

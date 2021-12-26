@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='776'
+SCRIPT_INCREMENTVER='777'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='24/12/2021'
@@ -685,7 +685,10 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.2'
+PHPSWOOLE_VER='4.8.5'
+PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
+PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
+PHPSWOOLE_SEVEN_ONE_VER='4.5.10' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
@@ -697,10 +700,13 @@ SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.4'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.5'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.7.4'      # MongoDB PHP version
+MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
+MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
+MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
+MONGODBPHP_EIGHT_VER='1.12.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
@@ -829,7 +835,8 @@ PCRE_SOURCEINSTALL='n'
 PCRE_VERSION='8.45'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.4'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.6.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
 MEMCACHED_INSTALL='y'          # Install Memcached

@@ -1,6 +1,33 @@
 #######################################################
 checkmongodbtar() {
 
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7.1+ requires mongodb 1.11.1
+    # PHP 7.0 requires mongodb 1.9.2
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_SEVEN_ZERO_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_SEVEN_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_EIGHT_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  fi
+
 cecho "Check if ${PHPEXT_MONGODBLINKFILE} exists" $boldyellow
 if [[ ! -f "${DIR_TMP}/${PHPEXT_MONGODBLINKFILE}" || ! -d "${DIR_TMP}/mongodb-${MONGODBPHP_VER}" ]]; then
 

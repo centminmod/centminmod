@@ -1,19 +1,34 @@
 #######################################################
 checkswooletar() {
 
-cecho "Check if ${PHPEXT_SWOOLELINKFILE} exists" $boldyellow
-if [[ ! -f "${DIR_TMP}/${PHPEXT_SWOOLELINKFILE}" || ! -d "${DIR_TMP}/swoole-${PHPSWOOLE_VER}" ]]; then
+    if [[ "$PHPMVER" = '5.5' || "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_FIVE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ONE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ZERO_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    fi
 
-    cecho "Downloading swoole PHP extension.." $boldgreen
-
-swoolephptarball
-fi
-
+    cecho "Check if ${PHPEXT_SWOOLELINKFILE} exists" $boldyellow
+    if [[ ! -f "${DIR_TMP}/${PHPEXT_SWOOLELINKFILE}" || ! -d "${DIR_TMP}/swoole-${PHPSWOOLE_VER}" ]]; then
+        cecho "Downloading swoole PHP extension.." $boldgreen
+        swoolephptarball
+    fi
 }
 
 #######################################################
 swooleinstall() {
         if [[ "$PHP_INSTALL" = [yY] ]]; then
+
 if [[ "$PHPSWOOLE" = [yY] ]]; then
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
