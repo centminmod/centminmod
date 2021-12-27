@@ -1,7 +1,12 @@
 #######################################################
 checkswooletar() {
 
-    if [[ "$PHPMVER" = '5.5' || "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' ]]; then
+    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '5.5' || "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' ]]; then
         PHPSWOOLE_VER="$PHPSWOOLE_FIVE_VER"
         PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
         PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
@@ -28,6 +33,28 @@ checkswooletar() {
 #######################################################
 swooleinstall() {
         if [[ "$PHP_INSTALL" = [yY] ]]; then
+
+    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '5.5' || "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_FIVE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ONE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ZERO_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    fi
 
 if [[ "$PHPSWOOLE" = [yY] ]]; then
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
