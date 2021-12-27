@@ -334,7 +334,7 @@ else
     echo "NGDEBUG is PHP 8.1 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
-    echo "Current PHP Version: $(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')"
+    echo "Current PHP Version: $(php-config --version)"
     # display latest PHP version available for current detected
     # PHP major version branch
     if [ ! -f /usr/local/bin/get-php-ver ]; then
@@ -345,7 +345,7 @@ else
         chmod +x /usr/local/bin/getphpver
     fi
     if [ -f /usr/local/bin/getphpver ]; then
-        getlatest_phpbranch=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}' | awk  -F '.' '{print $1$2}')
+        getlatest_phpbranch=$(php-config --version | awk  -F '.' '{print $1$2}')
         if [[ "$getlatest_phpbranch" = '81' ]]; then
             getlatest_phpbranchver=$(getphpver 81)
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
@@ -431,7 +431,7 @@ fi # UALL
 ## grab newer custom written htpasswd.sh as well
 gethtpasswdsh
 
-PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 PHPMU_ALPHAVER=$(echo "$phpver")
 
@@ -1235,7 +1235,7 @@ if [[ "$zendopcacheon" = [yY] && "$OLD_OPCACHEPHP" != [yY] ]]; then
 fi
 
 # notes for users if PHP 7.0 detected
-php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 
