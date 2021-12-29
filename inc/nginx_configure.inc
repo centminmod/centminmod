@@ -276,6 +276,15 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     echo "$DETECT_NGXVER"
   fi
 
+  if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
+    PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
+    PCRE_TWO_LD=' -lpcre'
+  elif [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && ! -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
+    source_pcre_two_install
+    PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
+    PCRE_TWO_LD=' -lpcre'
+  fi
+
   # if openssl 1.1.1 breaks HPACK patching
   # if [[ "$TLSONETHREE_DETECT" = [yY] ]]; then
   #   NGINX_HPACK='n'
@@ -1221,7 +1230,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     export LUAJIT_LIB='/usr/local/lib'
     export LUAJIT_INC="/usr/local/include/luajit-2.1"
 
-    LUALD_OPT="-Wl,-rpath,${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
+    LUALD_OPT="-Wl,-rpath,${PCRE_TWO_RPATH}${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
     if [[ ! -f /usr/bin/lua || ! -f /usr/include/lua.h ]]; then
       time $YUMDNFBIN -q -y install lua lua-devel${DISABLEREPO_DNF}
     fi
@@ -1279,7 +1288,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       cd "${DIR_TMP}"
   else
     LUAOPT=""
-    LUALD_OPT="-Wl,-rpath,${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
+    LUALD_OPT="-Wl,-rpath,${PCRE_TWO_RPATH}${ZLIBCF_RPATH}${BORINGSSL_RPATH}/usr/local/lib"
     if [[ -f /usr/local/nginx/modules/ngx_http_lua_module.so && "$NGXDYNAMIC_MANUALOVERRIDE" != [yY] ]]; then
       rm -rf /usr/local/nginx/modules/ngx_http_lua_module.so
     fi
@@ -1537,7 +1546,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$NGINX_PCREJIT" = [yY] ]]; then
     PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
-    if [[ "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/lib/libpcre.so ]]; then
+    if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
+      PCREJITOPT=" --with-pcre-jit"
+      PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
+      LIBBROTLIENC_OPT="-L/usr/local/nginx-dep/lib ${PCRE_TWO_LD} -L/usr/local/lib "
+      LIBBROTLIINC_OPT='-I/usr/local/nginx-dep/include -I/usr/local/include '
+    elif [[ "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/lib/libpcre.so ]]; then
       PCREJITOPT=" --with-pcre-jit"
       LIBBROTLIENC_OPT='-L/usr/local/lib '
       LIBBROTLIINC_OPT='-I/usr/local/include '
@@ -2137,8 +2151,14 @@ EIF
   fi
   if [[ "$DYNAMIC_SUPPORT" = [yY] && "$NGXDYNAMIC_BROTLI" = [yY] ]]; then
     BROTLIOPT=' --add-dynamic-module=../ngx_brotli'
-    LIBBROTLIENC_OPT='-L/usr/local/lib '
-    LIBBROTLIINC_OPT='-I/usr/local/include '
+    if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
+      PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
+      LIBBROTLIENC_OPT="-L/usr/local/nginx-dep/lib ${PCRE_TWO_LD} -L/usr/local/lib "
+      LIBBROTLIINC_OPT='-I/usr/local/nginx-dep/include -I/usr/local/include '
+    else
+      LIBBROTLIENC_OPT='-L/usr/local/lib '
+      LIBBROTLIINC_OPT='-I/usr/local/include '
+    fi
     if [ -f /usr/local/nginx/conf/dynamic-modules.conf ]; then
       echo "load_module \"modules/ngx_http_brotli_filter_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
       echo "load_module \"modules/ngx_http_brotli_static_module.so\";" >> /usr/local/nginx/conf/dynamic-modules.conf
@@ -2151,8 +2171,13 @@ EIF
     fi
   else
     BROTLIOPT=' --add-module=../ngx_brotli'
-    LIBBROTLIENC_OPT='-L/usr/local/lib '
-    LIBBROTLIINC_OPT='-I/usr/local/include '
+    if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
+      LIBBROTLIENC_OPT="-L/usr/local/nginx-dep/lib ${PCRE_TWO_LD} -L/usr/local/lib "
+      LIBBROTLIINC_OPT='-I/usr/local/nginx-dep/include -I/usr/local/include '
+    else
+      LIBBROTLIENC_OPT='-L/usr/local/lib '
+      LIBBROTLIINC_OPT='-I/usr/local/include '
+    fi
     # if NGXDYNAMIC_BROTLI='y' was previously set with nginx 1.9.11+, then the nginx
     # dynamic module /usr/local/nginx/modules/ngx_http_lua_module.so would of been
     # created
@@ -2243,7 +2268,11 @@ elif [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
 fi
 
 if [[ -f /usr/local/bin/pcretest ]] && [[ "$ORESTY_LUANGINX" = [yY] ]]; then
-  PCRE_LD=' -lpcre'
+  if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
+    PCRE_LD=""
+  else
+    PCRE_LD=' -lpcre'
+  fi
 else
   PCRE_LD=""
 fi
@@ -3124,7 +3153,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       fi
     elif [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc ]]; then
       DEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-missing-profile -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-vla-parameter'
-      DEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wno-vla-parameter'
       DEVTOOLSETTEN_FALLTHROUGH=""
       DEVTOOLSETTEN_EXTRAFLAGS=""
       DEVTOOLSETNINE_FALLTHROUGH=""
@@ -3154,7 +3183,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       fi
     elif [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc ]]; then
       DEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-missing-profile -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
-      DEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wno-vla-parameter'
       DEVTOOLSETNINE_FALLTHROUGH=""
       DEVTOOLSETNINE_EXTRAFLAGS=""
       DEVTOOLSETEIGHT_FALLTHROUGH=""

@@ -761,6 +761,39 @@ echo ""
   fi
 }
 
+nginxpcretwotarball() {
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${PCRETWOLINKFILE} ..." $boldyellow
+    if [[ -s "${PCRETWOLINKFILE}" && "$(tar -tzf ${PCRETWOLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        cecho "${PCRETWOLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        echo "wget -c${ipv_forceopt} --progress=bar ${PCRETWOLINK} -O ${PCRETWOLINKFILE} --tries=3"
+        wget -c${ipv_forceopt} --progress=bar "${PCRETWOLINK}" -O "${PCRETWOLINKFILE}" --tries=3
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PCRETWOLINKFILE} download failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+    fi
+
+tar xzf "${PCRETWOLINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PCRETWOLINKFILE} extraction failed." $boldgreen
+checklogdetails
+  exit #$ERROR
+else 
+         cecho "${PCRETWOLINKFILE} valid file." $boldyellow
+echo ""
+  fi
+}
+
 nginxzlibtarball() {
 
     cd "$DIR_TMP"
@@ -1255,6 +1288,7 @@ echo ""
     fi    
 
 nginxpcretarball
+nginxpcretwotarball
 nginxwebdavtarball
 nginxpgspeedtarball
 
