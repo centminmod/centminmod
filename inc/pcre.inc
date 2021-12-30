@@ -28,6 +28,24 @@ source_pcre_two_install() {
   fi
 }
 
+nginx_pcreinstall() {
+  if [[ "$NGINX_PCRE" = [yY] ]]; then
+    {
+    echo "*************************************************"
+    cecho "* Source Install PCRE For Nginx" $boldgreen
+    echo "*************************************************"
+    pcredir_check
+    cd $DIR_TMP
+    echo "Compiling PCRE For Nginx..."
+    cd pcre-${PCRE_VERSION}
+    make clean
+    ./configure --prefix=/usr/local/nginx-dep --enable-utf8 --enable-unicode-properties --enable-pcre16 --enable-pcre32 --enable-pcregrep-libz --enable-pcregrep-libbz2 --enable-pcretest-libreadline --enable-jit
+    make$MAKETHREADS
+    make install
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
+  fi
+}
+
 source_pcreinstall() {
   if [[ "$PCRE_SOURCEINSTALL" = [yY] ]]; then
     {

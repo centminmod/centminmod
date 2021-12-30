@@ -278,11 +278,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
     PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
-    PCRE_TWO_LD=' -lpcre'
+    PCRE_TWO_LD=' -lpcre2-8'
   elif [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && "$NGINX_PCRE_DYNAMIC" = [yY] && ! -f /usr/local/nginx-dep/lib/libpcre2-8.so ]]; then
     source_pcre_two_install
     PCRE_TWO_RPATH='/usr/local/nginx-dep/lib:'
-    PCRE_TWO_LD=' -lpcre'
+    PCRE_TWO_LD=' -lpcre2-8'
   fi
 
   # if openssl 1.1.1 breaks HPACK patching
