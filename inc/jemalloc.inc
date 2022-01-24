@@ -34,7 +34,7 @@ main(int argc, char **argv)
 }
 JEM
 
-  if [ -f "$JEMSTATS_CFILE" ]; then
+  if [[ -f "$JEMSTATS_CFILE" && "$CCACHE_VER_FOUR" != [yY] ]]; then
     gcc "$JEMSTATS_CFILE" -o ex_stats_print -I${JEMALLOC_PATH}/include -L${JEMALLOC_PATH}/lib -Wl,-rpath,${JEMALLOC_PATH}/lib -ljemalloc
   fi
   if [ -f "$JEMSTATS_FILE" ]; then

@@ -956,10 +956,10 @@ elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_modu
   #HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
   #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 else
-  HTTPTWO=n
-  LISTENOPT='ssl spdy'
-  COMP_HEADER='spdy_headers_comp 5'
-  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO=y
+  LISTENOPT='ssl http2'
+  COMP_HEADER='#spdy_headers_comp 5'
+  SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
 fi
 
 if [[ -f /usr/bin/php74 && -f /usr/bin/php73 && -f /usr/bin/php72 && -f /usr/bin/php71 && -f /usr/bin/php70 && -f /usr/bin/php56 ]]; then

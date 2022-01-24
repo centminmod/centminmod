@@ -2,22 +2,24 @@ install_libmaxmindb() {
   #wget -${ipv_forceopt} https://github.com/maxmind/libmaxminddb/releases/download/1.3.2/libmaxminddb-1.3.2.tar.gz
   #tar xvzf libmaxminddb-1.3.2.tar.gz
   #cd libmaxminddb-1.3.2
-  pushd "$DIR_TMP"
-  rm -rf libmaxminddb
-  git clone --recursive https://github.com/maxmind/libmaxminddb
-  cd libmaxminddb
-  ./bootstrap
-  make clean && make distclean
-  pushd t/libtap
-  make clean
-  make$MAKETHREADS
-  make install
-  popd
-  ./configure
-  make$MAKETHREADS
-  make install
-  ldconfig
-  popd
+  if [ ! -f /usr/local/nginx-dep/lib/libmaxminddb.so ]; then
+    pushd "$DIR_TMP"
+    rm -rf libmaxminddb
+    git clone --recursive https://github.com/maxmind/libmaxminddb
+    cd libmaxminddb
+    ./bootstrap
+    make clean && make distclean
+    pushd t/libtap
+    make clean
+    make$MAKETHREADS
+    make install
+    popd
+    ./configure --prefix=/usr/local/nginx-dep
+    make$MAKETHREADS
+    make install
+    ldconfig
+    popd
+  fi
 }
 
 ngxgeoipmemtweak() {
@@ -43,7 +45,7 @@ geoiptwolite_phpext_install() {
     cd MaxMind-DB-Reader-php
     cd ext
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config
+    ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
     # make test
     make install
@@ -260,16 +262,16 @@ geoiptwolite_install() {
   echo
   ls -lah /usr/share/GeoIP/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb
   echo
-  /usr/local/bin/mmdblookup --help
+  /usr/local/nginx-dep/bin/mmdblookup --help
   echo
-  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en"
-  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
+  echo "/usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en"
+  /usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
   echo
-  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number"
-  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number
+  echo "/usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number"
+  /usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_number
   echo
-  echo "/usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization"
-  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization
+  echo "/usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization"
+  /usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-ASN.mmdb --ip 8.8.8.8 autonomous_system_organization
   echo
 
   cecho "Setup geoip2 database updater cronjob" $boldyellow

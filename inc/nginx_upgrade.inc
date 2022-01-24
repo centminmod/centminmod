@@ -1,3 +1,116 @@
+pcre_check_nginx(){
+    # checks for $NGINX_PCRE_TWO='y'
+    {
+    if [[ "$NGINX_PCRE_TWO" = [yY] ]]; then
+        echo
+        echo "nginx -V"
+        nginx -V 2>&1 | fold -w 80 -s
+        echo
+        echo "nginx -t"
+        nginx -t
+        echo
+        echo "ldd $(which nginx)"
+        ldd $(which nginx)
+        if [ -f /usr/bin/readelf ]; then
+            echo
+            echo "readelf -d $(which nginx) | grep 'R.*PATH'"
+            readelf -d $(which nginx) | grep 'R.*PATH'
+        fi
+        echo
+        echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre2-8"
+        PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre2-8
+        echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
+        PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
+        if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec
+        fi
+        if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libmaxminddb"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libmaxminddb
+        fi
+        if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion luajit"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion luajit
+        fi
+        if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] ]]; then
+            echo
+            echo "--------------------------------"
+            echo "Nginx PCRE2 config check #2:"
+            echo "--------------------------------"
+            echo "DETECT_NGXVER=$DETECT_NGXVER"
+            echo "NGINX_PCRE_DYNAMIC=$NGINX_PCRE_DYNAMIC"
+            echo "NGINX_PCRE_TWO=$NGINX_PCRE_TWO"
+            echo "PCRETWO_DISABLEOPT=$PCRETWO_DISABLEOPT"
+            if [ -f /etc/centminmod/custom_config.inc ]; then
+                echo "Check /etc/centminmod/custom_config.inc relevant variables:"
+                egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
+            fi
+            echo
+            echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
+            ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+        fi
+        echo
+    elif [[ "$NGINX_PCRE_TWO" != [yY] ]]; then
+        echo
+        echo "nginx -V"
+        nginx -V 2>&1 | fold -w 80 -s
+        echo
+        echo "nginx -t"
+        nginx -t
+        echo
+        echo "ldd $(which nginx)"
+        ldd $(which nginx)
+        echo
+        echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre"
+        PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre
+        echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
+        PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
+        if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlidec
+        fi
+        if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion modsecurity
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libmaxminddb"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libmaxminddb
+        fi
+        if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
+            echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion luajit"
+            PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion luajit
+        fi
+        if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" != [yY] ]]; then
+            echo
+            echo "--------------------------------"
+            echo "Nginx PCRE config check #2:"
+            echo "--------------------------------"
+            echo "DETECT_NGXVER=$DETECT_NGXVER"
+            echo "NGINX_PCRE_DYNAMIC=$NGINX_PCRE_DYNAMIC"
+            echo "NGINX_PCRE_TWO=$NGINX_PCRE_TWO"
+            echo "PCRETWO_DISABLEOPT=$PCRETWO_DISABLEOPT"
+            if [ -f /etc/centminmod/custom_config.inc ]; then
+                echo "Check /etc/centminmod/custom_config.inc relevant variables:"
+                egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
+            fi
+            echo
+            echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
+            ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+        fi
+        echo
+    fi
+    if [[ "$NGX_LDMOLD" = [yY] ]]; then
+        readelf -p .comment $(which nginx)
+    fi
+    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_checks_${DT}.log"
+}
+
 check_requestscheme() {
 # check for REQUEST_SCHEME parameter added in nginx 1.9.2 
 # add it if it doesn't exist in fastcgi_param and php include files
@@ -541,7 +654,13 @@ then
 
 fi
 
-    if [ -f "$(which figlet)" ]; then
+if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] ]]; then
+    pcre_two_dir_check ngxupgrade
+else
+    pcredir_check ngxupgrade
+fi
+
+    if [[ -f "$(which figlet)" && "$ORESTY_LUANGINX" = [yY] ]]; then
         figlet -ckf standard "luajit install"
     fi
 
@@ -694,17 +813,53 @@ fi
 ################
 # error check
 
-  ERR=$?
-  if [ $ERR != 0 ]; then
+  # NGX_CONFIGURE_ERR=$?
+  if [ "$NGX_CONFIGURE_ERR" != 0 ]; then
       echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
         echo
-        free -m
+        free -mlt
         echo
         df -hT
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "PCRE/PCRE2 Settings"
+        echo "NGINX_PCRE=$NGINX_PCRE"
+        echo "NGINX_PCRE_TWO=$NGINX_PCRE_TWO"
+        echo "DROPBOX_SEND=$DROPBOX_SEND"
+        echo "RCLONE_ENABLE=$RCLONE_ENABLE"
+        echo "ORESTY_LUANGINX=$ORESTY_LUANGINX"
+        echo "NGINX_MODSECURITY=$NGINX_MODSECURITY"
+        echo "NGX_LDMOLD=$NGX_LDMOLD"
+        echo "NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
+        echo "NGINX_KTLS=$NGINX_KTLS"
+        echo "OPENSSL_VERSION=$OPENSSL_VERSION"
+        echo
+        echo "ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'
+        echo
+        echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+        if [[ "$NGINX_PCRE" = [yY] && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log" ]]; then
+            echo
+            echo "pcre install log: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
+            ls -lAh "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
+        else
+            echo "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log not found"
+        fi
+        if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log" ]]; then
+            echo
+            echo "pcre2 install log: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log"
+            ls -lAh "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log"
+        else
+            echo
+            echo "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log not found"
+        fi
+        if [ -f objs/autoconf.err ]; then
+            cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx-configure_autoconf.err.${DT}.log"
+        fi
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
@@ -718,6 +873,11 @@ fi
         echo
         echo "log files saved at ${CENTMINLOGDIR}"
         ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
+        if [[ "$DROPBOX_SEND" = [yY] ]]; then
+            echo
+            echo "dropbox_generate $DT"
+            dropbox_generate "$DT" configure-error
+        fi
         exit
   else
       echo -e "\n`date`\nSuccess: Nginx configure ok\n"
@@ -771,11 +931,48 @@ fi
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
         echo
-        free -m
+        free -mlt
         echo
         df -hT
         echo
         echo "CPU: $(awk -F ': ' '/^model name/ {print $2}' /proc/cpuinfo | head -n1) ($(grep -c "processor" /proc/cpuinfo))"
+        echo
+        echo "PCRE/PCRE2 Settings"
+        echo "NGINX_PCRE=$NGINX_PCRE"
+        echo "NGINX_PCRE_TWO=$NGINX_PCRE_TWO"
+        echo "DROPBOX_SEND=$DROPBOX_SEND"
+        echo "RCLONE_ENABLE=$RCLONE_ENABLE"
+        echo "ORESTY_LUANGINX=$ORESTY_LUANGINX"
+        echo "NGINX_MODSECURITY=$NGINX_MODSECURITY"
+        echo "NGX_LDMOLD=$NGX_LDMOLD"
+        echo "NGXEXTRA_LDGOLDCCOPT=$NGXEXTRA_LDGOLDCCOPT"
+        echo "NGINX_KTLS=$NGINX_KTLS"
+        echo "OPENSSL_VERSION=$OPENSSL_VERSION"
+        echo
+        echo "ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/lib | egrep 'libpcre.so|libpcre2-8.so'
+        echo
+        echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
+        ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
+        if [[ "$NGINX_PCRE" = [yY] && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log" ]]; then
+            echo
+            echo "pcre install log: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
+            ls -lAh "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log"
+        else
+            echo "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre-nginx_install.log not found"
+        fi
+        if [[ "$DETECT_NGXVER" -ge '1021005' && "$NGINX_PCRE_TWO" = [yY] && -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log" ]]; then
+            echo
+            echo "pcre2 install log: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log"
+            ls -lAh "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log"
+        else
+            echo
+            echo "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre2_install.log not found"
+        fi
+        if [ -f objs/autoconf.err ]; then
+            cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx-make_autoconf.err.${DT}.log"
+        fi
+        echo
         echo
         echo "version increment history"
         tail -5 /etc/centminmod-versionlog
@@ -789,6 +986,11 @@ fi
         echo
         echo "log files saved at ${CENTMINLOGDIR}"
         ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
+        if [[ "$DROPBOX_SEND" = [yY] ]]; then
+            echo
+            echo "dropbox_generate $DT"
+            dropbox_generate "$DT" make-error
+        fi
       exit
   else
      echo -e "\n`date`\nSuccess: Nginx make ok\n"
@@ -1061,10 +1263,12 @@ fi
 
         if [ -f /usr/local/sbin/nginx ]; then
             echo
-            echo "nginx -V"
-            nginx -V
+            pcre_check_nginx
             echo
-            nginx -t
+            # echo "nginx -V"
+            # nginx -V
+            # echo
+            # nginx -t
         fi
 
         if [[ "$DYNAMIC_SUPPORT" = [yY] ]]; then
@@ -1082,10 +1286,14 @@ fi
             \cp -af /usr/local/nginx/modules/* /usr/local/nginx/modules.copy
             ls -lah /usr/local/nginx/modules.copy
         fi
-
         echo
         echo "log files saved at ${CENTMINLOGDIR}"
         ls -lAhrt "${CENTMINLOGDIR}" | grep $DT
+        if [[ "$DROPBOX_SEND" = [yY] ]]; then
+            echo
+            echo "dropbox_generate $DT"
+            dropbox_generate "$DT"
+        fi
         echo
 
         echo "*************************************************"

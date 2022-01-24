@@ -30,11 +30,11 @@ SCRIPT_MINORVER='09'
 SCRIPT_INCREMENTVER='782'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='24/12/2021'
+SCRIPT_DATE='01/01/22'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
-COPYRIGHT="Copyright 2011-2021 CentminMod.com"
+COPYRIGHT="Copyright 2011-2022 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -475,6 +475,8 @@ NGINX_NOFATLTO_OBJECTS='n'      # enable -fno-fat-lto-objects flag for nginx bui
 NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
+NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
+MOLD_VERSION='1.0.1'          # mold linker rpm version
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -541,6 +543,7 @@ NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by 
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
 NGINX_HTTPPUSH='n'           # Nginx http/2 push patch https://community.centminmod.com/threads/11910/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
 NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centminmod/nginx-ssl-fingerprint
@@ -594,9 +597,10 @@ NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing add
 NGINX_WEBDAV='n'             # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
 NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
-NGINX_LIBATOMIC_VERSION='7.6.10' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
+NGINX_LIBATOMIC_VERSION='7.6.12' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
+NGINX_PCRE='y'               # Nginx specific pcre & pcre-jit support
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
 NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Nginx
@@ -1000,6 +1004,7 @@ fi
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
 source "inc/fastmirrors.conf"
+source "inc/sync.inc"
 source "inc/qrencode.inc"
 source "inc/tcp.inc"
 source "inc/customrpms.inc"
@@ -3561,7 +3566,7 @@ EOF
             cecho "--------------------------------------------------------" $boldyellow
             cecho "Check Nginx Version:" $boldyellow
             cecho "--------------------------------------------------------" $boldyellow
-            nginx -V
+            nginx -V 2>&1 | fold -w 80 -s
         echo ""
             cecho "--------------------------------------------------------" $boldyellow
             cecho "Check PHP-FPM Version:" $boldyellow

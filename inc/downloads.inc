@@ -742,7 +742,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRELINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  # exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -754,7 +754,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRELINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  # exit #$ERROR
 else 
          cecho "${PCRELINKFILE} valid file." $boldyellow
 echo ""
@@ -775,7 +775,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRETWOLINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  # exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -787,7 +787,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRETWOLINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  # exit #$ERROR
 else 
          cecho "${PCRETWOLINKFILE} valid file." $boldyellow
 echo ""

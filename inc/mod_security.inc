@@ -156,7 +156,7 @@ modsecurity_install() {
     fi
     pushd "$DIR_TMP"
 
-    if [[ ! "$(/usr/local/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/bin/mmdblookup ]; then
+    if [[ ! "$(/usr/local/nginx-dep/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/nginx-dep/bin/mmdblookup ]; then
       install_libmaxmindb
     fi
     
@@ -166,21 +166,23 @@ modsecurity_install() {
     git submodule init
     git submodule update
     ./build.sh
-    if [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
-      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig
-      ./configure
-      # ./configure --with-maxmind=/usr/local
-    elif [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [nN] ]]; then
-      ./configure --without-maxmind
+    if [[ -f /usr/local/nginx-dep/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
+      ./configure --prefix=/usr/local/nginx-dep
+      # ./configure --prefix=/usr/local/nginx-dep --with-maxmind=/usr/local/nginx-dep
+    elif [[ -f /usr/local/nginx-dep/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [nN] ]]; then
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
+      ./configure --prefix=/usr/local/nginx-dep --without-maxmind
     else
-      ./configure
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
+      ./configure --prefix=/usr/local/nginx-dep
     fi
     make${MAKETHREADS}
     make install
     popd
 
-    if [[ -f /usr/local/modsecurity/lib/libmodsecurity.so ]] && [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
-        # MODSEC_VER=$(strings /usr/local/modsecurity/lib/libmodsecurity.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
+    if [[ -f /usr/local/nginx-dep/lib/libmodsecurity.so ]] && [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
+        # MODSEC_VER=$(strings /usr/local/nginx-dep/lib/libmodsecurity.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
         echo
         echo "setup MODSEC_OPT"
         pushd "$DIR_TMP"

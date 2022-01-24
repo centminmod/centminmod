@@ -348,7 +348,7 @@ ngx_fingerprint_patch() {
     NGINX_FINGERPRINT_BASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
-  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]]; then
+  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$DETECT_NGXVER" -ge '1021000' ]]; then
       NGX_FINGERPRINT_DIR='nginx-ssl-fingerprint'
       if [[ -d "${DIR_TMP}/${NGX_FINGERPRINT_DIR}" || ! -d "${DIR_TMP}/${NGX_FINGERPRINT_DIR}" ]]; then
         rm -rf "${DIR_TMP}/${NGX_FINGERPRINT_DIR}"
