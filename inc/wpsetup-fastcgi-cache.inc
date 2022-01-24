@@ -2167,7 +2167,7 @@ location ~ ^${WPSUBDIR}/wp-content/uploads/ {
   #add_header X-Robots-Tag "noindex, nofollow";
   location ~* ^${WPSUBDIR}/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
     expires 30d;
-    add_header Vary "Accept";
+    #add_header Vary "Accept";
     add_header Cache-Control "public";
     try_files \$uri\$webp_extension \$uri =404;
   }
