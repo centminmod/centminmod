@@ -156,6 +156,10 @@ checkimagicksys() {
         YUMDNFBIN='yum'
     fi
 
+    if [ -z "$(rpm -qa open-sans-fonts)" ]; then
+        $YUMDNFBIN -y install open-sans-fonts
+    fi
+
     # whether to skip ImageMagick YUM updates
     if [[ "$SKIP_IMAGEMAGICK_YUM_UPDATES" != [yY] ]]; then
         cecho "Check for ImageMagicK System Updates (YUM)" $boldyellow
