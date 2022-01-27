@@ -50,6 +50,12 @@ pcre_check_nginx(){
                 echo "Check /etc/centminmod/custom_config.inc relevant variables:"
                 egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
             fi
+            echo "TLSTHREEOPT=$TLSTHREEOPT"
+            echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
+            echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
+            echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
+            echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
+            echo "OPENSSL_VERION=$OPENSSL_VERSION"
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -99,6 +105,12 @@ pcre_check_nginx(){
                 echo "Check /etc/centminmod/custom_config.inc relevant variables:"
                 egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
             fi
+            echo "TLSTHREEOPT=$TLSTHREEOPT"
+            echo "OPENSSL_TLSONETHREE=$OPENSSL_TLSONETHREE"
+            echo "NGINX_OPENSSLOPT_EXTRAS=$NGINX_OPENSSLOPT_EXTRAS"
+            echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
+            echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
+            echo "OPENSSL_VERION=$OPENSSL_VERSION"
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
