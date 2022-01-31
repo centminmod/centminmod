@@ -63,18 +63,46 @@ if [ "$CCACHEINSTALL" == 'y' ]; then
       if [ -f /opt/rh/devtoolset-8/enable ]; then
         source /opt/rh/devtoolset-8/enable
       fi
+      if [ -f /opt/rh/devtoolset-9/enable ]; then
+        source /opt/rh/devtoolset-9/enable
+      fi
+      if [ -f /opt/rh/devtoolset-10/enable ]; then
+        source /opt/rh/devtoolset-10/enable
+      fi
+      if [ -f /opt/rh/devtoolset-11/enable ]; then
+        source /opt/rh/devtoolset-11/enable
+      fi
+      # dependencies
+      # if [ ! -f /usr/bin/a2x ]; then
+      #   echo
+      #   yum -y install asciidoc
+      #   echo
+      # fi
+      # if [ -f /usr/bin/asciidoctor ]; then
+      #   yum -y install asciidoctor
+      # fi
+      if [[ ! -s /usr/local/lib/libhiredis.so ]]; then
+        yum -y localinstall https://centminmod.com/centminmodparts/hiredis/centmin-hiredis-0.14.1-1.el7.x86_64.rpm
+        ldconfig
+      fi
       cd ${DIR_TMP}/ccache-${CCACHE_VER}/
       rm -rf build
       mkdir -p build
       cd build
       export CC=gcc
-      time cmake3 -DCMAKE_BUILD_TYPE=Release -DZSTD_FROM_INTERNET=ON ..
+      export CXX="g++"
+      export CMAKE_C_COMPILER=gcc
+      export CMAKE_CXX_COMPILER=g++
+      make clean
+      rm -f CMakeCache.txt
+      PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH cmake3 -DCMAKE_BUILD_TYPE=Release -DZSTD_FROM_INTERNET=ON -D CMAKE_C_COMPILER=gcc -D CMAKE_CXX_COMPILER=g++ -D CMAKE_PREFIX_PATH=/usr/local/lib -D CMAKE_INCLUDE_PATH=/usr/local/include ..
       sar_call
       make -j${MAKETHREADS}
       sar_call
       make install
       sar_call
       export CC='ccache gcc'
+      export CXX="ccache g++"
       echo
     else
       echo "install ccache $CCACHE_VER"

@@ -28,8 +28,10 @@ PHPREDIS='y'
 centminlog
 {
 if [[ "$TIME_REDIS" = [yY] ]]; then
+  checkredis_server_install 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
   redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
 else
+  checkredis_server_install
   redisinstall submenu
 fi
 /usr/bin/nprestart >/dev/null 2>&1
@@ -42,8 +44,10 @@ centminlog
 {
 PHPREDIS='y'
 if [[ "$TIME_REDIS" = [yY] ]]; then
+  checkredis_server_install 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
   redisinstall submenu 2>&1 | awk '{ print strftime("%Y-%m-%d %H:%M:%S"), $0; fflush(); }'
 else
+  checkredis_server_install
   redisinstall submenu
 fi
 /usr/bin/nprestart >/dev/null 2>&1

@@ -142,9 +142,9 @@ if [[ -f /usr/share/GeoIP/GeoLite2-City.mmdb || -f /usr/share/GeoIP/GeoLite2-Cou
 
   cecho "Check GeoIP2 Lite Databases" $boldyellow
   echo
-  /usr/local/bin/mmdblookup --help
+  /usr/local/nginx-dep/bin/mmdblookup --help
   echo
-  /usr/local/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
+  /usr/local/nginx-dep/bin/mmdblookup --file /usr/share/GeoIP/GeoLite2-Country.mmdb --ip 8.8.8.8 country names en
   echo
   popd
 fi

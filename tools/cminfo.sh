@@ -326,7 +326,7 @@ top_info() {
     CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
     CCACHE_INFOVER=$(ccache -V | head -n1)
     NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
-    PHP_INFOVER=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')
+    PHP_INFOVER=$(php-config --version)
     MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
     MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
     CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
@@ -780,7 +780,7 @@ SYSTYPE=$(virt-what | head -n1)
 CENTMINMOD_INFOVER=$(head -n1 /etc/centminmod-release)
 CCACHE_INFOVER=$(ccache -V | head -n1)
 NGINX_INFOVER=$(nginx -v 2>&1 | awk -F "/" '{print $2}' | head -n1)
-PHP_INFOVER=$(php -v 2>&1 | head -n1 | cut -d "(" -f1 | awk '{print $2}')
+PHP_INFOVER=$(php-config --version)
 MARIADB_INFOVER=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3)
 MEMCACHEDSERVER_INFOVER=$(/usr/local/bin/memcached -h | head -n1 | awk '{print $2}')
 CSF_INFOVER=$(csf -v | head -n1 | awk '{print $2}')
@@ -952,7 +952,7 @@ echo "------------------------------------------------------------------"
 echo " Nginx Configuration:"
 echo "------------------------------------------------------------------"
 echo
-nginx -V
+nginx -V 2>&1 | fold -w 80 -s
 
 echo
 echo "------------------------------------------------------------------"

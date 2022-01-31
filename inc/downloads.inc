@@ -742,7 +742,7 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRELINKFILE} download failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  # exit #$ERROR
 else 
          cecho "Download done." $boldyellow
 #echo ""
@@ -754,9 +754,42 @@ ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRELINKFILE} extraction failed." $boldgreen
 checklogdetails
-  exit #$ERROR
+  # exit #$ERROR
 else 
          cecho "${PCRELINKFILE} valid file." $boldyellow
+echo ""
+  fi
+}
+
+nginxpcretwotarball() {
+
+    cd "$DIR_TMP"
+
+        cecho "Download ${PCRETWOLINKFILE} ..." $boldyellow
+    if [[ -s "${PCRETWOLINKFILE}" && "$(tar -tzf ${PCRETWOLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
+        cecho "${PCRETWOLINKFILE} Archive found, skipping download..." $boldgreen
+    else
+        echo "wget -c${ipv_forceopt} --progress=bar ${PCRETWOLINK} -O ${PCRETWOLINKFILE} --tries=3"
+        wget -c${ipv_forceopt} --progress=bar "${PCRETWOLINK}" -O "${PCRETWOLINKFILE}" --tries=3
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PCRETWOLINKFILE} download failed." $boldgreen
+checklogdetails
+  # exit #$ERROR
+else 
+         cecho "Download done." $boldyellow
+#echo ""
+  fi
+    fi
+
+tar xzf "${PCRETWOLINKFILE}"
+ERROR=$?
+  if [[ "$ERROR" != '0' ]]; then
+  cecho "Error: ${PCRETWOLINKFILE} extraction failed." $boldgreen
+checklogdetails
+  # exit #$ERROR
+else 
+         cecho "${PCRETWOLINKFILE} valid file." $boldyellow
 echo ""
   fi
 }
@@ -1255,6 +1288,7 @@ echo ""
     fi    
 
 nginxpcretarball
+nginxpcretwotarball
 nginxwebdavtarball
 nginxpgspeedtarball
 
@@ -2227,6 +2261,15 @@ echo ""
 ###############################################
 imagickphpextlocaltarball() {
 
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
+    # PHP 5.x requires imagick <=3.4.4
+    IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
+    PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
+    PHPEXT_IMAGICKLINK="https://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
+    PHPEXT_IMAGICKLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
+  fi
+
     cd "$DIR_TMP"
     rm -rf imagick*
 
@@ -2262,6 +2305,15 @@ echo ""
 
 ###############################################
 imagickphpexttarball() {
+
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
+    # PHP 5.x requires imagick <=3.4.4
+    IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
+    PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
+    PHPEXT_IMAGICKLINK="https://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
+    PHPEXT_IMAGICKLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
+  fi
 
     cd "$DIR_TMP"
 
@@ -2519,6 +2571,33 @@ echo ""
 ###############################################
 mongodbphplocaltarball() {
 
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7.1+ requires mongodb 1.11.1
+    # PHP 7.0 requires mongodb 1.9.2
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_SEVEN_ZERO_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_SEVEN_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_EIGHT_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  fi
+
     cd "$DIR_TMP"
     rm -rf mongo*
 
@@ -2554,6 +2633,33 @@ echo ""
 
 ###############################################
 mongodbphptarball() {
+
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7.1+ requires mongodb 1.11.1
+    # PHP 7.0 requires mongodb 1.9.2
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_SEVEN_ZERO_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_SEVEN_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 8 requires mongodb =>1.12.0
+    # PHP 7 requires mongodb 1.11.1+
+    # PHP 5.x requires mongodb <=1.7.5
+    MONGODBPHP_VER="$MONGODBPHP_EIGHT_VER"
+    PHPEXT_MONGODBLINKFILE="mongodb-${MONGODBPHP_VER}.tgz"
+    PHPEXT_MONGODBLINK="https://pecl.php.net/get/${PHPEXT_MONGODBLINKFILE}"
+    PHPEXT_MONGODBLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/mongodb/${PHPEXT_MONGODBLINKFILE}"
+  fi
 
     cd "$DIR_TMP"
 
@@ -2592,6 +2698,28 @@ echo ""
 ###############################################
 swoolephplocaltarball() {
 
+    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '5.5' || "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_FIVE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ONE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ZERO_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    fi
+
     cd "$DIR_TMP"
     rm -rf mongo*
 
@@ -2627,6 +2755,28 @@ echo ""
 
 ###############################################
 swoolephptarball() {
+
+    if [[ "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '5.5' || "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMUVER" = '5.6' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_FIVE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ONE_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    elif [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' ]]; then
+        PHPSWOOLE_VER="$PHPSWOOLE_SEVEN_ZERO_VER"
+        PHPEXT_SWOOLELINKFILE="swoole-${PHPSWOOLE_VER}.tgz"
+        PHPEXT_SWOOLELINK="https://pecl.php.net/get/${PHPEXT_SWOOLELINKFILE}"
+        PHPEXT_SWOOLELINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/swoole/${PHPEXT_SWOOLELINKFILE}"
+    fi
 
     cd "$DIR_TMP"
 
@@ -3847,9 +3997,9 @@ yuminstall
 questions
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
-    php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+    php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
 else
-    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+    echo "$PHP_VERSION" | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
 fi
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"

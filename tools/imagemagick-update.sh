@@ -2,7 +2,8 @@
 ######################################################
 # standalone imagemagick + imagick updater
 ######################################################
-IMAGICKPHP_VER='3.4.4'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.6.0'   # PHP extension for imagick
 PHP_INSTALL='y'
 PHPIMAGICK='y'
 REMIREPO_DISABLE='n'
@@ -349,7 +350,7 @@ imagickinstall() {
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
 

@@ -6,6 +6,7 @@ php_ext_brotli() {
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
       enable_devtoolset
+      # export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
     echo "Downloading brotli PHP extension..."
     pushd "$DIR_TMP"
     rm -rf php-ext-brotli

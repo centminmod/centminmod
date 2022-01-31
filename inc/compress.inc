@@ -1,6 +1,6 @@
-ZSTD_VER='1.5.0'
+ZSTD_VER='1.5.1'
 LZFOUR_VER='1.9.2'
-PIGZ_VER='2.4'
+PIGZ_VER='2.6'
 PBZIP_VER='1.1.13'
 LBZIP_VER='2.5'
 LZIP_VER='1.21'
@@ -36,7 +36,7 @@ compgcc_nine() {
   if [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
     label='gcc9 built'
     source /opt/rh/devtoolset-9/enable
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result"
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result"
     export CXXFLAGS="${CFLAGS}"
   else
     label=""
@@ -48,7 +48,7 @@ compgcc_ten() {
   if [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
     label='gcc10 built'
     source /opt/rh/devtoolset-10/enable
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
     export CXXFLAGS="${CFLAGS}"
   else
     label=""
@@ -60,7 +60,7 @@ compgcc_eleven() {
   if [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
     label='gcc10 built'
     source /opt/rh/devtoolset-11/enable
-    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
+    export CFLAGS="-Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-missing-profile -Wno-stringop-overflow -Wno-alloc-size-larger-than"
     export CXXFLAGS="${CFLAGS}"
   else
     label=""

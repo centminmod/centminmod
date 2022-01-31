@@ -124,7 +124,7 @@ if [[ "$mysqlroot_reset" = [yY] ]]; then
     mysqld --skip-grant-tables --skip-networking --user=mysql &
     mysql -e "FLUSH PRIVILEGES;"
   fi
-  NEWMYSQLROOTPASS=$(openssl rand 21 -base64 | tr -dc 'a-zA-Z0-9')
+  NEWMYSQLROOTPASS=$(/usr/bin/openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')
   echo "mysqladmin -u root -p${OLDMYSQLROOTPASS} password $NEWMYSQLROOTPASS"
   mysqladmin -u root -p${OLDMYSQLROOTPASS} password $NEWMYSQLROOTPASS
   echo

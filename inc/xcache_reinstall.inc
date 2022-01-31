@@ -75,7 +75,7 @@ if [[ "$xcachekey" = [yY] ]]; then
   echo "1).  Rename existing xcacheadmin directory"
   echo " mv /usr/local/nginx/html/myxcacheadmin /usr/local/nginx/html/myxcacheadmin_old"
   echo "2).  Edit php.ini - you can use centmin mod command shortcut = phpedit"
-  echo "     http://centminmod.com/faq.html#commandshortcuts to quickly get to php.ini"
+  echo "     https://centminmod.com/faq.html#commandshortcuts to quickly get to php.ini"
   echo "     remove entries related to xcache settings and save php.ini file"
   echo "3).  Re-run centmin.sh & run menu option #8 to Install Xcache"
   echo "------------------------------------------------------------------"

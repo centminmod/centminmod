@@ -14,7 +14,7 @@ if [[ ! -f /usr/local/nginx/html/memcache_*.php ]]; then
 
 cd $DIR_TMP
 # php 7 versus php <7 memcache source directory
-PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 
 if [[ "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = 'NGDEBUG' || "$PHPEIGHT_CHECKVER" = '0' ]]; then
   cd memcache-php8
@@ -54,9 +54,9 @@ sed -i "s/mymemcache-server2:11211/localhost:11212/g" /usr/local/nginx/html/memc
 
 fi
 
-CSALT=$(openssl rand 8 -base64 | tr -dc 'a-zA-Z0-9')
+CSALT=$(/usr/bin/openssl rand -base64 10 | tr -dc 'a-zA-Z0-9')
 memcacheduser=$(echo "memadmin${CSALT}")
-memcachedpassword=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
+memcachedpassword=$(/usr/bin/openssl rand -base64 21 | tr -dc 'a-zA-Z0-9')
 echo ""
 
 cecho "Setup Memcached Server Admin Login Details for /usr/local/nginx/html/memcache_${N}.php" $boldgreen

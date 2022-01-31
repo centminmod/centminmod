@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 # Centmin Mod centminmod.com
 # written by George Liu (eva2000)
 #############################################################
-PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 #############################################################
 
@@ -49,10 +49,10 @@ cd ioncube
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
   if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
-    if [[ "$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)" != '5.6' ]]; then
+    if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64_5.1.2.tar.gz
-    elif [[ "$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)" = '5.6' ]]; then
+    elif [[ "$(php-config --version | cut -d . -f1,2)" = '5.6' ]]; then
       rm -rf ioncube_loaders_lin_x86-64.tar.gz
       rm -rf ioncube
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
@@ -66,10 +66,10 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
   fi
 else
   if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
-    if [[ "$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)" != '5.6' ]]; then
+    if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86_5.1.2.tar.gz
-    elif [[ "$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)" = '5.6' ]]; then
+    elif [[ "$(php-config --version | cut -d . -f1,2)" = '5.6' ]]; then
       rm -rf ioncube_loaders_lin_x86.tar.gz
       rm -rf ioncube
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86.tar.gz
@@ -84,7 +84,7 @@ else
 fi
 
 # check current PHP version
-ICPHPVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+ICPHPVER=$(php-config --version | cut -d . -f1,2)
 PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 
 # move current ioncube version to existing PHP extension directory
@@ -94,7 +94,7 @@ if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]];
   chmod 755 "${PHPEXTDIRD}/ioncube.so"
 else
   # for php 7 ioncube beta8
-  ICPHPVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+  ICPHPVER=$(php-config --version | cut -d . -f1,2)
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
     chown root:root "${PHPEXTDIRD}/ioncube.so"

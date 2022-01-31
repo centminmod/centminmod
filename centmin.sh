@@ -27,14 +27,14 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='753'
+SCRIPT_INCREMENTVER='789'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='30/06/2021'
+SCRIPT_DATE='01/01/22'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
-COPYRIGHT="Copyright 2011-2021 CentminMod.com"
+COPYRIGHT="Copyright 2011-2022 CentminMod.com"
 DISCLAIMER='This software is provided "as is" in the hope that it will be useful, but WITHOUT ANY WARRANTY, to the extent permitted by law; without even the implied warranty of MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE. IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.'
 
 #####################################################
@@ -475,16 +475,19 @@ NGINX_NOFATLTO_OBJECTS='n'      # enable -fno-fat-lto-objects flag for nginx bui
 NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
+NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
+MOLD_VERSION='1.0.1'          # mold linker rpm version
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
 NSD_DISABLED='n'              # when set to =y, NSD disabled by default with chkconfig off
-MEMCACHED_DISABLED='n'        # when set to =y,  Memcached server disabled by default via chkconfig off
-PHP_DISABLED='n'              # when set to =y,  PHP-FPM disabled by default with chkconfig off
-MYSQLSERVICE_DISABLED='n'     # when set to =y,  MariaDB MySQL service disabled by default with chkconfig off
+MEMCACHED_DISABLED='n'        # when set to =y, Memcached server disabled by default via chkconfig off
+PHP_DISABLED='n'              # when set to =y, PHP-FPM disabled by default with chkconfig off
+MYSQLSERVICE_DISABLED='n'     # when set to =y, MariaDB MySQL service disabled by default with chkconfig off
 PUREFTPD_DISABLED='n'         # when set to =y, Pure-ftpd service disabled by default with chkconfig off
+REDIS_DISABLED='n'            # when set to =y, Redis server disabled by default via chkconfig off
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
@@ -538,13 +541,18 @@ NGINX_COMPILE_EXPORT='y'     # nginx compile export symbols when mixing nginx st
 NGINX_ZERODT='n'             # nginx zero downtime reloading on nginx upgrades
 NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by editing value i.e. http://openresty-reference.readthedocs.io/en/latest/Lua_Nginx_API/#print
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
+NGINX_HPACK_ALLOWED_VER='1021006'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
+NGINX_DYNAMICTLS_ALLOWED_VER='1021006' # Max allowed Nginx version for Nginx Dynamic TLS patch support
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
 NGINX_HTTPPUSH='n'           # Nginx http/2 push patch https://community.centminmod.com/threads/11910/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
+NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centminmod/nginx-ssl-fingerprint
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+NGINX_MODSECURITY_JSONLOGS='n' # enable to switch to JSON log format, to switch back manually edit /usr/local/nginx/modsec/modsecurity.conf
 NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing to compile so disable it in favour of GeoIP legacy
-MODSECURITY_OWASPVER='3.3.0' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
+MODSECURITY_OWASPVER='3.3.2' # owasp modsecurity ruleset https://github.com/coreruleset/coreruleset/releases
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
 NGINX_NJS='n'                # nginScript https://www.nginx.com/blog/launching-nginscript-and-looking-ahead/
@@ -585,18 +593,21 @@ NGINX_LIBBROTLISTATIC='n'    # only enable if you want pre-compress brotli suppo
 NGINX_BROTLIDEP_UPDATE='n'   # experimental manual update of Google Brotli dependency in ngx_brotli
 NGINX_PAGESPEED='n'          # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.13.35.2-stable'
-NGINX_PAGESPEEDPSOL_VER='1.13.35.2'
+NGXPGSPEED_VER='1.14.33.1-RC1'
+NGINX_PAGESPEEDPSOL_VER='1.14.36.1'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV='n'             # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
 NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
-NGINX_LIBATOMIC_VERSION='7.6.10' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
+NGINX_LIBATOMIC_VERSION='7.6.12' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
+NGINX_PCRE='y'               # Nginx specific pcre & pcre-jit support
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
 NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
+NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
@@ -682,7 +693,10 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.2'
+PHPSWOOLE_VER='4.8.5'
+PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
+PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
+PHPSWOOLE_SEVEN_ONE_VER='4.5.10' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
@@ -694,10 +708,13 @@ SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.4'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.5'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.7.4'      # MongoDB PHP version
+MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
+MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
+MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
+MONGODBPHP_EIGHT_VER='1.12.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
@@ -721,6 +738,9 @@ POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel
 POSTGRESQL_BRANCHVER='13'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+
+# Redis server
+REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
 ########################################################
 # Choice of installing MariaDB 5.2 via RPM or via MariaDB 5.2 CentOS YUM Repo
 # If MDB_YUMREPOINSTALL=y and MDB_INSTALL=n then MDB_VERONLY version 
@@ -755,7 +775,7 @@ MYSQL_INSTALL='n'            # Install official Oracle MySQL Server (MariaDB alt
 SENDMAIL_INSTALL='n'         # Install Sendmail (and mailx) set to y and POSTFIX_INSTALL=n for sendmail
 POSTFIX_INSTALL=y            # Install Postfix (and mailx) set to n and SENDMAIL_INSTALL=y for sendmail
 # Nginx
-NGINX_VERSION='1.21.4'       # Use this version of Nginx
+NGINX_VERSION='1.21.6'       # Use this version of Nginx
 NGINX_VHOSTSSL='y'            # enable centmin.sh menu 2 prompt to create self signed SSL vhost 2nd vhost conf
 NGINXBACKUP='y'
 NGINX_STAPLE_CACHE_OVERRIDE='n' # Enable will override Nginx OCSP stapling cache refresh time of 3600 seconds
@@ -776,11 +796,12 @@ VHOSTCTRL_AUTOPROTECTINC='y'
 ## Nginx SSL options
 # OpenSSL
 NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
+SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1l'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1l'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1l' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_VERSION='1.1.1m'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1m'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1m' # override version if persist config OPENSSL_VERSION variable is out of date
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
@@ -822,7 +843,8 @@ PCRE_SOURCEINSTALL='n'
 PCRE_VERSION='8.45'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.4'   # PHP extension for imagick
+IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.6.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
 MEMCACHED_INSTALL='y'          # Install Memcached
@@ -984,6 +1006,7 @@ fi
 # source "inc/mainmenu_cli.inc"
 # source "inc/ramdisk.inc"
 source "inc/fastmirrors.conf"
+source "inc/sync.inc"
 source "inc/qrencode.inc"
 source "inc/tcp.inc"
 source "inc/customrpms.inc"
@@ -2278,6 +2301,11 @@ if [[ "$PHPREDIS" = [yY] ]]; then
     redisinstall
 fi
 
+if [[ "$REDIS_SERVER_INSTALL" = [yY] ]]; then
+  echo "redis_server_install"
+  redis_server_install
+fi
+
 echo "mongodbinstall"
 mongodbinstall
 
@@ -2336,7 +2364,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
@@ -3540,7 +3568,7 @@ EOF
             cecho "--------------------------------------------------------" $boldyellow
             cecho "Check Nginx Version:" $boldyellow
             cecho "--------------------------------------------------------" $boldyellow
-            nginx -V
+            nginx -V 2>&1 | fold -w 80 -s
         echo ""
             cecho "--------------------------------------------------------" $boldyellow
             cecho "Check PHP-FPM Version:" $boldyellow

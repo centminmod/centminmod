@@ -10,8 +10,36 @@ modsecurity_install() {
     echo "build libmodsecurity..."
     # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
 
-    # force devtoolset-10 gcc usage
-      if [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    # force devtoolset gcc usage
+      if [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+        source /opt/rh/devtoolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
         unset CXX
@@ -128,7 +156,7 @@ modsecurity_install() {
     fi
     pushd "$DIR_TMP"
 
-    if [[ ! "$(/usr/local/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/bin/mmdblookup ]; then
+    if [[ ! "$(/usr/local/nginx-dep/bin/mmdblookup --version | awk '/version/ {print $3}' | sed -e 's|\.|00|g')" -lt '1004002' ]] || [ ! -f /usr/local/nginx-dep/bin/mmdblookup ]; then
       install_libmaxmindb
     fi
     
@@ -138,21 +166,23 @@ modsecurity_install() {
     git submodule init
     git submodule update
     ./build.sh
-    if [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
-      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig
-      ./configure
-      # ./configure --with-maxmind=/usr/local
-    elif [[ -f /usr/local/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [nN] ]]; then
-      ./configure --without-maxmind
+    if [[ -f /usr/local/nginx-dep/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [yY] ]]; then
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
+      ./configure --prefix=/usr/local/nginx-dep
+      # ./configure --prefix=/usr/local/nginx-dep --with-maxmind=/usr/local/nginx-dep
+    elif [[ -f /usr/local/nginx-dep/lib/libmaxminddb.so && "$NGINX_MODSECURITY_MAXMIND" = [nN] ]]; then
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
+      ./configure --prefix=/usr/local/nginx-dep --without-maxmind
     else
-      ./configure
+      export PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig
+      ./configure --prefix=/usr/local/nginx-dep
     fi
     make${MAKETHREADS}
     make install
     popd
 
-    if [[ -f /usr/local/modsecurity/lib/libmodsecurity.so ]] && [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
-        # MODSEC_VER=$(strings /usr/local/modsecurity/lib/libmodsecurity.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
+    if [[ -f /usr/local/nginx-dep/lib/libmodsecurity.so ]] && [[ "$NGINX_MODSECURITY" = [yY] && "$DYNAMIC_SUPPORT" = [yY] ]]; then
+        # MODSEC_VER=$(strings /usr/local/nginx-dep/lib/libmodsecurity.so | awk '/Apache\// {print $3}' | awk -F "/" '{print $2}')
         echo
         echo "setup MODSEC_OPT"
         pushd "$DIR_TMP"
@@ -178,7 +208,18 @@ modsecurity_install() {
       wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/modsecurity.conf-recommended
       wget -P /usr/local/nginx/modsec/ https://github.com/SpiderLabs/ModSecurity/raw/v3/master/unicode.mapping
       mv /usr/local/nginx/modsec/modsecurity.conf-recommended /usr/local/nginx/modsec/modsecurity.conf
-      # sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
+      if [[ "$NGINX_MODSECURITY_JSONLOGS" = [yY] ]]; then
+        # switch to ModSecurity JSON formatted logs
+        if [ ! "$(grep 'SecAuditLogFormat JSON' /usr/local/nginx/modsec/modsecurity.conf)" ]; then
+          sed -i 's|^SecRuleEngine DetectionOnly|SecRuleEngine On\nSecAuditLogFormat JSON|' /usr/local/nginx/modsec/modsecurity.conf
+          sed -i 's|^SecRuleEngine On|SecRuleEngine On\nSecAuditLogFormat JSON|' /usr/local/nginx/modsec/modsecurity.conf
+        fi
+      fi
+      # if [[ "$NGINX_MODSECURITY_DETECTONLY" = [nN] ]]; then
+      #   sed -i 's/SecRuleEngine DetectionOnly/SecRuleEngine On/' /usr/local/nginx/modsec/modsecurity.conf
+      # elif [[ "$NGINX_MODSECURITY_DETECTONLY" = [yY] ]]; then
+      #   sed -i 's/SecRuleEngine On/SecRuleEngine DetectionOnly/' /usr/local/nginx/modsec/modsecurity.conf
+      # fi
     fi
     if [ ! -f "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf" ]; then
       newowaspver='y'
@@ -186,9 +227,15 @@ modsecurity_install() {
       wget -4 "https://github.com/coreruleset/coreruleset/archive/v${MODSECURITY_OWASPVER}.tar.gz"
       tar xvzf "v${MODSECURITY_OWASPVER}.tar.gz"
       mv "coreruleset-${MODSECURITY_OWASPVER}" /usr/local/nginx
+      echo
       ls -lah "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}"
+      echo
       cp "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf.example" "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf"
+      cp "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf.example" "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/REQUEST-900-EXCLUSION-RULES-BEFORE-CRS.conf"
+      cp "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf.example" "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/RESPONSE-999-EXCLUSION-RULES-AFTER-CRS.conf"
+      echo
       ls -lah "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/"
+      echo
       popd
     fi
     if [[ ! -f /usr/local/nginx/modsec/main.conf || "$newowaspver" = [yY] ]]; then
@@ -232,6 +279,22 @@ EOF
       sed -i 's|^    modsecurity on;|    #modsecurity on;|g' /usr/local/nginx/conf/conf.d/virtual.conf
       sed -i 's|^    modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|    #modsecurity_rules_file \/usr\/local\/nginx\/modsec\/main.conf;|g' /usr/local/nginx/conf/conf.d/virtual.conf
     fi
+  if [[ "$NGINX_MODSECURITY" = [yY] ]]; then
+cat > /etc/logrotate.d/modsecurity <<EOF
+/var/log/modsec_audit.log
+{
+  daily
+  dateext
+  missingok
+  rotate 10
+  maxsize 500M
+  missingok
+  compress
+  delaycompress
+  notifempty
+}
+EOF
+  fi
   MODSEC_INSTALLED=y
   # DEVTOOLSETSEVEN='y'
   NGINX_DEVTOOLSETGCC='y'

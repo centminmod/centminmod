@@ -1045,7 +1045,7 @@ sslvhostsetup_mainhostname() {
 # generated will use the defined SECOND_IP=111.222.333.444 where
 # the IP is a secondary IP addressed added to the server.
 # You define SECOND_IP variable is centmin mod persistent config
-# file outlined at http://centminmod.com/upgrade.html#persistent
+# file outlined at https://centminmod.com/upgrade.html#persistent
 # you manually creat the file at /etc/centminmod/custom_config.inc
 # and add SECOND_IP=yoursecondary_IPaddress variable to it which
 # will be registered with nginx vhost generator routine so that 
@@ -1223,9 +1223,9 @@ cecho "dhparam file generation time: $DHPARAMTIME" $boldyellow
 # main hostname's ssl vhost at virual.ssl.conf
 cat > "${MAIN_HOSTNAMEVHOSTSSLFILE}"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_HTTP/2.html
+# read https://centminmod.com/nginx_configure_https_ssl_HTTP/2.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1432,7 +1432,7 @@ sslvhostsetup() {
 # generated will use the defined SECOND_IP=111.222.333.444 where
 # the IP is a secondary IP addressed added to the server.
 # You define SECOND_IP variable is centmin mod persistent config
-# file outlined at http://centminmod.com/upgrade.html#persistent
+# file outlined at https://centminmod.com/upgrade.html#persistent
 # you manually creat the file at /etc/centminmod/custom_config.inc
 # and add SECOND_IP=yoursecondary_IPaddress variable to it which
 # will be registered with nginx vhost generator routine so that 
@@ -1478,9 +1478,9 @@ if [[ "$HTTPSONLY" = 'https' && "$CHECKFORWP" = 'wp' ]]; then
 echo "[wp] create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1534,9 +1534,9 @@ if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
   if [[ ! "$(grep '^#x# HTTPS-DEFAULT' "/usr/local/nginx/conf/conf.d/$vhostname.ssl.conf")" ]]; then
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1565,9 +1565,9 @@ elif [ ! -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
 echo "create /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1678,9 +1678,9 @@ if [ -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
 elif [ ! -f "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf" ]; then
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_HTTP/2.html
+# read https://centminmod.com/nginx_configure_https_ssl_HTTP/2.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable

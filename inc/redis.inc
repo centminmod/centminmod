@@ -1,3 +1,44 @@
+redis_server_install() {
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$REDIS_SERVER_INSTALL" = [yY] ]]; then
+    {
+    pushd "${SCRIPT_DIR}/addons/"
+    # echo "Download to ${SCRIPT_DIR}/addons/redis-server-install.sh"
+    # wget -4 https://github.com/centminmod/centminmod-redis/raw/master/redis-install.sh -O ${SCRIPT_DIR}/addons/redis-server-install.sh
+    # chmod +x redis-server-install.sh
+    if [ -f "${SCRIPT_DIR}/addons/redis-server-install.sh" ]; then
+      echo "Run redis installer ${SCRIPT_DIR}/addons/redis-server-install.sh"
+      ${SCRIPT_DIR}/addons/redis-server-install.sh install
+      echo
+      echo "Redis Info"
+      redis-cli info server
+      echo
+    else
+      echo
+      echo "error: ${SCRIPT_DIR}/addons/redis-server-install.sh not found"
+      echo
+    fi
+    popd
+    } 2>&1 | tee -a "${CENTMINLOGDIR}/redis-server-install_${DT}.log"
+  fi
+}
+
+checkredis_server_install() {
+  # if redis-cli not installed, install it
+  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/redis-cli ]]; then
+    echo "*************************************************"
+    cecho "* Installing redis server" $boldgreen
+    echo "*************************************************"
+    echo "detected centmin.sh menu option 13 run"
+    echo "assumes you want to use redis PHP extension"
+    echo "but redis server isn't installed"
+    echo
+    echo "installing redis server..."
+    echo
+    redis_server_install
+    echo
+  fi
+}
+
 #######################################################
 checkredistar() {
 
@@ -49,7 +90,7 @@ redisinstall() {
     REDIS_SUBMENU=$1
 
     if [[ "$REDIS_SUBMENU" = 'submenu' ]]; then
-        REDIS_PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+        REDIS_PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
     fi
 
     PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`

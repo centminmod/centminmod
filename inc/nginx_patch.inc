@@ -290,14 +290,14 @@ ngx_hpack_patch() {
     echo "patching nginx http/2 full HPACK encoding for nginx 1.20.0"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
-  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le '1021004' ]]; then
+  elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le "$NGINX_HPACK_ALLOWED_VER" ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
     cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
     cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
     patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
     echo 
-    echo "patching nginx http/2 full HPACK encoding for nginx 1.21.3"
+    echo "patching nginx http/2 full HPACK encoding for nginx 1.21.5+"
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
@@ -333,6 +333,39 @@ ngx_httppush_patch() {
       echo "patching nginx http2 push for nginx 1.11.12+"
       popd
     fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
+ngx_fingerprint_patch() {
+  {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    NGINX_FINGERPRINT_BASE=$ngver
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    NGINX_FINGERPRINT_BASE=$NGINX_VERSION
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$DETECT_NGXVER" -ge '1021000' ]]; then
+      NGX_FINGERPRINT_DIR='nginx-ssl-fingerprint'
+      if [[ -d "${DIR_TMP}/${NGX_FINGERPRINT_DIR}" || ! -d "${DIR_TMP}/${NGX_FINGERPRINT_DIR}" ]]; then
+        rm -rf "${DIR_TMP}/${NGX_FINGERPRINT_DIR}"
+        pushd "${DIR_TMP}"
+        git clone https://github.com/centminmod/nginx-ssl-fingerprint
+        popd
+      fi
+      if [ ! -f nginx_fingerprint.patch ]; then
+          wget -4 https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/nginx.patch -O nginx_fingerprint.patch
+      fi
+      if [ -f nginx_fingerprint.patch ]; then
+        cecho "patching nginx for nginx-ssl-fingerprint module" $boldyellow
+        cecho "patch -p1 < nginx_fingerprint.patch" $boldyellow
+        patch -p1 < nginx_fingerprint.patch
+        echo 
+        echo "patching nginx for nginx-ssl-fingerprint module 1.21.x"
+      fi
   fi
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
@@ -612,7 +645,7 @@ patchnginx() {
      elif [[ "$DETECT_NGXVER" -ge '1020000' && "$DETECT_NGXVER" -le '1020001' ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
-     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le '1021004' ]]; then
+     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le "$NGINX_DYNAMICTLS_ALLOWED_VER" ]]; then
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
      fi
@@ -660,7 +693,7 @@ patchnginx() {
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
       fi
-     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le '1021004' ]]; then
+     elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le "$NGINX_DYNAMICTLS_ALLOWED_VER" ]]; then
       if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
         echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
         patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"

@@ -463,6 +463,7 @@ fi
 
 DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
 DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
 
 # if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] ; then
 if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1' ]] || [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1a' ]]; then
@@ -635,6 +636,34 @@ if [[ "$CLOUDFLARE_PATCHSSL" = [yY] && "$DETECTOPENSSL_ONEZERO" = '1.1' ]] && [[
         echo "######################################################################"
     fi
 fi # CLOUDFLARE_PATCHSSL
+
+if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+    if [ -f "$(which figlet)" ]; then
+         figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module Patch"
+     fi
+     echo "######################################################################"
+     echo "Patching OpenSSL 1.1.1 branch"
+     echo "######################################################################"
+     echo "patching OpenSSL for nginx-ssl-fingerprint module"
+     echo "######################################################################"
+     echo "DETECTOPENSSL_ONEONE=$DETECTOPENSSL_ONEONE"
+     NGX_FINGERPRINT_DIR='nginx-ssl-fingerprint'
+     if [ ! -f openssl_nginx_fingerprint.patch ]; then
+        wget -4 https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/openssl.1_1_1.patch -O openssl_nginx_fingerprint.patch
+     fi
+     if [ -f openssl_nginx_fingerprint.patch ]; then
+         cecho "patching OpenSSL for nginx-ssl-fingerprint module" $boldyellow
+         cecho "patch -p1 < openssl_nginx_fingerprint.patch" $boldyellow
+         patch -p1 < openssl_nginx_fingerprint.patch
+         echo  "######################################################################"
+         echo  "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
+         echo  "######################################################################"
+         if [ -f "$(which figlet)" ]; then
+             figlet -ckf standard "OpenSSL 1.1.1 branch nginx-ssl-fingerprint module patched"
+         fi
+     fi
+fi
+
   } 2>&1 | tee "${CENTMINLOGDIR}/patch_opensslpatches_${DT}.log"
 }
 
@@ -643,7 +672,7 @@ crypto_gcc() {
       if [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-11/enable
-        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -659,7 +688,7 @@ crypto_gcc() {
       elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
-        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -675,7 +704,7 @@ crypto_gcc() {
       elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
-        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -690,7 +719,7 @@ crypto_gcc() {
         fi
       elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
         source /opt/gcc9/enable
-        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -721,7 +750,7 @@ crypto_gcc() {
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
-        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -737,7 +766,7 @@ crypto_gcc() {
       elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-11/enable
-        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -753,7 +782,7 @@ crypto_gcc() {
       elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
-        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -769,7 +798,7 @@ crypto_gcc() {
       elif [[ "$CENTOS_SIX" -eq '6' && "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-10/enable
-        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result'
+        CRYPTODEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
         CRYPTODEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -785,7 +814,7 @@ crypto_gcc() {
       elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
-        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
         CRYPTODEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0'
         which gcc
         which g++
@@ -958,6 +987,11 @@ fi
 
 installopenssl() {
 
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /usr/share/perl5/vendor_perl/IPC/Cmd.pm ]]; then
+    # required for OpenSSL 3.x
+    yum -y install perl-IPC-Cmd
+  fi
+
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   OPENSSL_VERSION_CUSTOMCONFIG=$(awk -F "'" '/^OPENSSL_VERSION=/ {print $2}' "${CONFIGSCANBASE}/custom_config.inc")
   if [[ "${OPENSSL_VERSION}" = '1.1.0j' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0j' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0i' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0h' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0g' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0f' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0e' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0d' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0c' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0b' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0a' ]]; then
@@ -1020,6 +1054,7 @@ fi
     fi
     DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
     DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
+    DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(TZ=UTC date +%s.%N)
 
@@ -1098,6 +1133,8 @@ fi
         echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
     elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+      OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
+      if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
         opensslinstallstarttime=$(TZ=UTC date +%s.%N)
 
         if [ -f "$(which figlet)" ]; then
@@ -1175,6 +1212,9 @@ fi
                 fi
                 echo "./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}"
                 ./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}
+            elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1224,6 +1264,9 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+      else
+        echo "Skip OpenSSL Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
+      fi
     elif [[ "$BORINGSSL_SWITCH" = [yY] ]]; then
         boringsslinstallstarttime=$(TZ=UTC date +%s.%N)
         crypto_gcc

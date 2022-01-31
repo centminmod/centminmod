@@ -132,7 +132,7 @@ echo "
 * Getting Started Guide - https://centminmod.com/getstarted.html
 * Centmin Mod FAQ - https://centminmod.com/faq.html
 * Centmin Mod Config Files - https://centminmod.com/configfiles.html
-* Change Log - https://centminmod.com/changelog.html
+* Centmin Mod Blog - https://blog.centminmod.com
 * Community Forums https://community.centminmod.com  [ << Register ]
 ===============================================================================
 "

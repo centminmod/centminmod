@@ -3,7 +3,7 @@ libheif_install() {
         if [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
             source /opt/rh/devtoolset-11/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread'
             export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
             export CXXFLAGS="-fPIC"
         fi
@@ -11,7 +11,7 @@ libheif_install() {
         if [[ -f /opt/rh/devtoolset-10/root/usr/bin/gcc || -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
             source /opt/rh/devtoolset-10/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
             export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
             export CXXFLAGS="-fPIC"
         fi
@@ -81,6 +81,16 @@ libheif_install() {
 }
 
 checkphpext() {
+
+  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+    # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
+    # PHP 5.x requires imagick <=3.4.4
+    IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"
+    PHPEXT_IMAGICKLINKFILE="imagick-${IMAGICKPHP_VER}.tgz"
+    PHPEXT_IMAGICKLINK="https://pecl.php.net/get/${PHPEXT_IMAGICKLINKFILE}"
+    PHPEXT_IMAGICKLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/imagick/${PHPEXT_IMAGICKLINKFILE}"
+  fi
+  
     cecho "Check for php extensions" $boldyellow
     if [[ ! -f "${DIR_TMP}/imagick-${IMAGICKPHP_VER}.tgz" || ! -d "${DIR_TMP}/imagick-${IMAGICKPHP_VER}" ]]; then
         echo "Downloading imagick extension"
@@ -144,6 +154,10 @@ checkimagicksys() {
         fi
     else
         YUMDNFBIN='yum'
+    fi
+
+    if [ -z "$(rpm -qa open-sans-fonts)" ]; then
+        $YUMDNFBIN -y install open-sans-fonts
     fi
 
     # whether to skip ImageMagick YUM updates
@@ -293,10 +307,10 @@ imagickinstall() {
     echo "cd $DIR_TMP"
     cd $DIR_TMP
 
-php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
-php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2 | egrep -w '8.0'
+php-config --version | cut -d . -f1,2 | egrep -w '8.0|8.1'
 PHPEIGHT_CHECKVER=$?
 echo $PHPEIGHT_CHECKVER
 

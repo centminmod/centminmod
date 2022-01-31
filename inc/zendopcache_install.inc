@@ -12,9 +12,9 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
+OPSALT=$(/usr/bin/openssl rand -base64 11 | tr -dc 'a-zA-Z0-9')
 OPUSER=$(echo "opadmin${OPSALT}")
-OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
+OPPASS=$(/usr/bin/openssl rand -base64 23 | tr -dc 'a-zA-Z0-9')
 
   echo ""
   cecho "Creating htpasswd_opcache user/pass..." $boldyellow
@@ -85,7 +85,7 @@ zopcacheinstall() {
 
     cd $DIR_TMP
 
-PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 PHPMVER=$(echo "$PHP_VERSION" | cut -d . -f1,2)
 PHPMUVER=$(echo "$phpver" | cut -d . -f1,2)
 

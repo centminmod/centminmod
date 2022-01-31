@@ -12,9 +12,9 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
+OPSALT=$(/usr/bin/openssl rand -base64 11 | tr -dc 'a-zA-Z0-9')
 OPUSER=$(echo "opadmin${OPSALT}")
-OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
+OPPASS=$(/usr/bin/openssl rand -base64 23 | tr -dc 'a-zA-Z0-9')
 
   echo ""
   cecho "Creating htpasswd_opcache user/pass..." $boldyellow
@@ -177,9 +177,9 @@ gethtpasswdsh
   else
     hname=$(hostname -f)
   fi
-OPSALT=$(openssl rand 10 -base64 | tr -dc 'a-zA-Z0-9')
+OPSALT=$(/usr/bin/openssl rand -base64 11 | tr -dc 'a-zA-Z0-9')
 OPUSER=$(echo "opadmin${OPSALT}")
-OPPASS=$(openssl rand 22 -base64 | tr -dc 'a-zA-Z0-9')
+OPPASS=$(/usr/bin/openssl rand -base64 23 | tr -dc 'a-zA-Z0-9')
 
 N=$(od -vAn -N8 -tx < /dev/urandom | sed -e 's/\s//g')
 if [[ -f /usr/local/nginx/html/opcache.php ]]; then

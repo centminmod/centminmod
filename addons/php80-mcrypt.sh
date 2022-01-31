@@ -15,7 +15,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 CONFIGSCANDIR='/etc/centminmod/php.d'
 DIR_TMP='/svr-setup'
-PHPCURRENTVER=$(php -v 2>&1 | grep -v 'PHP Warning' | awk -F " " '{print $2}' | head -n1 | cut -d . -f1,2)
+PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 #############################################################
 

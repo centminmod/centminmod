@@ -466,6 +466,8 @@ EOF
 cecho "*************************************************" $boldgreen
 cecho "Fixing rpmforge.repo YUM Priorities" $boldgreen
 cecho "*************************************************" $boldgreen
+# disable rpmforge
+sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
 cat /etc/yum.repos.d/rpmforge.repo
 echo ""
 fi

@@ -53,7 +53,7 @@ installredisserver() {
 }
 
 dbsetup() {
-  SALT=$(openssl rand 12 -base64 | tr -dc 'a-zA-Z0-9')
+  SALT=$(/usr/bin/openssl rand -base64 14 | tr -dc 'a-zA-Z0-9')
   DBN=$RANDOM
   DBNB=$RANDOM
   DBNC=$RANDOM
@@ -156,10 +156,10 @@ elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_modu
   #HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
   #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 else
-  HTTPTWO=n
-  LISTENOPT='ssl spdy'
-  COMP_HEADER='spdy_headers_comp 5'
-  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO=y
+  LISTENOPT='ssl http2'
+  COMP_HEADER='#spdy_headers_comp 5'
+  SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl ]; then
@@ -336,7 +336,7 @@ pureftpinstall
 # generated will use the defined SECOND_IP=111.222.333.444 where
 # the IP is a secondary IP addressed added to the server.
 # You define SECOND_IP variable is centmin mod persistent config
-# file outlined at http://centminmod.com/upgrade.html#persistent
+# file outlined at https://centminmod.com/upgrade.html#persistent
 # you manually creat the file at /etc/centminmod/custom_config.inc
 # and add SECOND_IP=yoursecondary_IPaddress variable to it which
 # will be registered with nginx vhost generator routine so that 
@@ -352,8 +352,8 @@ elif [[ "$SECOND_IP" ]]; then
 fi
 
 wpinstall
-  WPSALT=$(openssl rand 19 -base64 | tr -dc 'a-zA-Z0-9')
-  WPSALTB=$(openssl rand 11 -base64 | tr -dc 'a-zA-Z0-9')
+  WPSALT=$(/usr/bin/openssl rand -base64 21 | tr -dc 'a-zA-Z0-9')
+  WPSALTB=$(/usr/bin/openssl rand -base64 14 | tr -dc 'a-zA-Z0-9')
   WPN=$RANDOM
   WPNB=$RANDOM
   WPADMINUSER="z${WPSALT}wp${WPNB}"
@@ -728,11 +728,11 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
 <p>Useful Centmin Mod info and links to bookmark.</p>
 
 <ul>
-  <li>Getting Started Guide - <a href="http://centminmod.com/getstarted.html" target="_blank">http://centminmod.com/getstarted.html</a></li>
-  <li>Latest Centmin Mod version - <a href="http://centminmod.com" target="_blank">http://centminmod.com</a></li>
-  <li>Centmin Mod FAQ - <a href="http://centminmod.com/faq.html" target="_blank">http://centminmod.com/faq.html</a></li>
-  <li>Change Log - <a href="http://centminmod.com/changelog.html" target="_blank">http://centminmod.com/changelog.html</a></li>
-  <li>Google+ Page latest news <a href="http://centminmod.com/gpage" target="_blank">http://centminmod.com/gpage</a></li>
+  <li>Getting Started Guide - <a href="https://centminmod.com/getstarted.html" target="_blank">https://centminmod.com/getstarted.html</a></li>
+  <li>Latest Centmin Mod version - <a href="https://centminmod.com" target="_blank">https://centminmod.com</a></li>
+  <li>Centmin Mod FAQ - <a href="https://centminmod.com/faq.html" target="_blank">https://centminmod.com/faq.html</a></li>
+  <li>Change Log - <a href="https://centminmod.com/changelog.html" target="_blank">https://centminmod.com/changelog.html</a></li>
+  <li>Google+ Page latest news <a href="https://centminmod.com/gpage" target="_blank">https://centminmod.com/gpage</a></li>
   <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
   <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
   <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
@@ -753,8 +753,8 @@ find "/home/nginx/domains/$vhostname" -type d -exec chmod g+s {} \;
 if [[ "$disablepwdprotect" != [yY] ]]; then
   # wp-login.php password protection
   if [[ -f /usr/local/nginx/conf/htpasswd.sh && ! -f /home/nginx/domains/$vhostname/htpasswd_wplogin ]]; then
-    HTWPLOGINSALT=$(openssl rand 14 -base64 | tr -dc 'a-zA-Z0-9')
-    HTWPLOGINSALTB=$(openssl rand 20 -base64 | tr -dc 'a-zA-Z0-9')
+    HTWPLOGINSALT=$(/usr/bin/openssl rand -base64 16 | tr -dc 'a-zA-Z0-9')
+    HTWPLOGINSALTB=$(/usr/bin/openssl rand -base64 23 | tr -dc 'a-zA-Z0-9')
     HTWPLOGIN=$RANDOM
     HTWPLOGINB=$RANDOM
     HTUSER="u${HTWPLOGINSALT}x${HTWPLOGIN}"
@@ -1226,7 +1226,7 @@ fi
 # main non-ssl vhost at yourdomain.com.conf for Wordpress
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable
@@ -1344,9 +1344,9 @@ ENSS
 # separate ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1494,7 +1494,7 @@ else
 
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable
@@ -1659,7 +1659,7 @@ location ~ ^${WPSUBDIR}/wp-content/uploads/ {
   #add_header X-Robots-Tag "noindex, nofollow";
   location ~* ^${WPSUBDIR}/wp-content/uploads/(.+/)?(.+)\.(png|jpe?g)\$ {
     expires 30d;
-    add_header Vary "Accept";
+    #add_header Vary "Accept";
     add_header Cache-Control "public";
     try_files \$uri\$webp_extension \$uri =404;
   }

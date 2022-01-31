@@ -4,7 +4,7 @@
 # https://centminmod.com
 # Creating a custom_config.inc file it will override default setting for 
 # upgrades and software installs set in centmin.sh.
-# Persistent config outlined at http://centminmod.com/upgrade.html#persistent
+# Persistent config outlined at https://centminmod.com/upgrade.html#persistent
 # Location:  /etc/centminmod/custom_config.inc
 
 EMAIL=''          # Server notification email address enter only 1 address
@@ -68,6 +68,8 @@ NGINX_NOFATLTO_OBJECTS='n'      # enable -fno-fat-lto-objects flag for nginx bui
 NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
+NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
+MOLD_VERSION='1.0.1'          # mold linker rpm version
 
 # Nginx Dynamic Module Switches
 NGXDYNAMIC_MANUALOVERRIDE='n' # set to 'y' if you want to manually drop in nginx dynamic modules into /usr/local/nginx/modules
@@ -131,11 +133,16 @@ NGINX_COMPILE_EXPORT='y'     # nginx compile export symbols when mixing nginx st
 NGINX_ZERODT='n'             # nginx zero downtime reloading on nginx upgrades
 NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by editing value i.e. http://openresty-reference.readthedocs.io/en/latest/Lua_Nginx_API/#print
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
+NGINX_HPACK_ALLOWED_VER='1021006'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
+NGINX_DYNAMICTLS_ALLOWED_VER='1021006' # Max allowed Nginx version for Nginx Dynamic TLS patch support
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
+NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
 NGINX_HTTPPUSH='n'           # Nginx http/2 push patch https://community.centminmod.com/threads/11910/
 NGINX_ZLIBNG='n'             # 64bit OS only for Nginx compiled against zlib-ng https://github.com/Dead2/zlib-ng
+NGINX_TLS_FINGERPRINT='n'    # JA3 fingerprint module https://github.com/centminmod/nginx-ssl-fingerprint
 NGINX_MODSECURITY='n'        # modsecurity module support https://github.com/SpiderLabs/ModSecurity/wiki/Reference-Manual#Installation_for_NGINX
+NGINX_MODSECURITY_JSONLOGS='n' # enable to switch to JSON log format, to switch back manually edit /usr/local/nginx/modsec/modsecurity.conf
 NGINX_MODSECURITY_MAXMIND='y' # modsecurity built with libmaxminddb is failing to compile so disable it in favour of GeoIP legacy
 NGINX_REALIP='y'             # http://nginx.org/en/docs/http/ngx_http_realip_module.html
 NGINX_RDNS='n'               # https://github.com/flant/nginx-http-rdns
@@ -177,18 +184,21 @@ NGINX_LIBBROTLISTATIC='n'    # only enable if you want pre-compress brotli suppo
 NGINX_BROTLIDEP_UPDATE='n'   # experimental manual update of Google Brotli dependency in ngx_brotli
 NGINX_PAGESPEED='n'          # Install ngx_pagespeed
 NGINX_PAGESPEEDGITMASTER='n' # Install ngx_pagespeed from official github master instead  
-NGXPGSPEED_VER='1.13.35.2-stable'
-NGINX_PAGESPEEDPSOL_VER='1.13.35.2'
+NGXPGSPEED_VER='1.14.33.1-RC1'
+NGINX_PAGESPEEDPSOL_VER='1.14.36.1'
 NGINX_PASSENGER='n'          # Install Phusion Passenger requires installing addons/passenger.sh before hand
 NGINX_WEBDAV='n'             # Nginx WebDAV and nginx-dav-ext-module
 NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
 NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
-NGINX_LIBATOMIC_VERSION='7.6.10' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
+NGINX_LIBATOMIC_VERSION='7.6.12' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
 NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
+NGINX_PCRE='y'               # Nginx specific pcre & pcre-jit support
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
 NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Nginx
+NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
+NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
 NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
@@ -274,11 +284,17 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 SHORTCUTS='y'                # shortcuts
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.2'
+PHPSWOOLE_VER='4.8.5'
+PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
+PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
+PHPSWOOLE_SEVEN_ONE_VER='4.5.10' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
 IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+
+# Redis server
+REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install
 ##################################
 ## Nginx SSL options
 
@@ -290,11 +306,12 @@ VHOSTCTRL_AUTOPROTECTINC='y'
 
 # OpenSSL
 NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
+SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1l'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1l'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1l' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_VERSION='1.1.1m'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1m'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1m' # override version if persist config OPENSSL_VERSION variable is out of date
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
@@ -349,12 +366,16 @@ MEMCACHEDPHP_SEVENVER='3.1.5' # Memcached PHP 7 only extension version
 LIBMEMCACHED_YUM='y'          # switch to YUM install instead of source compile
 LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
+
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.4'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.5'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
-MONGODBPHP_VER='1.7.4'      # MongoDB PHP version
+MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
+MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
+MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
+MONGODBPHP_EIGHT_VER='1.12.0'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'       # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
@@ -430,7 +451,7 @@ LETSENCRYPT_DETECT='n'
 # by default. The service is still installed but disabled
 # by default and can be re-enabled with commands:
 # service servicename start; chkconfig servicename on
-# From http://centminmod.com/faq.html Question #25
+# From https://centminmod.com/faq.html Question #25
 CMSDEBUG='n'                  # leave as CMSDEBUG='n' so the below 5 services actually get disabled
 NSD_DISABLED='n'              # when set to ='y'NSD disabled by default with chkconfig off
 MEMCACHED_DISABLED='n'        # when set to ='y' Memcached server disabled by default via chkconfig off

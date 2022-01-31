@@ -1,5 +1,5 @@
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable

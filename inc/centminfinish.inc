@@ -110,10 +110,34 @@ echo ""
   echo "PHP_INSTALL='n' set"
   fi
 
+  if [ -f /usr/bin/php81 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 8.1 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php81 -v
+letswait
+  fi
+  if [ -f /usr/bin/php80 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 8.0 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php80 -v
+letswait
+  fi
+  if [ -f /usr/bin/php74 ]; then
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check PHP-FPM 7.4 Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  /usr/bin/php74 -v
+letswait
+  fi
   if [ -f /usr/bin/php73 ]; then
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "Check PHP-FPM 7.2 Version:" $boldyellow
+  cecho "Check PHP-FPM 7.3 Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   /usr/bin/php73 -v
 letswait
@@ -183,7 +207,7 @@ if [[ "$NGINX_PAGESPEED" = [yY] ]]; then
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Check ngx_pagespeed Control Script:" $boldyellow
-  cecho "http://centminmod.com/nginx_ngx_pagespeed.html" $boldyellow
+  cecho "https://centminmod.com/nginx_ngx_pagespeed.html" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
 /usr/bin/pscontrol
 letswait
@@ -252,6 +276,21 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
   cecho "In future to re-enable Memcached server service type these 2 commands:" $boldyellow
   echo "service memcached start"
   echo "chkconfig memcached on"
+  cecho "--------------------------------------------------------" $boldyellow
+fi
+
+if [[ "$REDIS_DISABLED" = [yY] ]]; then
+
+  echo ""
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "Stopping Redis server service:" $boldyellow
+  cmservice redis stop
+  cecho "Disabling Redis server service:" $boldyellow
+  cmchkconfig redis stop
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "In future to re-enable Redis server service type these 2 commands:" $boldyellow
+  echo "service redis start"
+  echo "chkconfig redis on"
   cecho "--------------------------------------------------------" $boldyellow
 fi
 
@@ -369,7 +408,7 @@ echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.l
     echo "*************************************************"
 
 if [[ "$TS_INSTALL" = [yY] ]]; then
-  curl -s "${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
+  curl -4s "${CURL_TIMEOUTS}" http://check.centminmod.com/utctime > "${CENTMINLOGDIR}/install.utc.time.log" 2>&1
 fi
 
 }

@@ -91,16 +91,35 @@ bin_backup() {
     NGXLTO_LABEL=""
     NGXFATLTO_LABEL=""
   fi
+
+  # check if nginx binary built with lto & fat-lto-objects
+  CHECK_NGINX_PCRETWO_BUILT=$(ldd $(which nginx) | grep -w -o 'libpcre2-8' | uniq)
+  if [[ "$CHECK_NGINX_PCRETWO_BUILT" = 'libpcre2-8' ]]; then
+    NGX_PCRETWO_LABEL='-pcre2'
+    PCRE_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libpcre2-8/ {print $3}'))
+    PCRE_LIBRARY_WILDCARD='libpcre2-8'
+    LIBSATOMICOPS_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libatomic/ {print $3}'))
+    LIBSATOMICOPS_LIBRARY_WILDCARD='libatomic_ops'
+  else
+    NGX_PCRETWO_LABEL="-pcre"
+    PCRE_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libpcre/ {print $3}'))
+    PCRE_LIBRARY_WILDCARD='libpcre'
+    LIBSATOMICOPS_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libatomic/ {print $3}'))
+    LIBSATOMICOPS_LIBRARY_WILDCARD='libatomic_ops'
+  fi
   
-  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}${NGXLTO_LABEL}${NGXFATLTO_LABEL}"
+  backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}${NGXLTO_LABEL}${NGXFATLTO_LABEL}${NGX_PCRETWO_LABEL}"
   if [ ! -d "${NGINXBIN_BACKUPDIR}/${backup_tag}" ]; then
     echo "--------------------------------------------------------"
     echo "backup current Nginx binary and dynamic modules"
     echo "--------------------------------------------------------"
     echo "backup started..."
     mkdir -p "${NGINXBIN_BACKUPDIR}/${backup_tag}/bin"
+    mkdir -p "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
     cp -af "$NGINXBIN_PATH" "${NGINXBIN_BACKUPDIR}/${backup_tag}/bin"
     cp -af "$NGINXBIN_MODULESDIR" "${NGINXBIN_BACKUPDIR}/${backup_tag}"
+    cp -af ${PCRE_LIBRARY_PATHDIR}/${PCRE_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
+    cp -af ${LIBSATOMICOPS_LIBRARY_PATHDIR}/${LIBSATOMICOPS_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
     # remove .so.old older dynamic nginx modules from backup
     # https://community.centminmod.com/posts/66124/
     if [ -d "${NGINXBIN_BACKUPDIR}/${backup_tag}/modules" ]; then
@@ -111,7 +130,7 @@ bin_backup() {
     if [[ "$verbose" != 'quiet' ]]; then
     echo "--------------------------------------------------------"
       if [ -f $(which tree) ]; then
-        tree -A "${NGINXBIN_BACKUPDIR}/${backup_tag}"
+        tree "${NGINXBIN_BACKUPDIR}/${backup_tag}"
       else
         ls -lahR "${NGINXBIN_BACKUPDIR}/${backup_tag}"
       fi
@@ -137,6 +156,21 @@ bin_restore() {
     if [ "$1" ]; then
       backup_path="$1"
     fi
+    # check if nginx binary built with lto & fat-lto-objects
+    CHECK_NGINX_PCRETWO_BUILT=$(ldd ${backup_path}/bin/nginx | grep -w -o 'libpcre2-8' | uniq)
+    if [[ "$CHECK_NGINX_PCRETWO_BUILT" = 'libpcre2-8' ]]; then
+      NGX_PCRETWO_LABEL='-pcre2'
+      PCRE_LIBRARY_PATHDIR=$(dirname $(ldd ${backup_path}/bin/nginx | awk '/libpcre2-8/ {print $3}'))
+      PCRE_LIBRARY_WILDCARD='libpcre2-8'
+      LIBSATOMICOPS_LIBRARY_PATHDIR=$(dirname $(ldd ${backup_path}/bin/nginx | awk '/libatomic/ {print $3}'))
+      LIBSATOMICOPS_LIBRARY_WILDCARD='libatomic_ops'
+    else
+      NGX_PCRETWO_LABEL="-pcre"
+      PCRE_LIBRARY_PATHDIR=$(dirname $(ldd ${backup_path}/bin/nginx | awk '/libpcre/ {print $3}'))
+      PCRE_LIBRARY_WILDCARD='libpcre'
+      LIBSATOMICOPS_LIBRARY_PATHDIR=$(dirname $(ldd ${backup_path}/bin/nginx | awk '/libatomic/ {print $3}'))
+      LIBSATOMICOPS_LIBRARY_WILDCARD='libatomic_ops'
+    fi
     echo "--------------------------------------------------------"
     echo "Restore Nginx binary/module from backups"
     echo "--------------------------------------------------------"
@@ -149,7 +183,7 @@ bin_restore() {
       echo "You entered $backup_path"
       echo
       if [ -f $(which tree) ]; then
-        tree -A "$backup_path"
+        tree "$backup_path"
       else
         ls -lahR "$backup_path"
       fi
@@ -170,6 +204,14 @@ bin_restore() {
             echo "cp -af ${backup_path}/bin/nginx $NGINXBIN_PATH"
             cp -af "${backup_path}/bin/nginx" "$NGINXBIN_PATH"
             ls -lah "$NGINXBIN_PATH"
+          fi
+          if [ -d "${backup_path}/libs" ]; then
+            echo "cp -af ${backup_path}/libs/* $PCRE_LIBRARY_PATHDIR"
+            cp -af ${PCRE_LIBRARY_PATHDIR}/${PCRE_LIBRARY_WILDCARD}.* "$PCRE_LIBRARY_PATHDIR"
+            ls -lah "$PCRE_LIBRARY_PATHDIR" | grep "$PCRE_LIBRARY_WILDCARD"
+            echo "cp -af ${backup_path}/libs/* $LIBSATOMICOPS_LIBRARY_PATHDIR"
+            cp -af ${LIBSATOMICOPS_LIBRARY_PATHDIR}/${LIBSATOMICOPS_LIBRARY_WILDCARD}.* "$LIBSATOMICOPS_LIBRARY_PATHDIR"
+            ls -lah "$LIBSATOMICOPS_LIBRARY_PATHDIR" | grep "$LIBSATOMICOPS_LIBRARY_WILDCARD"
           fi
           if [ -d "${backup_path}/modules" ]; then
             echo

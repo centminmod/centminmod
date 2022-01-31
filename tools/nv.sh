@@ -178,10 +178,10 @@ elif [[ "$(nginx -V 2>&1 | grep -Eo 'with-http_v2_module')" = 'with-http_v2_modu
   #HTTPTWO_MAXHEADERSIZE='http2_max_header_size 32k;'
   #HTTPTWO_MAXREQUESTS='http2_max_requests 50000;'
 else
-  HTTPTWO=n
-  LISTENOPT='ssl spdy'
-  COMP_HEADER='spdy_headers_comp 5'
-  SPDY_HEADER='add_header Alternate-Protocol  443:npn-spdy/3;'
+  HTTPTWO=y
+  LISTENOPT='ssl http2'
+  COMP_HEADER='#spdy_headers_comp 5'
+  SPDY_HEADER='#add_header Alternate-Protocol  443:npn-spdy/3;'
 fi
 
 if [ ! -d "$CUR_DIR" ]; then
@@ -652,7 +652,7 @@ fi
 # generated will use the defined SECOND_IP=111.222.333.444 where
 # the IP is a secondary IP addressed added to the server.
 # You define SECOND_IP variable is centmin mod persistent config
-# file outlined at http://centminmod.com/upgrade.html#persistent
+# file outlined at https://centminmod.com/upgrade.html#persistent
 # you manually creat the file at /etc/centminmod/custom_config.inc
 # and add SECOND_IP=yoursecondary_IPaddress variable to it which
 # will be registered with nginx vhost generator routine so that 
@@ -988,7 +988,7 @@ fi
 # main non-ssl vhost at yourdomain.com.conf
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<ENSS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable
@@ -1070,9 +1070,9 @@ fi
 # single ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESX
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1168,9 +1168,9 @@ elif [[ "$sslconfig" = 'yd' ]]; then
 # single ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1265,9 +1265,9 @@ else
 # separate ssl vhost at yourdomain.com.ssl.conf
 cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read http://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1372,7 +1372,7 @@ fi
 
 cat > "/usr/local/nginx/conf/conf.d/$vhostname.conf"<<END
 # Centmin Mod Getting Started Guide
-# must read http://centminmod.com/getstarted.html
+# must read https://centminmod.com/getstarted.html
 
 # redirect from non-www to www 
 # uncomment, save file and restart Nginx to enable

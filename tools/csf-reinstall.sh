@@ -507,7 +507,6 @@ additional_blocks() {
   csf -d 93.174.95.106 battery.census.shodan.io
   csf -d 198.20.87.96 border.census.shodan.io
   csf -d 198.20.87.97 border.census.shodan.io
-  csf -d 198.20.87.98 border.census.shodan.io
   csf -d 198.20.87.99 border.census.shodan.io
   csf -d 198.20.87.100 border.census.shodan.io
   csf -d 198.20.87.101 border.census.shodan.io
@@ -521,10 +520,7 @@ additional_blocks() {
   csf -d 80.82.77.33 sky.census.shodan.io
   csf -d 80.82.77.139 dojo.census.shodan.io
   csf -d 66.240.205.34 malware-hunter.census.shodan.io
-  csf -d 93.120.27.62 lavender.mrtaggy.com
   csf -d 188.138.9.50 atlantic481.serverprofi24.com
-  csf -d 85.25.43.94 atlantic756.dedicatedpanel.com
-  csf -d 85.25.103.50 atlantic836.serverprofi24.com
   # whitelisting IPs for downloads/services Centmin Mod relies on
   csf --profile backup cmm-b4-whitelist
   # whitelist CSF Firewall's download url otherwise unable to download CSF Firewall updates

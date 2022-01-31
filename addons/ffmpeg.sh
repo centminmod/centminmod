@@ -42,9 +42,9 @@ ENABLE_LIBASS='y'
 ENABLE_ZIMG='y'
 ENABLE_OPENCV='n'
 # http://downloads.xiph.org/releases/ogg/
-LIBOGG_VER='1.3.4'
+LIBOGG_VER='1.3.5'
 # http://downloads.xiph.org/releases/vorbis/
-LIBVORBIS_VER='1.3.6'
+LIBVORBIS_VER='1.3.7'
 GD_ENABLE='n'
 NASM_SOURCEINSTALL='y'
 NASM_VER='2.14'
