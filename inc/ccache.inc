@@ -11,27 +11,55 @@ if [ ! -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
-else
+elif [ -f /usr/bin/sar ]; then
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi

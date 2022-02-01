@@ -181,6 +181,12 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [ -f /etc/almalinux-release ]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
+  CENTOS_EIGHT='8'
+  ALMALINUX_EIGHT='8'
+fi
+
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""
@@ -912,8 +918,9 @@ CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
-WGET_VERSION='1.20.3'
-WGET_VERSION_SEVEN='1.20.3'
+WGET_VERSION='1.21.2'
+WGET_VERSION_SEVEN='1.21.2'
+WGET_VERSION_EIGHT='1.21.2'
 ###############################################################
 # cloudflare authenticated origin pull cert
 # setup https://community.centminmod.com/threads/13847/
@@ -1027,6 +1034,7 @@ source "inc/questions.inc"
 source "inc/downloads_centosfive.inc"
 source "inc/downloads_centossix.inc"
 source "inc/downloads_centosseven.inc"
+source "inc/downloads_centoseight.inc"
 source "inc/downloadlinks.inc"
 source "inc/libzip.inc"
 source "inc/downloads.inc"
@@ -1287,15 +1295,20 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 
   # enable CentOS 8 PowerTools repo for -devel packages
+  if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
+    reponame_powertools=powertools
+  else
+    reponame_powertools=PowerTools
+  fi
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install dnf-utils
-    yum-config-manager --enable PowerTools
+    yum -q -y install yum-utils
+    yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
-    yum-config-manager --enable PowerTools
+    yum-config-manager --enable $reponame_powertools
   fi
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mysql php:7.2
+  yum -q -y module disable nginx mariadb mysql php glpi composer redis:5
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs
@@ -1388,7 +1401,7 @@ EOF
   fi
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -1439,27 +1452,55 @@ if [ ! -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
-else
+elif [ -f /usr/bin/sar ]; then
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
     SARCALL='/usr/lib64/sa/sa1'
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi

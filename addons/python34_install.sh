@@ -70,6 +70,12 @@ fi
 if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
     CENTOS_SIX='6'
 fi
+
+if [ -f /etc/almalinux-release ]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
+  CENTOS_EIGHT='8'
+  ALMALINUX_EIGHT='8'
+fi
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -169,7 +175,7 @@ if [[ "$(rpm -qa python34u)" ]]; then
   # install epel python34
   yum -y install python34 python34-devel python34-pip python34-setuptools python34-tools python34-libs python34-tkinter
 fi
-if [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
+if [[ "$CENTOS_SEVEN" = '7' ]] && [[ ! "$(rpm -qa cmake3)" || ! "$(rpm -qa cmake3-data)" ]]; then
   # reinstall removed dependencies from above removed ius community packages
   yum -y install cmake3 cmake3-data
 fi

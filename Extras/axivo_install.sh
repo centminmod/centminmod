@@ -39,6 +39,12 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [ -f /etc/almalinux-release ]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
+  CENTOS_EIGHT='8'
+  ALMALINUX_EIGHT='8'
+fi
+
 # Setup Colours
 black='\E[30;40m'
 red='\E[31;40m'

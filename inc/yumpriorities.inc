@@ -294,7 +294,7 @@ EOF
 
 else
         # check if CentOS-Base.repo is actually used
-        if [[ "$(grep -q '^#\[base\]$' /etc/yum.repos.d/CentOS-Base.repo; echo $?)" != '0' ]]; then
+        if [[ -f /etc/yum.repos.d/CentOS-Base.repo && "$(grep -q '^#\[base\]$' /etc/yum.repos.d/CentOS-Base.repo; echo $?)" != '0' ]]; then
         #centos repo priorities
         cp -p /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.OLD
         
@@ -439,12 +439,40 @@ fi
 fi # repo file check
 }
 
+yumpriorepel_eight() {
+if [ -f /etc/yum.repos.d/epel.repo ]; then
+cp -p /etc/yum.repos.d/epel.repo /etc/yum.repos.d/epel.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/epel.repo)" ]
+        then
+                #echo priorities already set for epel.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for epel.repo"
+                ex -s /etc/yum.repos.d/epel.repo << EOF
+:/\[epel\]/ , /gpgkey/
+:a
+priority=3
+exclude=ImageMagick*
+.
+:w
+:q
+EOF
+
+cecho "*************************************************" $boldgreen
+cecho "Fixing epel.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+cat /etc/yum.repos.d/epel.repo
+echo ""
+fi
+fi # repo file check
+}
+
 
 yumpriorrpmforge() {
   forgefix
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
 cp -p /etc/yum.repos.d/rpmforge.repo /etc/yum.repos.d/rpmforge.OLD
-    if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
         sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
     fi
 if [ -n "$(grep ^priority /etc/yum.repos.d/rpmforge.repo)" ]
@@ -500,6 +528,10 @@ cat /etc/yum.repos.d/centalt.repo
 echo ""
 fi
 fi # repo file check
+}
+
+yumpriorpercona_eight() {
+    echo "Percona Yum Priorities Placeholder"
 }
 
 yumpriorpercona() {

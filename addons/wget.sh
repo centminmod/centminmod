@@ -25,11 +25,13 @@ ALTPCRE_VERSION='8.45'
 ALTPCRELINKFILE="pcre-${ALTPCRE_VERSION}.tar.gz"
 ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
-WGET_VERSION='1.20.3'
-WGET_VERSION_SEVEN='1.20.3'
+WGET_VERSION='1.21.2'
+WGET_VERSION_SEVEN='1.21.2'
+WGET_VERSION_EIGHT='1.21.2'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
+WGET_OPENSSL='n'
 WGET_STRACE='n'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 ###########################################################
@@ -79,15 +81,26 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+if [ -f /etc/almalinux-release ]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
+  CENTOS_EIGHT='8'
+  ALMALINUX_EIGHT='8'
+fi
+
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+    label_os=AlmaLinux
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  else
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  fi
   echo
-  echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
-  echo "To follow CentOS 8 compatibility progress read & subscribe to thread at:"
-  echo "https://community.centminmod.com/threads/centmin-mod-centos-8-compatibility-worklog.18372/"
+  echo "$label_os 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL8 compatibility for CentOS 8 / AlmaLinux 8 read thread at:"
+  echo "https://community.centminmod.com/threads/18372/"
   echo "You can read CentOS 8 specific discussions via prefix tag link at:"
-  echo "https://community.centminmod.com/forums/centos-redhat-oracle-linux-news.31/?prefix_id=81"
-  echo "You can read CentOS 8 specific discussions via prefix tag link at:"
-  echo "https://community.centminmod.com/forums/centos-redhat-oracle-linux-news.31/?prefix_id=81"
+  echo "$label_prefix"
   exit 1
   echo
 fi
@@ -96,7 +109,7 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  WGET_VERSION=$WGET_VERSION_SEVEN
+  WGET_VERSION=$WGET_VERSION_EIGHT
 fi
 
 if [ -f /usr/local/lib/libssl.a ]; then
@@ -186,7 +199,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   # yum -y -q install epel-release
   if [[ ! -f /usr/bin/dnf ]]; then
     yum -y -q install dnf
@@ -215,12 +228,26 @@ if [ ! -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -230,12 +257,26 @@ elif [ -f /usr/bin/sar ]; then
   else
     SARCALL='/usr/lib/sa/sa1'
   fi
-  if [[ "$CENTOS_SEVEN" != '7' ]]; then
+  if [[ "$CENTOS_SIX" = '6' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
     service sysstat restart
     chkconfig sysstat on
-  else
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     sed -i 's|10|5|g' /etc/cron.d/sysstat
+    if [ -d /etc/cron.d ]; then
+      echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    fi
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   fi
@@ -276,6 +317,19 @@ return
 ###########################################################
 sar_call() {
   $SARCALL 1 1
+}
+
+libmetalink_install() {
+  echo
+  pushd "$DIR_TMP"
+  rm -rf libmetalink
+  git clone https://github.com/metalink-dev/libmetalink
+  ./buildconf
+  ./configure
+  make -j$(nproc)
+  make install
+  echo
+  popd
 }
 
 patch_wget() {
@@ -345,6 +399,24 @@ scl_install() {
         /opt/rh/devtoolset-7/root/usr/bin/g++ --version
       fi
     fi
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+      if [[ "$DEVTOOLSETNINE" = [yY] ]]; then
+        if [[ "$(rpm -ql gcc-toolset-9-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-9-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-9-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install gcc-toolset-9-gcc gcc-toolset-9-gcc-c++ gcc-toolset-9-binutils
+        fi
+        sar_call
+        echo
+        /opt/rh/gcc-toolset-9/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-9/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETTEN" = [yY] ]]; then
+        if [[ "$(rpm -ql gcc-toolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time $YUMDNFBIN -y -q install gcc-toolset-10-gcc gcc-toolset-10-gcc-c++ gcc-toolset-10-binutils
+        fi
+        sar_call
+        echo
+        /opt/rh/gcc-toolset-10/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-10/root/usr/bin/g++ --version
+      fi
   elif [[ "$CENTOS_SEVEN" = '7' ]]; then
       if [[ -z "$(rpm -qa | grep rpmforge)" ]]; then
         if [[ "$(rpm -ql centos-release-scl >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
@@ -421,17 +493,36 @@ gccdevtools() {
     export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
     export CFLAGS="-Wimplicit-fallthrough=0"
     export CXXFLAGS="${CFLAGS}"
+  elif [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+    unset CC
+    unset CXX
+    export CC="/opt/rh/gcc-toolset-9/root/usr/bin/gcc"
+    export CXX="/opt/rh/gcc-toolset-9/root/usr/bin/g++"
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+    unset CC
+    unset CXX
+    export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc"
+    export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++"
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
+  elif [ "$CENTOS_EIGHT" = '8' ]; then
+    unset CC
+    unset CXX
+    export CFLAGS="-Wimplicit-fallthrough=0"
+    export CXXFLAGS="${CFLAGS}"
   fi
 }
 
 source_pcreinstall() {
-  if [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
+  if [[ ! "$CENTOS_EIGHT" ]] && [[ "$(/usr/local/bin/pcre-config --version 2>&1 | grep -q ${ALTPCRE_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No UTF-8 support' >/dev/null 2>&1; echo $?)" = '0' ]] || [[ -f /usr/local/bin/pcretest && "$(/usr/local/bin/pcretest -C | grep 'No just-in-time compiler support' >/dev/null 2>&1; echo $?)" = '0' ]]; then
   cd "$DIR_TMP"
   cecho "Download $ALTPCRELINKFILE ..." $boldyellow
   if [ -s "$ALTPCRELINKFILE" ]; then
     cecho "$ALTPCRELINKFILE Archive found, skipping download..." $boldgreen
   else
-    wget -c${ipv_forceopt} --progress=bar "$ALTPCRELINK" --tries=3 
+    wget -4 -c${ipv_forceopt} --progress=bar "$ALTPCRELINK" --tries=3 
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
       cecho "Error: $ALTPCRELINKFILE download failed." $boldgreen
@@ -471,9 +562,26 @@ source_pcreinstall() {
 }
 
 source_wgetinstall() {
-  if [[ "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$WGET_REBUILD_ALWAYS" = [yY] || "$(/usr/local/bin/wget -V | head -n1 | awk '{print $3}' | grep -q ${WGET_VERSION} >/dev/null 2>&1; echo $?)" != '0' ]]; then
   WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
   WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+    libmetalink_install
+    export METALINK_CFLAGS='-I/usr/local/include'
+    export METALINK_LIBS='-L/usr/local/lib -lmetalink'
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/idn2.h ]]; then
+    yum -q -y install libidn2-devel libidn2
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/libpsl.h ]]; then
+    yum -q -y install libpsl libpsl-devel
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/gpgme.h ]]; then
+    yum -q -y install gpgme gpgme-devel
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/gnutls/gnutls.h ]]; then
+    yum -q -y install gnutls gnutls-devel
+  fi
   cd "$DIR_TMP"
   cecho "Download $WGET_FILENAME ..." $boldyellow
   if [ -s "$WGET_FILENAME" ]; then
@@ -483,11 +591,11 @@ source_wgetinstall() {
     curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 "$WGET_LINK" | grep 'HTTP\/' | grep '200'
     WGET_CURLCHECK=$?
     if [[ "$WGET_CURLCHECK" = '0' ]]; then
-      wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+      wget -4 -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
     else
       WGET_LINK="$WGET_LINKLOCAL"
-      echo "wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
-      wget -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
+      echo "wget -4 -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3"
+      wget -4 -c${ipv_forceopt} --progress=bar "$WGET_LINK" -O "$WGET_FILENAME" --tries=3
     fi
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
@@ -513,7 +621,14 @@ source_wgetinstall() {
     make clean
   fi
   patch_wget
-  if [[ "$(uname -m)" = 'x86_64' ]]; then
+  if [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" = 'x86_64' ]]; then
+    export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -Wp,-D_GLIBCXX_ASSERTIONS -fexceptions -fstack-protector-strong -fasynchronous-unwind-tables -fstack-clash-protection -fcf-protection -grecord-gcc-switches -m64 -mtune=generic"
+    export PCRE_CFLAGS="-I /usr/local/include"
+    export PCRE_LIBS="-L /usr/local/lib -lpcre"
+    # ensure wget.sh installer utilises system openssl
+    export OPENSSL_CFLAGS="-I /usr/include"
+    export OPENSSL_LIBS="-L /usr/lib64 -lssl -lcrypto"
+  elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
     export PCRE_CFLAGS="-I /usr/local/include"
     export PCRE_LIBS="-L /usr/local/lib -lpcre"
@@ -532,7 +647,13 @@ source_wgetinstall() {
     fi
   fi
   # ./configure --with-ssl=openssl PCRE_CFLAGS="-I /usr/local/include" PCRE_LIBS="-L /usr/local/lib -lpcre"
-  ./configure --with-ssl=openssl
+  if [[ "$CENTOS_EIGHT" = '8' && "$WGET_OPENSSL" = [yY] ]]; then
+    ./configure --with-ssl=openssl --with-metalink
+  elif [[ "$CENTOS_EIGHT" = '8' && "$WGET_OPENSSL" != [yY] ]]; then
+    ./configure --with-ssl=gnutls --with-metalink
+  else
+    ./configure --with-ssl=openssl
+  fi
   sar_call
   if [[ "$WGET_STRACE" = [yY] ]]; then
     make check

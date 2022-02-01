@@ -35,12 +35,17 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     if [[ "$VERCOMPARE" = "1"  ]]; then
     
      echo "-----------------------------------------------------"
-            echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
-            echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
-            echo "No guarantee 100% working install with your CentOS $CENTOSVER"
-            if [[ "$CENTOS_EIGHT" = '8' ]]; then
+            if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+              echo "Detected AlmaLinux OS"
               echo
-              echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
+              echo "AlmaLinux 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+              echo
+            elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+              echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
+              echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
+              echo "No guarantee 100% working install with your CentOS $CENTOSVER"
+              echo
+              echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
               echo
             fi
      echo "-----------------------------------------------------"
