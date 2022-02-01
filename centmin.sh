@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='789'
+SCRIPT_INCREMENTVER='790'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/01/22'
@@ -1467,7 +1467,7 @@ fi
 
 # function checks if persistent config file has low mem variable enabled
 # LOWMEM_INSTALL='y'
-checkfor_lowmem
+# checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 

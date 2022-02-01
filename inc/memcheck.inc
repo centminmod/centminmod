@@ -35,7 +35,7 @@ lowmemcheck() {
 
   # function checks if persistent config file has low mem variable enabled
   # LOWMEM_INSTALL='y'
-  checkfor_lowmem
+  # checkfor_lowmem
 
   if [[ "$INITIALINSTALL" = [yY] ]]; then
     cpcheck initialinstall
