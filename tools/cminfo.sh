@@ -19,6 +19,7 @@ MYSQLHOST='localhost'
 #####################################################
 CMINFO_SAR_MEM='y'
 CMINFO_SAR_DAYS='7'
+CMINFO_SAR_INTERVAL_DIR='/home/cminfo'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
@@ -262,6 +263,46 @@ sar_cpu_pc() {
             fi
         fi
     done
+    ##########################################################################
+}
+
+sar_cpu_pc_interval() {
+    # cpu utilisation interval drilldown
+    mkdir -p "$CMINFO_SAR_INTERVAL_DIR"
+    mkdir -p "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days"
+    if [ -f /usr/bin/datamash ]; then
+        for t in $(seq 0 $CMINFO_SAR_DAYS); do
+            if [ -f "/var/log/sa/sa$(date +%d -d "$t day ago")" ]; then
+                sar -u -f /var/log/sa/sa$(date +%d -d "$t day ago") >> "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log"
+            fi
+        done
+        echo
+        echo "------------------------------------------------------------------"
+        echo " CPU Utilisation % Interval Breakdown Summary $CMINFO_SAR_DAYS days ($(nproc) CPU Threads):"
+        echo "------------------------------------------------------------------"
+        if [ -f "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" ]; then
+            sar_cpu_metrics_period_raw_data=$(cat "${CENTMINLOGDIR}/cminfo-top-sar-cpu-period-${CMINFO_SAR_DAYS}-${DT}.log" | egrep -iv 'Linux|runq|user|mem|DEV|Average' | sed -e '1d' -e '/^ *$/d')
+            sar_cpu_metrics_period_raw_data_grep_fields=$(echo "$sar_cpu_metrics_period_raw_data" | awk '{print $1,$2}' | sort -u)
+            echo "$sar_cpu_metrics_period_raw_data_grep_fields" | while read t tt; do
+                newt="$t $tt";
+                tformat=$(echo $newt | sed -e "s|\:||g" -e 's| ||g');
+                # echo $tformat;
+                echo "$sar_cpu_metrics_period_raw_data" | grep "$newt" | awk '{print $4,$5,$6,$7,$8,$9}' | datamash -W -R 2 --no-strict --filler 0 min 1-6 mean 1-6 max 1-6 perc:50 1-6 perc:75 1-6 perc:90 1-6 perc:99 1-6 | column -t | xargs -n6 | awk '{print "%user:",$1, "%nice:",$2, "%system:",$3, "%iowait:",$4, "%steal:",$5, "%idle:",$6}' > "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log";
+                sar_cpu_umin_period_raw=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 1p)
+                sar_cpu_uavg_period_raw=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 2p)
+                sar_cpu_umax_period_raw=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 3p)
+                sar_cpu_upc_period_raw_50=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 4p)
+                sar_cpu_upc_period_raw_75=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 5p)
+                sar_cpu_upc_period_raw_90=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 6p)
+                # sar_cpu_upc_period_raw_95=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 7p)
+                sar_cpu_upc_period_raw_99=$(cat "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat.log" | sed -n 7p)
+                echo -e "${newt} %CPU min: $sar_cpu_umin_period_raw\n${newt} %CPU avg: $sar_cpu_uavg_period_raw\n${newt} %CPU max: $sar_cpu_umax_period_raw\n${newt} %CPU 50%: $sar_cpu_upc_period_raw_50\n${newt} %CPU 75%: $sar_cpu_upc_period_raw_75\n${newt} %CPU 90%: $sar_cpu_upc_period_raw_90\n${newt} %CPU 99%: $sar_cpu_upc_period_raw_99" | column -t > "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days/$tformat-summary.log";
+            done
+            find "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days" -type f -name "*AM-summary.log" | sort | while read f; do echo "------------------------";cat $f; done
+            find "${CMINFO_SAR_INTERVAL_DIR}/sar-interval-averages-over-days" -type f -name "*PM-summary.log" | sort | while read f; do echo "------------------------";cat $f; done
+        fi
+    fi
+    ##########################################################################
 }
 
 sar_mem_pc() {
@@ -1074,6 +1115,11 @@ case "$1" in
     sar_json $2
     } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-json-${DT}.log"
         ;;
+    sar-cpu-interval)
+    {
+    sar_cpu_pc_interval
+    } 2>&1 | tee "${CENTMINLOGDIR}/cminfo-top-sar-cpu-interval-${DT}.log"
+        ;;
     sar-cpu)
     {
     sar_cpu_pc
@@ -1124,6 +1170,6 @@ case "$1" in
     check_version
     ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver}"
         ;;
 esac
