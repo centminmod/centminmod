@@ -352,7 +352,8 @@ PCRE_SOURCEINSTALL='n'
 PCRE_VERSION='8.45'          # PCRE version
 
 # PHP and Cache/Acceleration
-IMAGICKPHP_VER='3.4.4'        # PHP extension for imagick
+IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'      # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
 MEMCACHED_INSTALL='y'         # Install Memcached
@@ -369,7 +370,7 @@ TWEMPERF_VER='0.1.1'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.5'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.6'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
