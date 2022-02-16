@@ -1413,7 +1413,7 @@ cd $INSTALLDIR
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
-PHPVERLATEST=${PHPVERLATEST:-"8.0.14"}
+PHPVERLATEST=${PHPVERLATEST:-"8.0.16"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
@@ -1501,13 +1501,14 @@ echo "--------------------------------------------------------------------------
   DTIME_SEC=$(echo "$DTIME" |awk '{print $7}')
   NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
   NTIME_SEC=$(echo "$NTIME" |awk '{print $7}')
+  CM_INSTALL_TIME_LOG=$(find /root/centminlogs/ -type f -name "*_install.log" | grep -v pcre)
   if [ -f /root/centminlogs/centminmod_phpinstalltime_*.log ]; then
     PTIME=$(tail -1 /root/centminlogs/centminmod_phpinstalltime_*.log)
     PTIME_SEC=$(echo "$PTIME" |awk '{print $7}')
   else
     PTIME_SEC='0'
   fi
-  CMTIME=$(tail -1 /root/centminlogs/*_install.log)
+  CMTIME=$(tail -1 ${CM_INSTALL_TIME_LOG})
   CMTIME_SEC=$(echo "$CMTIME" |awk '{print $6}')
   CMTIME_SEC=$(printf "%0.4f\n" $CMTIME_SEC)
 if [[ "$DNF_ENABLE" = [yY] ]]; then
@@ -1515,7 +1516,7 @@ if [[ "$DNF_ENABLE" = [yY] ]]; then
 else
   CURLT=$(awk '{print $8}' /root/centminlogs/firstyum_installtime_*.log | tail -1)
 fi
-  CT=$(awk '{print $6}' /root/centminlogs/*_install.log | tail -1)
+  CT=$(awk '{print $6}' ${CM_INSTALL_TIME_LOG} | tail -1)
   GETCMTIME=$(tail -1 /root/centminlogs/getcmtime_installtime_${DT}.log)
   TT=$(echo "$CURLT + $CT + $GETCMTIME" | bc)
   TT=$(printf "%0.4f\n" $TT)
