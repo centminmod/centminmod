@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='794'
+SCRIPT_INCREMENTVER='795'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/02/22'
@@ -476,7 +476,7 @@ NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSS
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
-MOLD_VERSION='1.0.1'          # mold linker rpm version
+MOLD_VERSION='1.1'          # mold linker rpm version
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
