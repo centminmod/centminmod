@@ -1324,6 +1324,13 @@ if [[ "$PHPMUVER" = '5.6' && -f "${CONFIGSCANDIR}/timezonedb.ini" ]]; then
     fi
 fi
 
+    if [[ "$PHP_LDMOLD" = [yY] ]]; then
+        echo
+        echo "***************************************************"
+        echo "readelf -p .comment $(which php)"
+        readelf -p .comment $(which php)
+        echo
+    fi
     echo "***************************************************"
     php-config
     echo "***************************************************"
