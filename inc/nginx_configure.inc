@@ -213,6 +213,19 @@ if [[ "$ORESTY_LUANGINX" = [yY] ]]; then
   # https://github.com/openresty/lua-nginx-module/issues/1984
   NGINX_PCRE_TWO='n'
 fi
+if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+  KTLS_BUILD_TAG='-ktls'
+  NGINX_KTLS_OPT=' enable-ktls'
+  NGINX_KTLS_OPT_ALT='enable-ktls'
+  echo
+  echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
+else
+  KTLS_BUILD_TAG=""
+  NGINX_KTLS_OPT=""
+  NGINX_KTLS_OPT_ALT=""
+  echo
+  echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
+fi
 
   # adjustments for OpenSSL 1.1.0
   DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
@@ -830,6 +843,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+        OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
@@ -861,6 +876,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
+      elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+        OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -3888,18 +3905,6 @@ if [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\
       fi
     fi
   fi
-fi
-
-if [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
-  KTLS_BUILD_TAG='-ktls'
-  NGINX_KTLS_OPT=" enable-ttls"
-  echo
-  echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
-else
-  KTLS_BUILD_TAG=""
-  NGINX_KTLS_OPT=""
-  echo
-  echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
 fi
 
 if [[ "$NGINXCOMPILE_FORMATSEC" = [yY] ]]; then
