@@ -3919,7 +3919,7 @@ if [[ ! -f /proc/user_beancounters && -f /usr/local/nginx/conf/conf.d/virtual.co
     SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/2))
     # take care of non-HTTPS listen backlog socket directive as per ip/port pair rules
     if [ ! -z "$SET_NGINXBACKLOG" ]; then
-      sed -i "s|backlog=.*|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf
+      sed -i "s|backlog=.*|backlog=$SET_NGINXBACKLOG;|" /usr/local/nginx/conf/conf.d/virtual.conf
     fi
 fi
 if [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f /proc/user_beancounters && -f "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h" ]]; then
