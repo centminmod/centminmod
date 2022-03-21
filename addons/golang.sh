@@ -113,7 +113,7 @@ fi
 
 go_install() {
 	cd $DIR_TMP
-  GO_VERSION=$(curl -${ipv_forceopt}s https://golang.org/dl/ | egrep -o "go[0-9.]+\.linux\-amd64\.tar[.a-z]*" | head -n1 | sed -e 's|.linux-amd64.tar.gz||' -e 's|go||')
+  GO_VERSION=$(curl -${ipv_forceopt}s https://go.dev/dl/ | egrep -o "go[0-9.]+\.linux\-amd64\.tar[.a-z]*" | head -n1 | sed -e 's|.linux-amd64.tar.gz||' -e 's|go||')
 		
   cecho "Download go${GO_VERSION}.linux-${GOARCH}.tar.gz ..." $boldyellow
   if [ -s go${GO_VERSION}.linux-${GOARCH}.tar.gz ]; then

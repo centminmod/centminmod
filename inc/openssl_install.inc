@@ -987,7 +987,7 @@ fi
 
 installopenssl() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' && "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /usr/share/perl5/vendor_perl/IPC/Cmd.pm ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /usr/share/perl5/vendor_perl/IPC/Cmd.pm ]]; then
     # required for OpenSSL 3.x
     yum -y install perl-IPC-Cmd
   fi

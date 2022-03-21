@@ -27,10 +27,10 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='789'
+SCRIPT_INCREMENTVER='804'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
-SCRIPT_DATE='01/01/22'
+SCRIPT_DATE='02/02/22'
 SCRIPT_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_MODIFICATION_AUTHOR='eva2000 (centminmod.com)'
 SCRIPT_URL='https://centminmod.com'
@@ -482,7 +482,7 @@ NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSS
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
-MOLD_VERSION='1.0.1'          # mold linker rpm version
+MOLD_VERSION='1.1'          # mold linker rpm version
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -531,7 +531,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
 NGINXUPGRADESLEEP='3'
 AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
-AUTOHARDTUNE_NGINXBACKLOG='n' # on non-openvz systems, if enabled will override nginx default NGX_LISTEN_BACKLOG in src/os/unix/ngx_linux_config.h
+AUTOHARDTUNE_NGINXBACKLOG='y' # on non-openvz systems, if enabled will override nginx default NGX_LISTEN_BACKLOG in src/os/unix/ngx_linux_config.h
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NGINX_SSLCACHE_ALLOWOVERRIDE='n' # dynamically tune nginx ssl_session_cache in /usr/local/nginx/conf/ssl_include.conf based on system detected memory
@@ -714,7 +714,7 @@ SUHOSINVER='0.9.38'
 
 PHPREDIS='y'                # redis PHP extension install
 REDISPHP_VER='4.3.0'        # redis PHP version for PHP <7.x
-REDISPHPSEVEN_VER='5.3.5'   # redis PHP version for PHP =>7.x
+REDISPHPSEVEN_VER='5.3.6'   # redis PHP version for PHP =>7.x
 REDISPHP_GIT='n'            # pull php 7 redis extension from git or pecl downloads
 PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
@@ -805,9 +805,9 @@ NGINX_PRIORITIZECHACHA='n' # https://community.centminmod.com/posts/67042/
 SSL_PROTOCOL_MODERN='y'         # switch Nginx HTTPS to disabel TLSv1.0 & TLSv1.1 by default and support TLSv1.2 minimum
 DISABLE_TLSONEZERO_PROTOCOL='n' # disable TLS 1.0 protocol by default industry is moving to deprecate for security
 NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for system default YUM package setup
-OPENSSL_VERSION='1.1.1m'   # Use this version of OpenSSL http://openssl.org/
-OPENSSL_VERSIONFALLBACK='1.1.1m'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
-OPENSSL_VERSION_OLDOVERRIDE='1.1.1m' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_VERSION='1.1.1n'   # Use this version of OpenSSL http://openssl.org/
+OPENSSL_VERSIONFALLBACK='1.1.1n'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
+OPENSSL_VERSION_OLDOVERRIDE='1.1.1n' # override version if persist config OPENSSL_VERSION variable is out of date
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
@@ -850,7 +850,7 @@ PCRE_VERSION='8.45'          # PCRE version
 
 # PHP and Cache/Acceleration
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
-IMAGICKPHP_SEVEN_VER='3.6.0'   # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 MAILPARSEPHP_VER='2.1.6'       # https://pecl.php.net/package/mailparse
 MAILPARSEPHP_COMPATVER='3.1.2' # For PHP 7
 MEMCACHED_INSTALL='y'          # Install Memcached
@@ -1508,7 +1508,7 @@ fi
 
 # function checks if persistent config file has low mem variable enabled
 # LOWMEM_INSTALL='y'
-checkfor_lowmem
+# checkfor_lowmem
 ###############################################################
 # FUNCTIONS
 

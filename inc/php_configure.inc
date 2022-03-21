@@ -485,6 +485,12 @@ fi
 
 oniguruma_check
 
+if [[ "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+  PHP_MOLDOPT=' -B/usr/local/libexec/mold'
+else
+  PHP_MOLDOPT=""
+fi
+
 # whether to switch from system used zlib to cloudflare zlib performance
 # fork for php conmpilations for cpus supporting SSE4.2 at least
 CHECK_PCLMUL=$(gcc -c -Q -march=native --help=target | egrep '\[enabled\]|mtune|march' | grep 'mpclmul' | grep -o enabled)
@@ -1956,10 +1962,10 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     SET_PHPEXTRA_CFLAGS=" -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=' --disable-gcc-global-regs'
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [yY] && "$PHP_LTO" = [nN] ]]; then
-    SET_PHPEXTRA_CFLAGS=" -gsplit-dwarf -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    SET_PHPEXTRA_CFLAGS=" -gsplit-dwarf -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_GSPLITDWARF" = [nN] && "$PHP_LTO" = [nN] ]]; then
-    SET_PHPEXTRA_CFLAGS=" -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
+    SET_PHPEXTRA_CFLAGS=" -Wno-deprecated-declarations${PHP_MOLDOPT}${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
     PHPLTOOPT=""
   elif [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1-3 | sed "s|\.|0|g")" -ge '40805' && "$PHP_LTO" = [yY] ]]; then
     SET_PHPEXTRA_CFLAGS=" -flto -fno-fat-lto-objects -fuse-ld=gold -fuse-linker-plugin -flto-partition=max -Wno-deprecated-declarations${DEVTOOLSETPHP_FALLTHROUGH}${DEVTOOLSETPHP_EXTRAFLAGS}${PHPEXTRA_CFLAGS}"
