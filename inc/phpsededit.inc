@@ -136,7 +136,7 @@ phpsededit() {
     if [[ ! -f /proc/user_beancounters && -f /usr/local/etc/php-fpm.conf && "$CHECK_LXD" != [yY] ]]; then
         GETSOMAXCON_VALUE=$(sysctl net.core.somaxconn | awk -F  '= ' '{print $2}')
         SET_PHPFPMBACKLOG=$GETSOMAXCON_VALUE
-        SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/16))
+        SET_NGINXBACKLOG=$(($GETSOMAXCON_VALUE/4))
         sed -i "s|^;listen.backlog = .*|listen.backlog = $SET_PHPFPMBACKLOG|" /usr/local/etc/php-fpm.conf
         sed -i "s|^listen.backlog = 4095|listen.backlog = $SET_PHPFPMBACKLOG|" /usr/local/etc/php-fpm.conf
         sed -i "s|backlog=2048|backlog=$SET_NGINXBACKLOG|" /usr/local/nginx/conf/conf.d/virtual.conf

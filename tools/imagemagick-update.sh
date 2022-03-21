@@ -3,7 +3,7 @@
 # standalone imagemagick + imagick updater
 ######################################################
 IMAGICKPHP_VER='3.4.4'         # PHP extension for imagick
-IMAGICKPHP_SEVEN_VER='3.6.0'   # PHP extension for imagick
+IMAGICKPHP_SEVEN_VER='3.7.0'   # PHP extension for imagick
 PHP_INSTALL='y'
 PHPIMAGICK='y'
 REMIREPO_DISABLE='n'
