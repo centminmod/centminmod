@@ -677,7 +677,6 @@ ngxbrotli_download() {
         export CXX="ccache g++"
         gcc --version
         g++ --version
->>>>>>> 123.09beta01-el8.3
     fi
 
     if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then

@@ -69,6 +69,9 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
     CCPERCONACHECK="$ERR"
       if [ "$CCPERCONACHECK" == '0' ]; then
         yumpriorpercona_eight
+        percona-release show
+        percona-release disable all
+        percona-release enable tools
         echo
       else
         cecho "Error: problem with Percona repo install." $boldgreen

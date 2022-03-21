@@ -3269,6 +3269,7 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       fi
     fi
+  fi
 fi
 
 # devtoolset-4 usage of GCC 4.9 even for CentOS7

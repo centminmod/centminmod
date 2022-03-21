@@ -747,7 +747,7 @@ crypto_gcc() {
             export CC="/opt/gcc8/bin/gcc"
             export CXX="/opt/gcc8/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' && "$DEVTOOLSETNINE" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
         CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
@@ -811,7 +811,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-10/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-10/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/devtoolset-9/root/usr/bin/gcc || -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-9/enable
         CRYPTODEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
@@ -827,7 +827,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -843,7 +843,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-8/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-8/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/rh/devtoolset-8/root/usr/bin/gcc || -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-8/enable
         CRYPTODEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -859,7 +859,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-8/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-8/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-7/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -875,7 +875,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-7/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc || -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETSEVEN" = [yY] ]] && [[ -f /opt/rh/devtoolset-7/root/usr/bin/gcc || -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-7/enable
         CRYPTODEVTOOLSETSEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -891,7 +891,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-7/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-7/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETSIX" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETSIX" = [yY] ]] && [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-6/enable
         which gcc
@@ -905,7 +905,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETSIX" != [yY] ]] && [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETSIX" != [yY] ]] && [[ ! -f /opt/rh/devtoolset-4/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/devtoolset-4/enable
         which gcc
@@ -919,7 +919,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-4/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-4/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETSIX" = [yY] && -f /opt/rh/devtoolset-6/root/usr/bin/gcc && -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-6/enable
         scl_install
         which gcc
@@ -933,7 +933,7 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-6/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-6/root/usr/bin/g++"
         fi
-      elif [[ "$DEVTOOLSETSIX" != [yY] ]] && [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
+      elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ "$DEVTOOLSETSIX" != [yY] ]] && [[ -f /opt/rh/devtoolset-4/root/usr/bin/gcc && -f /opt/rh/devtoolset-4/root/usr/bin/g++ ]]; then
         source /opt/rh/devtoolset-4/enable
         scl_install
         which gcc
@@ -1144,7 +1144,10 @@ fi
         # Install OpenSSL
         cd $DIR_TMP
         echo "Compiling OpenSSL..."
-    
+        
+        if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
+            $YUMDNFBIN -q -y install perl-Pod-Html
+        fi
         if [ ! -f /usr/bin/makedepend ]; then
             time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
         fi

@@ -1308,7 +1308,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   fi
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mariadb mysql php glpi composer redis:5
+  yum -q -y module disable nginx mariadb mysql php redis:5
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs
@@ -2023,8 +2023,16 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     cecho "LXC/LXD container system detected, NTP not installed" $boldgreen
 else
-    if [[ "$NTP_INSTALL" = [yY] ]]; 
-    then
+    if [[ "$CENTOS_EIGHT" = '8' && ! -f /sbin/chronyd ]]; then
+        echo
+        time $YUMDNFBIN -y install chrony
+        systemctl start chronyd
+        systemctl enable chronyd
+        systemctl status chronyd
+        echo "current chrony ntp servers"
+        chronyc sources
+    fi
+    if [[ "$CENTOS_SEVEN" = '7' && "$NTP_INSTALL" = [yY] ]]; then
         echo "*************************************************"
         cecho "* Installing NTP (and syncing time)" $boldgreen
         echo "*************************************************"

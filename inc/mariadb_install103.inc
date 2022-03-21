@@ -387,9 +387,9 @@ else
 fi
 
 if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
-    DISABLEOTHERREPO="--disablerepo=epel --disablerepo=rpmforge${yumpriorities_opt}"
+    DISABLEOTHERREPO=" --disablerepo=epel --disablerepo=rpmforge${yumpriorities_opt}"
 else
-    DISABLEOTHERREPO="--disablerepo=epel${yumpriorities_opt}"
+    DISABLEOTHERREPO=" --disablerepo=epel${yumpriorities_opt}"
 fi
 
 # set /etc/my.cnf templates
