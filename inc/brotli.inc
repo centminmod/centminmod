@@ -630,7 +630,6 @@ ngxbrotli_download() {
     fi
 
     if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-<<<<<<< HEAD
         if [[ "$INITIALINSTALL" != [yY] ]]; then
           source /opt/rh/devtoolset-10/enable
           unset CC
@@ -648,14 +647,6 @@ ngxbrotli_download() {
           gcc --version
           g++ --version
         fi
-=======
-        source /opt/rh/devtoolset-10/enable
-        unset CC
-        unset CXX
-        export CC="ccache gcc"
-        export CXX="ccache g++"
-        gcc --version
-        g++ --version
     fi
 
     if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
@@ -767,24 +758,6 @@ ngxbrotli_download() {
     fi
 
     if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-<<<<<<< HEAD
-=======
-      unset CC
-      unset CXX
-    fi
-
-    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-      unset CC
-      unset CXX
-    fi
-
-    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
-      unset CC
-      unset CXX
-    fi
-
-    if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
->>>>>>> 123.09beta01-el8.3
       unset CC
       unset CXX
     fi
