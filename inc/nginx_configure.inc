@@ -298,7 +298,7 @@ else
   ZLIBNG_OPT=""
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$ngver" && "$ngver" = 'master-google' ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")

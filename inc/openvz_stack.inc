@@ -29,7 +29,7 @@ function funct_openvz_stacksize {
       if [ -f /etc/init.d/nsd ]; then
         sed -i 's/#!\/bin\/bash/#!\/bin\/bash\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 128\nfi\n/g' /etc/init.d/nsd
       fi
-      if [ -f /etc/init.d/nginx ]; then
+      if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [ -f /etc/init.d/nginx ]; then
         sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 256\nfi\n/g' /etc/init.d/nginx
       fi
       if [ -f /etc/init.d/lfd ]; then
@@ -49,7 +49,7 @@ function funct_openvz_stacksize {
       if [ -f /etc/init.d/nsd ]; then
         head -n 5 /etc/init.d/nsd
       fi
-      if [ -f /etc/init.d/nginx ]; then
+      if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [ -f /etc/init.d/nginx ]; then
         head -n 5 /etc/init.d/nginx
       fi
       if [ -f /etc/init.d/lfd ]; then
@@ -75,7 +75,7 @@ EFF
       if [ -f /etc/init.d/nsd ]; then
         sed -i 's/#!\/bin\/bash/#!\/bin\/bash\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 128\nfi\n/g' /etc/init.d/nsd
       fi
-      if [ -f /etc/init.d/nginx ]; then
+      if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [ -f /etc/init.d/nginx ]; then
         sed -i 's/#!\/bin\/sh/#!\/bin\/sh\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 256\nfi\n/g' /etc/init.d/nginx
       fi
       if [[ ! -d /etc/systemd/system/lfd.service.d || ! -f /etc/systemd/system/lfd.service.d/lfd.conf ]]; then

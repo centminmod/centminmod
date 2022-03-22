@@ -2458,7 +2458,7 @@ if [ -f /etc/init.d/ntpd ]; then
   /etc/init.d/ntpd start
 fi
 
-if [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
+if [[ "$NGINX_INSTALL" = [yY] ]] && [[ -f /usr/lib/systemd/system/nginx.service || -f /etc/init.d/nginx ]]; then
   sleep 2
   service nginx start
 fi
