@@ -399,7 +399,7 @@ fi
 installchecks
 nvcheck
 DATENOW=$(date +"%b %d")
-YUMLOG=$(grep -h "$DATENOW" /var/log/yum.log)
+YUMLOG=$(grep -h "$DATENOW" "$YUMLOG_FILE")
 echo "$YUMLOG" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_yum-log.log"
 
 

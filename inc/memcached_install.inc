@@ -375,7 +375,10 @@ fi # PHP_MEMCACHE = y
 #############################################
 if [ "$PHP_MEMCACHED" == 'y' ]; then
 if [[ "$LIBMEMCACHED_YUM" = [yY] ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' ]]; then
+        cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
+        ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi --disablerepo=epel --disableplugin=priorities
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
         cecho "Installing libmemcached via CentOS base YUM repo ..." $boldgreen
         if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
             ${YUMDNFBIN}${CACHESKIP} -q -y install libmemcached libmemcached-devel --disablerepo=remi --disablerepo=epel --disablerepo=rpmforge --disableplugin=priorities

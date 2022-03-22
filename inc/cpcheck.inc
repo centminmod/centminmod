@@ -220,7 +220,7 @@ mytop_setup() {
 pureftpd_symlink_fix() {
   # workaround for too many levels of symbolic links
   # messages on openvz vpses
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ -f /proc/user_beancounters && ! -f /etc/systemd/system/pure-ftpd.service.d/pidfile.conf ]]; then
     echo
     # echo "create /etc/systemd/system/pure-ftpd.service.d/pidfile.conf"
     mkdir -p /etc/systemd/system/pure-ftpd.service.d
@@ -1240,7 +1240,7 @@ fixlshw_rpmforge() {
 }
 
 fixnoarch_percona() {
-  if [[ "$(yum-config-manager percona-release-noarch | awk '/enabled = / {print $3}')" != 'False' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && "$(yum-config-manager percona-release-noarch | awk '/enabled = / {print $3}')" != 'False' ]]; then
     yum-config-manager --disable percona-release-noarch >/dev/null 2>&1
   fi
 }
@@ -1644,7 +1644,7 @@ yumupdatechecker() {
     echo
     echo " checking for YUM updates... please wait..."
     # only check if last yum update was over 24hrs ago
-    LASTYUMCHECK_EPOCHDATE=$(date -d "$(awk '/Updated: / {print $1,$2,$3}' /var/log/yum.log | tail -1)" +%s)
+    LASTYUMCHECK_EPOCHDATE=$(date -d "$(awk '/Updated: / {print $1,$2,$3}' "$YUMLOG_FILE" | tail -1)" +%s)
     # LASTYUMHISTORYCHECK_EPOCHDATE=$(date -d $(history | grep 'yum' | grep update | grep -v list | tail -1 | awk '{print $2}' | sed -e 's|\[||g' -e 's|\]||g' -e 's|\.|\/|g') +%s)
     TODAY_EPOCHDATE=$(date +%s)
     SEC_SINCELASTUPDATE=$(echo ${TODAY_EPOCHDATE} - ${LASTYUMCHECK_EPOCHDATE} | bc)

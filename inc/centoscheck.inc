@@ -1,3 +1,11 @@
+yumlog_check() {
+  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+    YUMLOG_FILE='/var/log/dnf.log'
+  else
+    YUMLOG_FILE='/var/log/yum.log'
+  fi
+}
+
 grub_efi_fix() {
     if [[ "$CENTOS_SEVEN" -eq '7' && "$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)" -eq '0' && -d /boot/efi/EFI/centos && ! -f /boot/efi/EFI/centos/grub.cfg ]]; then
       if [[ "$(lsblk | grep nvme)" && -d /boot/efi/EFI/centos ]]; then
@@ -49,8 +57,12 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
               echo
             fi
      echo "-----------------------------------------------------"
-            echo ""
-            read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
+            if [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+              centoscheckcont='y'
+            else
+              echo ""
+              read -ep "Do you still want to continue with install ? [y/n]: " centoscheckcont
+            fi
     
             if [[ "$centoscheckcont" != [yY] ]]; then
     
@@ -252,5 +264,7 @@ fi
 countcpus
 
 nano_highlight
+
+yumlog_check
 
 }

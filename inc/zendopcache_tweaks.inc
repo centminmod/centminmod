@@ -19,7 +19,7 @@ opcachehugepages() {
       else
         FREEMEM=$(egrep '^MemFree|^Buffers|^Cached' /proc/meminfo | awk '{summ+=$2} END {print summ}' | head -n1)
       fi
-    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
       if [[ ! -f /proc/user_beancounters && -f /usr/bin/numactl ]]; then
         # account for multiple cpu socket numa based memory
         # https://community.centminmod.com/posts/48189/
@@ -44,7 +44,7 @@ opcachehugepages() {
     MAXLOCKEDMEM_SIZE=$(($MAXLOCKEDMEM_COUNT*1024))
     MAXLOCKEDMEM_SIZE_NGINX=$(($MAXLOCKEDMEM_SIZE*32))
 
-    if [[ "$CENTOS_SEVEN" = '7' && ! -f /proc/user_beancounters ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /proc/user_beancounters ]]; then
       echo
       echo "set vm.nr.hugepages in /etc/sysctl.conf"
       echo
@@ -109,7 +109,7 @@ opcachehugepages() {
           echo -e "\nopcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
         fi
       fi      
-    elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[always]' ]]; then
+    elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$HP_CHECK" = '[always]' ]]; then
       if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
         OPCACHEHUGEPAGES_OPT=' --enable-huge-code-pages'
         echo $OPCACHEHUGEPAGES_OPT
@@ -122,7 +122,7 @@ opcachehugepages() {
           echo -e "\nopcache.huge_code_pages=1" >> ${CONFIGSCANDIR}/zendopcache.ini
         fi
       fi
-    elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [yY] && ! -f /proc/user_beancounters && "$FREEMEM" -ge '1980000' ]]; then
+    elif [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [yY] && ! -f /proc/user_beancounters && "$FREEMEM" -ge '1980000' ]]; then
       # setting PHP explicit huge pages support for zend opcache
       # opcache.huge_code_pages
       if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
@@ -144,6 +144,27 @@ opcachehugepages() {
         echo
       fi
     elif [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [nN] ]] || [[ "$CENTOS_SEVEN" = '7' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [yY] && -f /proc/user_beancounters ]]; then
+      # setting PHP explicit huge pages support for zend opcache
+      # opcache.huge_code_pages
+      if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then
+        OPCACHEHUGEPAGES_OPT=''
+        echo $OPCACHEHUGEPAGES_OPT
+        if [[ "$(grep 'opcache.huge_code_pages' ${CONFIGSCANDIR}/zendopcache.ini)" ]]; then
+          sed -i 's|^opcache.huge_code_pages=.*|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+          sed -i 's|^;opcache.huge_code_pages=.*|opcache.huge_code_pages=0|' ${CONFIGSCANDIR}/zendopcache.ini
+        else
+          echo -e "\nopcache.huge_code_pages=0" >> ${CONFIGSCANDIR}/zendopcache.ini
+        fi
+        echo
+        echo "sysctl vm.nr_hugepages"
+        sysctl vm.nr_hugepages
+        echo
+        cat /proc/meminfo
+        echo
+        php --ri 'zend opcache' | grep 'opcache.huge_code_pages'
+        echo
+      fi        
+    elif [[ "$CENTOS_EIGHT" = '8' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [nN] ]] || [[ "$CENTOS_EIGHT" = '8' && "$HP_CHECK" = '[never]' && "$PHP_HUGEPAGES" = [yY] && -f /proc/user_beancounters ]]; then
       # setting PHP explicit huge pages support for zend opcache
       # opcache.huge_code_pages
       if [ -f "${CONFIGSCANDIR}/zendopcache.ini" ]; then

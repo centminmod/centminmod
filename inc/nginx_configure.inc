@@ -3269,6 +3269,92 @@ if [[ "$CENTOS_EIGHT" = '8' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
         NGX_GSPLITDWARF='n'
       fi
     fi
+  elif [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] || [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+    if [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+        yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
+    fi
+    if [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+        yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
+    fi
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc ]]; then
+      DEVTOOLSETTEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+      DEVTOOLSETTEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETNINE_FALLTHROUGH=""
+      DEVTOOLSETNINE_EXTRAFLAGS=""
+      DEVTOOLSETEIGHT_FALLTHROUGH=""
+      DEVTOOLSETEIGHT_EXTRAFLAGS=""
+      DEVTOOLSETSEVEN_FALLTHROUGH=""
+      DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/rh/gcc-toolset-10/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        source /opt/rh/gcc-toolset-10/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    elif [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc ]]; then
+      DEVTOOLSETNINE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+      DEVTOOLSETNINE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETEIGHT_FALLTHROUGH=""
+      DEVTOOLSETEIGHT_EXTRAFLAGS=""
+      DEVTOOLSETSEVEN_FALLTHROUGH=""
+      DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        source /opt/rh/gcc-toolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        source /opt/rh/gcc-toolset-9/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    elif [[ "$DEVTOOLSETEIGHT" = [yY] ]]; then
+      DEVTOOLSETEIGHT_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+      DEVTOOLSETEIGHT_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+      DEVTOOLSETNINE_FALLTHROUGH=""
+      DEVTOOLSETNINE_EXTRAFLAGS=""
+      DEVTOOLSETSEVEN_FALLTHROUGH=""
+      DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      if [[ "$INITIALINSTALL" != [yY] ]]; then
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        NGX_GSPLITDWARF='n'
+      else
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="gcc"
+        export CXX="g++"
+        NGX_GSPLITDWARF='n'
+      fi
+    fi
   fi
 fi
 

@@ -955,7 +955,7 @@ fi
 phpimap_install
 
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$POSTGRESQL" = [yY] ]]; then
     # to allow to persist on centmin mod code updates
@@ -968,7 +968,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     PDOPGSQL_OPT=""
   fi
 
-  if [[ ! -f /usr/bin/libmcrypt-config ]]; then
+  if [ ! -f /usr/bin/libmcrypt-config ]; then
 
     # double check mcrypt has been installed
     CHECKMCRYPT='libmcrypt libmcrypt-devel'
