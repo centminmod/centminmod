@@ -1307,8 +1307,10 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
     yum-config-manager --enable $reponame_powertools
   fi
 
-  # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mariadb mysql php redis:5
+  if [[ "$CENTOS_EIGHT" -eq '8' && "$INITIALINSTALL" = [yY] ]]; then
+    # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
+    yum -q -y module disable nginx mariadb mysql php redis:5
+  fi
 
   # install missing dependencies specific to CentOS 8
   # for csf firewall installs
