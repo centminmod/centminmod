@@ -93,7 +93,10 @@ if [ -f /etc/rocky-release ]; then
 fi
 
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
-  if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+  if [[ "$ROCKYLINUX_EIGHT" = '8' ]]; then
+    label_os=RockyLinux
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_EIGHT" = '8' ]]; then
     label_os=AlmaLinux
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
   else
