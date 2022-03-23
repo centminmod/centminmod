@@ -4,9 +4,9 @@ FASTOPEN_VAL=$(cat /proc/sys/net/ipv4/tcp_fastopen >/dev/null 2>&1; echo $?)
 FASTOPEN_VAL=$(echo $FASTOPEN_VAL | awk '{print $NF}')
 FASTOPEN_STATSVAL=$(grep '^TcpExt:' /proc/net/netstat | cut -d ' ' -f 87-92  | column -t | grep 'TCPFast'; echo $?)
 FASTOPEN_STATSVAL=$(echo $FASTOPEN_STATSVAL | awk '{print $NF}')
-CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
+CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
 
-if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   SUPPORT_REUSEPORT=y
 else
   SUPPORT_REUSEPORT=n

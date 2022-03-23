@@ -1826,8 +1826,8 @@ selinxcheck() {
 
 reuseportchecks() {
   if [[ "$INITIALINSTALL" = [yY] ]]; then
-    CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels/* | head -n1 | awk -F ":" '{print $2}')
-    if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]]; then
+    CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+    if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       SUPPORT_REUSEPORT=y
       if [ -f /usr/local/nginx/conf/nginx.conf ]; then
         sed -i 's|accept_mutex .*|accept_mutex off;|' /usr/local/nginx/conf/nginx.conf
