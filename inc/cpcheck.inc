@@ -2086,6 +2086,9 @@ nvcheck() {
 cmupdatecheck() {
   if [ ! -h /usr/bin/cmupdate ]; then
     rm -rf /usr/bin/cmupdate
+    if [[ "$INITIALINSTALL" = [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+      sed -i "s|^cmupdate_branchname=.*|cmupdate_branchname=${branchname}|" "${SCRIPT_DIR}/tools/cmupdate.sh"
+    fi
     ln -s "${SCRIPT_DIR}/tools/cmupdate.sh" /usr/bin/cmupdate
     chmod +x /usr/bin/cmupdate
   fi

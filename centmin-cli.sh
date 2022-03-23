@@ -24,7 +24,7 @@ CMSDEBUG='n'
 #####################################################
 DT=$(date +"%d%m%y-%H%M%S")
 # for github support
-branchname='123.09beta01'
+branchname=123.09beta01-el8.5
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
 SCRIPT_INCREMENTVER='804'
@@ -990,6 +990,10 @@ else
 fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  AXEL_VER='2.16.1'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  AXEL_VER='2.16.1'
+elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   AXEL_VER='2.16.1'
 fi
 
