@@ -1381,6 +1381,9 @@ cd $INSTALLDIR
       time git clone -b ${branchname} --depth=5 ${CMGIT} centminmod
       getcmendtime=$(TZ=UTC date +%s.%N)
       sar_call
+      if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        git config --global pull.rebase false
+      fi
       cd centminmod
       chmod +x centmin.sh
     fi
