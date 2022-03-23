@@ -3457,6 +3457,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       DEVTOOLSETEIGHT_EXTRAFLAGS=""
       DEVTOOLSETSEVEN_FALLTHROUGH=""
       DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      export LTO_LDFLAGS="-Wno-stringop-overflow"
       if [[ "$INITIALINSTALL" != [yY] ]]; then
         source /opt/rh/devtoolset-11/enable
         which gcc
@@ -3485,6 +3486,7 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
       DEVTOOLSETEIGHT_EXTRAFLAGS=""
       DEVTOOLSETSEVEN_FALLTHROUGH=""
       DEVTOOLSETSEVEN_EXTRAFLAGS=""
+      export LTO_LDFLAGS="-Wno-stringop-overflow"
       if [[ "$INITIALINSTALL" != [yY] ]]; then
         source /opt/rh/devtoolset-10/enable
         which gcc

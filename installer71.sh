@@ -193,9 +193,17 @@ if [ -f /etc/almalinux-release ]; then
   CENTOS_EIGHT='8'
   ALMALINUX_EIGHT='8'
 fi
+if [ -f /etc/rocky-release ]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release)
+  CENTOS_EIGHT='8'
+  ROCKYLINUX_EIGHT='8'
+fi
 
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
-  if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+  if [[ "$ROCKYLINUX_EIGHT" = '8' ]]; then
+    label_os=RockyLinux
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_EIGHT" = '8' ]]; then
     label_os=AlmaLinux
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
   else

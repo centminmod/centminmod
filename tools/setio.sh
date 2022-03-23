@@ -93,6 +93,11 @@ if [ -f /etc/almalinux-release ]; then
   CENTOS_EIGHT='8'
   ALMALINUX_EIGHT='8'
 fi
+if [ -f /etc/rocky-release ]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release)
+  CENTOS_EIGHT='8'
+  ROCKYLINUX_EIGHT='8'
+fi
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
   IFREEMEM=$(cat /proc/meminfo | grep MemFree | awk '{print $2}')

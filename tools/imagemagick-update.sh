@@ -65,6 +65,11 @@ if [ -f /etc/almalinux-release ]; then
   CENTOS_EIGHT='8'
   ALMALINUX_EIGHT='8'
 fi
+if [ -f /etc/rocky-release ]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release)
+  CENTOS_EIGHT='8'
+  ROCKYLINUX_EIGHT='8'
+fi
 
 if [ ! -d "$CENTMINLOGDIR" ]; then
     mkdir -p "$CENTMINLOGDIR"
