@@ -188,13 +188,23 @@ fi
 
 if [ -f /etc/almalinux-release ]; then
   CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
-  CENTOS_EIGHT='8'
-  ALMALINUX_EIGHT='8'
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
 fi
 if [ -f /etc/rocky-release ]; then
   CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release)
-  CENTOS_EIGHT='8'
-  ROCKYLINUX_EIGHT='8'
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
 fi
 
 if [ ! -d "$DIR_TMP" ]; then

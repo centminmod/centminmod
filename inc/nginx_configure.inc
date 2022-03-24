@@ -4178,7 +4178,15 @@ fi
     # force NGXMODULE_ALTORDER='y'
     NGXMODULE_ALTORDER='y'
     SETBUILD_DATE=$(date +"%d%m%y-%H%M%S")
-    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    if [[ "$ALMALINUX_NINE" -eq '9' ]]; then
+      SETBUILD_OS='almalinux9'
+    elif [[ "$ROCKYLINUX_NINE" -eq '9' ]]; then
+      SETBUILD_OS='rockylinux9'
+    elif [[ "$ALMALINUX_EIGHT" -eq '8' ]]; then
+      SETBUILD_OS='almalinux8'
+    elif [[ "$ROCKYLINUX_EIGHT" -eq '8' ]]; then
+      SETBUILD_OS='rockylinux8'
+    elif [[ "$CENTOS_NINE" -eq '9' ]]; then
       SETBUILD_OS='centos9'
     elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
       SETBUILD_OS='centos8'
