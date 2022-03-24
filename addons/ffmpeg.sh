@@ -69,6 +69,55 @@ if [ -f "/etc/centminmod/ffmpeg_config.inc" ]; then
   . "/etc/centminmod/ffmpeg_config.inc"
 fi
 
+CENTOSVER=$(awk '{ print $3 }' /etc/redhat-release)
+
+if [ "$CENTOSVER" == 'release' ]; then
+    CENTOSVER=$(awk '{ print $4 }' /etc/redhat-release | cut -d . -f1,2)
+    if [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
+        CENTOS_EIGHT='8'
+    fi
+fi
+
+if [[ "$(cat /etc/redhat-release | awk '{ print $3 }' | cut -d . -f1)" = '6' ]]; then
+    CENTOS_SIX='6'
+fi
+
+# Check for Redhat Enterprise Linux 7.x
+if [ "$CENTOSVER" == 'Enterprise' ]; then
+    CENTOSVER=$(awk '{ print $7 }' /etc/redhat-release)
+    if [[ "$(awk '{ print $1,$2 }' /etc/redhat-release)" = 'Red Hat' && "$(awk '{ print $7 }' /etc/redhat-release | cut -d . -f1)" = '7' ]]; then
+        CENTOS_SEVEN='7'
+        REDHAT_SEVEN='y'
+    fi
+fi
+
+if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" = 'Amazon Linux AMI' ]]; then
+    CENTOS_SIX='6'
+fi
+
+if [ -f /etc/almalinux-release ]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+fi
+if [ -f /etc/rocky-release ]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+fi
+
 if [ -f /proc/user_beancounters ]; then
     # CPUS='1'
     # MAKETHREADS=" -j$CPUS"
@@ -215,52 +264,79 @@ else
   MARCH_TARGET='x86-64'
 fi
 
-if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-7/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
+if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+  if [[ "$GCC_SEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-7/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-8/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-8 for GCC 8..."
+    yum -y install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
+    source /opt/rh/devtoolset-8/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-9 for GCC 9..."
+    yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+    source /opt/rh/devtoolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-10 for GCC 10..."
+    yum -y install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
+    source /opt/rh/devtoolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_ELEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+    source /opt/rh/devtoolset-11/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 fi
-
-if [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-8/root/usr/bin/gcc && -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-8/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-elif [[ "$GCC_EIGHT" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
-  echo "installing devtoolset-8 for GCC 8..."
-  yum -y install devtoolset-8-gcc devtoolset-8-gcc-c++ devtoolset-8-binutils
-  source /opt/rh/devtoolset-8/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-fi
-
-if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-9/root/usr/bin/gcc && -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-9/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-elif [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
-  echo "installing devtoolset-9 for GCC 9..."
-  yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
-  source /opt/rh/devtoolset-9/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-fi
-
-if [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-10/root/usr/bin/gcc && -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-10/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc && ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
-  echo "installing devtoolset-10 for GCC 10..."
-  yum -y install devtoolset-10-gcc devtoolset-10-gcc-c++ devtoolset-10-binutils
-  source /opt/rh/devtoolset-10/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
-fi
-
-if [[ "$GCC_ELEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/devtoolset-11/root/usr/bin/gcc && -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
-  source /opt/rh/devtoolset-11/enable
-  export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
-  export CXXFLAGS="${CFLAGS}"
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_NINE" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-9 for GCC 9..."
+    yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
+    source /opt/rh/gcc-toolset-9/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+  
+  if [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+    echo "installing devtoolset-10 for GCC 10..."
+    yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
+    source /opt/rh/gcc-toolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
 fi
 
 do_continue() {
