@@ -128,6 +128,12 @@ return
 }
 
 ###########################################################
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  echo "$0 only for CentOS 7"
+  echo "aborted..."
+  exit 1
+fi
+
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
     if [ ! -f /etc/yum.repos.d/ius.repo ]; then

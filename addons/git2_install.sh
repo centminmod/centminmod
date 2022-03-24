@@ -104,6 +104,12 @@ return
 }
 
 ###########################################################
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  echo "$0 only for CentOS 7"
+  echo "aborted..."
+  exit 1
+fi
+
 starttime=$(TZ=UTC date +%s.%N)
 {
 
