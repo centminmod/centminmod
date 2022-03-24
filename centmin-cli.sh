@@ -1328,7 +1328,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
 
   if [[ "$CENTOS_EIGHT" -eq '8' && "$INITIALINSTALL" = [yY] ]]; then
     # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-    yum -q -y module disable nginx mariadb mysql php redis:5
+    yum -q -y module disable nginx mariadb mysql php composer redis:5
   fi
 
   # install missing dependencies specific to CentOS 8
