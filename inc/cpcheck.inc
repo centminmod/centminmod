@@ -929,7 +929,7 @@ cityfan_fix() {
 }
 
 update_initphpfpm() {
-  if [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/php-fpm && "$(grep -qw 'configtest' /etc/init.d/php-fpm >/dev/null 2>&1; echo $?)" != '0' ]]; then
     \cp -f "${SCRIPT_DIR}/init/php-fpm" /etc/init.d/php-fpm
     chmod +x /etc/init.d/php-fpm
     if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then

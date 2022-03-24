@@ -1218,7 +1218,7 @@ fi
 
 sar_call
 
-    if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
       /usr/local/src/centminmod/tools/php-systemd.sh fpm-systemd
     fi
     cmservice php-fpm restart
