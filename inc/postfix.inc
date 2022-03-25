@@ -108,7 +108,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
   fi
 fi # centos6
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$SENDMAIL_INSTALL" = [yY] && "$POSTFIX_INSTALL" = [nN] ]]; then
     if [[ ! -f /usr/lib/systemd/system/postfix.service && ! -f /usr/lib/systemd/system/sendmail.service ]]; then
       echo "*************************************************"

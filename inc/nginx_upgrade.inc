@@ -1011,7 +1011,7 @@ fi
 # error check
 ################
 
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             systemctl daemon-reload
         fi
 
@@ -1174,7 +1174,7 @@ fi
         fi
         echo
     fi
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             systemctl daemon-reload
         fi
         # empty pagespeed cache
