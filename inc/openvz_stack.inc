@@ -22,7 +22,7 @@ function funct_openvz_stacksize {
     echo "********************************************************************"
     cecho "* Correct service's stack size for OpenVZ systems. Please wait...." $boldgreen
     echo "********************************************************************"
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
       if [ -f /etc/init.d/rsyslog ]; then
         sed -i 's/#!\/bin\/bash/#!\/bin\/bash\nif [ -f \/proc\/user_beancounters ]; then\nulimit -s 128\nfi\n/g' /etc/init.d/rsyslog
       fi
@@ -104,7 +104,7 @@ EFF
       fi
     fi # centos 6 or centos 7
 
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
       RSYSLOGRUNNING=$(service rsyslog status | awk '{ print $5 }' | sed 's/running.\.\./running/g')
       if [[ "$RSYSLOGRUNNING" = 'running' ]]; then
         service rsyslog restart

@@ -62,7 +62,7 @@ NSDRUN_VERCHECK=$(nsd -v 2>&1 | head -n1 | awk '{print $3}' | cut -d . -f1)
     cd /etc/init.d/
     cp $CUR_DIR/init/nsd nsd
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/nsd/nsd.conf
     sed -i 's/\/var\/run\/nsd\/nsd.pid/\/run\/nsd\/nsd.pid/' /etc/init.d/nsd
 fi

@@ -31,7 +31,7 @@ fi
 
 touch /etc/logrotate.d/php-fpm
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         VARDFSIZE=$(df --output=avail /var | tail -1)
 else
         VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')

@@ -1,5 +1,21 @@
 libheif_install() {
-    if [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETELEVEN" = [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTEN" = [yY] ]]; then
+        if [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+            source /opt/rh/gcc-toolset-10/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETNINE" = [yY] ]]; then
+        if [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+            source /opt/rh/gcc-toolset-9/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETELEVEN" = [yY] ]]; then
         if [[ -f /opt/rh/devtoolset-11/root/usr/bin/gcc || -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
             source /opt/rh/devtoolset-11/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -82,7 +98,7 @@ libheif_install() {
 
 checkphpext() {
 
-  if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
     # PHP 7+ requires imagick >3.4.4 i.e. 3.6.0+
     # PHP 5.x requires imagick <=3.4.4
     IMAGICKPHP_VER="$IMAGICKPHP_SEVEN_VER"

@@ -7,7 +7,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ ! -f /etc/rc.d/rc.local ]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -65,7 +65,7 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         # centos 7
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -143,7 +143,7 @@ EOF
   fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
             if [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then

@@ -21,7 +21,7 @@ if [[ -f /proc/sys/net/ipv4/tcp_fastopen && "$FASTOPEN_STATSVAL" = '0' ]]; then
       echo "net.ipv4.tcp_fastopen=3" >> /etc/sysctl.conf
       sysctl -p
     fi
-  elif [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+  elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     echo 'net.ipv4.tcp_fastopen=3' > /etc/sysctl.d/50-tcp_fastopen.conf
     sysctl -p /etc/sysctl.d/50-tcp_fastopen.conf
   fi

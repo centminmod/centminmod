@@ -157,7 +157,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
         yum${CACHESKIP} -y install perl-libwww-perl
         sar_call
     fi
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         if [[ $(rpm -q perl-LWP-Protocol-https >/dev/null 2>&1; echo $?) != '0' ]]; then
             yum${CACHESKIP} -y install perl-LWP-Protocol-https
             sar_call
@@ -285,10 +285,10 @@ fi # check to see if csf.pignore already has custom apps added
 
 # if CentOS 7 is detected disable firewalld in favour 
 # of csf iptables ip6tables for now
-if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     if [[ "$FIREWALLD_DISABLE" = [yY] ]]; then
         # disable firewalld
-        if [[ "$CENTOS_EIGHT" = '8' ]]; then
+        if [[ "$CENTOS_EIGHT" = '8'|| "$CENTOS_NINE" -eq '9' ]]; then
             systemctl disable firewalld nftables
             systemctl stop firewalld nftables
         else

@@ -122,7 +122,7 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
             pushd /etc/init.d/
             patch -s < memcached-socketfix.patch >/dev/null 2>&1
             rm -rf memcached-socketfix.patch
-            if [[ "$CENTOS_SEVEN" = '7' ]]; then
+            if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 systemctl daemon-reload
             fi
             if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -138,7 +138,7 @@ PHPEXTDIRD=$(cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} E
             pushd /etc/init.d/
             patch -s < memcached-socketfix.patch >/dev/null 2>&1
             rm -rf memcached-socketfix.patch
-            if [[ "$CENTOS_SEVEN" = '7' ]]; then
+            if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
                 systemctl daemon-reload
             fi
             if [ "$(ps -C memcached | grep -w memcached)" ]; then
@@ -255,7 +255,7 @@ fi # FPMRPM_MEMCACHED
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 $(pidof memcached)
-elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     kill -9 $(pidof memcached)
 fi
 sleep 2
@@ -603,7 +603,7 @@ fi # PHP_MEMCACHED = y
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
     kill -9 "$(pidof memcached)"
-elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     kill -9 $(pidof memcached)
 fi
 sleep 2
