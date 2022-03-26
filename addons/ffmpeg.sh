@@ -378,9 +378,21 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
     export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
     export CXXFLAGS="${CFLAGS}"
   elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
-    echo "installing devtoolset-10 for GCC 10..."
+    echo "installing gcc-toolset-10 for GCC 10..."
     yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
     source /opt/rh/gcc-toolset-10/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  fi
+
+  if [[ "$GCC_ELEVEN" = [yY] && "$(uname -m)" = 'x86_64' && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+    source /opt/rh/gcc-toolset-11/enable
+    export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
+    export CXXFLAGS="${CFLAGS}"
+  elif [[ "$GCC_TEN" = [yY] && "$(uname -m)" = 'x86_64' && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+    echo "installing gcc-toolset-11 for GCC 11..."
+    yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-memstomp gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
+    source /opt/rh/gcc-toolset-11/enable
     export CFLAGS="${OPT_LEVEL} -march=${MARCH_TARGET} -Wimplicit-fallthrough=0 -Wno-pedantic"
     export CXXFLAGS="${CFLAGS}"
   fi

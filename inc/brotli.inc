@@ -163,7 +163,14 @@ scl_install() {
     fi
   # centos 8
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-      if [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc ]]; then
+      if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc ]]; then
+        if [[ "$(rpm -ql gcc-toolset-11-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-11-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-11-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-memstomp gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
+        fi
+        sar_call
+        /opt/rh/gcc-toolset-11/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-11/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc ]]; then
         if [[ "$(rpm -ql gcc-toolset-10-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-10-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-10-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
           time yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
         fi
@@ -429,6 +436,16 @@ libbroti_install() {
         g++ --version
     fi
 
+    if [[ "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
+        source /opt/rh/gcc-toolset-11/root/usr/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
     if [[ "$DEVTOOLSETEIGHT" = [yY] ]] && [[ -f /opt/gcc8/bin/gcc && -f /opt/gcc8/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -lt '407' ]]; then
         source /opt/gcc8/enable
         unset CC
@@ -661,6 +678,16 @@ ngxbrotli_download() {
 
     if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
         source /opt/rh/gcc-toolset-10/enable
+        unset CC
+        unset CXX
+        export CC="ccache gcc"
+        export CXX="ccache g++"
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-11/enable
         unset CC
         unset CXX
         export CC="ccache gcc"

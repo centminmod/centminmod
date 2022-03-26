@@ -282,6 +282,51 @@ install_cfzlib() {
         g++ --version
     fi
 
+    if [[ "$DEVTOOLSETNINE" = [yY] && -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-9/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETTEN" = [yY] && -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        gcc --version
+        g++ --version
+    fi
+
+    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
+        source /opt/rh/gcc-toolset-11/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache gcc"
+            export CXX="ccache g++"
+        else
+            export CC="gcc"
+            export CXX="g++"
+        fi
+        gcc --version
+        g++ --version
+    fi
+
         install_cfzlibstartdir=$(pwd)
         echo
         echo "install zlib cloudflare..."

@@ -63,8 +63,15 @@ enable_devtoolset() {
    if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
-      if [[ "$CENTOS_SIX" = 6 || "$CENTOS_SEVEN" = 7 || "$CENTOS_EIGHT" = 8 ]]; then
-        if [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTEN" = [yY] ]]; then
+      if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 || "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
+        if [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETELEVEN" = [yY] ]]; then
+            if [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+               yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-memstomp gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
+            fi       
+            source /opt/rh/gcc-toolset-11/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
                yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
             fi       

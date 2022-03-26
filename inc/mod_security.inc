@@ -11,6 +11,7 @@ modsecurity_install() {
     # https://github.com/SpiderLabs/ModSecurity/wiki/Compilation-recipes
 
     # force devtoolset gcc usage
+    if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 ]]; then
       if [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
         scl_install
         unset CC
@@ -138,6 +139,93 @@ modsecurity_install() {
         gcc --version
         g++ --version
       fi
+    fi
+    if [[ "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
+      if [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+        source /opt/rh/gcc-toolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
+        source /opt/rh/gcc-toolset-10/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+        scl_install
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+      elif [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
+        source /opt/rh/gcc-toolset-9/enable
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+          export CC="ccache gcc"
+          export CXX="ccache g++"
+        else
+          export CC="gcc"
+          export CXX="g++"
+        fi
+        # export CFLAGS="-Wimplicit-fallthrough=0"
+        gcc --version
+        g++ --version
+    fi
    
     if [[ ! -f /usr/bin/json_verify && ! -f /usr/include/yajl/yajl_common.h ]]; then
       yum -y install yajl yajl-devel
