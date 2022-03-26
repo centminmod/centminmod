@@ -101,9 +101,22 @@ if [ -f /etc/rocky-release ]; then
     ROCKYLINUX_NINE='9'
   fi
 fi
+if [ -f /etc/oracle-release ]; then
+  CENTOSVER=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g')
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+fi
 
 if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
-  if [[ "$ROCKYLINUX_EIGHT" = '8' ]]; then
+  if [[ "$ORACLELINUX_EIGHT" = '8' ]]; then
+    label_os=OracleLinux
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_EIGHT" = '8' ]]; then
     label_os=RockyLinux
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
   elif [[ "$ALMALINUX_EIGHT" = '8' ]]; then
