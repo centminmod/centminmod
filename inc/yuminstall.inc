@@ -32,7 +32,7 @@ echo "...."
 echo "......"
 echo "........."
 
-if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' ]]; then
 
   # do not install yum fastmirror plugin if not enough detected system memory available
   # for yum fastmirror operation
@@ -97,17 +97,17 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 else
 
-if [[ $(rpm -q yum-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' ]] && [[ $(rpm -q yum-priorities >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-priorities${DISABLEREPO_DNF}
   sar_call
 fi
 
-if [[ $(rpm -q yum-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' ]] && [[ $(rpm -q yum-fastestmirror >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-fastestmirror${DISABLEREPO_DNF}
   sar_call
 fi
 
-if [[ $(rpm -q yum-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
+if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' ]] && [[ $(rpm -q yum-downloadonly >/dev/null 2>&1; echo $?) != '0' ]]; then
   yum -y -q install yum-downloadonly${DISABLEREPO_DNF}
   sar_call
 fi
@@ -121,7 +121,7 @@ sed -i 's/metadata_expire=1h/metadata_expire=4h/g' /etc/yum.conf
 yumprior
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
     time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
     sar_call
