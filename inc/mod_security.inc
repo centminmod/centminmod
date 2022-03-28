@@ -225,6 +225,7 @@ modsecurity_install() {
         # export CFLAGS="-Wimplicit-fallthrough=0"
         gcc --version
         g++ --version
+      fi
     fi
    
     if [[ ! -f /usr/bin/json_verify && ! -f /usr/include/yajl/yajl_common.h ]]; then
