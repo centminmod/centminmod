@@ -1,3 +1,30 @@
+ngx_modern_ciphers_setup() {
+  if [[ -d /usr/local/nginx/conf/ssl && ! -f /usr/local/nginx/conf/ssl/dhparam.pem ]]; then
+if [[ "$NGINX_DHPARAM_SIZE" = '3072' ]]; then
+  echo '-----BEGIN DH PARAMETERS-----
+MIIBiAKCAYEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
+ssbzSibBsu/6iGtCOGEfz9zeNVs7ZRkDW7w09N75nAI4YbRvydbmyQd62R0mkff3
+7lmMsPrBhtkcrv4TCYUTknC0EwyTvEN5RPT9RFLi103TZPLiHnH1S/9croKrnJ32
+nuhtK8UiNjoNq8Uhl5sN6todv5pC1cRITgq80Gv6U93vPBsg7j/VnXwl5B0rZsYu
+N///////////AgEC
+-----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
+elif [[ "$NGINX_DHPARAM_SIZE" = '2048' ]]; then
+  echo '-----BEGIN DH PARAMETERS-----
+MIIBCAKCAQEA//////////+t+FRYortKmq/cViAnPTzx2LnFg84tNpWp4TZBFGQz
++8yTnc4kmz75fS/jY2MMddj2gbICrsRhetPfHtXV/WVhJDP1H18GbtCFY2VVPe0a
+87VXE15/V8k1mE8McODmi3fipona8+/och3xWKE2rec1MKzKT0g6eXq8CrGCsyT7
+YdEIqUuyyOP7uWrat2DX9GgdT0Kj3jlN9K5W7edjcrsZCwenyO4KbXCeAvzhzffi
+7MA0BM0oNC9hkXL+nOmFg/+OTxIy7vKBg8P+OxtMb61zO7X8vC7CIAXFjvGDfRaD
+ssbzSibBsu/6iGtCOGEoXJf//////////wIBAg==
+-----END DH PARAMETERS-----' > /usr/local/nginx/conf/ssl/dhparam.pem
+fi
+  fi
+}
+
 disable_rpmforge() {
   if [ -f /etc/yum.repos.d/rpmforge.repo ]; then
     sed -i 's|enabled .*|enabled = 0|g' /etc/yum.repos.d/rpmforge.repo
@@ -3306,6 +3333,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   jetpack_ip_whitelist_cronsetup
   lets_dst_root_ca_fix
   check_php_cainfo_file
+  ngx_modern_ciphers_setup
 fi
 
 }

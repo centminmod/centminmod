@@ -272,6 +272,7 @@ fi
     umask 022
 
     mkdir -p /usr/local/nginx/conf/conf.d
+    mkdir -p /usr/local/nginx/conf/ssl
     fpmconfdir
     mkdir -p /var/log/nginx
     touch /var/log/nginx/localhost.access.log

@@ -125,6 +125,7 @@ NSD_INSTALL='y'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
 NTP_INSTALL='y'              # Install Network time protocol daemon
 NGINXPATCH='y'               # Set to y to allow NGINXPATCH_DELAY seconds time before Nginx configure and patching Nginx
+NGINX_DHPARAM_SIZE='2048'    # Default Nginx dhparam size = 2048 or 3072
 NGINX_IOURING_PATCH='n'      # Experimental Nginx AIO patch for Linux 5.1+ Kernel systems only
 NGINXPATCH_DELAY='1'         # Number of seconds to pause Nginx configure routine during Nginx upgrades
 STRIPNGINX='y'               # set 'y' to strip nginx binary to reduce size
