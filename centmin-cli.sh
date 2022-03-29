@@ -1755,10 +1755,16 @@ fi
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
+if [[ "$CENTOS_NINE" -eq 9 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel -4'
     WGETRETRY=''
-elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
+elif [[ "$CENTOS_EIGHT" -eq 8 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP='axel -4'
+    WGETRETRY=''
+elif [[ "$CENTOS_SEVEN" -eq 7 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP='axel -4'
+    WGETRETRY=''
+elif [[ "$CENTOS_SIX" -eq 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel'
     WGETRETRY=''
 else
