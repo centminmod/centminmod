@@ -111,8 +111,8 @@ pgophpbench() {
   echo "PGO phpbench setup start"
   rm -rf "${DIR_TMP}/phpbench"
   mkdir -p "${DIR_TMP}/phpbench" /opt/phpbench
-  wget -4 -O "${DIR_TMP}/phpbench/phpbench-0.8.1.zip" https://github.com/centminmod/centminmod-php71/raw/master/scripts/phpbench-0.8.1.zip
-  wget -4 -O /opt/phpbench/detailed_benchmark.php https://github.com/centminmod/centminmod-php71/raw/master/scripts/detailed_benchmark.php
+  wget${ipv_forceopt_wget} -O "${DIR_TMP}/phpbench/phpbench-0.8.1.zip" https://github.com/centminmod/centminmod-php71/raw/master/scripts/phpbench-0.8.1.zip
+  wget${ipv_forceopt_wget} -O /opt/phpbench/detailed_benchmark.php https://github.com/centminmod/centminmod-php71/raw/master/scripts/detailed_benchmark.php
   pushd "${DIR_TMP}/phpbench"
   unzip phpbench-0.8.1.zip
   \cp -af tests /opt/phpbench/tests
@@ -219,12 +219,12 @@ install_libgd_external() {
     echo
     pushd "$DIR_TMP"
     if [ ! -f "libgd-${LIBGD_EXTERNAL_VER}.tar.gz" ]; then
-    wget -4 "https://github.com/libgd/libgd/releases/download/gd-${LIBGD_EXTERNAL_VER}/libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
+    wget${ipv_forceopt_wget} "https://github.com/libgd/libgd/releases/download/gd-${LIBGD_EXTERNAL_VER}/libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
     tar xvfz "libgd-${LIBGD_EXTERNAL_VER}.tar.gz"
     fi
     cd "libgd-${LIBGD_EXTERNAL_VER}"
     if [[ "$LIBGD_EXTERNAL_VER" = '2.3.3' ]]; then
-      wget -4 https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.patch -O gdflip.patch
+      wget${ipv_forceopt_wget} https://github.com/libgd/libgd/commit/f4bc1f5c26925548662946ed7cfa473c190a104a.patch -O gdflip.patch
       patch -p1 < gdflip.patch
     fi
     make clean
@@ -568,17 +568,17 @@ if [[ "$CENTOS_SIX" = '6' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || 
   export GD_LIBS="-L/usr/${LIBDIR_GD} -lgd"
   # PHP 7.4 sqlite requires >3.7 but centos 6 only has sqlite 3.6.20
   if [[ "$(uname -m)" = 'x86_64' && ! -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm" ]]; then
-    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm"
+    wget${ipv_forceopt_wget} http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm"
     # yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm
   elif [[ "$(uname -m)" != 'x86_64' && ! -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm" ]]; then
-    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm"
+    wget${ipv_forceopt_wget} http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm"
     # yum -y localinstall $DIR_TMP/sqlite-3.7.9-1.el6.art.i686.rpm
   fi
   if [[ "$(uname -m)" = 'x86_64' && ! -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm" ]]; then
-    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm"
+    wget${ipv_forceopt_wget} http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm"
     # yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm
   elif [[ "$(uname -m)" != 'x86_64' && ! -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm" ]]; then
-    wget -4 http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm"
+    wget${ipv_forceopt_wget} http://www6.atomicorp.com/channels/atomic/centos/6/x86_64/RPMS/sqlite-devel-3.7.9-1.el6.art.i686.rpm -O "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm"
     # yum -y localinstall $DIR_TMP/sqlite-devel-3.7.9-1.el6.art.i686.rpm
   fi
   if [[ "$(uname -m)" = 'x86_64' && -f "$DIR_TMP/sqlite-3.7.9-1.el6.art.x86_64.rpm" && -f "$DIR_TMP/sqlite-devel-3.7.9-1.el6.art.x86_64.rpm" ]]; then

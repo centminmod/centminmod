@@ -221,8 +221,10 @@ fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
+  ipv_forceopt_wget=""
 else
   ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
 fi
 
 if [[ "$ACME_DEFAULT_CA" = 'buypass' ]]; then

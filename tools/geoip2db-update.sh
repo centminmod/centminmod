@@ -45,7 +45,7 @@ geoiptwo_updater() {
     if [ -f /usr/share/GeoIP/GeoLite2-City.mmdb ] ; then
       ls -lah /usr/share/GeoIP/GeoLite2-City.mmdb
     fi
-    wget -4 "$maxmind_city_url" -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+    wget${ipv_forceopt_wget} "$maxmind_city_url" -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
@@ -61,7 +61,7 @@ geoiptwo_updater() {
     if [ -f /usr/share/GeoIP/GeoLite2-Country.mmdb ]; then
       ls -lah /usr/share/GeoIP/GeoLite2-Country.mmdb
     fi
-    wget -4 "$maxmind_country_url" -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+    wget${ipv_forceopt_wget} "$maxmind_country_url" -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
@@ -74,7 +74,7 @@ geoiptwo_updater() {
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOASNDATA_CURLCHECK" = '0' ]]; then
-    wget -4 "$maxmind_asn_url" -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
+    wget${ipv_forceopt_wget} "$maxmind_asn_url" -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   fi
   tar xzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-ASN_*/GeoLite2-ASN.mmdb /usr/share/GeoIP/GeoLite2-ASN.mmdb

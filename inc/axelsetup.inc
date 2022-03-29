@@ -53,7 +53,7 @@ return
     if [ -s $AXEL_LINKFILE ]; then
         cecho "Axel ${AXEL_VER} Archive found, skipping download..." $boldgreen 
     else
-        wget -4 -O $AXEL_LINKFILE $AXEL_LINK
+        wget${ipv_forceopt_wget} -O $AXEL_LINKFILE $AXEL_LINK
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: $AXEL_LINKFILE download failed." $boldgreen
@@ -68,7 +68,7 @@ else
 if [[ "$(tar -tzf axel-${AXEL_VER}.tar.gz >/dev/null; echo $?)" != '0' ]]; then
   rm -rf /svr-setup/axel-${AXEL_VER}.*
   echo "re-try download form local mirror..."
-  wget -4 -O $AXEL_LINKFILE $AXEL_LINKLOCAL
+  wget${ipv_forceopt_wget} -O $AXEL_LINKFILE $AXEL_LINKLOCAL
 fi
 
 tar xzf $AXEL_LINKFILE

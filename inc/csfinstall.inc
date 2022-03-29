@@ -20,7 +20,7 @@ csf_maxmind_geolite_two_download() {
             sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf
             csf --profile backup cmm-after-maxmind-csf-database-download >/dev/null 2>&1
         else
-            wget -4 https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
+            wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/geoip2-lite/csf-geolite2.tar.gz -O /svr-setup/csf-geolite2.tar.gz
             tar xvf /svr-setup/csf-geolite2.tar.gz -C /var/lib/csf/
             csf --profile backup cmm-before-maxmind-csf-database-download >/dev/null 2>&1
             sed -i 's|CC_INTERVAL = .*|CC_INTERVAL = "14"|' /etc/csf/csf.conf

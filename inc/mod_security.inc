@@ -224,7 +224,7 @@ modsecurity_install() {
     if [ ! -f "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf" ]; then
       newowaspver='y'
       pushd "$DIR_TMP"
-      wget -4 "https://github.com/coreruleset/coreruleset/archive/v${MODSECURITY_OWASPVER}.tar.gz"
+      wget${ipv_forceopt_wget} "https://github.com/coreruleset/coreruleset/archive/v${MODSECURITY_OWASPVER}.tar.gz"
       tar xvzf "v${MODSECURITY_OWASPVER}.tar.gz"
       mv "coreruleset-${MODSECURITY_OWASPVER}" /usr/local/nginx
       echo

@@ -1,5 +1,5 @@
 cd /usr/local/etc/
-wget -4 https://centminmod.com/phpfpm/php-fpm-minond.conf
+wget${ipv_forceopt_wget} https://centminmod.com/phpfpm/php-fpm-minond.conf
 cp php-fpm.conf php-fpm.conf-backupold
 unalias cp
 cp -f php-fpm-minond.conf php-fpm.conf

@@ -5,7 +5,7 @@ phptimezonedb_install() {
     echo
     pushd "${DIR_TMP}"
     if [ ! -f "timezonedb-${PHPTIMEZONEDB_VER}.tgz" ]; then
-      wget -4 "https://pecl.php.net/get/timezonedb-${PHPTIMEZONEDB_VER}.tgz"
+      wget${ipv_forceopt_wget} "https://pecl.php.net/get/timezonedb-${PHPTIMEZONEDB_VER}.tgz"
     fi
     tar xzf "timezonedb-${PHPTIMEZONEDB_VER}.tgz"
     cd "timezonedb-${PHPTIMEZONEDB_VER}"

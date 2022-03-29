@@ -649,7 +649,7 @@ if [[ "$NGINX_TLS_FINGERPRINT" = [yY] && "$DETECTOPENSSL_ONEONE" && "$DETECTOPEN
      echo "DETECTOPENSSL_ONEONE=$DETECTOPENSSL_ONEONE"
      NGX_FINGERPRINT_DIR='nginx-ssl-fingerprint'
      if [ ! -f openssl_nginx_fingerprint.patch ]; then
-        wget -4 https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/openssl.1_1_1.patch -O openssl_nginx_fingerprint.patch
+        wget${ipv_forceopt_wget} https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/openssl.1_1_1.patch -O openssl_nginx_fingerprint.patch
      fi
      if [ -f openssl_nginx_fingerprint.patch ]; then
          cecho "patching OpenSSL for nginx-ssl-fingerprint module" $boldyellow

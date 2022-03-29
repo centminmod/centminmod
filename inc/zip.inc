@@ -12,7 +12,7 @@ zip_php_install() {
       echo "Downloading ZIP PHP extension..."
       cd "$DIR_TMP"
       if [ ! -f  "${DIR_TMP}/zip-${PHPZIP_VER}.tgz" ]; then
-        wget -4 https://pecl.php.net/get/zip-${PHPZIP_VER}.tgz -O zip-${PHPZIP_VER}.tgz
+        wget${ipv_forceopt_wget} https://pecl.php.net/get/zip-${PHPZIP_VER}.tgz -O zip-${PHPZIP_VER}.tgz
         tar xzvf "zip-${PHPZIP_VER}.tgz"
       elif [[ -f  "${DIR_TMP}/zip-${PHPZIP_VER}.tgz" && ! -d  "${DIR_TMP}/zip-${PHPZIP_VER}" ]]; then
         tar xzvf "zip-${PHPZIP_VER}.tgz"
