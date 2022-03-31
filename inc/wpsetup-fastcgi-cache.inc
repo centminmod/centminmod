@@ -420,7 +420,7 @@ PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -4s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
     fi
 pureftpinstall
 

@@ -22,7 +22,7 @@ jetpack_ip_whitelist_cronsetup() {
 }
 jetpack_ip_whitelist_cronsetup
 
-jetpackallowips=$(curl -4sk https://jetpack.com/ips-v4.txt | awk '{print "allow "$1";"}')
+jetpackallowips=$(curl -${ipv_forceopt}sk https://jetpack.com/ips-v4.txt | awk '{print "allow "$1";"}')
 echo "populating include file /usr/local/nginx/conf/jetpack_whitelist_ip.conf with:"
 echo
 echo -e "# jetpack ip whitelist https://jetpack.com/support/hosting-faq/\n$jetpackallowips\ndeny all;" | tee /usr/local/nginx/conf/jetpack_whitelist_ip.conf

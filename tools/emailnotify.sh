@@ -225,7 +225,7 @@ check_pass_msg() {
 }
 
 checks() {
-  serverip_ipv4=$(curl -4s https://ipinfo.io/ip)
+  serverip_ipv4=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
   serverip_ipv6=$(curl -6s https://ipinfo.io/ip)
   serverhostname=$(hostname)
   serverhostname_ipv4=$(dig +short A $serverhostname)

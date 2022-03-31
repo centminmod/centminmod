@@ -11,10 +11,10 @@ dropbox_send() {
     echo
   fi
   if [ ! -f /usr/local/bin/dbsend ]; then
-    curl -4sL https://gist.githubusercontent.com/centminmod/dca86d219b5bb98dcf26c602c548487e/raw/dbsend.sh -o /usr/local/bin/dbsend
+    curl -${ipv_forceopt}sL https://gist.githubusercontent.com/centminmod/dca86d219b5bb98dcf26c602c548487e/raw/dbsend.sh -o /usr/local/bin/dbsend
     chmod +x /usr/local/bin/dbsend
   elif [ -f /usr/local/bin/dbsend ]; then
-    curl -4sL https://gist.githubusercontent.com/centminmod/dca86d219b5bb98dcf26c602c548487e/raw/dbsend.sh -o /usr/local/bin/dbsend
+    curl -${ipv_forceopt}sL https://gist.githubusercontent.com/centminmod/dca86d219b5bb98dcf26c602c548487e/raw/dbsend.sh -o /usr/local/bin/dbsend
     chmod +x /usr/local/bin/dbsend
   fi
   if [[ "$DROPBOX_SEND" = [yY] && -f /usr/sbin/rclone && "$(/usr/sbin/rclone listremotes | grep -o dropbox1)" = 'dropbox1' && "$RCLONE_ENABLE" = [yY] ]]; then
