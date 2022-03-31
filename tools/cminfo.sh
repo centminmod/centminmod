@@ -1075,7 +1075,7 @@ version_log() {
 }
 
 check_version() {
-    latest_incre=$(curl -4sL https://github.com/centminmod/centminmod/raw/123.09beta01/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
+    latest_incre=$(curl -${ipv_forceopt}sL https://github.com/centminmod/centminmod/raw/123.09beta01/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
     cur_incre=$(awk -F '.b' '{print $3}' /etc/centminmod-release)
     latest="123.09beta01.b${latest_incre}"
     current="123.09beta01.b${cur_incre}"

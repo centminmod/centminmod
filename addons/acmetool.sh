@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.77'
+ACMEVER='1.0.78'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -388,19 +388,19 @@ check_cfdns_api() {
   echo "Verifying working Cloudflare DNS API Credentials"
   if [[ ! -z "$CF_KEY" && ! -z "$CF_Email" ]] && [[ -z "$CF_Token" && -z "$CF_Account_ID" ]]; then
     echo "CF Global API Key detected"
-    cfapi_check=$(curl -4sX GET "https://api.cloudflare.com/client/v4/zones" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r '.success')
+    cfapi_check=$(curl -${ipv_forceopt}sX GET "https://api.cloudflare.com/client/v4/zones" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r '.success')
     if [[ "$cfapi_check" = 'true' ]]; then
       echo "Ok: CF Global API works"
-      cflist_zones=$(curl -4sX GET "https://api.cloudflare.com/client/v4/zones" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r '.result[] | "\(.name) \(.id) \(.status) \(.paused)"')
+      cflist_zones=$(curl -${ipv_forceopt}sX GET "https://api.cloudflare.com/client/v4/zones" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r '.result[] | "\(.name) \(.id) \(.status) \(.paused)"')
       # get specific zone details
-      # curl -4sX GET "https://api.cloudflare.com/client/v4/zones/$CF_Zone_ID" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r
+      # curl -${ipv_forceopt}sX GET "https://api.cloudflare.com/client/v4/zones/$CF_Zone_ID" -H "X-Auth-Email: $CF_Email" -H "X-Auth-Key: $CF_KEY" -H "Content-Type: application/json" | jq -r
     else
       echo "Error: CF Global API not working"
     fi
 
   elif [[ -z "$CF_KEY" && -z "$CF_Email" ]] && [[ ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]]; then
     echo "CF API Tokens detected"
-    cfapi_check=$(curl -4sX GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CF_Token" -H "Content-Type:application/json" | jq -r '.success')
+    cfapi_check=$(curl -${ipv_forceopt}sX GET "https://api.cloudflare.com/client/v4/user/tokens/verify" -H "Authorization: Bearer $CF_Token" -H "Content-Type:application/json" | jq -r '.success')
     if [[ "$cfapi_check" = 'true' ]]; then
       echo "Ok: CF API Token works"
     else

@@ -327,7 +327,7 @@ pureftpinstall() {
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -4s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
     fi
 
 		yum -q -y install pure-ftpd
@@ -612,7 +612,7 @@ PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -4s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
     fi
 if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
   pureftpinstall
