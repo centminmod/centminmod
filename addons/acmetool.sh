@@ -4469,7 +4469,7 @@ manual_mode() {
   echo
   getuseragent
   echo "$0 acmeupdate"
-  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
 
   echo
   cecho "---------------------------------------------------------------------------" $boldgreen
