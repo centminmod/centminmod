@@ -9,9 +9,10 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
     ERR=$?
     CCREMICHECK="$ERR"
     if [ "$CCREMICHECK" == '0' ]; then
-      yumpriorremi_eight
+      # yumpriorremi_eight
       echo
       # set remi redis 6.2 default
+      yum -y module disable composer
       yum -y module enable redis:remi-6.2
     else
       cecho "Error: problem with Remi repo install." $boldgreen
@@ -28,7 +29,11 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
 {
   if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
     echo "*************************************************"
-    cecho "* AlmaLinux 8.x detected installing EPEL Repo" $boldgreen
+    cecho "* Alma Linux 8.x detected installing EPEL Repo" $boldgreen
+    echo "*************************************************"
+  elif [[ "$ROCKYLINUX_EIGHT" = '8' ]]; then
+    echo "*************************************************"
+    cecho "* Rocky Linux 8.x detected installing EPEL Repo" $boldgreen
     echo "*************************************************"
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
     echo "*************************************************"

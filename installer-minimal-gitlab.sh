@@ -573,9 +573,11 @@ fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 else
   ipv_forceopt='4'
   ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
 if [[ ! -f /proc/user_beancounters && -f /usr/bin/systemd-detect-virt && "$(/usr/bin/systemd-detect-virt)" = 'lxc' ]] || [[ ! -f /proc/user_beancounters && -f $(which virt-what) && $(virt-what | xargs | grep -o lxc) = 'lxc' ]]; then

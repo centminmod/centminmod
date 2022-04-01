@@ -252,9 +252,11 @@ fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 else
   ipv_forceopt='4'
   ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
 source "inc/centos_seven.inc"
@@ -1119,7 +1121,6 @@ PYTHON_VERSION='2.7.10'       # Use this version of Python
 SIEGE_VERSION='4.0.4'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
-WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
 USEAXEL='y'                  # whether to use axel download accelerator or wget
 ###############################################################
@@ -1756,13 +1757,13 @@ fi
 # FUNCTIONS
 
 if [[ "$CENTOS_NINE" -eq 9 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP='axel -4'
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
     WGETRETRY=''
 elif [[ "$CENTOS_EIGHT" -eq 8 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP='axel -4'
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
     WGETRETRY=''
 elif [[ "$CENTOS_SEVEN" -eq 7 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP='axel -4'
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
     WGETRETRY=''
 elif [[ "$CENTOS_SIX" -eq 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel'
