@@ -184,9 +184,11 @@ fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
   ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 else
   ipv_forceopt='4'
   ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
 source "inc/centos_seven.inc"
@@ -1471,10 +1473,16 @@ fi
 ###############################################################
 # FUNCTIONS
 
-if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP='axel -4'
+if [[ "$CENTOS_NINE" -eq 9 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
     WGETRETRY=''
-elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
+elif [[ "$CENTOS_EIGHT" -eq 8 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
+    WGETRETRY=''
+elif [[ "$CENTOS_SEVEN" -eq 7 && "$USEAXEL" = [yY] ]]; then
+    DOWNLOADAPP="axel${ipv_forceopt_wget}"
+    WGETRETRY=''
+elif [[ "$CENTOS_SIX" -eq 6 && "$USEAXEL" = [yY] ]]; then
     DOWNLOADAPP='axel'
     WGETRETRY=''
 else
