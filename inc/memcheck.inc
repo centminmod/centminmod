@@ -11,7 +11,8 @@ TOTALMEM_SWAP=$(awk '/SwapFree/ {print $2}' /proc/meminfo)
 TOTALMEM_PHP=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 
 if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  ISLOWMEM='1870000'
+  ISLOWMEM='1700000'
+  TOTALMEM=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   ISLOWMEM='930000'
 else
