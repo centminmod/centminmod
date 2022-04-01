@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.78'
+ACMEVER='1.0.79'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -4407,7 +4407,7 @@ manual_mode() {
   echo
   getuseragent
   echo "$0 acmeupdate"
-  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k "$KEYLENGTH" --useragent "$LE_USERAGENT" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
+  echo "$ACMEBINARY --force --issue -d domain.com -d www.domain.com -w /home/nginx/domains/domain.com/public -k \"$KEYLENGTH\" --useragent \"$LE_USERAGENT\" $ACMEDEBUG_OPT${ACME_PREFERRED_CHAIN}"
 
   echo
   cecho "---------------------------------------------------------------------------" $boldgreen
