@@ -2689,7 +2689,7 @@ source_pcreinstall
 echo
 shortcutsinstall
 
-if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ -f "$CUR_DIR/tools/journald-set.sh config" ]]; then
   echo
   "$CUR_DIR/tools/journald-set.sh" config
 fi
