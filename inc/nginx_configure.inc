@@ -200,6 +200,16 @@ if [[ "$NGINX_COMPILE_EXPORT" = [yY] ]]; then
   NGINX_EXPORTLD_OPT='-Wl,-E '
 fi
 
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+else
+  ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+fi
+
 if [[ "$NGX_LDMOLD" = [yY] ]]; then
   mold_check
 fi
