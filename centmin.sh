@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='804'
+SCRIPT_INCREMENTVER='805'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/02/22'
@@ -878,7 +878,7 @@ PYTHON_VERSION='2.7.10'       # Use this version of Python
 SIEGE_VERSION='4.0.4'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
-WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases
 USEAXEL='y'                  # whether to use axel download accelerator or wget
 ###############################################################
