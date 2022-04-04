@@ -854,7 +854,7 @@ NGINX_PCREVER='8.45'         # Version of PCRE used for pcre-jit support in Ngin
 NGINX_PCRE_TWO='n'           # optional PCRE2 for Nginx 1.21.5+
 NGINX_PCRETWOVER='10.39'     # Version of PCRE2 used for pcre-jit support in Nginx
 NGINX_ZLIBCUSTOM='y'         # Use custom zlib instead of system version
-NGINX_ZLIBVER='1.2.12'       # http://www.zlib.net/
+NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
