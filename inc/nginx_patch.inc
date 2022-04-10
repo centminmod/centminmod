@@ -357,7 +357,7 @@ ngx_fingerprint_patch() {
         popd
       fi
       if [ ! -f nginx_fingerprint.patch ]; then
-          wget -4 https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/nginx.patch -O nginx_fingerprint.patch
+          wget${ipv_forceopt_wget} https://github.com/centminmod/nginx-ssl-fingerprint/raw/master/patches/nginx.patch -O nginx_fingerprint.patch
       fi
       if [ -f nginx_fingerprint.patch ]; then
         cecho "patching nginx for nginx-ssl-fingerprint module" $boldyellow
@@ -576,8 +576,8 @@ patchnginx() {
       echo
       cecho "patching nginx for http/2 support" $boldyellow
       echo
-      cecho "wget -4 http://nginx.org/patches/http2/patch.http2.txt" $boldyellow
-      wget -4 http://nginx.org/patches/http2/patch.http2.txt
+      cecho "wget${ipv_forceopt_wget} http://nginx.org/patches/http2/patch.http2.txt" $boldyellow
+      wget${ipv_forceopt_wget} http://nginx.org/patches/http2/patch.http2.txt
     
       cecho "patch -p1 < patch.http2.txt" $boldyellow
       patch -p1 < patch.http2.txt

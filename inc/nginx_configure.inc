@@ -1,7 +1,7 @@
 mold_check() {
     if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION}")" != "centmin-mold-${MOLD_VERSION}" || ! -s /usr/local/libexec/mold ]]; then
       echo "installing newer mold ${MOLD_VERSION}"
-      wget -4 -q "https://centminmod.com/centminmodparts/mold/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/mold/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-mold-${MOLD_VERSION}-1.el7.x86_64.rpm"
     fi
@@ -198,6 +198,16 @@ fi
 
 if [[ "$NGINX_COMPILE_EXPORT" = [yY] ]]; then
   NGINX_EXPORTLD_OPT='-Wl,-E '
+fi
+
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+else
+  ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
 if [[ "$NGX_LDMOLD" = [yY] ]]; then
@@ -1474,7 +1484,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       cd ../
       # setup /vhost_status.html
       \cp -af "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
-      MAINURIHOST=$(curl -4s https://ipinfo.io/ip)
+      MAINURIHOST=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
       NEWURI="/vhost_status"
       if [ -f /usr/local/nginx/html/vhost_status.html ]; then
           sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
@@ -1496,7 +1506,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
         cd ../
         # setup /vhost_status.html
         \cp -af "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
-        MAINURIHOST=$(curl -4s https://ipinfo.io/ip)
+        MAINURIHOST=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
         NEWURI="/vhost_status"
         if [ -f /usr/local/nginx/html/vhost_status.html ]; then
           sed -i "s|{{uri}}|$NEWURI|" /usr/local/nginx/html/vhost_status.html
@@ -1608,9 +1618,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' && "$(rpm -qa centmin-libatomic_ops | grep -o "centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}")" != "centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}" ]]; then
       echo "installing newer libatomic_ops library ${NGINX_LIBATOMIC_VERSION}"
       # PREFIX=/usr/local version
-      # wget -4 -q "https://centminmod.com/centminmodparts/libatomic_ops/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
+      # wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/libatomic_ops/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       # PREFIX=/usr/local/nginx-dep version
-      wget -4 -q "https://centminmod.com/centminmodparts/libatomic_ops/nginx-dep/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} -q "https://centminmod.com/centminmodparts/libatomic_ops/nginx-dep/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm" -O "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       echo "yum -y localinstall ${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       yum -y localinstall "${DIR_TMP}/centmin-libatomic_ops-${NGINX_LIBATOMIC_VERSION}-1.el7.x86_64.rpm"
       ldconfig

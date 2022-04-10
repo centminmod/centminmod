@@ -38,17 +38,17 @@ phpxz_detect() {
   fi
   
   if [[ "$CENTOS_SEVEN" = 7 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP_PHP="curl -4"
+    DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
     WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   elif [[ "$CENTOS_SIX" = 6 && "$USEAXEL" = [yY] ]]; then
-    DOWNLOADAPP_PHP="curl -4"
+    DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
     WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
   else
-    DOWNLOADAPP_PHP="curl -4"
+    DOWNLOADAPP_PHP="curl${ipv_forceopt_wget}"
     WGETRETRY_PHP=''
     AXELPHPTARGZ_PHP="-o php-${PHP_VERSION}.tar.${PHPEXTSION}"
     AXELPHPUPGRADETARGZ_PHP="-o php-${phpver}.tar.${PHPEXTSION}"
@@ -3962,6 +3962,16 @@ echo ""
 ###############################################
 
 alldownloads() {
+
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+else
+  ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+fi
 
 echo "*****************************************************"
 cecho "Downloading all required software for install routines." $boldgreen

@@ -726,7 +726,7 @@ php_patches() {
     # echo
     # echo "revert PHP 7.4.2 main/php_variables.c to PHP 7.4.1 version"
     # echo "https://community.centminmod.com/posts/81184/"
-    # wget -4 https://raw.githubusercontent.com/php/php-src/PHP-7.4.1/main/php_variables.c -O main/php_variables.c
+    # wget${ipv_forceopt_wget} https://raw.githubusercontent.com/php/php-src/PHP-7.4.1/main/php_variables.c -O main/php_variables.c
 
     # backport security bug patch for php 7.4
     # 79174 https://community.centminmod.com/posts/81231/

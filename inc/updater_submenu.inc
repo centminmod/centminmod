@@ -211,7 +211,7 @@ gitenv_update() {
   CM_DIRSIZE=$(df -P /usr/local/src/centminmod | awk '{print $4}' | tail -1 | awk '{print $1}')
   REMOTE_CMGIT=$(curl -sk${ipv_forceopt} https://raw.githubusercontent.com/centminmod/centminmod/${branchname}/giturl.txt)
 if [[ -d "${SCRIPT_DIR}/.git" ]]; then
-  if [[ "$(curl -4sLk https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
+  if [[ "$(curl -${ipv_forceopt}sLk https://github.com/centminmod/centminmod/raw/${branchname}/gitclean.txt)" = 'no' ]]; then
     echo
     cecho "Updating Current Centmin Mod code branch via git" $boldyellow
     # git fetch

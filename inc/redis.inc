@@ -3,7 +3,7 @@ redis_server_install() {
     {
     pushd "${SCRIPT_DIR}/addons/"
     # echo "Download to ${SCRIPT_DIR}/addons/redis-server-install.sh"
-    # wget -4 https://github.com/centminmod/centminmod-redis/raw/master/redis-install.sh -O ${SCRIPT_DIR}/addons/redis-server-install.sh
+    # wget${ipv_forceopt_wget} https://github.com/centminmod/centminmod-redis/raw/master/redis-install.sh -O ${SCRIPT_DIR}/addons/redis-server-install.sh
     # chmod +x redis-server-install.sh
     if [ -f "${SCRIPT_DIR}/addons/redis-server-install.sh" ]; then
       echo "Run redis installer ${SCRIPT_DIR}/addons/redis-server-install.sh"

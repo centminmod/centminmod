@@ -36,7 +36,7 @@ cforigin() {
           echo "updating $d cloudflare authenticated origin cert"
           echo "at ${cf_auth_origin_cert_dir}/${d}/origin.crt"
           cp -a "${cf_auth_origin_cert_dir}/${d}/origin.crt" "${cf_auth_origin_cert_dir}/${d}/origin.crt-backup"
-          wget -4 -q -O "${cf_auth_origin_cert_dir}/${d}/origin.crt" "$cf_auth_origin_cert"
+          wget${ipv_forceopt_wget} -q -O "${cf_auth_origin_cert_dir}/${d}/origin.crt" "$cf_auth_origin_cert"
           err=$?
           if [[ "$err" -eq '0' ]]; then
             echo "succesfully updated ${cf_auth_origin_cert_dir}/${d}/origin.crt"

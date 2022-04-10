@@ -392,7 +392,7 @@ pureftpinstall() {
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -4s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
     fi
 
 		yum -q -y install pure-ftpd
@@ -488,9 +488,9 @@ fi
 # setup https://community.centminmod.com/threads/13847/
 if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
-  wget -4 $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 elif [ -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
-  wget -4 $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -641,7 +641,7 @@ PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -4s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
     fi
 if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
   pureftpinstall

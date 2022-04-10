@@ -108,8 +108,12 @@ if [ -f /etc/centminmod/custom_config.inc ]; then
 fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 else
   ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
 if [ ! -f /root/.mytop ]; then
@@ -1073,7 +1077,7 @@ version_log() {
 }
 
 check_version() {
-    latest_incre=$(curl -4sL https://github.com/centminmod/centminmod/raw/123.09beta01/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
+    latest_incre=$(curl -${ipv_forceopt}sL https://github.com/centminmod/centminmod/raw/123.09beta01/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
     cur_incre=$(awk -F '.b' '{print $3}' /etc/centminmod-release)
     latest="123.09beta01.b${latest_incre}"
     current="123.09beta01.b${cur_incre}"

@@ -32,15 +32,15 @@ check_dns() {
       VHOST_AWWWCHECKLIST=$(echo $VHOST_AWWWCHECK | xargs)
       VHOST_AAAAWWWCHECK=$(dig -t AAAA +short @8.8.8.8 www.$vhostname_dns | grep -v $vhostname_dns)
       VHOST_AAAAWWWCHECKLIST=$(echo $VHOST_AAAAWWWCHECK | xargs)
-      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
-      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsa=($VHOST_ACHECK)
       dnsa_noips=${#dnsa[@]}
       declare -a dnsawww=($VHOST_AWWWCHECK)
       dnsawww_noips=${#dnsawww[@]}
 
-      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
-      ISCF_AAAAWWWCHECK=$(dig -t AAAA +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AAAAWWWCHECK=$(dig -t AAAA +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsaaaa=($VHOST_AAAACHECK)
       dnsaaaa_noips=${#dnsaaaa[@]}
       declare -a dnsaaaawww=($VHOST_AAAAWWWCHECK)
@@ -54,11 +54,11 @@ check_dns() {
       VHOST_ACHECKLIST=$(echo $VHOST_ACHECK | xargs)
       VHOST_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns)
       VHOST_AAAACHECKLIST=$(echo $VHOST_AAAACHECK | xargs)
-      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsa=($VHOST_ACHECK)
       dnsa_noips=${#dnsa[@]}
 
-      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -4s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsaaaa=($VHOST_AAAACHECK)
       dnsaaaa_noips=${#dnsaaaa[@]}
 
@@ -388,9 +388,9 @@ fi
 # setup https://community.centminmod.com/threads/13847/
 if [ ! -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
   mkdir -p /usr/local/nginx/conf/ssl/cloudflare/${vhostname}
-  wget -4 $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 elif [ -d /usr/local/nginx/conf/ssl/cloudflare/${vhostname} ]; then
-  wget -4 $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
+  wget${ipv_forceopt_wget} $CLOUDFLARE_AUTHORIGINPULLCERT -O /usr/local/nginx/conf/ssl/cloudflare/${vhostname}/origin.crt
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -540,10 +540,10 @@ PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -4s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
     fi
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
-# CURRENTCOUNTRY=$(curl -4s https://ipinfo.io/$CURRENTIP/country)
+# CURRENTCOUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/$CURRENTIP/country)
 pureftpinstall
 
 # Support secondary dedicated IP configuration for centmin mod

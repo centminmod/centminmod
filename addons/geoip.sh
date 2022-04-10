@@ -72,8 +72,12 @@ if [ -f /etc/centminmod/custom_config.inc ]; then
 fi
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
   ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 else
   ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
 fi
 
 geoipinstall() {
@@ -88,7 +92,7 @@ fi
 rpm -ql GeoIP-devel GeoIP
 
 	cd $DIR
-# 	# wget -4 http://geolite.maxmind.com/download/geoip/api/c/GeoIP.tar.gz
+# 	# wget${ipv_forceopt_wget} http://geolite.maxmind.com/download/geoip/api/c/GeoIP.tar.gz
 # 	# tar -zxvf GeoIP.tar.gz
 
 #         cecho "Download GeoIP.tar.gz ..." $boldyellow
