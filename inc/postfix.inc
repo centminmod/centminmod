@@ -306,7 +306,11 @@ if [[ "$DISABLE_IPVSIX" = [yY] ]]; then
     postconf -n inet_protocols
 else
     postconf -n inet_protocols
-    postconf -e 'inet_protocols = ipv4'
+    if [[ "$FORCE_IPVFOUR" = [nN] ]]; then
+      postconf -e 'inet_protocols = all'
+    else
+      postconf -e 'inet_protocols = ipv4'
+    fi
     postconf -n inet_protocols
 fi
 
