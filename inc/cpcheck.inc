@@ -1,3 +1,48 @@
+nginx_systemd_switch() {
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
+    rm -f /etc/init.d/nginx
+    if [ ! -f /usr/bin/file ]; then
+        yum -q -y install file
+    fi
+    if [ ! -f /usr/bin/dos2unix ]; then
+        yum -q -y install dos2unix
+    fi
+    # CENTOS_EIGHT = 8 nginx systemd service file
+    mkdir -p /etc/systemd/system/nginx.service.d/
+    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
+        echo "Initial Install: Update nginx for LimitNOFILE=1048576"
+cat > "/etc/systemd/system/nginx.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=1048576
+TDG
+        systemctl daemon-reload
+    fi
+
+cat > /usr/lib/systemd/system/nginx.service <<EOF
+[Unit]
+Description=Centmin Mod NGINX Server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/sbin/nginx -t
+ExecStart=/usr/local/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+ExecReload=/bin/sh -c "/bin/kill -s HUP \$(/bin/cat /usr/local/nginx/logs/nginx.pid)"
+ExecStop=/bin/sh -c "/bin/kill -s TERM \$(/bin/cat /usr/local/nginx/logs/nginx.pid)"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+service nginx start >/dev/null 2>&1
+service nginx status >/dev/null 2>&1
+chkconfig nginx on >/dev/null 2>&1
+
+fi # CENTOS_EIGHT = 8 nginx systemd service file
+}
+
 ngx_modern_ciphers_setup() {
   if [[ -d /usr/local/nginx/conf/ssl && ! -f /usr/local/nginx/conf/ssl/dhparam.pem ]]; then
 if [[ "$NGINX_DHPARAM_SIZE" = '3072' ]]; then
@@ -1030,7 +1075,7 @@ update_cmdshortcuts() {
       sed -i 's|service php-fpm restart|\/etc\/init.d\/php-fpm restart|' /usr/bin/fpmrestart
     fi
   fi
-  if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmreload ]]; the
+  if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmreload ]]; then
     if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/fpmreload)" ]]; then
       sed -i 's|service php-fpm reload|\/etc\/init.d\/php-fpm reload|' /usr/bin/fpmreload
     fi
@@ -3282,6 +3327,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
     fixwp_updater
   fi
   update_nginxconf
+  nginx_systemd_switch
   update_cmdshortcuts
   update_initphpfpm
   update_phpfpmconfg

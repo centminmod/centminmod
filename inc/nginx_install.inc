@@ -324,7 +324,7 @@ if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] || [[ "$SWITCH_NGINX_SYST
     fi
     # CENTOS_EIGHT = 8 nginx systemd service file
     mkdir -p /etc/systemd/system/nginx.service.d/
-    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
+    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
         echo "Initial Install: Update nginx for LimitNOFILE=1048576"
 cat > "/etc/systemd/system/nginx.service.d/openfileslimit.conf" <<TDG
 [Service]
