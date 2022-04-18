@@ -976,62 +976,62 @@ update_phpfpmconfg() {
 
 update_cmdshortcuts() {
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/ngxstop ]]; then
-    if [[ "$(grep 'service' /usr/bin/npstop)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/npstop)" ]]; then
       sed -i 's|service nginx stop;service php-fpm stop|\/etc\/init.d\/nginx stop;\/etc\/init.d\/php-fpm stop|' /usr/bin/npstop
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/npstart ]]; then
-    if [[ "$(grep 'service' /usr/bin/npstart)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/npstart)" ]]; then
       sed -i 's|service nginx start;service php-fpm start|\/etc\/init.d\/nginx start;\/etc\/init.d\/php-fpm start|' /usr/bin/npstart
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/nprestart ]]; then
-    if [[ "$(grep 'service' /usr/bin/nprestart)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/nprestart)" ]]; then
       sed -i 's|service nginx restart;service php-fpm restart|\/etc\/init.d\/nginx restart;\/etc\/init.d\/php-fpm restart|' /usr/bin/nprestart
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/npreload ]]; then
-    if [[ "$(grep 'service' /usr/bin/npreload)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/npreload)" ]]; then
       sed -i 's|service nginx reload;service php-fpm reload|\/etc\/init.d\/nginx reload;\/etc\/init.d\/php-fpm reload|' /usr/bin/npreload
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/ngxstop ]]; then
-    if [[ "$(grep 'service' /usr/bin/ngxstop)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/ngxstop)" ]]; then
       sed -i 's|service nginx stop|\/etc\/init.d\/nginx stop|' /usr/bin/ngxstop
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/ngxstart ]]; then
-    if [[ "$(grep 'service' /usr/bin/ngxstart)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/ngxstart)" ]]; then
       sed -i 's|service nginx start|\/etc\/init.d\/nginx start|' /usr/bin/ngxstart
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/ngxrestart ]]; then
-    if [[ "$(grep 'service' /usr/bin/ngxrestart)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/ngxrestart)" ]]; then
       sed -i 's|service nginx restart|\/etc\/init.d\/nginx restart|' /usr/bin/ngxrestart
     fi
   fi
   if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/ngxreload ]]; then
-    if [[ "$(grep 'service' /usr/bin/ngxreload)" ]]; then
+    if [[ "$SWITCH_NGINX_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/ngxreload)" ]]; then
       sed -i 's|service nginx reload|\/etc\/init.d\/nginx reload|' /usr/bin/ngxreload
     fi
   fi
-  if [ -f /usr/bin/fpmstop ]; then
-    if [[ "$(grep 'service' /usr/bin/fpmstop)" ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmstop ]]; then
+    if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/fpmstop)" ]]; then
       sed -i 's|service php-fpm stop|\/etc\/init.d\/php-fpm stop|' /usr/bin/fpmstop
     fi
   fi
-  if [ -f /usr/bin/fpmstart ]; then
-    if [[ "$(grep 'service' /usr/bin/fpmstart)" ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmstart ]]; then
+    if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/fpmstart)" ]]; then
       sed -i 's|service php-fpm start|\/etc\/init.d\/php-fpm start|' /usr/bin/fpmstart
     fi
   fi
-  if [ -f /usr/bin/fpmrestart ]; then
-    if [[ "$(grep 'service' /usr/bin/fpmrestart)" ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmrestart ]]; then
+    if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/fpmrestart)" ]]; then
       sed -i 's|service php-fpm restart|\/etc\/init.d\/php-fpm restart|' /usr/bin/fpmrestart
     fi
   fi
-  if [ -f /usr/bin/fpmreload ]; then
-    if [[ "$(grep 'service' /usr/bin/fpmreload)" ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' && -f /usr/bin/fpmreload ]]; the
+    if [[ "$SWITCH_PHPFPM_SYSTEMD" != [yY] && "$(grep 'service' /usr/bin/fpmreload)" ]]; then
       sed -i 's|service php-fpm reload|\/etc\/init.d\/php-fpm reload|' /usr/bin/fpmreload
     fi
   fi

@@ -298,7 +298,7 @@ fi
     echo ""
 
 ## only run for CentOS 6.x & CentOS 7.x
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [[ "$SWITCH_NGINX_SYSTEMD" != [yY] ]]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
     # add check for Windows CLRF line endings
     if [ ! -f /usr/bin/file ]; then
@@ -315,7 +315,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     chkconfig --levels 235 nginx on
 fi # CENTOS_SEVEN = 7
 
-if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] || [[ "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
+    if [ ! -f /usr/bin/file ]; then
+        yum -q -y install file
+    fi
+    if [ ! -f /usr/bin/dos2unix ]; then
+        yum -q -y install dos2unix
+    fi
     # CENTOS_EIGHT = 8 nginx systemd service file
     mkdir -p /etc/systemd/system/nginx.service.d/
     if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
