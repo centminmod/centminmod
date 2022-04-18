@@ -296,26 +296,60 @@ fi
     reuseportchecks
     echo ""
 
-## only run for CentOS 6.x
-#if [[ "$CENTOS_SEVEN" != '7' ]]; then
+## only run for CentOS 6.x & CentOS 7.x
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]] && [[ "$SWITCH_NGINX_SYSTEMD" != [yY] ]]; then
     cp $CUR_DIR/init/nginx /etc/init.d/nginx
+    # add check for Windows CLRF line endings
+    if [ ! -f /usr/bin/file ]; then
+        yum -q -y install file
+    fi
+    if [[ $(file /etc/init.d/nginx) =~ CRLF && -f /etc/init.d/nginx ]]; then
+        if [ ! -f /usr/bin/dos2unix ]; then
+            yum -q -y install dos2unix
+        fi
+        echo "detected CRLF line endings converting to Unix LF"
+        dos2unix /etc/init.d/nginx
+    fi
+    chmod +x /etc/init.d/nginx
+    chkconfig --levels 235 nginx on
+fi # CENTOS_SEVEN = 7
 
-
-# add check for Windows CLRF line endings
-if [ ! -f /usr/bin/file ]; then
-    yum -q -y install file
-fi
-if [[ $(file /etc/init.d/nginx) =~ CRLF && -f /etc/init.d/nginx ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] || [[ "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
+    if [ ! -f /usr/bin/file ]; then
+        yum -q -y install file
+    fi
     if [ ! -f /usr/bin/dos2unix ]; then
         yum -q -y install dos2unix
     fi
-    echo "detected CRLF line endings converting to Unix LF"
-    dos2unix /etc/init.d/nginx
-fi
+    # CENTOS_EIGHT = 8 nginx systemd service file
+    mkdir -p /etc/systemd/system/nginx.service.d/
+    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/openfileslimit.conf ]]; then
+        echo "Initial Install: Update nginx for LimitNOFILE=1048576"
+cat > "/etc/systemd/system/nginx.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=1048576
+TDG
+        systemctl daemon-reload
+    fi
 
-    chmod +x /etc/init.d/nginx
-    chkconfig --levels 235 nginx on
-#fi # CENTOS_SEVEN != 7
+cat > /usr/lib/systemd/system/nginx.service <<EOF
+[Unit]
+Description=Centmin Mod NGINX Server
+After=syslog.target network-online.target remote-fs.target nss-lookup.target
+Wants=network-online.target
+
+[Service]
+Type=forking
+PIDFile=/usr/local/nginx/logs/nginx.pid
+ExecStartPre=/usr/local/sbin/nginx -t
+ExecStart=/usr/local/sbin/nginx -c /usr/local/nginx/conf/nginx.conf
+ExecReload=/bin/sh -c "/bin/kill -s HUP \$(/bin/cat /usr/local/nginx/logs/nginx.pid)"
+ExecStop=/bin/sh -c "/bin/kill -s TERM \$(/bin/cat /usr/local/nginx/logs/nginx.pid)"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+fi # CENTOS_EIGHT = 8 nginx systemd service file
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then

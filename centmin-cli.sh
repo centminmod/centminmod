@@ -526,6 +526,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 # General Configuration
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
 NGINXUPGRADESLEEP='3'
+SWITCH_NGINX_SYSTEMD='n'     # Switch to centos 7 systemd nginx service file
 AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
 AUTOHARDTUNE_NGINXBACKLOG='y' # on non-openvz systems, if enabled will override nginx default NGX_LISTEN_BACKLOG in src/os/unix/ngx_linux_config.h
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
