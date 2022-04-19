@@ -17,6 +17,19 @@ LimitNOFILE=1048576
 TDG
         systemctl daemon-reload
     fi
+    if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/nginx.service.d/failure-restart.conf ]]; then
+        echo "setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
+cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
+[Unit]
+StartLimitIntervalSec=30
+StartLimitBurst=2
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TDG
+        systemctl daemon-reload
+    fi
 
 cat > /usr/lib/systemd/system/nginx.service <<EOF
 [Unit]

@@ -115,6 +115,16 @@ ExecStart=/bin/sh -c "/usr/bin/echo 'never' > /sys/kernel/mm/transparent_hugepag
 WantedBy=multi-user.target
 EOF
 
+cat > "/etc/systemd/system/redis.service.d/failure-restart.conf" <<TDG
+[Unit]
+StartLimitIntervalSec=30
+StartLimitBurst=2
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TDG
+
 if [ -f /etc/systemd/system/disable-thp.service ]; then
   systemctl daemon-reload
   systemctl start disable-thp

@@ -44,6 +44,17 @@ StartLimitBurst=50
 #CPUSchedulingPriority=99
 EOF
   fi
+        if [ ! -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf ]; then
+cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
+[Unit]
+StartLimitIntervalSec=30
+StartLimitBurst=2
+
+[Service]
+Restart=on-failure
+RestartSec=5s
+TDG
+        fi
 
 CHECK_FPMSYSTEMD=$(php-config --configure-options | grep -o with-fpm-systemd)
 
