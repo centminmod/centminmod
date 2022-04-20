@@ -40,6 +40,102 @@ else
 fi
 
 ###############################################################################
+if [[ "$CENTOS_NINE" = '9' ]]; then
+
+#     if [ "$(uname -m)" == 'aarch64' ]; then
+
+# if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-amd64
+# module_hotfixes=1
+# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# else
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = http://yum.mariadb.org/10.1/centos9-amd64
+# module_hotfixes=1
+# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# fi
+
+    if [ "$(uname -m)" == 'aarch64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-aarch64
+module_hotfixes=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3/centos9-aarch64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+    fi
+
+    if [ "$(uname -m)" == 'x86_64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-amd64
+module_hotfixes=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3/centos9-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    else
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-amd64
+module_hotfixes=1
+gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = http://yum.mariadb.org/10.3/centos9-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    fi # centos 9 uname -m
+
+fi
+
+###############################################################################
 if [[ "$CENTOS_EIGHT" = '8' ]]; then
 
 #     if [ "$(uname -m)" == 'aarch64' ]; then
@@ -377,7 +473,7 @@ echo ""
 
 echo "MariaDB 10.3 YUM install..."
 
-if [[ "$CENTOS_EIGHT" = '8' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
   yumpriorities_opt=""
   # yumdisable_appstream=' --disablerepo=AppStream'
   yumdisable_appstream=""
@@ -440,6 +536,20 @@ elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-newold
 elif [[ "$CENTOS_EIGHT" = '8' ]]; then
     # run for CentOS 8.x
+    echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
+    time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI
+
+    echo ""
+    echo "*************************************************"
+    cecho "MariaDB 10.3.x YUM install..." $boldgreen
+    cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}" $boldgreen
+    echo "*************************************************"
+    echo ""
+    time time $YUMDNFBIN -y install MariaDB-client MariaDB-common MariaDB-devel MariaDB-server MariaDB-shared${DISABLEOTHERREPO}${yumdisable_appstream}
+
+    cp -a /etc/my.cnf /etc/my.cnf-newold
+elif [[ "$CENTOS_NINE" = '9' ]]; then
+    # run for CentOS 9.x
     echo "time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI"
     time ${YUMDNFBIN}${CACHESKIP} -q -y install perl-DBI
 
@@ -531,7 +641,7 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     mysqlinitfix
 fi # CENTOS_SEVEN != 7
 
-if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
 [Service]

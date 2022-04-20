@@ -259,6 +259,7 @@ yum clean all -q
 yumcentossixdownload
 yumcentossevendownload
 yumcentoseightdownload
+yumcentosninedownload
 axelsetup
 geoipinstall
 customrpms

@@ -167,6 +167,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -201,7 +203,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
-if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 
   # enable CentOS 8 PowerTools repo for -devel packages
@@ -516,6 +518,15 @@ exclude=*.i686
 :w
 :q
 EOF
+  elif [[ "$CENTOS_NINE" = '9' ]] && [ ! "$(grep -w 'exclude' /etc/yum.conf)" ]; then
+ex -s /etc/yum.conf << EOF
+:/best=True/
+:a
+exclude=*.i686
+.
+:w
+:q
+EOF
   fi
 fi
 
@@ -602,6 +613,14 @@ if [ ! -f /usr/bin/sar ]; then
     systemctl daemon-reload
     systemctl restart sysstat.service
     systemctl enable sysstat.service
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
   fi
 elif [ -f /usr/bin/sar ]; then
   if [[ "$(uname -m)" = 'x86_64' || "$(uname -m)" = 'aarch64' ]]; then
@@ -624,6 +643,14 @@ elif [ -f /usr/bin/sar ]; then
     systemctl restart sysstat.service
     systemctl enable sysstat.service
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
+    #if [ -d /etc/cron.d ]; then
+    #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
+    #fi
+    systemctl daemon-reload
+    systemctl restart sysstat.service
+    systemctl enable sysstat.service
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
     sed -i 's|10|5|g' /usr/lib/systemd/system/sysstat-collect.timer
     #if [ -d /etc/cron.d ]; then
     #  echo '* * * * * root /usr/lib64/sa/sa1 1 1' > /etc/cron.d/cmsar
