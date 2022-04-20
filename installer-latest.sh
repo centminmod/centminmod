@@ -813,7 +813,7 @@ else
 fi
 
 # only run for CentOS 6.x
-if [[ "$CENTOS_SEVEN" != '7' ]]; then
+if [[ "$CENTOS_SIX" = '6' ]]; then
     echo ""
     echo "Check for existing mysql-server packages"
     OLDMYSQLSERVER=`rpm -qa | grep 'mysql-server' | head -n1`
