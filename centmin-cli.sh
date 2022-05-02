@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='123.09beta01'
 SCRIPT_MAJORVER='1.2.3'
 SCRIPT_MINORVER='09'
-SCRIPT_INCREMENTVER='809'
+SCRIPT_INCREMENTVER='812'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/02/22'
@@ -478,7 +478,7 @@ NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSS
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
-MOLD_VERSION='1.1'          # mold linker rpm version
+MOLD_VERSION='1.2.1'          # mold linker rpm version
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -526,6 +526,7 @@ MARIADB_UPDATEMAINTENANCE='n'
 # General Configuration
 NGINXCOMPILE_PIE='n'         # build nginx with Position-independent code (PIC) / Position-indendendent executables (PIEs)
 NGINXUPGRADESLEEP='3'
+SWITCH_NGINX_SYSTEMD='n'     # Switch to centos 7 systemd nginx service file
 AUTOTUNE_CLIENTMAXBODY='y'   # auto tune client_max_body_size option in nginx.conf
 AUTOHARDTUNE_NGINXBACKLOG='y' # on non-openvz systems, if enabled will override nginx default NGX_LISTEN_BACKLOG in src/os/unix/ngx_linux_config.h
 USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of main_ext custom format for nginx amplify
