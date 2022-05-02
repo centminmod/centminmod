@@ -14,7 +14,7 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   ISLOWMEM='1700000'
   TOTALMEM=$(($TOTALMEM_T+$TOTALMEM_SWAP))
 elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
-  ISLOWMEM='930000'
+  ISLOWMEM='922624'
 else
   ISLOWMEM='262144'
 fi
