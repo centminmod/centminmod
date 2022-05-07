@@ -382,7 +382,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   fi
   
   echo
-  read -ep "Enter the branch name you want to switch to i.e. 123.09beta01 : " branchname
+  read -ep "Enter the branch name you want to switch to i.e. 124.00stable : " branchname
   echo
 
   if [ ! "$(echo $CMBRANCHLIST | grep -o "${branchname}")" ]; then

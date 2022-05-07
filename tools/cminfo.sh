@@ -9,6 +9,7 @@ export LC_CTYPE=en_US.UTF-8
 #####################################################
 # quick info overview for centminmod.com installs
 #####################################################
+branchname='124.00stable'
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
 #####################################################
@@ -1077,10 +1078,10 @@ version_log() {
 }
 
 check_version() {
-    latest_incre=$(curl -${ipv_forceopt}sL https://github.com/centminmod/centminmod/raw/123.09beta01/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
+    latest_incre=$(curl -${ipv_forceopt}sL https://github.com/centminmod/centminmod/raw/${branchname}/centmin.sh | awk -F "=" '/SCRIPT_INCREMENTVER=/ {print $2}' | sed -e "s|'||g")
     cur_incre=$(awk -F '.b' '{print $3}' /etc/centminmod-release)
-    latest="123.09beta01.b${latest_incre}"
-    current="123.09beta01.b${cur_incre}"
+    latest="${branchname}.b${latest_incre}"
+    current="${branchname}.b${cur_incre}"
     if [[ "$cur_incre" -eq "$latest_incre" ]]; then
         echo "centminmod latest version $current detected"
         exit 0
