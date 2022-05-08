@@ -50,18 +50,33 @@ fupdate() {
       exit 1
     fi
   if [[ -d "${CM_INSTALLDIR}/.git" ]]; then
-    if [[ "$CHECK_GITCLEAN" = 'no' ]] || [[ "$branch_opt" != 'beta' || "$branch_opt" != 'stable' ]]; then
+    if [[ "$branch_opt" = 'beta' || "$branch_opt" = 'stable' ]]; then
+      echo "Switching local code branch to $cmupdate_branchname_new"
+      echo
+      cd /usr/local/src
+      mv centminmod centminmod-automoved-cmupdate
+      git clone -b ${cmupdate_branchname_new} --depth=1 https://github.com/centminmod/centminmod.git centminmod
+      if [[ "$?" -eq '0' ]]; then
+        rm -rf centminmod-automoved-cmupdate
+        echo
+        echo "Completed. Fresh ${CM_INSTALLDIR} code base in place"
+        echo "To run centmin.sh again, you need to change into directory: ${CM_INSTALLDIR}"
+        echo "cd ${CM_INSTALLDIR}"
+        echo
+      else
+        mv centminmod-automoved-cmupdate centminmod
+        echo
+        echo "Error: wasn't able to successfully update ${CM_INSTALLDIR} code base"
+        echo "       restoring previous copy of ${CM_INSTALLDIR} code base"
+      fi
+    elif [[ "$CHECK_GITCLEAN" = 'no' ]]; then
       cd "${CM_INSTALLDIR}"
       git stash
       git pull
     else
       echo
-      if [[ "$branch_opt" = 'beta' || "$branch_opt" = 'stable' ]]; then
-        echo "Switching local code branch to $cmupdate_branchname_new"
-      else
-        echo "Detected Centmin Mod Github Remote Repo Changes"
-        echo "setting up fresh ${CM_INSTALLDIR} code base to match"
-      fi
+      echo "Detected Centmin Mod Github Remote Repo Changes"
+      echo "setting up fresh ${CM_INSTALLDIR} code base to match"
       echo
       cd /usr/local/src
       mv centminmod centminmod-automoved-cmupdate
