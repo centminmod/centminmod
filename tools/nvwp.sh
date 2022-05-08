@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 # .09 beta01 and higher written by George Liu
 # modified for wordpress setup
 ################################################################
-branchname='123.09beta01'
+branchname='130.00beta01'
 #CUR_DIR="/usr/local/src/centminmod-${branchname}"
 CUR_DIR="/usr/local/src/centminmod"
 

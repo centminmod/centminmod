@@ -2,7 +2,7 @@
 ######################################################
 # to update geoip country and city databases
 ######################################################
-branchname='123.09beta01'
+branchname='130.00beta01'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
 
 # Maxmind GeoLite2 database API Key

@@ -14,7 +14,7 @@ export LC_CTYPE=en_US.UTF-8
 DT=$(date +"%d%m%y-%H%M%S")
 DNF_ENABLE='n'
 DNF_COPR='y'
-branchname=123.09beta01
+branchname='130.00beta01'
 DOWNLOAD="${branchname}.zip"
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 
@@ -1507,7 +1507,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
         fi
       else
         if [ -f /var/cache/yum/i386/6/timedhosts.txt ]; then
-          sed -i 's|centos.bhs.mirrors.ovh.net .*|centos.bhs.mirrors.ovh.net 0.000115046005249|' /var/cache/yum/i386/6/timedhosts.txt
+          sed -i 's|centos.bhs.mirrors.ovh.net .*|centos.bhs.mirrors.ovh.net 0.000110046005249|' /var/cache/yum/i386/6/timedhosts.txt
         fi
       fi
     fi
@@ -1548,8 +1548,15 @@ fi
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   $YUMDNFBIN makecache fast
   sar_call
-  if [[ "$CENTOS_EIGHT" = '8' ]]; then
-    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing
+  if [[ "$CENTOS_NINE" = '9' ]]; then
+    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing,remi --skip-broken
+    libc_fix
+    if [ -f /usr/bin/pip ]; then
+      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
+    fi
+    sar_call
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing,remi --skip-broken
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
@@ -1713,7 +1720,9 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-# sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='5.6.40'|" centmin.sh
+PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '7.4' | head -n1)
+PHPVERLATEST=${PHPVERLATEST:-"7.4.29"}
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
@@ -1846,6 +1855,7 @@ fi
 
 case "$1" in
   install)
+    # devtoolset SCL repo only supports 64bit OSes
     if [[ "$LOWMEM_INSTALL" != [yY] && "$(uname -m)" = 'x86_64' ]]; then
       source_pcreinstall
       source_wgetinstall

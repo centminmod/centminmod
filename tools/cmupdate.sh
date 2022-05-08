@@ -9,7 +9,7 @@ CM_INSTALLDIR='/usr/local/src/centminmod'
 #############
 # variables
 #############
-cmupdate_branchname=123.09beta01-el8.5
+cmupdate_branchname='130.00beta01'
 cmupdate_branchname_new=$cmupdate_branchname
 DT=$(date +"%d%m%y-%H%M%S")
 ######################################################

@@ -5,6 +5,7 @@
 # written by George Liu (eva2000) centminmod.com
 ######################################################
 # variables
+branchname='130.00beta01'
 DEBUG='n'
 YUMDNFBIN='yum'
 
@@ -315,7 +316,7 @@ glances_aliascheck() {
     if [ ! -f /etc/glances/glances.conf ]; then
       mkdir -p /etc/glances
       # wget -O /etc/glances/glances.conf https://raw.githubusercontent.com/nicolargo/glances/master/conf/glances.conf
-      wget -O /etc/glances/glances.conf https://github.com/centminmod/centminmod/raw/123.09beta01/config/glances/glances.conf
+      wget -O /etc/glances/glances.conf https://github.com/centminmod/centminmod/raw/${branchname}/config/glances/glances.conf
       sed -i 's|^disable=True|disable=False|g' /etc/glances/glances.conf
     fi
     if [[ ! "$(grep -w 'glances' /root/.bashrc)" ]]; then
