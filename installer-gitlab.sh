@@ -1317,7 +1317,6 @@ install_axel() {
       echo "Download $AXEL_LINKFILE done."
     fi
   fi
-
   if [[ "$(tar -tzf axel-${AXEL_VER}.tar.gz >/dev/null; echo $?)" != '0' ]]; then
     rm -rf /svr-setup/axel-${AXEL_VER}.*
     echo "re-try download form local mirror..."
@@ -1416,7 +1415,9 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-# sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='5.6.20'|" centmin.sh
+PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '7.4' | head -n1)
+sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
+PHPVERLATEST=${PHPVERLATEST:-"7.4.29"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
