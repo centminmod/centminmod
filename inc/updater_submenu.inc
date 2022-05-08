@@ -338,7 +338,7 @@ fi
 
 gitenv_change() {
   # check local DNS resolve and network connectivity before setting up git clone
-  LOCALDNS_RESOLVER=$(awk '/nameserver/ {print $0}' /etc/resolv.conf | awk 'NR==1 {print $2}')
+  LOCALDNS_RESOLVER=$(awk '/nameserver/ {print $0}' /etc/resolv.conf | grep -v '#' | awk 'NR==1 {print $2}')
   if [[ "$LOCALDNS_RESOLVER" = '127.0.0.1' || "$LOCALDNS_RESOLVER" = 'localhost' ]]; then
     LOCALDNS_RESOLVER='8.8.8.8'
   fi
@@ -370,7 +370,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   if [[ "$(echo $CMGIT | grep github)" ]]; then
     GITCURLSTATUS=$(curl -sI https://github.com/centminmod/centminmod/branches/active | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$GITCURLSTATUS" = '200' ]]; then
-      CMBRANCHLIST=$(curl -s${ipv_forceopt} https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan' | uniq)
+      CMBRANCHLIST=$(curl -s${ipv_forceopt} https://github.com/centminmod/centminmod/branches/active | grep -P '\/centminmod\/centminmod\/tree\/.*">' | grep -Po '(?<=href=")[^"]*(?=")' | sed 's|/centminmod/centminmod/tree/||g' | egrep -v '123.06stable|123.07stable|123.08beta03|123.08beta03-rtmp|123.08zerodown|123.09beta01-gcc|123.09beta01-dnf|123.09beta01-nchan|123.09beta01-el8.5' | uniq)
       echo "$CMBRANCHLIST"
     fi
   else
@@ -382,7 +382,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   fi
   
   echo
-  read -ep "Enter the branch name you want to switch to i.e. 123.09beta01 : " branchname
+  read -ep "Enter the branch name you want to switch to i.e. 124.00stable : " branchname
   echo
 
   if [ ! "$(echo $CMBRANCHLIST | grep -o "${branchname}")" ]; then

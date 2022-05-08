@@ -438,7 +438,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
       echo
       echo "download nginx-rtmp-module from github"
       pushd "$DIR_TMP"
-      time git clone git://github.com/arut/nginx-rtmp-module.git
+      time git clone https://github.com/arut/nginx-rtmp-module
       echo
       popd
     elif [[ -d "${DIR_TMP}/nginx-rtmp-module" && -d "${DIR_TMP}/nginx-rtmp-module/.git" ]]; then

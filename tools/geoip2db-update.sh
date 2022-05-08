@@ -1,6 +1,6 @@
 #!/bin/bash
 ############################################################
-# update centmin mod 123.09beta01 & newer's optional
+# update centmin mod 124.00stable & newer's optional
 # geoip2 lite nginx module's database for geoip2 city
 ############################################################
 # Maxmind GeoLite2 database API Key
