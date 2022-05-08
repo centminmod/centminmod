@@ -9,7 +9,7 @@ CM_INSTALLDIR='/usr/local/src/centminmod'
 #############
 # variables
 #############
-cmupdate_branchname=123.09beta01
+cmupdate_branchname=123.09beta01-el8.5
 cmupdate_branchname_new=$cmupdate_branchname
 DT=$(date +"%d%m%y-%H%M%S")
 ######################################################
@@ -26,18 +26,42 @@ if [ -f "${MAINDIR}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc
     source "${MAINDIR}/custom_config.inc"
 fi
-CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk https://github.com/centminmod/centminmod/raw/${cmupdate_branchname}/gitclean.txt)
 
 fupdate() {
+  branch_opt=$1
+  if [[ "$branch_opt" = 'beta' ]]; then
+    cmupdate_branchname=130.00beta01
+    cmupdate_branchname_new=$cmupdate_branchname
+  elif [[ "$branch_opt" = 'stable' ]]; then
+    cmupdate_branchname=124.00stable
+    cmupdate_branchname_new=$cmupdate_branchname
+  fi
+
+  CMUPDATE_GITCURLSTATUS=$(curl -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
+    if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
+      CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
+    else
+      echo
+      echo "Error: unable to connect to Github.com repo right now"
+      echo "try again later"
+      echo
+      echo "if issue persists, report it on official Centmin Mod community"
+      echo "https://community.centminmod.com/forums/install-upgrades-or-pre-install-questions.8/"
+      exit 1
+    fi
   if [[ -d "${CM_INSTALLDIR}/.git" ]]; then
-    if [[ "$CHECK_GITCLEAN" = 'no' ]]; then
+    if [[ "$CHECK_GITCLEAN" = 'no' ]] || [[ "$branch_opt" != 'beta' || "$branch_opt" != 'stable' ]]; then
       cd "${CM_INSTALLDIR}"
       git stash
       git pull
     else
       echo
-      echo "Detected Centmin Mod Github Remote Repo Changes"
-      echo "setting up fresh ${CM_INSTALLDIR} code base to match"
+      if [[ "$branch_opt" = 'beta' || "$branch_opt" = 'stable' ]]; then
+        echo "Switching local code branch to $cmupdate_branchname_new"
+      else
+        echo "Detected Centmin Mod Github Remote Repo Changes"
+        echo "setting up fresh ${CM_INSTALLDIR} code base to match"
+      fi
       echo
       cd /usr/local/src
       mv centminmod centminmod-automoved-cmupdate
@@ -62,6 +86,19 @@ fupdate() {
 ######################################################
 fupdate
 
+case "$1" in
+  update )
+    fupdate
+    ;;
+  update-stable )
+    fupdate stable
+    ;;
+  update-beta )
+    fupdate beta
+    ;;
+  * )
+    fupdate
+    ;;
+esac
+
 exit
-
-
