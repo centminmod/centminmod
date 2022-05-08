@@ -646,10 +646,6 @@ if [[ "$PHPMVER" = 5.[23456] ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
-if [[ "$PHPMUVER" = 5.[23456] ]]; then
-  NEWLIBICU='n'
-  echo "NEWLIBICU=$NEWLIBICU"
-fi
 if [[ "$PHPMVER" = '7.0' ]]; then
   NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
@@ -672,6 +668,10 @@ if [[ "$PHPMVER" = '7.4' ]]; then
 fi
 if [[ "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPVER_ID" -ge '80000' ]]; then
   NEWLIBICU='y'
+  echo "NEWLIBICU=$NEWLIBICU"
+fi
+if [[ "$PHPMUVER" = 5.[23456] ]]; then
+  NEWLIBICU='n'
   echo "NEWLIBICU=$NEWLIBICU"
 fi
 if [[ "$PHPMUVER" = '7.0' ]]; then
