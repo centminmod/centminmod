@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='4'
+SCRIPT_INCREMENTVER='5'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1159,8 +1159,8 @@ CUSTOM_CURLRPMSYSURL='http://mirror.city-fan.org/ftp/contrib/sysutils/Mirroring'
 CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 
 # wget source compile version
-WGET_VERSION='1.21.2'
-WGET_VERSION_SEVEN='1.21.2'
+WGET_VERSION='1.20.3'
+WGET_VERSION_SEVEN='1.20.3'
 WGET_VERSION_EIGHT='1.21.2'
 ###############################################################
 # cloudflare authenticated origin pull cert
