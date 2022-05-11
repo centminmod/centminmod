@@ -113,6 +113,7 @@ case "$1" in
     ;;
   * )
     fupdate
+    exit
     ;;
 esac
 
