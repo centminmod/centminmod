@@ -462,6 +462,9 @@ brdep_update() {
 
 ngxbrotli_download() {
   if [[ "$NGINX_LIBBROTLI" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
+    # update system cmake with cmake3 alternative setup
+    # https://community.centminmod.com/posts/92826/
+    cmake_alternatives
 
     if [[ "$DEVTOOLSETSEVEN" = [yY] && -f /opt/rh/devtoolset-7/root/usr/bin/gcc && -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]] && [[ "$(gcc --version | head -n1 | awk '{print $3}' | cut -d . -f1,2 | sed "s|\.|0|")" -gt '407' ]]; then
         if [[ "$INITIALINSTALL" != [yY] ]]; then
