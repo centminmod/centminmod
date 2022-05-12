@@ -1,3 +1,29 @@
+nginx_maintenance_on(){
+    # if you set /etc/centminmod/custom_config.inc file to
+    # NGINX_UPDATEMAINTENANCE=y
+    # then whenever you run nginx upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus off
+        fi
+    fi
+}
+
+nginx_maintenance_off(){
+    # if you set /etc/centminmod/custom_config.inc file to
+    # NGINX_UPDATEMAINTENANCE=y
+    # then whenever you run nginx upgrade, you put all sites
+    # on server into 503 maintenance mode first and once
+    # updated, disable 503 maintenance mod after
+    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
+        if [ -f /usr/bin/sitestatus ]; then
+            /usr/bin/sitestatus on
+        fi
+    fi
+}
+
 pcre_check_nginx(){
     # checks for $NGINX_PCRE_TWO='y'
     {
@@ -526,16 +552,7 @@ elif [[ "$CLI_NGINX_VER" ]]; then
         ngver="$LASTEST_NGINXVERS"
     fi
 
-    # if you set /etc/centminmod/custom_config.inc file to
-    # NGINX_UPDATEMAINTENANCE=y
-    # then whenever you run nginx upgrade, you put all sites
-    # on server into 503 maintenance mode first and once
-    # updated, disable 503 maintenance mod after
-    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
-        if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus off
-        fi
-    fi
+    nginx_maintenance_on
 
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
@@ -571,16 +588,7 @@ else
         ngver="$LASTEST_NGINXVERS"
     fi
 
-    # if you set /etc/centminmod/custom_config.inc file to
-    # NGINX_UPDATEMAINTENANCE=y
-    # then whenever you run nginx upgrade, you put all sites
-    # on server into 503 maintenance mode first and once
-    # updated, disable 503 maintenance mod after
-    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
-        if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus off
-        fi
-    fi
+    nginx_maintenance_on
 
     # auto check if static compiled Nginx openssl version matches
     # the one defined in centmin.sh OPENSSL_VERSION variable
@@ -740,6 +748,7 @@ fi
                 echo "make sure you type the correct nginx version"
                 echo "report errors on the forums at community.centminmod.com/forums/8/"
                 echo "with info asked at community.centminmod.com/threads/17778/"
+                nginx_maintenance_off
             echo
             free -m
             echo
@@ -775,6 +784,7 @@ fi
             echo "make sure you type the correct nginx version"
             echo "report errors on the forums at community.centminmod.com/forums/8/"
             echo "with info asked at community.centminmod.com/threads/17778/"
+            nginx_maintenance_off
             echo
             free -m
             echo
@@ -830,6 +840,7 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx configure failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        nginx_maintenance_off
         echo
         free -mlt
         echo
@@ -942,6 +953,7 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx make failed\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        nginx_maintenance_off
         echo
         free -mlt
         echo
@@ -1077,6 +1089,7 @@ fi
       echo -e "\n`date`\nError: $ERR, Nginx wasn't installed properly\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17778/"
+        nginx_maintenance_off
         echo
         free -m
         echo
@@ -1328,16 +1341,7 @@ fi
         fi
         echo "*************************************************"
 
-    # if you set /etc/centminmod/custom_config.inc file to
-    # NGINX_UPDATEMAINTENANCE=y
-    # then whenever you run nginx upgrade, you put all sites
-    # on server into 503 maintenance mode first and once
-    # updated, disable 503 maintenance mod after
-    if [[ "$NGINX_UPDATEMAINTENANCE" = [yY] ]]; then
-        if [ -f /usr/bin/sitestatus ]; then
-            /usr/bin/sitestatus on
-        fi
-    fi
+        nginx_maintenance_off
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then
         cp -af "$DIR_TMP/njs/build/njs" /usr/local/bin/njs
     fi
