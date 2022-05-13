@@ -1576,7 +1576,9 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
     echo
   fi
   # run lestdebug.net API check
-  run_letsdebug "$vhostname"
+  if [[ "$sslconfig" = 'le' || "$sslconfig" = 'led' || "$sslconfig" = 'lelive' || "$sslconfig" = 'lelived' ]]; then
+    run_letsdebug "$vhostname"
+  fi
 fi
 
 echo 
