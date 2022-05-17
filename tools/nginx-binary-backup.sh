@@ -115,6 +115,13 @@ bin_backup() {
     JEMALLOC_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libjemalloc/ {print $3}'))
     JEMALLOC_LIBRARY_WILDCARD='libjemalloc'
   fi
+  # check if nginx binary built with mimalloc custom RPM
+  CHECK_NGINX_CUSTOM_MIMALLOC_BUILT=$(ldd $(which nginx) | grep -w -o '/usr/local/nginx-dep/lib/libmimalloc.so.2' | uniq | grep -o 'libmimalloc')
+  if [[ "$CHECK_NGINX_CUSTOM_MIMALLOC_BUILT" = 'libmimalloc' ]]; then
+    NGX_MIMALLOC_LABEL='-mimalloc'
+    MIMALLOC_LIBRARY_PATHDIR=$(dirname $(ldd $(which nginx) | awk '/libmimalloc/ {print $3}'))
+    MIMALLOC_LIBRARY_WILDCARD='libmimalloc'
+  fi
   
   backup_tag="${NGINXBIN_VER}-${NGINXBIN_COMPILERNAME}-${NGINXBIN_CRYPTO}-${DDT}${NGXDEBUG_LABEL}${NGXHPACK_LABEL}${NGXZLIB_LABEL}${NGXLTO_LABEL}${NGXFATLTO_LABEL}${NGX_PCRETWO_LABEL}${NGX_JEMALLOC_LABEL}"
   if [ ! -d "${NGINXBIN_BACKUPDIR}/${backup_tag}" ]; then
@@ -130,6 +137,9 @@ bin_backup() {
     cp -af ${LIBSATOMICOPS_LIBRARY_PATHDIR}/${LIBSATOMICOPS_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
     if [[ "$CHECK_NGINX_CUSTOM_JEMALLOC_BUILT" = 'libjemalloc' ]]; then
       cp -af ${JEMALLOC_LIBRARY_PATHDIR}/${JEMALLOC_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
+    fi
+    if [[ "$CHECK_NGINX_CUSTOM_MIMALLOC_BUILT" = 'libmimalloc' ]]; then
+      cp -af ${MIMALLOC_LIBRARY_PATHDIR}/${MIMALLOC_LIBRARY_WILDCARD}.* "${NGINXBIN_BACKUPDIR}/${backup_tag}/libs"
     fi
     # remove .so.old older dynamic nginx modules from backup
     # https://community.centminmod.com/posts/66124/
@@ -189,6 +199,13 @@ bin_restore() {
       JEMALLOC_LIBRARY_PATHDIR=$(dirname $(ldd ${backup_path}/bin/nginx | awk '/libjemalloc/ {print $3}'))
       JEMALLOC_LIBRARY_WILDCARD='libjemalloc'
     fi
+    # check if nginx binary built with mimalloc custom RPM
+    CHECK_NGINX_CUSTOM_MIMALLOC_BUILT=$(ldd ${backup_path}/bin/nginx | grep -w -o '/usr/local/nginx-dep/lib/libmimalloc.so.2' | uniq | grep -o 'libmimalloc')
+    if [[ "$CHECK_NGINX_CUSTOM_MIMALLOC_BUILT" = 'libmimalloc' ]]; then
+      NGX_MIMALLOC_LABEL='-mimalloc'
+      MIMALLOC_LIBRARY_PATHDIR=$(dirname $(ldd ${backup_path}/bin/nginx | awk '/libmimalloc/ {print $3}'))
+      MIMALLOC_LIBRARY_WILDCARD='libmimalloc'
+    fi
     echo "--------------------------------------------------------"
     echo "Restore Nginx binary/module from backups"
     echo "--------------------------------------------------------"
@@ -234,6 +251,11 @@ bin_restore() {
               echo "cp -af ${backup_path}/libs/* $JEMALLOC_LIBRARY_PATHDIR"
               cp -af ${JEMALLOC_LIBRARY_PATHDIR}/${JEMALLOC_LIBRARY_WILDCARD}.* "$JEMALLOC_LIBRARY_PATHDIR"
               ls -lah "$JEMALLOC_LIBRARY_PATHDIR" | grep "$JEMALLOC_LIBRARY_WILDCARD"
+            fi
+            if [[ "$CHECK_NGINX_CUSTOM_MIMALLOC_BUILT" = 'libmimalloc' ]]; then
+              echo "cp -af ${backup_path}/libs/* $MIMALLOC_LIBRARY_PATHDIR"
+              cp -af ${MIMALLOC_LIBRARY_PATHDIR}/${MIMALLOC_LIBRARY_WILDCARD}.* "$MIMALLOC_LIBRARY_PATHDIR"
+              ls -lah "$MIMALLOC_LIBRARY_PATHDIR" | grep "$MIMALLOC_LIBRARY_WILDCARD"
             fi
           fi
           if [ -d "${backup_path}/modules" ]; then
