@@ -348,6 +348,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     echo "NGINX_PCRE_DYNAMIC=$NGINX_PCRE_DYNAMIC"
     echo "NGINX_PCRE_TWO=$NGINX_PCRE_TWO"
     echo "PCRETWO_DISABLEOPT=$PCRETWO_DISABLEOPT"
+    echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
+    echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
     if [ -f /etc/centminmod/custom_config.inc ]; then
       echo "Check /etc/centminmod/custom_config.inc relevant variables:"
       egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
@@ -366,6 +368,8 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     echo "NGINX_PCRE_DYNAMIC=$NGINX_PCRE_DYNAMIC"
     echo "NGINX_PCRE_TWO=$NGINX_PCRE_TWO"
     echo "PCRETWO_DISABLEOPT=$PCRETWO_DISABLEOPT"
+    echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
+    echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
     if [ -f /etc/centminmod/custom_config.inc ]; then
       echo "Check /etc/centminmod/custom_config.inc relevant variables:"
       egrep 'NGINX_PCRE|NGINX_MODSECURITY|ORESTY_LUANGINX' /etc/centminmod/custom_config.inc
