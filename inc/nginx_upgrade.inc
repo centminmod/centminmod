@@ -82,6 +82,8 @@ pcre_check_nginx(){
             echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
             echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
             echo "OPENSSL_VERION=$OPENSSL_VERSION"
+            echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
+            echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -137,6 +139,8 @@ pcre_check_nginx(){
             echo "NGINXOPENSSL_FATLTO_OBJECTS=$NGINXOPENSSL_FATLTO_OBJECTS"
             echo "NGINXOPENSSL_NOFATLTO_OBJECTS=$NGINXOPENSSL_NOFATLTO_OBJECTS"
             echo "OPENSSL_VERION=$OPENSSL_VERSION"
+            echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
+            echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'

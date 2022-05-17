@@ -49,6 +49,11 @@ ExecStop=/bin/sh -c "/bin/kill -s TERM \$(/bin/cat /usr/local/nginx/logs/nginx.p
 WantedBy=multi-user.target
 EOF
 
+echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
+echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
+echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
+echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
+
 service nginx start >/dev/null 2>&1
 service nginx status >/dev/null 2>&1
 chkconfig nginx on >/dev/null 2>&1
