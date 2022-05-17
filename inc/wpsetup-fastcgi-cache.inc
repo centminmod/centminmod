@@ -3684,7 +3684,9 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
     echo
   fi
   # run lestdebug.net API check
-  run_letsdebug "$vhostname"
+  if [[ "$vhostssl" = 'le' || "$vhostssl" = 'led' || "$vhostssl" = 'lelive' || "$vhostssl" = 'lelived' ]]; then
+    run_letsdebug "$vhostname"
+  fi
 fi
 
 if [[ "$wpcli_ssldefault" = '1' ]]; then
