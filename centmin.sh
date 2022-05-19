@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='15'
+SCRIPT_INCREMENTVER='16'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -669,7 +669,7 @@ CCACHESIZE='2.5G'
 # account API key by setting MM_LICENSE_KEY variable 
 # in persistent config file /etc/centminmod/custom_config.inc
 MM_LICENSE_KEY='k0sP8JPgZm6i0sOF'
-MM_CSF_SRC='y'
+MM_CSF_SRC='n'
 
 #####################################################
 # Networking
