@@ -223,6 +223,9 @@ geoiptwolite_install() {
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCITYDATA_CURLCHECK" = '0' ]]; then
     wget -${ipv_forceopt} $maxmind_city_url -O /usr/share/GeoIP/GeoLite2-City.tar.gz
+  else
+    maxmind_city_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-City.tar.gz'
+    wget -${ipv_forceopt} $maxmind_city_url -O /usr/share/GeoIP/GeoLite2-City.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-City.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-City_*/GeoLite2-City.mmdb /usr/share/GeoIP/GeoLite2-City.mmdb
@@ -237,6 +240,9 @@ geoiptwolite_install() {
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOCOUNTRYDATA_CURLCHECK" = '0' ]]; then
     wget -${ipv_forceopt} $maxmind_country_url -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
+  else
+    maxmind_country_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-Country.tar.gz'
+    wget -${ipv_forceopt} $maxmind_country_url -O /usr/share/GeoIP/GeoLite2-Country.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-Country.tar.gz -C /usr/share/GeoIP
   cp -a GeoLite2-Country_*/GeoLite2-Country.mmdb /usr/share/GeoIP/GeoLite2-Country.mmdb
@@ -250,6 +256,9 @@ geoiptwolite_install() {
   # only overwrite existing downloaded file if the download url is working
   # if download doesn't work, do not overwrite existing downloaded file
   if [[ "$GEOIPTWOASNDATA_CURLCHECK" = '0' ]]; then
+    wget -${ipv_forceopt} $maxmind_asn_url -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
+  else
+    maxmind_asn_url='https://centminmod.com/centminmodparts/geoip2-lite/GeoLite2-ASN.tar.gz'
     wget -${ipv_forceopt} $maxmind_asn_url -O /usr/share/GeoIP/GeoLite2-ASN.tar.gz
   fi
   tar xvzf /usr/share/GeoIP/GeoLite2-ASN.tar.gz -C /usr/share/GeoIP
