@@ -495,7 +495,8 @@ fi
 
 oniguruma_check
 
-if [[ "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
+  # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
   PHP_MOLDOPT=' -B/usr/local/libexec/mold'
 else
   PHP_MOLDOPT=""
@@ -2224,15 +2225,53 @@ else
   fi  
 fi
 
-if [[ "$PHP_CUSTOMSSL" = [yY] ]]; then
-  if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
-    PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
-    ln -s /opt/libressl/lib /opt/libressl/lib64
+# install check & set PHP_OPENSSLOPT
+  if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' ]]; then
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+      PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
+      ln -s /opt/libressl/lib /opt/libressl/lib64
+    elif [[ "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
+      PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
+      ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
+      echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
+      export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
+      export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
+      if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
+          \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
+      fi
+    else
+      PHP_OPENSSLOPT='--with-openssl'
+    fi
   else
-    PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
-    ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
+    PHP_OPENSSLOPT='--with-openssl'
   fi
-else
+
+
+# upgrades check & set PHP_OPENSSLOPT
+  if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
+      PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
+      ln -s /opt/libressl/lib /opt/libressl/lib64
+    elif [[ "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
+      PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
+      ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
+      echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
+      export OPENSSL_CFLAGS="-I${OPENSSL_CUSTOMPATH}/include"
+      export OPENSSL_LIBS="-L${OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
+      if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
+          \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
+      fi
+    else
+      PHP_OPENSSLOPT='--with-openssl'
+    fi
+  else
+    PHP_OPENSSLOPT='--with-openssl'
+  fi
+
+if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' ]]; then
+  PHP_OPENSSLOPT='--with-openssl'
+fi
+if [[ "$PHPMUVER" = '5.5' || "$PHPMUVER" = '5.6' || "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$PHPMUVER" = '7.3' ]]; then
   PHP_OPENSSLOPT='--with-openssl'
 fi
 

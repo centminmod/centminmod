@@ -470,7 +470,7 @@ funct_centos6check
 
     cd "$DIR_TMP"
 
-if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80')" ]; then
+if [ "$(rpm -qa | grep '^php*' | egrep -v 'phonon-backend-gstreamer|php56|php70|php71|php72|php73|php74|php80|php81|php82')" ]; then
     # IMPORTANT Erase any PHP installations first, otherwise conflicts may arise
     echo "yum -y erase php*"
     yum -y erase php*

@@ -1355,6 +1355,9 @@ fi
         mkdir -p /opt/openssl/certs/
         \cp -Rpf /etc/ssl/certs/* /opt/openssl/certs/
         \cp -Pf /etc/pki/tls/cert.pem /opt/openssl/
+        if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
+            \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
+        fi
         crypto_gccunset
         opensslinstallendtime=$(TZ=UTC date +%s.%N)
         OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
