@@ -43,12 +43,12 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
     if [[ "$VERCOMPARE" = "1"  ]]; then
     
      echo "-----------------------------------------------------"
-            if [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+            if [[ "$ALMALINUX_EIGHT" -eq '8' || "$ALMALINUX_NINE" -eq '9' ]]; then
               echo "Detected AlmaLinux OS"
               echo
-              echo "AlmaLinux 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
+              echo "AlmaLinux 8/9 is currently not supported by Centmin Mod, please use CentOS 7.9+"
               echo
-            elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+            elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
               echo "Detected CentOS version greater than > CentOS $TESTEDCENTOSVER"
               echo "CentOS $TESTEDCENTOSVER is the latest tested version for Centmin Mod"
               echo "No guarantee 100% working install with your CentOS $CENTOSVER"
@@ -57,7 +57,9 @@ if [[ "$INITIALINSTALL" = [yY] ]]; then
               echo
             fi
      echo "-----------------------------------------------------"
-            if [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+            if [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+              centoscheckcont='y'
+            elif [[ "$CENTOS_ALPHATEST" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
               centoscheckcont='y'
             else
               echo ""

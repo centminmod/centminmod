@@ -258,25 +258,41 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
-if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
-  if [[ "$ORACLELINUX_EIGHT" = '8' ]]; then
+if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
     label_os=OracleLinux
+    label_os_ver=9
     label_prefix='https://community.centminmod.com/forums/31/'
-  elif [[ "$ROCKYLINUX_EIGHT" = '8' ]]; then
+  elif [[ "$ROCKYLINUX_NINE" -eq '9' ]]; then
     label_os=RockyLinux
+    label_os_ver=9
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
-  elif [[ "$ALMALINUX_EIGHT" = '8' ]]; then
+  elif [[ "$ALMALINUX_NINE" -eq '9' ]]; then
     label_os=AlmaLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$ORACLELINUX_EIGHT" -eq '8' ]]; then
+    label_os=OracleLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_EIGHT" -eq '8' ]]; then
+    label_os=RockyLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_EIGHT" -eq '8' ]]; then
+    label_os=AlmaLinux
+    label_os_ver=8
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
   else
     label_os=CentOS
+    label_os_ver=7
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
   fi
   echo
-  echo "$label_os 8 is currently not supported by Centmin Mod, please use CentOS 7.9+"
-  echo "To follow EL8 compatibility for CentOS 8 / AlmaLinux 8 read thread at:"
+  echo "$label_os $label_os_ver is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL8+ compatibility for CentOS 8 / AlmaLinux 8 read thread at:"
   echo "https://community.centminmod.com/threads/18372/"
-  echo "You can read CentOS 8 specific discussions via prefix tag link at:"
+  echo "You can read specific discussions via prefix tag link at:"
   echo "$label_prefix"
   exit 1
   echo
