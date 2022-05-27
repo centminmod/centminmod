@@ -346,15 +346,15 @@ install_cfzlib() {
         pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
         # CVE-2018-25032 patch
         LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
-        ls -lah CVE-2018-25032.patch
-        if [[ ! -f CVE-2018-25032.patch && "$LAST_CFZLIB_COMMIT" = '959b4ea' ]] || [[ "$ZLIB_STASHED" = [yY] ]]; then
-            echo
-            echo "Patch Cloudflare zlib CVE-2018-25032"
-            echo
-            wget -O CVE-2018-25032.patch https://patch-diff.githubusercontent.com/raw/cloudflare/zlib/pull/29.patch
-            patch -p1 < CVE-2018-25032.patch
-            echo
-        fi
+        # ls -lah CVE-2018-25032.patch
+        # if [[ ! -f CVE-2018-25032.patch && "$LAST_CFZLIB_COMMIT" = '959b4ea' ]] || [[ "$ZLIB_STASHED" = [yY] ]]; then
+        #     echo
+        #     echo "Patch Cloudflare zlib CVE-2018-25032"
+        #     echo
+        #     wget -O CVE-2018-25032.patch https://patch-diff.githubusercontent.com/raw/cloudflare/zlib/pull/29.patch
+        #     patch -p1 < CVE-2018-25032.patch
+        #     echo
+        # fi
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
