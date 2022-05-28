@@ -48,6 +48,7 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
 WGET_VERSION_EIGHT='1.21.2'
+WGET_VERSION_NINE='1.21.2'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
@@ -301,8 +302,8 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-  WGET_VERSION=$WGET_VERSION_SEVEN
+if [ "$CENTOS_EIGHT" -eq '8' ]; then
+  WGET_VERSION=$WGET_VERSION_EIGHT
 
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
@@ -321,6 +322,28 @@ if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   yum -q -y module disable nginx mariadb mysql php redis:5
 
   # install missing dependencies specific to CentOS 8
+  # for csf firewall installs
+  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+    yum -q -y install perl-Math-BigInt
+  fi
+fi
+if [ "$CENTOS_NINE" -eq '9' ]; then
+  WGET_VERSION=$WGET_VERSION_NINE
+
+  # enable CentOS 9 crb repo for -devel packages
+  reponame_powertools=crb
+
+  if [ ! -f /usr/bin/yum-config-manager ]; then
+    yum -q -y install yum-utils
+    yum-config-manager --enable $reponame_powertools
+  elif [ -f /usr/bin/yum-config-manager ]; then
+    yum-config-manager --enable $reponame_powertools
+  fi
+
+  # disable native CentOS 9 AppStream repo based nginx, php & oracle mysql packages
+  yum -q -y module disable nginx mariadb mysql php redis:6
+
+  # install missing dependencies specific to CentOS 9
   # for csf firewall installs
   if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
     yum -q -y install perl-Math-BigInt
