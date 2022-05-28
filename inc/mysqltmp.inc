@@ -1,5 +1,5 @@
 c7tmpsetup() {
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/protecthome.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Update MariaDB 10 setting for ProtectHome=false"
 cat > "/etc/systemd/system/mariadb.service.d/protecthome.conf" <<TDF
 [Service]

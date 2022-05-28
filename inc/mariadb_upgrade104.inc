@@ -629,7 +629,7 @@ echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
 fi
 
 if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original_before_mariadb102upgrade
+cp /etc/my.cnf /etc/my.cnf-original_before_mariadb104upgrade
 fi
 
 echo ""

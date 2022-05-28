@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='24'
+SCRIPT_INCREMENTVER='25'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1004,6 +1004,8 @@ MDB_YUMREPOINSTALL='y'      # Install MariaDB 5.5 via CentOS YUM Repo
 MARIADB_INSTALLTENTWO='n'   # MariaDB 10.2 YUM default install if set to yes
 MARIADB_INSTALLTENTHREE='y' # MariaDB 10.3 YUM default install if set to yes
 MARIADB_INSTALLTENFOUR='n'  # MariaDB 10.4 YUM default install if set to yes
+MARIADB_INSTALLTENFIVE='n'  # MariaDB 10.5 YUM default install if set to yes
+MARIADB_INSTALLTENSIX='n'  # MariaDB 10.6 YUM default install if set to yes
 
 # Define current MariaDB version
 MDB_VERONLY='5.2.14'
@@ -1328,6 +1330,8 @@ source "inc/setmycnf.inc"
 source "inc/mariadb_install102.inc"
 source "inc/mariadb_install103.inc"
 source "inc/mariadb_install104.inc"
+source "inc/mariadb_install105.inc"
+source "inc/mariadb_install106.inc"
 source "inc/mariadb_install.inc"
 source "inc/mysql_install.inc"
 source "inc/mariadb_submenu.inc"
@@ -1360,6 +1364,8 @@ source "inc/mariadb_upgrade101.inc"
 source "inc/mariadb_upgrade102.inc"
 source "inc/mariadb_upgrade103.inc"
 source "inc/mariadb_upgrade104.inc"
+source "inc/mariadb_upgrade105.inc"
+source "inc/mariadb_upgrade106.inc"
 source "inc/nginx_errorpage.inc"
 source "inc/sendmail.inc"
 source "inc/postfix.inc"

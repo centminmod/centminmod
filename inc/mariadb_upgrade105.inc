@@ -1,9 +1,9 @@
-backupmsg103() {
+backupmsg105() {
 
 echo ""
 cat <<EOF
 -------------------------------------------------------------------------------
- This script's MariaDB 10.3.x upgrade process is still in beta testing stages. 
+ This script's MariaDB 10.5.x upgrade process is still in beta testing stages. 
  So please test on a test server and not a live production server. But if you use 
  on live server or if MySQL databases already exist, please back them up before 
  running this upgrade script via mysqldump - instructions at: 
@@ -11,7 +11,7 @@ cat <<EOF
 
  ###################################################################
  ###          IMPORTANT MYSQLDUMP BACKUP BEFORE UPGRADE          ###
- ###        OR RISK DATA LOSS DUE TO MARIADB 10.3 Changes        ###
+ ###        OR RISK DATA LOSS DUE TO MARIADB 10.5 Changes        ###
  ###################################################################
 
  For each DATABASENAME backup via mysqldump i.e.
@@ -26,12 +26,12 @@ read -ep "Have you backed up your databases ? [y/n] " askbackup
 
 if [[ "$askbackup" == [nN] ]]; then
 echo ""
-cecho "Aborting MariaDB 10.3.x upgrade..." $boldyellow
+cecho "Aborting MariaDB 10.5.x upgrade..." $boldyellow
 exit
 fi
 
 echo ""
-echo "MariaDB 10.3.x https://mariadb.com/resources/blog/whats-new-mariadb-server-103"
+echo "MariaDB 10.5.x https://mariadb.com/kb/en/library/what-is-mariadb-104/"
 echo 
 echo "!!  Note  !!"
 echo "upgrade process can take more >5 minutes.. you may want to shutdown"
@@ -39,11 +39,11 @@ echo "nginx server to not show mysql errors to visitors on your site or"
 echo "put site(s) into maintenance mode before proceeding with mysql upgrade"
 sleep 15
 echo
-read -ep "Do you want to continue with upgrade to MariaDB 10.3.x ? [y/n] " contbackup
+read -ep "Do you want to continue with upgrade to MariaDB 10.5.x ? [y/n] " contbackup
 
 if [[ "$contbackup" == [nN] ]]; then
 echo ""
-cecho "Aborting MariaDB 10.3.x upgrade..." $boldyellow
+cecho "Aborting MariaDB 10.5.x upgrade..." $boldyellow
 exit
 fi
 
@@ -72,7 +72,7 @@ if [[ "$CHECK_MYSQLPASS" != '0' ]]; then
         echo "or"
         echo "/root/.my.cnf file doesn't exist"
     fi
-    cecho "Aborting MariaDB 10.3.x upgrade..." $boldyellow
+    cecho "Aborting MariaDB 10.5.x upgrade..." $boldyellow
     exit
 fi
 
@@ -127,7 +127,7 @@ fi
 
 }
 
-mariadb102uninstall() {
+mariadb104uninstall() {
 OLDMARIADBVERS=`rpm -qa | grep MariaDB`
 
 echo "#####################################################"
@@ -151,6 +151,7 @@ OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
 OLDMARIADBTEST=`rpm -qa | grep MariaDB | awk '/MariaDB-test/'`
 OLDMARIADBCOMMON=`rpm -qa | grep MariaDB | awk '/MariaDB-common/'`
 OLDMARIADBCOMPAT=`rpm -qa | grep MariaDB | awk '/MariaDB-compat/'`
+OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
 
 yum -q -y remove perl-DBD-MySQL
 
@@ -158,6 +159,7 @@ echo "rpm -e $OLDMARIADBTEST"
 echo "rpm -e $OLDMARIADBSERVER"
 echo "rpm -e $OLDMARIADBCLIENT"
 echo "rpm -e $OLDMARIADBDEVEL"
+echo "rpm -e $OLDGALERA"
 echo "rpm -e --nodeps $OLDMARIADBSHARED"
 echo "rpm -e --nodeps $OLDMARIADBCOMPAT"
 echo "rpm -e --nodeps $OLDMARIADBCOMMON"
@@ -166,6 +168,7 @@ rpm -e $OLDMARIADBTEST
 rpm -e $OLDMARIADBSERVER
 rpm -e $OLDMARIADBCLIENT
 rpm -e $OLDMARIADBDEVEL
+rpm -e $OLDGALERA
 rpm -e --nodeps $OLDMARIADBSHARED
 rpm -e --nodeps $OLDMARIADBCOMPAT
 rpm -e --nodeps $OLDMARIADBCOMMON
@@ -180,14 +183,14 @@ echo "#####################################################"
 
 }
 
-mariadb103install() {
+mariadb105install() {
 
     if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "MariaDB 10.3.x Repo Setup"
+        figlet -ckf standard "MariaDB 10.5.x Repo Setup"
     fi
 
     echo "*************************************************"
-    cecho "MariaDB 10.3.x Repo setup..." $boldgreen
+    cecho "MariaDB 10.5.x Repo setup..." $boldgreen
    echo "*************************************************"
 echo ""
 
@@ -233,7 +236,7 @@ if [[ "$CENTOS_NINE" = '9' ]]; then
 # cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # [mariadb]
 # name = MariaDB
-# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-amd64
+# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-amd64
 # module_hotfixes=1
 # gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 # gpgcheck=1
@@ -255,7 +258,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-aarch64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-aarch64
 module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -264,7 +267,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos9-aarch64
+baseurl = http://yum.mariadb.org/10.5/centos9-aarch64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -278,7 +281,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-amd64
 module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -287,7 +290,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos9-amd64
+baseurl = http://yum.mariadb.org/10.5/centos9-amd64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -300,7 +303,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos9-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-amd64
 module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -309,7 +312,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos9-amd64
+baseurl = http://yum.mariadb.org/10.5/centos9-amd64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -329,7 +332,7 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
 # cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # [mariadb]
 # name = MariaDB
-# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-amd64
 # module_hotfixes=1
 # gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 # gpgcheck=1
@@ -351,7 +354,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-aarch64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-aarch64
 module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -360,7 +363,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos8-aarch64
+baseurl = http://yum.mariadb.org/10.5/centos8-aarch64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -374,7 +377,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-amd64
 module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -383,7 +386,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos8-amd64
+baseurl = http://yum.mariadb.org/10.5/centos8-amd64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -396,7 +399,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos8-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-amd64
 module_hotfixes=1
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -405,7 +408,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos8-amd64
+baseurl = http://yum.mariadb.org/10.5/centos8-amd64
 module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
@@ -425,7 +428,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-aarch64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-aarch64
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -433,7 +436,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos7-aarch64
+baseurl = http://yum.mariadb.org/10.5/centos7-aarch64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -446,7 +449,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-amd64
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -454,7 +457,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos7-amd64
+baseurl = http://yum.mariadb.org/10.5/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -466,7 +469,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos7-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-amd64
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -474,7 +477,7 @@ else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos7-amd64
+baseurl = http://yum.mariadb.org/10.5/centos7-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -493,7 +496,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos6-amd64
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos6-amd64
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -505,7 +508,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos6-amd64
+baseurl = http://yum.mariadb.org/10.5/centos6-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -517,7 +520,7 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.3/centos6-x86
+baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos6-x86
 gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -529,7 +532,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos6-x86
+baseurl = http://yum.mariadb.org/10.5/centos6-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -549,7 +552,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos5-amd64
+baseurl = http://yum.mariadb.org/10.5/centos5-amd64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 priority=8
@@ -564,7 +567,7 @@ cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # http://downloads.mariadb.org/mariadb/repositories/
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.3/centos5-x86
+baseurl = http://yum.mariadb.org/10.5/centos5-x86
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 priority=8
@@ -575,12 +578,12 @@ fi # centos5 check
 
 }
 
-mariadbtentwototenthreeupgrade() {
+mariadbtenfourtotenfiveupgrade() {
 if [ -z "$OLDMARIADBVERS" ]; then
 MYSQLDATADIR=$(mysqladmin var | grep 'datadir' | awk '{ print $4}')
 
-backupmsg103
-#mariadb102uninstall
+backupmsg105
+#mariadb104uninstall
 
 mariadb_upgrade_check_versionlock
 
@@ -600,9 +603,23 @@ mv ib_logfile1 ib_logfile1.bak
 echo
 
 OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
+OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
 rpm -e $OLDMARIADBSERVER
+rpm -e $OLDGALERA
 
-mariadb103install
+# MariaDB 10.5 client package includes mytop
+# client already so no longer need EPEL version
+yum -y remove mytop
+if [[ -f /etc/yum.repos.d/epel.repo && ! "$(grep 'mytop' /etc/yum.repos.d/epel.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/epel.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/epel.repo
+fi
+if [[ -f /etc/yum.repos.d/rpmforge.repo && ! "$(grep 'mytop' /etc/yum.repos.d/rpmforge.repo)" ]]; then
+  NEW_MYTOP_EXCLUDES=$(echo "$(grep '^exclude=' /etc/yum.repos.d/rpmforge.repo) mytop")
+  sed -i "s|^exclude=.*|$NEW_MYTOP_EXCLUDES|" /etc/yum.repos.d/rpmforge.repo
+fi
+
+mariadb105install
 
 if [[ "1$CENTALTREPO_DISABLE" = [nN] ]]; then
     DISABLECENTALTREPO=" --disablerepo=CentALT"
@@ -624,25 +641,25 @@ echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
 fi
 
 if [ -f /etc/my.cnf ]; then
-cp /etc/my.cnf /etc/my.cnf-original_before_mariadb103upgrade
+cp /etc/my.cnf /etc/my.cnf-original_before_mariadb105upgrade
 fi
 
 echo ""
     echo "*************************************************"
-cecho "MariaDB 10.3.x check available packages" $boldgreen
+cecho "MariaDB 10.5.x check available packages" $boldgreen
 cecho "yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
 time yum -q list MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
 
     if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "MariaDB 10.3.x Install"
+        figlet -ckf standard "MariaDB 10.5.x Install"
     fi
 
 echo ""
     echo "*************************************************"
-cecho "MariaDB 10.3.x YUM install..." $boldgreen
-cecho "yum -q -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
+cecho "MariaDB 10.5.x YUM install..." $boldgreen
+cecho "yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities" $boldgreen
     echo "*************************************************"
 echo ""
 time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel MariaDB-server MariaDB-shared --disablerepo=epel --disableplugin=priorities
@@ -651,7 +668,7 @@ time yum -y install MariaDB-client MariaDB-common MariaDB-compat MariaDB-devel M
 echo ""
     echo "*************************************************"
     cecho "* Adjust old MariaDB 10.x /etc/my.cnf " $boldyellow
-    cecho "  for MariaDB 10.3.x my.cnf compatibility " $boldyellow
+    cecho "  for MariaDB 10.5.x my.cnf compatibility " $boldyellow
     echo "*************************************************"
 
 # unalias cp
@@ -660,16 +677,22 @@ if [ -f /etc/my.cnf.rpmorig ]; then
 fi
 
     if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "MariaDB 10.3.x /etc/my.cnf Adjustments"
+        figlet -ckf standard "MariaDB 10.5.x /etc/my.cnf Adjustments"
     fi
 
 cat >>/etc/my.cnf<<FFF
 
 
-[mariadb-10.3]
+[mariadb-10.5]
 #innodb_file_format = Barracuda
 innodb_default_row_format = dynamic
 innodb_file_per_table = 1
+
+# performance regressions
+# https://jira.mariadb.org/browse/MDEV-16337
+# https://jira.mariadb.org/browse/MDEV-20697
+#join_cache_level=0
+optimizer_use_condition_selectivity=1
 
 ## wsrep specific
 # wsrep_on=OFF
@@ -720,18 +743,20 @@ FFF
 # sed -i 's/innodb_additional_mem_pool_size/#innodb_additional_mem_pool_size/g' /etc/my.cnf
 # sed -i 's/skip-innodb/innodb=ON/g' /etc/my.cnf
 sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
-sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+# sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
 sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
 sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
 sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
 sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
 sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
 sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
-# deprecated in 10.3
-# https://mariadb.com/kb/en/library/mariadb-1031-release-notes/
-sed -i '/^innodb_large_prefix/d' /etc/my.cnf
-sed -i '/^innodb_file_format/d' /etc/my.cnf
+# deprecated in 10.5
+sed -i '/^innodb_thread_concurrency/d' /etc/my.cnf
+sed -i '/^innodb_log_files_in_group/d' /etc/my.cnf
+sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
 sed -i '/^innodb_support_xa/d' /etc/my.cnf
+sed -i '/^innodb_file_format/d' /etc/my.cnf
+sed -i '/^innodb_large_prefix/d' /etc/my.cnf
 
 echo ""
 
@@ -905,11 +930,11 @@ echo
 rm -rf /usr/bin/mysqlreload
 
 echo "------------------------------------------------"
-echo "MariaDB 10.3.x Upgrade completed"
+echo "MariaDB 10.5.x Upgrade completed"
 echo "------------------------------------------------"
 
     if [ -f "$(which figlet)" ]; then
-        figlet -ckf standard "MariaDB 10.3.x Upgraded"
+        figlet -ckf standard "MariaDB 10.5.x Upgraded"
     fi
 
 fi
