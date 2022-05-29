@@ -32,8 +32,8 @@ MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
 # so can use alternative mirrors for better speed and connectivity
 if [[ "$MDB_COUNTRY" = 'CN' ]]; then
-    echo "rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB"
-    rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+    echo "rpm --import https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB"
+    rpm --import https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 else
     echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
     rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
@@ -48,9 +48,9 @@ if [[ "$CENTOS_NINE" = '9' ]]; then
 # cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # [mariadb]
 # name = MariaDB
-# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-amd64
+# baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos9-amd64
 # module_hotfixes=1
-# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 # gpgcheck=1
 # EOF
 # else
@@ -70,9 +70,9 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-aarch64
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos9-aarch64
 module_hotfixes=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -93,9 +93,9 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-amd64
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos9-amd64
 module_hotfixes=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -115,9 +115,9 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos9-amd64
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos9-amd64
 module_hotfixes=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -144,9 +144,9 @@ if [[ "$CENTOS_EIGHT" = '8' ]]; then
 # cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # [mariadb]
 # name = MariaDB
-# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-amd64
+# baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos8-amd64
 # module_hotfixes=1
-# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 # gpgcheck=1
 # EOF
 # else
@@ -166,9 +166,9 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-aarch64
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos8-aarch64
 module_hotfixes=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -189,9 +189,9 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-amd64
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos8-amd64
 module_hotfixes=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -211,9 +211,9 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos8-amd64
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos8-amd64
 module_hotfixes=1
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -240,8 +240,8 @@ if [[ "$CENTOS_SEVEN" = '7' ]]; then
 # cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 # [mariadb]
 # name = MariaDB
-# baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-amd64
-# gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+# baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos7-amd64
+# gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 # gpgcheck=1
 # EOF
 # else
@@ -260,8 +260,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-aarch64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos7-aarch64
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -281,8 +281,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos7-amd64
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -301,8 +301,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos7-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos7-amd64
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -328,8 +328,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos6-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos6-amd64
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -352,8 +352,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.5/centos6-x86
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum//RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.5/centos6-x86
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
