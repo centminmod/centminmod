@@ -28,8 +28,9 @@ ls -lah /var/log/mysqld.log
 echo
 
 #MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
-MDB_COUNTRY=$(curl -${ipv_forceopt}s https://geoip.centminmod.com/v3 | jq -r '.country')
-MDB_CONTINENT=$(curl -${ipv_forceopt}s https://geoip.centminmod.com/v3 | jq -r '.continent')
+MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION" https://geoip.centminmod.com/v3 | jq -r)
+MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
+MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
 # so can use alternative mirrors for better speed and connectivity
@@ -850,6 +851,10 @@ sed -i '/^innodb_buffer_pool_instances/d' /etc/my.cnf
 sed -i '/^innodb_support_xa/d' /etc/my.cnf
 sed -i '/^innodb_file_format/d' /etc/my.cnf
 sed -i '/^innodb_large_prefix/d' /etc/my.cnf
+# mariadb 10.6 utf8 no longer exists for character set
+# https://mariadb.com/kb/en/changes-improvements-in-mariadb-106/
+# https://jira.mariadb.org/browse/MDEV-8334
+# sed -i '/^character-set-server/d' /etc/my.cnf
 
 # MariaDB 10.6 client package includes mytop
 # client already so no longer need EPEL version
