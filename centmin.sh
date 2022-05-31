@@ -917,6 +917,9 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 # wget source compile version
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
+
+# centmin.sh curl options
+CURL_AGENT=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
 ###############################################################
 # cloudflare authenticated origin pull cert
 # setup https://community.centminmod.com/threads/13847/
