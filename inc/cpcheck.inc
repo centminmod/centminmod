@@ -54,6 +54,11 @@ echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
 echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
 echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
 
+echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+
 service nginx start >/dev/null 2>&1
 service nginx status >/dev/null 2>&1
 chkconfig nginx on >/dev/null 2>&1
