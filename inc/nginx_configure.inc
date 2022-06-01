@@ -201,6 +201,12 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   fi
 fi
 
+ECNISTP_CHECK=$(gcc -dM -E - </dev/null | grep __SIZEOF_INT128__)
+ECNISTP_ENDIAN=$(echo -n I | od -to2 | awk 'FNR==1{ print substr($2,6,1)}')
+if [[ "$ECNISTP_ENDIAN" -ne '1' ]]; then
+  unset ECNISTP_CHECK
+fi
+
 if [[ "$NGINX_COMPILE_EXPORT" = [yY] ]]; then
   NGINX_EXPORTLD_OPT='-Wl,-E '
 fi
@@ -847,6 +853,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       LIBRESSLOPT=""
       BORINGSSLOPT=""
       if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 1a
         if [[ "$(uname -m)" = 'x86_64' ]]; then
           OPENSSLOPT=" --with-openssl=../openssl-tls1.3"
           TLSTHREEOPT='y'
@@ -855,8 +862,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 1b
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          if [ "$ECNISTP_CHECK" ]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
           TLSTHREEOPT='y'
         else
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -865,8 +877,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
+        echo 1c
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          if [ "$ECNISTP_CHECK" ]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
         else
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
         fi
@@ -878,6 +895,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       LIBRESSLOPT=""
       BORINGSSLOPT=""
       if [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$TLSONETHREE" = [yY] && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 2a
         OPENSSL_CUSTOMPATH='/opt/openssl-tls1.3'
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
@@ -888,8 +906,13 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
           OPENSSLOPT_B=" --with-openssl-opt=enable-tls1_3"
         fi
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
+        echo 2b
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          if [ "$ECNISTP_CHECK" ]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
           TLSTHREEOPT='y'
         else
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -898,9 +921,14 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       elif [[ "$NGINX_KTLS" = [yY] && "$KERNEL_NUMERICVER" -ge '5002000000' && "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
         OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='${NGINX_KTLS_OPT_ALT}'"
       else
+        echo 2c
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          if [ "$ECNISTP_CHECK" ]; then
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+          else
+            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+          fi
         else
           OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
         fi
@@ -1975,7 +2003,11 @@ else
           fi
         else
           if [[ "$(uname -m)" = 'x86_64' ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+            if [ "$ECNISTP_CHECK" ]; then
+              OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+            else
+              OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+            fi
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           fi
@@ -2016,7 +2048,11 @@ else
           fi
         else
           if [[ "$(uname -m)" = 'x86_64' ]]; then
-            OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+            if [ "$ECNISTP_CHECK" ]; then
+              OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
+            else
+              OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
+            fi
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
           fi
