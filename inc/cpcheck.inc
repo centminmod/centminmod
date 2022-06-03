@@ -1,3 +1,18 @@
+fix_phpfpm_systemd_switch() {
+if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] ]]; then
+        if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/php-fpm.service.d/failure-restart.conf)" = 'Unit' ]]; then
+cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
+[Service]
+StartLimitInterval=30
+StartLimitBurst=2
+Restart=on-failure
+RestartSec=5s
+TDG
+          systemctl daemon-reload
+        fi
+fi
+}
+
 nginx_systemd_switch() {
 if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] ]]; then
     rm -f /etc/init.d/nginx
@@ -75,7 +90,7 @@ chkconfig nginx on >/dev/null 2>&1
 
 fi # CENTOS_EIGHT = 8 nginx systemd service file
 if [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/nginx.service.d/failure-restart.conf)" = 'Unit' ]]; then
-        echo "fix setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
+        # echo "fix setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
 cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
 [Service]
 StartLimitInterval=30
@@ -3372,6 +3387,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   fi
   update_nginxconf
   nginx_systemd_switch
+  fix_phpfpm_systemd_switch
   update_cmdshortcuts
   update_initphpfpm
   update_phpfpmconfg
