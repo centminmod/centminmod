@@ -74,6 +74,17 @@ service nginx status >/dev/null 2>&1
 chkconfig nginx on >/dev/null 2>&1
 
 fi # CENTOS_EIGHT = 8 nginx systemd service file
+if [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/nginx.service.d/failure-restart.conf)" = 'Unit' ]]; then
+        echo "fix setup /etc/systemd/system/nginx.service.d/failure-restart.conf"
+cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
+[Service]
+StartLimitInterval=30
+StartLimitBurst=2
+Restart=on-failure
+RestartSec=5s
+TDG
+        systemctl daemon-reload
+fi
 }
 
 ngx_modern_ciphers_setup() {
