@@ -216,7 +216,7 @@ fi
 MARIADB55ARCH=`uname -m`
 
 #MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
-MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION" https://geoip.centminmod.com/v3 | jq -r)
+MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED" https://geoip.centminmod.com/v3 | jq -r)
 MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
 MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 
