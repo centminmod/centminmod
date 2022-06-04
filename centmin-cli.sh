@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='14'
+SCRIPT_INCREMENTVER='18'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -917,6 +917,11 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 # wget source compile version
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
+
+# centmin.sh curl options
+CURL_AGENT=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
+CURL_CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs | sed -e 's|(R)||g' -e 's|(TM)||g' -e 's|Intel Core|Intel|g' -e 's|CPU ||g' -e 's|-Core|C|g' -e 's|@ |@|g');
+CURL_CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq| sed -e s'|      ||g' | xargs | awk '{sum = 0; for (i = 1; i <= NF; i++) sum += $i; sum /= NF; printf("%.0f\n",sum)}')
 ###############################################################
 # cloudflare authenticated origin pull cert
 # setup https://community.centminmod.com/threads/13847/
