@@ -52,20 +52,32 @@ echo ""
   fi
 
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "Ensure crond & sysstat service are running" $boldyellow
+  cecho "Ensure nginx, php-fpm, redis, crond & sysstat service are running" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
-    if [[ "$CENTOS_SEVEN" != '7' ]]; then
+    if [ "$CENTOS_SIX" -eq '6' ]; then
       pkill crond
       service crond restart
       service sysstat restart
+      service nginx restart
+      service php-fpm restart
+      service redis restart
       chkconfig crond on
       chkconfig sysstat on
+      chkconfig nginx on
+      chkconfig php-fpm on
+      chkconfig redis on
     else
       pkill crond
       systemctl restart crond.service
       systemctl enable crond.service
       systemctl restart sysstat.service
       systemctl enable sysstat.service
+      systemctl restart nginx.service
+      systemctl enable nginx.service
+      systemctl restart php-fpm.service
+      systemctl enable php-fpm.service
+      systemctl restart redis.service
+      systemctl enable redis.service
     fi
   fi
 
@@ -189,6 +201,12 @@ echo ""
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check Redis Server Version:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow  
+  /usr/bin/redis-server -v | head -n1
+letswait
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
   cecho "Check CSF Firewall Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
 $(which csf) -v
@@ -258,8 +276,13 @@ if [[ "$NSD_DISABLED" = [yY] ]]; then
   cmchkconfig nsd off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable NSD service type these 2 commands:" $boldyellow
-  echo "service nsd start"
-  echo "chkconfig nsd on"
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    echo "service nsd start"
+    echo "chkconfig nsd on"
+  else
+    echo "service nsd start"
+    echo "chkconfig nsd on"
+  fi
   cecho "--------------------------------------------------------" $boldyellow
   fi
 fi
@@ -274,8 +297,13 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
   cmchkconfig memcached stop
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable Memcached server service type these 2 commands:" $boldyellow
-  echo "service memcached start"
-  echo "chkconfig memcached on"
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    echo "service memcached start"
+    echo "chkconfig memcached on"
+  else
+    echo "service memcached start"
+    echo "chkconfig memcached on"
+  fi
   cecho "--------------------------------------------------------" $boldyellow
 fi
 
@@ -289,8 +317,13 @@ if [[ "$REDIS_DISABLED" = [yY] ]]; then
   cmchkconfig redis stop
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable Redis server service type these 2 commands:" $boldyellow
-  echo "service redis start"
-  echo "chkconfig redis on"
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    echo "systemctl start redis"
+    echo "systemctl enable redis"
+  else
+    echo "service redis start"
+    echo "chkconfig redis on"
+  fi
   cecho "--------------------------------------------------------" $boldyellow
 fi
 
@@ -304,8 +337,13 @@ if [[ "$PHP_DISABLED" = [yY] ]]; then
   cmchkconfig php-fpm off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable php-fpm service type these 2 commands:" $boldyellow
-  echo "service php-fpm start"
-  echo "chkconfig php-fpm on"
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    echo "systemctl start php-fpm"
+    echo "systemctl enable php-fpm"
+  else
+    echo "service php-fpm start"
+    echo "chkconfig php-fpm on"
+  fi
   cecho "--------------------------------------------------------" $boldyellow
 fi
 
@@ -319,12 +357,17 @@ if [[ "$MYSQLSERVICE_DISABLED" = [yY] ]]; then
   cmchkconfig mysql off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable mysql service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_SIX" = '6' ]]; then
-    echo "service mysql start"
-    echo "chkconfig mysql on"
-  else
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
     echo "systemctl start mariadb"
     echo "systemctl enable mariadb"
+  else
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+      echo "service mysql start"
+      echo "chkconfig mysql on"
+    else
+      echo "systemctl start mariadb"
+      echo "systemctl enable mariadb"
+    fi
   fi
   cecho "--------------------------------------------------------" $boldyellow
 fi
@@ -339,8 +382,13 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
   cmchkconfig pure-ftpd off
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable pure-ftpd service type these 2 commands:" $boldyellow
-  echo "service pure-ftpd start"
-  echo "chkconfig pure-ftpd on"
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    echo "systemctl start pure-ftpd"
+    echo "systemctl enable pure-ftpd"
+  else
+    echo "service pure-ftpd start"
+    echo "chkconfig pure-ftpd on"
+  fi
   cecho "--------------------------------------------------------" $boldyellow
 fi
 

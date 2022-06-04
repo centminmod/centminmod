@@ -84,9 +84,9 @@ echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /
 echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
 echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
 
-service nginx start >/dev/null 2>&1
-service nginx status >/dev/null 2>&1
-chkconfig nginx on >/dev/null 2>&1
+systemctl start nginx >/dev/null 2>&1
+systemctl enable nginx >/dev/null 2>&1
+systemctl status nginx >/dev/null 2>&1
 
 fi # CENTOS_EIGHT = 8 nginx systemd service file
 if [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/nginx.service.d/failure-restart.conf)" = 'Unit' ]]; then
