@@ -28,7 +28,11 @@ ls -lah /var/log/mysqld.log
 echo
 
 #MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
-MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.6 install" https://geoip.centminmod.com/v3 | jq -r)
+MDB_DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
+MDB_DTIME_SEC=$(echo "$MDB_DTIME" |awk '{printf("%.2f\n",$7)}')
+MDB_NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
+MDB_NTIME_SEC=$(echo "$MDB_NTIME" |awk '{printf("%.2f\n",$7)}')
+MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.6 install D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC" https://geoip.centminmod.com/v3 | jq -r)
 MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
 MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 
