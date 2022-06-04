@@ -238,6 +238,14 @@ elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
     MDB_MIRROR_BASEURL='https://download.nus.edu.sg/mirror/mariadb/yum'
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+elif [[ "$MDB_COUNTRY" = 'GB' ]]; then
+    MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
+    echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+elif [[ "$MDB_COUNTRY" = 'HK' ]]; then
+    MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
+    echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
     MDB_MIRROR_BASEURL='https://mirrors.n-ix.net/mariadb/yum'
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
