@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='46'
+SCRIPT_INCREMENTVER='47'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1036,6 +1036,7 @@ VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-
 NGINXDIR='/usr/local/nginx'
 NGINXCONFDIR="${NGINXDIR}/conf"
 NGINXBACKUPDIR='/usr/local/nginxbackup'
+NGINX_MAINHOSTNAME_BLANK_INDEX='n'  # if enabled main hostname public web root /usr/local/nginx/html/index.html will be blank
 
 # control variables post vhost creation
 # whether cloudflare.conf include file is uncommented (enabled) or commented out (disabled)

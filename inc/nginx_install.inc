@@ -293,6 +293,11 @@ fi
     #rm -rf $CUR_DIR/htdocs
     cp -R $CUR_DIR/config/nginx/* /usr/local/nginx/conf
     opt_sslcache silent
+    if [[ "$NGINX_MAINHOSTNAME_BLANK_INDEX" = [yY] ]]; then
+        cp -a /usr/local/nginx/html/index.html /usr/local/nginx/html/index.html-orig
+        rm -f /usr/local/nginx/html/index.html
+        touch /usr/local/nginx/html/index.html
+    fi
 
     #################################################################################
     ngx_dynamicfunction

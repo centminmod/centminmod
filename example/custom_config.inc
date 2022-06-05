@@ -121,6 +121,7 @@ USE_NGINXMAINEXTLOGFORMAT='n' # use default combined nginx log format instead of
 NGINX_ALLOWOVERRIDE='y'      # allow centmin mod to update nginx.conf setting defaults when the defaults are revised
 NGINX_SSLCACHE_ALLOWOVERRIDE='n' # dynamically tune nginx ssl_session_cache in /usr/local/nginx/conf/ssl_include.conf based on system detected memory
 NGINXUPGRADESLEEP='3'
+NGINX_MAINHOSTNAME_BLANK_INDEX='n'  # if enabled main hostname public web root /usr/local/nginx/html/index.html will be blank
 SWITCH_NGINX_SYSTEMD='y'     # Switch to centos 7 systemd nginx service file
 NSD_INSTALL='y'              # Install NSD (DNS Server)
 NSD_VERSION='3.2.18'         # NSD Version
