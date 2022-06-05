@@ -841,7 +841,32 @@ fi
         figlet -ckf standard "PHP: Make Install"
     fi
 
-echo "make install"
+    echo "make install"
+    if [[ "$FPM_PHPFPM_INSTALLDIR_ENABLE" = [yY] ]]; then
+      echo
+      rm -rf "$FPM_PHPFPM_INSTALLDIR"
+      mkdir -p "$FPM_PHPFPM_INSTALLDIR"
+      echo "time make install INSTALL_ROOT=$FPM_PHPFPM_INSTALLDIR"
+      time make install INSTALL_ROOT="$FPM_PHPFPM_INSTALLDIR"
+      FPM_PHPFPM_INSTALLDIR_ERR=$?
+      if [[ "$STRIPPHP" = [yY] ]]; then
+          echo
+          echo "strip PHP binary..."
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          echo
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
+          strip -s ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          echo
+          echo "after strip PHP binary..."
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/bin/php-cgi
+          ls -lah ${FPM_PHPFPM_INSTALLDIR}/usr/local/sbin/php-fpm
+          echo
+      fi
+    fi
     time make install
     ERR=$?
 
