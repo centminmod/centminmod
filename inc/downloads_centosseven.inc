@@ -378,7 +378,9 @@ echo "--------------------------------------------------------------------------
 echo "----------------------------------------------------------------------------------"
 cecho "Installing $pkgs" $boldyellow
 echo "----------------------------------------------------------------------------------"
-      if [[ "$pkgs" = 'libzip5' || "$pkgs" = 'libzip5-devel' ]]; then
+      if [[ "$pkgs" = 'oniguruma5php' || "$pkgs" = 'oniguruma5php-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
+      elif [[ "$pkgs" = 'libzip5' || "$pkgs" = 'libzip5-devel' ]]; then
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
       else
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
