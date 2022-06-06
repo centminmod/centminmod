@@ -47,6 +47,8 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
+WGET_VERSION_EIGHT='1.21.2'
+WGET_VERSION_NINE='1.21.2'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
@@ -189,13 +191,114 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
-if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" = '8' ]]; then
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
+if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+  if [[ "$ORACLELINUX_NINE" -eq '9' ]]; then
+    label_os=OracleLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_NINE" -eq '9' ]]; then
+    label_os=RockyLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_NINE" -eq '9' ]]; then
+    label_os=AlmaLinux
+    label_os_ver=9
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$ORACLELINUX_EIGHT" -eq '8' ]]; then
+    label_os=OracleLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/'
+  elif [[ "$ROCKYLINUX_EIGHT" -eq '8' ]]; then
+    label_os=RockyLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=84'
+  elif [[ "$ALMALINUX_EIGHT" -eq '8' ]]; then
+    label_os=AlmaLinux
+    label_os_ver=8
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    label_os_ver=9
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    label_os_ver=8
+    label_os=CentOS
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  fi
   echo
-  echo "CentOS 8 is currently not supported by Centmin Mod, please use CentOS 7.7+"
-  echo "To follow CentOS 8 compatibility progress read & subscribe to thread at:"
-  echo "https://community.centminmod.com/threads/centmin-mod-centos-8-compatibility-worklog.18372/"
+  echo "$label_os ${label_os_ver} is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL${label_os_ver} compatibility for CentOS ${label_os_ver} / AlmaLinux ${label_os_ver} read thread at:"
+  echo "https://community.centminmod.com/threads/18372/"
   echo "You can read CentOS 8 specific discussions via prefix tag link at:"
-  echo "https://community.centminmod.com/forums/centos-redhat-oracle-linux-news.31/?prefix_id=81"
+  echo "$label_prefix"
   exit 1
   echo
 fi
@@ -204,20 +307,49 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  WGET_VERSION=$WGET_VERSION_SEVEN
+  echo "EL${label_os_ver} Install Dependencies Start..."
+  WGET_VERSION=$WGET_VERSION_EIGHT
 
   # enable CentOS 8 PowerTools repo for -devel packages
+  if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
+    reponame_powertools=powertools
+  else
+    reponame_powertools=PowerTools
+  fi
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install dnf-utils
-    yum-config-manager --enable PowerTools
+    yum -q -y install yum-utils tar
+    yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
-    yum-config-manager --enable PowerTools
+    yum-config-manager --enable $reponame_powertools
   fi
 
   # disable native CentOS 8 AppStream repo based nginx, php & oracle mysql packages
-  yum -q -y module disable nginx mysql php:7.2
+  yum -q -y module disable nginx mariadb mysql php redis:5
 
   # install missing dependencies specific to CentOS 8
+  # for csf firewall installs
+  if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
+    yum -q -y install perl-Math-BigInt
+  fi
+fi
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
+  WGET_VERSION=$WGET_VERSION_NINE
+
+  # enable CentOS 9 crb repo for -devel packages
+  reponame_powertools=crb
+
+  if [ ! -f /usr/bin/yum-config-manager ]; then
+    yum -q -y install yum-utils tar
+    yum-config-manager --enable $reponame_powertools
+  elif [ -f /usr/bin/yum-config-manager ]; then
+    yum-config-manager --enable $reponame_powertools
+  fi
+
+  # disable native CentOS 9 AppStream repo based nginx, php & oracle mysql packages
+  yum -q -y module disable nginx mariadb mysql php redis:6
+
+  # install missing dependencies specific to CentOS 9
   # for csf firewall installs
   if [ ! -f /usr/share/perl5/vendor_perl/Math/BigInt.pm ]; then
     yum -q -y install perl-Math-BigInt
@@ -474,7 +606,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   AXEL_VER='2.16.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
@@ -541,7 +673,7 @@ elif [[ "$CENTOS_SIX" -eq '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' && "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -1118,7 +1250,13 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
+  if [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
     yum -y install yum-plugin-versionlock uw-imap-devel
     yum versionlock libc-client uw-imap-devel
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" != 'libc-client-2007f-16.el7.x86_64' ]]; then
@@ -1153,7 +1291,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' && ! -f /etc/rc.d/rc.local ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -1259,7 +1397,7 @@ EOF
     fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
         if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
@@ -1470,7 +1608,11 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     USER_PKGS=" ipset ipset-devel"
   fi
 
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  time $YUMDNFBIN -y install systemd-libs open-sans-fonts libidn2-devel libpsl-devel gpgme-devel gnutls-devel virt-what acl libacl-devel attr libattr-devel lz4-devel gawk unzip libuuid-devel sqlite-devel bc wget lynx screen ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF} --skip-broken
+else
   time $YUMDNFBIN -y install systemd-libs open-sans-fonts virt-what acl libacl-devel attr libattr-devel lz4-devel python-devel gawk unzip pyOpenSSL python-dateutil libuuid-devel sqlite-devel bc wget lynx screen deltarpm ca-certificates yum-utils bash mlocate subversion rsyslog dos2unix boost-program-options net-tools imake bind-utils libatomic_ops-devel time coreutils autoconf cronie crontabs cronie-anacron gcc gcc-c++ automake libtool make libXext-devel unzip patch sysstat openssh flex bison file libtool-ltdl-devel  krb5-devel libXpm-devel nano gmp-devel aspell-devel numactl lsof pkgconfig gdbm-devel tk-devel bluez-libs-devel iptables* rrdtool diffutils which perl-Test-Simple perl-ExtUtils-Embed perl-ExtUtils-MakeMaker perl-Time-HiRes perl-libwww-perl perl-Crypt-SSLeay perl-Net-SSLeay cyrus-imapd cyrus-sasl-md5 cyrus-sasl-plain strace cmake git net-snmp-libs net-snmp-utils iotop libvpx libvpx-devel t1lib t1lib-devel expect expect-devel readline readline-devel libedit libedit-devel libxslt libxslt-devel openssl openssl-devel curl curl-devel openldap openldap-devel zlib zlib-devel gd gd-devel pcre pcre-devel gettext gettext-devel libidn libidn-devel libjpeg libjpeg-devel libpng libpng-devel freetype freetype-devel libxml2 libxml2-devel glib2 glib2-devel bzip2 bzip2-devel ncurses ncurses-devel e2fsprogs e2fsprogs-devel libc-client libc-client-devel cyrus-sasl cyrus-sasl-devel pam pam-devel libaio libaio-devel libevent libevent-devel recode recode-devel libtidy libtidy-devel net-snmp net-snmp-devel enchant enchant-devel lua lua-devel mailx perl-LWP-Protocol-https OpenEXR-devel OpenEXR-libs atk cups-libs fftw-libs-double fribidi gdk-pixbuf2 ghostscript-devel ghostscript-fonts gl-manpages graphviz gtk2 hicolor-icon-theme ilmbase ilmbase-devel jasper-devel jasper-libs jbigkit-devel jbigkit-libs lcms2 lcms2-devel libICE-devel libSM-devel libXaw libXcomposite libXcursor libXdamage-devel libXfixes-devel libXfont libXi libXinerama libXmu libXrandr libXt-devel libXxf86vm-devel libdrm-devel libfontenc librsvg2 libtiff libtiff-devel libwebp libwebp-devel libwmf-lite mesa-libGL-devel mesa-libGLU mesa-libGLU-devel poppler-data urw-fonts xorg-x11-font-utils${USER_PKGS}${DISABLEREPO_DNF}
+fi
   sar_call
   # allows curl install to skip checking for already installed yum packages 
   # later on in initial curl installations
@@ -1478,8 +1620,15 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
   # $YUMDNFBIN makecache fast
   sar_call
-  if [[ "$CENTOS_EIGHT" = '8' ]]; then
-    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing
+  if [[ "$CENTOS_NINE" = '9' ]]; then
+    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
+    libc_fix
+    if [ -f /usr/bin/pip ]; then
+      PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
+    fi
+    sar_call
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
@@ -1644,7 +1793,7 @@ cd $INSTALLDIR
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.1' | head -n1)
-PHPVERLATEST=${PHPVERLATEST:-"8.1.5"}
+PHPVERLATEST=${PHPVERLATEST:-"8.1.6"}
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
