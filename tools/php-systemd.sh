@@ -155,7 +155,7 @@ Restart=on-failure
 RestartSec=5s
 TDG
         fi
-    elif [ "$CENTOS_SEVEN" -eq '7' ]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         if [ ! -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf ] || [[ "$CENTOS_SEVEN" = '7' && "$(grep -o Unit /etc/systemd/system/php-fpm.service.d/failure-restart.conf)" = 'Unit' ]]; then
 cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
 [Service]

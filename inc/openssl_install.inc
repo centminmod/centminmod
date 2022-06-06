@@ -1,5 +1,5 @@
 cmake_alternatives() {
-    if [ "$CENTOS_SEVEN" -eq '7' ]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         if [ ! -f /usr/bin/cmake3 ]; then
             yum -q -y install cmake3
         fi

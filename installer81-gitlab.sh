@@ -203,7 +203,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
-if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 
   # enable CentOS 8 PowerTools repo for -devel packages
@@ -531,11 +531,13 @@ EOF
 fi
 
 # some centos images don't even install tar by default !
-if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/tar ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-elif [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SIX" -eq '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
 fi
 
@@ -666,8 +668,11 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     echo "LXC/LXD container system detected, NTP not installed"
 else
-  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       echo
+      echo "*************************************************"
+      echo "* Installing chronyd (and syncing time)"
+      echo "*************************************************"
       time $YUMDNFBIN -y install chrony
       systemctl start chronyd
       systemctl enable chronyd
@@ -1038,7 +1043,9 @@ source_wgetinstall() {
     echo ""
   fi
   cd "wget-${WGET_VERSION}"
-  gccdevtools
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    gccdevtools
+  fi
   make clean
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
@@ -1091,7 +1098,9 @@ source_wgetinstall() {
   cecho "--------------------------------------------------------" $boldgreen
   cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
   cecho "--------------------------------------------------------" $boldgreen
-  unset CFLAGS
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    unset CFLAGS
+  fi
   echo
   fi
 }
@@ -1202,7 +1211,22 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        # centos 8
+        if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
+cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*          soft    nproc     8192
+*          hard    nproc     8192
+nginx      soft    nproc     32278
+nginx      hard    nproc     32278
+root       soft    nproc     unlimited
+EOF
+      fi
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
         # centos 7
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -1423,7 +1447,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
       sar_call
@@ -1452,7 +1476,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
-  $YUMDNFBIN makecache fast
+  # $YUMDNFBIN makecache fast
   sar_call
   if [[ "$CENTOS_EIGHT" = '8' ]]; then
     time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion bash-completion-extras mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing

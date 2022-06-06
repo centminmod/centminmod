@@ -67,7 +67,7 @@ iouring_patch() {
         if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_SIX" -eq '6' ]] && [[ -f /etc/init.d/nginx ]]; then
           sed -i '/ulimit -l/d' /etc/init.d/nginx
           sed -i "s|#!\/bin\/sh|#!\/bin\/sh\nif [ ! -f \/proc\/user_beancounters ]; then ulimit -l $IOURING_MAXLOCKEDMEM_SIZE_NGINX ; fi\n|g" /etc/init.d/nginx
-          if [ "$CENTOS_SEVEN" -eq '7' ]; then
+          if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
             systemctl daemon-reload >/dev/null 2>&1
           fi
           head -n8 /etc/init.d/nginx

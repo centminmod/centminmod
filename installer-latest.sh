@@ -284,16 +284,20 @@ if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_A
     label_os=AlmaLinux
     label_os_ver=8
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
-  else
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    label_os_ver=9
     label_os=CentOS
-    label_os_ver=7
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    label_os_ver=8
+    label_os=CentOS
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
   fi
   echo
-  echo "$label_os $label_os_ver is currently not supported by Centmin Mod, please use CentOS 7.9+"
-  echo "To follow EL8+ compatibility for CentOS 8 / AlmaLinux 8 read thread at:"
+  echo "$label_os ${label_os_ver} is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL${label_os_ver} compatibility for CentOS ${label_os_ver} / AlmaLinux ${label_os_ver} read thread at:"
   echo "https://community.centminmod.com/threads/18372/"
-  echo "You can read specific discussions via prefix tag link at:"
+  echo "You can read CentOS 8 specific discussions via prefix tag link at:"
   echo "$label_prefix"
   exit 1
   echo
@@ -302,7 +306,8 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
-if [ "$CENTOS_EIGHT" -eq '8' ]; then
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_EIGHT
 
   # enable CentOS 8 PowerTools repo for -devel packages
@@ -312,7 +317,7 @@ if [ "$CENTOS_EIGHT" -eq '8' ]; then
     reponame_powertools=PowerTools
   fi
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install yum-utils
+    yum -q -y install yum-utils tar
     yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
     yum-config-manager --enable $reponame_powertools
@@ -327,14 +332,15 @@ if [ "$CENTOS_EIGHT" -eq '8' ]; then
     yum -q -y install perl-Math-BigInt
   fi
 fi
-if [ "$CENTOS_NINE" -eq '9' ]; then
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_NINE
 
   # enable CentOS 9 crb repo for -devel packages
   reponame_powertools=crb
 
   if [ ! -f /usr/bin/yum-config-manager ]; then
-    yum -q -y install yum-utils
+    yum -q -y install yum-utils tar
     yum-config-manager --enable $reponame_powertools
   elif [ -f /usr/bin/yum-config-manager ]; then
     yum-config-manager --enable $reponame_powertools
@@ -600,7 +606,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   AXEL_VER='2.16.1'
   AXEL_LINKFILE="axel-${AXEL_VER}.tar.gz"
   AXEL_LINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/axel/v${AXEL_VER}.tar.gz"
@@ -657,15 +663,17 @@ EOF
 fi
 
 # some centos images don't even install tar by default !
-if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/tar ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-elif [[ "$CENTOS_SEVEN" = '7' && ! -f /usr/bin/tar ]]; then
+elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /usr/bin/tar ]]; then
   yum -y -q install tar
-elif [[ "$CENTOS_SIX" = '6' && ! -f /bin/tar ]]; then
+elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /usr/bin/tar ]]; then
+  yum -y -q install tar
+elif [[ "$CENTOS_SIX" -eq '6' && ! -f /bin/tar ]]; then
   yum -y -q install tar
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   if [[ $(rpm -q epel-release >/dev/null 2>&1; echo $?) != '0' ]]; then
     yum -y -q install epel-release
     yum clean all
@@ -798,8 +806,11 @@ if [ -f /proc/user_beancounters ]; then
 elif [[ "$CHECK_LXD" = [yY] ]]; then
     echo "LXC/LXD container system detected, NTP not installed"
 else
-  if [[ "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       echo
+      echo "*************************************************"
+      echo "* Installing chronyd (and syncing time)"
+      echo "*************************************************"
       time $YUMDNFBIN -y install chrony
       systemctl start chronyd
       systemctl enable chronyd
@@ -1170,7 +1181,9 @@ source_wgetinstall() {
     echo ""
   fi
   cd "wget-${WGET_VERSION}"
-  gccdevtools
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    gccdevtools
+  fi
   make clean
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     export CFLAGS="-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -m64 -mtune=generic"
@@ -1223,7 +1236,9 @@ source_wgetinstall() {
   cecho "--------------------------------------------------------" $boldgreen
   cecho "wget ${WGET_VERSION} installed at /usr/local/bin/wget" $boldyellow
   cecho "--------------------------------------------------------" $boldgreen
-  unset CFLAGS
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    unset CFLAGS
+  fi
   echo
   fi
 }
@@ -1241,7 +1256,10 @@ fileperm_fixes() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
+  if [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
     yum -y -q install python3-dnf-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_SEVEN" -eq '7' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-16.el7.x86_64' ]]; then
@@ -1279,7 +1297,7 @@ opt_tcp() {
         echo "* soft nofile 524288" >>/etc/security/limits.conf
         echo "* hard nofile 524288" >>/etc/security/limits.conf
 # https://community.centminmod.com/posts/52406/
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [ ! -f /etc/rc.d/rc.local ]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [ ! -f /etc/rc.d/rc.local ]; then
 
 
 cat > /usr/lib/systemd/system/rc-local.service <<EOF
@@ -1337,7 +1355,22 @@ fi
         fi
     fi # check if custom open file descriptor limits already exist
 
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+        # centos 8
+        if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
+cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
+# Default limit for number of user's processes to prevent
+# accidental fork bombs.
+# See rhbz #432903 for reasoning.
+
+*          soft    nproc     8192
+*          hard    nproc     8192
+nginx      soft    nproc     32278
+nginx      hard    nproc     32278
+root       soft    nproc     unlimited
+EOF
+      fi
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
         # centos 7
         if [[ -f /etc/security/limits.d/20-nproc.conf ]]; then
 cat > "/etc/security/limits.d/20-nproc.conf" <<EOF
@@ -1370,7 +1403,7 @@ EOF
     fi
 
 if [[ ! -f /proc/user_beancounters ]]; then
-    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
         if [ -d /etc/sysctl.d ]; then
             # centos 7
             touch /etc/sysctl.d/101-sysctl.conf
@@ -1558,7 +1591,7 @@ if [[ ! -f /usr/bin/git || ! -f /usr/bin/bc || ! -f /usr/bin/wget || ! -f /bin/n
     fi
   fi
 
-  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]]; then
+  if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
     if [[ $(rpm -q nmap-ncat >/dev/null 2>&1; echo $?) != '0' ]]; then
       time $YUMDNFBIN -y install nmap-ncat${DISABLEREPO_DNF}
       sar_call
@@ -1591,17 +1624,17 @@ fi
   # later on in initial curl installations
   touch /tmp/curlinstaller-yum
   time $YUMDNFBIN -y install epel-release${DISABLEREPO_DNF}
-  $YUMDNFBIN makecache fast
+  # $YUMDNFBIN makecache fast
   sar_call
   if [[ "$CENTOS_NINE" = '9' ]]; then
-    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing,remi --skip-broken
+    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip
     fi
     sar_call
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-playground,epel-testing,remi --skip-broken
+    time $YUMDNFBIN -y install systemd-libs xxhash-devel libzstd xxhash libzstd-devel datamash qrencode jq clang clang-devel jemalloc jemalloc-devel zstd python2-pip libmcrypt libmcrypt-devel libraqm oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 bash-completion mlocate re2c kernel-headers kernel-devel${DISABLEREPO_DNF} --enablerepo=epel,epel-testing,remi --skip-broken
     libc_fix
     if [ -f /usr/bin/pip ]; then
       PYTHONWARNINGS=ignore:::pip._internal.cli.base_command pip install --upgrade pip

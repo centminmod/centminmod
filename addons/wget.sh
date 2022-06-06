@@ -177,16 +177,20 @@ if [[ "$CENTOS_ALPHATEST" != [yY] && "$CENTOS_EIGHT" -eq '8' ]] || [[ "$CENTOS_A
     label_os=AlmaLinux
     label_os_ver=8
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=83'
-  else
+  elif [[ "$CENTOS_NINE" = '9' ]]; then
+    label_os_ver=9
     label_os=CentOS
-    label_os_ver=7
+    label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
+  elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+    label_os_ver=8
+    label_os=CentOS
     label_prefix='https://community.centminmod.com/forums/31/?prefix_id=81'
   fi
   echo
-  echo "$label_os $label_os_ver is currently not supported by Centmin Mod, please use CentOS 7.9+"
-  echo "To follow EL8+ compatibility for CentOS 8 / AlmaLinux 8 read thread at:"
+  echo "$label_os ${label_os_ver} is currently not supported by Centmin Mod, please use CentOS 7.9+"
+  echo "To follow EL${label_os_ver} compatibility for CentOS ${label_os_ver} / AlmaLinux ${label_os_ver} read thread at:"
   echo "https://community.centminmod.com/threads/18372/"
-  echo "You can read specific discussions via prefix tag link at:"
+  echo "You can read CentOS 8 specific discussions via prefix tag link at:"
   echo "$label_prefix"
   exit 1
   echo
@@ -196,9 +200,11 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_EIGHT
 fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_NINE
 fi
 
@@ -463,7 +469,7 @@ else
     MAKETHREADS=" -j$CPUS"
 fi
 
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$DNF_ENABLE" = [yY] ]]; then
   # yum -y -q install epel-release
   if [[ ! -f /usr/bin/dnf ]]; then
     yum -y -q install dnf
@@ -896,7 +902,9 @@ source_wgetinstall() {
     echo ""
   fi
   cd "wget-${WGET_VERSION}"
-  gccdevtools
+  if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+    gccdevtools
+  fi
   if [ -f config.status ]; then
     make clean
   fi

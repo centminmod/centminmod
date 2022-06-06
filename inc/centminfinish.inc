@@ -54,7 +54,7 @@ echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Ensure nginx, php-fpm, redis, crond & sysstat service are running" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
-    if [ "$CENTOS_SIX" -eq '6' ]; then
+    if [[ "$CENTOS_SIX" -eq '6' ]]; then
       pkill crond
       service crond restart
       service sysstat restart
