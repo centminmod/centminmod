@@ -2487,7 +2487,7 @@ echo
 echo "Using GCC $(gcc -dumpversion)"
 echo
 
-if [[ "$FPM_PHPFPM_RPM" = [yY] && "$INITIALINSTALL" = [yY] ]]; then
+if [[ "$FPM_PHPFPM_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
   # experimental initial install PHP-FPM custom RPM build
   echo
   echo "Skip PHP-FPM configure..."
