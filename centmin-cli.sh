@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='50'
+SCRIPT_INCREMENTVER='51'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -909,7 +909,8 @@ LUACJSONVER='2.1.0.8rc1'              # https://github.com/openresty/lua-cjson
 
 STRIPPHP='y'                 # set 'y' to strip PHP binary to reduce size
 PHP_INSTALL='y'              # Install PHP /w Fast Process Manager
-SWITCH_PHPFPM_SYSTEMD='y'    # Switch to centos 7 systemd php-fpm service file https://community.centminmod.com/threads/16511/
+SWITCH_PHPFPM_SYSTEMD='y'                 # Switch to centos 7 systemd php-fpm service file https://community.centminmod.com/threads/16511/
+FPM_PHPFPM_INSTALLDIR='/home/installdir'  # default directory for PHP-FPM INSTALL_ROOT routines
 ZSTD_LOGROTATE_PHPFPM='n'    # initial install only for zstd compressed log rotation community.centminmod.com/threads/16371/
 PHP_PATCH='y'                # Apply PHP patches if they exist
 PHP_MYSQLND_PATCH_FIX='y'    # Apply PHP 7.3 backported mysqlnd patch for MariaDB for PHP <=7.2 https://community.centminmod.com/posts/86953/
