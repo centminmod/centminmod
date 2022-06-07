@@ -1,0 +1,66 @@
+From 1f8f48703c7800b0e90344ccd73e74a1727f8a72 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <smalyshev@gmail.com>
+Date: Mon, 6 Jun 2022 00:56:51 -0600
+Subject: [PATCH 2/3] Fix bug #81719: mysqlnd/pdo password buffer overflow
+
+(cherry picked from commit 58006537fc5f133ae8549efe5118cde418b3ace9)
+(cherry picked from commit 9433de72e291db518357fe55531cc15432d43ec4)
+(cherry picked from commit 1560224d3a26574f0195af3853e4d7e050b0b06f)
+(cherry picked from commit 5e1d9182748c5330c4bf2154da858206e76914b6)
+---
+ ext/mysqlnd/mysqlnd_wireprotocol.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ext/mysqlnd/mysqlnd_wireprotocol.c b/ext/mysqlnd/mysqlnd_wireprotocol.c
+index 6113543e2b..fa8c6bff46 100644
+--- a/ext/mysqlnd/mysqlnd_wireprotocol.c
++++ b/ext/mysqlnd/mysqlnd_wireprotocol.c
+@@ -798,7 +798,8 @@ static size_t
+ php_mysqlnd_change_auth_response_write(void * _packet, MYSQLND_CONN_DATA * conn)
+ {
+ 	MYSQLND_PACKET_CHANGE_AUTH_RESPONSE *packet= (MYSQLND_PACKET_CHANGE_AUTH_RESPONSE *) _packet;
+-	zend_uchar * buffer = conn->net->cmd_buffer.length >= packet->auth_data_len? conn->net->cmd_buffer.buffer : mnd_emalloc(packet->auth_data_len);
++	size_t total_packet_size = packet->auth_data_len + MYSQLND_HEADER_SIZE;
++	zend_uchar * buffer = conn->net->cmd_buffer.length >= total_packet_size? conn->net->cmd_buffer.buffer : mnd_emalloc(total_packet_size);
+ 	zend_uchar *p = buffer + MYSQLND_HEADER_SIZE; /* start after the header */
+ 
+ 	DBG_ENTER("php_mysqlnd_change_auth_response_write");
+-- 
+2.35.3
+
+From b243ab09f95d2737b99ce87d485c052734c2f3f5 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Tue, 7 Jun 2022 09:57:15 +0200
+Subject: [PATCH 3/3] NEWS
+
+(cherry picked from commit f451082baf14ee9ea86cdd19870e906adb368f02)
+(cherry picked from commit 87247fb08e905e629836350ac4e639edd1b40ed8)
+(cherry picked from commit 151499ec0f70bf4f1bd65aebf037bd6273f0ef34)
+---
+ NEWS | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index 0207f4caed..8d609a489c 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,16 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.4.30
++
++- mysqlnd:
++  . Fixed bug #81719: mysqlnd/pdo password buffer overflow.
++    (CVE-2022-31626) (c dot fol at ambionics dot io)
++
++- pgsql
++  . Fixed bug #81720: Uninitialized array in pg_query_params().
++    (CVE-2022-31625) (cmb)
++
+ Backported from 7.3.33
+ 
+ - XML:
+-- 
+2.35.3
+
