@@ -724,7 +724,7 @@ php_patches() {
         fi
       done
     fi
-    if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70331' ]]; then
+    if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
       phpseven_bugids='81026 81719 81720 pcre1038'
       for bugid in $phpseven_bugids; do
