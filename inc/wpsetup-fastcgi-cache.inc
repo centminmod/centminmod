@@ -3882,7 +3882,7 @@ elif [[ "$wpscache" = [nN] ]]; then
 elif [[ "$wpscache" = [yY] ]]; then
   cecho "  1. Enable Permalinks (DO NOT use links with .html extensions for performance reasons) i.e. /%post_id%/%postname%/
   2. Settings Menu > Super Cache > Easy tab and enable it by checking Caching On (Recommended) and hit Update Status
-  3. Advanced tab & check Use mod_rewrite serve cache files & Don’t cache pages with GET parameters and Known User. 
+  3. Advance tab & check Cache Delivery Method = Expert to serve cache files & Don’t cache pages with GET parameters and Known User and enabling Tracking Parameters. 
     (Recommended), Cache rebuild for anonymous users, clear all cache when a post or page updated & hit Update Status
   4. Appearance > Theme Options (Responsive theme) > Home Page nav bar > Uncheck Overrides Wordpress front page option"
   if [[ "$WPPLUGINS_ALL" = [yY] ]]; then
