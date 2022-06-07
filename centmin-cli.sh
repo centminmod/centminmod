@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='58'
+SCRIPT_INCREMENTVER='59'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -2757,30 +2757,37 @@ if [ -f /etc/init.d/ntpd ]; then
   /etc/init.d/ntpd start
 fi
 
-if [[ "$NGINX_INSTALL" = [yY] ]] && [[ -f /usr/lib/systemd/system/nginx.service || -f /etc/init.d/nginx ]]; then
-  sleep 2
-  service nginx start
-fi
-
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
   sleep 2
   systemctl daemon-reload -q
   service php-fpm stop >/dev/null 2>&1
+  sleep 2
   systemctl restart mariadb -q
   service php-fpm start >/dev/null 2>&1
   if [[ "$(systemctl is-active mariadb -q; echo $?)" -ne '0' ]]; then
-    sleep 4
+    sleep 8
     systemctl daemon-reload -q
     systemctl restart mariadb -q
     if [[ "$(systemctl is-active mariadb -q; echo $?)" -eq '0' ]]; then
       echo "Starting mariadb (via systemctl): [ OK ]"
     else
       echo "Starting mariadb (via systemctl): [ Failed ]"
+      echo "MariaDB log saved at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb-server-failed-startup.log"
+      journalctl -u mariadb --no-pager | sed -e "s|$(hostname)|hostname|g" > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb-server-failed-startup.log"
     fi
   fi
 elif [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
   sleep 3
   /etc/init.d/mysql restart
+fi
+
+if [[ "$NGINX_INSTALL" = [yY] && -f /usr/lib/systemd/system/nginx.service ]]; then
+  sleep 2
+  systemctl daemon-reload -q
+  systemctl start nginx
+elif [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
+  sleep 2
+  service nginx start
 fi
 
 if [[ "$MYSQL_INSTALL" = [yY] && -f /etc/init.d/mysqld ]]; then
