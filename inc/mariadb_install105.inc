@@ -1027,6 +1027,15 @@ TDG
   systemctl daemon-reload
 fi
 
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/notifyaccess.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Initial Install: Update MariaDB 10 setting for NotifyAccess=all"
+cat > "/etc/systemd/system/mariadb.service.d/notifyaccess.conf" <<TDG
+[Service]
+NotifyAccess=all
+TDG
+  systemctl daemon-reload
+fi
+
 cmservice mysql restart
 
     if [ -f "$(which figlet)" ]; then
