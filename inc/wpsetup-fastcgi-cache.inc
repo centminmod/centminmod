@@ -3003,7 +3003,7 @@ if [[ -z "$(crontab -l 2>&1 | grep '\/${vhostname}/wp-cron.php')" ]]; then
     cp cronjoblist /home/nginx/domains/${vhostname}/cronjobs/cronjoblist-before-wp-cron.txt
     # only insert cronjob if one doesn't already exist
     if [[ -z $(grep "${vhostname}\/wp-cron.php" cronjoblist) ]]; then
-      if [[ "$wpcli_ssldefault" = '1' ]]; then
+      if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
         echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"https://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
       else
         echo "#*/15 * * * * sleep ${DELAY}s > /dev/null 2>&1; curl -skD - -H \"Cookie: wordpress_logged_in\" \"http://${vhostname}/wp-cron.php?doing_wp_cron\" -o /dev/null 2>&1" >> cronjoblist
@@ -3689,7 +3689,7 @@ if [[ "$LETSENCRYPT_DETECT" = [yY] ]]; then
   fi
 fi
 
-if [[ "$wpcli_ssldefault" = '1' ]]; then
+if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
   \wp option update home "https://${vhostname}${WPSUBDIR}"  --allow-root
   \wp option update siteurl "https://${vhostname}${WPSUBDIR}"  --allow-root
 fi
@@ -3780,7 +3780,7 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
     cecho "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" $boldyellow
     cecho "wp-login.php protection Username: $HTUSER" $boldyellow
     cecho "wp-login.php protection Password: $HTPASS" $boldyellow
-    if [[ "$wpcli_ssldefault" = '1' ]]; then
+    if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
       cecho "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
     else
       cecho "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" $boldyellow
@@ -4016,7 +4016,7 @@ if [[ "$disablepwdprotect" != [yY] ]]; then
     echo "wp-login.php protection file /home/nginx/domains/$vhostname/htpasswd_wplogin" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     echo "wp-login.php protection Username: $HTUSER" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     echo "wp-login.php protection Password: $HTPASS" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
-    if [[ "$wpcli_ssldefault" = '1' ]]; then
+    if [[ "$wpcli_ssldefault" = '1' ]] || [[ "$vhostssl" = [yY] ]] || [[ "$vhostssl" = 'le' ]] || [[ "$vhostssl" = 'led' ]] || [[ "$vhostssl" = 'lelive' ]] || [[ "$vhostssl" = 'lelived' ]]; then
       echo "https://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
     else
       echo "http://${HTUSER}:${HTPASS}@${vhostname}${WPSUBDIR}/wp-login.php" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_wordpress_addvhost_${vhostname}-logins-http-pass.log"
