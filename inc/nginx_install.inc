@@ -431,6 +431,7 @@ geoipphp
 
     countcpus
     detect_tlsonethree
+    run_after_nginx_install
 
     # zlibsymlink_fix
     if [[ "$NGINX_NJS" = [yY] && -f "$DIR_TMP/njs/build/njs" ]]; then

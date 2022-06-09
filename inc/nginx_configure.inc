@@ -1,3 +1,21 @@
+run_after_nginx_upgrade() {
+  if [[ -d /etc/centminmod && -f /etc/centminmod/run-after-nginx-upgrade.sh ]]; then
+    echo
+    echo "running /etc/centminmod/run-after-nginx-upgrade.sh"
+    bash /etc/centminmod/run-after-nginx-upgrade.sh
+    echo
+  fi
+}
+
+run_after_nginx_install() {
+  if [[ -d /etc/centminmod && -f /etc/centminmod/run-after-nginx-install.sh ]]; then
+    echo
+    echo "running /etc/centminmod/run-after-nginx-install.sh"
+    bash /etc/centminmod/run-after-nginx-install.sh
+    echo
+  fi
+}
+
 mold_check() {
     if [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]] && [[ "$(rpm -qa centmin-mold | grep -o "centmin-mold-${MOLD_VERSION}")" != "centmin-mold-${MOLD_VERSION}" || ! -s /usr/local/libexec/mold ]]; then
       echo "installing newer mold ${MOLD_VERSION}"

@@ -1128,6 +1128,7 @@ fi
         if [ -f objs/autoconf.err ]; then
             cat objs/autoconf.err > "${CENTMINLOGDIR}/nginx_autoconf.err.${DT}.log"
         fi
+      run_after_nginx_upgrade
       echo -e "\n`date`\nSuccess: Nginx was installed properly\n"
 
     if [[ "$NGINX_HTTP2" = [yY] && "$NGINX_SPDYPATCHED" = [yY] ]] && [[ "$NGX_VEREVAL" -ge '10907' ]]; then

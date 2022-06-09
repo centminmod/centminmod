@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='66'
+SCRIPT_INCREMENTVER='67'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -2577,6 +2577,7 @@ fi
 
 max_spawn_rate_check
 funct_logphprotate
+run_after_php_install
 
     echo "*************************************************"
     cecho "* PHP installed" $boldgreen
