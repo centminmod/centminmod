@@ -70,77 +70,77 @@ enable_devtoolset() {
             fi       
             source /opt/rh/gcc-toolset-11/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=maybe-uninitialized'
         elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
                yum -y install gcc-toolset-10-binutils gcc-toolset-10-gcc gcc-toolset-10-gcc-c++
             fi       
             source /opt/rh/gcc-toolset-10/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=maybe-uninitialized'
         elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETNINE" = [yY] ]]; then
             if [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
                yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
             fi       
             source /opt/rh/gcc-toolset-9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result -Wno-error=maybe-uninitialized'
         elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETEIGHT" = [yY] ]]; then
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-error=maybe-uninitialized'
         elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETELEVEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-11/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-error=maybe-uninitialized'
         elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETTEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-10/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-error=maybe-uninitialized'
          elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETNINE" = [yY] && -f /opt/gcc9/bin/gcc && -f /opt/gcc9/bin/g++ ]]; then
             source /opt/gcc9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-error=maybe-uninitialized'
          elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETNINE" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-error=maybe-uninitialized'
          elif [[ "$CENTOS_SEVEN" = 7 && "$DEVTOOLSETEIGHT" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-8/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-error=maybe-uninitialized'
          elif [[ "$CENTOS_SIX" = 6 && "$DEVTOOLSETNINE" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-9/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-9/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-9/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-error=maybe-uninitialized'
          elif [[ "$CENTOS_SIX" = 6 && "$DEVTOOLSETEIGHT" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-8/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-8/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-8/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-error=maybe-uninitialized'
          elif [[ "$DEVTOOLSETSEVEN" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-7/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-7/root/usr/bin/g++ ]]; then
                scl_install
             fi       
             source /opt/rh/devtoolset-7/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
-            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-error=maybe-uninitialized'
          elif [[ "$DEVTOOLSETSIX" = [yY] ]]; then
             if [[ ! -f /opt/rh/devtoolset-6/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-6/root/usr/bin/g++ ]]; then
                scl_install
