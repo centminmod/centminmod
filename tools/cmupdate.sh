@@ -27,6 +27,16 @@ if [ -f "${MAINDIR}/custom_config.inc" ]; then
     source "${MAINDIR}/custom_config.inc"
 fi
 
+if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
+  ipv_forceopt=""
+  ipv_forceopt_wget=""
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+else
+  ipv_forceopt='4'
+  ipv_forceopt_wget=' -4'
+  WGETOPT="-cnv --no-dns-cache${ipv_forceopt_wget}"
+fi
+
 fupdate() {
   branch_opt=$1
   if [[ "$branch_opt" = 'beta' ]]; then
@@ -37,9 +47,9 @@ fupdate() {
     cmupdate_branchname_new=$cmupdate_branchname
   fi
 
-  CMUPDATE_GITCURLSTATUS=$(curl -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
+  CMUPDATE_GITCURLSTATUS=$(curl -${ipv_forceopt}sL --connect-timeout 20 -sI https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt | grep 'HTTP\/' | awk '/200/ {print $2}')
     if [[ "$CMUPDATE_GITCURLSTATUS" = '200' ]]; then
-      CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
+      CHECK_GITCLEAN=$(curl -${ipv_forceopt}sLk --connect-timeout 20 https://raw.githubusercontent.com/centminmod/centminmod/${cmupdate_branchname}/gitclean.txt)
     else
       echo
       echo "Error: unable to connect to Github.com repo right now"
