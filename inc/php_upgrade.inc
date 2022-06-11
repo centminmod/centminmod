@@ -1289,7 +1289,7 @@ echo "$PHPSEVEN_CHECKVER"
 
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     cecho "***************************************************" $boldgreen
-    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1 detected.. remove unsupported PHP extensions manually" $boldyellow
+    cecho "PHP 7.0/7.1/7.2/7.3/7.4/8.0/8.1/8.2 detected.. remove unsupported PHP extensions manually" $boldyellow
     cecho "by removing their ini files listed below (if list is empty = nothing to do):" $boldyellow
     cecho "***************************************************" $boldgreen
     echo
@@ -1303,7 +1303,10 @@ if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
     #     cecho "#rm -rf ${CONFIGSCANDIR}/memcache.ini" $boldyellow
     # fi
     if [ -f "${CONFIGSCANDIR}/mongodb.ini" ]; then
-        cecho "#rm -f ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
+        cecho "rm -f ${CONFIGSCANDIR}/mongodb.ini" $boldyellow
+    fi
+    if [ -f "${CONFIGSCANDIR}/swoole.ini" ]; then
+        cecho "rm -f ${CONFIGSCANDIR}/swoole.ini" $boldyellow
     fi
     # if [ -f ${CONFIGSCANDIR}/redis.ini ]; then
     #     cecho "#rm -f ${CONFIGSCANDIR}/redis.ini" $boldyellow
