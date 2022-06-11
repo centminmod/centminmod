@@ -1078,6 +1078,14 @@ fi
 
     time make install
     ERR=$?
+    if [[ "$FPM_NGINX_INSTALLDIR_ENABLE" = [yY] ]]; then
+      echo
+      rm -rf "$FPM_NGINX_INSTALLDIR"
+      mkdir -p "$FPM_NGINX_INSTALLDIR"
+      echo "time make install DESTDIR=$FPM_NGINX_INSTALLDIR"
+      time make install DESTDIR="$FPM_NGINX_INSTALLDIR"
+      FPM_NGINX_INSTALLDIR_ERR=$?
+    fi
     sar_call
 
 if [[ "$CLANG" = [yY] ]]; then

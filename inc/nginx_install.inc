@@ -163,7 +163,7 @@ nginx_libuuid
 
     # Install nginx
     cd $DIR_TMP
-
+if [[ "$FPM_NGINX_RPM" != [yY] ]]; then
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Compiling Nginx"
     fi
@@ -182,12 +182,13 @@ nginx_libuuid
         tar xzf "${NGX_LINKFILE}"
     fi
     cd nginx-${NGINX_VERSION}
+fi # FPM_NGINX_RPM
 
 # set_intelflags
 
 SET_NGINXVER=$(echo ${NGINX_VERSION} |sed -e 's|\.|0|g' | head -n1)
 
-if [[ "$NGINXPATCH" = [yY] ]]; then
+if [[ "$NGINXPATCH" = [yY] && "$FPM_NGINX_RPM" != [yY] ]]; then
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Patch Nginx"
@@ -202,6 +203,20 @@ fi
 
 funct_nginxconfigure
 
+if [[ "$FPM_NGINX_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+  # experimental initial install Nginx custom RPM build
+  echo
+  echo "Skip Nginx make & make install stage..."
+  echo "FPM_NGINX_RPM=$FPM_NGINX_RPM"
+  echo
+  # experimental initial install Nginx custom RPM build
+  echo
+  echo "install Nginx custom RPM"
+  echo
+  wget${ipv_forceopt_wget} https://github.com/centminmod/centminmod-nginx-rpm/blob/master/rpms/nginx-custom-1.21.6-1.el7.x86_64.rpm?raw=true -O "$DIR_TMP/nginx-custom-1.21.6-1.el7.x86_64.rpm"
+  yum -y localinstall "$DIR_TMP/nginx-custom-1.21.6-1.el7.x86_64.rpm"
+  echo
+else
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "Nginx Make"
     fi
@@ -236,6 +251,7 @@ funct_nginxconfigure
     fi
 
     time make install
+fi # FPM_NGINX_RPM
     sar_call
 
 if [[ "$CLANG" = [yY] ]]; then

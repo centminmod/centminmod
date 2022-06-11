@@ -2441,7 +2441,7 @@ elif [[ -f /usr/bin/jemalloc.sh && -d /usr/include/jemalloc ]]; then
 fi
 
 # for jemalloc alternative mimalloc
-if [ ! -f /usr/local/nginx-dep/lib/libmimalloc.so ]; then
+if [[ "$NGINX_MIMALLOC" = [yY] && ! -f /usr/local/nginx-dep/lib/libmimalloc.so ]]; then
   if [[ "$NGINX_MIMALLOC" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
     wget${ipv_forceopt_wget} https://github.com/centminmod/centminmod-mimalloc/raw/master/rpms/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm -O ${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm
     time $YUMDNFBIN -y install "${DIR_TMP}/mimalloc-custom-${NGINX_MIMALLOC_VERSION}-1.el8.x86_64.rpm"
@@ -2458,7 +2458,7 @@ if [ ! -f /usr/local/nginx-dep/lib/libmimalloc.so ]; then
       JEMALLOC_LD=""
     fi
   fi
-elif [[ -f /usr/local/nginx-dep/lib/libmimalloc.so && -f /usr/local/nginx-dep/include/mimalloc.h ]]; then
+elif [[ "$NGINX_MIMALLOC" = [yY] ]] && [[ -f /usr/local/nginx-dep/lib/libmimalloc.so && -f /usr/local/nginx-dep/include/mimalloc.h ]]; then
   if [[ "$GPERFTOOLS_SOURCEINSTALL" = [yY] ]]; then
     MIMALLOC_LD=""
     JEMALLOC_LD=""
@@ -4361,7 +4361,13 @@ fi
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "
 #    if [[ "$asknginxipv" = [yY] ]]; then
-   
+if [[ "$FPM_NGINX_RPM" = [yY] && "$INITIALINSTALL" = [yY] && "$CENTOS_SEVEN" -eq '7' ]]; then
+  # experimental initial install Nginx custom RPM build
+  echo
+  echo "Skip Nginx configure..."
+  echo "FPM_NGINX_RPM=$FPM_NGINX_RPM"
+  NGX_CONFIGURE_ERR=0
+else
     # force NGXMODULE_ALTORDER='y'
     NGXMODULE_ALTORDER='y'
     SETBUILD_DATE=$(date +"%d%m%y-%H%M%S")
@@ -4459,6 +4465,7 @@ fi
       NGX_CONFIGURE_ERR=$?
       fi
   fi # NGXMODULE_ALTORDER
+fi # FPM_NGINX_RPM
   sar_call
 
 }
