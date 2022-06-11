@@ -196,8 +196,12 @@ fi
 #   exit
 # fi
 
-if [[ ! -f /usr/bin/wget ]] ; then
+if [ ! -f /usr/bin/wget ] ; then
 	yum -y -q install wget
+fi
+
+if [ ! -f /usr/bin/inotifywait ]; then
+  yum -y -q inotify-tools
 fi
 
 if [[ -z "$ALERTEMAIL" ]]; then
