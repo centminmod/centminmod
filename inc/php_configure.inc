@@ -2513,22 +2513,22 @@ sar_call
       echo
       echo "install PHP-FPM 7.4 custom RPM"
       echo
-      wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/phpfpm-rpm/phpfpm-custom-7.4.29-1.el7.x86_64.rpm -O "$DIR_TMP/phpfpm-custom-7.4.29-1.el7.x86_64.rpm"
-      yum -y localinstall "$DIR_TMP/phpfpm-custom-7.4.29-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/phpfpm-rpm/phpfpm-custom-7.4.30-1.el7.x86_64.rpm -O "$DIR_TMP/phpfpm-custom-7.4.30-1.el7.x86_64.rpm"
+      yum -y localinstall "$DIR_TMP/phpfpm-custom-7.4.30-1.el7.x86_64.rpm"
       echo
     elif [[ "$PHPMVER" = '8.0'  ]]; then
       echo
       echo "install PHP-FPM 8.0 custom RPM"
       echo
-      wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/phpfpm-rpm/phpfpm-custom-8.0.19-1.el7.x86_64.rpm -O "$DIR_TMP/phpfpm-custom-8.0.19-1.el7.x86_64.rpm"
-      yum -y localinstall "$DIR_TMP/phpfpm-custom-8.0.19-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/phpfpm-rpm/phpfpm-custom-8.0.20-1.el7.x86_64.rpm -O "$DIR_TMP/phpfpm-custom-8.0.20-1.el7.x86_64.rpm"
+      yum -y localinstall "$DIR_TMP/phpfpm-custom-8.0.20-1.el7.x86_64.rpm"
       echo
     elif [[ "$PHPMVER" = '8.1' ]]; then
       echo
       echo "install PHP-FPM 8.1 custom RPM"
       echo
-      wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/phpfpm-rpm/phpfpm-custom-8.1.6-1.el7.x86_64.rpm -O "$DIR_TMP/phpfpm-custom-8.1.6-1.el7.x86_64.rpm"
-      yum -y localinstall "$DIR_TMP/phpfpm-custom-8.1.6-1.el7.x86_64.rpm"
+      wget${ipv_forceopt_wget} https://centminmod.com/centminmodparts/phpfpm-rpm/phpfpm-custom-8.1.7-1.el7.x86_64.rpm -O "$DIR_TMP/phpfpm-custom-8.1.7-1.el7.x86_64.rpm"
+      yum -y localinstall "$DIR_TMP/phpfpm-custom-8.1.7-1.el7.x86_64.rpm"
       echo
     fi
   elif [[ "$INITIALINSTALL" = [yY] ]]; then
