@@ -786,11 +786,13 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
     cmservice mysql stop
     gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
     cmservice mysql start
-else
-    # only remove log files but leave innodb tablespace
-    cmservice mysql stop
-    gzip /var/lib/mysql/{ib_logfile0,ib_logfile1}
-    cmservice mysql start
+elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    # ensure MariaDB starts up initially
+    systemctl stop mariadb
+    sleep 2
+    rm -f /var/lib/mysql/ib_logfile*
+    rm -f /var/lib/mysql/aria_log*
+    systemctl start mariadb
 fi
 
 # https://community.centminmod.com/posts/25691/
