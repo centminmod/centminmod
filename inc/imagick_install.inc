@@ -345,7 +345,7 @@ imagickinstall() {
 php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4'
 PHPSEVEN_CHECKVER=$?
 echo $PHPSEVEN_CHECKVER
-php-config --version | cut -d . -f1,2 | egrep -w '8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '8.0|8.1|8.2'
 PHPEIGHT_CHECKVER=$?
 echo $PHPEIGHT_CHECKVER
 
