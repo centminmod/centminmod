@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='73'
+SCRIPT_INCREMENTVER='74'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -942,10 +942,10 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.5'
+PHPSWOOLE_VER='4.8.9'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
-PHPSWOOLE_SEVEN_ONE_VER='4.5.10' # max PHP 7.1 supported version
+PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
@@ -963,7 +963,8 @@ PHPMONGODB='n'              # MongoDB PHP extension install
 MONGODBPHP_VER='1.7.5'      # MongoDB PHP version
 MONGODBPHP_SEVEN_ZERO_VER='1.9.2' # MongoDB max PHP =<7.0 version
 MONGODBPHP_SEVEN_VER='1.11.1'     # MongoDB max PHP 7.1+ version
-MONGODBPHP_EIGHT_VER='1.12.0'     # MongoDB PHP version
+MONGODBPHP_EIGHT_VER='1.13.0'
+MONGODBPHP_EIGHTTWO_VER='1.14.0beta1'     # MongoDB PHP version
 MONGODB_SASL='n'            # SASL not working yet leave = n
 PDOPGSQL_PHPVER='11'        # pdo-pgsql PHP extension version for postgresql
 PHP_LIBZIP='n'              # use newer libzip instead of PHP embedded zip
