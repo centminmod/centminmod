@@ -131,7 +131,7 @@ if [ ! -f /usr/bin/wget ] ; then
 fi
 
 if [ ! -f /usr/bin/inotifywait ]; then
-  yum -y -q inotify-tools
+  yum -y -q install inotify-tools
 fi
 
 if [[ -z "$ALERTEMAIL" ]]; then
