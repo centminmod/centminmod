@@ -100,6 +100,21 @@ RestartSec=5s
 TDG
         systemctl daemon-reload
 fi
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] && "$(grep 'init.d' /usr/bin/ngxreload)" ]]; then
+  echo "service nginx stop" >/usr/bin/ngxstop ; chmod 700 /usr/bin/ngxstop
+  echo "service nginx start" >/usr/bin/ngxstart ; chmod 700 /usr/bin/ngxstart
+  echo "service nginx restart" >/usr/bin/ngxrestart ; chmod 700 /usr/bin/ngxrestart
+  echo "service nginx reload" >/usr/bin/ngxreload ; chmod 700 /usr/bin/ngxreload
+  
+  echo "service nginx stop;service php-fpm stop" >/usr/bin/npstop ; chmod 700 /usr/bin/npstop
+  echo "service nginx start;service php-fpm start" >/usr/bin/npstart ; chmod 700 /usr/bin/npstart
+  echo "service nginx restart;service php-fpm restart" >/usr/bin/nprestart ; chmod 700 /usr/bin/nprestart
+  echo "service nginx reload;service php-fpm reload" >/usr/bin/npreload ; chmod 700 /usr/bin/npreload
+  
+  systemctl start nginx >/dev/null 2>&1
+  systemctl enable nginx >/dev/null 2>&1
+  systemctl status nginx >/dev/null 2>&1
+fi
 }
 
 ngx_modern_ciphers_setup() {
