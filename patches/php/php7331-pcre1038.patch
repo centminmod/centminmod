@@ -1,0 +1,27 @@
+From 56495ac031005f8b64e75c94e86ec942dd15aa74 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Thu, 21 Oct 2021 10:38:16 +0200
+Subject: [PATCH] fix for pcre2 10.38
+
+---
+ ext/pcre/php_pcre.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/ext/pcre/php_pcre.c b/ext/pcre/php_pcre.c
+index 19ea92713875..9d01b328228d 100644
+--- a/ext/pcre/php_pcre.c
++++ b/ext/pcre/php_pcre.c
+@@ -169,7 +169,13 @@ static void php_pcre_free(void *block, void *data)
+ 	pefree(block, 1);
+ }/*}}}*/
+ 
++#ifdef PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK
++	/* pcre 10.38 needs PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK, disabled by default */
++#define PHP_PCRE_DEFAULT_EXTRA_COPTIONS (PCRE2_EXTRA_BAD_ESCAPE_IS_LITERAL|PCRE2_EXTRA_ALLOW_LOOKAROUND_BSK)
++#else
+ #define PHP_PCRE_DEFAULT_EXTRA_COPTIONS PCRE2_EXTRA_BAD_ESCAPE_IS_LITERAL
++#endif
++
+ #define PHP_PCRE_PREALLOC_MDATA_SIZE 32
+ 
+ static void php_pcre_init_pcre2(uint8_t jit)

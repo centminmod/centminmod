@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='18'
+SCRIPT_INCREMENTVER='28'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -863,7 +863,7 @@ LIBMEMCACHED_VER='1.0.18'     # libmemcached version for source compile
 TWEMPERF_VER='0.1.1'
 
 PHP_OVERWRITECONF='y'       # whether to show the php upgrade prompt to overwrite php-fpm.conf
-PHP_VERSION='7.4.29'        # Use this version of PHP
+PHP_VERSION='7.4.30'        # Use this version of PHP
 PHP_MIRRORURL='https://www.php.net'
 PHPUPGRADE_MIRRORURL="$PHP_MIRRORURL"
 XCACHE_VERSION='3.2.0'      # Use this version of Xcache
@@ -2378,7 +2378,7 @@ if [[ "$NSD_INSTALL" = [yY] ]]; then
     nsdinstall
 fi
 
-php-config --version | cut -d . -f1,2 | egrep -w '7.0||7.1|7.2|7.3|7.4|8.0|8.1'
+php-config --version | cut -d . -f1,2 | egrep -w '7.0|7.1|7.2|7.3|7.4|8.0|8.1'
 PHPSEVEN_CHECKVER=$?
 echo "$PHPSEVEN_CHECKVER"
 if [[ "$PHPSEVEN_CHECKVER" = '0' ]]; then
@@ -2421,30 +2421,37 @@ if [ -f /etc/init.d/ntpd ]; then
   /etc/init.d/ntpd start
 fi
 
-if [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
-  sleep 2
-  service nginx start
-fi
-
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]]; then
   sleep 2
   systemctl daemon-reload -q
   service php-fpm stop >/dev/null 2>&1
+  sleep 2
   systemctl restart mariadb -q
   service php-fpm start >/dev/null 2>&1
   if [[ "$(systemctl is-active mariadb -q; echo $?)" -ne '0' ]]; then
-    sleep 4
+    sleep 8
     systemctl daemon-reload -q
     systemctl restart mariadb -q
     if [[ "$(systemctl is-active mariadb -q; echo $?)" -eq '0' ]]; then
       echo "Starting mariadb (via systemctl): [ OK ]"
     else
       echo "Starting mariadb (via systemctl): [ Failed ]"
+      echo "MariaDB log saved at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb-server-failed-startup.log"
+      journalctl -u mariadb --no-pager | sed -e "s|$(hostname)|hostname|g" > "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_mariadb-server-failed-startup.log"
     fi
   fi
 elif [[ "$MDB_INSTALL" = [yY] || "$MDB_YUMREPOINSTALL" = [yY] ]] && [ -f /etc/init.d/mysql ]; then
   sleep 3
   /etc/init.d/mysql restart
+fi
+
+if [[ "$NGINX_INSTALL" = [yY] && -f /usr/lib/systemd/system/nginx.service ]]; then
+  sleep 2
+  systemctl daemon-reload -q
+  systemctl start nginx
+elif [[ "$NGINX_INSTALL" = [yY] && -f /etc/init.d/nginx ]]; then
+  sleep 2
+  service nginx start
 fi
 
 if [[ "$MYSQL_INSTALL" = [yY] && -f /etc/init.d/mysqld ]]; then
