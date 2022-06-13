@@ -381,6 +381,10 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 
     if [[ "$ENABLE_MARIADBTENFOURUPGRADE" = [nN] ]]; then
       echo "Place holder for now until MariaDB 10.4.x is ready to be added"
+      echo "10.4 officially supported until June 2024"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-104/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-104/"
     else
       # echo "Place holder for now until MariaDB 10.4.x is ready to be added"
       c7tmpsetup
@@ -413,6 +417,10 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 
     if [[ "$ENABLE_MARIADBTENFIVEUPGRADE" = [nN] ]]; then
       echo "Place holder for now until MariaDB 10.5.x is ready to be added"
+      echo "10.5 officially supported until June 2025"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-105/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-105/"
     else
       # echo "Place holder for now until MariaDB 10.4.x is ready to be added"
       c7tmpsetup
@@ -447,6 +455,10 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
 
     if [[ "$ENABLE_MARIADBTENSIXUPGRADE" = [nN] ]]; then
       echo "Place holder for now until MariaDB 10.6.x is ready to be added"
+      echo "10.6 LTS release officially supported until July 2026"
+      echo "https://mariadb.com/kb/en/changes-improvements-in-mariadb-106/"
+      echo
+      echo "Discussions https://community.centminmod.com/tags/mariadb-106/"
     else
       # echo "Place holder for now until MariaDB 10.5.x is ready to be added"
       c7tmpsetup
