@@ -11,7 +11,7 @@ export LC_CTYPE=en_US.UTF-8
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.81'
+ACMEVER='1.0.82'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -270,15 +270,15 @@ if [ ! -d "$ACMESH_BACKUPDIR" ]; then
   mkdir -p "$ACMESH_BACKUPDIR"
 fi
 
-if [ -f "/etc/centminmod/acmetool-config.ini" ]; then
-  dos2unix -q "/etc/centminmod/acmetool-config.ini"
-  . "/etc/centminmod/acmetool-config.ini"
-fi
-
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc
   dos2unix -q "/etc/centminmod/custom_config.inc"
   . "/etc/centminmod/custom_config.inc"
+fi
+
+if [ -f "/etc/centminmod/acmetool-config.ini" ]; then
+  dos2unix -q "/etc/centminmod/acmetool-config.ini"
+  . "/etc/centminmod/acmetool-config.ini"
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
