@@ -1350,10 +1350,21 @@ fi
     cecho "* MariaDB installed" $boldgreen
     echo "*************************************************"
     
-    cmservice mysql stop
-    cmservice mysql start
-    chkconfig mysql on
-    chkconfig mariadb on
+    if [[ "$CENTOS_SIX" = '6' ]]; then
+        echo
+        echo "After MariaDB installation"
+        date
+        cmservice mysql stop
+        cmservice mysql start
+        chkconfig mysql on
+        chkconfig mariadb on
+    elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        echo "After MariaDB installation"
+        date
+        systemctl stop mariadb
+        systemctl start mariadb
+        systemctl enable mariadb
+    fi
 fi
 
 }
