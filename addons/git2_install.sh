@@ -224,7 +224,7 @@ cecho "*************************************************" $boldgreen
 # install Git 2.16+ package to replace Git 1.8 package
 yum -y install yum-plugin-replace --enablerepo=ius
 yum -y update git
-yum -y replace git --replace-with git222 --enablerepo=ius
+yum -y replace git --replace-with git236 --enablerepo=ius
 
 echo
 yum versionlock git perl-Git
@@ -237,10 +237,10 @@ fi
 echo
 git --version
 
-} 2>&1 | tee ${CENTMINLOGDIR}/git222-install_${DT}.log
+} 2>&1 | tee ${CENTMINLOGDIR}/git236-install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
 
 INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
-echo "" >> ${CENTMINLOGDIR}/git222-install_${DT}.log
-echo "Git 2.16+ Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/git222-install_${DT}.log
+echo "" >> ${CENTMINLOGDIR}/git236-install_${DT}.log
+echo "Git 2.16+ Install Time: $INSTALLTIME seconds" >> ${CENTMINLOGDIR}/git236-install_${DT}.log
