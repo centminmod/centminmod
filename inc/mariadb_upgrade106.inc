@@ -216,6 +216,7 @@ fi
 MARIADB55ARCH=`uname -m`
 
 #MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
+MDB_TOTALMEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)/1024))
 MDB_VIRTWHAT_GET=$(virt-what)
 MDB_VIRTWHAT="${MDB_VIRTWHAT_GET:-d}"
 MDB_DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
