@@ -32,6 +32,9 @@ EMAILNOTIFY_SES_SMTP_USERNAME='your_ses_smtp_username'
 EMAILNOTIFY_SES_SMTP_PASSWORD='your_ses_smtp_password'
 EMAILNOTIFY_SES_SMTP_SERVER='your_ses_smtp_server'
 EMAILNOTIFY_SES_SMTP_PORT='587'
+
+# IPv4/IPv6
+FORCE_IPVFOUR='y'
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -170,10 +173,17 @@ EOF
 }
 
 postfix_update() {
-  if [[ -f /usr/sbin/postconf && "$(postconf -n inet_protocols | awk -F ' = ' '{print $2}')" != 'ipv4' ]]; then
+  if [[ "$FORCE_IPVFOUR" = [yY] && -f /usr/sbin/postconf && "$(postconf -n inet_protocols | awk -F ' = ' '{print $2}')" != 'ipv4' ]]; then
     # force postfix to use IPv4 address
     echo "updating postfix inet_protocols = ipv4"
     postconf -e 'inet_protocols = ipv4'
+    if [[ "$(ps -ef | grep postfix | grep -v grep)" ]]; then
+      # only restart postfix is detected that it's currently running
+      service postfix restart >/dev/null 2>&1
+    fi
+  elif [[ "$FORCE_IPVFOUR" = [nN] ]]; then
+    echo "updating postfix inet_protocols = all"
+    postconf -e 'inet_protocols = all'
     if [[ "$(ps -ef | grep postfix | grep -v grep)" ]]; then
       # only restart postfix is detected that it's currently running
       service postfix restart >/dev/null 2>&1
