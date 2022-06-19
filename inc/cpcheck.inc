@@ -114,6 +114,8 @@ if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] 
   systemctl start nginx >/dev/null 2>&1
   systemctl enable nginx >/dev/null 2>&1
   systemctl status nginx >/dev/null 2>&1
+elif [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/init.d/nginx && "$SWITCH_NGINX_SYSTEMD" = [yY] && "$(systemctl is-enabled nginx)" = 'disabled' ]]; then
+  systemctl enable nginx >/dev/null 2>&1
 fi
 }
 
