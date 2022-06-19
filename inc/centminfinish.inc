@@ -95,6 +95,8 @@ echo ""
   cecho "--------------------------------------------------------" $boldyellow
   if [ -f "$(which nginx)" ]; then
     $(which nginx) -V
+    echo
+    systemctl status nginx
   else
     echo "can not find nginx binary.. install failed"
   fi
@@ -113,6 +115,8 @@ echo ""
   cecho "Check PHP-FPM Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   $(which php) -v
+  echo
+  systemctl status php-fpm
 letswait
   else
 echo ""
@@ -192,6 +196,8 @@ echo ""
   cecho "Check MariaDB installed RPM Versions:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   $(which rpm) -qa | grep -i MariaDB
+  echo
+  systemctl status mariadb
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
@@ -204,12 +210,16 @@ echo ""
   cecho "Check Redis Server Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow  
   /usr/bin/redis-server -v | head -n1
+  echo
+  systemctl status redis
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Check CSF Firewall Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
-$(which csf) -v
+  $(which csf) -v
+  echo
+  systemctl status csf lfd
 letswait
 
 if [[ "$(uname -m)" != 'aarch64' ]]; then
