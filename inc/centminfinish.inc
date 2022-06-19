@@ -95,6 +95,9 @@ echo ""
   cecho "--------------------------------------------------------" $boldyellow
   if [ -f "$(which nginx)" ]; then
     $(which nginx) -V
+    if [[ "$(systemctl is-enabled nginx)" = 'disabled' ]]; then
+      systemctl enable nginx >/dev/null 2>&1
+    fi
     echo
     systemctl status nginx
   else
@@ -115,6 +118,9 @@ echo ""
   cecho "Check PHP-FPM Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   $(which php) -v
+  if [[ "$(systemctl is-enabled php-fpm)" = 'disabled' ]]; then
+    systemctl enable php-fpm >/dev/null 2>&1
+  fi
   echo
   systemctl status php-fpm
 letswait
@@ -196,6 +202,9 @@ echo ""
   cecho "Check MariaDB installed RPM Versions:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   $(which rpm) -qa | grep -i MariaDB
+  if [[ "$(systemctl is-enabled mariadb)" = 'disabled' ]]; then
+    systemctl enable mariadb >/dev/null 2>&1
+  fi
   echo
   systemctl status mariadb
 letswait
@@ -210,6 +219,9 @@ echo ""
   cecho "Check Redis Server Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow  
   /usr/bin/redis-server -v | head -n1
+  if [[ "$(systemctl is-enabled redis)" = 'disabled' ]]; then
+    systemctl enable redis >/dev/null 2>&1
+  fi
   echo
   systemctl status redis
 letswait
@@ -218,6 +230,12 @@ echo ""
   cecho "Check CSF Firewall Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
   $(which csf) -v
+  if [[ "$(systemctl is-enabled csf)" = 'disabled' ]]; then
+    systemctl enable csf >/dev/null 2>&1
+  fi
+  if [[ "$(systemctl is-enabled lfd)" = 'disabled' ]]; then
+    systemctl enable lfd >/dev/null 2>&1
+  fi
   echo
   systemctl status csf lfd
 letswait
@@ -266,6 +284,9 @@ echo ""
   cecho "Check pure-ftpd Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
 $(which pure-ftpd) -h | head -n1 | awk '{print $1,$2}'
+  if [[ "$(systemctl is-enabled pure-ftpd)" = 'disabled' ]]; then
+    systemctl enable pure-ftpd >/dev/null 2>&1
+  fi
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
