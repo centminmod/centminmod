@@ -245,7 +245,7 @@ elif [[ "$MDB_COUNTRY" = 'HK' ]]; then
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
-    MDB_MIRROR_BASEURL='https://mirrors.n-ix.net/mariadb/yum'
+    MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'AU' || "$MDB_CONTINENT" = 'OC' ]]; then
