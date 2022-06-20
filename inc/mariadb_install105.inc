@@ -41,34 +41,117 @@ MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
 MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
 
+if [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
+    MDB_REPO_VER=10.2
+elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] ]]; then
+    MDB_REPO_VER=10.3
+elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] ]]; then
+    MDB_REPO_VER=10.4
+elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] ]]; then
+    MDB_REPO_VER=10.5
+elif [[ "$MARIADB_INSTALLTENSIX" = [yY] ]]; then
+    MDB_REPO_VER=10.6
+else
+    MDB_REPO_VER=10.1
+fi
+if [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'aarch64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos9-aarch64"
+elif [[ "$CENTOS_NINE" = '9' && "$(uname -m)" == 'x86_64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos9-amd64"
+elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos8-aarch64"
+elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos8-amd64"
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
+    MDB_REPO_DIR=centos7-aarch64
+elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
+fi
+
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
 # so can use alternative mirrors for better speed and connectivity
 if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
     MDB_MIRROR_BASEURL='https://download.nus.edu.sg/mirror/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'GB' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'HK' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'AU' || "$MDB_CONTINENT" = 'OC' ]]; then
     MDB_MIRROR_BASEURL='http://mirror.aarnet.edu.au/pub/MariaDB/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 elif [[ "$MDB_COUNTRY" = 'CN' ]]; then
     MDB_MIRROR_BASEURL='https://mirrors.aliyun.com/mariadb/yum'
+    MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
+    # fallback check of repomd.xml
+    curl -s "$MDB_REPOMD_URL" -o repomd.xml
+    MDB_REPOMD_URL_CHECK=$(xmllint --format repomd.xml >/dev/null 2>&1 ; echo $?)
+    rm -f repomd.xml
+    if [[ "$MDB_REPOMD_URL_CHECK" -ne '0' ]]; then
+        MDB_MIRROR_BASEURL='https://yum.mariadb.org'
+    fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
 else
