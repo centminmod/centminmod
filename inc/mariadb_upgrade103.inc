@@ -248,7 +248,7 @@ elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'aarch64' ]]; then
 elif [[ "$CENTOS_EIGHT" = '8' && "$(uname -m)" == 'x86_64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/centos8-amd64"
 elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'aarch64' ]]; then
-    MDB_REPO_DIR=centos7-aarch64
+    MDB_REPO_DIR="${MDB_REPO_VER}/centos7-aarch64"
 elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" == 'x86_64' ]]; then
     MDB_REPO_DIR="${MDB_REPO_VER}/centos7-amd64"
 fi
