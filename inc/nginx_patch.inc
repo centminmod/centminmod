@@ -370,6 +370,66 @@ ngx_fingerprint_patch() {
   } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
+ngx_headers_more_patch() {
+  {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$DETECT_NGXVER" -ge '1023000' && "$NGINX_HEADERSMORE" = '0.33' ]]; then
+    NGX_HEADERSMOREDIR=$(tar -tzf "$DIR_TMP/${NGX_HEADERSMORELINKFILE}" | head -1 | cut -f1 -d"/")
+    if [ -d "${DIR_TMP}/${NGX_HEADERSMOREDIR}" ]; then
+      rm -rf "${DIR_TMP}/${NGX_HEADERSMOREDIR}"
+      pushd "${DIR_TMP}"
+      if [ -f "$DIR_TMP/${NGX_HEADERSMORELINKFILE}" ]; then
+        tar xzf "$DIR_TMP/${NGX_HEADERSMORELINKFILE}"
+      fi
+      popd
+      pushd "${DIR_TMP}/${NGX_HEADERSMOREDIR}"
+      cecho "patching headers-more-nginx-module" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/headers-more/headers-more-nginx-1.23.0.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/headers-more/headers-more-nginx-1.23.0.patch"
+      echo 
+      echo "patching headers-more-nginx-module for nginx 1.23.0+"
+      popd
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
+ngx_srcache_patch() {
+  {
+  if [ "$ngver" ]; then
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  else
+    DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-${NGINX_VERSION}/src/core/nginx.h")
+    echo "$DETECT_NGXVER"
+  fi
+  if [[ "$DETECT_NGXVER" -ge '1023000' && "$ORESTY_SRCCACHEVER" = '0.32' ]]; then
+    NGX_SRCACHEDIR=$(tar -tzf "$DIR_TMP/${NGX_SRCACHELINKFILE}" | head -1 | cut -f1 -d"/")
+    if [ -d "${DIR_TMP}/${NGX_SRCACHEDIR}" ]; then
+      rm -rf "${DIR_TMP}/${NGX_SRCACHEDIR}"
+      pushd "${DIR_TMP}"
+      if [ -f "$DIR_TMP/${NGX_SRCACHELINKFILE}" ]; then
+        tar xzf "$DIR_TMP/${NGX_SRCACHELINKFILE}"
+      fi
+      popd
+      pushd "${DIR_TMP}/${NGX_SRCACHEDIR}"
+      cecho "patching srcache-nginx-module" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/srcache-nginx/srcache-nginx-1.23.0.patch" $boldyellow
+      patch -p1 < "$CUR_DIR/patches/srcache-nginx/srcache-nginx-1.23.0.patch"
+      echo 
+      echo "patching srcache-nginx-module for nginx 1.23.0+"
+      popd
+    fi
+  fi
+  } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+}
+
 ngx_cachepurge_patch() {
   {
   if [ "$ngver" ]; then
@@ -715,6 +775,8 @@ patchnginx() {
   fi
   iouring_patch
   ocsp_ttl_override
+  ngx_srcache_patch
+  ngx_headers_more_patch
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
