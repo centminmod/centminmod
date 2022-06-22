@@ -587,7 +587,7 @@ else
     if [[ "$ngx_stillcont" = [nN] ]];then
         exit 0
     fi
-    if [[ "$ngver" = '1.23.0' || "$ngver" = '1.23.1' || "$ngver" = '1.23.2' || "$ngver" = '1.23.3' ]]; then
+    if [[ "$NGINX_ONETWOTHREE_COMPAT" != [yY] ]] && [[ "$ngver" = '1.23.0' || "$ngver" = '1.23.1' || "$ngver" = '1.23.2' || "$ngver" = '1.23.3' ]]; then
         echo "Note: As at June 22, 2022 Nginx 1.23.0 is incompatible with several"
         echo "Centmin Mod Nginx modules like srcache-nginx-module & redis nginx module"
         echo "until then, you can stick with 1.21.6."
