@@ -144,8 +144,15 @@ fi
 
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
-    LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+    if [[ "$DMOTD_NGINXCHECK_DEBUG" = [yY] ]]; then
+        LASTEST_NGINXVERS_CURL=$(curl -${ipv_forceopt}siL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log")
+        LATEST_NGINXSTABLEVER_CURL=$(curl -${ipv_forceopt}siL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | tee -a "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log")
+        LASTEST_NGINXVERS=$(echo "$LASTEST_NGINXVERS_CURL" | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
+        LATEST_NGINXSTABLEVER=$(echo "$LATEST_NGINXSTABLEVER_CURL" | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+    else
+        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
+        LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+    fi
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
     if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
       echo
@@ -175,7 +182,11 @@ phpver_checker() {
     if [ ! -f /usr/bin/jq ]; then
       yum -q -y install jq
     fi
-    LASTEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
+    if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
+      LASTEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')") | tee "${CENTMINLOGDIR}/cmm-login-phpver-check-debug_${DT}.log"
+    else
+      LASTEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
+    fi
     CURRENT_PHPVERS=$(php-config --version)
     if [[ "$CURRENT_PHPVERS" != "$LASTEST_PHPVERS" ]]; then
       echo
