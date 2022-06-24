@@ -12,6 +12,32 @@ php_patches() {
       fi
       # popd
     fi
+    if [[ "$PHPMUVER" = '5.4' || "$PHPMVER" = '5.4' ]]; then
+      # backport security bug patch from PHP 7.4.30 to 
+      # PHP 5.4 bug #81719 https://bugs.php.net/bug.php?id=81719
+      if [ ! -f php54-81719.patch ]; then
+        echo
+        echo "patching PHP 5.4 for bug #81719"
+        echo "https://bugs.php.net/bug.php?id=81719"
+        echo
+        cp -a $CUR_DIR/patches/php/php54-81719.patch php54-81719.patch
+        dos2unix php54-81719.patch
+        patch -p1 < php54-81719.patch
+      fi
+    fi
+    if [[ "$PHPMUVER" = '5.5' || "$PHPMVER" = '5.5' ]]; then
+      # backport security bug patch from PHP 7.4.30 to 
+      # PHP 5.5 bug #81719 https://bugs.php.net/bug.php?id=81719
+      if [ ! -f php55-81719.patch ]; then
+        echo
+        echo "patching PHP 5.5 for bug #81719"
+        echo "https://bugs.php.net/bug.php?id=81719"
+        echo
+        cp -a $CUR_DIR/patches/php/php55-81719.patch php55-81719.patch
+        dos2unix php55-81719.patch
+        patch -p1 < php55-81719.patch
+      fi
+    fi
     if [[ "$PHPMUVER" = '5.6' || "$PHPMVER" = '5.6' ]]; then
       # backport security bug patch from PHP 7.1.27 to 
       # PHP 5.6 bug #77540 https://bugs.php.net/bug.php?id=77540
