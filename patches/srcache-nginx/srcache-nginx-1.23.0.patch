@@ -1,3 +1,12 @@
+From c216f16488c1b82ba46984079fafb357a125c8fc Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Wed, 22 Jun 2022 12:32:52 +0900
+Subject: [PATCH 1/4] Update handling of cache_control changed in nginx 1.23.0
+
+---
+ src/ngx_http_srcache_util.c | 22 +++++++++++++++++++++-
+ 1 file changed, 21 insertions(+), 1 deletion(-)
+
 diff --git a/src/ngx_http_srcache_util.c b/src/ngx_http_srcache_util.c
 index bc8b0aa..2fe5a20 100644
 --- a/src/ngx_http_srcache_util.c
@@ -46,3 +55,99 @@ index bc8b0aa..2fe5a20 100644
  
          if (!conf->store_private
              && ngx_strlcasestrn(p, last, (u_char *) "private", 7 - 1) != NULL)
+
+From 6c0b1a56dee0a54cf5e0a9cb4fbdcc605b66e3f4 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Thu, 23 Jun 2022 03:49:34 +0900
+Subject: [PATCH 2/4] Add nginx 1.23.0 to .travis.yml matrix
+
+---
+ .travis.yml | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/.travis.yml b/.travis.yml
+index 9ef4844..600cf7d 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -25,6 +25,7 @@ env:
+   matrix:
+     - NGINX_VERSION=1.17.8
+     - NGINX_VERSION=1.19.9
++    - NGINX_VERSION=1.23.0
+ 
+ services:
+  - memcache
+
+From f542c0cdbbab0557dc45f02642a5d0bbcd78ffbf Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Tue, 28 Jun 2022 05:34:12 +0900
+Subject: [PATCH 3/4] Fix ngx_http_srcache_process_multi_header_lines for nginx
+ 1.23.0
+
+---
+ src/ngx_http_srcache_headers.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/src/ngx_http_srcache_headers.c b/src/ngx_http_srcache_headers.c
+index 40f9b05..2802df2 100644
+--- a/src/ngx_http_srcache_headers.c
++++ b/src/ngx_http_srcache_headers.c
+@@ -256,9 +256,17 @@ static ngx_int_t
+ ngx_http_srcache_process_multi_header_lines(ngx_http_request_t *r,
+     ngx_table_elt_t *h, ngx_uint_t offset)
+ {
++#if defined(nginx_version) && nginx_version < 1023000
+     ngx_array_t      *pa;
++#endif
+     ngx_table_elt_t  *ho, **ph;
+ 
++#if defined(nginx_version) && nginx_version >= 1023000
++    ph = (ngx_table_elt_t **) ((char *) &r->headers_out + offset);
++    while (*ph) {
++      ph = &(*ph)->next;
++    }
++#else
+     pa = (ngx_array_t *) ((char *) &r->headers_out + offset);
+ 
+     if (pa->elts == NULL) {
+@@ -272,6 +280,7 @@ ngx_http_srcache_process_multi_header_lines(ngx_http_request_t *r,
+     if (ph == NULL) {
+         return NGX_ERROR;
+     }
++#endif
+ 
+     ho = ngx_list_push(&r->headers_out.headers);
+     if (ho == NULL) {
+@@ -280,6 +289,9 @@ ngx_http_srcache_process_multi_header_lines(ngx_http_request_t *r,
+ 
+     *ho = *h;
+     *ph = ho;
++#if defined(nginx_version) && nginx_version >= 1023000
++    ho->next = NULL;
++#endif
+ 
+     return NGX_OK;
+ }
+
+From 1be6a61d93ac32d381d5cdc2772f50071e141bac Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Tue, 28 Jun 2022 10:32:21 +0900
+Subject: [PATCH 4/4] Fix ngx_http_srcache_response_no_cache
+
+---
+ src/ngx_http_srcache_util.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/ngx_http_srcache_util.c b/src/ngx_http_srcache_util.c
+index 2fe5a20..05037af 100644
+--- a/src/ngx_http_srcache_util.c
++++ b/src/ngx_http_srcache_util.c
+@@ -566,7 +566,7 @@ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
+         goto check_expires;
+     }
+ 
+-    for (cc = cc->next; cc; cc = cc->next) {
++    for (; cc; cc = cc->next) {
+         if (!cc->hash) {
+             continue;
+         }

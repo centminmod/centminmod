@@ -1,0 +1,205 @@
+From 81ef0bd5ea93a2579fbe6f4b4cbad39e3a6c8e23 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Wed, 22 Jun 2022 11:27:54 +0900
+Subject: [PATCH 1/3] Use request cookie field in request renamed in nginx
+ 1.23.0
+
+---
+ src/ngx_http_lua_headers_in.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/src/ngx_http_lua_headers_in.c b/src/ngx_http_lua_headers_in.c
+index a55d9cac7..f18d30519 100644
+--- a/src/ngx_http_lua_headers_in.c
++++ b/src/ngx_http_lua_headers_in.c
+@@ -152,9 +152,15 @@ static ngx_http_lua_set_header_t  ngx_http_lua_set_handlers[] = {
+                  ngx_http_set_builtin_header },
+ #endif
+ 
++#if defined(nginx_version) && nginx_version >= 1023000
++    { ngx_string("Cookie"),
++                 offsetof(ngx_http_headers_in_t, cookie),
++                 ngx_http_set_builtin_multi_header },
++#else
+     { ngx_string("Cookie"),
+                  offsetof(ngx_http_headers_in_t, cookies),
+                  ngx_http_set_builtin_multi_header },
++#endif
+ 
+     { ngx_null_string, 0, ngx_http_set_header }
+ };
+
+From 597b7311f0071522dec0c720d8f5684001cfb272 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Thu, 23 Jun 2022 11:32:00 +0900
+Subject: [PATCH 2/3] Update handling of multiple headers changed in nginx
+ 1.23.0
+
+---
+ src/ngx_http_lua_headers_in.c  | 38 ++++++++++++++++++++
+ src/ngx_http_lua_headers_out.c | 63 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 101 insertions(+)
+
+diff --git a/src/ngx_http_lua_headers_in.c b/src/ngx_http_lua_headers_in.c
+index f18d30519..32b7d4e5a 100644
+--- a/src/ngx_http_lua_headers_in.c
++++ b/src/ngx_http_lua_headers_in.c
+@@ -586,6 +586,43 @@ static ngx_int_t
+ ngx_http_set_builtin_multi_header(ngx_http_request_t *r,
+     ngx_http_lua_header_val_t *hv, ngx_str_t *value)
+ {
++#if defined(nginx_version) && nginx_version >= 1023000
++    ngx_table_elt_t  **headers, **ph, *h;
++    int                nelts;
++
++    headers = (ngx_table_elt_t **) ((char *) &r->headers_in + hv->offset);
++
++    if (!hv->no_override && *headers != NULL) {
++        nelts = 0;
++        for (h = *headers; h; h = h->next) {
++            nelts++;
++        }
++
++        *headers = NULL;
++
++        dd("clear multi-value headers: %d", nelts);
++    }
++
++    if (ngx_http_set_header_helper(r, hv, value, &h) == NGX_ERROR) {
++        return NGX_ERROR;
++    }
++
++    if (value->len == 0) {
++        return NGX_OK;
++    }
++
++    dd("new multi-value header: %p", h);
++
++    if (*headers) {
++        for (ph = headers; *ph; ph = &(*ph)->next) { /* void */ }
++        *ph = h;
++    } else {
++        *headers = h;
++    }
++    h->next = NULL;
++
++    return NGX_OK;
++#else
+     ngx_array_t       *headers;
+     ngx_table_elt_t  **v, *h;
+ 
+@@ -632,6 +669,7 @@ ngx_http_set_builtin_multi_header(ngx_http_request_t *r,
+ 
+     *v = h;
+     return NGX_OK;
++#endif
+ }
+ 
+ 
+diff --git a/src/ngx_http_lua_headers_out.c b/src/ngx_http_lua_headers_out.c
+index 6e9f9c19a..6f8098493 100644
+--- a/src/ngx_http_lua_headers_out.c
++++ b/src/ngx_http_lua_headers_out.c
+@@ -311,6 +311,68 @@ static ngx_int_t
+ ngx_http_set_builtin_multi_header(ngx_http_request_t *r,
+     ngx_http_lua_header_val_t *hv, ngx_str_t *value)
+ {
++#if defined(nginx_version) && nginx_version >= 1023000
++    ngx_table_elt_t  **headers, *h, *ho, **ph;
++
++    headers = (ngx_table_elt_t **) ((char *) &r->headers_out + hv->offset);
++
++    if (hv->no_override) {
++        for (h = *headers; h; h = h->next) {
++            if (!h->hash) {
++                h->value = *value;
++                h->hash = hv->hash;
++                return NGX_OK;
++            }
++        }
++
++        goto create;
++    }
++
++    /* override old values (if any) */
++
++    if (*headers) {
++        for (h = (*headers)->next; h; h = h->next) {
++            h->hash = 0;
++            h->value.len = 0;
++        }
++
++        h = *headers;
++
++        h->value = *value;
++
++        if (value->len == 0) {
++            h->hash = 0;
++
++        } else {
++            h->hash = hv->hash;
++        }
++
++        return NGX_OK;
++    }
++
++create:
++    for (ph = headers; *ph; ph = &(*ph)->next) { /* void */ }
++
++    ho = ngx_list_push(&r->headers_out.headers);
++    if (ho == NULL) {
++        return NGX_ERROR;
++    }
++
++    ho->value = *value;
++
++    if (value->len == 0) {
++        ho->hash = 0;
++
++    } else {
++        ho->hash = hv->hash;
++    }
++
++    ho->key = hv->key;
++    ho->next = NULL;
++    *ph = ho;
++
++    return NGX_OK;
++#else
+     ngx_array_t      *pa;
+     ngx_table_elt_t  *ho, **ph;
+     ngx_uint_t        i;
+@@ -384,6 +446,7 @@ ngx_http_set_builtin_multi_header(ngx_http_request_t *r,
+     *ph = ho;
+ 
+     return NGX_OK;
++#endif
+ }
+ 
+ 
+
+From 0a9a6b5532a3e4c4dd0060e1c742dfb5d68e4b54 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Thu, 23 Jun 2022 11:43:55 +0900
+Subject: [PATCH 3/3] Add blank lines
+
+---
+ src/ngx_http_lua_headers_in.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/src/ngx_http_lua_headers_in.c b/src/ngx_http_lua_headers_in.c
+index 32b7d4e5a..440548140 100644
+--- a/src/ngx_http_lua_headers_in.c
++++ b/src/ngx_http_lua_headers_in.c
+@@ -616,9 +616,11 @@ ngx_http_set_builtin_multi_header(ngx_http_request_t *r,
+     if (*headers) {
+         for (ph = headers; *ph; ph = &(*ph)->next) { /* void */ }
+         *ph = h;
++
+     } else {
+         *headers = h;
+     }
++
+     h->next = NULL;
+ 
+     return NGX_OK;
