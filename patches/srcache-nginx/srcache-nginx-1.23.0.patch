@@ -1,0 +1,48 @@
+diff --git a/src/ngx_http_srcache_util.c b/src/ngx_http_srcache_util.c
+index bc8b0aa..2fe5a20 100644
+--- a/src/ngx_http_srcache_util.c
++++ b/src/ngx_http_srcache_util.c
+@@ -546,15 +546,34 @@ ngx_int_t
+ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
+     ngx_http_srcache_loc_conf_t *conf, ngx_http_srcache_ctx_t *ctx)
+ {
+-    ngx_table_elt_t   **ccp;
+     ngx_table_elt_t    *h;
++#if defined(nginx_version) && nginx_version >= 1023000
++    ngx_table_elt_t    *cc;
++#else
++    ngx_table_elt_t   **ccp;
+     ngx_uint_t          i;
++#endif
+     u_char             *p, *last;
+     ngx_int_t           n;
+     time_t              expires;
+ 
+     dd("checking response cache control settings");
+ 
++#if defined(nginx_version) && nginx_version >= 1023000
++    cc = r->headers_out.cache_control;
++
++    if (cc == NULL) {
++        goto check_expires;
++    }
++
++    for (cc = cc->next; cc; cc = cc->next) {
++        if (!cc->hash) {
++            continue;
++        }
++
++        p = cc->value.data;
++        last = p + cc->value.len;
++#else
+     ccp = r->headers_out.cache_control.elts;
+ 
+     if (ccp == NULL) {
+@@ -568,6 +587,7 @@ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
+ 
+         p = ccp[i]->value.data;
+         last = p + ccp[i]->value.len;
++#endif
+ 
+         if (!conf->store_private
+             && ngx_strlcasestrn(p, last, (u_char *) "private", 7 - 1) != NULL)

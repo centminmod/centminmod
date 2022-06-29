@@ -23,6 +23,7 @@ DELETE_TMPLOGS='y'
 CTMPDIR=/home/checkdomainstmp
 CENTMINLOGDIR='/root/centminlogs'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 ##########################################################################
 if [ -f "/etc/centminmod/custom_config.inc" ]; then
   # default is at /etc/centminmod/custom_config.inc

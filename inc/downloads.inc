@@ -64,7 +64,7 @@ phpgeolocation() {
   # PHPUPGRADE_MIRRORURL='http://php.net'
   
   # Get server's 2 digit country code
-  SERVER_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
+  SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.country')
 
   if [[ -z "$SERVER_COUNTRY" ]]; then
     PHP_MIRRORURL="https://www.php.net"
@@ -149,7 +149,7 @@ libresslgeolocation() {
   # closest to that country for faster downloads http://www.openbsd.org/ftp.html
   
   # Get server's 2 digit country code
-  SERVER_COUNTRY=$(curl -${ipv_forceopt}s --max-time 5 --connect-timeout 5 https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -v 'phone|postal|loc' | awk -F ": " '/country/ {print $2}')
+  SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.country')
 
   if [[ -z "$SERVER_COUNTRY" ]]; then
     LIBRESSL_MIRRORURL="https://cloudflare.cdn.openbsd.org/pub/OpenBSD/LibreSSL"
