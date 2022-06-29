@@ -32,15 +32,15 @@ check_dns() {
       VHOST_AWWWCHECKLIST=$(echo $VHOST_AWWWCHECK | xargs)
       VHOST_AAAAWWWCHECK=$(dig -t AAAA +short @8.8.8.8 www.$vhostname_dns | grep -v $vhostname_dns)
       VHOST_AAAAWWWCHECKLIST=$(echo $VHOST_AAAAWWWCHECK | xargs)
-      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
-      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AWWWCHECK=$(dig -t A +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsa=($VHOST_ACHECK)
       dnsa_noips=${#dnsa[@]}
       declare -a dnsawww=($VHOST_AWWWCHECK)
       dnsawww_noips=${#dnsawww[@]}
 
-      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
-      ISCF_AAAAWWWCHECK=$(dig -t AAAA +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AAAAWWWCHECK=$(dig -t AAAA +short @8.8.8.8 www.$vhostname_dns | while read i; do curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsaaaa=($VHOST_AAAACHECK)
       dnsaaaa_noips=${#dnsaaaa[@]}
       declare -a dnsaaaawww=($VHOST_AAAAWWWCHECK)
@@ -54,11 +54,11 @@ check_dns() {
       VHOST_ACHECKLIST=$(echo $VHOST_ACHECK | xargs)
       VHOST_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns)
       VHOST_AAAACHECKLIST=$(echo $VHOST_AAAACHECK | xargs)
-      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_ACHECK=$(dig -t A +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsa=($VHOST_ACHECK)
       dnsa_noips=${#dnsa[@]}
 
-      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
+      ISCF_AAAACHECK=$(dig -t AAAA +short @8.8.8.8 $vhostname_dns | while read i; do curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/$i/org; done | uniq | egrep -io 'Cloudflare|Incapsula|Sucuri')
       declare -a dnsaaaa=($VHOST_AAAACHECK)
       dnsaaaa_noips=${#dnsaaaa[@]}
 
@@ -540,7 +540,7 @@ PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
     fi
 # CURRENTIP=$(echo $SSH_CLIENT | awk '{print $1}')
 # CURRENTCOUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/$CURRENTIP/country)
