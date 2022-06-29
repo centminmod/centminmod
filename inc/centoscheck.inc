@@ -1,5 +1,5 @@
 grub_efi_fix() {
-    if [[ "$CENTOS_SEVEN" -eq '7' && "$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)" -eq '0' && -d /boot/efi/EFI/centos && ! -f /boot/efi/EFI/centos/grub.cfg ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' && "$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"\(.data.asn) \(.data.description_short)"' | grep -o 'OVH' >/dev/null 2>&1; echo $?)" -eq '0' && -d /boot/efi/EFI/centos && ! -f /boot/efi/EFI/centos/grub.cfg ]]; then
       if [[ "$(lsblk | grep nvme)" && -d /boot/efi/EFI/centos ]]; then
         if [ ! -f /usr/sbin/efibootmgr ]; then
           yum -q -y install efibootmgr

@@ -748,7 +748,8 @@ march_hostcheck() {
   # smarter detection of cloud vps providers who run a mix of different
   # cpu models to prevent issues when you switch host nodes with differing 
   # cpu models causing seg faults for nginx and php-fpm
-  VPS_ASNCHECK=$(curl -${ipv_forceopt}s https://ipinfo.io/org)
+  # VPS_ASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org)
+  VPS_ASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"\(.data.asn) \(.data.description_short)"')
   if [[ "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
     NGX_GSPLITDWARF='n'
@@ -2297,7 +2298,7 @@ pureftpdupdates() {
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
+      CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
     fi
     # disable anonymous logins by default
     CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
@@ -2692,7 +2693,8 @@ ovhkernelcheck() {
     # Intel Xeon D-15xx Broadwell-DE processors which need
     # OVH custom kernel for the newer Intel network NIC support
     # Intel Corporation Ethernet Connection X552/X557-AT 10GBASE-T
-    OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+    # OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org | grep -o 'OVH' >/dev/null 2>&1; echo $?)
+    OVHASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"\(.data.asn) \(.data.description_short)"' | grep -o 'OVH' >/dev/null 2>&1; echo $?)
     OVHKERNEL_CHECK=$(uname -r | grep '\-grs' >/dev/null 2>&1; echo $?)
     BROADWELLDE_CHECK=$(grep 'Xeon(R) CPU D-15' /proc/cpuinfo >/dev/null 2>&1; echo $?)
     # more sure way to check for OVH custom kernel if /root/.ovhrc file exists

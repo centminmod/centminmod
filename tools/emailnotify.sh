@@ -32,6 +32,10 @@ EMAILNOTIFY_SES_SMTP_USERNAME='your_ses_smtp_username'
 EMAILNOTIFY_SES_SMTP_PASSWORD='your_ses_smtp_password'
 EMAILNOTIFY_SES_SMTP_SERVER='your_ses_smtp_server'
 EMAILNOTIFY_SES_SMTP_PORT='587'
+
+# IPv4/IPv6
+FORCE_IPVFOUR='y'
+CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -225,8 +229,8 @@ check_pass_msg() {
 }
 
 checks() {
-  serverip_ipv4=$(curl -${ipv_forceopt}s https://ipinfo.io/ip)
-  serverip_ipv6=$(curl -6s https://ipinfo.io/ip)
+  serverip_ipv4=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+  serverip_ipv6=$(curl -6s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
   serverhostname=$(hostname)
   serverhostname_ipv4=$(dig +short A $serverhostname)
   serverhostname_ipv6=$(dig +short AAAA $serverhostname)
