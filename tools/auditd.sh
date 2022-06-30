@@ -320,6 +320,107 @@ echo ""$CENTMINLOGDIR/auditctl_rules_$DT.log" created"
     fi
 }
 
+audit_logrotate() {
+  echo
+  echo "setup logrotation for auditd"
+  echo "at: /etc/logrotate.d/auditd"
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+          VARDFSIZE=$(df --output=avail /var | tail -1)
+  else
+          VARDFSIZE=$(df -P /var | tail -1 | awk '{print $4}')
+  fi
+
+  if [[ "$TOTALMEM" -le '1153433' || "$VARDFSIZE" -le '10485760' ]]; then
+    if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_AUDITD" = [yY] ]]; then
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 30M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    else
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 30M
+        compress
+        delaycompress
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    fi
+  else
+    if [[ -f /usr/local/bin/zstd && "$ZSTD_LOGROTATE_AUDITD" = [yY] ]]; then
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 200M
+        compress
+        delaycompress
+        compresscmd /usr/local/bin/zstd
+        uncompresscmd /usr/local/bin/unzstd
+        compressoptions -9 --long -T0
+        compressext .zst
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    else
+cat > "/etc/logrotate.d/auditd" <<END
+/var/log/audit/*.log {
+        daily
+        dateext
+        missingok
+        rotate 31
+        minsize 100k
+        maxsize 200M
+        compress
+        delaycompress
+        notifempty
+        postrotate
+          touch /var/log/audit/audit.log ||:
+          chmod 0600 /var/log/audit/audit.log ||:
+          service auditd restart
+        endscript           
+}
+END
+    fi
+  fi
+}
+
 ######################################################
 audit_setup() {
     # only setup audit for non-openvz systems
@@ -331,7 +432,8 @@ audit_setup() {
         if [ -f /etc/audit/auditd.conf ]; then
             cp -a /etc/audit/auditd.conf /etc/audit/auditd.conf.bak-initial
             sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
-            sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
             sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
             service auditd restart >/dev/null 2>&1
             chkconfig auditd on >/dev/null 2>&1
@@ -341,13 +443,30 @@ audit_setup() {
             sed -i 's|args = LOG_INFO|args = LOG_AUTHPRIV6|' /etc/audisp/plugins.d/syslog.conf
         fi
         sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
-        sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
+        sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
+        sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
         sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
         service auditd restart >/dev/null 2>&1
         chkconfig auditd on >/dev/null 2>&1
     fi
     if [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
-        if [[ "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_NINE" -eq '9' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+            if [ -f "$AUDITRULE_PERMFILE" ]; then
+                auditd_customrules
+                augenrules --check >/dev/null 2>&1
+                augenrules --load >/dev/null 2>&1
+            fi
+        elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+            AUDITRULE_FILE='/etc/audit/audit.rules'
+            AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
+            if [ -f "$AUDITRULE_PERMFILE" ]; then
+                auditd_customrules
+                augenrules --check >/dev/null 2>&1
+                augenrules --load >/dev/null 2>&1
+            fi
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
             AUDITRULE_FILE='/etc/audit/audit.rules'
             AUDITRULE_PERMFILE='/etc/audit/rules.d/audit.rules'
             if [ -f "$AUDITRULE_PERMFILE" ]; then
@@ -366,6 +485,7 @@ audit_setup() {
         fi
     fi
     if [[ -f /sbin/aureport && ! -f /proc/user_beancounters ]]; then
+        audit_logrotate
         echo
         echo "auditd installed and configured"
     elif [ -f /proc/user_beancounters ]; then
@@ -403,16 +523,26 @@ cat > "$AUDITRULE_PERMFILE" <<EOF
 EOF
         if [ -f /etc/audit/auditd.conf ]; then
             sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
-            sed -i 's|^max_log_file .*|max_log_file = 35|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
+            sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
             sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
         fi
         auditd_customrules
-        if [[ "$CENTOS_SIX" = '6' || "$CENTOS_SEVEN" = '7' ]]; then
+        if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
             augenrules --check >/dev/null 2>&1
             augenrules --load >/dev/null 2>&1
         fi
-        service auditd restart >/dev/null 2>&1
-        chkconfig auditd on >/dev/null 2>&1
+        rm -f /var/log/audit/audit.log.*
+        audit_logrotate
+        if [[ "$CENTOS_SIX" -eq '6' ]]; then
+          service auditd restart >/dev/null 2>&1
+          chkconfig auditd on >/dev/null 2>&1
+        elif [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+          # systemctl restart auditd
+          # systemctl enable auditd
+          service auditd restart >/dev/null 2>&1
+          chkconfig auditd on >/dev/null 2>&1
+        fi
         echo
         echo "auditd configuration reset"
     fi
