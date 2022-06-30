@@ -3160,7 +3160,9 @@ else
   YUMDNFBIN='yum'
 fi
 
-march_hostcheck
+if [[ "$INITIALINSTALL" = [yY] ]]; then
+  march_hostcheck
+fi
 yumfastmirror_check
 ovhkernelcheck
 fileperm_fixes
