@@ -2302,7 +2302,7 @@ pureftpdupdates() {
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(echo "${VPS_ASNCHECK}" | jq -r '.ip')
+      CNIP=$(echo "$VPS_GEOIPCHECK" | jq -r '.ip')
     fi
     # disable anonymous logins by default
     CHECKPFTPD_ANON=$(grep 'NoAnonymous                 no' /etc/pure-ftpd/pure-ftpd.conf)
