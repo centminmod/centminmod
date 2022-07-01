@@ -36,6 +36,10 @@ EMAILNOTIFY_SES_SMTP_PORT='587'
 # IPv4/IPv6
 FORCE_IPVFOUR='y'
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
+#####################################################
+# local geoip server version used
+VPS_GEOIPCHECK_V3='y'
+VPS_GEOIPCHECK_V4='n'
 ######################################################
 # Setup Colours
 black='\E[30;40m'
@@ -236,8 +240,13 @@ check_pass_msg() {
 }
 
 checks() {
-  serverip_ipv4=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
-  serverip_ipv6=$(curl -6s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+  if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
+    serverip_ipv4=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+    serverip_ipv6=$(curl -6s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+  elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
+    serverip_ipv4=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+    serverip_ipv6=$(curl -6s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+  fi
   serverhostname=$(hostname)
   serverhostname_ipv4=$(dig +short A $serverhostname)
   serverhostname_ipv6=$(dig +short AAAA $serverhostname)

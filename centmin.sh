@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='110'
+SCRIPT_INCREMENTVER='111'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -661,6 +661,11 @@ MARIADB_JEMALLOC='n'
 CCACHEINSTALL='y'
 CCACHE_VER="3.7.12"
 CCACHESIZE='2.5G'
+
+#####################################################
+# local geoip server version used
+VPS_GEOIPCHECK_V3='y'
+VPS_GEOIPCHECK_V4='n'
 
 #####################################################
 # Maxmind GeoLite2 database API Key
@@ -1542,6 +1547,11 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
     OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
   fi
+fi
+
+if [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
+  VPS_GEOIPCHECK_V4='y'
+  VPS_GEOIPCHECK_V3='n'
 fi
 
 if [[ "$MARCH_TARGETNATIVE" = [yY] ]]; then

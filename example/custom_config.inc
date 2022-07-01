@@ -18,6 +18,11 @@ ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
 ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 
 #####################################################
+# local geoip server version used
+VPS_GEOIPCHECK_V3='y'
+VPS_GEOIPCHECK_V4='n'
+
+#####################################################
 TIME_NGINX='n'
 TIME_PHPCONFIGURE='n'
 TIME_MEMCACHED='n'

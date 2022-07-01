@@ -30,6 +30,11 @@ USE_NGINXMAINEXTLOGFORMAT='n'
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 CLOUDFLARE_AUTHORIGINPULLCERT='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 VHOST_CFAUTHORIGINPULL='y'
+
+#####################################################
+# local geoip server version used
+VPS_GEOIPCHECK_V3='y'
+VPS_GEOIPCHECK_V4='n'
 ###############################################################
 # Letsencrypt integration via addons/acmetool.sh auto detection
 # in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost
@@ -462,7 +467,11 @@ pureftpinstall() {
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+      if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+      elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+      fi
     fi
 
 		yum -q -y install pure-ftpd
@@ -711,7 +720,11 @@ PUREGROUP=nginx
     if [ "$SECOND_IP" ]; then
       CNIP="$SECOND_IP"
     else
-      CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+      if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+      elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+      fi
     fi
 if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then
   pureftpinstall
