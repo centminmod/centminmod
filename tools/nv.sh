@@ -33,8 +33,8 @@ VHOST_CFAUTHORIGINPULL='y'
 
 #####################################################
 # local geoip server version used
-VPS_GEOIPCHECK_V3='y'
-VPS_GEOIPCHECK_V4='n'
+VPS_GEOIPCHECK_V3='n'
+VPS_GEOIPCHECK_V4='y'
 ###############################################################
 # Letsencrypt integration via addons/acmetool.sh auto detection
 # in centmin.sh menu option 2, 22, and /usr/bin/nv nginx vhost

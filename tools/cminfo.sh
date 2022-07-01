@@ -19,8 +19,8 @@ PASS=''
 MYSQLHOST='localhost'
 #####################################################
 # local geoip server version used
-VPS_GEOIPCHECK_V3='y'
-VPS_GEOIPCHECK_V4='n'
+VPS_GEOIPCHECK_V3='n'
+VPS_GEOIPCHECK_V4='y'
 #####################################################
 CMINFO_SAR_MEM='y'
 CMINFO_SAR_DAYS='7'

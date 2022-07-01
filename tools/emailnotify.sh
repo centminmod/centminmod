@@ -38,8 +38,8 @@ FORCE_IPVFOUR='y'
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 #####################################################
 # local geoip server version used
-VPS_GEOIPCHECK_V3='y'
-VPS_GEOIPCHECK_V4='n'
+VPS_GEOIPCHECK_V3='n'
+VPS_GEOIPCHECK_V4='y'
 ######################################################
 # Setup Colours
 black='\E[30;40m'

@@ -19,8 +19,8 @@ ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 
 #####################################################
 # local geoip server version used
-VPS_GEOIPCHECK_V3='y'
-VPS_GEOIPCHECK_V4='n'
+VPS_GEOIPCHECK_V3='n'
+VPS_GEOIPCHECK_V4='y'
 
 #####################################################
 TIME_NGINX='n'
