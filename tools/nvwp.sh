@@ -30,8 +30,8 @@ USE_NGINXMAINEXTLOGFORMAT='n'
 CLOUDFLARE_AUTHORIGINPULLCERT='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 #####################################################
 # local geoip server version used
-VPS_GEOIPCHECK_V3='y'
-VPS_GEOIPCHECK_V4='n'
+VPS_GEOIPCHECK_V3='n'
+VPS_GEOIPCHECK_V4='y'
 ###############################################################
 # Settings for centmin.sh menu option 2 and option 22 for
 # the details of the self-signed SSL certificate that is auto 

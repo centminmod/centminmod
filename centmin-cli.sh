@@ -420,8 +420,8 @@ CCACHESIZE='2.5G'
 
 #####################################################
 # local geoip server version used
-VPS_GEOIPCHECK_V3='y'
-VPS_GEOIPCHECK_V4='n'
+VPS_GEOIPCHECK_V3='n'
+VPS_GEOIPCHECK_V4='y'
 
 #####################################################
 # Maxmind GeoLite2 database API Key
