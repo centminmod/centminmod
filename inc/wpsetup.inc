@@ -328,9 +328,9 @@ PUREGROUP=nginx
       CNIP="$SECOND_IP"
     else
       if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Wordpress Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
       elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Wordpress Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
     fi
 pureftpinstall

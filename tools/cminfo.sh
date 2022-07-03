@@ -498,9 +498,9 @@ top_info() {
     # CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -vi 'ip:|phone|postal|loc|readme')
     # echo "$CMINFO_IPINFO" | grep -iv 'readme'
     if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
     elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
     fi
     echo "$CMINFO_IPINFO"
     # echo "  ASN: $(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1 | grep -iv 'readme')"
@@ -950,9 +950,9 @@ echo "------------------------------------------------------------------"
 echo "Server Location Info"
 # echo
 if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
 elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
 fi
 echo "$CMINFO_IPINFO"
 

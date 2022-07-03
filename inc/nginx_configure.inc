@@ -1540,9 +1540,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       # setup /vhost_status.html
       \cp -af "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
       if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-        MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+        MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Configure IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
       elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-        MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+        MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Configure IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
       NEWURI="/vhost_status"
       if [ -f /usr/local/nginx/html/vhost_status.html ]; then
@@ -1566,9 +1566,9 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         # setup /vhost_status.html
         \cp -af "${DIR_TMP}/nginx-module-vts/share/status.compress.html" /usr/local/nginx/html/vhost_status.html
         if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-          MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+          MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Configure IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
         elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-          MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+          MAINURIHOST=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Nginx Configure IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
         fi
         NEWURI="/vhost_status"
         if [ -f /usr/local/nginx/html/vhost_status.html ]; then
