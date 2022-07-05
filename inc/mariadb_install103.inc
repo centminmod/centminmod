@@ -34,7 +34,11 @@ MDB_DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
 MDB_DTIME_SEC=$(echo "$MDB_DTIME" |awk '{printf("%.2f\n",$7)}')
 MDB_NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
 MDB_NTIME_SEC=$(echo "$MDB_NTIME" |awk '{printf("%.2f\n",$7)}')
-MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.3 install D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v3 | jq -r)
+if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
+    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.3 install D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v3 | jq -r)
+elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
+    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.3 install D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v4 | jq -r)
+fi
 MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
 MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
