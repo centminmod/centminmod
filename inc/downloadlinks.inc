@@ -275,10 +275,8 @@ NGX_REDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/redis2-nginx-mo
 
 # wget renamed
 NGX_HTTPREDISLINKFILE="ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
-#NGX_HTTPREDISLINK="http://people.freebsd.org/~osa/ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
-NGX_HTTPREDISLINK="https://github.com/osokin/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
-
-
+# NGX_HTTPREDISLINK="https://github.com/osokin/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
+NGX_HTTPREDISLINK="https://github.com/centminmod/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
 
 ##############
 # lua
