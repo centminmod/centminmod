@@ -30,6 +30,11 @@ USE_NGINXMAINEXTLOGFORMAT='n'
 VHOST_PRESTATICINC='y'       # add pre-staticfiles-local.conf & pre-staticfiles-global.conf include files
 CLOUDFLARE_AUTHORIGINPULLCERT='https://gist.githubusercontent.com/centminmod/020e3580eb03f1c36ced83b94fe4e1c5/raw/origin.crt'
 VHOST_CFAUTHORIGINPULL='y'
+
+# centmin.sh curl options
+CURL_AGENT=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')
+CURL_CPUMODEL=$(awk -F: '/model name/{print $2}' /proc/cpuinfo | sort | uniq -c | xargs | sed -e 's|(R)||g' -e 's|(TM)||g' -e 's|Intel Core|Intel|g' -e 's|CPU ||g' -e 's|-Core|C|g' -e 's|@ |@|g');
+CURL_CPUSPEED=$(awk -F: '/cpu MHz/{print $2}' /proc/cpuinfo | sort | uniq| sed -e s'|      ||g' | xargs | awk '{sum = 0; for (i = 1; i <= NF; i++) sum += $i; sum /= NF; printf("%.0f\n",sum)}')
 #####################################################
 # local geoip server version used
 VPS_GEOIPCHECK_V3='n'
@@ -397,9 +402,9 @@ pureftpinstall() {
       CNIP="$SECOND_IP"
     else
       if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nv Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
       elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nv Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
     fi
 
@@ -650,9 +655,9 @@ PUREGROUP=nginx
       CNIP="$SECOND_IP"
     else
       if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nv Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.ip')
       elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.ip')
+        CNIP=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT nv Vhost IP CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
       fi
     fi
 if [[ "$PUREFTPD_INSTALLED" = [nN] ]]; then

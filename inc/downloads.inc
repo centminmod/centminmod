@@ -65,9 +65,9 @@ phpgeolocation() {
   
   # Get server's 2 digit country code
   if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.country')
+    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Download Country CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.country')
   elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.country')
+    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Download Country CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.country')
   fi
 
   if [[ -z "$SERVER_COUNTRY" ]]; then
@@ -154,9 +154,9 @@ libresslgeolocation() {
   
   # Get server's 2 digit country code
   if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v3 | jq -r '.country')
+    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Download Country CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r '.country')
   elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://geoip.centminmod.com/v4 | jq -r '.country')
+    SERVER_COUNTRY=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT Download Country CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.country')
   fi
 
   if [[ -z "$SERVER_COUNTRY" ]]; then

@@ -230,7 +230,8 @@ NGX_CONCATLINKGITLAB='https://gitlab.com/centminmod-github-mirror/nginx-http-con
 
 # wget renamed
 NGX_HEADERSMORELINKFILE="headers-more-v${NGINX_HEADERSMORE}.tar.gz"
-NGX_HEADERSMORELINK="https://github.com/openresty/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
+# NGX_HEADERSMORELINK="https://github.com/openresty/headers-more-nginx-module/archive/v${NGINX_HEADERSMORE}.tar.gz"
+NGX_HEADERSMORELINK="https://github.com/centminmod/headers-more-nginx-module/archive/refs/tags/v${NGINX_HEADERSMORE}.tar.gz"
 NGX_HEADERSMORELINKGITLAB="https://gitlab.com/centminmod-github-mirror/headers-more-nginx-module/repository/archive.tar.gz?ref=v${NGINX_HEADERSMORE}"
 
 # wget renamed
@@ -275,7 +276,9 @@ NGX_REDISLINKGITLAB="https://gitlab.com/centminmod-github-mirror/redis2-nginx-mo
 
 # wget renamed
 NGX_HTTPREDISLINKFILE="ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
-NGX_HTTPREDISLINK="http://people.freebsd.org/~osa/ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
+# NGX_HTTPREDISLINK="http://people.freebsd.org/~osa/ngx_http_redis-${NGINX_HTTPREDISVER}.tar.gz"
+# NGX_HTTPREDISLINK="https://github.com/osokin/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
+NGX_HTTPREDISLINK="https://github.com/centminmod/ngx_http_redis/archive/refs/tags/${NGINX_HTTPREDISVER}.tar.gz"
 
 ##############
 # lua
