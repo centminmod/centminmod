@@ -188,7 +188,14 @@ phpver_checker() {
       LASTEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
     fi
     CURRENT_PHPVERS=$(php-config --version)
-    if [[ "$CURRENT_PHPVERS" != "$LASTEST_PHPVERS" ]]; then
+    CURRENT_PHPXZVER_CHECK=$(php-config --version | awk -F '.' '{print $1"."$2}')
+    if [[ -f /usr/bin/xz && "$CURRENT_PHPXZVER_CHECK" > 5.4 ]]; then
+      PHPEXTSION_CHECK='xz'
+    else
+      PHPEXTSION_CHECK='gz'
+    fi
+    IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LASTEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
+    if [[ "$CURRENT_PHPVERS" != "$LASTEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       cecho "* PHP Update May Be Available via centmin.sh menu option 5" $boldyellow
