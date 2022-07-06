@@ -199,7 +199,7 @@ NGINX_EXTWEBDAVVER='0.0.3'   # nginx-dav-ext-module version
 NGINX_LIBATOMIC='y'          # Nginx configured with libatomic support
 NGINX_LIBATOMIC_VERSION='7.6.12' # Newer than system default 7.2 for CentOS 7 only https://github.com/ivmai/libatomic_ops/releases
 NGINX_HTTPREDIS='y'          # Nginx redis http://wiki.nginx.org/HttpRedisModule
-NGINX_HTTPREDISVER='0.3.7'   # Nginx redis version
+NGINX_HTTPREDISVER='0.4.0-cmm'   # Nginx redis version
 NGINX_PCRE='y'               # Nginx specific pcre & pcre-jit support
 NGINX_PCREJIT='y'            # Nginx configured with pcre & pcre-jit support
 NGINX_PCRE_DYNAMIC='y'       # compile nginx pcre as dynamic instead of static library
@@ -211,7 +211,7 @@ NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
-NGINX_HEADERSMORE='0.33'
+NGINX_HEADERSMORE='0.34-cmm'
 NGINX_CACHEPURGEVER='2.5.1'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
