@@ -377,6 +377,20 @@ else
             echo "Can Not Determine Latest PHP Version Installable: $getlatest_phpbranchver"
         fi
     fi
+    PHP_AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
+    if [ "$PHP_AUTOOPENSSLCHECK" ]; then
+        php_customssl_run_nginx_notify='n'
+    else
+        php_customssl_run_nginx_notify='y'
+    fi
+    if [[ "$php_customssl_run_nginx_notify" = [yY] && "$PHP_CUSTOMSSL" = [yY] ]]; then
+        echo
+        echo "You are using PHP_CUSTOMSSL='y'. Detected new/different OpenSSL version"
+        echo "is available. Please run centmin.sh menu option 4 to update Nginx's"
+        echo "OpenSSL version first. Then run centmin.sh menu option 5 to update PHP"
+        echo
+        exit
+    fi
     echo
     read -ep "Enter PHP Version number you want to upgrade/downgrade to: " phpver
     echo
