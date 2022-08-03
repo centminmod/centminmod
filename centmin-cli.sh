@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='120'
+SCRIPT_INCREMENTVER='121'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1564,7 +1564,9 @@ if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
-  echo "EL${label_os_ver} Install Dependencies Start..."
+  if [[ "$INITIALINSTALL" = [yY] ]]; then
+    echo "EL${label_os_ver} Install Dependencies Start..."
+  fi
   WGET_VERSION=$WGET_VERSION_EIGHT
 
   # enable CentOS 8 PowerTools repo for -devel packages
