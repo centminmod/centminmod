@@ -29,10 +29,11 @@ fi
 
 echo
 echo "ioncube loader installation started"
-echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6 & 7.x"
+echo "ioncube loader only supports PHP 5.3, 5.4, 5.5, 5.6, 7.x, 8.0, 8.1"
 # echo "ioncube loader PHP 7 currently beta supported"
-echo "http://blog.ioncube.com/2016/09/15/php-7-ioncube-loaders/"
+# echo "http://blog.ioncube.com/2016/09/15/php-7-ioncube-loaders/"
 echo
+echo "installing..."
 
 if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
@@ -52,7 +53,7 @@ mkdir -p ioncube
 cd ioncube
 
 if [[ "$(uname -m)" = 'x86_64' ]]; then
-  if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
+  if [[ "$(php-config --version | cut -d . -f1)" = '5' ]]; then
     if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64_5.1.2.tar.gz
@@ -62,14 +63,19 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
       tar xvzf ioncube_loaders_lin_x86-64.tar.gz
     fi
-  else
+  elif [[ "$(php-config --version | cut -d . -f1)" = '8' ]]; then
+    rm -rf ioncube_loaders_lin_x86-64_v12.tar.gz
+    rm -rf linux_x86_64
+    wget -${ipv_forceopt}cnv https://www.ioncube.com/linux-v12-loaders/ioncube_loaders_lin_x86-64_v12.tar.gz
+    tar xvzf ioncube_loaders_lin_x86-64_v12.tar.gz
+  elif [[ "$(php-config --version | cut -d . -f1)" = '7' ]]; then
     rm -rf ioncube_loaders_lin_x86-64.tar.gz
     rm -rf ioncube
     wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
     tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   fi
 else
-  if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
+  if [[ "$(php-config --version | cut -d . -f1)" != '7' ]]; then
     if [[ "$(php-config --version | cut -d . -f1,2)" != '5.6' ]]; then
       wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86_5.1.2.tar.gz
       tar xvzf ioncube_loaders_lin_x86_5.1.2.tar.gz
@@ -92,12 +98,20 @@ ICPHPVER=$(php-config --version | cut -d . -f1,2)
 PHPEXTDIRD=`cat /usr/local/bin/php-config | awk '/^extension_dir/ {extdir=$1} END {gsub(/\047|extension_dir|=|)/,"",extdir); print extdir}'`
 
 # move current ioncube version to existing PHP extension directory
-if [[ "$(php -v | awk -F " " '{print $2}' | head -n1 | cut -d . -f1)" != '7' ]]; then
+if [[ "$(php-config --version | cut -d . -f1)" = '5' ]]; then
   \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
   chown root:root "${PHPEXTDIRD}/ioncube.so"
   chmod 755 "${PHPEXTDIRD}/ioncube.so"
-else
-  # for php 7 ioncube beta8
+elif [[ "$(php-config --version | cut -d . -f1)" = '8' ]]; then
+  # for php 8 ioncube
+  ICPHPVER="$(php-config --version | cut -d . -f1,2).0"
+  if [[ "$(uname -m)" = 'x86_64' ]]; then
+    \cp -fa "linux_x86_64/${ICPHPVER}/ioncube_loader_12.0.0.so" "${PHPEXTDIRD}/ioncube.so"
+    chown root:root "${PHPEXTDIRD}/ioncube.so"
+    chmod 755 "${PHPEXTDIRD}/ioncube.so"
+  fi
+elif [[ "$(php-config --version | cut -d . -f1)" = '7' ]]; then
+  # for php 7 ioncube
   ICPHPVER=$(php-config --version | cut -d . -f1,2)
   if [[ "$(uname -m)" = 'x86_64' ]]; then
     \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
@@ -137,7 +151,7 @@ if [ -f "${PHPEXTDIRD}/ioncube.so" ]; then
   echo "ioncube loader installation completed"
   echo "you'll need to rerun ioncube.sh after each major PHP version upgrades"
   echo "PHP 5.3 to 5.4 or PHP 5.4 to PHP 5.5 to PHP 5.6 to PHP 7.0"
-  echo "7.1 to 7.2, 7.2 to 7.3, 7.3 to 7.4 etc"
+  echo "7.1 to 7.2, 7.2 to 7.3, 7.3 to 7.4, 7.4 to 8.0, 8.0 to 8.1 etc"
   echo
 else
   echo ""
