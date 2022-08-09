@@ -1548,6 +1548,17 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_SIX" = '6' ]]; then
     UPSTREAMOPT=""
   fi
 
+    NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
+    ngver_branch=$(echo $ngver | cut -d . -f1,2 | sed -e 's|\.|00|g')
+    if [[ "$NGXVER_BRANCH" -ge '10023' ]]; then
+        NGINX_PAGESPEED='n'
+        NGXDYNAMIC_NGXPAGESPEED='n'
+    fi
+    if [[ "$ngver_branch" -ge '10023' ]]; then
+        NGINX_PAGESPEED='n'
+        NGXDYNAMIC_NGXPAGESPEED='n'
+    fi
+
   if [[ "$NGINX_PAGESPEED" = [yY] && "$(uname -m)" = 'x86_64' ]]; then
     # ngxpagespeed_patched
     ngxpagespeed_setpipepatch
