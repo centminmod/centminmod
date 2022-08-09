@@ -587,7 +587,12 @@ else
     if [[ "$ngx_stillcont" = [nN] ]];then
         exit 0
     fi
-    if [[ "$NGINX_ONETWOTHREE_COMPAT" != [yY] ]] && [[ "$ngver" = '1.23.0' || "$ngver" = '1.23.1' || "$ngver" = '1.23.2' || "$ngver" = '1.23.3' ]]; then
+    ngver_branch=$(echo $ngver | cut -d . -f1,2 | sed -e 's|\.|00|g')
+    if [[ "$ngver_branch" -ge '10023' ]]; then
+        NGINX_PAGESPEED='n'
+        NGXDYNAMIC_NGXPAGESPEED='n'
+    fi
+    if [[ "$NGINX_ONETWOTHREE_COMPAT" != [yY] ]] && [[ "$ngver" = '1.23.0' || "$ngver" = '1.23.1' || "$ngver" = '1.23.2' || "$ngver" = '1.23.3' || "$ngver" = '1.23.4' || "$ngver" = '1.23.5' ]]; then
         echo "Note: As at June 22, 2022 Nginx 1.23.0 is incompatible with several"
         echo "Centmin Mod Nginx modules like srcache-nginx-module & redis nginx module"
         echo "until then, you can stick with 1.21.6."
