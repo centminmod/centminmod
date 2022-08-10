@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='127'
+SCRIPT_INCREMENTVER='128'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1172,8 +1172,8 @@ CUSTOM_CURLRPMLIBURL='http://mirror.city-fan.org/ftp/contrib/libraries'
 # wget source compile version
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.2'
-WGET_VERSION_NINE='1.21.2'
+WGET_VERSION_EIGHT='1.21.3'
+WGET_VERSION_NINE='1.21.3'
 
 # centmin.sh curl options
 CURL_AGENT=$(curl -V 2>&1 | head -n 1 |  awk '{print $1"/"$2}')

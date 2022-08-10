@@ -27,8 +27,8 @@ ALTPCRELINK="${LOCALCENTMINMOD_MIRROR}/centminmodparts/pcre/${ALTPCRELINKFILE}"
 
 WGET_VERSION='1.20.3'
 WGET_VERSION_SEVEN='1.20.3'
-WGET_VERSION_EIGHT='1.21.2'
-WGET_VERSION_NINE='1.21.2'
+WGET_VERSION_EIGHT='1.21.3'
+WGET_VERSION_NINE='1.21.3'
 WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
 WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 WGET_LINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/wget/${WGET_FILENAME}"
@@ -874,6 +874,9 @@ source_wgetinstall() {
   fi
   if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/gnutls/gnutls.h ]]; then
     yum -q -y install gnutls gnutls-devel
+  fi
+  if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/include/libassuan2/assuan.h ]]; then
+    yum -q -y install libassuan-devel
   fi
   cd "$DIR_TMP"
   cecho "Download $WGET_FILENAME ..." $boldyellow
