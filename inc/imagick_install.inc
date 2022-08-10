@@ -125,11 +125,17 @@ checkimagicksys() {
     else
         VERSIONLOCK_REPO=""
     fi
-      if [[ "$CENTOS_SIX" = '6' ]]; then
-        REMI_IMAGEMAGICK_PKGNAME='6'
-      else
-        REMI_IMAGEMAGICK_PKGNAME="6"
-      fi
+    if [[ "$CENTOS_NINE" = '9' ]]; then
+      REMI_IMAGEMAGICK_PKGNAME=''
+    elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+      REMI_IMAGEMAGICK_PKGNAME=''
+    elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+      REMI_IMAGEMAGICK_PKGNAME='6'
+    elif [[ "$CENTOS_SIX" = '6' ]]; then
+      REMI_IMAGEMAGICK_PKGNAME='6'
+    else
+      REMI_IMAGEMAGICK_PKGNAME="6"
+    fi
     if [[ "$IMAGEMAGICK_HEIF" = [yY] ]]; then
         IMG_HEIFOPT=' ImageMagick${REMI_IMAGEMAGICK_PKGNAME}-heic'
     else
