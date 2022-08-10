@@ -610,6 +610,7 @@ libmetalink_install() {
   pushd "$DIR_TMP"
   rm -rf libmetalink
   git clone https://github.com/metalink-dev/libmetalink
+  cd libmetalink
   ./buildconf
   ./configure
   make -j$(nproc)
