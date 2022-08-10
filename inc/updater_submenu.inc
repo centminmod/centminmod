@@ -304,7 +304,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
       # echo "$SPID process id for centmin.sh ended"
       kill "$SPID"
     fi
-    break 2
+    # break 2
   else
     echo
     echo "Detected Centmin Mod Github Remote Repo Changes"
@@ -332,7 +332,7 @@ else
   echo
   echo "Error: you do not have git environment setup for github based updates"
   echo "       run submenu option 1 to setup github environment first"
-  break
+  # break
 fi
 }
 
@@ -491,7 +491,7 @@ if [[ -d "${SCRIPT_DIR}/.git" ]]; then
   kill "$SPID"
   # re_sourcefiles
   # break
-  break 2
+  # break 2
   fi  
 else
   echo
