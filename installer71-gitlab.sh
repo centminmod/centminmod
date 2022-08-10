@@ -305,10 +305,14 @@ fi
 
 if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
   WGET_VERSION=$WGET_VERSION_SEVEN
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_EIGHT
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
   # enable CentOS 8 PowerTools repo for -devel packages
   if [ "$(yum repolist powertools | grep -ow 'powertools')" ]; then
@@ -335,6 +339,8 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   echo "EL${label_os_ver} Install Dependencies Start..."
   WGET_VERSION=$WGET_VERSION_NINE
+  WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+  WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
 
   # enable CentOS 9 crb repo for -devel packages
   reponame_powertools=crb

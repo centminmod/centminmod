@@ -1677,9 +1677,18 @@ gitenv_askupdate() {
 wgetver_check() {
   if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
     WGET_VERSION=$WGET_VERSION_SEVEN
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
   fi
   if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
     WGET_VERSION=$WGET_VERSION_EIGHT
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
+  fi
+  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    WGET_VERSION=$WGET_VERSION_NINE
+    WGET_FILENAME="wget-${WGET_VERSION}.tar.gz"
+    WGET_LINK="https://centminmod.com/centminmodparts/wget/${WGET_FILENAME}"
   fi
   # only check if on 64bit OS
   if [[ "$(uname -m)" = 'x86_64' ]]; then
