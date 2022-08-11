@@ -290,6 +290,15 @@ $(which pure-ftpd) -h | head -n1 | awk '{print $1,$2}'
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
+  cecho "Check postfix Status:" $boldyellow
+  cecho "--------------------------------------------------------" $boldyellow
+  if [[ "$(systemctl is-enabled postfix)" = 'disabled' ]]; then
+    systemctl enable postfix >/dev/null 2>&1
+  fi
+  systemctl status postfix --no-pager
+letswait
+echo ""
+  cecho "--------------------------------------------------------" $boldyellow
   cecho "Check YUM Repo List" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow
 $(which yum) repolist
