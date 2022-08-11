@@ -144,6 +144,17 @@ EOF
 
 if [[ ! -f /proc/user_beancounters ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+        # TCPMEMTOTAL=$(awk '/MemTotal/ {print $2}' /proc/meminfo)
+        if [ "$TCPMEMTOTAL" -le '3000000' ]; then
+          TCP_OPTMEM_MAX='8192'
+        else
+          TCP_OPTMEM_MAX='81920'
+        fi
+        if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+          TCP_PID_MAX='4194300'
+        elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+          TCP_PID_MAX='65535'
+        fi
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
             if [[ "$(virt-what | grep -o lxc)" != 'lxc' ]]; then
@@ -159,7 +170,7 @@ if [[ ! -f /proc/user_beancounters ]]; then
             if [[ "$(grep 'centminmod added' /etc/sysctl.d/101-sysctl.conf >/dev/null 2>&1; echo $?)" != '0' ]]; then
 cat >> "/etc/sysctl.d/101-sysctl.conf" <<EOF
 # centminmod added
-kernel.pid_max=65536
+kernel.pid_max=$TCP_PID_MAX
 kernel.printk=4 1 1 7
 fs.nr_open=12000000
 fs.file-max=9000000
@@ -172,7 +183,7 @@ net.ipv4.tcp_rmem=8192 87380 16777216
 net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
-net.core.optmem_max=8192
+net.core.optmem_max=$TCP_OPTMEM_MAX
 net.ipv4.tcp_fin_timeout=10
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
