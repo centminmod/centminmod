@@ -2249,8 +2249,8 @@ if [[ -s "${PHPEXT_MAILPARSELINKFILE}" && "$(tar -tzf ${PHPEXT_MAILPARSELINKFILE
   cecho "${PHPEXT_MAILPARSELINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MAILPARSELINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MAILPARSELINK} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_MAILPARSELINK}" --tries=3
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MAILPARSELINK} --tries=3 --timeout=60"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MAILPARSELINK}" --tries=3 --timeout=60
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MAILPARSELINKFILE} download failed." $boldgreen
@@ -2340,8 +2340,8 @@ if [[ -s "${PHPEXT_IMAGICKLINKFILE}" && "$(tar -tzf ${PHPEXT_IMAGICKLINKFILE} >/
   cecho "${PHPEXT_IMAGICKLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_IMAGICKLINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINK} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_IMAGICKLINK}" --tries=3
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_IMAGICKLINK} --tries=3 --timeout=60"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_IMAGICKLINK}" --tries=3 --timeout=60
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_IMAGICKLINKFILE} download failed." $boldgreen
@@ -2413,8 +2413,8 @@ if [[ -s "${PHPEXT_MEMCACHELINKFILE}" && "$(tar -tzf ${PHPEXT_MEMCACHELINKFILE} 
   cecho "${PHPEXT_MEMCACHELINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHELINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINK} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHELINK}" --tries=3
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHELINK} --tries=3 --timeout=60"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHELINK}" --tries=3 --timeout=60
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHELINKFILE} download failed." $boldgreen
@@ -2486,8 +2486,8 @@ if [[ -s "${PHPEXT_MEMCACHEDLINKFILE}" && "$(tar -tzf ${PHPEXT_MEMCACHEDLINKFILE
   cecho "${PHPEXT_MEMCACHEDLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MEMCACHEDLINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINK} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHEDLINK}" --tries=3
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MEMCACHEDLINK} --tries=3 --timeout=60"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MEMCACHEDLINK}" --tries=3 --timeout=60
 ERROR=$?
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PHPEXT_MEMCACHEDLINKFILE} download failed." $boldgreen
@@ -2694,8 +2694,8 @@ if [[ -s "${PHPEXT_MONGODBLINKFILE}" && "$(tar -tzf ${PHPEXT_MONGODBLINKFILE} >/
   cecho "${PHPEXT_MONGODBLINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_MONGODBLINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MONGODBLINK} -O ${PHPEXT_MONGODBLINKFILE} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_MONGODBLINK}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_MONGODBLINK} -O ${PHPEXT_MONGODBLINKFILE} --tries=3 --timeout=60"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_MONGODBLINK}" -O "${PHPEXT_MONGODBLINKFILE}" --tries=3 --timeout=60
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_MONGODBLINKFILE} download failed." $boldgreen
@@ -2811,8 +2811,8 @@ if [[ -s "${PHPEXT_SWOOLELINKFILE}" && "$(tar -tzf ${PHPEXT_SWOOLELINKFILE} >/de
   cecho "${PHPEXT_SWOOLELINKFILE} found, skipping download..." $boldgreen
   else
   echo "Error: ${PHPEXT_SWOOLELINKFILE} not found !!! Downloading now......" $boldgreen
-        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_SWOOLELINK} -O ${PHPEXT_SWOOLELINKFILE} --tries=3"
-        wget ${WGETOPT} --progress=bar "${PHPEXT_SWOOLELINK}" -O "${PHPEXT_SWOOLELINKFILE}" --tries=3
+        echo "wget ${WGETOPT} --progress=bar ${PHPEXT_SWOOLELINK} -O ${PHPEXT_SWOOLELINKFILE} --tries=3 --timeout=60"
+        wget ${WGETOPT} --progress=bar "${PHPEXT_SWOOLELINK}" -O "${PHPEXT_SWOOLELINKFILE}" --tries=3 --timeout=60
 ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
     cecho "Error: ${PHPEXT_SWOOLELINKFILE} download failed." $boldgreen
