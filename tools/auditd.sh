@@ -431,10 +431,10 @@ audit_setup() {
         fi
         if [ -f /etc/audit/auditd.conf ]; then
             cp -a /etc/audit/auditd.conf /etc/audit/auditd.conf.bak-initial
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
             sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
             sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
             service auditd restart >/dev/null 2>&1
             chkconfig auditd on >/dev/null 2>&1
         fi
@@ -442,10 +442,10 @@ audit_setup() {
         if [ -f /etc/audisp/plugins.d/syslog.conf ]; then
             sed -i 's|args = LOG_INFO|args = LOG_AUTHPRIV6|' /etc/audisp/plugins.d/syslog.conf
         fi
-        sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+        sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
         sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
         sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
-        sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+        sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
         service auditd restart >/dev/null 2>&1
         chkconfig auditd on >/dev/null 2>&1
     fi
@@ -522,10 +522,10 @@ cat > "$AUDITRULE_PERMFILE" <<EOF
 # Feel free to add below this line. See auditctl man page
 EOF
         if [ -f /etc/audit/auditd.conf ]; then
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
             sed -i 's|^max_log_file .*|max_log_file = 0|' /etc/audit/auditd.conf
             sed -i 's|^max_log_file_action .*|max_log_file_action = ignore|' /etc/audit/auditd.conf
-            sed -i 's|^num_logs .*|num_logs = 20|' /etc/audit/auditd.conf
+            sed -i 's|^num_logs .*|num_logs = 40|' /etc/audit/auditd.conf
         fi
         auditd_customrules
         if [[ "$CENTOS_SIX" -eq '6' || "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
