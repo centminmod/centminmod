@@ -19,6 +19,8 @@ DT=$(date +"%d%m%y-%H%M%S")
 SCRIPTDIR="$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 BASEDIR=$(dirname $SCRIPTDIR)
 
+COMPRESS='y'
+PERM_CPUS=$(nproc)
 DELOLD='y'
 DELOLD_VERBOSE='n'
 DEL_THRESHOLD='365'
@@ -66,8 +68,16 @@ backupperm() {
 	echo " backup directory & file permissions for: "
 	echo " $BASEDIR"
 	echo "-------------------------------------------------------"
-	getfacl -R -L --absolute-names $BASEDIR > "$BASEDIR/backup/permissions/permissions-$DT.acl"
-	ls -lah "$BASEDIR/backup/permissions/permissions-$DT.acl"
+	if [[ "$COMPRESS" = [yY] && "$PERM_CPUS" -gt '1' ]]; then
+		getfacl -R -L --absolute-names $BASEDIR | pigz -4 > "$BASEDIR/backup/permissions/permissions-$DT.acl.gz"
+		ls -lah "$BASEDIR/backup/permissions/permissions-$DT.acl.gz"
+	elif [[ "$COMPRESS" = [yY] && "$PERM_CPUS" -eq '1' ]]; then
+		getfacl -R -L --absolute-names $BASEDIR | gzip -4 > "$BASEDIR/backup/permissions/permissions-$DT.acl.gz"
+		ls -lah "$BASEDIR/backup/permissions/permissions-$DT.acl.gz"
+	else
+		getfacl -R -L --absolute-names $BASEDIR > "$BASEDIR/backup/permissions/permissions-$DT.acl"
+		ls -lah "$BASEDIR/backup/permissions/permissions-$DT.acl"
+	fi
 	echo "-------------------------------------------------------"
 	echo
 	echo "ensure directory and files have correct nginx user:group permission"
@@ -84,6 +94,11 @@ restoreperm() {
 	echo " and restore with this command"
 	echo "-------------------------------------------------------"
 	echo
+	echo "setfacl --restore=$BASEDIR/backup/permissions/permissions-XXX.acl"
+	echo
+	echo "or"
+	echo
+	echo "gzip -d $BASEDIR/backup/permissions/permissions-XXX.acl.gz"
 	echo "setfacl --restore=$BASEDIR/backup/permissions/permissions-XXX.acl"
 	echo
 	echo "-------------------------------------------------------"
