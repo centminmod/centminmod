@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.1.3'
+VER='0.1.4'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -12,11 +12,11 @@ export LC_CTYPE=en_US.UTF-8
 # for Centminmod.com
 # written by George Liu (eva2000) centminmod.com
 ######################################################
-RUBYVER='3.0.1'
+RUBYVER='3.1.2'
 RUBYBUILD=''
 
 # switch to nodesource yum repo instead of source compile
-NODEJSVER='14'
+NODEJSVER='16'
 
 DT=$(date +"%d%m%y-%H%M%S")
 CENTMINLOGDIR='/root/centminlogs'
