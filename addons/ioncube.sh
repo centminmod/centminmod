@@ -78,10 +78,10 @@ if [[ "$(uname -m)" = 'x86_64' ]]; then
     echo "only PHP 8.1 is supported"
     exit
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.1' ]]; then
-    rm -rf ioncube_loaders_lin_x86-64_v12.tar.gz
-    rm -rf linux_x86_64
-    wget -${ipv_forceopt}cnv https://www.ioncube.com/linux-v12-loaders/ioncube_loaders_lin_x86-64_v12.tar.gz
-    tar xvzf ioncube_loaders_lin_x86-64_v12.tar.gz
+    rm -rf ioncube_loaders_lin_x86-64.tar.gz
+    rm -rf ioncube
+    wget -${ipv_forceopt}cnv https://downloads.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64.tar.gz
+    tar xvzf ioncube_loaders_lin_x86-64.tar.gz
   elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.0' ]]; then
     echo "ioncube loader has skipped PHP 8.0 support"
     echo "only PHP 8.1 is supported"
@@ -123,9 +123,9 @@ if [[ "$(php-config --version | cut -d . -f1)" = '5' ]]; then
   chmod 755 "${PHPEXTDIRD}/ioncube.so"
 elif [[ "$(php-config --version | cut -d . -f1-2)" = '8.1' ]]; then
   # for php 8 ioncube
-  ICPHPVER="$(php-config --version | cut -d . -f1,2).0"
+  ICPHPVER="$(php-config --version | cut -d . -f1,2)"
   if [[ "$(uname -m)" = 'x86_64' ]]; then
-    \cp -fa "linux_x86_64/${ICPHPVER}/ioncube_loader_12.0.0.so" "${PHPEXTDIRD}/ioncube.so"
+    \cp -fa ioncube/ioncube_loader_lin_${ICPHPVER}.so "${PHPEXTDIRD}/ioncube.so"
     chown root:root "${PHPEXTDIRD}/ioncube.so"
     chmod 755 "${PHPEXTDIRD}/ioncube.so"
   fi
