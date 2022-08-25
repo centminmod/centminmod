@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='141'
+SCRIPT_INCREMENTVER='142'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1547,6 +1547,15 @@ if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
     OPENSSL_LINKFILE="openssl-${OPENSSL_VERSION}.tar.gz"
     OPENSSL_LINK="https://www.openssl.org/source/${OPENSSL_LINKFILE}"
   fi
+fi
+
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  # el9 OSes will default to MariaDB 10.6 LTS releases
+  MARIADB_INSTALLTENTWO='n'
+  MARIADB_INSTALLTENTHREE='n'
+  MARIADB_INSTALLTENFOUR='n'
+  MARIADB_INSTALLTENFIVE='n'
+  MARIADB_INSTALLTENSIX='y'
 fi
 
 if [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
