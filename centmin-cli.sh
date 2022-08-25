@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='42'
+SCRIPT_INCREMENTVER='46'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -483,7 +483,7 @@ NGINXOPENSSL_FATLTO_OBJECTS='n' # enable -ffat-lto-objects flag for nginx OpenSS
 NGINXOPENSSL_NOFATLTO_OBJECTS='n' # enable -fno-fat-lto-objects flag for nginx OpenSSL builds - much slower compile times
 NGINXCOMPILE_FORMATSEC='y'    # whether or not nginx is compiled with -Wformat -Werror=format-security flags
 NGX_LDMOLD='n'                # optional mold linker https://github.com/rui314/mold
-MOLD_VERSION='1.2.1'          # mold linker rpm version
+MOLD_VERSION='1.3.0'          # mold linker rpm version
 
 # When set to =y, will disable those listed installed services 
 # by default. The service is still installed but disabled 
@@ -550,8 +550,8 @@ NGINX_ZERODT='n'             # nginx zero downtime reloading on nginx upgrades
 NGINX_ONETWOTHREE_COMPAT='n' # whether to allow nginx 1.23+ installs
 NGINX_MAXERRBYTELIMIT='2048' # modify NGX_MAX_ERROR_STR hardcoded 2048 limit by editing value i.e. http://openresty-reference.readthedocs.io/en/latest/Lua_Nginx_API/#print
 NGINX_INSTALL='y'            # Install Nginx (Webserver)
-NGINX_HPACK_ALLOWED_VER='1021006'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
-NGINX_DYNAMICTLS_ALLOWED_VER='1021006' # Max allowed Nginx version for Nginx Dynamic TLS patch support
+NGINX_HPACK_ALLOWED_VER='1022001'      # Max allowed Nginx version for Nginx HTTP/2 HPACK full encoding patch support
+NGINX_DYNAMICTLS_ALLOWED_VER='1022001' # Max allowed Nginx version for Nginx Dynamic TLS patch support
 NGINX_DEBUG='n'              # Enable & reinstall Nginx debug log nginx.org/en/docs/debugging_log.html & wiki.nginx.org/Debugging
 NGINX_HTTP2='y'              # Nginx http/2 patch https://community.centminmod.com/threads/4127/
 NGINX_KTLS='n'               # Enable Nginx kTLS - TLS in Kernel support if OpenSSL 3.0.x & 5.2+ Kernel detected
@@ -622,7 +622,7 @@ NGINX_ZLIBVER='1.2.11'       # http://www.zlib.net/
 NGINX_VIDEO='n'              # control variable when 'y' set for NGINX_SLICE='y', NGINX_RTMP='y', NGINX_FLV='y', NGINX_MP4='y'
 ORESTY_HEADERSMORE='y'       # openresty headers more https://github.com/openresty/headers-more-nginx-module
 ORESTY_HEADERSMOREGIT='n'    # use git master instead of version specific
-NGINX_HEADERSMORE='0.34-cmm'
+NGINX_HEADERSMORE='0.34'
 NGINX_CACHEPURGEVER='2.5.1'
 NGINX_STICKY='n'             # nginx sticky module https://bitbucket.org/nginx-goodies/nginx-sticky-module-ng
 NGINX_STICKYVER='master'
@@ -643,9 +643,9 @@ LUAJIT_GITINSTALL='y'        # opt to install luajit 2.1 from dev branch http://
 LUAJIT_GITINSTALLVER='2.1-agentzh'   # branch version = v2.1 will override ORESTY_LUAGITVER if LUAJIT_GITINSTALL='y'
 
 ORESTY_LUANGINX='n'             # enable or disable or ORESTY_LUA* nginx modules below
-ORESTY_LUANGINXVER='0.10.19'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
+ORESTY_LUANGINXVER='0.10.21'  # openresty lua-nginx-module https://github.com/openresty/lua-nginx-module
 ORESTY_LUAGITVER='2.0.5'        # luagit http://luajit.org/
-ORESTY_LUAMEMCACHEDVER='0.15'   # openresty https://github.com/openresty/lua-resty-memcached
+ORESTY_LUAMEMCACHEDVER='0.16'   # openresty https://github.com/openresty/lua-resty-memcached
 ORESTY_LUAMYSQLVER='0.23'    # openresty https://github.com/openresty/lua-resty-mysql
 ORESTY_LUAREDISVER='0.29'       # openresty https://github.com/openresty/lua-resty-redis
 ORESTY_LUADNSVER='0.21'         # openresty https://github.com/openresty/lua-resty-dns
@@ -656,8 +656,8 @@ ORESTY_LUASTRINGVER='0.12'      # openresty https://github.com/openresty/lua-res
 ORESTY_LUAREDISPARSERVER='0.13'    # openresty https://github.com/openresty/lua-redis-parser
 ORESTY_LUAUPSTREAMCHECKVER='0.06'  # openresty https://github.com/openresty/lua-resty-upstream-healthcheck
 ORESTY_LUALRUCACHEVER='0.10'       # openresty https://github.com/openresty/lua-resty-lrucache
-ORESTY_LUARESTYCOREVER='0.1.21'    # openresty https://github.com/openresty/lua-resty-core
-ORESTY_LUASTREAMVER='0.0.9'        # https://github.com/openresty/stream-lua-nginx-module
+ORESTY_LUARESTYCOREVER='0.1.23'    # openresty https://github.com/openresty/lua-resty-core
+ORESTY_LUASTREAMVER='0.0.11'        # https://github.com/openresty/stream-lua-nginx-module
 ORESTY_LUASTREAM='y'               # control https://github.com/openresty/stream-lua-nginx-module
 NGX_LUASTREAM_FORCED='y'           # control stream-lua-nginx enabling for nginx 1.17+
 ORESTY_LUAUPSTREAMVER='0.07'       # openresty https://github.com/openresty/lua-upstream-nginx-module
@@ -702,10 +702,10 @@ PHPMSSQL_ALWAYS='n'          # mssql php extension always install on php recompi
 PHPEMBED='y'                 # built php with php embed SAPI library support --enable-embed=shared
 
 PHPSWOOLE='n'                # https://pecl.php.net/package/swoole
-PHPSWOOLE_VER='4.8.5'
+PHPSWOOLE_VER='4.8.9'
 PHPSWOOLE_FIVE_VER='2.0.5' # max PHP 5.0 supported version
 PHPSWOOLE_SEVEN_ZERO_VER='4.3.5' # max PHP 7.0 supported version
-PHPSWOOLE_SEVEN_ONE_VER='4.5.10' # max PHP 7.1 supported version
+PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 

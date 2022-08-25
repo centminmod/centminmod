@@ -113,7 +113,13 @@ if [[ "$NGINX_INSTALL" = [yY] ]]; then
 
     # echo "\${CUR_DIR} & \${CM_INSTALLDIR}"
     # echo ${CUR_DIR}
-    # echo ${CM_INSTALLDIR}        
+    # echo ${CM_INSTALLDIR}
+
+NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
+if [[ "$NGXVER_BRANCH" -ge '10023' ]]; then
+    NGINX_PAGESPEED='n'
+    NGXDYNAMIC_NGXPAGESPEED='n'
+fi
 
 # only run for CentOS 6.x
 if [[ "$CENTOS_SEVEN" != '7' ]]; then
