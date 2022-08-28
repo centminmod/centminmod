@@ -1271,7 +1271,7 @@ Restart=on-failure
 RestartSec=5s
 TDG
         fi
-    elif [ "$CENTOS_SEVEN" -eq '7' ] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
+    elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ "$SWITCH_PHPFPM_SYSTEMD" = [yY] && -f "/usr/local/src/centminmod/tools/php-systemd.sh" && ! -f /usr/lib/systemd/system/php-fpm.service ]]; then
       /usr/local/src/centminmod/tools/php-systemd.sh fpm-systemd
         if [ ! -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf ] || [[ "$CENTOS_SEVEN" = '7' && "$(grep -o Unit /etc/systemd/system/php-fpm.service.d/failure-restart.conf)" = 'Unit' ]]; then
 cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG

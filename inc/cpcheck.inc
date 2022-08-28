@@ -1606,7 +1606,8 @@ nginx_mutexoff() {
 }
 
 check_jemstatsfile() {
-  if [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
+  # skip for el9
+  if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /usr/bin/jemalloc-stats && -f /usr/bin/jemalloc.sh ]]; then
     jemalloc_printstats
   fi
 }

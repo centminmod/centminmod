@@ -467,6 +467,34 @@ fi
 fi # repo file check
 }
 
+yumpriorepel_nine() {
+if [ -f /etc/yum.repos.d/epel.repo ]; then
+cp -p /etc/yum.repos.d/epel.repo /etc/yum.repos.d/epel.OLD
+if [ -n "$(grep ^priority /etc/yum.repos.d/epel.repo)" ]
+        then
+                #echo priorities already set for epel.repo
+PRIOREXISTS=1
+        else
+                echo "setting yum priorities for epel.repo"
+                ex -s /etc/yum.repos.d/epel.repo << EOF
+:/\[epel\]/ , /gpgkey/
+:a
+priority=3
+exclude=ImageMagick*
+.
+:w
+:q
+EOF
+
+cecho "*************************************************" $boldgreen
+cecho "Fixing epel.repo YUM Priorities" $boldgreen
+cecho "*************************************************" $boldgreen
+cat /etc/yum.repos.d/epel.repo
+echo ""
+fi
+fi # repo file check
+}
+
 
 yumpriorrpmforge() {
   forgefix

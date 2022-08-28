@@ -5,6 +5,7 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
   cd $DIR_TMP
   if [ ! "$(yum repolist remi | grep -o remi)" ]; then
     echo "Configuring Remi EL9 repo"
+    rpm --import https://rpms.remirepo.net/RPM-GPG-KEY-remi2021
     yum -y install https://rpms.remirepo.net/enterprise/remi-release-9.rpm
     ERR=$?
     CCREMICHECK="$ERR"
@@ -88,7 +89,7 @@ if [[ "$CENTOS_NINE" = '9' ]]; then
   fi
 
   # CentOS 9 repo mirrors aren't fully updated so need to specify actual kernel-headers version
-  PACKAGEEXTRA='oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 uw-imap-devel libtidy libtidy-devel libJudy axel bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake'
+  PACKAGEEXTRA='perl-FindBin oniguruma5php oniguruma5php-devel figlet moreutils nghttp2 libnghttp2 libnghttp2-devel jq clang clang-devel jemalloc jemalloc-devel pngquant optipng jpegoptim pwgen pigz pbzip2 xz pxz lz4 libc-client libc-client-devel uw-imap-devel libtidy libtidy-devel libJudy axel bash-completion mlocate re2c libmcrypt libmcrypt-devel kernel-headers kernel-devel cmake'
 
   declare -a arrays
   arrays=(${PACKAGEEXTRA})
@@ -114,9 +115,13 @@ echo "--------------------------------------------------------------------------
         ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
         yum -y module disable php:remi-7.4
       elif [[ "$pkgs" = 'oniguruma5php' || "$pkgs" = 'oniguruma5php-devel' ]]; then
-        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi --skip-broken
+      elif [[ "$pkgs" = 'libc-client' || "$pkgs" = 'libc-client-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi,remi-safe --skip-broken
+      elif [[ "$pkgs" = 'uw-imap-devel' ]]; then
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --enablerepo=remi,remi-safe --skip-broken
       else
-        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs
+        ${YUMDNFBIN}${CACHESKIP} -q -y install $pkgs --skip-broken
       fi
         # ${YUMDNFBIN}${CACHESKIP} -q list $pkgs
 echo "----------------------------------------------------------------------------------"
