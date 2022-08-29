@@ -279,6 +279,9 @@ EOF
   else
     echo "php-fpm systemd service setup"
   fi
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+      sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+    fi
   fi
 }
 
