@@ -103,8 +103,10 @@ fi
 
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
 else
   PHP_PID_PATH='/var/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/var/run/php-fpm/'
 fi
 
 phpfpm_setup_systemd() {
@@ -115,10 +117,10 @@ phpfpm_setup_systemd() {
       rm -rf /etc/init.d/php-fpm
     fi
   mkdir -p /etc/systemd/system/php-fpm.service.d
-  echo "d      /var/run/php-fpm/         0755 root root" > /etc/tmpfiles.d/php-fpm.conf
-  if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi
-  if [[ ! "$(grep '/var/run/php-fpm' /etc/rc.local)" ]]; then
-    echo 'if [ ! -d /var/run/php-fpm/ ]; then mkdir -p /var/run/php-fpm/; fi' >> /etc/rc.local
+  echo "d      $PHP_PID_PATHDIR         0755 root root" > /etc/tmpfiles.d/php-fpm.conf
+  if [ ! -d "$PHP_PID_PATHDIR" ]; then mkdir -p "$PHP_PID_PATHDIR"; fi
+  if [[ ! "$(grep "$PHP_PID_PATHDIR" /etc/rc.local)" ]]; then
+    echo "if [ ! -d $PHP_PID_PATHDIR ]; then mkdir -p $PHP_PID_PATHDIR; fi" >> /etc/rc.local
   fi
 
   if [[ -f /proc/user_beancounters || "$(virt-what | grep -o lxc )" = 'lxc' ]]; then
