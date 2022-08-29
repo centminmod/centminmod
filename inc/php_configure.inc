@@ -221,13 +221,6 @@ elif [[ "$CPUS_LTO" -lt '16' && "$TOTALMEMMB" -gt '31000' ]]; then
   PHP_LTO='n'
 fi
 
-# el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
-# for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
-# https://bugs.php.net/bug.php?id=81540
-if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]]; then
-  PHP_CUSTOMSSL='y'
-fi
-
 install_libgd_external() {
   # using --with-external-gd flag only supported in PHP 7.4+ and PHP 8.0+
   if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$PHP_LIBGD_EXTERNAL" = [yY] ]] && [[ "$PHPMVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPMVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPMVER" = '8.2' || "$PHPMUVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
@@ -501,6 +494,16 @@ else
 fi
 
 oniguruma_check
+
+# el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
+# for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
+# https://bugs.php.net/bug.php?id=81540
+if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]] ; then
+  PHP_CUSTOMSSL='y'
+fi
+if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]] ; then
+  PHP_CUSTOMSSL='y'
+fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
