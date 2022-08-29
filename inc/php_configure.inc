@@ -498,12 +498,12 @@ oniguruma_check
 # el9 uses OpenSSL 3.0 and is not supported for PHP builds <=8.0
 # for PHP 7.4 to 8.0, use OpenSSL 1.1.1 instead
 # https://bugs.php.net/bug.php?id=81540
-if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]] ; then
-  PHP_CUSTOMSSL='y'
-fi
-if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]] ; then
-  PHP_CUSTOMSSL='y'
-fi
+# if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80100' ]] ; then
+#   PHP_CUSTOMSSL='y'
+# fi
+# if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]] ; then
+#   PHP_CUSTOMSSL='y'
+# fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds

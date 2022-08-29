@@ -1,0 +1,143 @@
+Backported for 8.0 from
+
+
+From 718e91343fddb8817a004f96f111c424843bf746 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@php.net>
+Date: Wed, 11 Aug 2021 13:02:18 +0200
+Subject: [PATCH] add SHA256 and SHA512 for security protocol
+
+---
+ ext/snmp/config.m4                            | 18 +++++++++-
+ ext/snmp/snmp.c                               | 33 ++++++++++++++++++-
+ .../tests/snmp-object-setSecurity_error.phpt  |  2 +-
+ ext/snmp/tests/snmp3-error.phpt               |  2 +-
+ 4 files changed, 51 insertions(+), 4 deletions(-)
+
+diff --git a/ext/snmp/config.m4 b/ext/snmp/config.m4
+index 1475ddfe2b7f0..f285a572de9cb 100644
+--- a/ext/snmp/config.m4
++++ b/ext/snmp/config.m4
+@@ -30,7 +30,7 @@ if test "$PHP_SNMP" != "no"; then
+         AC_MSG_ERROR([Could not find the required paths. Please check your net-snmp installation.])
+       fi
+     else
+-      AC_MSG_ERROR([Net-SNMP version 5.3 or greater reqired (detected $snmp_full_version).])
++      AC_MSG_ERROR([Net-SNMP version 5.3 or greater required (detected $snmp_full_version).])
+     fi
+   else
+     AC_MSG_ERROR([Could not find net-snmp-config binary. Please check your net-snmp installation.])
+@@ -54,6 +54,22 @@ if test "$PHP_SNMP" != "no"; then
+     $SNMP_SHARED_LIBADD
+   ])
+ 
++  dnl Check whether usmHMAC192SHA256AuthProtocol exists.
++  PHP_CHECK_LIBRARY($SNMP_LIBNAME, usmHMAC192SHA256AuthProtocol,
++  [
++    AC_DEFINE(HAVE_SNMP_SHA256, 1, [ ])
++  ], [], [
++    $SNMP_SHARED_LIBADD
++  ])
++
++  dnl Check whether usmHMAC384SHA512AuthProtocol exists.
++  PHP_CHECK_LIBRARY($SNMP_LIBNAME, usmHMAC384SHA512AuthProtocol,
++  [
++    AC_DEFINE(HAVE_SNMP_SHA512, 1, [ ])
++  ], [], [
++    $SNMP_SHARED_LIBADD
++  ])
++
+   PHP_NEW_EXTENSION(snmp, snmp.c, $ext_shared)
+   PHP_SUBST(SNMP_SHARED_LIBADD)
+ fi
+diff --git a/ext/snmp/snmp.c b/ext/snmp/snmp.c
+index 69d6549405b17..f0917501751f5 100644
+--- a/ext/snmp/snmp.c
++++ b/ext/snmp/snmp.c
+@@ -29,6 +29,7 @@
+ #include "php_snmp.h"
+ 
+ #include "zend_exceptions.h"
++#include "zend_smart_string.h"
+ #include "ext/spl/spl_exceptions.h"
+ #include "snmp_arginfo.h"
+ 
+@@ -938,16 +939,48 @@ static int netsnmp_session_set_auth_protocol(struct snmp_session *s, char *prot)
+ 	if (!strcasecmp(prot, "MD5")) {
+ 		s->securityAuthProto = usmHMACMD5AuthProtocol;
+ 		s->securityAuthProtoLen = USM_AUTH_PROTO_MD5_LEN;
+-	} else
++		return 0;
++	}
+ #endif
++
+ 	if (!strcasecmp(prot, "SHA")) {
+ 		s->securityAuthProto = usmHMACSHA1AuthProtocol;
+ 		s->securityAuthProtoLen = USM_AUTH_PROTO_SHA_LEN;
+-	} else {
+-		zend_value_error("Authentication protocol must be either \"MD5\" or \"SHA\"");
+-		return (-1);
++		return 0;
+ 	}
+-	return (0);
++
++#ifdef HAVE_SNMP_SHA256
++	if (!strcasecmp(prot, "SHA256")) {
++		s->securityAuthProto = usmHMAC192SHA256AuthProtocol;
++		s->securityAuthProtoLen = sizeof(usmHMAC192SHA256AuthProtocol) / sizeof(oid);
++		return 0;
++	}
++#endif
++
++#ifdef HAVE_SNMP_SHA512
++	if (!strcasecmp(prot, "SHA512")) {
++		s->securityAuthProto = usmHMAC384SHA512AuthProtocol;
++		s->securityAuthProtoLen = sizeof(usmHMAC384SHA512AuthProtocol) / sizeof(oid);
++		return 0;
++	}
++#endif
++
++	smart_string err = {0};
++
++	smart_string_appends(&err, "Authentication protocol must be \"SHA\"");
++#ifdef HAVE_SNMP_SHA256
++	smart_string_appends(&err, " or \"SHA256\"");
++#endif
++#ifdef HAVE_SNMP_SHA512
++	smart_string_appends(&err, " or \"SHA512\"");
++#endif
++#ifndef DISABLE_MD5
++	smart_string_appends(&err, " or \"MD5\"");
++#endif
++	smart_string_0(&err);
++	zend_value_error("%s", err.c);
++	smart_string_free(&err);
++	return -1;
+ }
+ /* }}} */
+ 
+diff --git a/ext/snmp/tests/snmp-object-setSecurity_error.phpt b/ext/snmp/tests/snmp-object-setSecurity_error.phpt
+index f8de846492a75..cf4f928837773 100644
+--- a/ext/snmp/tests/snmp-object-setSecurity_error.phpt
++++ b/ext/snmp/tests/snmp-object-setSecurity_error.phpt
+@@ -59,7 +59,7 @@ var_dump($session->close());
+ --EXPECTF--
+ Security level must be one of "noAuthNoPriv", "authNoPriv", or "authPriv"
+ Security level must be one of "noAuthNoPriv", "authNoPriv", or "authPriv"
+-Authentication protocol must be either "MD5" or "SHA"
++Authentication protocol must be %s
+ 
+ Warning: SNMP::setSecurity(): Error generating a key for authentication pass phrase '': Generic error (The supplied password length is too short.) in %s on line %d
+ bool(false)
+diff --git a/ext/snmp/tests/snmp3-error.phpt b/ext/snmp/tests/snmp3-error.phpt
+index 849e363b45058..389800dad6b28 100644
+--- a/ext/snmp/tests/snmp3-error.phpt
++++ b/ext/snmp/tests/snmp3-error.phpt
+@@ -58,7 +58,7 @@ try {
+ Checking error handling
+ Security level must be one of "noAuthNoPriv", "authNoPriv", or "authPriv"
+ Security level must be one of "noAuthNoPriv", "authNoPriv", or "authPriv"
+-Authentication protocol must be either "MD5" or "SHA"
++Authentication protocol must be %s
+ 
+ Warning: snmp3_get(): Error generating a key for authentication pass phrase '': Generic error (The supplied password length is too short.) in %s on line %d
+ bool(false)
