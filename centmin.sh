@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='151'
+SCRIPT_INCREMENTVER='152'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -1253,6 +1253,12 @@ elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   AXEL_VER='2.16.1'
 elif [[ "$CENTOS_NINE" -eq '9' ]]; then
   AXEL_VER='2.16.1'
+fi
+
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+else
+  PHP_PID_PATH='/var/run/php-fpm/php-fpm.pid'
 fi
 
 if [[ "$CENTOS_SIX" -eq '6' ]]; then
@@ -2663,6 +2669,9 @@ else
     phptuning
 fi
 
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+fi
 
     cp "$CUR_DIR/init/php-fpm" /etc/init.d/php-fpm
 
@@ -2682,9 +2691,9 @@ fi
 
     mkdir -p /var/run/php-fpm
     chmod 755 /var/run/php-fpm
-    touch /var/run/php-fpm/php-fpm.pid
+    touch $PHP_PID_PATH
     chown nginx:nginx /var/run/php-fpm
-    chown root:root /var/run/php-fpm/php-fpm.pid
+    chown root:root $PHP_PID_PATH
 
     mkdir /var/log/php-fpm/
     touch /var/log/php-fpm/www-error.log

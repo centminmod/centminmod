@@ -986,6 +986,10 @@ if [[ "$overwritephpfpmconf" = [yY] ]]; then
         cp -f "$CUR_DIR/config/php-fpm/php-fpm.conf" /usr/local/etc/php-fpm.conf
     fi # lessphpmem
 
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+      sed -i 's|\/var\/run\/php-fpm\/php-fpm.pid|\/run\/php-fpm\/php-fpm.pid|' /usr/local/etc/php-fpm.conf
+    fi
+
     # account for phpmyadmin.sh created php-fpm unix socket pool support
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_myadmin.conf ]; then
         sed -i 's/;include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/include=\/usr\/local\/nginx\/conf\/phpfpmd\/\*.conf/g' /usr/local/etc/php-fpm.conf

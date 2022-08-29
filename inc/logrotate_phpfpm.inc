@@ -54,7 +54,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         compressext .zst
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat $PHP_PID_PATH 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END
@@ -70,7 +70,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         delaycompress
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat $PHP_PID_PATH 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END
@@ -91,7 +91,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         compressext .zst
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat $PHP_PID_PATH 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END
@@ -106,7 +106,7 @@ cat > "/etc/logrotate.d/php-fpm" <<END
         delaycompress
         notifempty
         postrotate
-        /bin/kill -SIGUSR1 \$(cat /var/run/php-fpm/php-fpm.pid 2>/dev/null) 2>/dev/null || true
+        /bin/kill -SIGUSR1 \$(cat $PHP_PID_PATH 2>/dev/null) 2>/dev/null || true
         endscript            
 }
 END

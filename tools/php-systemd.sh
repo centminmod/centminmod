@@ -101,6 +101,12 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
   fi
 fi
 
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+else
+  PHP_PID_PATH='/var/run/php-fpm/php-fpm.pid'
+fi
+
 phpfpm_setup_systemd() {
   fpm_systemd=$1
   if [[ -d /etc/systemd/system ]]; then
@@ -177,8 +183,8 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/php-fpm/php-fpm.pid
-ExecStart=/usr/local/sbin/php-fpm --daemonize --fpm-config /usr/local/etc/php-fpm.conf --pid /var/run/php-fpm/php-fpm.pid
+PIDFile=$PHP_PID_PATH
+ExecStart=/usr/local/sbin/php-fpm --daemonize --fpm-config /usr/local/etc/php-fpm.conf --pid $PHP_PID_PATH
 ExecReload=/bin/kill -USR2 \$MAINPID
 ExecStop=/bin/kill -s QUIT \$MAINPID
 #Restart=on-failure
@@ -200,8 +206,8 @@ After=syslog.target network.target
 
 [Service]
 Type=forking
-PIDFile=/var/run/php-fpm/php-fpm.pid
-ExecStart=/usr/local/sbin/php-fpm --daemonize --fpm-config /usr/local/etc/php-fpm.conf --pid /var/run/php-fpm/php-fpm.pid
+PIDFile=$PHP_PID_PATH
+ExecStart=/usr/local/sbin/php-fpm --daemonize --fpm-config /usr/local/etc/php-fpm.conf --pid $PHP_PID_PATH
 ExecReload=/bin/kill -USR2 \$MAINPID
 ExecStop=/bin/kill -s QUIT \$MAINPID
 #Restart=on-failure
@@ -290,9 +296,9 @@ restore_initd() {
       chmod +x /etc/init.d/php-fpm
       mkdir -p /var/run/php-fpm
       chmod 755 /var/run/php-fpm
-      touch /var/run/php-fpm/php-fpm.pid
+      touch $PHP_PID_PATH
       chown nginx:nginx /var/run/php-fpm
-      chown root:root /var/run/php-fpm/php-fpm.pid
+      chown root:root $PHP_PID_PATH
   
       mkdir -p /var/log/php-fpm/
       touch /var/log/php-fpm/www-error.log
