@@ -2232,6 +2232,9 @@ else
 fi
 
 # install check & set PHP_OPENSSLOPT
+  echo "PHP_OPENSSLOPT install check"
+  echo "$PHPMVER"
+  echo "$PHPVER_ID"
   if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMVER" = '8.1' || "$PHPMVER" = '8.2' ]]; then
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
@@ -2252,7 +2255,9 @@ fi
     PHP_OPENSSLOPT='--with-openssl'
   fi
 
-
+  echo "PHP_OPENSSLOPT upgrade check"
+  echo "$PHPMUVER"
+  echo "$PHPVER_ID"
 # upgrades check & set PHP_OPENSSLOPT
   if [[ "$PHP_CUSTOMSSL" = [yY] ]] && [[ "$PHPMUVER" = '7.4' || "$PHPMUVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
