@@ -804,6 +804,22 @@ php_patches() {
       fi
     done
   fi
+  # backport PHP 8.0 OpenSSL 3 compatibility for PHP 7.4
+  if [[ "$CENTOS_NINE" -eq '9' ]] && [[ "$PHPVER_ID" -ge '70400' && "$PHPVER_ID" -lt '80000' ]]; then
+    phpsevenfour_opensslthree_bugids='php74-openssl3 php74-snmp-openssl3'
+    for bugid in $phpsevenfour_opensslthree_bugids; do
+      if [[ ! -f "${bugid}.patch" && -f "$CUR_DIR/patches/php/${bugid}.patch" ]]; then
+        echo
+        if [[ "$bugid" != 'php-openssl-cert' ]]; then
+          echo "patching PHP 7.4 for #${bugid}"
+        fi
+        echo
+        cp -a $CUR_DIR/patches/php/${bugid}.patch ${bugid}.patch
+        dos2unix ${bugid}.patch
+        patch -p1 < ${bugid}.patch
+      fi
+    done
+  fi
   if [[ "$PHPVER_ID" -lt '80100' && "$FPM_MAX_SPAWN_RATE" -ge '32' && -f sapi/fpm/fpm/fpm_process_ctl.h ]]; then
     echo
     echo "adjust FPM_MAX_SPAWN_RATE for PHP-FPM"
