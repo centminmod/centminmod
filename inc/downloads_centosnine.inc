@@ -15,8 +15,8 @@ if [[ "$REMIREPO_DISABLE" = [nN] ]]; then
       # set remi redis 6.2 default
       yum -y module disable composer
       yum -y module enable redis:remi-6.2
-      # el9 missing libc-client that remi-safe repo has
-      yum -y install libc-client
+      # el9 missing libc-client& uw-imap-develthat remi-safe/remi repo have
+      yum -y install libc-client uw-imap-devel --enablerepo=remi,remi-safe
     else
       cecho "Error: problem with Remi repo install." $boldgreen
     fi
