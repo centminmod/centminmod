@@ -461,11 +461,17 @@ top_info() {
     fi
     
     # only assign variables if mysql is running
-    if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
     DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
-    MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-    MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-    MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+      if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+      else
+        MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+        MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+        MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+      fi
     fi
     PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
 
@@ -498,9 +504,9 @@ top_info() {
     # CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | egrep -vi 'ip:|phone|postal|loc|readme')
     # echo "$CMINFO_IPINFO" | grep -iv 'readme'
     if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
     elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+      CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
     fi
     echo "$CMINFO_IPINFO"
     # echo "  ASN: $(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org 2>&1 | grep -iv 'readme')"
@@ -513,13 +519,17 @@ top_info() {
     echo "$CPUCACHE"
     echo ""
     
-    if [[ "$CENTOS_SEVEN" = '7' ]]; then
+    if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
         echo -ne " System Up Since: \t"; uptime -s
         echo -ne " System Uptime: \t"; uptime -p
     else
         echo -ne " System Uptime: \t"; uptime | awk '{print $2, $3, $4, $5}'
     fi
-    if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    if [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
+        echo -e " MySQL Server Started \t$MYSQLSTART"
+        echo -e " MySQL Uptime: \t\t$MYSQLUPTIMEFORMAT"
+        echo -e " MySQL Uptime (secs): \t$MYSQLUPTIME"
+    elif [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
         echo -e " MySQL Server Started \t$MYSQLSTART"
         echo -e " MySQL Uptime: \t\t$MYSQLUPTIMEFORMAT"
         echo -e " MySQL Uptime (secs): \t$MYSQLUPTIME"
@@ -921,11 +931,17 @@ else
 fi
 
 # only assign variables if mysql is running
-if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]] || [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
 DATABSELIST=$(mysql $MYSQLADMINOPT -e 'show databases;' | grep -Ev '(Database|information_schema|performance_schema)')
-MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
-MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
-MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+  MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+  MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+  MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+else
+  MYSQLUPTIME=$(mysqladmin $MYSQLADMINOPT ext | awk '/Uptime|Uptime_since_flush_status/ { print $4 }' | head -n1)
+  MYSQLUPTIMEFORMAT=$(mysqladmin $MYSQLADMINOPT ver | awk '/Uptime/ { print $2, $3, $4, $5, $6, $7, $8, $9 }')
+  MYSQLSTART=$(mysql $MYSQLADMINOPT -e "SELECT FROM_UNIXTIME(UNIX_TIMESTAMP() - variable_value) AS server_start FROM INFORMATION_SCHEMA.GLOBAL_STATUS WHERE variable_name='Uptime';" | egrep -Ev '+--|server_start')
+fi
 fi
 PAGESPEEDSTATUS=$(grep 'pagespeed unplugged' /usr/local/nginx/conf/pagespeed.conf)
 
@@ -950,9 +966,9 @@ echo "------------------------------------------------------------------"
 echo "Server Location Info"
 # echo
 if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v3 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.data.asn) \(.data.description_short)\n  timezone \(.timezone)"')
 elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  hostname: \(.host)\n  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
+  CMINFO_IPINFO=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT cmminfo IP CHECK" https://geoip.centminmod.com/v4 | jq -r '"  city: \(.city)\n  region: \(.region)\n  country: \(.country)\n  org: \(.asn) \(.asOrganization)\n  timezone \(.timezone)"')
 fi
 echo "$CMINFO_IPINFO"
 
@@ -964,13 +980,17 @@ echo "$CPUMODEL"
 echo "$CPUCACHE"
 echo ""
 
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
     echo -ne " System Up Since: \t"; uptime -s
     echo -ne " System Uptime: \t"; uptime -p
 else
     echo -ne " System Uptime: \t"; uptime | awk '{print $2, $3, $4, $5}'
 fi
-if [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
+if [[ "$(ps -o comm -C mariadbd >/dev/null 2>&1; echo $?)" = '0' ]]; then
+    echo -e " MySQL Server Started \t$MYSQLSTART"
+    echo -e " MySQL Uptime: \t\t$MYSQLUPTIMEFORMAT"
+    echo -e " MySQL Uptime (secs): \t$MYSQLUPTIME"
+elif [[ "$(ps -o comm -C mysqld >/dev/null 2>&1; echo $?)" = '0' ]]; then
     echo -e " MySQL Server Started \t$MYSQLSTART"
     echo -e " MySQL Uptime: \t\t$MYSQLUPTIMEFORMAT"
     echo -e " MySQL Uptime (secs): \t$MYSQLUPTIME"
