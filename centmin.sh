@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='155'
+SCRIPT_INCREMENTVER='156'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -249,6 +249,12 @@ elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; the
     CENTOS_NINE='9'
     EUROLINUX_NINE='9'
   fi
+fi
+
+# switch el8 OSes to GCC 11 for compile routines
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  DEVTOOLSETTEN='n'
+  DEVTOOLSETELEVEN='y'
 fi
 
 if [[ "$FORCE_IPVFOUR" != [yY] ]]; then
