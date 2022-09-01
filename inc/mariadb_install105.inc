@@ -1237,6 +1237,8 @@ if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)"
 echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
 fi
 
+set_mariadb_mysqldump_charset
+
 # setup mariadb mysql log rotation
 funct_logmysqlrotate
 

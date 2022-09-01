@@ -134,6 +134,7 @@ log-error=/var/log/mysqld.log
 open-files-limit = 8192
 
 [mysqldump]
+#default-character-set=utf8mb4
 quick
 max_allowed_packet = 64M
 

@@ -1,3 +1,15 @@
+set_mariadb_mysqldump_charset() {
+  if [[ -f /etc/my.cnf && "$SET_DEFAULT_MYSQLCHARSET" != 'utf8' && ! -z "$SET_DEFAULT_MYSQLCHARSET" ]]; then
+    if [[ "$(grep '^#default-character-set=utf8mb4' /etc/my.cnf)" = '#default-character-set=utf8mb4' ]]; then
+      sed -i "s|^#default-character-set=utf8mb4|default-character-set=utf8mb4|g" /etc/my.cnf
+    elif [[ "$(grep '^default-character-set=' /etc/my.cnf)" ]]; then
+      sed -i "s|^default-character-set=.*|default-character-set=$SET_DEFAULT_MYSQLCHARSET|" /etc/my.cnf
+    elif [[ ! "$(grep '^#default-character-set=' /etc/my.cnf)" ]]; then
+      sed -i "s|\[mysqldump\]|\[mysqldump\]\ndefault-character-set=$SET_DEFAULT_MYSQLCHARSET|" /etc/my.cnf
+    fi
+  fi
+}
+
 securemysql() {
 THEMYSQLPASS=$(/usr/bin/openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')
 
