@@ -26,7 +26,8 @@ unsetramdisk() {
 		\cp -R ${DIR_TMP}/* ${DIR_TMP}_disk &>/dev/null
 		# ls -lah ${DIR_TMP}_disk
 		# diff -qr ${DIR_TMP} ${DIR_TMP}_disk &>/dev/null
-		umount ${DIR_TMP}
+		umount -l "${DIR_TMP}"
+		mkdir -p "${DIR_TMP}"
 		\cp -R ${DIR_TMP}_disk/* ${DIR_TMP} &>/dev/null
 		# ls -lahrt ${DIR_TMP}
 		rm -rf ${DIR_TMP}_disk
