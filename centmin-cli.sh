@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='161'
+SCRIPT_INCREMENTVER='163'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -70,7 +70,7 @@ DIR_TMP='/svr-setup'
 CENTMINLOGDIR='/root/centminlogs'
 
 source "inc/memcheck.inc"
-TMPFSLIMIT=2900000
+TMPFSLIMIT=4000000
 if [ ! -d "$DIR_TMP" ]; then
         if [[ "$TOTALMEM" -ge "$TMPFSLIMIT" ]]; then
             TMPFSENABLED=1
@@ -78,7 +78,7 @@ if [ ! -d "$DIR_TMP" ]; then
             echo "setting up $DIR_TMP on tmpfs ramdisk for initial install"
             mkdir -p "$DIR_TMP"
             chmod 0750 "$DIR_TMP"
-            mount -t tmpfs -o size=2200M,mode=0755 tmpfs "$DIR_TMP"
+            mount -t tmpfs -o size=3400M,mode=0755 tmpfs "$DIR_TMP"
             df -hT
         else
             mkdir -p "$DIR_TMP"
