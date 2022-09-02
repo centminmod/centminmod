@@ -4056,6 +4056,37 @@ if [[ "$CENTOS_SEVEN" = '7' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] 
   fi
 fi
 
+# el9 default GCC 11 settings
+if [[ "$CENTOS_NINE" -eq '9' && "$CLANG" = [nN] && "$NGINX_DEVTOOLSETGCC" = [yY] ]]; then
+  DEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+  DEVTOOLSETELEVEN_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args'
+  DEVTOOLSETTEN_FALLTHROUGH=""
+  DEVTOOLSETTEN_EXTRAFLAGS=""
+  DEVTOOLSETNINE_FALLTHROUGH=""
+  DEVTOOLSETNINE_EXTRAFLAGS=""
+  DEVTOOLSETEIGHT_FALLTHROUGH=""
+  DEVTOOLSETEIGHT_EXTRAFLAGS=""
+  DEVTOOLSETSEVEN_FALLTHROUGH=""
+  DEVTOOLSETSEVEN_EXTRAFLAGS=""
+  if [[ "$INITIALINSTALL" != [yY] ]]; then
+    which gcc
+    which g++
+    unset CC
+    unset CXX
+    export CC="ccache gcc"
+    export CXX="ccache g++"
+    NGX_GSPLITDWARF='n'
+  else
+    which gcc
+    which g++
+    unset CC
+    unset CXX
+    export CC="gcc"
+    export CXX="g++"
+    NGX_GSPLITDWARF='n'
+  fi
+fi  
+
 # intel specific
 CPUVENDOR=$(cat /proc/cpuinfo | awk '/vendor_id/ {print $3}' | sort -u | head -n1)
 echo
