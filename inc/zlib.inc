@@ -573,6 +573,19 @@ install_stdzlib() {
         if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
             nginxzlibtarball
         fi
+        # CVE-2022-37434 patch
+        # https://bugzilla.redhat.com/show_bug.cgi?id=2116639
+        if [[ ! "$(grep '(len = state->head->extra_len - state->length) <' ${DIR_TMP}/zlib-${NGINX_ZLIBVER}/inflate.c)" ]]; then
+            pushd "zlib-${NGINX_ZLIBVER}"
+            echo
+            echo "Patch Nginx zlib for CVE-2022-37434"
+            echo "https://bugzilla.redhat.com/show_bug.cgi?id=2116639"
+            echo
+            if [ -f "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch" ]; then
+                patch -p1 < "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch"
+            fi
+            popd
+        fi
         # pushd "$DIR_TMP"
         # cd "zlib-${NGINX_ZLIBVER}"
         # make clean
@@ -585,17 +598,6 @@ install_stdzlib() {
             echo
             pushd "zlib-${NGINX_ZLIBVER}"
             make -d uninstall
-            # CVE-2022-37434 patch
-            # https://bugzilla.redhat.com/show_bug.cgi?id=2116639
-            if [[ ! "$(grep '(len = state->head->extra_len - state->length) <' ${DIR_TMP}/zlib-${NGINX_ZLIBVER}/inflate.c)" ]]; then
-                echo
-                echo "Patch Nginx zlib for CVE-2022-37434"
-                echo "https://bugzilla.redhat.com/show_bug.cgi?id=2116639"
-                echo
-                if [ -f "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch" ]; then
-                    patch -p1 < "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch"
-                fi
-            fi
             listservices=$(lsof | grep 'libz.so' | grep 'DEL.*lib' | cut -f 1 -d ' ' | sort -u)
             for i in ${listservices[@]}; do
               if [ -d /usr/lib/systemd/system ]; then
