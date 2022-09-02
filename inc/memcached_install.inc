@@ -251,6 +251,10 @@ else
     cp -f "$DIR_TMP/memcached-${MEMCACHED_VERSION}/scripts/memcached-tool" /usr/local/bin
 fi # FPMRPM_MEMCACHED
 
+    # if [[ -f /usr/local/bin/memcached && ! -f /usr/bin/memcached ]]; then
+    #     setup_initd_memcached
+    # fi
+
     cecho "Compiled memcached server..." $boldgreen
 
 if [[ "$CENTOS_SIX" = '6' ]]; then
@@ -266,9 +270,9 @@ service memcached start
     if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [ "$PHP_MEMCACHE" == 'y' ]; then
     PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
-    if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+    if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
         echo
-        if [[ "$PHPVER_ID" -ge '80000' ]]; then
+        if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
             echo "Compiling memcache PHP extension for PHP 8.x ..."
         else
             echo "Compiling memcache PHP extension for PHP 7.x ..."
@@ -280,7 +284,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
             fi
         fi
         pushd "$DIR_TMP"
-        if [[ "$PHPVER_ID" -ge '80000' ]]; then
+        if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
             rm -rf memcache-php8
             time git clone -b NON_BLOCKING_IO_php8 https://github.com/websupport-sk/pecl-memcache.git memcache-php8
             cd memcache-php8
@@ -453,7 +457,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     PHPEXT_MEMCACHEDLINK="https://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
     PHPEXT_MEMCACHEDLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
     echo
-    if [[ "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
         echo "compiling memcached PHP extension for PHP 8.x ..."
     else
         echo "compiling memcached PHP extension for PHP 7.x ..."
@@ -470,7 +474,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
             export PHP_AUTOHEADER=/usr/bin/autoheader268
         fi
     fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
       pushd "$DIR_TMP"
       rm -rf memcached-php8
       time git clone --depth=1 https://github.com/php-memcached-dev/php-memcached.git memcached-php8
@@ -633,6 +637,9 @@ cecho "memcache/memcached routines completed" $boldgreen
 #######################################################
 incmemcachedinstall() {
 
+if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    mkdir -p /etc/init.d
+fi
 if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
     MEMCINSTALL='y'
     nomemcachedservers='1'
@@ -748,4 +755,71 @@ service memcached start
 
 fi
 
+}
+
+#######################################################
+setup_initd_memcached() {
+    if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mkdir -p /etc/init.d
+    fi
+    if [[ "$MEMCACHED_INSTALL" = [yY] ]]; then
+        nomemcachedservers='1'
+    fi
+    
+    pushd "$SCRIPT_DIR"
+    if [[ ! -f /etc/init.d/memcached ]]; then
+        echo "Setup /etc/init.d/memcached with $nomemcachedservers Memcached servers"
+        
+        if [[ "$nomemcachedservers" = '1' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "cp $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+            cp "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+        fi
+        
+        if [[ "$nomemcachedservers" = '2' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "cp $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+            cp "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
+        fi
+    fi # check /etc/init.d/memcached
+    
+    if [[ ! "$(grep PIDA /etc/init.d/memcached)" ]]; then
+        # ensure newest init.d/memcached file is in place
+        echo "Check /etc/init.d/memcached for PIDA / PIDB options"
+    
+        # transfer existing MEMSIZE memory allocation to newer init.d/memcached file
+        MEMCACHED_EXISTMEMSIZE=$(awk -F "=" '/^MEMSIZE/ {print $2}' /etc/init.d/memcached)
+        
+        if [[ "$nomemcachedservers" = '1' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "\cp -f $CUR_DIR/config/memcached/memcached /etc/init.d/memcached"
+            \cp -f "$CUR_DIR/config/memcached/memcached" /etc/init.d/memcached
+            sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+        fi
+        
+        if [[ "$nomemcachedservers" = '2' ]]; then
+            echo "setup /etc/init.d/memcached"
+            echo "\cp -f $CUR_DIR/config/memcached/memcached2 /etc/init.d/memcached"
+            \cp -f "$CUR_DIR/config/memcached/memcached2" /etc/init.d/memcached
+            sed -i "s|^MEMSIZE=.*|MEMSIZE=$MEMCACHED_EXISTMEMSIZE|" /etc/init.d/memcached
+        fi
+    fi # check /etc/init.d/memcached for PIDA/PIDB
+    
+    # add check for Windows CLRF line endings
+    if [ ! -f /usr/bin/file ]; then
+        yum -q -y install file
+    fi
+    if [[ $(file /etc/init.d/memcached) =~ CRLF && -f /etc/init.d/memcached ]]; then
+        if [ ! -f /usr/bin/dos2unix ]; then
+            yum -q -y install dos2unix
+        fi
+        echo "detected CRLF line endings converting to Unix LF"
+        dos2unix /etc/init.d/memcached
+    fi
+    
+    chmod +x /etc/init.d/memcached
+    chkconfig --add memcached
+    chkconfig --level 345 memcached on
+    service memcached start
+    popd
 }
