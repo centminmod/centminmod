@@ -173,11 +173,22 @@ install_cfzlib() {
             DEVTOOLSETEIGHT='y'
         elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_NINE" -eq '9' ]]; then
             CLANG='n'
-            DEVTOOLSETELEVEN='y'
-            DEVTOOLSETTEN='n'
-            DEVTOOLSETNINE='n'
-            DEVTOOLSETEIGHT='n'
-            DEVTOOLSETSEVEN='n'
+            # DEVTOOLSETELEVEN='y'
+            # DEVTOOLSETTEN='n'
+            # DEVTOOLSETNINE='n'
+            # DEVTOOLSETEIGHT='n'
+            # DEVTOOLSETSEVEN='n'
+            unset CC
+            unset CXX
+            if [[ "$INITIALINSTALL" != [yY] ]]; then
+                export CC="ccache gcc"
+                export CXX="ccache g++"
+            else
+                export CC="gcc"
+                export CXX="g++"
+            fi
+            gcc --version
+            g++ --version
         elif [[ "$DEVTOOLSETELEVEN" = [yY] && "$CLANG" = [nN] && "$CENTOS_EIGHT" -eq '8' ]]; then
             CLANG='n'
             DEVTOOLSETELEVEN='y'
@@ -386,6 +397,17 @@ install_cfzlib() {
             popd
         fi
         pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+        # CVE-2022-37434 patch
+        # https://bugzilla.redhat.com/show_bug.cgi?id=2116639
+        if [[ ! "$(grep '(len = state->head->extra_len - state->length) <' ${DIR_TMP}/zlib-cloudflare-${CLOUDFLARE_ZLIBVER}/inflate.c)" ]]; then
+            echo
+            echo "Patch Nginx Cloudflare zlib for CVE-2022-37434"
+            echo "https://bugzilla.redhat.com/show_bug.cgi?id=2116639"
+            echo
+            if [ -f "$CUR_DIR/patches/cloudflare/cloudflare-zlib-CVE-2022-37434.patch" ]; then
+                patch -p1 < "$CUR_DIR/patches/cloudflare/cloudflare-zlib-CVE-2022-37434.patch"
+            fi
+        fi
         # CVE-2018-25032 patch
         LAST_CFZLIB_COMMIT=$(git rev-parse --short HEAD)
         # ls -lah CVE-2018-25032.patch
@@ -563,6 +585,17 @@ install_stdzlib() {
             echo
             pushd "zlib-${NGINX_ZLIBVER}"
             make -d uninstall
+            # CVE-2022-37434 patch
+            # https://bugzilla.redhat.com/show_bug.cgi?id=2116639
+            if [[ ! "$(grep '(len = state->head->extra_len - state->length) <' ${DIR_TMP}/zlib-${NGINX_ZLIBVER}/inflate.c)" ]]; then
+                echo
+                echo "Patch Nginx zlib for CVE-2022-37434"
+                echo "https://bugzilla.redhat.com/show_bug.cgi?id=2116639"
+                echo
+                if [ -f "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch" ]; then
+                    patch -p1 < "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch"
+                fi
+            fi
             listservices=$(lsof | grep 'libz.so' | grep 'DEL.*lib' | cut -f 1 -d ' ' | sort -u)
             for i in ${listservices[@]}; do
               if [ -d /usr/lib/systemd/system ]; then
