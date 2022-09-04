@@ -851,6 +851,12 @@ fi
 # error check
 ################
 
+    if [[ "$PHPMAKETEST" = [yY] ]]; then
+      figlet -ckf standard "PHP: Make Test"
+      time make TEST_PHP_ARGS="-j$(nproc) -q" test | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}-php-upgrade-make-test.log"
+      sar_call
+    fi
+
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "PHP: Make Install"
     fi

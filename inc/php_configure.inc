@@ -2716,7 +2716,7 @@ sar_call
     echo
 
     if [[ "$PHPMAKETEST" = [yY] ]]; then
-      time make test
+      time make TEST_PHP_ARGS="-j$(nproc) -q" test | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}-php-initial-install-make-test.log"
       sar_call
     fi
     
