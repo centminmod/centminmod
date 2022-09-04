@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='171'
+SCRIPT_INCREMENTVER='172'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -637,6 +637,13 @@ ENABLE_MENU='n'
 FIREWALLD_DISABLE='y'
 DNF_ENABLE='n'
 DNF_COPR='y'
+
+#####################################################
+# SSH specific
+# setup /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+# during initial install to re-enable root user SSH logins
+# for EL9 systems
+SSHD_REENABLE_ROOT_LOGINS='y'
 
 #####################################################
 # CSF FIREWALL

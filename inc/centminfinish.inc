@@ -432,6 +432,8 @@ if [[ "$PUREFTPD_DISABLED" = [yY] ]]; then
   cecho "--------------------------------------------------------" $boldyellow
 fi
 
+  sshdtweaks_nine
+
   echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "mytimes check:" $boldyellow

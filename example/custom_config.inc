@@ -18,6 +18,13 @@ ENABLEMOTD_CSFMSG='y'         # motd banner csf message alert disaply
 ENABLEMOTD_LINKSMSG='y'       # motd centminmod.com links bookmark alert display
 
 #####################################################
+# SSH specific
+# setup /etc/ssh/sshd_config.d/01-permitrootlogin.conf
+# during initial install to re-enable root user SSH logins
+# for EL9 systems
+SSHD_REENABLE_ROOT_LOGINS='y'
+
+#####################################################
 # local geoip server version used
 VPS_GEOIPCHECK_V3='n'
 VPS_GEOIPCHECK_V4='y'
