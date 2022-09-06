@@ -504,6 +504,11 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' && "$PHP_PATCH_OPENSSL_THREE" != [yY] ]] && [[ "$PHPMVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPMVER" = '8.0' || "$PHPMUVER" = '8.0' ]] ; then
   PHP_CUSTOMSSL='y'
 fi
+# disable PHP custom openssl as el8 already defaults to desired
+# openssl 1.1.1 for system version
+if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  PHP_CUSTOMSSL='n'
+fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
