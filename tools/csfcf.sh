@@ -16,6 +16,10 @@ if [ ! -f /usr/bin/curl ]; then
 	echo "Installing curl please wait..."
 	yum -y -q install curl
 fi
+if [ ! -f /usr/bin/ipcalc ]; then
+	echo "Installing ipcalc please wait..."
+	yum -y -q install ipcalc
+fi
 ###############################
 # set locale temporarily to english
 # due to some non-english locale issues

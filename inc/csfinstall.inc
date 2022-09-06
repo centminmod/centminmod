@@ -182,7 +182,7 @@ if [[ "$CSFINSTALLOK" = [yY] ]]; then
 sed -i "s/TCP_OUT = \"/TCP_OUT = \"8080,2525,465,111,2049,1110,1194,9418,/g" /etc/csf/csf.conf
 sed -i "s/TCP6_OUT = \"/TCP6_OUT = \"8080,2525,465,/g" /etc/csf/csf.conf
 sed -i "s/UDP_IN = \"/UDP_IN = \"67,68,111,2049,1110,33434:33534,/g" /etc/csf/csf.conf
-sed -i "s/UDP_OUT = \"/UDP_OUT = \"67,68,111,2049,1110,33434:33534,/g" /etc/csf/csf.conf
+sed -i "s/UDP_OUT = \"/UDP_OUT = \"67,68,111,2049,1110,33434:33534,443/g" /etc/csf/csf.conf
 sed -i "s/DROP_NOLOG = \"67,68,/DROP_NOLOG = \"/g" /etc/csf/csf.conf
 
     egrep '^UDP_|^TCP_|^DROP_NOLOG' /etc/csf/csf.conf
