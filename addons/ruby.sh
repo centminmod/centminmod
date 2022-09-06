@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.5'
+VER='0.0.6'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -480,7 +480,7 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   
   echo "rvm install ${RUBYVER}"
   echo "rvm use ${RUBYVER} --default"
-  echo "rvm rubygems current"
+  echo "rvm rubygems current --force"
   echo "--------------------------------" 
   echo $GEM_HOME
   echo $GEM_PATH
@@ -489,14 +489,14 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
     
   echo "--------------------------------"
   # RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
-  rvm install ${RUBYVER}
+  rvm install ${RUBYVER} 
   echo "--------------------------------"
   rvm use ${RUBYVER} --default
   echo "--------------------------------"
 
   echo "PATH echo..."
   echo "--------------------------------"
-  rvm rubygems current
+  rvm rubygems current --force
   echo "--------------------------------"
   gem env
   echo "--------------------------------"
@@ -522,8 +522,20 @@ case $1 in
   install)
 starttime=$(TZ=UTC date +%s.%N)
 {
-    preyum
-    installruby
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        echo "EL7 install"
+        preyum
+        installruby
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        echo "EL8 module install"
+        dnf module list ruby
+        dnf module -y reset ruby
+        dnf module -y enable ruby:3.0
+        dnf module -y update ruby:3.0
+    elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        echo "EL9 install"
+        yum -y install ruby rubygem rubygem-bundler ruby-libs
+    fi
 } 2>&1 | tee ${CENTMINLOGDIR}/centminmod_ruby_install_${DT}.log
 
 endtime=$(TZ=UTC date +%s.%N)
