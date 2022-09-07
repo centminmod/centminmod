@@ -569,7 +569,9 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # if doesn't match then auto recompile the statically set
     # OPENSSL_VERSION
     AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
-    if [[ "$AUTOOPENSSLCHECK" ]]; then
+    if [[ "$ngver" = 'quic' ]]; then
+        recompileopenssl='n'
+    elif [[ "$AUTOOPENSSLCHECK" ]]; then
         recompileopenssl='y'
     else
         recompileopenssl='y'
@@ -747,12 +749,18 @@ fi
         git clone --depth=1 https://github.com/nginx/nginx nginx-master
         mv nginx-master/auto/configure nginx-master/configure
     fi
+    if [[ "$ngver" = 'quic' ]]; then
+        rm -rf nginx-${ngver}*
+        mercurial_check
+        hg clone -b quic https://hg.nginx.org/nginx-quic
+        mv nginx-quic/auto/configure nginx-quic/configure
+    fi
     if [[ "$ngver" = 'master-google' ]]; then
         rm -rf nginx-${ngver}*
         git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google
         mv nginx-master-google/auto/configure nginx-master-google/configure
     fi
-    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' ]]; then
+    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
         download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
@@ -793,7 +801,7 @@ fi
         fi
     fi
 
-    if [[ ! "$(echo $ngver | grep 'master')" ]]; then
+    if [[ ! "$(echo $ngver | egrep 'master|quic')" ]]; then
         tar xvfz "nginx-${ngver}.tar.gz"
         NGINXTAREXTRACT_CHECK=$?
         if [[ "$NGINXTAREXTRACT_CHECK" != '0' ]]; then
