@@ -1,5 +1,5 @@
 #!/bin/bash
-VER='0.0.6'
+VER='0.0.7'
 #####################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -13,7 +13,8 @@ export LC_CTYPE=en_US.UTF-8
 # written by George Liu (eva2000) centminmod.com
 # https://rvm.io/
 ######################################################
-RUBYVER='3.1.2'
+# https://rvm_io.global.ssl.fastly.net/binaries/centos/7/x86_64/
+RUBYVER='2.6.6'
 RUBYBUILD=''
 
 DT=$(date +"%d%m%y-%H%M%S")
@@ -436,7 +437,8 @@ preyum() {
   fi
 
   if [[ "$(rpm -ql ruby | grep -v 'not installed')" || "$(rpm -ql ruby-libs | grep -v 'not installed')" || "$(rpm -ql rubygems | grep -v 'not installed')" ]]; then
-    yum -y erase ruby ruby-libs ruby-mode rubygems
+    yum -y remove ruby ruby-libs rubygems --skip-broken --disableplugin=versionlock
+    yum versionlock ruby ruby-libs rubygems
   fi
 
   mkdir -p /home/.ccache/tmp
@@ -455,14 +457,21 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   curl -sSL https://rvm.io/pkuczynski.asc | gpg2 --import -
   \curl -L https://get.rvm.io | bash -s stable
   
-  source /etc/profile.d/rvm.sh
-
-  echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> /root/.bashrc
-  if [[ "$(id -u)" -ne '0' ]]; then
+  # clear duplicates previously added
+  sed -i '/rvm.sh/d' $HOME/.bashrc
+  if [[ ! "$(grep 'rvm.sh' $HOME/.bashrc)" ]]; then
+    echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> /root/.bashrc
+  fi
+  if [[ "$(id -u)" -ne '0' && ! "$(grep 'rvm.sh' $HOME/.bashrc)" ]]; then
     echo '[[ -s "/etc/profile.d/rvm.sh" ]] && source "/etc/profile.d/rvm.sh"  # This loads RVM into a shell session.' >> $HOME/.bashrc
   fi
   
   echo "checks..."
+  if [ ! -f ~/.rvmrc ]; then
+    touch ~/.rvmrc
+    echo "rvm_silence_path_mismatch_check_flag=1" >> ~/.rvmrc
+  fi
+  source /etc/profile.d/rvm.sh
   echo "--------------------------------"
   echo "export PATH="$PATH""
   export PATH="$PATH"
@@ -485,7 +494,9 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo $GEM_HOME
   echo $GEM_PATH
   echo "--------------------------------"
-  echo "gem install rake rails sqlite3"
+  echo "gem install rake"
+  echo "gem install rails"
+  echo "gem install sqlite3"
     
   echo "--------------------------------"
   # RUBYVER=$(rvm list | awk -F " " '/^\=\*/ {print $2}' | awk -F "-" '{print $2}')
@@ -500,7 +511,13 @@ if [[ -z $(which ruby >/dev/null 2>&1) || -z $(which rvm >/dev/null 2>&1) || -z 
   echo "--------------------------------"
   gem env
   echo "--------------------------------"
-  gem install rake rails sqlite3
+  # find /usr/local/rvm/gems -name "concurrent-ruby-*.gem" -delete
+  # find /usr/local/rvm/gems -name "rake-*.gem" -delete
+  # find /usr/local/rvm/gems -name "rails-*.gem" -delete
+  find /usr/local/rvm/gems/ruby-*/cache -type f -name "*.gem"
+  gem install rake
+  gem install rails
+  gem install sqlite3
   echo "--------------------------------"
   
   echo "more checks..."
