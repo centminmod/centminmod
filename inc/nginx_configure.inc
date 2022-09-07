@@ -3,6 +3,10 @@ mercurial_check() {
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       yum -y localinstall https://centminmod.com/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
     fi
+  elif [[ ! -f /usr/bin/hg ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      yum -y localinstall https://centminmod.com/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
+    fi
   fi
 }
 
@@ -547,8 +551,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       else
         NGINX_SPDY=n
         if [[ "$ngver" = 'quic' ]]; then
-          # HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
-          HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
+          if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
+            HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
+            # HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
+          else
+            HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
+          fi
         else
           HTTPTWOOPT=' --with-http_v2_module'
         fi
@@ -1831,8 +1839,12 @@ else
       else
         NGINX_SPDY=n
         if [[ "$ngver" = 'quic' ]]; then
-          # HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
-          HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
+          if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
+            HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
+            # HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
+          else
+            HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
+          fi
         else
           HTTPTWOOPT=' --with-http_v2_module'
         fi

@@ -47,6 +47,12 @@ pcre_check_nginx(){
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre2-8
         echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
+        if [[ "$ngver" = 'quic' ]]; then
+            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
+            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
+            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
+            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
+        fi
         if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
@@ -107,6 +113,12 @@ pcre_check_nginx(){
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre
         echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
+        if [[ "$ngver" = 'quic' ]]; then
+            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
+            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
+            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
+            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
+        fi
         if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
