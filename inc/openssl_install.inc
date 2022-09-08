@@ -1226,7 +1226,153 @@ fi
 
         echo "" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
         echo "LibreSSL Install Time: $LIBRESSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
-        ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log         
+        ls -lah ${CENTMINLOGDIR}/centminmod_libresslinstalltime_${DT}.log
+    elif [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
+      if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        opensslinstallstarttime=$(TZ=UTC date +%s.%N)
+
+        if [ -f "$(which figlet)" ]; then
+            figlet -ckf standard "Compiling OpenSSL quictls fork"
+        fi
+
+        # Install OpenSSL
+        cd $DIR_TMP
+        echo "Compiling OpenSSL quictls fork..."
+        
+        if [[ "$CENTOS_EIGHT" = '8' && ! -f /usr/bin/pod2html ]]; then
+            $YUMDNFBIN -q -y install perl-Pod-Html
+        fi
+        if [ ! -f /usr/bin/makedepend ]; then
+            time $YUMDNFBIN -q -y install imake${DISABLEREPO_DNF}
+        fi
+        CLOUDFLARE_ZLIB_OPENSSL='n'
+        if [[ "$CLOUDFLARE_ZLIB_OPENSSL" = [yY] && "$CLOUDFLARE_ZLIB" = [yY] && "$(cat /proc/cpuinfo | grep -o 'sse4_2' | uniq)" = 'sse4_2' && "$CHECK_PCLMUL" = 'enabled' && -d /usr/local/zlib-cf ]]; then
+            OPENSSL_CFZLIB_OPT=' -I/usr/local/zlib-cf/include -L/usr/local/zlib-cf/lib'
+            OPENSSL_CFZLIB_RPATH='/usr/local/zlib-cf:'
+            echo "OPENSSL_CFZLIB_OPT = $OPENSSL_CFZLIB_OPT"
+            echo "OPENSSL_CFZLIB_RPATH = $OPENSSL_CFZLIB_RPATH"
+        else
+            echo "OPENSSL_CFZLIB_OPT = $OPENSSL_CFZLIB_OPT"
+            echo "OPENSSL_CFZLIB_RPATH = $OPENSSL_CFZLIB_RPATH"
+        fi
+
+        # OPENSSL_QUIC_VERSION='OpenSSL_1_1_1q+quic'
+        # OPENSSL_QUIC_VERSION='openssl-3.0.5+quic'
+        OPENSSL_QUIC_DIR='openssl-quic-nginx'
+        OPENSSL_QUIC_CUSTOMPATH=/opt/openssl-quic
+        rm -rf "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+        if [ ! -d "$OPENSSL_QUIC_DIR" ]; then
+            git clone --depth 1 -b "$OPENSSL_QUIC_VERSION" https://github.com/quictls/openssl "$OPENSSL_QUIC_DIR"
+        fi
+        echo
+        echo "cloned to $OPENSSL_QUIC_DIR"
+        ls -lAh "$OPENSSL_QUIC_DIR"
+
+        export STATICLIBSSL="${OPENSSL_QUIC_CUSTOMPATH}"
+        cd "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+
+        rm -rf "$STATICLIBSSL"
+        mkdir -p "$STATICLIBSSL"
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            make clean
+        fi
+        # opensslpatches
+        crypto_gcc
+        if [[ "$(uname -m)" = 'x86_64' ]]; then
+            ECNISTP_CHECK=$(gcc -dM -E - </dev/null | grep __SIZEOF_INT128__)
+            if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
+                ECNISTP_OPT=' enable-ec_nistp_64_gcc_128'
+            else
+                ECNISTP_OPT=""
+            fi
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+                # openssl 1.1.0 unsupported flag enable-tlsext
+                if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'tls1_3' Configure)" ]]; then
+                    TLSONETHREEOPT=' enable-tls1_3'
+                    TLSONETHREE_DETECT='y'
+                else
+                    # https://wiki.openssl.org/index.php/TLS1.3
+                    if [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+                        TLSONETHREEOPT=" no-tls1_3"
+                    else
+                        TLSONETHREEOPT=""
+                    fi
+                    TLSONETHREE_DETECT='n'
+                fi
+                # openssl 1.1. use new native threading API
+                # https://www.openssl.org/news/cl110.txt
+                if [[ "${OPENSSL_THREADS}" = [nN] ]]; then
+                    OPENSSL_THREADSOPT=' no-threads'
+                elif [[ "${OPENSSL_THREADS}" = [yY] ]]; then
+                    OPENSSL_THREADSOPT=""
+                elif [[ ! "${OPENSSL_THREADS}" ]]; then
+                    OPENSSL_THREADSOPT=""
+                fi
+                echo "./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}
+            elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            else
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            fi
+        else
+            if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+                # openssl 1.1.0 unsupported flag enable-tlsext
+                if [[ "$OPENSSL_TLSONETHREE" = [yY] && "$(grep -w 'tls1_3' Configure)" ]]; then
+                    TLSONETHREEOPT=' enable-tls1_3'
+                    TLSONETHREE_DETECT='y'
+                else
+                    # https://wiki.openssl.org/index.php/TLS1.3
+                    if [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+                        TLSONETHREEOPT=" no-tls1_3"
+                    else
+                        TLSONETHREEOPT=""
+                    fi
+                    TLSONETHREE_DETECT='n'
+                fi
+                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${TLSONETHREEOPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${TLSONETHREEOPT}
+            else
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext"
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext
+            fi
+        fi
+        if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
+            make${MAKETHREADS}
+        else
+            make depend
+            make
+        fi
+        # make install
+        make install_sw
+        if [[ "$?" = '0' ]]; then
+            ln -s "${STATICLIBSSL}/lib" "${STATICLIBSSL}/lib64"
+        else
+            rm -rf "${STATICLIBSSL}/lib64"
+        fi
+        mkdir -p "${OPENSSL_QUIC_CUSTOMPATH}/certs/"
+        \cp -Rpf /etc/ssl/certs/* "${OPENSSL_QUIC_CUSTOMPATH}/certs/"
+        \cp -Pf /etc/pki/tls/cert.pem "${OPENSSL_QUIC_CUSTOMPATH}/"
+        if [[ -f "${DIR_TMP}/${OPENSSL_QUIC_DIR}/apps/openssl.cnf" && ! -f "${OPENSSL_QUIC_CUSTOMPATH}/openssl.cnf" ]]; then
+            \cp -af "${DIR_TMP}/${OPENSSL_QUIC_DIR}/apps/openssl.cnf" "${OPENSSL_QUIC_CUSTOMPATH}/openssl.cnf"
+        fi
+        crypto_gccunset
+        echo
+        echo "Check ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+        echo "ls -lah ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+        ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+        echo
+        opensslinstallendtime=$(TZ=UTC date +%s.%N)
+        OPENSSLINSTALLTIME=$(echo "scale=2;$opensslinstallendtime - $opensslinstallstarttime"|bc )
+
+        echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        echo "OpenSSL quictls fork Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+      else
+        echo "Skip OpenSSL quictls fork Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
+      fi
     elif [[ "$LIBRESSL_SWITCH" = [nN] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
       OPENSSLVER_CHECK=$(/opt/openssl/bin/openssl version | awk '{print $2}')
       if [[ "$OPENSSLVER_CHECK" != "$OPENSSL_VERSION" ]] || [[ "$OPENSSL_FORCECOMPILE" = [yY] ]] || [[ "$NGINX_TLS_FINGERPRINT" = [yY] ]]; then
@@ -1280,7 +1426,7 @@ fi
         crypto_gcc
         if [[ "$(uname -m)" = 'x86_64' ]]; then
             ECNISTP_CHECK=$(gcc -dM -E - </dev/null | grep __SIZEOF_INT128__)
-            if [ "$ECNISTP_CHECK" ]; then
+            if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
                 ECNISTP_OPT=' enable-ec_nistp_64_gcc_128'
             else
                 ECNISTP_OPT=""

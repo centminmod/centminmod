@@ -278,7 +278,7 @@ else
   echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
 fi
 # openssl 1.1.1 quictls fork for nginx-quic HTTP/3 builds
-if [[ "$ngver" = 'quic' ]]; then
+if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
   if [[ ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_SEVEN" -eq '7' ]]; then
     yum -y localinstall "$DIR_TMP/centmin-openssl11-quic-compat-1.1.1q-1.el7.x86_64.rpm"
   elif [[ ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_EIGHT" -eq '8' ]]; then
@@ -287,17 +287,17 @@ if [[ "$ngver" = 'quic' ]]; then
     yum -y localinstall "$DIR_TMP/centmin-openssl11-quic-compat-1.1.1q-1.el9.x86_64.rpm"
   fi
   QUICTLS_LD=' -lssl -lcrypto '
-  QUICTLS_LD_OPT="-L/opt/el-compat-quic/lib ${QUICTLS_LD}"
-  QUICTLS_CC_OPT='-I/opt/el-compat-quic/include '
-  QUICTLS_RPATH='/opt/el-compat-quic/lib:'
+  QUICTLS_LD_OPT="-L../openssl-quic-nginx/lib ${QUICTLS_LD}"
+  QUICTLS_CC_OPT='-I../openssl-quic-nginx/include '
+  QUICTLS_RPATH='../openssl-quic-nginx/lib:'
   NGINX_HPACK='n'
   NGINX_DYNAMICTLS='n'
-  if [ ! -f /opt/el-compat-quic/bin/openssl ]; then
-    QUICTLS_LD_OPT=""
-    QUICTLS_CC_OPT=""
-    QUICTLS_RPATH=""
-    QUICTLS_LD=""
-  fi
+  # if [ ! -f /opt/el-compat-quic/bin/openssl ]; then
+  #   QUICTLS_LD_OPT=""
+  #   QUICTLS_CC_OPT=""
+  #   QUICTLS_RPATH=""
+  #   QUICTLS_LD=""
+  # fi
 else
   QUICTLS_LD_OPT=""
   QUICTLS_CC_OPT=""
@@ -382,7 +382,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
-  elif [[ "$ngver" && "$ngver" = 'quic' ]]; then
+  elif [[ "$ngver" && "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY]   ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
@@ -550,7 +550,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
       else
         NGINX_SPDY=n
-        if [[ "$ngver" = 'quic' ]]; then
+        if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
           if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
             HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
             # HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
@@ -934,7 +934,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         echo 1b
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [ "$ECNISTP_CHECK" ]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -949,7 +949,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       else
         echo 1c
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [ "$ECNISTP_CHECK" ]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -978,7 +978,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
       elif [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" != [yY] ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' && "$ORESTY_LUANGINX" = [yY] ]]; then
         echo 2b
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [ "$ECNISTP_CHECK" ]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -994,7 +994,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         echo 2c
         export STATICLIBSSL="${OPENSSL_CUSTOMPATH}"
         if [[ "$(uname -m)" = 'x86_64' ]]; then
-          if [ "$ECNISTP_CHECK" ]; then
+          if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
           else
             OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -1838,7 +1838,7 @@ else
         HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
       else
         NGINX_SPDY=n
-        if [[ "$ngver" = 'quic' ]]; then
+        if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
           if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
             HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
             # HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
@@ -2101,7 +2101,7 @@ else
           fi
         else
           if [[ "$(uname -m)" = 'x86_64' ]]; then
-            if [ "$ECNISTP_CHECK" ]; then
+            if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
               OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
             else
               OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -2146,7 +2146,7 @@ else
           fi
         else
           if [[ "$(uname -m)" = 'x86_64' ]]; then
-            if [ "$ECNISTP_CHECK" ]; then
+            if [[ "$ECNISTP_CHECK" && ! -d "${DIR_TMP}/${OPENSSL_QUIC_DIR}" ]]; then
               OPENSSLOPT=" --with-openssl=../$OPENSSLDIR --with-openssl-opt='enable-ec_nistp_64_gcc_128'"
             else
               OPENSSLOPT=" --with-openssl=../$OPENSSLDIR"
@@ -4465,9 +4465,9 @@ if [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f /proc/user_beancounters && -f 
     grep 'NGX_LISTEN_BACKLOG' "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h"
 fi
 
-if [[ "$ngver" = 'quic' ]]; then
-  # OPENSSLOPT=" --with-openssl=/opt/el-compat-quic"
-  OPENSSLOPT=""
+if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  OPENSSLOPT=" --with-openssl=../openssl-quic-nginx"
+  # OPENSSLOPT=""
 fi
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "

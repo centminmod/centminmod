@@ -47,12 +47,12 @@ pcre_check_nginx(){
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre2-8
         echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
-        if [[ "$ngver" = 'quic' ]]; then
-            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
-            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
-            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
-            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
-        fi
+        # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
+        # fi
         if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
@@ -93,6 +93,12 @@ pcre_check_nginx(){
             echo "ECNISTP_ENDIAN=$ECNISTP_ENDIAN"
             echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
             echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
+            # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+            #     echo
+            #     echo "Check ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     echo "ls -lah ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            # fi
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -113,12 +119,12 @@ pcre_check_nginx(){
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libpcre
         echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops"
         PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion atomic_ops
-        if [[ "$ngver" = 'quic' ]]; then
-            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
-            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
-            echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
-            PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
-        fi
+        # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libssl
+        #     echo "PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto"
+        #     PKG_CONFIG_PATH='/opt/el-compat-quic/lib/pkgconfig/' pkg-config --modversion libcrypto
+        # fi
         if [[ "$NGINX_LIBBROTLI" = [yY] ]]; then
             echo "PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc"
             PKG_CONFIG_PATH='/usr/local/nginx-dep/lib/pkgconfig/' pkg-config --modversion libbrotlienc
@@ -159,6 +165,12 @@ pcre_check_nginx(){
             echo "ECNISTP_ENDIAN=$ECNISTP_ENDIAN"
             echo "NGINX_MIMALLOC=$NGINX_MIMALLOC"
             echo "NGINX_MIMALLOC_VERSION=$NGINX_MIMALLOC_VERSION"
+            # if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+            #     echo
+            #     echo "Check ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     echo "ls -lah ${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            #     ls -lah "${DIR_TMP}/${OPENSSL_QUIC_DIR}"
+            # fi
             echo
             echo "ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'"
             ls -lAhrt /usr/local/nginx-dep/lib | egrep 'libpcre.so|libpcre2-8.so'
@@ -581,8 +593,8 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # if doesn't match then auto recompile the statically set
     # OPENSSL_VERSION
     AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
-    if [[ "$ngver" = 'quic' ]]; then
-        recompileopenssl='n'
+    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        recompileopenssl='y'
     elif [[ "$AUTOOPENSSLCHECK" ]]; then
         recompileopenssl='y'
     else
@@ -761,10 +773,10 @@ fi
         git clone --depth=1 https://github.com/nginx/nginx nginx-master
         mv nginx-master/auto/configure nginx-master/configure
     fi
-    if [[ "$ngver" = 'quic' ]]; then
+    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
         rm -rf nginx-${ngver}*
         mercurial_check
-        hg clone -b quic https://hg.nginx.org/nginx-quic
+        hg clone -b quic https://hg.nginx.org/nginx-quic nginx-quic
         mv nginx-quic/auto/configure nginx-quic/configure
     fi
     if [[ "$ngver" = 'master-google' ]]; then
@@ -772,7 +784,7 @@ fi
         git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google
         mv nginx-master-google/auto/configure nginx-master-google/configure
     fi
-    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
+    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY]   ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
         download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY
@@ -1324,8 +1336,8 @@ find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubat
 find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" ! -name "incubator-pagespeed-ngx-master" \) -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -print
 find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" \) -exec rm -rf {} \;
+find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" ! -name "openssl-quic-nginx*" \) -print
+find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" ! -name "openssl-quic-nginx*" \) -exec rm -rf {} \;
 find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -print
 find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -exec rm -rf {} \;
 
