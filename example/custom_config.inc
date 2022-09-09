@@ -275,6 +275,7 @@ PHP_MYSQLND_PATCH_FIX='y'    # Apply PHP 7.3 backported mysqlnd patch for MariaD
 PHP_TUNING='n'               # initial php-fpm install auto tuning
 PHP_HUGEPAGES='n'            # Enable explicit huge pages support for PHP 7 on CentOS 7.x systems
 PHP_CUSTOMSSL='n'            # compile php-fpm against openssl 1.0.2+ or libressl 2.3+ whichever nginx uses
+PHP_CUSTOMSSL_FORCE='n'      # unless force enabled PHP_CUSTOMSSL is disabled on EL7 systems due to additional work needed
 PHPMAKETEST='n'              # set to y to enable make test after PHP make for diagnostic purposes
 AUTODETECPHP_OVERRIDE='n'    # when enabled, php updates will always reinstall all php extensions even if minor php version
 PHP_PCREJIT_STACKSIZE_ADJUST='n' # when enabled, allows you to raise PHP's default PCRE JIT stack size https://github.com/php/php-src/pull/2910

@@ -509,6 +509,13 @@ fi
 if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
   PHP_CUSTOMSSL='n'
 fi
+# disable PHP custom openssl for el7 unless force flag enabled
+# due to additional package updates required to work 100%
+if [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" != [yY] ]]; then
+  PHP_CUSTOMSSL='n'
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$PHP_CUSTOMSSL_FORCE" = [yY] ]]; then
+  PHP_CUSTOMSSL='y'
+fi
 
 if [[ "$PHP_CUSTOMSSL" != [yY] && "$PHP_LDMOLD" = [yY] && -s /usr/local/libexec/mold ]]; then
   # PHP mold linker not compatible with custom OpenSSL 1.1.1 PHP builds
