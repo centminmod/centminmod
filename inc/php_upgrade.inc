@@ -662,6 +662,11 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+    echo
+    echo "Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo
+    echo "PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo
       exit
   else
       echo -e "\n`date`\nSuccess: PHP configure ok\n"
@@ -841,6 +846,11 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+    echo
+    echo "Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo
+    echo "PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo
       exit
   else
       echo -e "\n`date`\nSuccess: PHP make ok\n"
@@ -936,6 +946,11 @@ fi
             git log --numstat --pretty="%n%h %an %aD %n%s" --shortstat -1
             popd
         fi
+    echo
+    echo "Upgrade log at: ${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_php_upgrade.log"
+    echo
+    echo "PHP config.log at: ${DIR_TMP}/php-${phpver}/fpm-build/config.log"
+    echo
       exit
   else
       echo -e "\n`date`\nSuccess: PHP was installed properly\n"

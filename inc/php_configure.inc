@@ -2258,6 +2258,20 @@ fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
       ln -s /opt/libressl/lib /opt/libressl/lib64
+    elif [[ -d /opt/el-compat-quic && "$EL_COMPAT_QUIC_OPENSSL_INSTALL" = [yY] && "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
+      EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH='/opt/el-compat-quic'
+      PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
+      ln -s "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
+      echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
+      export OPENSSL_CFLAGS="-I${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/include"
+      export OPENSSL_LIBS="-L${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
+    elif [[ -d /opt/el-compat && "$EL_COMPAT_OPENSSL_INSTALL" = [yY] && "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
+      EL_COMPAT_OPENSSL_CUSTOMPATH='/opt/el-compat'
+      PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
+      ln -s "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
+      echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
+      export OPENSSL_CFLAGS="-I${EL_COMPAT_OPENSSL_CUSTOMPATH}/include"
+      export OPENSSL_LIBS="-L${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
     elif [[ "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
@@ -2282,6 +2296,20 @@ fi
     if [[ "$LIBRESSL_SWITCH" = [yY] ]]; then
       PHP_OPENSSLOPT='--with-openssl=/opt/libressl'
       ln -s /opt/libressl/lib /opt/libressl/lib64
+    elif [[ -d /opt/el-compat-quic && "$EL_COMPAT_QUIC_OPENSSL_INSTALL" = [yY] && "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
+      EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH='/opt/el-compat-quic'
+      PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
+      ln -s "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
+      echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
+      export OPENSSL_CFLAGS="-I${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/include"
+      export OPENSSL_LIBS="-L${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
+    elif [[ -d /opt/el-compat && "$EL_COMPAT_OPENSSL_INSTALL" = [yY] && "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
+      EL_COMPAT_OPENSSL_CUSTOMPATH='/opt/el-compat'
+      PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
+      ln -s "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
+      echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
+      export OPENSSL_CFLAGS="-I${EL_COMPAT_OPENSSL_CUSTOMPATH}/include"
+      export OPENSSL_LIBS="-L${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib -lssl -lcrypto -ldl -lpthread"
     elif [[ "$DETECTOPENSSL_THREEZERO" != '3.0' && "$LIBRESSL_SWITCH" = [nN] ]]; then
       PHP_OPENSSLOPT="--with-openssl=${OPENSSL_CUSTOMPATH}"
       ln -s "${OPENSSL_CUSTOMPATH}/lib" "${OPENSSL_CUSTOMPATH}/lib64"
