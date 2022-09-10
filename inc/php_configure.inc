@@ -979,15 +979,6 @@ elif [[ "$PHPFINFO" = [nN] ]]; then
   FILEINFOOPT=" --disable-fileinfo"
 fi
 
-if [[ "$PHPIMAP" = [yY] ]]; then
-  IMAPOPT=' --with-imap --with-imap-ssl'
-else
-  IMAPOPT=""
-fi
-
-phpimap_install
-
-
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' || "$CENTOS_SIX" = '6' ]]; then
 
   if [[ "$POSTGRESQL" = [yY] ]]; then
@@ -2269,6 +2260,7 @@ fi
       EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH='/opt/el-compat-quic'
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
+      PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       ln -s "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
       echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/include"
@@ -2277,6 +2269,7 @@ fi
       EL_COMPAT_OPENSSL_CUSTOMPATH='/opt/el-compat'
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
+      PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       ln -s "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
       echo "install PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_OPENSSL_CUSTOMPATH}/include"
@@ -2309,6 +2302,7 @@ fi
       EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH='/opt/el-compat-quic'
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
+      PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}"
       ln -s "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/lib64"
       echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_QUIC_OPENSSL_CUSTOMPATH}/include"
@@ -2317,6 +2311,7 @@ fi
       EL_COMPAT_OPENSSL_CUSTOMPATH='/opt/el-compat'
       PHP_OPENSSLOPT="--with-openssl=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       PHP_OPENSSL_CURL_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
+      PHP_OPENSSL_IMAP_OPT="=${EL_COMPAT_OPENSSL_CUSTOMPATH}"
       ln -s "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib" "${EL_COMPAT_OPENSSL_CUSTOMPATH}/lib64"
       echo "upgrade PHP OPENSSL_CFLAGS + OPENSSL_LIBS"
       export OPENSSL_CFLAGS="-I${EL_COMPAT_OPENSSL_CUSTOMPATH}/include"
@@ -2336,6 +2331,14 @@ fi
   else
     PHP_OPENSSLOPT='--with-openssl'
   fi
+
+if [[ "$PHPIMAP" = [yY] ]]; then
+  IMAPOPT=" --with-imap --with-imap-ssl${PHP_OPENSSL_IMAP_OPT}"
+else
+  IMAPOPT=""
+fi
+
+phpimap_install
 
 if [[ "$PHPMVER" = '5.5' || "$PHPMVER" = '5.6' || "$PHPMVER" = '7.0' || "$PHPMVER" = '7.1' || "$PHPMVER" = '7.2' || "$PHPMVER" = '7.3' ]]; then
   PHP_OPENSSLOPT='--with-openssl'
