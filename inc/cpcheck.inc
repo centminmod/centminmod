@@ -1997,7 +1997,9 @@ selinxcheck() {
 
 reuseportchecks() {
   if [[ "$INITIALINSTALL" = [yY] ]]; then
-    CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+    fi
     if [[ "$CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       SUPPORT_REUSEPORT=y
       if [ -f /usr/local/nginx/conf/nginx.conf ]; then
