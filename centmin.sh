@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='186'
+SCRIPT_INCREMENTVER='187'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -1146,7 +1146,7 @@ ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 https://pecl.php.net/package/Zen
 ZOPCACHE_OVERRIDE='n'           # =y will override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'       # Use this version of Python
-SIEGE_VERSION='4.0.4'
+SIEGE_VERSION='4.1.5'
 
 CURL_TIMEOUTS=' --max-time 5 --connect-timeout 5'
 AXEL_VER='2.6'               # Axel source compile version https://github.com/axel-download-accelerator/axel/releases

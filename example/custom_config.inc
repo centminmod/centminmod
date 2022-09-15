@@ -430,7 +430,7 @@ ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 https://pecl.php.net/package/Zen
 ZOPCACHE_OVERRIDE='n'           # ='y'ill override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
 PYTHON_VERSION='2.7.10'     # Use this version of Python
-SIEGE_VERSION='4.0.4'
+SIEGE_VERSION='4.1.5'
 
 # custom curl/libcurl RPM for 7.44 and higher
 # enable with CUSTOM_CURLRPM='y' use at own risk as it can break the system
