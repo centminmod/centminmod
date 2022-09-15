@@ -30,20 +30,20 @@ then
     sar_call
     make$MAKETHREADS
     sar_call
+    mkdir -p $HOME/.siege
     make install
     sar_call
     mkdir -p /usr/local/var/
 
     siege -q -b -c1 -r1 localhost >/dev/null 2>&1
     # sed -i 's/# failures =/failures = 2048/g' /usr/local/etc/siegerc
-    mkdir -p /root/.siege
-    sed -i 's/# failures =/failures = 2048/g' /root/.siege/siege.conf
-    #sed -i 's|^logging = false|logging = true|' /root/.siege/siege.conf
-    sed -i 's|limit = 255|limit = 4095|' /root/.siege/siege.conf
-    \cp -af /root/.siege/siege.conf /root/.siege/siege-csv.conf
-    sed -i 's|# csv = true|csv = true|' /root/.siege/siege-csv.conf
-    sed -i 's|# logfile = |logfile = /usr/local/var/log/siege-csv.log|' /root/.siege/siege-csv.conf
-    ls -lah /root/.siege/siege.conf /root/.siege/siege-csv.conf
+    sed -i 's/# failures =/failures = 2048/g' $HOME/.siege/siege.conf
+    #sed -i 's|^logging = false|logging = true|' $HOME/.siege/siege.conf
+    sed -i 's|limit = 255|limit = 4095|' $HOME/.siege/siege.conf
+    \cp -af $HOME/.siege/siege.conf $HOME/.siege/siege-csv.conf
+    sed -i 's|# csv = true|csv = true|' $HOME/.siege/siege-csv.conf
+    sed -i 's|# logfile = |logfile = /usr/local/var/log/siege-csv.log|' $HOME/.siege/siege-csv.conf
+    ls -lah $HOME/.siege/siege.conf $HOME/.siege/siege-csv.conf
 ) &
 
 if [[ "$UALL" != 'y' ]]; then 
