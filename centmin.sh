@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='188'
+SCRIPT_INCREMENTVER='189'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -57,6 +57,13 @@ if [ "$(id -u)" != 0 ]; then
     echo "sudo -i" >&2
   fi
   exit 1
+fi
+
+if [[ "$(id -u)" = 0 ]]; then
+  # account for if centmin mod installation is being
+  # run within a cloud-init user data scripted session
+  mkdir -p /root
+  export HOME=/root
 fi
 
 shopt -s expand_aliases
