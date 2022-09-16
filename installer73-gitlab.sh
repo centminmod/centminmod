@@ -99,6 +99,16 @@ if [ "$(id -u)" != 0 ]; then
   exit 1
 fi
 
+if [[ "$(id -u)" = 0 ]]; then
+  # account for if centmin mod installation is being
+  # run within a cloud-init user data scripted session
+  mkdir -p /root
+  export HOME=/root
+  touch $HOME/.rnd
+  export RANDFILE=$HOME/.rnd
+  chmod 600 $HOME/.rnd
+fi
+
 shopt -s expand_aliases
 for g in "" e f; do
     alias ${g}grep="LC_ALL=C ${g}grep"  # speed-up grep, egrep, fgrep
