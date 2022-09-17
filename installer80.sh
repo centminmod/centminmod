@@ -10,6 +10,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
 #######################################################
 DT=$(date +"%d%m%y-%H%M%S")
 DNF_ENABLE='n'
@@ -824,7 +826,7 @@ else
       time $YUMDNFBIN -y install chrony
       systemctl start chronyd
       systemctl enable chronyd
-      systemctl status chronyd
+      systemctl status chronyd --no-pager
       echo "current chrony ntp servers"
       chronyc sources
   else
@@ -1356,7 +1358,7 @@ fi
   pushd /etc; ln -s rc.d/rc.local /etc/rc.local; popd
   systemctl daemon-reload
   systemctl start rc-local.service
-  systemctl status rc-local.service
+  systemctl status rc-local.service --no-pager
 fi
         ulimit -n 524288
         echo "ulimit -n 524288" >> /etc/rc.local

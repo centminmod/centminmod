@@ -21,6 +21,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
 
 if [ -f "${MAINDIR}/custom_config.inc" ]; then
     # default is at /etc/centminmod/custom_config.inc

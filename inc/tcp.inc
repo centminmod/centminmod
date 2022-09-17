@@ -56,7 +56,7 @@ fi
   pushd /etc; ln -s rc.d/rc.local /etc/rc.local; popd
   systemctl daemon-reload
   systemctl start rc-local.service
-  systemctl status rc-local.service
+  systemctl status rc-local.service --no-pager
 fi
         ulimit -n 524288
         echo "ulimit -n 524288" >> /etc/rc.local

@@ -2099,7 +2099,7 @@ fi
   cd /etc; ln -s rc.d/rc.local /etc/rc.local;
   systemctl daemon-reload >/dev/null 2>&1
   systemctl start rc-local.service >/dev/null 2>&1
-  systemctl status rc-local.service >/dev/null 2>&1
+  systemctl status rc-local.service --no-pager >/dev/null 2>&1
 fi
   if [[ -f /etc/rc.d/rc.local && ! -x /etc/rc.d/rc.local ]]; then
     # centos 7 doesn't give rc.local executable permissions
