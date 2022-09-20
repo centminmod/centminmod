@@ -1051,7 +1051,15 @@ varnishfour_setup() {
 
 libc_fix() {
   # https://community.centminmod.com/posts/52555/
-  if [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
+  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum -y -q install libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    yum -y -q install python3-dnf-plugin-versionlock
+    yum -y -q install libc-client uw-imap-devel
+    yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
+  elif [[ "$CENTOS_NINE" -eq '9' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-30.el9.remi.x86_64' ]]; then
     yum -y -q install python3-dnf-plugin-versionlock
     yum versionlock libc-client uw-imap-devel -q >/dev/null 2>&1
   elif [[ "$CENTOS_EIGHT" -eq '8' && ! -f /etc/yum/pluginconf.d/versionlock.conf && "$(rpm -qa libc-client)" = 'libc-client-2007f-24.el8.x86_64' ]]; then
