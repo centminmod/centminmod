@@ -304,6 +304,9 @@ fi
 if [ -f /etc/init.d/memcached ]; then
 echo "-w /etc/init.d/memcached -p wa -k memcachedinitd_changes" >> "$AUDITRULE_PERMFILE"
 fi
+if [ -f /usr/lib/systemd/system/memcached.service ]; then
+echo "-w /usr/lib/systemd/system/memcached.service -p wa -k memcachedservice_changes" >> "$AUDITRULE_PERMFILE"
+fi
 if [ -f /etc/nsd/nsd.conf ]; then
 echo "-w /etc/nsd/nsd.conf -p wa -k nsdconf_changes" >> "$AUDITRULE_PERMFILE"
 fi

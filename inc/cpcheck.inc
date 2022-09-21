@@ -2598,7 +2598,7 @@ leupdates() {
 
 memcachedupdatechecks() {
   # 1.4.25 added options https://community.centminmod.com/threads/memcached-1-4-25-released.5007/
-  if [[ "$INITIALINSTALL" != [yY] ]]; then
+  if [[ "$CENTOS_SEVEN" -eq '7' && "$INITIALINSTALL" != [yY] ]]; then
     if [ -f /etc/init.d/memcached ]; then
       if [[ -z "$(grep 'MEM_CURVER' /etc/init.d/memcached)" ]]; then
         if [[ -f "${SCRIPT_DIR}/config/memcached/memcached1425.patch" && -f /etc/init.d/memcached ]]; then
