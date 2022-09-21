@@ -666,6 +666,8 @@ LimitNOFILE=524288
 TDG
         fi
         systemctl daemon-reload
+        systemctl start memcached
+        systemctl enable memcached
     elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         echo "setup memcached service file"
         mkdir -p /etc/sysconfig/
@@ -679,6 +681,8 @@ LimitNOFILE=524288
 TDG
         fi
         systemctl daemon-reload
+        systemctl start memcached
+        systemctl enable memcached
     elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         #######################################################
         # check /etc/init.d/memcached
