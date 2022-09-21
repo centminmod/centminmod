@@ -213,6 +213,9 @@ echo ""
   cecho "Check Memcached Server Version:" $boldyellow
   cecho "--------------------------------------------------------" $boldyellow  
   /usr/local/bin/memcached -h | head -n1
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    systemctl status memcached
+  fi
 letswait
 echo ""
   cecho "--------------------------------------------------------" $boldyellow
