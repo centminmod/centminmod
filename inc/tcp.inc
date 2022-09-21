@@ -152,8 +152,10 @@ if [[ ! -f /proc/user_beancounters ]]; then
         fi
         if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
           TCP_PID_MAX='4194300'
+          TCP_BACKLOG='524280'
         elif [[ "$CENTOS_SEVEN" = '7' ]]; then
           TCP_PID_MAX='65535'
+          TCP_BACKLOG='65535'
         fi
         if [ -d /etc/sysctl.d ]; then
             # raise hashsize for conntrack entries
@@ -182,13 +184,13 @@ net.core.rmem_max=16777216
 net.ipv4.tcp_rmem=8192 87380 16777216                                          
 net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
-net.core.somaxconn=65535
+net.core.somaxconn=$TCP_BACKLOG
 net.core.optmem_max=$TCP_OPTMEM_MAX
 net.ipv4.tcp_fin_timeout=10
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
-net.ipv4.tcp_max_syn_backlog=65536
+net.ipv4.tcp_max_syn_backlog=$TCP_BACKLOG
 net.ipv4.tcp_sack=1
 net.ipv4.tcp_syn_retries=3
 net.ipv4.tcp_synack_retries = 2
