@@ -390,6 +390,10 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
       c7tmpsetup
       if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         mariadbtenthreetotenfourupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+        mariadbtenthreetotenfourupgrade
+      elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtenthreetotenfourupgrade
       else
         echo "currently only tested on CentOS 7 systems"
       fi
@@ -424,7 +428,9 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
     else
       # echo "Place holder for now until MariaDB 10.4.x is ready to be added"
       c7tmpsetup
-      if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+      if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtenfourtotenfiveupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         mariadbtenfourtotenfiveupgrade
       elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         mariadbtenfourtotenfiveupgrade
@@ -462,7 +468,9 @@ MARIADBVERCHECK=`rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -
     else
       # echo "Place holder for now until MariaDB 10.5.x is ready to be added"
       c7tmpsetup
-      if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+      if [[ "$CENTOS_NINE" -eq '9' ]]; then
+        mariadbtenfivetotensixupgrade
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
         mariadbtenfivetotensixupgrade
       elif [[ "$CENTOS_SEVEN" -eq '7' ]]; then
         mariadbtenfivetotensixupgrade
