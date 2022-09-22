@@ -134,13 +134,13 @@ adjust_phpfpm_unix_socket_path() {
       sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpstatus.conf
     fi
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool1_uds.conf ]; then
-      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool1_uds.conf
+      sed -i "s|listen = /var/run/php-fpm/|listen = $PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool1_uds.conf
     fi
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool2_uds.conf ]; then
-      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool2_uds.conf
+      sed -i "s|listen = /var/run/php-fpm/|listen = $PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool2_uds.conf
     fi
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool3_uds.conf ]; then
-      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool3_uds.conf
+      sed -i "s|listen = /var/run/php-fpm/|listen = $PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool3_uds.conf
     fi
   elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
     PHP_PID_PATHDIR='/run/php-fpm/'
@@ -163,13 +163,13 @@ adjust_phpfpm_unix_socket_path() {
       sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpstatus.conf
     fi
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool1_uds.conf ]; then
-      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool1_uds.conf
+      sed -i "s|listen = /var/run/php-fpm/|listen = $PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool1_uds.conf
     fi
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool2_uds.conf ]; then
-      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool2_uds.conf
+      sed -i "s|listen = /var/run/php-fpm/|listen = $PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool2_uds.conf
     fi
     if [ -f /usr/local/nginx/conf/phpfpmd/phpfpm_pool3_uds.conf ]; then
-      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool3_uds.conf
+      sed -i "s|listen = /var/run/php-fpm/|listen = $PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpmd/phpfpm_pool3_uds.conf
     fi
   fi
 }
