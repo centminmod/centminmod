@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='200'
+SCRIPT_INCREMENTVER='201'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -1283,8 +1283,13 @@ fi
 
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
 else
   PHP_PID_PATH='/var/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/var/run/php-fpm/'
 fi
 
 if [[ "$CENTOS_SIX" -eq '6' ]]; then

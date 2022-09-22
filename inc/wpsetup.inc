@@ -928,7 +928,7 @@ location ~ [^/]\.php(/|\$) {
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
     fastcgi_pass   127.0.0.1:9000;
-    #fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;
+    #fastcgi_pass   unix:${PHP_PID_PATHDIR}/php-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
     fastcgi_param  SCRIPT_FILENAME    \$request_filename;
@@ -1031,7 +1031,7 @@ location ~ [^/]\.php(/|\$) {
     more_set_headers 'X-Cache-2 \$srcache_store_status';
 
     fastcgi_pass   127.0.0.1:9000;
-    #fastcgi_pass   unix:/var/run/php-fpm/php-fpm.sock;
+    #fastcgi_pass   unix:${PHP_PID_PATHDIR}/php-fpm.sock;
     fastcgi_index  index.php;
     #fastcgi_param  SCRIPT_FILENAME  \$document_root\$fastcgi_script_name;
     fastcgi_param  SCRIPT_FILENAME    \$request_filename;

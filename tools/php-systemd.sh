@@ -104,10 +104,75 @@ fi
 if [[ "$CENTOS_NINE" -eq '9' ]]; then
   PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
   PHP_PID_PATHDIR='/run/php-fpm/'
+elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+  PHP_PID_PATH='/run/php-fpm/php-fpm.pid'
+  PHP_PID_PATHDIR='/run/php-fpm/'
 else
   PHP_PID_PATH='/var/run/php-fpm/php-fpm.pid'
   PHP_PID_PATHDIR='/var/run/php-fpm/'
 fi
+
+adjust_phpfpm_unix_socket_path() {
+  if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    PHP_PID_PATHDIR='/run/php-fpm/' 
+    if [ -f /usr/local/nginx/conf/php-geoip2.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/php-geoip2.conf
+    fi
+    if [ -f /usr/local/nginx/conf/php.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/php.conf
+    fi
+    if [ -f /usr/local/nginx/conf/php_laravael.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/php_laravael.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpalt.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpalt.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpssl.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpssl.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpstatus.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpstatus.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpfpm_pool1_uds.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpm_pool1_uds.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpfpm_pool2_uds.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpm_pool2_uds.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpfpm_pool3_uds.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpm_pool3_uds.conf
+    fi
+  elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    PHP_PID_PATHDIR='/run/php-fpm/'
+    if [ -f /usr/local/nginx/conf/php-geoip2.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/php-geoip2.conf
+    fi
+    if [ -f /usr/local/nginx/conf/php.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/php.conf
+    fi
+    if [ -f /usr/local/nginx/conf/php_laravael.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/php_laravael.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpalt.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpalt.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpssl.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpssl.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpstatus.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpstatus.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpfpm_pool1_uds.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpm_pool1_uds.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpfpm_pool2_uds.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpm_pool2_uds.conf
+    fi
+    if [ -f /usr/local/nginx/conf/phpfpm_pool3_uds.conf ]; then
+      sed -i "s|unix:/var/run/php-fpm/|unix:$PHP_PID_PATHDIR|g" /usr/local/nginx/conf/phpfpm_pool3_uds.conf
+    fi
+  fi
+}
 
 phpfpm_setup_systemd() {
   fpm_systemd=$1
@@ -118,6 +183,7 @@ phpfpm_setup_systemd() {
     fi
   mkdir -p /etc/systemd/system/php-fpm.service.d
   echo "d      $PHP_PID_PATHDIR         0755 root root" > /etc/tmpfiles.d/php-fpm.conf
+  adjust_phpfpm_unix_socket_path
   if [ ! -d "$PHP_PID_PATHDIR" ]; then mkdir -p "$PHP_PID_PATHDIR"; fi
   if [[ ! "$(grep "$PHP_PID_PATHDIR" /etc/rc.local)" ]]; then
     echo "if [ ! -d $PHP_PID_PATHDIR ]; then mkdir -p $PHP_PID_PATHDIR; fi" >> /etc/rc.local
