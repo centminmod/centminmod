@@ -1,8 +1,13 @@
 disk_cleanups() {
     # tidy up to reduce disk space usage
+    echo "disk cleanups"
+    echo "check HOME=$HOME"
+    echo "check PWD=$PWD"
     find /svr-setup -maxdepth 1 -type d ! -wholename "/svr-setup" -exec rm -rf {} \;
     rm -f /svr-setup/1
+    rm -f /svr-setup/20190702.tar.gz
     rm -f /svr-setup/axel-2.14.1.tar.gz
+    rm -f /svr-setup/axel-2.16.1.tar.gz
     rm -f /svr-setup/axel-2.4-1.el5.rf.i386.rpm
     rm -f /svr-setup/axel-2.4-1.el5.rf.x86_64.rpm
     rm -f /svr-setup/axel-2.4-1.el6.rf.i686.rpm
@@ -10,23 +15,88 @@ disk_cleanups() {
     rm -f /svr-setup/axel-2.5.tar.gz
     rm -f /svr-setup/axel-2.6.tar.gz
     rm -f /svr-setup/ccache-3.4.1.tar.gz
+    rm -f /svr-setup/ccache-3.7.12.tar.gz
     rm -f /svr-setup/city-fan.org-release-1-13.rhel6.noarch.rpm
     rm -f /svr-setup/city-fan.org-release-1-13.rhel7.noarch.rpm
     rm -f /svr-setup/csf.tgz-local
+    rm -f /svr-setup/echo-nginx-module_v0.61.tar.gz
+    rm -f /svr-setup/echo-nginx-module_v0.62.tar.gz
     rm -f /svr-setup/epel-release*
+    rm -f /svr-setup/headers-more-v0.33.tar.gz
+    rm -f /svr-setup/headers-more-v0.34.tar.gz
     rm -f /svr-setup/help-dummy.o
+    rm -f /svr-setup/igbinary-igbinary-1.1.2-dev.tar.gz
+    rm -f /svr-setup/libmemcached-1.0.18.tar.gz
+    rm -f /svr-setup/libressl-3.0.2.tar.gz
+    rm -f /svr-setup/libsodium-1.0.18.tar.gz
+    rm -f /svr-setup/libzip-1.7.3.tar.gz
+    rm -f /svr-setup/lua-cjson_2.1.0.5.tar.gz
+    rm -f /svr-setup/lua-nginx-module_v0.10.9rc7.tar.gz
+    rm -f /svr-setup/lua-redis-parser_v0.13.tar.gz
+    rm -f /svr-setup/lua-resty-cookie_vmaster.tar.gz
+    rm -f /svr-setup/lua-resty-core_v0.1.12rc7.tar.gz
+    rm -f /svr-setup/lua-resty-dns_v0.18.tar.gz
+    rm -f /svr-setup/lua-resty-lock_v0.06.tar.gz
+    rm -f /svr-setup/lua-resty-logger-socket_v0.1.tar.gz
+    rm -f /svr-setup/lua-resty-lrucache_v0.04.tar.gz
+    rm -f /svr-setup/lua-resty-memcached_v0.14.tar.gz
+    rm -f /svr-setup/lua-resty-mysql_v0.20rc1.tar.gz
+    rm -f /svr-setup/lua-resty-redis_v0.26.tar.gz
+    rm -f /svr-setup/lua-resty-string_v0.09.tar.gz
+    rm -f /svr-setup/lua-resty-upload_v0.10.tar.gz
+    rm -f /svr-setup/lua-resty-upstream-healthcheck_v0.04.tar.gz
+    rm -f /svr-setup/lua-resty-websocket_v0.05.tar.gz
+    rm -f /svr-setup/lua-upstream-cache-nginx-module_v0.1.1.tar.gz
+    rm -f /svr-setup/lua-upstream-nginx-module_v0.06.tar.gz
+    rm -f /svr-setup/luagit-2.0.4.tar.gz
+    rm -f /svr-setup/memc-nginx-module_v0.18.tar.gz
+    rm -f /svr-setup/memc-nginx-module_v0.19.tar.gz
+    rm -f /svr-setup/memcached-1.5.5.tar.gz
+    rm -f /svr-setup/memcached-1.6.17.tar.gz
     rm -f /svr-setup/mongodb-1.4.0.tgz
+    rm -f /svr-setup/nginx-1.13.9.tar.gz
+    rm -f /svr-setup/nginx-1.23.1.tar.gz
+    rm -f /svr-setup/Nginx-accesskey-2.0.3.tar.gz
+    rm -f /svr-setup/nginx-dav-ext-module-0.0.3.tar.gz
+    rm -f /svr-setup/nginx-develkit_v0.3.0.tar.gz
+    rm -f /svr-setup/nginx-http-concat-master.tar.gz
+    rm -f /svr-setup/nginx-sticky-1.2.6.tar.gz
+    rm -f /svr-setup/nginx-sticky-master.tar.gz
+    rm -f /svr-setup/nginx-upstream-check-0.3.0.tar.gz
     rm -f /svr-setup/ngx-fancyindex-0.3.1.tar.gz
+    rm -f /svr-setup/ngx-fancyindex-0.4.2.tar.gz
     rm -f /svr-setup/ngx_cache_purge-2.4.2.tar.gz
+    rm -f /svr-setup/ngx_cache_purge-2.5.1.tar.gz
+    rm -f /svr-setup/ngx_http_redis-0.3.7.tar.gz
+    rm -f /svr-setup/ngx_http_redis-0.4.0-cmm.tar.gz
+    rm -f /svr-setup/nsd-3.2.18.tar.gz
+    rm -f /svr-setup/openssl-1.1.1q.tar.gz
     rm -f /svr-setup/package.xml
+    rm -f /svr-setup/pcre-8.41.tar.gz
+    rm -f /svr-setup/pcre-8.45.tar.gz
+    rm -f /svr-setup/pcre2-10.39.tar.gz
+    rm -f /svr-setup/pflogsumm-1.1.5.tar.gz
+    rm -f /svr-setup/php-8.0.23.tar.gz
     rm -f /svr-setup/redis2-nginx-module_v0.14.tar.gz
+    rm -f /svr-setup/redis2-nginx-module_v0.15.tar.gz
+    rm -f /svr-setup/release-2.1.12-stable.tar.gz
+    rm -f /svr-setup/release-2.1.8-stable.tar.gz
     rm -f /svr-setup/remi-release-5.rpm
     rm -f /svr-setup/remi-release-6.rpm
     rm -f /svr-setup/rpmforge-release-0.5.3-1.el5*
     rm -f /svr-setup/rpmforge-release-0.5.3-1.el6*
     rm -f /svr-setup/set-misc-nginx-module_v0.31*
+    rm -f /svr-setup/set-misc-nginx-module_v0.32.tar.gz
+    rm -f /svr-setup/siege-4.0.4.tar.gz
+    rm -f /svr-setup/siege-4.1.5.tar.gz
+    rm -f /svr-setup/sproxy-latest.tar.gz
+    rm -f /svr-setup/srcache-nginx-module_v0.31.tar.gz
+    rm -f /svr-setup/srcache-nginx-module_v0.32.tar.gz
+    rm -f /svr-setup/twemperf-0.1.1.tar.gz
     rm -f /svr-setup/varnish-release-3.0-1.el6.noarch.rpm
     rm -f /svr-setup/wget-1.19.4.tar.gz
+    rm -f /svr-setup/wget-1.21.3.tar.gz
+    rm -f /svr-setup/zlib-1.2.11.tar.gz
 }
 
 installchecks() {

@@ -1,6 +1,7 @@
 phpiadmin() {
     if [ -f /usr/local/nginx/html/phpi.php ]; then
         # Randomize phpi.php filename
+        echo "run phpiadmin"
         NPHP=$(od -vAn -N4 -tx < /dev/urandom)
         NPHP=$(echo ${NPHP} | sed -e 's/\s//')
         PHPISALT=$(/usr/bin/openssl rand -base64 14 | tr -dc 'a-zA-Z0-9')
