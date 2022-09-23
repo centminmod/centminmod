@@ -97,6 +97,7 @@ disk_cleanups() {
     rm -f /svr-setup/wget-1.19.4.tar.gz
     rm -f /svr-setup/wget-1.21.3.tar.gz
     rm -f /svr-setup/zlib-1.2.11.tar.gz
+    cd -
 }
 
 installchecks() {
