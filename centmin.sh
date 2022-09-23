@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='205'
+SCRIPT_INCREMENTVER='206'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -3385,8 +3385,23 @@ else
         #########################################################
         
         case "$option" in
-        1|install)
+        1)
             CM_MENUOPT=1
+            starttime=$(TZ=UTC date +%s.%N)
+            echo
+            echo "Submenu Option 1 Deprecated"
+            echo "Official install method at https://centminmod.com/install.html"
+            echo
+            endtime=$(TZ=UTC date +%s.%N)
+            INSTALLTIME=$(echo "scale=2;$endtime - $starttime"|bc )
+            echo "" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install_submenu1.log"
+            echo "centmin.sh submenu option 1: $INSTALLTIME seconds" >> "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_install_submenu1.log"
+            
+            exit 0
+        
+        ;;
+        install)
+            CM_MENUOPT=install
             starttime=$(TZ=UTC date +%s.%N)
             INITIALINSTALL='y'
             export INITIALINSTALL='y'
