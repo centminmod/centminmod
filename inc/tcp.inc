@@ -1,3 +1,54 @@
+tcp_bbr_setup() {
+  if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$TCP_BBR_ENABLE" = [yY] ]]; then
+    if [[ ! "$(sysctl net.core.default_qdisc | grep -ow 'net.core.default_qdisc = fq')" ]]; then
+      if [[ ! "$(grep -ow 'net.core.default_qdisc' /etc/sysctl.conf)" ]]; then
+        echo "net.core.default_qdisc = fq" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.core.default_qdisc = .*|net.core.default_qdisc = fq|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_congestion_control | grep -ow 'net.ipv4.tcp_congestion_control = bbr')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_congestion_control' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_congestion_control = bbr" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_congestion_control = .*|net.ipv4.tcp_congestion_control = bbr|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_notsent_lowat | grep -ow 'net.ipv4.tcp_notsent_lowat = 16384')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_notsent_lowat' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_notsent_lowat = 16384" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_notsent_lowat = .*|net.ipv4.tcp_notsent_lowat = 16384|' /etc/sysctl.conf
+      fi
+    fi
+    sysctl -p >/dev/null 2>&1
+  elif [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]] && [[ "$TCP_BBR_ENABLE" != [yY] ]]; then
+    if [[ ! "$(sysctl net.core.default_qdisc | grep -ow 'net.core.default_qdisc = fq_codel')" ]]; then
+      if [[ ! "$(grep -ow 'net.core.default_qdisc' /etc/sysctl.conf)" ]]; then
+        echo "net.core.default_qdisc = fq_codel" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.core.default_qdisc = .*|net.core.default_qdisc = fq_codel|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_congestion_control | grep -ow 'net.ipv4.tcp_congestion_control = cubic')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_congestion_control' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_congestion_control = cubic" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_congestion_control = .*|net.ipv4.tcp_congestion_control = cubic|' /etc/sysctl.conf
+      fi
+    fi
+    if [[ ! "$(sysctl net.ipv4.tcp_notsent_lowat | grep -ow 'net.ipv4.tcp_notsent_lowat = 4294967295')" ]]; then
+      if [[ ! "$(grep -ow 'net.ipv4.tcp_notsent_lowat' /etc/sysctl.conf)" ]]; then
+        echo "net.ipv4.tcp_notsent_lowat = 4294967295" >> /etc/sysctl.conf
+      else
+        sed -i 's|net.ipv4.tcp_notsent_lowat = .*|net.ipv4.tcp_notsent_lowat = 4294967295|' /etc/sysctl.conf
+      fi
+    fi
+    sysctl -p >/dev/null 2>&1
+    # sysctl net.core.default_qdisc net.ipv4.tcp_congestion_control net.ipv4.tcp_notsent_lowat
+  fi
+}
+
 opt_tcp() {
 #######################################################
 # check if custom open file descriptor limits already exist

@@ -513,3 +513,6 @@ SKIP_CSF_MAXMIND_REGO='n'
 SKIP_CHECKIPVSIX='n'
 SKIP_LIBC_FIX='n'
 ###############################################################
+# TCP BBR congestion control
+TCP_BBR_ENABLE='n'
+###############################################################

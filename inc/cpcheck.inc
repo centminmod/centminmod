@@ -3358,6 +3358,7 @@ disable_avahi
 qrencode_setup
 initial_pip_updates initial
 jetpack_ip_whitelist_cronsetup
+tcp_bbr_setup
 
 if [[ "$INITIALINSTALL" != [yY] ]]; then
   march_hostcheck
@@ -3493,6 +3494,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   lets_dst_root_ca_fix
   check_php_cainfo_file
   ngx_modern_ciphers_setup
+  tcp_bbr_setup
 fi
 
 }
