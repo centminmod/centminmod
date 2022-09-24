@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='209'
+SCRIPT_INCREMENTVER='210'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -2780,6 +2780,15 @@ fi
 max_spawn_rate_check
 funct_logphprotate
 run_after_php_install
+
+        echo
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
+        echo
 
     echo "*************************************************"
     cecho "* PHP installed" $boldgreen

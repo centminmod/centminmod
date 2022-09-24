@@ -647,6 +647,13 @@ fi
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
         echo
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
+        echo
         free -m
         echo
         df -hT
@@ -826,7 +833,12 @@ fi
     sar_call
   if [ $ERR != 0 ]; then
     echo -e "\n`date`\nError: $ERR, PHP make failed ($SCRIPT_VERSION)\n"
-        free -m
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
         echo
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
@@ -930,6 +942,13 @@ fi
     echo -e "\n`date`\nError: $ERR, PHP wasn't installed properly ($SCRIPT_VERSION)\n"
         echo "report errors on the forums at community.centminmod.com/forums/8/"
         echo "with info asked at community.centminmod.com/threads/17857/"
+        echo
+        echo "lscpu"
+        lscpu
+        echo
+        echo "CFLAGS=$CFLAGS"
+        echo "CXXFLAGS=$CXXFLAGS"
+        echo "GCC_NONNATIVEFLAGS=$GCC_NONNATIVEFLAGS"
         echo
         free -m
         echo
