@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='210'
+SCRIPT_INCREMENTVER='211'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='02/09/22'
@@ -1203,6 +1203,8 @@ WGET_VERSION_NINE='1.21.3'
 
 # TCP BBR congestion control
 TCP_BBR_ENABLE='n'
+# TCP Fast Open
+TCP_FASTOPEN_ENABLE='n'
 
 # centmin.sh curl options
 OS_PRETTY_NAME=$(cat /etc/os-release | awk -F '=' '/PRETTY_NAME/ {print $2}' | sed -e 's| (| |g' -e 's|)| |g' -e 's| Core ||g' -e 's|"||g')

@@ -515,4 +515,6 @@ SKIP_LIBC_FIX='n'
 ###############################################################
 # TCP BBR congestion control
 TCP_BBR_ENABLE='n'
+# TCP Fast Open
+TCP_FASTOPEN_ENABLE='n'
 ###############################################################
