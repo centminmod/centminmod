@@ -1657,11 +1657,11 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
 
     NGXVER_BRANCH=$(echo $NGINX_VERSION | cut -d . -f1,2 | sed -e 's|\.|00|g')
     ngver_branch=$(echo $ngver | cut -d . -f1,2 | sed -e 's|\.|00|g')
-    if [[ "$NGXVER_BRANCH" -ge '10023' ]]; then
+    if [[ "$NGXVER_BRANCH" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         NGINX_PAGESPEED='n'
         NGXDYNAMIC_NGXPAGESPEED='n'
     fi
-    if [[ "$ngver_branch" -ge '10023' ]]; then
+    if [[ "$ngver_branch" -ge '10023' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         NGINX_PAGESPEED='n'
         NGXDYNAMIC_NGXPAGESPEED='n'
     fi
