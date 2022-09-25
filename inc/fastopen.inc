@@ -31,8 +31,10 @@ if [[ -f /proc/sys/net/ipv4/tcp_fastopen && "$FASTOPEN_STATSVAL" = '0' ]]; then
     echo 'net.ipv4.tcp_fastopen=3' > /etc/sysctl.d/50-tcp_fastopen.conf
     sysctl -p /etc/sysctl.d/50-tcp_fastopen.conf
   elif [[ "$TCP_FASTOPEN_ENABLE" != [yY] ]] && [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
-    rm -f /etc/sysctl.d/50-tcp_fastopen.conf
-    sysctl -p
+    if [ -f /etc/sysctl.d/50-tcp_fastopen.conf ]; then
+      rm -f /etc/sysctl.d/50-tcp_fastopen.conf
+      sysctl -p
+    fi
   fi
   grep '^TcpExt:' /proc/net/netstat | cut -d ' ' -f 87-92  | column -t
 else
