@@ -482,7 +482,7 @@ set_mariadb_mysqldump_charset
 
 # setup mariadb mysql log rotation
 funct_logmysqlrotate
-  if # install-fresh
+  fi # install-fresh
 
   if [[ "$install_native_mariadb_ten_three_mode" = 'install-fresh' ]]; then
     if [ -f "$(which figlet)" ]; then
