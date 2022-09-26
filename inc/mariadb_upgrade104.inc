@@ -1067,10 +1067,14 @@ mv ib_logfile0 ib_logfile0.bak
 mv ib_logfile1 ib_logfile1.bak
 echo
 
-OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
-OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
-rpm -e $OLDMARIADBSERVER
-rpm -e $OLDGALERA
+if [[ "$CENTOS_EIGHT" -eq '8' && "$(rpm -qa | grep mariadb | awk '/mariadb-server-utils/')" ]]; then
+    remove_mariadb_ten_three_native_module
+else
+    OLDMARIADBSERVER=`rpm -qa | grep MariaDB | awk '/MariaDB-server/'`
+    OLDGALERA=`rpm -qa | grep galera | awk '/galera/'`
+    rpm -e $OLDMARIADBSERVER
+    rpm -e $OLDGALERA
+fi
 
 mariadb104install
 

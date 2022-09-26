@@ -25,7 +25,7 @@ remove_mariadb_ten_three_native_module() {
   echo "#####################################################"
   
   # List current existing MariaDB versions for RPMs
-  echo "Current Official MariaDB 10.3 versions installed:"
+  echo "Current Appstream Module MariaDB 10.3 versions installed:"
   for mrpm in $OLDMARIADBVERS
   do
   echo $mrpm
@@ -81,7 +81,7 @@ remove_mariadb_ten_three_native_module() {
   yum clean all
   
   if [ -z "$OLDMARIADBVERS" ]; then
-    echo "Official MariaDB 10.3 versions successfully removed..."
+    echo "Appstream Module MariaDB 10.3 versions successfully removed..."
   fi
 }
 
@@ -156,17 +156,6 @@ install_native_mariadb_ten_three() {
   mariabackup_destination_dir=$2
   CMM_BACKUP_MYCNF='/etc/my.cnf-b4-mariadb10.3-swtch'
 
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] && [[ "$install_native_mariadb_ten_three_mode" = 'install-fresh' ]]; then
-    mysqltmpdir_native_switchback
-
-    echo "setup /var/log/mysqld.log"
-    touch /var/log/mysqld.log
-    chown mysql:mysql /var/log/mysqld.log
-    chmod 600 /var/log/mysqld.log
-    ls -lah /var/log/mysqld.log
-    echo
-  fi
-
   #MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
   MDB_TOTALMEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)/1024))
   MDB_VIRTWHAT_GET=$(virt-what)
@@ -230,39 +219,50 @@ install_native_mariadb_ten_three() {
       cp /etc/my.cnf /etc/my.cnf-original
       rm -f /etc/my.cnf
     fi
-  # set /etc/my.cnf templates
-  setmycnf
+    # set /etc/my.cnf templates
+    setmycnf
   
-  sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
-  sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
-  sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
-  sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
-  sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
-  sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
-  sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
-  sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
-  sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
-  sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
-  sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
-  sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
-  # deprecated in 10.3
-  # https://mariadb.com/kb/en/library/mariadb-1031-release-notes/
-  sed -i '/^innodb_large_prefix/d' /etc/my.cnf
-  sed -i '/^innodb_file_format/d' /etc/my.cnf
-  sed -i '/^innodb_support_xa/d' /etc/my.cnf
-  echo
-  echo "yum -q module list mariadb"
-  yum -q module list mariadb
-  echo
-  echo "yum -y module enable mariadb"
-  yum -y module enable mariadb
-  echo
-  echo "yum -q module list mariadb"
-  yum -q module list mariadb
-  echo
-  echo "yum -y install mariadb-server mariadb"
-  yum -y install mariadb-server mariadb
-  echo
+    sed -i 's/skip-pbxt/#skip-pbxt/g' /etc/my.cnf
+    sed -i 's/innodb_use_purge_thread = 4/innodb_purge_threads=1/g' /etc/my.cnf
+    sed -i 's/innodb_extra_rsegments/#innodb_extra_rsegments/g' /etc/my.cnf
+    sed -i 's/innodb_adaptive_checkpoint/innodb_adaptive_flushing_method/g' /etc/my.cnf
+    sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+    sed -i 's|^innodb_thread_concurrency|#innodb_thread_concurrency|g' /etc/my.cnf
+    sed -i 's|^skip-federated|#skip-federated|g' /etc/my.cnf
+    sed -i 's|^skip-pbxt|#skip-pbxt|g' /etc/my.cnf
+    sed -i 's|^skip-pbxt_statistics|#skip-pbxt_statistics|g' /etc/my.cnf
+    sed -i 's|^skip-archive|#skip-archive|g' /etc/my.cnf
+    sed -i 's|^innodb_buffer_pool_dump_at_shutdown|#innodb_buffer_pool_dump_at_shutdown|g' /etc/my.cnf
+    sed -i 's|^innodb_buffer_pool_load_at_startup|#innodb_buffer_pool_load_at_startup|g' /etc/my.cnf
+    # deprecated in 10.3
+    # https://mariadb.com/kb/en/library/mariadb-1031-release-notes/
+    sed -i '/^innodb_large_prefix/d' /etc/my.cnf
+    sed -i '/^innodb_file_format/d' /etc/my.cnf
+    sed -i '/^innodb_support_xa/d' /etc/my.cnf
+    echo
+    echo "yum -q module list mariadb"
+    yum -q module list mariadb
+    echo
+    echo "yum -y module enable mariadb"
+    yum -y module enable mariadb
+    echo
+    echo "yum -q module list mariadb"
+    yum -q module list mariadb
+    echo
+    echo "yum -y install mariadb-server mariadb"
+    yum -y install mariadb-server mariadb
+    echo
+  
+    if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$install_native_mariadb_ten_three_mode" = 'install-fresh' ]]; then
+      mysqltmpdir_native_switchback
+  
+      echo "setup /var/log/mysqld.log"
+      touch /var/log/mysqld.log
+      chown mysql:mysql /var/log/mysqld.log
+      chmod 600 /var/log/mysqld.log
+      ls -lah /var/log/mysqld.log
+      echo
+    fi
 
     if [ -f "$(which figlet)" ]; then
         figlet -ckf standard "/etc/my.cnf compat checks"
@@ -473,10 +473,10 @@ echo "exclude=mariadb*" >> /etc/yum.repos.d/centalt.repo
 fi
 fi # CENTALTREPO_DISABLE
 
-# exclude MariaDB Galera Server
-if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
-echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
-fi
+# # exclude MariaDB Galera Server
+# if [[ -z "$(grep 'exclude=MariaDB-Galera-server' /etc/yum.repos.d/mariadb.repo)" ]]; then
+# echo "exclude=MariaDB-Galera-server" >> /etc/yum.repos.d/mariadb.repo
+# fi
 
 set_mariadb_mysqldump_charset
 
@@ -677,7 +677,7 @@ install_official_mariadb_ten_three() {
   
       cp -a /etc/my.cnf /etc/my.cnf-newold
   fi
-  if [[ "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]]; then
+  if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
     mysqltmpdir_native_switchback
 
     echo "setup /var/log/mysqld.log"
