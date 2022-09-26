@@ -1386,6 +1386,7 @@ source "inc/php_mssql.inc"
 source "inc/mysql_proclimit.inc"
 source "inc/mysqltmp.inc"
 source "inc/setmycnf.inc"
+source "inc/mariadb_switch103.inc"
 source "inc/mariadb_install102.inc"
 source "inc/mariadb_install103.inc"
 source "inc/mariadb_install104.inc"
@@ -2596,7 +2597,11 @@ elif [[ "$MARIADB_INSTALLTENFIVE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; 
 elif [[ "$MARIADB_INSTALLTENFOUR" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
   mariadbtenfour_installfunct
 elif [[ "$MARIADB_INSTALLTENTHREE" = [yY] && "$MARIADB_INSTALLTENTWO" = [nN] ]]; then
-  mariadbtenthree_installfunct
+  if [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+    install_native_mariadb_ten_three install-fresh
+  else
+    mariadbtenthree_installfunct
+  fi
 elif [[ "$MARIADB_INSTALLTENTWO" = [yY] ]]; then
   mariadbtentwo_installfunct
 else
