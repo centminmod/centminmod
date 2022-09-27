@@ -6,8 +6,8 @@ disk_cleanups() {
     find /svr-setup -maxdepth 1 -type d ! -wholename "/svr-setup" -exec rm -rf {} \;
     rm -f /svr-setup/1
     rm -f /svr-setup/20190702.tar.gz
-    rm -f /svr-setup/axel-2.14.1.tar.gz
-    rm -f /svr-setup/axel-2.16.1.tar.gz
+    # rm -f /svr-setup/axel-2.14.1.tar.gz
+    # rm -f /svr-setup/axel-2.16.1.tar.gz
     rm -f /svr-setup/axel-2.4-1.el5.rf.i386.rpm
     rm -f /svr-setup/axel-2.4-1.el5.rf.x86_64.rpm
     rm -f /svr-setup/axel-2.4-1.el6.rf.i686.rpm

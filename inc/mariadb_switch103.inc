@@ -513,6 +513,7 @@ funct_logmysqlrotate
         sleep 2
         rm -f /var/lib/mysql/ib_logfile*
         rm -f /var/lib/mysql/aria_log*
+        systemctl start mariadb
     fi
     # https://community.centminmod.com/posts/25691/
     if [ -f /usr/local/src/centminmod/tools/setio.sh ]; then
