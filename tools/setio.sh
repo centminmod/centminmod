@@ -43,10 +43,11 @@ if [ ! -d "$FIOBASEDIR" ]; then
   mkdir -p $FIOBASEDIR
   if [[ ! "$(grep 'cmsetiofiotest' /etc/my.cnf)" ]]; then
     cp -a /etc/my.cnf /etc/my.cnf-setiobackup
-    sed -i 's|\[mysqld\]|\[mysqld\]\nignore_db_dir=cmsetiofiotest|' /etc/my.cnf
+    sed -i 's|\[mysqld\]|\[mysqld\]\nignore_db_dirs=cmsetiofiotest|' /etc/my.cnf
     MARIADBVERCHECK=$(rpm -qa | grep MariaDB-server | awk -F "-" '{print $3}' | cut -c1-4)
     if [[ "$MARIADBVERCHECK" == '10.1' || "$MARIADBVERCHECK" == '10.2' || "$MARIADBVERCHECK" == '10.3' || "$MARIADBVERCHECK" == '10.4' || "$MARIADBVERCHECK" == '10.5' || "$MARIADBVERCHECK" == '10.6' ]]; then
-      sed -i 's|ignore-db-dir|ignore_db_dirs|g' /etc/my.cnf
+      sed -i 's|ignore-db-dir=|ignore_db_dirs=|g' /etc/my.cnf
+      sed -i 's|ignore_db_dir=|ignore_db_dirs=|g' /etc/my.cnf
     fi
     # /usr/bin/mysqlreload
   fi
@@ -166,6 +167,10 @@ if [[ "$CENTOS_SIX" = '6' ]]; then
   FREEMEM=$(echo "$IFREEMEM + $CACHEDMEM" | bc)
 elif [[ "$CENTOS_SEVEN" = '7' ]]; then
   FREEMEM=$(cat /proc/meminfo | grep MemAvailable | awk '{print $2}')
+fi
+
+if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
+  systemctl start mariadb
 fi
 
 baseinfo() {

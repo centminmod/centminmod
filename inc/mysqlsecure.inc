@@ -11,6 +11,9 @@ set_mariadb_mysqldump_charset() {
 }
 
 securemysql() {
+  if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
+    systemctl start mariadb
+  fi
 THEMYSQLPASS=$(/usr/bin/openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')
 
 # mysql -e "DELETE FROM mysql.user WHERE User=""; FLUSH PRIVILEGES;"

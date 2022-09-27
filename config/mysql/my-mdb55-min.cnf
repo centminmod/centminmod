@@ -6,7 +6,7 @@ max_allowed_packet = 32M
 
 [mysqld]
 local-infile=0
-ignore_db_dir=lost+found
+ignore_db_dirs=lost+found
 character-set-server=utf8
 datadir=/var/lib/mysql
 socket=/var/lib/mysql/mysql.sock
