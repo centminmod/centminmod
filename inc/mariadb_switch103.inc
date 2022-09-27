@@ -83,6 +83,12 @@ remove_mariadb_ten_three_native_module() {
   rpm -e --nodeps $OLDGALERA
   
   yum -y module disable mariadb
+  if [ -f /etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf ]; then
+    rm -f /etc/systemd/system/mariadb.service.d/mysql-prepare-db-dir-modify.conf
+  fi
+  if [ -f /usr/libexec/mysql-prepare-db-dir-modify ]; then
+    rm -f /usr/libexec/mysql-prepare-db-dir-modify
+  fi
   yum clean all
   
   if [ -z "$OLDMARIADBVERS" ]; then
