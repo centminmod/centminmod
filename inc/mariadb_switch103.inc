@@ -330,6 +330,8 @@ FFF
   fi
 
 if [[ "$install_native_mariadb_ten_three_mode" = 'install-fresh' ]]; then
+  tmpsetup_native_switchback
+
   if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
     echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
 cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
