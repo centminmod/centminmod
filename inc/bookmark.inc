@@ -1,7 +1,7 @@
 bookmark() {
 
-    echo "check HOME=$HOME"
-    echo "check PWD=$PWD"
+    # echo "check HOME=$HOME"
+    # echo "check PWD=$PWD"
     echo
 echo ""
   cecho "--------------------------------------------------------" $boldyellow

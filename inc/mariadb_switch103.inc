@@ -46,9 +46,9 @@ remove_mariadb_ten_three_native_module() {
   OLD_MARIADB_BACKUP=$(rpm -qa | grep mariadb | awk '/mariadb-backup/')
   OLDGALERA=$(rpm -qa | grep galera | awk '/galera/')
 
-  echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
-  mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
-  sleep 10
+  # echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+  # mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
+  # sleep 10
   echo
   echo "shutdown MariaDB 10.3 server"
   sleep 5
@@ -57,25 +57,25 @@ remove_mariadb_ten_three_native_module() {
   
   yum -q -y remove perl-DBD-MySQL
   
-  echo "rpm -e $OLD_MARIADB_CONNECTOR_C_CONFIG"
-  echo "rpm -e $OLD_MARIADB_COMMON"
-  echo "rpm -e $OLD_MARIADB_GSSAPI_SERVER"
-  echo "rpm -e $OLD_MARIADB_ERRMSG"
-  echo "rpm -e $OLD_MARIADB_SERVER_UTILS"
-  echo "rpm -e $OLD_MARIADB_SERVER"
-  echo "rpm -e $OLD_MARIADB_CONNECTOR_C"
-  echo "rpm -e $OLD_MARIADB_BACKUP"
-  echo "rpm -e $OLDGALERA"
+  echo "rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C_CONFIG"
+  echo "rpm -e --nodeps $OLD_MARIADB_COMMON"
+  echo "rpm -e --nodeps $OLD_MARIADB_GSSAPI_SERVER"
+  echo "rpm -e --nodeps $OLD_MARIADB_ERRMSG"
+  echo "rpm -e --nodeps $OLD_MARIADB_SERVER_UTILS"
+  echo "rpm -e --nodeps $OLD_MARIADB_SERVER"
+  echo "rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C"
+  echo "rpm -e --nodeps $OLD_MARIADB_BACKUP"
+  echo "rpm -e --nodeps $OLDGALERA"
   
-  rpm -e $OLD_MARIADB_CONNECTOR_C_CONFIG
-  rpm -e $OLD_MARIADB_COMMON
-  rpm -e $OLD_MARIADB_GSSAPI_SERVER
-  rpm -e $OLD_MARIADB_ERRMSG
-  rpm -e $OLD_MARIADB_SERVER_UTILS
-  rpm -e $OLD_MARIADB_SERVER
-  rpm -e $OLD_MARIADB_CONNECTOR_C
-  rpm -e $OLD_MARIADB_BACKUP
-  rpm -e $OLDGALERA
+  rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C_CONFIG
+  rpm -e --nodeps $OLD_MARIADB_COMMON
+  rpm -e --nodeps $OLD_MARIADB_GSSAPI_SERVER
+  rpm -e --nodeps $OLD_MARIADB_ERRMSG
+  rpm -e --nodeps $OLD_MARIADB_SERVER_UTILS
+  rpm -e --nodeps $OLD_MARIADB_SERVER
+  rpm -e --nodeps $OLD_MARIADB_CONNECTOR_C
+  rpm -e --nodeps $OLD_MARIADB_BACKUP
+  rpm -e --nodeps $OLDGALERA
   
   yum -y module disable mariadb
   yum clean all

@@ -1057,7 +1057,10 @@ echo
 echo "shut down existing MariaDB server for upgrade.."
 mysql -e "set global innodb_buffer_pool_dump_at_shutdown=0;"
 sleep 10
-cmservice mysql stop
+echo "mysql -e \"SET GLOBAL innodb_fast_shutdown = 1;\""
+mysql -e "SET GLOBAL innodb_fast_shutdown = 1;"
+sleep 10
+systemctl stop mariadb
 echo
 # move aside existing ib_logfile* files
 cd $MYSQLDATADIR
@@ -1351,6 +1354,26 @@ EFF
     systemctl daemon-reload
     fi
 fi
+
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/openfileslimit.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Initial Install: Update MariaDB 10 setting for LimitNOFILE=524288"
+cat > "/etc/systemd/system/mariadb.service.d/openfileslimit.conf" <<TDG
+[Service]
+LimitNOFILE=524288
+TDG
+  systemctl daemon-reload
+fi
+
+if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]] && [[ ! -f /etc/systemd/system/mariadb.service.d/notifyaccess.conf && -d /etc/systemd/system/mariadb.service.d/ ]]; then
+    echo "Initial Install: Update MariaDB 10 setting for NotifyAccess=all"
+cat > "/etc/systemd/system/mariadb.service.d/notifyaccess.conf" <<TDG
+[Service]
+NotifyAccess=all
+TDG
+  systemctl daemon-reload
+fi
+
+mysqltmpdir
 
 cmservice mysql restart
 if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
