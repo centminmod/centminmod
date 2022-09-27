@@ -656,6 +656,7 @@ install_zimg() {
   rm -rf zimg
   git clone --depth=1 https://github.com/sekrit-twc/zimg
   cd zimg
+  git submodule update --init --recursive
   make clean
   ./autogen.sh
   ./configure --prefix="${OPT}/ffmpeg" --bindir="${OPT}/bin" --enable-static  --enable-shared --with-pic
@@ -698,7 +699,13 @@ install_yasm
 if [[ "$ENABLE_FONTCONFIG" = [yY] ]]; then
   install_freetype
 fi
-if [[ "$ENABLE_ZIMG" = [yY] ]]; then
+if [[ "$CENTOS_NINE" -eq '9' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$CENTOS_EIGHT" -eq '8' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$CENTOS_SEVEN" -eq '7' && "$ENABLE_ZIMG" = [yY] ]]; then
+  yum -y install zimg zimg-devel
+elif [[ "$ENABLE_ZIMG" = [yY] ]]; then
   install_zimg
 fi
 
