@@ -471,6 +471,26 @@ php_patches() {
         dos2unix php5640-81720.patch
         patch -p1 < php5640-81720.patch
       fi
+      # PHP 5.6 bug #81726 https://bugs.php.net/bug.php?id=81726
+      if [ ! -f php5640-81726.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #81726"
+        echo "https://bugs.php.net/bug.php?id=81726"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-81726.patch php5640-81726.patch
+        dos2unix php5640-81726.patch
+        patch -p1 < php5640-81726.patch
+      fi
+      # PHP 5.6 bug #81727 https://bugs.php.net/bug.php?id=81727
+      if [ ! -f php5640-81727.patch ]; then
+        echo
+        echo "patching PHP 5.6 for bug #81727"
+        echo "https://bugs.php.net/bug.php?id=81727"
+        echo
+        cp -a $CUR_DIR/patches/php/php5640-81727.patch php5640-81727.patch
+        dos2unix php5640-81727.patch
+        patch -p1 < php5640-81727.patch
+      fi
     fi
 
     if [[ "$PHPVER_ID" = '70213' || "$PHPVER_ID" = '70125' ]]; then
