@@ -776,7 +776,7 @@ php_patches() {
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
-          php7331-pcre1038
+          # php7331-pcre1038
           if [[ "$bugid" = 'pcre1038' ]]; then
             cp -a $CUR_DIR/patches/php/php7331-${bugid}.patch php7331-${bugid}.patch
             dos2unix php7331-${bugid}.patch
