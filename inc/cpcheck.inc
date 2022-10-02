@@ -14,7 +14,7 @@ fi
 }
 
 start_limit_burst_adjust() {
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
     nginx_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/nginx.service.d/failure-restart.conf)
     if [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -eq '15' ]]; then
       sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
