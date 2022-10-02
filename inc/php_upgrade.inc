@@ -1308,7 +1308,7 @@ sar_call
 cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
 [Unit]
 StartLimitIntervalSec=30
-StartLimitBurst=15
+StartLimitBurst=5
 
 [Service]
 Restart=on-failure
@@ -1321,7 +1321,7 @@ TDG
 cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
 [Service]
 StartLimitInterval=30
-StartLimitBurst=15
+StartLimitBurst=5
 Restart=on-failure
 RestartSec=5s
 TDG
