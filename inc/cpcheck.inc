@@ -4,13 +4,33 @@ if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] ]]; then
 cat > "/etc/systemd/system/php-fpm.service.d/failure-restart.conf" <<TDG
 [Service]
 StartLimitInterval=30
-StartLimitBurst=2
+StartLimitBurst=15
 Restart=on-failure
 RestartSec=5s
 TDG
           systemctl daemon-reload
         fi
 fi
+}
+
+start_limit_burst_adjust() {
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
+    nginx_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/nginx.service.d/failure-restart.conf)
+    if [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -lt '15' ]]; then
+      sed -i "s|StartLimitBurst=.*|StartLimitBurst=15|" /etc/systemd/system/nginx.service.d/failure-restart.conf
+      systemctl daemon-reload
+    fi
+    phpfpm_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/php-fpm.service.d/failure-restart.conf)
+    if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -lt '15' ]]; then
+      sed -i "s|StartLimitBurst=.*|StartLimitBurst=15|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
+      systemctl daemon-reload
+    fi
+    redis_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/redis.service.d/failure-restart.conf)
+    if [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -lt '15' ]]; then
+      sed -i "s|StartLimitBurst=.*|StartLimitBurst=15|" /etc/systemd/system/redis.service.d/failure-restart.conf
+      systemctl daemon-reload
+    fi
+  fi
 }
 
 nginx_systemd_switch() {
@@ -37,7 +57,7 @@ TDG
 cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
 [Unit]
 StartLimitIntervalSec=30
-StartLimitBurst=2
+StartLimitBurst=15
 
 [Service]
 Restart=on-failure
@@ -49,7 +69,7 @@ TDG
 cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
 [Service]
 StartLimitInterval=30
-StartLimitBurst=2
+StartLimitBurst=15
 Restart=on-failure
 RestartSec=5s
 TDG
@@ -94,7 +114,7 @@ if [[ "$CENTOS_SEVEN" = '7' && -f /etc/systemd/system/nginx.service.d/failure-re
 cat > "/etc/systemd/system/nginx.service.d/failure-restart.conf" <<TDG
 [Service]
 StartLimitInterval=30
-StartLimitBurst=2
+StartLimitBurst=15
 Restart=on-failure
 RestartSec=5s
 TDG
@@ -3495,6 +3515,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   check_php_cainfo_file
   ngx_modern_ciphers_setup
   tcp_bbr_setup
+  start_limit_burst_adjust
 fi
 
 }
