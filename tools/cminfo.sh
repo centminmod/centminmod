@@ -1197,6 +1197,21 @@ check_version() {
         exit 1
     fi
 }
+
+service_info_json() {
+  info_service_name=$1
+  if [[ -n "$info_service_name" ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+      systemctl show --no-pager $info_service_name | jq --slurp --raw-input 'split("\n") | map(select(. != "") | split("=") | {"key": .[0], "value": (.[1:] | join("="))}) | from_entries' | jq --arg sli_opt $sli_opt -r '{Names: .Names, Description: .Description, Type: .Type, ActiveState: .ActiveState, LoadState: .LoadState, SubState: .SubState, Result: .Result, ExecMainStartTimestamp: .ExecMainStartTimestamp, MainPID: .MainPID, DropInPaths: .DropInPaths, ExecStart: .ExecStart, ExecStartPre: .ExecStartPre, ExecReload: .ExecReload, ExecStop: .ExecStop, PIDFile: .PIDFile, LimitMEMLOCK: .LimitMEMLOCK, LimitNOFILE: .LimitNOFILE, LimitNPROC: .LimitNPROC, After: .After, Before: .Before, Conflicts: .Conflicts, FailureAction: .FailureAction, FragmentPath: .FragmentPath, NotifyAccess: .NotifyAccess, PrivateNetwork: .PrivateNetwork, PrivateTmp: .PrivateTmp, ProtectHome: .ProtectHome, ProtectSystem: .ProtectSystem, Requires: .Requires, Restart: .Restart, RestartUSec: .RestartUSec, StartLimitAction: .StartLimitAction, StartLimitBurst: .StartLimitBurst, StartLimitInterval: .StartLimitInterval, TimeoutStartUSec: .TimeoutStartUSec, TimeoutStopUSec: .TimeoutStopUSec, UnitFilePreset: .UnitFilePreset, UnitFileState: .UnitFileState, WantedBy: .WantedBy, Wants: .Wants}'
+    else
+      systemctl show --no-pager $info_service_name | jq --slurp --raw-input 'split("\n") | map(select(. != "") | split("=") | {"key": .[0], "value": (.[1:] | join("="))}) | from_entries' | jq --arg sli_opt $sli_opt -r '{Names: .Names, Description: .Description, Type: .Type, ActiveState: .ActiveState, LoadState: .LoadState, SubState: .SubState, Result: .Result, ExecMainStartTimestamp: .ExecMainStartTimestamp, MainPID: .MainPID, DropInPaths: .DropInPaths, ExecStart: .ExecStart, ExecStartPre: .ExecStartPre, ExecReload: .ExecReload, ExecStop: .ExecStop, PIDFile: .PIDFile, LimitMEMLOCK: .LimitMEMLOCK, LimitNOFILE: .LimitNOFILE, LimitNPROC: .LimitNPROC, After: .After, Before: .Before, Conflicts: .Conflicts, FailureAction: .FailureAction, FragmentPath: .FragmentPath, NotifyAccess: .NotifyAccess, PrivateNetwork: .PrivateNetwork, PrivateTmp: .PrivateTmp, ProtectHome: .ProtectHome, ProtectSystem: .ProtectSystem, Requires: .Requires, Restart: .Restart, RestartUSec: .RestartUSec, StartLimitAction: .StartLimitAction, StartLimitBurst: .StartLimitBurst, StartLimitIntervalUSec: .StartLimitIntervalUSec, TimeoutStartUSec: .TimeoutStartUSec, TimeoutStopUSec: .TimeoutStopUSec, UnitFilePreset: .UnitFilePreset, UnitFileState: .UnitFileState, WantedBy: .WantedBy, Wants: .Wants}'
+    fi
+  else
+    echo "incorrect syntax"
+    echo "missing servicename"
+    echo "$0 service-info servicename"
+  fi
+}
 #########
 if [[ -z "$1" ]]; then
     infooutput
@@ -1281,7 +1296,10 @@ case "$1" in
     checkver)
     check_version
     ;;
+    service-info)
+      service_info_json "$2"
+    ;;
     *)
-    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver}"
+    echo "$0 {info|update|netstat|top|top-cron|sar-json|sar-cpu-interval|sar-cpu|sar-mem|phpmem|phpstats|phpstats-cron|listlogs|debug-menuexit|versions|checkver|service-info}"
         ;;
 esac
