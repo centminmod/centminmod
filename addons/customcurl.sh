@@ -25,6 +25,8 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
 
 shopt -s expand_aliases
 for g in "" e f; do
@@ -39,6 +41,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -59,6 +63,74 @@ if [[ -f /etc/system-release && "$(awk '{print $1,$2,$3}' /etc/system-release)" 
     CENTOS_SIX='6'
 fi
 
+# ensure only el8+ OS versions are being looked at for alma linux, rocky linux
+# oracle linux, vzlinux, circle linux, navy linux, euro linux
+EL_VERID=$(awk -F '=' '/VERSION_ID/ {print $2}' /etc/os-release | sed -e 's|"||g' | cut -d . -f1)
+if [ -f /etc/almalinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/almalinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ALMALINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ALMALINUX_NINE='9'
+  fi
+elif [ -f /etc/rocky-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/rocky-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ROCKYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ROCKYLINUX_NINE='9'
+  fi
+elif [ -f /etc/oracle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/oracle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    ORACLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    ORACLELINUX_NINE='9'
+  fi
+elif [ -f /etc/vzlinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/vzlinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    VZLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    VZLINUX_NINE='9'
+  fi
+elif [ -f /etc/circle-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $4 }' /etc/circle-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    CIRCLELINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    CIRCLELINUX_NINE='9'
+  fi
+elif [ -f /etc/navylinux-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $5 }' /etc/navylinux-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    NAVYLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    NAVYLINUX_NINE='9'
+  fi
+elif [ -f /etc/el-release ] && [[ "$EL_VERID" -eq 8 || "$EL_VERID" -eq 9 ]]; then
+  CENTOSVER=$(awk '{ print $3 }' /etc/el-release | cut -d . -f1,2)
+  if [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '8' ]]; then
+    CENTOS_EIGHT='8'
+    EUROLINUX_EIGHT='8'
+  elif [[ "$(echo $CENTOSVER | cut -d . -f1)" -eq '9' ]]; then
+    CENTOS_NINE='9'
+    EUROLINUX_NINE='9'
+  fi
+fi
+
 if [ -f /etc/centminmod/custom_config.inc ]; then
   source /etc/centminmod/custom_config.inc
 fi
@@ -73,12 +145,12 @@ else
 fi
 
 if [ ! -d "$DIR_TMP" ]; then
-	mkdir -p "$DIR_TMP"
+  mkdir -p "$DIR_TMP"
   chmod 0750 "$DIR_TMP"
 fi
 
 if [ ! -d "$CENTMINLOGDIR" ]; then
-	mkdir -p "$CENTMINLOGDIR"
+  mkdir -p "$CENTMINLOGDIR"
 fi
 ######################################################
 # Setup Colours
@@ -116,106 +188,114 @@ return
 ###########################################
 # functions
 #############
+if [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+  echo "$0 only for CentOS 7"
+  echo "aborted..."
+  exit 1
+fi
+
 
 curlrpm() {
 if [[ "$CUSTOM_CURLRPM" = [yY] ]]; then
-	if [ -f "/usr/local/src/centminmod/downloads/curlrpms.zip" ]; then
+  if [ -f "/usr/local/src/centminmod/downloads/curlrpms.zip" ]; then
     /usr/bin/unzip -qo "/usr/local/src/centminmod/downloads/curlrpms.zip" -d "$DIR_TMP"/
-	fi
-	###############################################################
-	if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
-	#############################
-	# el6 32bit
-	curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
-	CURL_NOARCHRPMCHECK=$?
-	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
-		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
-	else
-		if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm" ]; then
-			rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm"
-		fi
-	fi
-	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
-	if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
-		cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
-		if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
-    	#echo priorities already set for city-fan.org.repo
-			PRIOREXISTS=1
-		else
+  fi
+  ###############################################################
+  if [[ "$CENTOS_SIX" = '6' && "$(uname -m)" != 'x86_64' ]]; then
+  #############################
+  # el6 32bit
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
+  CURL_NOARCHRPMCHECK=$?
+  if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
+    rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
+  else
+    if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm" ]; then
+      rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm"
+    fi
+  fi
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+  if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+    cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+    if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+      #echo priorities already set for city-fan.org.repo
+      PRIOREXISTS=1
+    else
       echo "setting yum priorities for city-fan.org.repo"
       sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
-		fi
-	fi # repo file check
-	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
-	echo
-	curl -V
-	echo
-	cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
-	cecho "complete new curl version setup on your system" $boldyellow
-	###############################################################
-	elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
-	###############################################################
-	# el6 64bit
-	curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
-	CURL_NOARCHRPMCHECK=$?
-	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
-		rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
-	else
-		if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm" ]; then
-			rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm"
-		fi
-	fi
-	
-	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
-	if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
-		cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
-		if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
-    	#echo priorities already set for city-fan.org.repo
-			PRIOREXISTS=1
-  	else
-      echo "setting yum priorities for city-fan.org.repo"
-			sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
-		fi
-	fi # repo file check
-	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
-	echo
-	curl -V
-	echo
-	cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
-	cecho "complete new curl version setup on your system" $boldyellow
-	###############################################################
-	elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
-	###############################################################
-	# el7 64bit
-	curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-3-2.rhel7.noarch.rpm
-	CURL_NOARCHRPMCHECK=$?
-	if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
-		rpm -Uvh https://mirror.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-3-2.rhel7.noarch.rpm
-	else
-		if [ -f "$DIR_TMP/city-fan.org-release-2-2.rhel7.noarch.rpm" ]; then
-			rpm -Uvh "$DIR_TMP/city-fan.org-release-2-2.rhel7.noarch.rpm"
-		fi
-	fi
-	
-	sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
-	if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
-		cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
-		if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
-    	#echo priorities already set for city-fan.org.repo
-			PRIOREXISTS=1
-  	else
+    fi
+  fi # repo file check
+  yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+  echo
+  curl -V
+  echo
+  cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+  cecho "complete new curl version setup on your system" $boldyellow
+  ###############################################################
+  elif [[ "$CENTOS_SIX" = '6' && "$(uname -m)" = 'x86_64' ]]; then
+  ###############################################################
+  # el6 64bit
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
+  CURL_NOARCHRPMCHECK=$?
+  if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
+    rpm -Uvh http://www.city-fan.org/ftp/contrib/yum-repo/city-fan.org-release-2-1.rhel6.noarch.rpm
+  else
+    if [ -f "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm" ]; then
+      rpm -Uvh "$DIR_TMP/city-fan.org-release-2-1.rhel6.noarch.rpm"
+    fi
+  fi
+  
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+  if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+    cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+    if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+      #echo priorities already set for city-fan.org.repo
+      PRIOREXISTS=1
+    else
       echo "setting yum priorities for city-fan.org.repo"
       sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
-		fi
-	fi # repo file check
-	yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
-	echo
-	curl -V
-	echo
-	cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
-	cecho "complete new curl version setup on your system" $boldyellow
-	fi
-	###############################################################
+    fi
+  fi # repo file check
+  yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+  echo
+  curl -V
+  echo
+  cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+  cecho "complete new curl version setup on your system" $boldyellow
+  ###############################################################
+  elif [[ "$CENTOS_SEVEN" = '7' && "$(uname -m)" = 'x86_64' ]]; then
+  ###############################################################
+  # el7 64bit
+  cityfan_rpm_name=$(curl -${ipv_forceopt}sL --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/| egrep -ow "city-fan.org-release-[0-9.]+\-[0-9.]+\.rhel7\.noarch\.rpm" | grep release | uniq)
+  rpm --import https://mirror.city-fan.org/ftp/contrib/GPG-KEYS/RPM-GPG-KEY-city-fan.org-rhel-7
+  curl -${ipv_forceopt}Is --connect-timeout 30 --max-time 30 https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
+  CURL_NOARCHRPMCHECK=$?
+  if [[ "$CURL_NOARCHRPMCHECK" = '0' ]]; then
+    rpm -Uvh https://mirror.city-fan.org/ftp/contrib/yum-repo/${cityfan_rpm_name}
+  else
+    if [ -f "$DIR_TMP/${cityfan_rpm_name}" ]; then
+      rpm -Uvh "$DIR_TMP/${cityfan_rpm_name}"
+    fi
+  fi
+  
+  sed -i 's|enabled=1|enabled=0|g' /etc/yum.repos.d/city-fan.org.repo
+  if [ -f /etc/yum.repos.d/city-fan.org.repo ]; then
+    cp -p /etc/yum.repos.d/city-fan.org.repo /etc/yum.repos.d/city-fan.org.OLD
+    if [ -n "$(grep ^priority /etc/yum.repos.d/city-fan.org.repo)" ]; then
+      #echo priorities already set for city-fan.org.repo
+      PRIOREXISTS=1
+    else
+      echo "setting yum priorities for city-fan.org.repo"
+      sed -i 's|^gpgkey=.*|&\npriority=99\nexcludes=libtidy libtidy-devel|' /etc/yum.repos.d/city-fan.org.repo
+    fi
+  fi # repo file check
+  yum -y install curl libcurl libcurl-devel libcurl7112 libcurl7155 --enablerepo=city-fan.org --disableplugin=priorities
+  echo
+  curl -V
+  echo
+  cecho "recompile PHP via centmin.sh menu option 5 to" $boldyellow
+  cecho "complete new curl version setup on your system" $boldyellow
+  fi
+  ###############################################################
 fi # CUSTOM_CURLRPM=y
 }
 ##############################################################

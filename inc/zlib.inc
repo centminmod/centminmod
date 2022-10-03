@@ -298,6 +298,17 @@ install_cfzlib() {
             popd
         fi
         pushd "zlib-cloudflare-${CLOUDFLARE_ZLIBVER}"
+        # CVE-2022-37434 patch
+        # https://bugzilla.redhat.com/show_bug.cgi?id=2116639
+        if [[ ! "$(grep '(len = state->head->extra_len - state->length) <' ${DIR_TMP}/zlib-cloudflare-${CLOUDFLARE_ZLIBVER}/inflate.c)" ]]; then
+            echo
+            echo "Patch Nginx Cloudflare zlib for CVE-2022-37434"
+            echo "https://bugzilla.redhat.com/show_bug.cgi?id=2116639"
+            echo
+            if [ -f "$CUR_DIR/patches/cloudflare/cloudflare-zlib-CVE-2022-37434.patch" ]; then
+                patch -p1 < "$CUR_DIR/patches/cloudflare/cloudflare-zlib-CVE-2022-37434.patch"
+            fi
+        fi
         # sed -i "s|\#define ZLIB_VERSION .*|\#define ZLIB_VERSION \"${CLOUDFLARE_ZLIBVER}\"|" zlib.h
         # ldconfig
         make -f Makefile.in distclean
@@ -451,6 +462,19 @@ install_stdzlib() {
         echo
         if [[ ! -f "${DIR_TMP}/${NGX_ZLIBLINKFILE}" || ! -d "${DIR_TMP}/zlib-${NGINX_ZLIBVER}" ]]; then
             nginxzlibtarball
+        fi
+        # CVE-2022-37434 patch
+        # https://bugzilla.redhat.com/show_bug.cgi?id=2116639
+        if [[ ! "$(grep '(len = state->head->extra_len - state->length) <' ${DIR_TMP}/zlib-${NGINX_ZLIBVER}/inflate.c)" ]]; then
+            pushd "zlib-${NGINX_ZLIBVER}"
+            echo
+            echo "Patch Nginx zlib for CVE-2022-37434"
+            echo "https://bugzilla.redhat.com/show_bug.cgi?id=2116639"
+            echo
+            if [ -f "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch" ]; then
+                patch -p1 < "$CUR_DIR/patches/zlib/zlib-CVE-2022-37434.patch"
+            fi
+            popd
         fi
         # pushd "$DIR_TMP"
         # cd "zlib-${NGINX_ZLIBVER}"

@@ -1,0 +1,77 @@
+From 8b300e157e92b0e945ad813d608f076b5323d721 Mon Sep 17 00:00:00 2001
+From: Derick Rethans <github@derickrethans.nl>
+Date: Fri, 9 Sep 2022 16:54:03 +0100
+Subject: [PATCH] Fix #81727: Don't mangle HTTP variable names that clash with
+ ones that have a specific semantic meaning.
+
+(cherry picked from commit 0611be4e82887cee0de6c4cbae320d34eec946ca)
+---
+ NEWS                             |  6 ++++++
+ ext/standard/tests/bug81727.phpt | 15 +++++++++++++++
+ main/php_variables.c             | 14 ++++++++++++++
+ 3 files changed, 35 insertions(+)
+ create mode 100644 ext/standard/tests/bug81727.phpt
+
+diff --git a/NEWS b/NEWS
+index fd227bd33a..87b67643f3 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 7.4.31
++
++- Core:
++  . Fixed bug #81727: Don't mangle HTTP variable names that clash with ones
++    that have a specific semantic meaning. (CVE-2022-31629). (Derick)
++
+ Backported from 7.4.30
+ 
+ - mysqlnd:
+diff --git a/ext/standard/tests/bug81727.phpt b/ext/standard/tests/bug81727.phpt
+new file mode 100644
+index 0000000000..71a9cb46c8
+--- /dev/null
++++ b/ext/standard/tests/bug81727.phpt
+@@ -0,0 +1,15 @@
++--TEST--
++Bug #81727: $_COOKIE name starting with ..Host/..Secure should be discarded
++--COOKIE--
++..Host-test=ignore; __Host-test=correct; . Secure-test=ignore; . Elephpant=Awesome;
++--FILE--
++<?php
++var_dump($_COOKIE);
++?>
++--EXPECT--
++array(2) {
++  ["__Host-test"]=>
++  string(7) "correct"
++  ["__Elephpant"]=>
++  string(7) "Awesome"
++}
+diff --git a/main/php_variables.c b/main/php_variables.c
+index ca015352d2..f2d0c3bd98 100644
+--- a/main/php_variables.c
++++ b/main/php_variables.c
+@@ -115,6 +115,20 @@ PHPAPI void php_register_variable_ex(char *var_name, zval *val, zval *track_vars
+ 	}
+ 	var_len = p - var;
+ 
++	/* Discard variable if mangling made it start with __Host-, where pre-mangling it did not start with __Host- */
++	if (strncmp(var, "__Host-", sizeof("__Host-")-1) == 0 && strncmp(var_name, "__Host-", sizeof("__Host-")-1) != 0) {
++		zval_ptr_dtor_nogc(val);
++		free_alloca(var_orig, use_heap);
++		return;
++	}
++
++	/* Discard variable if mangling made it start with __Secure-, where pre-mangling it did not start with __Secure- */
++	if (strncmp(var, "__Secure-", sizeof("__Secure-")-1) == 0 && strncmp(var_name, "__Secure-", sizeof("__Secure-")-1) != 0) {
++		zval_ptr_dtor_nogc(val);
++		free_alloca(var_orig, use_heap);
++		return;
++	}
++
+ 	if (var_len==0) { /* empty variable name, or variable name with a space in it */
+ 		zval_ptr_dtor_nogc(val);
+ 		free_alloca(var_orig, use_heap);
