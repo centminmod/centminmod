@@ -342,8 +342,8 @@ cat > "/usr/local/nginx/modsec/main.conf" <<EOF
 Include "/usr/local/nginx/modsec/modsecurity.conf"
 
 # OWASP CRS v3 rules
-Include "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf"
-Include "/usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/*.conf"
+Include /usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/crs-setup.conf
+Include /usr/local/nginx/coreruleset-${MODSECURITY_OWASPVER}/rules/*.conf
 
 # Basic test rule
 SecRule ARGS:testparam "@contains test" "id:1234,deny,status:403"
