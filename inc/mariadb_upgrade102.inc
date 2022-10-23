@@ -201,6 +201,8 @@ if [ "$CENTOSVER" == 'release' ]; then
         CENTOS_SEVEN='7'
     elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '8' ]]; then
         CENTOS_EIGHT='8'
+    elif [[ "$(cat /etc/redhat-release | awk '{ print $4 }' | cut -d . -f1)" = '9' ]]; then
+        CENTOS_NINE='9'
     fi
 fi
 
@@ -211,34 +213,48 @@ fi
 MARIADB55ARCH=`uname -m`
 
 #MDB_COUNTRY=$(curl -${ipv_forceopt}s https://ipinfo.io/geo 2>&1 | sed -e 's|[{}]||' -e 's/\(^"\|"\)//g' -e 's|,||' | awk '/country: / {print $2}')
-MDB_VIRTWHAT_GET=$(virt-what)
-MDB_VIRTWHAT="${MDB_VIRTWHAT_GET:-d}"
-MDB_DTIME=$(tail -1 /root/centminlogs/centminmod_downloadtimes_*.log)
-MDB_DTIME_SEC=$(echo "$MDB_DTIME" |awk '{printf("%.2f\n",$7)}')
-MDB_NTIME=$(tail -1 /root/centminlogs/centminmod_ngxinstalltime_*.log)
-MDB_NTIME_SEC=$(echo "$MDB_NTIME" |awk '{printf("%.2f\n",$7)}')
 if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
-    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.2 upgrade D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v3 | jq -r)
+    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED" https://geoip.centminmod.com/v3 | jq -r)
 elif [[ "$VPS_GEOIPCHECK_V4" = [yY] ]]; then
-    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED 10.2 upgrade D:$MDB_DTIME_SEC N:$MDB_NTIME_SEC $MDB_VIRTWHAT $MDB_CITY $MDB_COLO" https://geoip.centminmod.com/v4 | jq -r)
+    MDB_GEOIP=$(curl -${ipv_forceopt}s -A "$CURL_AGENT $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED" https://geoip.centminmod.com/v4 | jq -r)
 fi
 MDB_COUNTRY=$(echo "$MDB_GEOIP" | jq -r '.country')
 MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
-MDB_CITY=$(echo "$MDB_GEOIP" | jq -r '.city')
-MDB_COLO=$(echo "$MDB_GEOIP" | jq -r '.colo')
 
 # MariaDB yum mirrors may have connectivity issues for servers in China (CN)
 # so can use alternative mirrors for better speed and connectivity
 if [[ "$MDB_COUNTRY" = 'CN' ]]; then
-    echo "rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB"
-    rpm --import https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+    echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
+    rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 else
     echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
     rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 fi
 
 ###############################################################################
-if [[ "$CENTOS_SEVEN" = '7' ]]; then
+if [[ "$CENTOS_EIGHT" = '8' ]]; then
+
+#     if [ "$(uname -m)" == 'aarch64' ]; then
+
+# if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = https://mirrors.aliyun.com/mariadb/yum/10.2/centos8-amd64
+# module_hotfixes=1
+# gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# else
+# cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+# [mariadb]
+# name = MariaDB
+# baseurl = http://yum.mariadb.org/10.1/centos8-amd64
+# module_hotfixes=1
+# gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+# gpgcheck=1
+# EOF
+# fi
 
     if [ "$(uname -m)" == 'aarch64' ]; then
 
@@ -246,15 +262,15 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-aarch64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.2/centos8-aarch64
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.2/centos7-aarch64
+baseurl = http://yum.mariadb.org/10.2/centos8-aarch64
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -267,15 +283,17 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.2/centos8-amd64
+module_hotfixes=1
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.2/centos7-amd64
+baseurl = http://yum.mariadb.org/10.2/centos8-amd64
+module_hotfixes=1
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -287,15 +305,85 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos7-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.2/centos8-amd64
+module_hotfixes=1
+gpgkey=https://mirrors.aliyun.com/mariadb/yum//RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = http://yum.mariadb.org/10.2/centos7-amd64
+baseurl = http://yum.mariadb.org/10.2/centos8-amd64
+module_hotfixes=1
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    fi # centos 8 uname -m
+
+fi
+
+###############################################################################
+if [[ "$CENTOS_SEVEN" = '7' ]]; then
+
+    if [ "$(uname -m)" == 'aarch64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.2/yum/centos7-aarch64/
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.2/yum/centos7-aarch64/
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+    fi
+
+    if [ "$(uname -m)" == 'x86_64' ]; then
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64/
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64/
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+fi
+
+    else
+
+if [[ "$MDB_COUNTRY" = 'CN' ]]; then
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64/
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+gpgcheck=1
+EOF
+else
+cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
+[mariadb]
+name = MariaDB
+baseurl = https://archive.mariadb.org/mariadb-10.2/yum/centos7-amd64/
 gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
@@ -314,8 +402,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos6-amd64
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.2/centos6-amd64
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -338,8 +426,8 @@ if [[ "$MDB_COUNTRY" = 'CN' ]]; then
 cat > "/etc/yum.repos.d/mariadb.repo" <<EOF
 [mariadb]
 name = MariaDB
-baseurl = https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/10.2/centos6-x86
-gpgkey=https://mirrors.tuna.tsinghua.edu.cn/mariadb/yum/RPM-GPG-KEY-MariaDB
+baseurl = https://mirrors.aliyun.com/mariadb/yum/10.2/centos6-x86
+gpgkey=https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
 gpgcheck=1
 EOF
 else
@@ -688,7 +776,7 @@ EFF
 fi
 
 cmservice mysql restart
-if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' ]] ; then
+if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" = '8' || "$CENTOS_NINE" = '9' ]] ; then
     cmchkconfig mariadb on
 else
     cmchkconfig mysql on

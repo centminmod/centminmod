@@ -1682,7 +1682,7 @@ yumupdatechecker() {
     YYUM_UPDATEPARAMETER="--disableplugin=priorities --setopt=deltarpm=0"
     # if IUS Community python34u, python35u or python36u packages installed from addons installers
     # ensure that system/EPEL versions of python34 and python36 are excluded from yum list & yum updates
-    if [[ "$(yum list installed python34u* python35u* python36u* -q --exclude=python* 2>&1 | grep -v Installed | grep -v 'No matching Packages' | tr -s ' ' | column -t)" ]]; then
+    if [[ "$(yum list installed python34u* python35u* python36u* -q --exclude=python* > /dev/null 2>&1 ; echo $?)" -eq '0' ]]; then
       PROMPT_FOR_BASE_PYTHON='y'
       YUM_EXCLUDE_PYTHON=' --exclude=python34-*,python35-*,python36-*'
     else
