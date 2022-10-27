@@ -3060,7 +3060,11 @@ rm -rf /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.csr
 rm -rf /usr/local/nginx/conf/ssl/${vhostname}
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf
 rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpcacheenabler_${vhostname}.conf
+rm -rf /usr/local/nginx/conf/wpincludes/${vhostname}/wpinfo.sh
 rm -rf /root/.acme.sh/${vhostname}
+rm -rf /root/.acme.sh/${vhostname}_ecc
+rm -rf /usr/local/nginx/conf/acmevhostbackup/${vhostname}.ssl.conf-acmebackup-*
+rm -rf /usr/local/nginx/conf/acmevhostbackup/${vhostname}.conf-backup-removal-https-default-*
 crontab -l > cronjoblist
 sed -i "/wp_updater_${vhostname}.sh/d" cronjoblist
 sed -i "/\/${vhostname}\/wp-cron.php/d" cronjoblist
