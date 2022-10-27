@@ -1,0 +1,70 @@
+From d50532be91f054ef9beb1afca2ea94f4a70f7c4d Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Tue, 18 Oct 2022 12:13:16 +0200
+Subject: [PATCH] Fix #81739: OOB read due to insufficient validation in
+ imageloadfont()
+
+If we swap the byte order of the relevant header bytes, we need to make
+sure again that the following multiplication does not overflow.
+---
+ ext/gd/gd.c                |  7 +++++++
+ ext/gd/tests/bug81739.phpt | 24 ++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+ create mode 100644 ext/gd/tests/bug81739.phpt
+
+diff --git a/ext/gd/gd.c b/ext/gd/gd.c
+index 336a73969267..fde93bba496f 100644
+--- a/ext/gd/gd.c
++++ b/ext/gd/gd.c
+@@ -1485,6 +1485,12 @@ PHP_FUNCTION(imageloadfont)
+ 		font->w = FLIPWORD(font->w);
+ 		font->h = FLIPWORD(font->h);
+ 		font->nchars = FLIPWORD(font->nchars);
++		if (overflow2(font->nchars, font->h) || overflow2(font->nchars * font->h, font->w )) {
++			php_error_docref(NULL, E_WARNING, "Error reading font, invalid font header");
++			efree(font);
++			php_stream_close(stream);
++			RETURN_FALSE;
++		}
+ 		body_size = font->w * font->h * font->nchars;
+ 	}
+ 
+@@ -1495,6 +1501,7 @@ PHP_FUNCTION(imageloadfont)
+ 		RETURN_FALSE;
+ 	}
+ 
++	ZEND_ASSERT(body_size > 0);
+ 	font->data = emalloc(body_size);
+ 	b = 0;
+ 	while (b < body_size && (n = php_stream_read(stream, &font->data[b], body_size - b)) > 0) {
+diff --git a/ext/gd/tests/bug81739.phpt b/ext/gd/tests/bug81739.phpt
+new file mode 100644
+index 000000000000..cc2a90381bab
+--- /dev/null
++++ b/ext/gd/tests/bug81739.phpt
+@@ -0,0 +1,24 @@
++--TEST--
++Bug #81739 (OOB read due to insufficient validation in imageloadfont())
++--SKIPIF--
++<?php
++if (!extension_loaded("gd")) die("skip gd extension not available");
++?>
++--FILE--
++<?php
++$s = fopen(__DIR__ . "/font.font", "w");
++// header without character data
++fwrite($s, "\x01\x00\x00\x00\x20\x00\x00\x00\x08\x00\x00\x00\x08\x00\x00\x00");
++fclose($s);
++var_dump(imageloadfont(__DIR__ . "/font.font"));
++?>
++--CLEAN--
++<?php
++@unlink(__DIR__ . "/font.font");
++?>
++--EXPECTF--
++Warning: imageloadfont(): %croduct of memory allocation multiplication would exceed INT_MAX, failing operation gracefully
++ in %s on line %d
++
++Warning: imageloadfont(): Error reading font, invalid font header in %s on line %d
++bool(false)
+\ No newline at end of file
