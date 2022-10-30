@@ -1,3 +1,10 @@
+fix_pure_ftpd_el8() {
+  if [[ -f /etc/pure-ftpd/pure-ftpd.conf && "$(grep '@sysconfigdir\@\/pureftpd.pdb' /etc/pure-ftpd/pure-ftpd.conf)" ]] && [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
+    sed -i 's/# PureDB                       \@sysconfigdir\@\/pureftpd.pdb/PureDB                        \/etc\/pure-ftpd\/pureftpd.pdb/' /etc/pure-ftpd/pure-ftpd.conf
+    service pure-ftpd restart >/dev/null 2>&1
+  fi
+}
+
 fix_phpfpm_systemd_switch() {
 if [[ "$CENTOS_SEVEN" -eq '7' && "$SWITCH_PHPFPM_SYSTEMD" = [yY] ]]; then
         if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "$(grep -o Unit /etc/systemd/system/php-fpm.service.d/failure-restart.conf)" = 'Unit' ]]; then
@@ -3525,6 +3532,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   ngx_modern_ciphers_setup
   tcp_bbr_setup
   start_limit_burst_adjust
+  fix_pure_ftpd_el8
 fi
 
 }
