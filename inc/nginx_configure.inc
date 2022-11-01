@@ -278,7 +278,7 @@ else
   echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
 fi
 # openssl 1.1.1 quictls fork for nginx-quic HTTP/3 builds
-if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
   if [[ "$NGINX_QUIC_RPMS" = [yY] && ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_SEVEN" -eq '7' ]]; then
     yum -y localinstall "$DIR_TMP/centmin-openssl11-quic-compat-1.1.1q-1.el7.x86_64.rpm"
   elif [[ "$NGINX_QUIC_RPMS" = [yY] && ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_EIGHT" -eq '8' ]]; then
@@ -290,7 +290,7 @@ if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
   # QUICTLS_LD_OPT="-L../openssl-quic-nginx/lib ${QUICTLS_LD}"
   # QUICTLS_CC_OPT='-I../openssl-quic-nginx/include '
   # QUICTLS_RPATH='../openssl-quic-nginx/lib:'
-  QUICTLS_LD_OPT="-L/opt/openssl-quic/lib ${QUICTLS_LD}"
+  QUICTLS_LD_OPT="-L/opt/openssl-quic/lib${QUICTLS_LD}"
   QUICTLS_CC_OPT='-I/opt/openssl-quic/include '
   QUICTLS_RPATH='/opt/openssl-quic/lib:'
   NGINX_HPACK='n'
@@ -4469,8 +4469,8 @@ if [[ "$CHECK_LXD" != [yY] ]] && [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f 
 fi
 
 if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
-  OPENSSLOPT=" --with-openssl=../openssl-quic-nginx"
-  # OPENSSLOPT=""
+  # OPENSSLOPT=" --with-openssl=../openssl-quic-nginx"
+  OPENSSLOPT=""
 fi
 
 #    ASK "Would you like to compile nginx with IPv6 support? [y/n] "

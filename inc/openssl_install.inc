@@ -1308,14 +1308,14 @@ fi
                 elif [[ ! "${OPENSSL_THREADS}" ]]; then
                     OPENSSL_THREADSOPT=""
                 fi
-                echo "./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}"
-                ./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}
+                echo "./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${TLSONETHREEOPT}${OPENSSL_THREADSOPT}${OPENSSL_CFZLIB_OPT}
             elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
-                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
-                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
-                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             fi
         else
             if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
@@ -1332,11 +1332,11 @@ fi
                     fi
                     TLSONETHREE_DETECT='n'
                 fi
-                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${TLSONETHREEOPT}"
-                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared${TLSONETHREEOPT}
+                echo "./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${TLSONETHREEOPT}"
+                ./config -Wl,--enable-new-dtags,-rpath=${STATICLIBSSL}/lib --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${TLSONETHREEOPT}
             else
-                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext"
-                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext
+                echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext"
+                ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext
             fi
         fi
         if [[ "$DETECTOPENSSL_ONEZERO" = '1.1' ]] || [[ "$DETECTOPENSSL_ONEONE" = '1.1.1' ]]; then
@@ -1370,6 +1370,9 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL quictls fork Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        if [ -f configdata.pm ]; then
+            ./configdata.pm -d > ${CENTMINLOGDIR}/centminmod_opensslinstall_configdata_${DT}.log
+        fi
       else
         echo "Skip OpenSSL quictls fork Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
       fi
@@ -1511,6 +1514,9 @@ fi
         echo "" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         echo "OpenSSL Install Time: $OPENSSLINSTALLTIME seconds" >> ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
         ls -lah ${CENTMINLOGDIR}/centminmod_opensslinstalltime_${DT}.log
+        if [ -f configdata.pm ]; then
+            ./configdata.pm -d > ${CENTMINLOGDIR}/centminmod_opensslinstall_configdata_${DT}.log
+        fi
       else
         echo "Skip OpenSSL Compile OPENSSLVER_CHECK=$OPENSSLVER_CHECK matches OPENSSL_VERSION=$OPENSSL_VERSION" | tee "${CENTMINLOGDIR}/centminmod_opensslinstall_skipped_${DT}.log"
       fi
