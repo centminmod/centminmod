@@ -1,0 +1,11 @@
+--- nginx-quic/src/http/ngx_http_core_module.c  2022-11-01 14:09:16.603615360 +0000
++++ nginx-quic-fix/src/http/ngx_http_core_module.c      2022-11-01 14:20:27.342938571 +0000
+@@ -3008,6 +3008,7 @@
+         lsopt.socklen = sizeof(struct sockaddr_in);
+ 
+         lsopt.backlog = NGX_LISTEN_BACKLOG;
++        lsopt.type = SOCK_STREAM;
+         lsopt.rcvbuf = -1;
+         lsopt.sndbuf = -1;
+ #if (NGX_HAVE_SETFIB)
+ 

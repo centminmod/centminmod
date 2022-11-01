@@ -652,6 +652,23 @@ patchnginx() {
     fi
   fi
 
+nginx_quic_patches() {
+  if [[ "$ngver" = 'quic' ]]; then
+    {
+    echo "patching nginx-quic"
+    if [ "$ngver" ]; then
+      pushd "$DIR_TMP/nginx-${ngver}"
+    else
+      pushd "$DIR_TMP/nginx-${NGINX_VERSION}"
+    fi
+    if [[ -f "$CUR_DIR/patches/nginx/nginx-quic-patch1.patch" && "$(grep -c 'lsopt.type = SOCK_STREAM;' src/http/ngx_http_core_module.c)" -lt '2' ]]; then
+      patch -p1 < "$CUR_DIR/patches/nginx/nginx-quic-patch1.patch"
+    fi
+    popd
+    } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
+  fi
+}
+
   if [[ "$NGINX_HTTP2" = [yY] ]]; then
     # assign NGX_VEREVAL nginx version based on if it's an initial
     # centmin mod fresh install or a nginx upgrade run
@@ -808,6 +825,7 @@ patchnginx() {
   ocsp_ttl_override
   ngx_srcache_patch
   ngx_headers_more_patch
+  nginx_quic_patches
 } 2>&1 | tee -a "${CENTMINLOGDIR}/patch_patchnginx_${DT}.log"
 }
 
