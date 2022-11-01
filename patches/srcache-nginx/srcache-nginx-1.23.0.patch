@@ -1,5 +1,69 @@
+From be22ac0dcd9245aadcaca3220da96a0c1a0285a7 Mon Sep 17 00:00:00 2001
+From: Hiroaki Nakamura <hnakamur@gmail.com>
+Date: Tue, 28 Jun 2022 10:55:57 +0900
+Subject: [PATCH] bugfix: Update handling of cache_control changed in nginx
+ 1.23.0 (Fixes #96) (#97)
+
+---
+ .travis.yml                    |  1 +
+ src/ngx_http_srcache_headers.c | 12 ++++++++++++
+ src/ngx_http_srcache_util.c    | 22 +++++++++++++++++++++-
+ 3 files changed, 34 insertions(+), 1 deletion(-)
+
+diff --git a/.travis.yml b/.travis.yml
+index 9ef4844..600cf7d 100644
+--- a/.travis.yml
++++ b/.travis.yml
+@@ -25,6 +25,7 @@ env:
+   matrix:
+     - NGINX_VERSION=1.17.8
+     - NGINX_VERSION=1.19.9
++    - NGINX_VERSION=1.23.0
+ 
+ services:
+  - memcache
+diff --git a/src/ngx_http_srcache_headers.c b/src/ngx_http_srcache_headers.c
+index 40f9b05..2802df2 100644
+--- a/src/ngx_http_srcache_headers.c
++++ b/src/ngx_http_srcache_headers.c
+@@ -256,9 +256,17 @@ static ngx_int_t
+ ngx_http_srcache_process_multi_header_lines(ngx_http_request_t *r,
+     ngx_table_elt_t *h, ngx_uint_t offset)
+ {
++#if defined(nginx_version) && nginx_version < 1023000
+     ngx_array_t      *pa;
++#endif
+     ngx_table_elt_t  *ho, **ph;
+ 
++#if defined(nginx_version) && nginx_version >= 1023000
++    ph = (ngx_table_elt_t **) ((char *) &r->headers_out + offset);
++    while (*ph) {
++      ph = &(*ph)->next;
++    }
++#else
+     pa = (ngx_array_t *) ((char *) &r->headers_out + offset);
+ 
+     if (pa->elts == NULL) {
+@@ -272,6 +280,7 @@ ngx_http_srcache_process_multi_header_lines(ngx_http_request_t *r,
+     if (ph == NULL) {
+         return NGX_ERROR;
+     }
++#endif
+ 
+     ho = ngx_list_push(&r->headers_out.headers);
+     if (ho == NULL) {
+@@ -280,6 +289,9 @@ ngx_http_srcache_process_multi_header_lines(ngx_http_request_t *r,
+ 
+     *ho = *h;
+     *ph = ho;
++#if defined(nginx_version) && nginx_version >= 1023000
++    ho->next = NULL;
++#endif
+ 
+     return NGX_OK;
+ }
 diff --git a/src/ngx_http_srcache_util.c b/src/ngx_http_srcache_util.c
-index bc8b0aa..2fe5a20 100644
+index d33adc1..bfa1eaa 100644
 --- a/src/ngx_http_srcache_util.c
 +++ b/src/ngx_http_srcache_util.c
 @@ -546,15 +546,34 @@ ngx_int_t
@@ -27,7 +91,7 @@ index bc8b0aa..2fe5a20 100644
 +        goto check_expires;
 +    }
 +
-+    for (cc = cc->next; cc; cc = cc->next) {
++    for (; cc; cc = cc->next) {
 +        if (!cc->hash) {
 +            continue;
 +        }
