@@ -1256,7 +1256,7 @@ fi
             echo "OPENSSL_CFZLIB_RPATH = $OPENSSL_CFZLIB_RPATH"
         fi
 
-        OPENSSL_QUIC_VERSION='OpenSSL_1_1_1s+quic'
+        # OPENSSL_QUIC_VERSION='OpenSSL_1_1_1s+quic'
         # OPENSSL_QUIC_VERSION='openssl-3.0.5+quic'
         OPENSSL_QUIC_DIR='openssl-quic-nginx'
         OPENSSL_QUIC_CUSTOMPATH=/opt/openssl-quic

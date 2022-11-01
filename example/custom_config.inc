@@ -329,6 +329,7 @@ NOSOURCEOPENSSL='y'        # set to 'y' to disable OpenSSL source compile for sy
 OPENSSL_VERSION='1.1.1s'   # Use this version of OpenSSL http://openssl.org/
 OPENSSL_VERSIONFALLBACK='1.1.1s'   # fallback if OPENSSL_VERSION uses openssl 1.1.x branch
 OPENSSL_VERSION_OLDOVERRIDE='1.1.1s' # override version if persist config OPENSSL_VERSION variable is out of date
+OPENSSL_QUIC_VERSION='OpenSSL_1_1_1r+quic'
 OPENSSL_THREADS='y'        # control whether openssl 1.1 branch uses threading or not
 OPENSSL_TLSONETHREE='y'    # whether OpenSSL 1.1.1 builds enable TLSv1.3
 OPENSSL_CUSTOMPATH='/opt/openssl'  # custom directory path for OpenSSL 1.0.2+
