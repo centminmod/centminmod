@@ -752,7 +752,7 @@ fi
 # SECOND_IP ip address set in the nginx vhost's listen directive
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  DEDI_LISTEN="listen   80;"
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"

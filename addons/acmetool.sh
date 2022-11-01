@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.82'
+ACMEVER='1.0.83'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -1124,7 +1124,7 @@ sslvhostsetup_mainhostname() {
 # SECOND_IP ip address set in the nginx vhost's listen directive
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  DEDI_LISTEN="listen   80;"
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
@@ -1511,7 +1511,7 @@ sslvhostsetup() {
 # SECOND_IP ip address set in the nginx vhost's listen directive
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  DEDI_LISTEN="listen   80;"
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
