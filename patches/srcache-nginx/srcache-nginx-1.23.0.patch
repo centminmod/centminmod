@@ -1,69 +1,14 @@
-From c216f16488c1b82ba46984079fafb357a125c8fc Mon Sep 17 00:00:00 2001
+From be22ac0dcd9245aadcaca3220da96a0c1a0285a7 Mon Sep 17 00:00:00 2001
 From: Hiroaki Nakamura <hnakamur@gmail.com>
-Date: Wed, 22 Jun 2022 12:32:52 +0900
-Subject: [PATCH 1/4] Update handling of cache_control changed in nginx 1.23.0
+Date: Tue, 28 Jun 2022 10:55:57 +0900
+Subject: [PATCH] bugfix: Update handling of cache_control changed in nginx
+ 1.23.0 (Fixes #96) (#97)
 
 ---
- src/ngx_http_srcache_util.c | 22 +++++++++++++++++++++-
- 1 file changed, 21 insertions(+), 1 deletion(-)
-
-diff --git a/src/ngx_http_srcache_util.c b/src/ngx_http_srcache_util.c
-index bc8b0aa..2fe5a20 100644
---- a/src/ngx_http_srcache_util.c
-+++ b/src/ngx_http_srcache_util.c
-@@ -546,15 +546,34 @@ ngx_int_t
- ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
-     ngx_http_srcache_loc_conf_t *conf, ngx_http_srcache_ctx_t *ctx)
- {
--    ngx_table_elt_t   **ccp;
-     ngx_table_elt_t    *h;
-+#if defined(nginx_version) && nginx_version >= 1023000
-+    ngx_table_elt_t    *cc;
-+#else
-+    ngx_table_elt_t   **ccp;
-     ngx_uint_t          i;
-+#endif
-     u_char             *p, *last;
-     ngx_int_t           n;
-     time_t              expires;
- 
-     dd("checking response cache control settings");
- 
-+#if defined(nginx_version) && nginx_version >= 1023000
-+    cc = r->headers_out.cache_control;
-+
-+    if (cc == NULL) {
-+        goto check_expires;
-+    }
-+
-+    for (cc = cc->next; cc; cc = cc->next) {
-+        if (!cc->hash) {
-+            continue;
-+        }
-+
-+        p = cc->value.data;
-+        last = p + cc->value.len;
-+#else
-     ccp = r->headers_out.cache_control.elts;
- 
-     if (ccp == NULL) {
-@@ -568,6 +587,7 @@ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
- 
-         p = ccp[i]->value.data;
-         last = p + ccp[i]->value.len;
-+#endif
- 
-         if (!conf->store_private
-             && ngx_strlcasestrn(p, last, (u_char *) "private", 7 - 1) != NULL)
-
-From 6c0b1a56dee0a54cf5e0a9cb4fbdcc605b66e3f4 Mon Sep 17 00:00:00 2001
-From: Hiroaki Nakamura <hnakamur@gmail.com>
-Date: Thu, 23 Jun 2022 03:49:34 +0900
-Subject: [PATCH 2/4] Add nginx 1.23.0 to .travis.yml matrix
-
----
- .travis.yml | 1 +
- 1 file changed, 1 insertion(+)
+ .travis.yml                    |  1 +
+ src/ngx_http_srcache_headers.c | 12 ++++++++++++
+ src/ngx_http_srcache_util.c    | 22 +++++++++++++++++++++-
+ 3 files changed, 34 insertions(+), 1 deletion(-)
 
 diff --git a/.travis.yml b/.travis.yml
 index 9ef4844..600cf7d 100644
@@ -77,17 +22,6 @@ index 9ef4844..600cf7d 100644
  
  services:
   - memcache
-
-From f542c0cdbbab0557dc45f02642a5d0bbcd78ffbf Mon Sep 17 00:00:00 2001
-From: Hiroaki Nakamura <hnakamur@gmail.com>
-Date: Tue, 28 Jun 2022 05:34:12 +0900
-Subject: [PATCH 3/4] Fix ngx_http_srcache_process_multi_header_lines for nginx
- 1.23.0
-
----
- src/ngx_http_srcache_headers.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
-
 diff --git a/src/ngx_http_srcache_headers.c b/src/ngx_http_srcache_headers.c
 index 40f9b05..2802df2 100644
 --- a/src/ngx_http_srcache_headers.c
@@ -128,26 +62,51 @@ index 40f9b05..2802df2 100644
  
      return NGX_OK;
  }
-
-From 1be6a61d93ac32d381d5cdc2772f50071e141bac Mon Sep 17 00:00:00 2001
-From: Hiroaki Nakamura <hnakamur@gmail.com>
-Date: Tue, 28 Jun 2022 10:32:21 +0900
-Subject: [PATCH 4/4] Fix ngx_http_srcache_response_no_cache
-
----
- src/ngx_http_srcache_util.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
 diff --git a/src/ngx_http_srcache_util.c b/src/ngx_http_srcache_util.c
-index 2fe5a20..05037af 100644
+index d33adc1..bfa1eaa 100644
 --- a/src/ngx_http_srcache_util.c
 +++ b/src/ngx_http_srcache_util.c
-@@ -566,7 +566,7 @@ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
-         goto check_expires;
-     }
+@@ -546,15 +546,34 @@ ngx_int_t
+ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
+     ngx_http_srcache_loc_conf_t *conf, ngx_http_srcache_ctx_t *ctx)
+ {
+-    ngx_table_elt_t   **ccp;
+     ngx_table_elt_t    *h;
++#if defined(nginx_version) && nginx_version >= 1023000
++    ngx_table_elt_t    *cc;
++#else
++    ngx_table_elt_t   **ccp;
+     ngx_uint_t          i;
++#endif
+     u_char             *p, *last;
+     ngx_int_t           n;
+     time_t              expires;
  
--    for (cc = cc->next; cc; cc = cc->next) {
+     dd("checking response cache control settings");
+ 
++#if defined(nginx_version) && nginx_version >= 1023000
++    cc = r->headers_out.cache_control;
++
++    if (cc == NULL) {
++        goto check_expires;
++    }
++
 +    for (; cc; cc = cc->next) {
-         if (!cc->hash) {
-             continue;
-         }
++        if (!cc->hash) {
++            continue;
++        }
++
++        p = cc->value.data;
++        last = p + cc->value.len;
++#else
+     ccp = r->headers_out.cache_control.elts;
+ 
+     if (ccp == NULL) {
+@@ -568,6 +587,7 @@ ngx_http_srcache_response_no_cache(ngx_http_request_t *r,
+ 
+         p = ccp[i]->value.data;
+         last = p + ccp[i]->value.len;
++#endif
+ 
+         if (!conf->store_private
+             && ngx_strlcasestrn(p, last, (u_char *) "private", 7 - 1) != NULL)
