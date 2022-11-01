@@ -266,9 +266,9 @@ service memcached start
     if [[ "$PHP_INSTALL" = [yY] ]]; then
 if [ "$PHP_MEMCACHE" == 'y' ]; then
     PHPCURRENTVER=$(php-config --version | cut -d . -f1,2)
-    if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
+    if [[ "$PHPCURRENTVER" = '7.0' || "$PHPMUVER" = '7.0' || "$PHPCURRENTVER" = '7.1' || "$PHPMUVER" = '7.1' || "$PHPCURRENTVER" = '7.2' || "$PHPMUVER" = '7.2' || "$PHPCURRENTVER" = '7.3' || "$PHPMUVER" = '7.3' || "$PHPCURRENTVER" = '7.4' || "$PHPMUVER" = '7.4' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.1' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG' || "$PHPSEVEN_CHECKVER" = '0' ]]; then
         echo
-        if [[ "$PHPVER_ID" -ge '80000' ]]; then
+        if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
             echo "Compiling memcache PHP extension for PHP 8.x ..."
         else
             echo "Compiling memcache PHP extension for PHP 7.x ..."
@@ -280,7 +280,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
             fi
         fi
         pushd "$DIR_TMP"
-        if [[ "$PHPVER_ID" -ge '80000' ]]; then
+        if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
             rm -rf memcache-php8
             time git clone -b NON_BLOCKING_IO_php8 https://github.com/websupport-sk/pecl-memcache.git memcache-php8
             cd memcache-php8
@@ -447,7 +447,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
     PHPEXT_MEMCACHEDLINK="https://pecl.php.net/get/${PHPEXT_MEMCACHEDLINKFILE}"
     PHPEXT_MEMCACHEDLINKLOCAL="${LOCALCENTMINMOD_MIRROR}/centminmodparts/memcached/${PHPEXT_MEMCACHEDLINKFILE}"
     echo
-    if [[ "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
         echo "compiling memcached PHP extension for PHP 8.x ..."
     else
         echo "compiling memcached PHP extension for PHP 7.x ..."
@@ -464,7 +464,7 @@ if [[ "$PHPMUVER" > 7 || "$PHPSEVEN_CHECKVER" = '0' ]]; then
             export PHP_AUTOHEADER=/usr/bin/autoheader268
         fi
     fi
-    if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPVER_ID" -ge '80000' ]]; then
+    if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
       pushd "$DIR_TMP"
       rm -rf memcached-php8
       time git clone --depth=1 https://github.com/php-memcached-dev/php-memcached.git memcached-php8

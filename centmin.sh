@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='58'
+SCRIPT_INCREMENTVER='62'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='08/05/22'
@@ -831,7 +831,7 @@ PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
 LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
-LIBRESSL_VERSION='3.0.2'   # Use this version of LibreSSL http://www.libressl.org/
+LIBRESSL_VERSION='3.5.3'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
 # not working yet just prep work
