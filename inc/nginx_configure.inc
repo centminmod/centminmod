@@ -214,6 +214,38 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+# ensure HTTP/3 UDP port 443 is open
+if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  if [[ ! "$(grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp_in
+    # csf --profile list
+    sed -i "s/UDP_IN = \"/UDP_IN = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443'
+    csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP_OUT =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp_out
+    # csf --profile list
+    sed -i "s/UDP_OUT = \"/UDP_OUT = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP_OUT =' /etc/csf/csf.conf | grep -o '443'
+    csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP6_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp6_in
+    # csf --profile list
+    sed -i "s/UDP6_IN = \"/UDP6_IN = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP6_IN =' /etc/csf/csf.conf | grep -o '443'
+    csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP6_OUT =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp6_out
+    # csf --profile list
+    sed -i "s/UDP6_OUT = \"/UDP6_OUT = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP6_OUT =' /etc/csf/csf.conf | grep -o '443'
+    csf -ra >/dev/null 2>&1
+  fi
+fi
+
 if [ -f "${CONFIGSCANBASE}/custom_config.inc" ]; then
   OPENSSL_VERSION_CUSTOMCONFIG=$(awk -F "'" '/^OPENSSL_VERSION=/ {print $2}' "${CONFIGSCANBASE}/custom_config.inc")
   if [[ "${OPENSSL_VERSION}" = '1.1.0j' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0j' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0i' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0h' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0g' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0f' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0e' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0d' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0c' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0b' || "$OPENSSL_VERSION_CUSTOMCONFIG" = '1.1.0a' ]]; then
@@ -277,6 +309,7 @@ else
   echo
   echo "NGINX_KTLS_OPT=$NGINX_KTLS_OPT"
 fi
+
 # openssl 1.1.1 quictls fork for nginx-quic HTTP/3 builds
 if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$LIBRESSL_SWITCH" = [nN] && "$BORINGSSL_SWITCH" = [nN] ]]; then
   if [[ "$NGINX_QUIC_RPMS" = [yY] && ! -f /opt/el-compat-quic/bin/openssl && "$CENTOS_SEVEN" -eq '7' ]]; then

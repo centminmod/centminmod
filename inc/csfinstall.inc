@@ -185,6 +185,38 @@ sed -i "s/UDP_IN = \"/UDP_IN = \"67,68,111,2049,1110,33434:33534,/g" /etc/csf/cs
 sed -i "s/UDP_OUT = \"/UDP_OUT = \"67,68,111,2049,1110,33434:33534,443/g" /etc/csf/csf.conf
 sed -i "s/DROP_NOLOG = \"67,68,/DROP_NOLOG = \"/g" /etc/csf/csf.conf
 
+# ensure HTTP/3 UDP port 443 is open
+if [[ "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+  if [[ ! "$(grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp_in
+    # csf --profile list
+    sed -i "s/UDP_IN = \"/UDP_IN = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP_OUT =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp_out
+    # csf --profile list
+    sed -i "s/UDP_OUT = \"/UDP_OUT = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP_OUT =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP6_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp6_in
+    # csf --profile list
+    sed -i "s/UDP6_IN = \"/UDP6_IN = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP6_IN =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+  if [[ ! "$(grep 'UDP6_OUT =' /etc/csf/csf.conf | grep -o '443')" ]]; then
+    csf --profile backup http3_udp6_out
+    # csf --profile list
+    sed -i "s/UDP6_OUT = \"/UDP6_OUT = \"443,/g" /etc/csf/csf.conf
+    grep 'UDP6_OUT =' /etc/csf/csf.conf | grep -o '443'
+    # csf -ra >/dev/null 2>&1
+  fi
+fi
+
     egrep '^UDP_|^TCP_|^DROP_NOLOG' /etc/csf/csf.conf
     
     echo "Disabling CSF Testing mode (activates firewall)..."
