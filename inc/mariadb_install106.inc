@@ -86,6 +86,9 @@ if [[ "$MDB_COUNTRY" = 'US' || "$MDB_CONTINENT" = 'NA' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
     MDB_MIRROR_BASEURL='https://download.nus.edu.sg/mirror/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
@@ -98,6 +101,9 @@ elif [[ "$MDB_COUNTRY" = 'SG' || "$MDB_CONTINENT" = 'AS' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'GB' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
@@ -110,6 +116,9 @@ elif [[ "$MDB_COUNTRY" = 'GB' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'HK' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
@@ -122,6 +131,9 @@ elif [[ "$MDB_COUNTRY" = 'HK' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
     MDB_MIRROR_BASEURL='https://mirror.rackspace.com/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
@@ -134,6 +146,9 @@ elif [[ "$MDB_COUNTRY" = 'DE' || "$MDB_CONTINENT" = 'EU' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'AU' || "$MDB_CONTINENT" = 'OC' ]]; then
     MDB_MIRROR_BASEURL='http://mirror.aarnet.edu.au/pub/MariaDB/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
@@ -146,6 +161,9 @@ elif [[ "$MDB_COUNTRY" = 'AU' || "$MDB_CONTINENT" = 'OC' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 elif [[ "$MDB_COUNTRY" = 'CN' ]]; then
     MDB_MIRROR_BASEURL='https://mirrors.aliyun.com/mariadb/yum'
     MDB_REPOMD_URL="${MDB_MIRROR_BASEURL}/${MDB_REPO_DIR}/repodata/repomd.xml"
@@ -158,10 +176,16 @@ elif [[ "$MDB_COUNTRY" = 'CN' ]]; then
     fi
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 else
     MDB_MIRROR_BASEURL='https://yum.mariadb.org'
     echo "rpm --import ${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
     rpm --import "${MDB_MIRROR_BASEURL}/RPM-GPG-KEY-MariaDB"
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 fi
 
 ###############################################################################
