@@ -406,15 +406,23 @@ if [[ "$MEMCACHED_DISABLED" = [yY] ]]; then
   echo ""
   cecho "--------------------------------------------------------" $boldyellow
   cecho "Stopping Memcached server service:" $boldyellow
-  cmservice memcached stop
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+    systemctl stop memcached
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    cmservice memcached stop
+  fi
   cecho "Disabling Memcached server service:" $boldyellow
-  cmchkconfig memcached stop
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+    systemctl disable memcached
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+    cmchkconfig memcached stop
+  fi
   cecho "--------------------------------------------------------" $boldyellow
   cecho "In future to re-enable Memcached server service type these 2 commands:" $boldyellow
-  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' || "$CENTOS_SEVEN" = '7' ]]; then
-    echo "service memcached start"
-    echo "chkconfig memcached on"
-  else
+  if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
+    echo "systemctl start memcached"
+    echo "systemctl enable memcached"
+  elif [[ "$CENTOS_SEVEN" = '7' ]]; then
     echo "service memcached start"
     echo "chkconfig memcached on"
   fi
