@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='245'
+SCRIPT_INCREMENTVER='246'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/11/22'
@@ -711,6 +711,8 @@ MM_CSF_SRC='n'
 # disable system IPv6 support
 # https://wiki.centos.org/FAQ/CentOS7#head-8984faf811faccca74c7bcdd74de7467f2fcd8ee
 DISABLE_IPVSIX='n'
+VPS_IPSIX_CHECK_DISABLE='y' # enable will disable check server for IPv6 support and auto configure Nginx vhosts for IPv6
+VPS_IPSIX_CHECK_DISABLE_DEBUG='n' # debug mode
 
 #####################################################
 # experimental use of subshells to download some
