@@ -282,7 +282,7 @@ if [ "$PHP_MEMCACHE" == 'y' ]; then
         pushd "$DIR_TMP"
         if [[ "$PHPMUVER" = '8.0' || "$PHPCURRENTVER" = '8.0' || "$PHPMUVER" = '8.1' || "$PHPCURRENTVER" = '8.1' || "$PHPMUVER" = '8.2' || "$PHPCURRENTVER" = '8.2' || "$PHPVER_ID" -ge '80000' ]]; then
             rm -rf memcache-php8
-            time git clone -b NON_BLOCKING_IO_php8 https://github.com/websupport-sk/pecl-memcache.git memcache-php8
+            time git clone https://github.com/websupport-sk/pecl-memcache.git memcache-php8
             cd memcache-php8
         else
             rm -rf memcache-php7
