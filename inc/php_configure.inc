@@ -1131,9 +1131,12 @@ else
 fi
 
 if [[ "$GCCINTEL_PHP" = [yY] ]]; then
-
+  CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
   # ensure devtoolset-7 and devtoolset-8 and devtoolset-9 are installed
 
+  if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+      yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
+  fi
   if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
       yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
   fi
@@ -1143,7 +1146,9 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   if [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ "$DEVTOOLSETNINE" = [yY] && ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
       yum -y install gcc-toolset-9-binutils gcc-toolset-9-gcc gcc-toolset-9-gcc-c++
   fi
-  if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
+  if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/devtoolset-12/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-12/root/usr/bin/g++ ]]; then
+      scl_install
+  elif [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/devtoolset-11/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-11/root/usr/bin/g++ ]]; then
       scl_install
   elif [[ "$DEVTOOLSETTEN" = [yY] && ! -f /opt/rh/devtoolset-10/root/usr/bin/gcc || ! -f /opt/rh/devtoolset-10/root/usr/bin/g++ ]]; then
       scl_install
@@ -1349,8 +1354,23 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
   # CentOS 8
   # initial php install
   if [[ "$CENTOS_EIGHT" = '8' && "$PHP_PGO" = [yY] && "$PHPMVER" > 7 ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.2' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.1' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '8.0' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '7.4' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMVER" = '7.3' ]] || [[ "$CENTOS_EIGHT" = '8' && "$DEVTOOLSET_PHP" = [yY] ]]; then
+    CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/gcc-toolset-12/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        echo "EL 8.7 set gcc-toolset-12"
+        echo $CC
+        echo $CXX
+    elif [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -1573,8 +1593,23 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # php upgrades
   if [[ "$CENTOS_EIGHT" = '8' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.2' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.1' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_EIGHT" = '8' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_EIGHT" = '8' && "$DEVTOOLSET_PHP" = [yY] ]]; then
+    CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
     # if devtoolset-4 gcc and g++ exist use then instead of system versions regardless of CentOS version
-    if [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+    if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/gcc-toolset-12/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        echo "EL 8.7 set gcc-toolset-12"
+        echo $CC
+        echo $CXX
+    elif [[ "$DEVTOOLSETELEVEN" = [yY] && -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
         DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
@@ -1631,6 +1666,23 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
 
   # php install & upgrades for el9's GCC 11 defaults
   if [[ "$CENTOS_NINE" -eq '9' ]]; then
+    CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+    if [[ "$CENTOSVER_NUMERIC" -ge '91' && "$DEVTOOLSETTWELVE" = [yY] && -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc && -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        GENERAL_DEVTOOLSETGCC='y'
+        DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-error=unused-result -Wno-unused-result'
+        DEVTOOLSETPHP_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-error=cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch'
+        source /opt/rh/gcc-toolset-12/enable
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc"
+        export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++"
+        echo "EL 9.1 set gcc-toolset-12"
+        echo $CC
+        echo $CXX
+    else
+        CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
         GENERAL_DEVTOOLSETGCC='y'
         DEVTOOLSETPHP_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result -Wno-vla-parameter -Wno-maybe-uninitialized -Wno-array-bounds -Wno-stringop-overread -Wno-missing-profile'
         DEVTOOLSETPHP_EXTRAFLAGS=" -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch"
@@ -1641,6 +1693,7 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
         echo "el9 set default GCC 11 settings for PHP compilations"
         echo $CC
         echo $CXX
+    fi
   fi
 
   if [[ "$CENTOS_SEVEN" = '7' && "$PHP_PGO" = [yY] && "$PHPMUVER" > 7 ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.2' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.1' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '8.0' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPVER_ID" -ge '80000' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.4' ]] || [[ "$CENTOS_SEVEN" = '7' && "$PHPMUVER" = '7.3' ]] || [[ "$CENTOS_SEVEN" = '7' && "$DEVTOOLSET_PHP" = [yY] ]]; then

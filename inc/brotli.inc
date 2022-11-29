@@ -163,7 +163,15 @@ scl_install() {
     fi
   # centos 8
   elif [[ "$CENTOS_EIGHT" = '8' ]]; then
-      if [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc ]]; then
+      CENTOSVER_NUMERIC=$(echo $CENTOSVER | sed -e 's|\.||g')
+      if [[ "$CENTOSVER_NUMERIC" -ge '87' && "$DEVTOOLSETTWELVE" = [yY] && ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc ]]; then
+        if [[ "$(rpm -ql gcc-toolset-12-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-12-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
+          time yum -y install gcc-toolset-12-annobin-annocheck gcc-toolset-12-annobin-docs.noarch gcc-toolset-12-annobin-plugin-gcc gcc-toolset-12-binutils gcc-toolset-12-binutils-devel gcc-toolset-12-dwz gcc-toolset-12-gcc gcc-toolset-12-gcc-c++ gcc-toolset-12-gcc-gfortran gcc-toolset-12-gdb gcc-toolset-12-libasan-devel gcc-toolset-12-libatomic-devel gcc-toolset-12-libgccjit gcc-toolset-12-libgccjit-devel gcc-toolset-12-libgccjit-docs gcc-toolset-12-libitm-devel gcc-toolset-12-liblsan-devel gcc-toolset-12-libquadmath-devel gcc-toolset-12-libstdc++-devel gcc-toolset-12-libtsan-devel gcc-toolset-12-libubsan-devel gcc-toolset-12-runtime
+        fi
+        sar_call
+        /opt/rh/gcc-toolset-12/root/usr/bin/gcc --version
+        /opt/rh/gcc-toolset-12/root/usr/bin/g++ --version
+      elif [[ "$DEVTOOLSETELEVEN" = [yY] && ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc ]]; then
         if [[ "$(rpm -ql gcc-toolset-11-gcc >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-11-gcc-c++ >/dev/null 2>&1; echo $?)" -ne '0' ]] || [[ "$(rpm -ql gcc-toolset-11-binutils >/dev/null 2>&1; echo $?)" -ne '0' ]]; then
           time yum -y install gcc-toolset-11-runtime gcc-toolset-11-toolchain gcc-toolset-11-binutils gcc-toolset-11-binutils-devel gcc-toolset-11-gcc gcc-toolset-11-gcc-c++ gcc-toolset-11-libatomic-devel gcc-toolset-11-libstdc++-devel gcc-toolset-11-ltrace gcc-toolset-11-make gcc-toolset-11-make-devel gcc-toolset-11-annobin-plugin-gcc gcc-toolset-11-annobin-annocheck gcc-toolset-11-gdb gcc-toolset-11-dwz gcc-toolset-11-elfutils gcc-toolset-11-elfutils-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-strace gcc-toolset-11-gcc-gfortran gcc-toolset-11-elfutils-libelf gcc-toolset-11-elfutils-libelf-devel gcc-toolset-11-libasan-devel gcc-toolset-11-libgccjit-devel gcc-toolset-11-libitm-devel gcc-toolset-11-liblsan-devel gcc-toolset-11-libquadmath-devel gcc-toolset-11-libtsan-devel gcc-toolset-11-libubsan-devel gcc-toolset-11-elfutils-debuginfod-client gcc-toolset-11-elfutils-debuginfod-client-devel gcc-toolset-11-elfutils-libs gcc-toolset-11-annobin-docs gcc-toolset-11-libgccjit gcc-toolset-11-libgccjit-devel gcc-toolset-11-libgccjit-docs
         fi
