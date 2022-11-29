@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.83'
+ACMEVER='1.0.84'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -994,6 +994,7 @@ switch_httpsdefault() {
 echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x# server {| server {|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+echo "sed -i \"s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
@@ -1003,6 +1004,7 @@ echo "sed -i \"s|#x# }| }|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.con
 sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i "s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   return 302 https:\/\/${vhostname}\$request_uri;|   return 302 https:\/\/${vhostname}\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1122,12 +1124,61 @@ sslvhostsetup_mainhostname() {
 # any new nginx vhosts created via centmin.sh menu option 2 or
 # /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
 # SECOND_IP ip address set in the nginx vhost's listen directive
+#
+# also check if system can resolve to a public IPv6 address to determine
+# if nginx vhost should support IPv6 listen directive
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo
+  echo "VPS_IPSIX_CHECK_DISABLE=$VPS_IPSIX_CHECK_DISABLE"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] ]]; then
+  IP_SYSTEM_CHECK_V4=$(curl -4s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv4 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  IP_SYSTEM_CHECK_V6=$(curl -6s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv6 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  if [ ! -f /usr/bin/ipcalc ]; then
+    yum -q -y install ipcalc
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  elif [ -f /usr/bin/ipcalc ]; then
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  fi
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "IP_SYSTEM_VALIDATE_V4=$IP_SYSTEM_VALIDATE_V4"
+  echo "IP_SYSTEM_VALIDATE_V6=$IP_SYSTEM_VALIDATE_V6"
+fi
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN="listen   80;"
+  # if VPS_IPSIX_CHECK_DISABLE=y then set default ipv4 listener
+  # if VPS_IPSIX_CHECK_DISABLE != y then set listeners based on
+  # IP_SYSTEM_VALIDATE_V4 and IP_SYSTEM_VALIDATE_V6 values where
+  # 0 = valid and 1 = not valid
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
+    DEDI_LISTEN=""
+  fi
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+    DEDI_LISTEN_V6="listen   [::]:80;"
+    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
+    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
+    DEDI_LISTEN_V6=""
+  else
+    DEDI_LISTEN_V6=""
+  fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "DEDI_LISTEN=$DEDI_LISTEN"
+  echo "DEDI_LISTEN_V6=$DEDI_LISTEN_V6"
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl ]; then
@@ -1302,6 +1353,7 @@ cat > "${MAIN_HOSTNAMEVHOSTSSLFILE}"<<ESS
 # if unsure use return 302 before using return 301
 # server {
 #       listen   ${DEDI_IP}80;
+#       $DEDI_LISTEN_V6
 #       server_name ${vhostname} www.${vhostname};
 #       return 302 https://\${vhostname}\$request_uri;
 # }
@@ -1509,12 +1561,61 @@ sslvhostsetup() {
 # any new nginx vhosts created via centmin.sh menu option 2 or
 # /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
 # SECOND_IP ip address set in the nginx vhost's listen directive
+#
+# also check if system can resolve to a public IPv6 address to determine
+# if nginx vhost should support IPv6 listen directive
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo
+  echo "VPS_IPSIX_CHECK_DISABLE=$VPS_IPSIX_CHECK_DISABLE"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] ]]; then
+  IP_SYSTEM_CHECK_V4=$(curl -4s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv4 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  IP_SYSTEM_CHECK_V6=$(curl -6s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv6 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  if [ ! -f /usr/bin/ipcalc ]; then
+    yum -q -y install ipcalc
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  elif [ -f /usr/bin/ipcalc ]; then
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  fi
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "IP_SYSTEM_VALIDATE_V4=$IP_SYSTEM_VALIDATE_V4"
+  echo "IP_SYSTEM_VALIDATE_V6=$IP_SYSTEM_VALIDATE_V6"
+fi
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN="listen   80;"
+  # if VPS_IPSIX_CHECK_DISABLE=y then set default ipv4 listener
+  # if VPS_IPSIX_CHECK_DISABLE != y then set listeners based on
+  # IP_SYSTEM_VALIDATE_V4 and IP_SYSTEM_VALIDATE_V6 values where
+  # 0 = valid and 1 = not valid
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
+    DEDI_LISTEN=""
+  fi
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+    DEDI_LISTEN_V6="listen   [::]:80;"
+    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
+    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
+    DEDI_LISTEN_V6=""
+  else
+    DEDI_LISTEN_V6=""
+  fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "DEDI_LISTEN=$DEDI_LISTEN"
+  echo "DEDI_LISTEN_V6=$DEDI_LISTEN_V6"
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -1558,6 +1659,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 ##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
+#x#   $DEDI_LISTEN_V6
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
 #x#   root /home/nginx/domains/$vhostname/public;
@@ -1614,6 +1716,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 ##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
+#x#   $DEDI_LISTEN_V6
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
 #x#   root /home/nginx/domains/$vhostname/public;
@@ -1645,6 +1748,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 ##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
+#x#   $DEDI_LISTEN_V6
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
 #x#   root /home/nginx/domains/$vhostname/public;
@@ -1653,6 +1757,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
@@ -1758,12 +1863,14 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # if unsure use return 302 before using return 301
 # server {
 #       listen   ${DEDI_IP}80;
+#       $DEDI_LISTEN_V6
 #       server_name ${vhostname} www.${vhostname};
 #       return 302 https://${vhostname}\$request_uri;
 # }
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;

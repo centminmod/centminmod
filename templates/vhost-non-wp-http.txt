@@ -6,6 +6,7 @@
 # if unsure use return 302 before using return 301
 #server {
 #            listen   ${DEDI_IP}80;
+#            $DEDI_LISTEN_V6
 #            server_name $vhostname;
 #            return 301 \$scheme://www.${vhostname}\$request_uri;
 #       }

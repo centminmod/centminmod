@@ -14,6 +14,7 @@ server {
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   ssl_dhparam /usr/local/nginx/conf/ssl/${vhostname}/dhparam.pem;
