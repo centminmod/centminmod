@@ -313,7 +313,18 @@ fix_nasm() {
 }
 
 imagemagick_heif() {
-  if [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+  if [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_EIGHT" = '8' && ! "$(rpm -qa ImageMagick-heic)" ]]; then
+    echo
+    echo "Install ImageMagick-heic one time only"
+    echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
+    libheif_install
+    yum -q -y install ImageMagick-heic --enablerepo=remi
+    echo "ImageMagick-heic installed"
+    if [[ "$(rpm -qa ImageMagick-heic | grep -o 'ImageMagick-heic')" ]]; then
+      yum -q versionlock delete ImageMagick-heic
+      yum -q versionlock ImageMagick-heic
+    fi
+  elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SEVEN" = '7' && ! "$(rpm -qa ImageMagick6-heic)" ]]; then
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"
@@ -324,7 +335,7 @@ imagemagick_heif() {
       yum -q versionlock delete ImageMagick6-heic
       yum -q versionlock ImageMagick6-heic
     fi
-  elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SIX" = '6' && ! "$(rpm -qa ImageMagick6-heic | grep -o 'ImageMagick6-heic')" ]]; then
+  elif [[ -f /etc/yum.repos.d/remi.repo && "$IMAGEMAGICK_HEIF" = [yY] && "$CENTOS_SIX" = '6' && ! "$(rpm -qa ImageMagick6-heic)" ]]; then
     echo
     echo "Install ImageMagick6-heic one time only"
     echo "https://blog.remirepo.net/post/2019/05/22/HEIC-HEIF-images-support"

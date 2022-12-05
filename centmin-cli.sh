@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='251'
+SCRIPT_INCREMENTVER='252'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='01/12/22'
@@ -1021,7 +1021,10 @@ SHORTCUTS='y'                # shortcuts
 POSTGRESQL='n'               # set to =y to install PostgreSQL 9.6 server, devel packages and pdo-pgsql PHP extension
 POSTGRESQL_BRANCHVER='13'   # PostgresSQL branch version https://www.postgresql.org/ i.e. 9.6, 10 or 11
 
-IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
+LIBDE265_VER='1.0.9'
+LIBHEIF_VER='1.14.0'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install

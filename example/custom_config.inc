@@ -308,7 +308,10 @@ PHPSWOOLE_SEVEN_ONE_VER='4.5.11' # max PHP 7.1 supported version
 PHP_LIBGD_EXTERNAL='n'       # optional use external libgd instead of bundled PHP gd version
 LIBGD_EXTERNAL_VER='2.3.3'   # https://github.com/libgd/libgd/releases
 
-IMAGEMAGICK_HEIF='n'         # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_HEIF='n'           # experimental ImageMagick HEIF image format support
+IMAGEMAGICK_SOURCE_INSTALL='n' # ImageMagick 7 source install with HEIC support
+LIBDE265_VER='1.0.9'
+LIBHEIF_VER='1.14.0'
 
 # Redis server
 REDIS_SERVER_INSTALL='y'      # Install redis server by default on initial install

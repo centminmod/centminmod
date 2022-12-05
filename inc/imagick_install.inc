@@ -1,5 +1,21 @@
 libheif_install() {
-    if [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTEN" = [yY] ]]; then
+    if [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTWELVE" = [yY] ]]; then
+        if [[ -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+            source /opt/rh/gcc-toolset-12/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETELEVEN" = [yY] ]]; then
+        if [[ -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+            source /opt/rh/gcc-toolset-11/enable
+            GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
+            GENERALDEVTOOLSET_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-cast-align -Wno-implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-deprecated-declarations -Wno-int-conversion -Wno-unused-result -Wno-unused-result'
+            export CFLAGS="-fPIC${GENERALDEVTOOLSET_FALLTHROUGH}${GENERALDEVTOOLSET_EXTRAFLAGS}"
+            export CXXFLAGS="-fPIC"
+        fi
+    elif [[ "$CENTOS_EIGHT" = 8 && "$DEVTOOLSETTEN" = [yY] ]]; then
         if [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
             source /opt/rh/gcc-toolset-10/enable
             GENERALDEVTOOLSET_FALLTHROUGH=' -Wimplicit-fallthrough=0'
@@ -49,22 +65,30 @@ libheif_install() {
     rm -rf x265
     git clone https://bitbucket.org/multicoreware/x265_git x265
     cd x265/build/linux
-    cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=off -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
+    cmake -G "Unix Makefiles" -DENABLE_PIC=:BOOL=1 -DENABLE_SHARED:BOOL=1 -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ../../source
     make -s -j$(nproc)
     make install
     echo
 
     echo "Install libde265 for libheif"
     pushd "$DIR_TMP"
-    rm -rf libde265
-    git clone --depth=1 -b frame-parallel https://github.com/strukturag/libde265
-    cd libde265
+    # rm -rf libde265
+    # git clone --depth=1 https://github.com/strukturag/libde265
+    rm -rf libde265-*
+    wget -q https://github.com/strukturag/libde265/releases/download/v${LIBDE265_VER}/libde265-${LIBDE265_VER}.tar.gz -O libde265-${LIBDE265_VER}.tar.gz
+    tar xzf libde265-${LIBDE265_VER}.tar.gz
+    cd libde265-${LIBDE265_VER}
+    # cd libde265
     # mkdir -p build
     # cd build
     # rm -rf CMakeCache.txt
-    # make clean
-    # cmake3 ..
-    ./autogen.sh
+    # cmake3 .. -DCMAKE_INSTALL_PREFIX=/usr/local
+    # sed -i 's|autoheader|\/usr\/bin\/autoheader|g' autogen.sh
+    # sed -i 's|autoconf|\/usr\/bin\/autoconf|g' autogen.sh
+    # sed -i 's|automake|\/usr\/bin\/automake|g' autogen.sh
+    # sed -i 's|autoreconf|\/usr\/bin\/autoreconf|g' autogen.sh
+    # sed -i 's|aclocal|\/usr\/bin\/aclocal|g' autogen.sh
+    # ./autogen.sh
     ./configure
     make -s -j$(nproc)
     make install
@@ -75,10 +99,14 @@ libheif_install() {
     export CXX="g++"
     echo "Install libheif for HEIF file format decoder/encoder"
     pushd "$DIR_TMP"
-    rm -rf libheif
-    git clone --depth=1 https://github.com/strukturag/libheif
-    cd libheif
-    ./autogen.sh
+    # rm -rf libheif
+    # git clone --depth=1 https://github.com/strukturag/libheif
+    # cd libheif
+    # ./autogen.sh
+    rm -rf libheif-*
+    wget -q https://github.com/strukturag/libheif/releases/download/v${LIBHEIF_VER}/libheif-${LIBHEIF_VER}.tar.gz -O libheif-${LIBHEIF_VER}.tar.gz
+    tar xzf libheif-${LIBHEIF_VER}.tar.gz
+    cd libheif-${LIBHEIF_VER}
     make clean
     # export libde265_CFLAGS='-I/usr/local/include'
     # export libde265_LIBS='-L/usr/local/lib'
@@ -90,10 +118,25 @@ libheif_install() {
     make install
     echo
     echo "libheif install completed"
-    unset libde265_CFLAGS
-    unset libde265_LIBS
-    unset x265_CFLAGS
-    unset x265_LIBS
+    # unset libde265_CFLAGS
+    # unset libde265_LIBS
+    # unset x265_CFLAGS
+    # unset x265_LIBS
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        echo
+        echo "ImageMagick 7 source install start..."
+        wget -q https://www.imagemagick.org/download/ImageMagick.tar.gz -O ImageMagick.tar.gz
+        tar xzf ImageMagick.tar.gz
+        rm -rf ImageMagick-7*
+        cd ImageMagick-7*
+        make clean
+        PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/lib/pkgconfig" LD_LIBRARY_PATH=/usr/local/lib:/usr/lib64 LDFLAGS="-L/usr/local/lib -L/usr/lib64" CPPFLAGS="-I/usr/local/include -I/usr/include" ./configure --with-heic=yes --with-jemalloc=yes --with-modules=yes --with-djvu=yes --with-pango=yes --with-raw=yes
+        make -s -j$(nproc)
+        make install
+        ldconfig
+        echo
+        echo "ImageMagick 7 source install completed"
+    fi
 }
 
 checkphpext() {
@@ -340,6 +383,14 @@ imagickinstall() {
       # notes for users if PHP 7.0 detected
       check_devtoolset_php
       enable_devtoolset
+
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        echo "*************************************************"
+        cecho "* Installing libheif dependencies & ImageMagick 7" $boldgreen
+        echo "*************************************************"
+        libheif_install
+    fi
+
     echo "*************************************************"
     cecho "* Installing imagick PHP Extension" $boldgreen
     echo "*************************************************"
@@ -395,8 +446,14 @@ if [[ "$PHPMUVER" = '8.0' || "$PHPVER_ID" -ge '80000' || "$PHPMUVER" = 'NGDEBUG'
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
+    export PHP_AUTOCONF=/usr/bin/autoconf
+    export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+    else
+        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    fi
     sar_call
     make${MAKETHREADS}
     sar_call
@@ -430,8 +487,14 @@ elif [[ "$PHPMUVER" = '7.0' || "$PHPMUVER" = '7.1' || "$PHPMUVER" = '7.2' || "$P
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
+    export PHP_AUTOCONF=/usr/bin/autoconf
+    export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+    else
+        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    fi
     sar_call
     make${MAKETHREADS}
     sar_call
@@ -442,8 +505,14 @@ else
     if [[ "$INITIALINSTALL" != [yY] ]]; then
         make clean
     fi
+    export PHP_AUTOCONF=/usr/bin/autoconf
+    export PHP_AUTOHEADER=/usr/bin/autoheader
     /usr/local/bin/phpize
-    ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    if [[ "$IMAGEMAGICK_SOURCE_INSTALL" = [yY] ]]; then
+        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr/local
+    else
+        ./configure --with-php-config=/usr/local/bin/php-config --with-imagick=/usr
+    fi
     sar_call
     make${MAKETHREADS}
     sar_call
