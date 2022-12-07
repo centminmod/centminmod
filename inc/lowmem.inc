@@ -21,7 +21,7 @@ checkfor_lowmem() {
     ORESTY_LUANGINX='n'
     PHPFINFO='n'
     PHPMAILPARSE='n'
-    LIBRESSL_SWITCH='y'
+    # LIBRESSL_SWITCH='y'
     PHP_FTPEXT='n'
     NSD_INSTALL='n'
   fi

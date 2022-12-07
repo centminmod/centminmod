@@ -352,7 +352,7 @@ OPENSSLEQUALCIPHER_PATCH='n'  # https://community.centminmod.com/posts/57916/
 PRIORITIZE_CHACHA_OPENSSL='n' # https://community.centminmod.com/threads/15708/
 
 # LibreSSL
-LIBRESSL_SWITCH='y'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
+LIBRESSL_SWITCH='n'        # if set to 'y' it overrides OpenSSL as the default static compiled option for Nginx server
 LIBRESSL_VERSION='3.5.3'   # Use this version of LibreSSL http://www.libressl.org/
 
 # BoringSSL
