@@ -30,10 +30,10 @@ DIR_TMP='/svr-setup'
 # Centmin Mod Git Repo URL - primary repo
 # https://github.com/centminmod/centminmod
 GITINSTALLED='y'
-CMGIT='https://github.com/centminmod/centminmod.git'
+#CMGIT='https://github.com/centminmod/centminmod.git'
 # Gitlab backup repo 
 # https://gitlab.com/centminmod/centminmod
-#CMGIT='https://gitlab.com/centminmod/centminmod.git'
+CMGIT='https://gitlab.com/centminmod/centminmod.git'
 #####################################################
 # wget renamed github
 AXEL='n'
@@ -1711,7 +1711,7 @@ install_axel() {
   if [ -s $AXEL_LINKFILE ]; then
     echo "Axel ${AXEL_VER} Archive found, skipping download..." 
   else
-    wget -O $AXEL_LINKFILE $AXEL_LINK
+    wget -O $AXEL_LINKFILE $AXEL_LINKLOCAL
     ERROR=$?
     if [[ "$ERROR" != '0' ]]; then
      echo "Error: $AXEL_LINKFILE download failed."
@@ -1821,9 +1821,9 @@ cd $INSTALLDIR
 #sed -i "s|PHPREDIS='y'|PHPREDIS='n'|" centmin.sh
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
-PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.0' | head -n1)
-PHPVERLATEST=${PHPVERLATEST:-"8.0.26"}
+PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.2' | head -n1)
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
+PHPVERLATEST=${PHPVERLATEST:-"8.2.0"}
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
 # disable axivo yum repo
@@ -1836,6 +1836,12 @@ if [[ "$LOWMEM_INSTALL" = [yY] ]]; then
 fi
 echo "1" > /etc/centminmod/email-primary.ini
 echo "2" > /etc/centminmod/email-secondary.ini
+
+# setup gitlab as default git repo instead of github
+sed -i "s|^CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|#CMGIT='https:\/\/github.com\/centminmod\/centminmod.git'|" centmin.sh
+sed -i "s|^#CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|CMGIT='https:\/\/gitlab.com\/centminmod\/centminmod.git'|" centmin.sh
+echo "CMGIT='https://gitlab.com/centminmod/centminmod.git'" > /etc/centminmod/custom_config.inc
+
 cd "${INSTALLDIR}/centminmod"
 ./centmin.sh install
 sar_call

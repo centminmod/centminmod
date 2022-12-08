@@ -323,15 +323,15 @@ elif [[ "$CLI_PHP_VER" ]]; then
     # lessphpmem='y'
 else
     if [ -f /usr/local/bin/getphpver ]; then
-      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81)"
+      display_phpver="$(getphpver 73), $(getphpver 74), $(getphpver 80), $(getphpver 81), $(getphpver 82)"
     else
-      display_phpver="7.3.33, 7.4.26, 8.0.13"
+      display_phpver="7.3.33, 7.4.33, 8.0.26, 8.1.13, 8.2.0"
     fi
     echo
     echo "----------------------------------------------------------------"
     echo "Install which version of PHP? (i.e. $display_phpver, NGDEBUG)"
     echo "PHP 7.x/7.1.x/7.2.x/7.3.x is GA Stable but still may have broken PHP extensions."
-    echo "NGDEBUG is PHP 8.1 dev builds minus incompatible PHP extensions"
+    echo "NGDEBUG is PHP 8.3 dev builds minus incompatible PHP extensions"
     echo "----------------------------------------------------------------"
     echo
     echo "Current PHP Version: $(php-config --version)"
@@ -346,7 +346,10 @@ else
     fi
     if [ -f /usr/local/bin/getphpver ]; then
         getlatest_phpbranch=$(php-config --version | awk  -F '.' '{print $1$2}')
-        if [[ "$getlatest_phpbranch" = '81' ]]; then
+        if [[ "$getlatest_phpbranch" = '82' ]]; then
+            getlatest_phpbranchver=$(getphpver 82)
+            echo "Latest PHP Version Installable: $getlatest_phpbranchver"
+        elif [[ "$getlatest_phpbranch" = '81' ]]; then
             getlatest_phpbranchver=$(getphpver 81)
             echo "Latest PHP Version Installable: $getlatest_phpbranchver"
         elif [[ "$getlatest_phpbranch" = '80' ]]; then
