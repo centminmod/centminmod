@@ -33,7 +33,7 @@ PHP 7.4.x default beta installer.
 
 PHP 8.2.x default beta installer.
 
-    yum -y update; curl -O https://centminmod.com/betainstaller82.sh && chmod 0700 betainstaller82.sh && bash betainstaller81.sh
+    yum -y update; curl -O https://centminmod.com/betainstaller82.sh && chmod 0700 betainstaller82.sh && bash betainstaller82.sh
 
 PHP 8.1.x default beta installer.
 
