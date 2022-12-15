@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.84'
+ACMEVER='1.0.85'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -382,25 +382,25 @@ if [[ "$CF_DNSAPI_GLOBAL" = [yY] ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_Email" ]] 
   export CF_Key="$CF_KEY"
   export CF_Email="$CF_EMAIL"
   DNSAPI_OPT_GLOBAL=' --dns dns_cf'
-  sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
-  sed -i "s|CF_Key=\".*|CF_Key=\"$CF_KEY\"|" "$ACMECERTHOME"account.conf
-  sed -i "s|CF_Email=\".*|CF_Email=\"$CF_EMAIL\"|" "$ACMECERTHOME"account.conf
+  sed -i "s|^#SAVED_CF_|SAVED_CF_|" "$ACMECERTHOME"account.conf
+  sed -i "s|SAVED_CF_Key='.*|SAVED_CF_Key='$CF_KEY'|" "$ACMECERTHOME"account.conf
+  sed -i "s|SAVED_CF_Email='.*|SAVED_CF_Email='$CF_EMAIL'|" "$ACMECERTHOME"account.conf
 elif [[ "$CF_DNSAPI_GLOBAL" = [yY] ]] && [[ ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]] && [[ -z "$CF_KEY" && -z "$CF_Email" ]]; then
   # if token set and global api not set
   export CF_Token="$CF_Token"
   export CF_Account_ID="$CF_Account_ID"
   DNSAPI_OPT_GLOBAL=' --dns dns_cf'
-  sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
-  sed -i "s|CF_Token=\".*|CF_Token=\"$CF_Token\"|" "$ACMECERTHOME"account.conf
-  sed -i "s|CF_Account_ID=\".*|CF_Account_ID=\"$CF_Account_ID\"|" "$ACMECERTHOME"account.conf
+  sed -i "s|^#SAVED_CF_|SAVED_CF_|" "$ACMECERTHOME"account.conf
+  sed -i "s|SAVED_CF_Token='.*|SAVED_CF_Token='$CF_Token'|" "$ACMECERTHOME"account.conf
+  sed -i "s|SAVED_CF_Account_ID='.*|SAVED_CF_Account_ID='$CF_Account_ID'|" "$ACMECERTHOME"account.conf
 elif [[ "$CF_DNSAPI_GLOBAL" = [yY] ]] && [[ ! -z "$CF_Token" && ! -z "$CF_Account_ID" ]] && [[ ! -z "$CF_KEY" && ! -z "$CF_Email" ]]; then
   # if both global api key and token set, prefer token api method
   export CF_Token="$CF_Token"
   export CF_Account_ID="$CF_Account_ID"
   DNSAPI_OPT_GLOBAL=' --dns dns_cf'
-  sed -i "s|^#CF_|CF_|" "$ACMECERTHOME"account.conf
-  sed -i "s|CF_Token=\".*|CF_Token=\"$CF_Token\"|" "$ACMECERTHOME"account.conf
-  sed -i "s|CF_Account_ID=\".*|CF_Account_ID=\"$CF_Account_ID\"|" "$ACMECERTHOME"account.conf
+  sed -i "s|^#SAVED_CF_|SAVED_CF_|" "$ACMECERTHOME"account.conf
+  sed -i "s|SAVED_CF_Token='.*|SAVED_CF_Token='$CF_Token'|" "$ACMECERTHOME"account.conf
+  sed -i "s|SAVED_CF_Account_ID='.*|SAVED_CF_Account_ID='$CF_Account_ID'|" "$ACMECERTHOME"account.conf
 else
   DNSAPI_OPT_GLOBAL=""
 fi
