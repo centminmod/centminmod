@@ -45,7 +45,7 @@ geoiptwolite_phpext_install() {
     cd MaxMind-DB-Reader-php
     cd ext
     /usr/local/bin/phpize
-    ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
+    PKG_CONFIG_PATH=/usr/lib64/pkgconfig:/usr/share/pkgconfig:/usr/local/nginx-dep/lib/pkgconfig ./configure --prefix=/usr/local/nginx-dep --with-php-config=/usr/local/bin/php-config
     make$MAKETHREADS
     # make test
     make install
