@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.85'
+ACMEVER='1.0.86'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -994,7 +994,9 @@ switch_httpsdefault() {
 echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x# server {| server {|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
-echo "sed -i \"s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+  echo "sed -i \"s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+fi
 echo "sed -i \"s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
@@ -1004,7 +1006,9 @@ echo "sed -i \"s|#x# }| }|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.con
 sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
-sed -i "s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+  sed -i "s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+fi
 sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   return 302 https:\/\/${vhostname}\$request_uri;|   return 302 https:\/\/${vhostname}\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1013,9 +1017,10 @@ sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
 # remove duplicates
 sed -i '/^# Centmin Mod Getting Started Guide/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
-sed -i '/^# must read http:\/\/centminmod.com\/getstarted.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# must read https:\/\/centminmod.com\/getstarted.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# For HTTP\/2 SSL Setup/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
-sed -i '/^# read http:\/\/centminmod.com\/nginx_configure_https_ssl_spdy.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# read https:\/\/centminmod.com\/nginx_configure_https_ssl_spdy.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# read https:\/\/centminmod.com\/letsencrypt-freessl.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# redirect from www to non-www  forced SSL/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# uncomment, save file and restart Nginx to enable/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# if unsure use return 302 before using return 301/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1024,6 +1029,7 @@ sed -i "/^#   server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/co
 sed -i '/^#    return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# }/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^#       listen   80;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/#       listen   \[::\]:80;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "/^#       server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^#       return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
@@ -1651,7 +1657,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/letsencrypt-freessl.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1708,7 +1714,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/letsencrypt-freessl.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1740,7 +1746,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/letsencrypt-freessl.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
