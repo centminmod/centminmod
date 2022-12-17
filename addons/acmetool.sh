@@ -13,7 +13,7 @@ export SYSTEMD_PAGER=''
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.86'
+ACMEVER='1.0.87'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -479,7 +479,7 @@ check_cfdns_api() {
 
 #####################
 check_domains() {
-  if [ -d /root/.acme.sh ]; then
+  if [ -d "${ACMECERTHOME}" ]; then
    echo "----------------------------------------------"
    echo "check domain DNS"
    echo "----------------------------------------------"
@@ -511,7 +511,7 @@ check_domains() {
 
 #####################
 checkdate() {
-  if [ -d /root/.acme.sh ]; then
+  if [ -d "${ACMECERTHOME}" ]; then
    echo "----------------------------------------------"
    echo "nginx installed"
    echo "----------------------------------------------"
@@ -541,6 +541,7 @@ checkdate() {
    echo "----------------------------------------------"
    for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain.cer|ca.cer'); do
     if [ -f $ca ]; then
+      # cert info
       expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
       fingerprint=$(openssl x509 -fingerprint -noout -in $ca | sed 's|:||g' | awk -F "=" '// {print $2}')
       epochExpirydate=$(date -d"${expiry}" +%s)
@@ -558,6 +559,10 @@ checkdate() {
         echo "https://crt.sh/?sha1=${fingerprint}"
       fi
       echo "certificate expires in $daysToExpire days on $expiry"
+      if [ -f "$conf" ]; then
+        getauth_method=$(grep -i 'Le_Webroot' "$conf")
+        echo "Letsencrypt validation method: $getauth_method"
+      fi
       if [[ "$checkRevokeCaa" -eq 1 ]]; then
         echo "certificate should be renewed ASAP due to CAA bug"
         echo "https://community.letsencrypt.org/t/2020-02-29-caa-rechecking-bug/114591"
@@ -789,8 +794,8 @@ install_acme() {
   else
   ./acme.sh --install --days $RENEWDAYS
   fi
-  if [ -f "/root/.acme.sh/acme.sh.env" ]; then
-    . "/root/.acme.sh/acme.sh.env"
+  if [ -f "${ACMECERTHOME}acme.sh.env" ]; then
+    . "${ACMECERTHOME}acme.sh.env"
   fi
   "$ACMEBINARY" -h
   echo
@@ -835,8 +840,8 @@ update_acme() {
   else
   ./acme.sh --install --days $RENEWDAYS
   fi
-  if [ -f "/root/.acme.sh/acme.sh.env" ]; then
-    . "/root/.acme.sh/acme.sh.env"
+  if [ -f "${ACMECERTHOME}acme.sh.env" ]; then
+    . "${ACMECERTHOME}acme.sh.env"
   fi
   "$ACMEBINARY" -v
   if [[ "$QUITEOUTPUT" != 'quite' ]]; then
@@ -865,7 +870,7 @@ setup_acme() {
 #####################
 check_acmeinstall() {
   # check if acme.sh is installed
-  if [[ ! -d /root/.acme.sh || ! -f /root/.acme.sh/acme.sh.env ]]; then
+  if [[ ! -d "${ACMECERTHOME}" || ! -f ${ACMECERTHOME}acme.sh.env ]]; then
     echo
     echo "acme.sh missing... installing acme.sh now..."
     install_acme
@@ -2251,7 +2256,7 @@ issue_acme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -2565,7 +2570,7 @@ reissue_acme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -2786,7 +2791,7 @@ reissue_acme_only() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -3097,7 +3102,7 @@ renew_acme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -3463,7 +3468,7 @@ webroot_issueacme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -3784,7 +3789,7 @@ webroot_reissueacme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -4143,7 +4148,7 @@ webroot_renewacme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -4501,7 +4506,7 @@ issue_acmedns() {
       echo "rm -rf ${ACMECERTHOME}/${vhostname}" >> "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
     fi
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
