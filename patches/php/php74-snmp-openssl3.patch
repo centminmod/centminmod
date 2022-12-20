@@ -1,0 +1,38 @@
+Backported from 8.0 for 7.4 by Remi
+
+
+From f9fd3595ecb36c8dc6add0515782a18f15216d77 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Thu, 27 May 2021 14:20:07 +0200
+Subject: [PATCH] Fix snmp build without DES
+
+---
+ ext/snmp/snmp.c | 16 ++++++++++++++--
+ 1 file changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/ext/snmp/snmp.c b/ext/snmp/snmp.c
+index 35d19c8738828..d31995827880d 100644
+--- a/ext/snmp/snmp.c
++++ b/ext/snmp/snmp.c
+@@ -1225,15 +1225,19 @@ static int netsnmp_session_set_auth_prot
+    Set the security protocol in the snmpv3 session */
+ static int netsnmp_session_set_sec_protocol(struct snmp_session *s, char *prot)
+ {
++#ifndef NETSNMP_DISABLE_DES
+ 	if (!strcasecmp(prot, "DES")) {
+ 		s->securityPrivProto = usmDESPrivProtocol;
+ 		s->securityPrivProtoLen = USM_PRIV_PROTO_DES_LEN;
++	} else
++#endif
+ #ifdef HAVE_AES
+-	} else if (!strcasecmp(prot, "AES128") || !strcasecmp(prot, "AES")) {
++	if (!strcasecmp(prot, "AES128") || !strcasecmp(prot, "AES")) {
+ 		s->securityPrivProto = usmAESPrivProtocol;
+ 		s->securityPrivProtoLen = USM_PRIV_PROTO_AES_LEN;
++	} else
+ #endif
+-	} else {
++	{
+ 		php_error_docref(NULL, E_WARNING, "Unknown security protocol '%s'", prot);
+ 		return (-1);
+ 	}

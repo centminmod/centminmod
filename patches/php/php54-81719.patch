@@ -1,0 +1,29 @@
+From 569b03f03929588741bb3dce5168d70805838143 Mon Sep 17 00:00:00 2001
+From: Stanislav Malyshev <smalyshev@gmail.com>
+Date: Mon, 6 Jun 2022 00:56:51 -0600
+Subject: [PATCH] Fix bug #81719: mysqlnd/pdo password buffer overflow
+
+(cherry picked from commit 58006537fc5f133ae8549efe5118cde418b3ace9)
+(cherry picked from commit 9433de72e291db518357fe55531cc15432d43ec4)
+(cherry picked from commit 1560224d3a26574f0195af3853e4d7e050b0b06f)
+(cherry picked from commit 5e1d9182748c5330c4bf2154da858206e76914b6)
+(cherry picked from commit 1f8f48703c7800b0e90344ccd73e74a1727f8a72)
+(cherry picked from commit e47e59289578140103efd03fcd58ea24776a6347)
+---
+ ext/mysqlnd/mysqlnd_wireprotocol.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/ext/mysqlnd/mysqlnd_wireprotocol.c b/ext/mysqlnd/mysqlnd_wireprotocol.c
+index 844330fbf10..6e5c539d149 100644
+--- a/ext/mysqlnd/mysqlnd_wireprotocol.c
++++ b/ext/mysqlnd/mysqlnd_wireprotocol.c
+@@ -763,7 +763,8 @@ static size_t
+ php_mysqlnd_change_auth_response_write(void * _packet, MYSQLND_CONN_DATA * conn TSRMLS_DC)
+ {
+ 	MYSQLND_PACKET_CHANGE_AUTH_RESPONSE *packet= (MYSQLND_PACKET_CHANGE_AUTH_RESPONSE *) _packet;
+-	zend_uchar * buffer = conn->net->cmd_buffer.length >= packet->auth_data_len? conn->net->cmd_buffer.buffer : mnd_emalloc(packet->auth_data_len);
++	size_t total_packet_size = packet->auth_data_len + MYSQLND_HEADER_SIZE;
++	zend_uchar * buffer = conn->net->cmd_buffer.length >= total_packet_size? conn->net->cmd_buffer.buffer : mnd_emalloc(total_packet_size);
+ 	zend_uchar *p = buffer + MYSQLND_HEADER_SIZE; /* start after the header */
+ 
+ 	DBG_ENTER("php_mysqlnd_change_auth_response_write");
