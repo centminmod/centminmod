@@ -1922,12 +1922,26 @@ yumupdatechecker() {
       cecho "-------------------------------------------------------------" $boldgreen
       cecho "  Following Updates are available: " $boldyellow
       cecho "-------------------------------------------------------------" $boldgreen
-      if [[ "$CENTOS_SIX" = '6' ]]; then
+      if [[ "$CENTOS_NINE" = '9' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME=''
+      elif [[ "$CENTOS_EIGHT" = '8' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME=''
+      elif [[ "$CENTOS_SEVEN" = '7' ]]; then
+        REMI_IMAGEMAGICK_PKGNAME='6'
+      elif [[ "$CENTOS_SIX" = '6' ]]; then
         REMI_IMAGEMAGICK_PKGNAME='6'
       else
         REMI_IMAGEMAGICK_PKGNAME="6"
       fi
-      if [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
+      if [[ "$CENTOS_NINE" -eq '9' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
+        yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+      elif [[ "$CENTOS_EIGHT" -eq '8' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
+        yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+        IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
+        rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
+      elif [[ "$CENTOS_SEVEN" -eq '7' ]] && [[ -f /etc/yum.repos.d/remi.repo && -f /etc/yum.repos.d/city-fan.org.repo ]] && [[ -f /usr/bin/php56 || -f /usr/bin/php70 || -f /usr/bin/php71 || -f /usr/bin/php72 || -f /usr/bin/php73 || -f /usr/bin/php74 || -f /usr/bin/php80 || -f /usr/bin/php81 || -f /usr/bin/php82 ]]; then
         yum -q list updates $YYUM_PARAMETER --enablerepo=${YENABLEREPOS}${YUM_EXCLUDE_PYTHON} --disableexcludes=main,remi | grep -v 'Updated Packages' | tee "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
         IMAGEMAGICK_UPDATECHECK=$(grep "ImageMagick${REMI_IMAGEMAGICK_PKGNAME}" "/root/centminlogs/yumcheck-imagemagick-$DT.txt" >/dev/null 2>&1; echo $?)
         rm -rf "/root/centminlogs/yumcheck-imagemagick-$DT.txt"
