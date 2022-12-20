@@ -1,0 +1,2480 @@
+From f7da6fd2d5d2160ef67e0bee3ad76f28d7b71983 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@php.net>
+Date: Sun, 8 Aug 2021 17:38:30 +0200
+Subject: [PATCH 01/24] minimal fix for openssl 3.0 (#7002)
+
+(cherry picked from commit a0972deb0f441fc7991001cb51efc994b70a3b51)
+---
+ ext/openssl/openssl.c | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index aa819be422..9cb643601c 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -1517,7 +1517,9 @@ PHP_MINIT_FUNCTION(openssl)
+ 	REGISTER_LONG_CONSTANT("PKCS7_NOSIGS", PKCS7_NOSIGS, CONST_CS|CONST_PERSISTENT);
+ 
+ 	REGISTER_LONG_CONSTANT("OPENSSL_PKCS1_PADDING", RSA_PKCS1_PADDING, CONST_CS|CONST_PERSISTENT);
++#ifdef RSA_SSLV23_PADDING
+ 	REGISTER_LONG_CONSTANT("OPENSSL_SSLV23_PADDING", RSA_SSLV23_PADDING, CONST_CS|CONST_PERSISTENT);
++#endif
+ 	REGISTER_LONG_CONSTANT("OPENSSL_NO_PADDING", RSA_NO_PADDING, CONST_CS|CONST_PERSISTENT);
+ 	REGISTER_LONG_CONSTANT("OPENSSL_PKCS1_OAEP_PADDING", RSA_PKCS1_OAEP_PADDING, CONST_CS|CONST_PERSISTENT);
+ 
+-- 
+2.31.1
+
+From 557f613efc86158ef65200f2c994c28bad257850 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 09:41:39 +0200
+Subject: [PATCH 02/24] ignore deprecated
+
+---
+ ext/openssl/openssl.c           |  2 ++
+ ext/openssl/tests/bug79145.phpt | 11 ++++++-----
+ 2 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 9cb643601c..2f2a7981da 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -25,6 +25,8 @@
+ #include "config.h"
+ #endif
+ 
++# pragma GCC diagnostic ignored "-Wdeprecated-declarations"
++
+ #include "php.h"
+ #include "php_ini.h"
+ #include "php_openssl.h"
+diff --git a/ext/openssl/tests/bug79145.phpt b/ext/openssl/tests/bug79145.phpt
+index 348831189b..b2cb6164bd 100644
+--- a/ext/openssl/tests/bug79145.phpt
++++ b/ext/openssl/tests/bug79145.phpt
+@@ -14,13 +14,14 @@ j85Q5OliVxOdB1LoTOsOmfFf/fdvpU3DsOWsDKlVrL41MHxXorwrwOiys/r/gv2d
+ C9C4JmhTOjBVAK8SewIDAQAC
+ -----END PUBLIC KEY-----';
+ 
++$a = openssl_get_publickey($b);
++@openssl_free_key($a);
++
+ $start = memory_get_usage(true);
+-for ($i = 0; $i < 100000; $i++) {
+-    $a = openssl_get_publickey($b);
+-    openssl_free_key($a);
+-}
++$a = openssl_get_publickey($b);
++@openssl_free_key($a);
+ $end = memory_get_usage(true);
+-var_dump($end <= 1.1 * $start);
++var_dump($end == $start);
+ ?>
+ --EXPECT--
+ bool(true)
+-- 
+2.31.1
+
+From c83d7444d35e4b246f84c1adc1353f75fbd4b44c Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 09:46:07 +0200
+Subject: [PATCH 03/24] Reduce security level in some OpenSSL tests
+
+This allows tests using older protocols and algorithms to work
+under OpenSSL 3.
+
+Also account for minor changes in error reporting.
+
+(cherry picked from commit 3ea57cf83834e07aae6953201015e39b4a2ac6dd)
+---
+ ext/openssl/tests/session_meta_capture.phpt          | 4 ++--
+ ext/openssl/tests/stream_crypto_flags_001.phpt       | 4 ++--
+ ext/openssl/tests/stream_crypto_flags_002.phpt       | 4 ++--
+ ext/openssl/tests/stream_crypto_flags_003.phpt       | 4 ++--
+ ext/openssl/tests/stream_crypto_flags_004.phpt       | 4 ++--
+ ext/openssl/tests/stream_security_level.phpt         | 6 +++---
+ ext/openssl/tests/tls_min_v1.0_max_v1.1_wrapper.phpt | 4 ++--
+ ext/openssl/tests/tls_wrapper.phpt                   | 4 ++--
+ ext/openssl/tests/tls_wrapper_with_tls_v1.3.phpt     | 4 ++--
+ ext/openssl/tests/tlsv1.0_wrapper.phpt               | 4 ++--
+ ext/openssl/tests/tlsv1.1_wrapper.phpt               | 4 ++--
+ 11 files changed, 23 insertions(+), 23 deletions(-)
+
+diff --git a/ext/openssl/tests/session_meta_capture.phpt b/ext/openssl/tests/session_meta_capture.phpt
+index d7169fe1f8..ebd442d0e5 100644
+--- a/ext/openssl/tests/session_meta_capture.phpt
++++ b/ext/openssl/tests/session_meta_capture.phpt
+@@ -15,7 +15,7 @@ $serverCode = <<<'CODE'
+     $serverFlags = STREAM_SERVER_BIND | STREAM_SERVER_LISTEN;
+     $serverCtx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server($serverUri, $errno, $errstr, $serverFlags, $serverCtx);
+@@ -37,7 +37,7 @@ $clientCode = <<<'CODE'
+         'cafile' => '%s',
+         'peer_name' => '%s',
+         'capture_session_meta' => true,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/stream_crypto_flags_001.phpt b/ext/openssl/tests/stream_crypto_flags_001.phpt
+index acd97110ff..a86e0f8a6c 100644
+--- a/ext/openssl/tests/stream_crypto_flags_001.phpt
++++ b/ext/openssl/tests/stream_crypto_flags_001.phpt
+@@ -15,7 +15,7 @@ $serverCode = <<<'CODE'
+     $serverFlags = STREAM_SERVER_BIND | STREAM_SERVER_LISTEN;
+     $serverCtx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server($serverUri, $errno, $errstr, $serverFlags, $serverCtx);
+@@ -35,7 +35,7 @@ $clientCode = <<<'CODE'
+         'verify_peer' => true,
+         'cafile' => '%s',
+         'peer_name' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/stream_crypto_flags_002.phpt b/ext/openssl/tests/stream_crypto_flags_002.phpt
+index 15b1ec2cfc..2870bdc814 100644
+--- a/ext/openssl/tests/stream_crypto_flags_002.phpt
++++ b/ext/openssl/tests/stream_crypto_flags_002.phpt
+@@ -15,7 +15,7 @@ $serverCode = <<<'CODE'
+     $serverFlags = STREAM_SERVER_BIND | STREAM_SERVER_LISTEN;
+     $serverCtx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server($serverUri, $errno, $errstr, $serverFlags, $serverCtx);
+@@ -36,7 +36,7 @@ $clientCode = <<<'CODE'
+         'verify_peer' => true,
+         'cafile' => '%s',
+         'peer_name' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/stream_crypto_flags_003.phpt b/ext/openssl/tests/stream_crypto_flags_003.phpt
+index 35f83f22dd..da1f1ae228 100644
+--- a/ext/openssl/tests/stream_crypto_flags_003.phpt
++++ b/ext/openssl/tests/stream_crypto_flags_003.phpt
+@@ -19,7 +19,7 @@ $serverCode = <<<'CODE'
+ 
+         // Only accept TLSv1.0 and TLSv1.2 connections
+         'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_0_SERVER  | STREAM_CRYPTO_METHOD_TLSv1_2_SERVER,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server($serverUri, $errno, $errstr, $serverFlags, $serverCtx);
+@@ -40,7 +40,7 @@ $clientCode = <<<'CODE'
+         'verify_peer' => true,
+         'cafile' => '%s',
+         'peer_name' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/stream_crypto_flags_004.phpt b/ext/openssl/tests/stream_crypto_flags_004.phpt
+index d9bfcfea3f..b7626b8ea7 100644
+--- a/ext/openssl/tests/stream_crypto_flags_004.phpt
++++ b/ext/openssl/tests/stream_crypto_flags_004.phpt
+@@ -16,7 +16,7 @@ $serverCode = <<<'CODE'
+     $serverCtx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+         'crypto_method' => STREAM_CRYPTO_METHOD_TLSv1_0_SERVER,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server($serverUri, $errno, $errstr, $serverFlags, $serverCtx);
+@@ -37,7 +37,7 @@ $clientCode = <<<'CODE'
+         'verify_peer' => true,
+         'cafile' => '%s',
+         'peer_name' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/stream_security_level.phpt b/ext/openssl/tests/stream_security_level.phpt
+index a377101c37..28ef1fc3d5 100644
+--- a/ext/openssl/tests/stream_security_level.phpt
++++ b/ext/openssl/tests/stream_security_level.phpt
+@@ -24,8 +24,8 @@ $serverCode = <<<'CODE'
+ 		'local_cert' => '%s',
+ 		// Make sure the server side starts up successfully if the default security level is
+ 		// higher. We want to test the error at the client side.
+-		'security_level' => 1,
+-	]]);
++        'security_level' => 0,
++    ]]);
+ 
+ 	$server = stream_socket_server($serverUri, $errno, $errstr, $serverFlags, $serverCtx);
+ 	phpt_notify();
+@@ -66,7 +66,7 @@ ServerClientTestCase::getInstance()->run($clientCode, $serverCode);
+ ?>
+ --EXPECTF--
+ Warning: stream_socket_client(): SSL operation failed with code 1. OpenSSL Error messages:
+-error:1416F086:SSL routines:tls_process_server_certificate:certificate verify failed in %s : eval()'d code on line %d
++error:%s:SSL routines:%S:certificate verify failed in %s : eval()'d code on line %d
+ 
+ Warning: stream_socket_client(): Failed to enable crypto in %s : eval()'d code on line %d
+ 
+diff --git a/ext/openssl/tests/tls_min_v1.0_max_v1.1_wrapper.phpt b/ext/openssl/tests/tls_min_v1.0_max_v1.1_wrapper.phpt
+index ac31192da4..73dd812291 100644
+--- a/ext/openssl/tests/tls_min_v1.0_max_v1.1_wrapper.phpt
++++ b/ext/openssl/tests/tls_min_v1.0_max_v1.1_wrapper.phpt
+@@ -15,7 +15,7 @@ $serverCode = <<<'CODE'
+         'local_cert' => '%s',
+         'min_proto_version' => STREAM_CRYPTO_PROTO_TLSv1_0,
+         'max_proto_version' => STREAM_CRYPTO_PROTO_TLSv1_1,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server('tls://127.0.0.1:64321', $errno, $errstr, $flags, $ctx);
+@@ -32,7 +32,7 @@ $clientCode = <<<'CODE'
+     $ctx = stream_context_create(['ssl' => [
+         'verify_peer' => false,
+         'verify_peer_name' => false,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/tls_wrapper.phpt b/ext/openssl/tests/tls_wrapper.phpt
+index d79e978c10..3488f6f7f0 100644
+--- a/ext/openssl/tests/tls_wrapper.phpt
++++ b/ext/openssl/tests/tls_wrapper.phpt
+@@ -14,7 +14,7 @@ $serverCode = <<<'CODE'
+     $flags = STREAM_SERVER_BIND|STREAM_SERVER_LISTEN;
+     $ctx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server('tls://127.0.0.1:64321', $errno, $errstr, $flags, $ctx);
+@@ -31,7 +31,7 @@ $clientCode = <<<'CODE'
+     $ctx = stream_context_create(['ssl' => [
+         'verify_peer' => false,
+         'verify_peer_name' => false,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/tls_wrapper_with_tls_v1.3.phpt b/ext/openssl/tests/tls_wrapper_with_tls_v1.3.phpt
+index b419179b3f..c8a0245601 100644
+--- a/ext/openssl/tests/tls_wrapper_with_tls_v1.3.phpt
++++ b/ext/openssl/tests/tls_wrapper_with_tls_v1.3.phpt
+@@ -14,7 +14,7 @@ $serverCode = <<<'CODE'
+     $flags = STREAM_SERVER_BIND|STREAM_SERVER_LISTEN;
+     $ctx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server('tls://127.0.0.1:64321', $errno, $errstr, $flags, $ctx);
+@@ -31,7 +31,7 @@ $clientCode = <<<'CODE'
+     $ctx = stream_context_create(['ssl' => [
+         'verify_peer' => false,
+         'verify_peer_name' => false,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/tlsv1.0_wrapper.phpt b/ext/openssl/tests/tlsv1.0_wrapper.phpt
+index adbe7b6308..fc802662ac 100644
+--- a/ext/openssl/tests/tlsv1.0_wrapper.phpt
++++ b/ext/openssl/tests/tlsv1.0_wrapper.phpt
+@@ -13,7 +13,7 @@ $serverCode = <<<'CODE'
+     $flags = STREAM_SERVER_BIND|STREAM_SERVER_LISTEN;
+     $ctx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server('tlsv1.0://127.0.0.1:64321', $errno, $errstr, $flags, $ctx);
+@@ -30,7 +30,7 @@ $clientCode = <<<'CODE'
+     $ctx = stream_context_create(['ssl' => [
+         'verify_peer' => false,
+         'verify_peer_name' => false,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+diff --git a/ext/openssl/tests/tlsv1.1_wrapper.phpt b/ext/openssl/tests/tlsv1.1_wrapper.phpt
+index c1aaa04919..84a137b5f4 100644
+--- a/ext/openssl/tests/tlsv1.1_wrapper.phpt
++++ b/ext/openssl/tests/tlsv1.1_wrapper.phpt
+@@ -13,7 +13,7 @@ $serverCode = <<<'CODE'
+     $flags = STREAM_SERVER_BIND|STREAM_SERVER_LISTEN;
+     $ctx = stream_context_create(['ssl' => [
+         'local_cert' => '%s',
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     $server = stream_socket_server('tlsv1.1://127.0.0.1:64321', $errno, $errstr, $flags, $ctx);
+@@ -30,7 +30,7 @@ $clientCode = <<<'CODE'
+     $ctx = stream_context_create(['ssl' => [
+         'verify_peer' => false,
+         'verify_peer_name' => false,
+-        'security_level' => 1,
++        'security_level' => 0,
+     ]]);
+ 
+     phpt_wait();
+-- 
+2.31.1
+
+From c9a9ef0d62c19bd2b3f89772c5a800781b88d53c Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 09:57:40 +0200
+Subject: [PATCH 04/24] Adjust some tests for whitespace differences in OpenSSL
+ 3
+
+A trailing newline is no longer present in OpenSSL 3.
+
+(cherry picked from commit 0a530d7650c6f9cb7c1b55755c8bf5961052039c)
+---
+ ext/openssl/tests/bug28382.phpt                 | 17 +++++++----------
+ ext/openssl/tests/cve2013_4073.phpt             |  5 ++---
+ ext/openssl/tests/openssl_x509_parse_basic.phpt | 10 ++++------
+ 3 files changed, 13 insertions(+), 19 deletions(-)
+
+diff --git a/ext/openssl/tests/bug28382.phpt b/ext/openssl/tests/bug28382.phpt
+index f64e77dbd2..00765ba838 100644
+--- a/ext/openssl/tests/bug28382.phpt
++++ b/ext/openssl/tests/bug28382.phpt
+@@ -9,11 +9,10 @@ if (!extension_loaded("openssl")) die("skip");
+ $cert = file_get_contents(__DIR__ . "/bug28382cert.txt");
+ $ext = openssl_x509_parse($cert);
+ var_dump($ext['extensions']);
+-/* openssl 1.0 prepends the string "Full Name:" to the crlDistributionPoints array key.
+-	For now, as this is the one difference only between 0.9.x and 1.x, it's handled with
+-	placeholders to not to duplicate the test. When more diffs come, a duplication would
+-	be probably a better solution.
+-*/
++/*
++ * The reason for %A at the end of crlDistributionPoints and authorityKeyIdentifier is that
++ * OpenSSL 3.0 removes new lines which were present in previous versions.
++ */
+ ?>
+ --EXPECTF--
+ array(11) {
+@@ -24,8 +23,7 @@ array(11) {
+   ["nsCertType"]=>
+   string(30) "SSL Client, SSL Server, S/MIME"
+   ["crlDistributionPoints"]=>
+-  string(%d) "%AURI:http://mobile.blue-software.ro:90/ca/crl.shtml
+-"
++  string(%d) "%AURI:http://mobile.blue-software.ro:90/ca/crl.shtml%A"
+   ["nsCaPolicyUrl"]=>
+   string(38) "http://mobile.blue-software.ro:90/pub/"
+   ["subjectAltName"]=>
+@@ -33,9 +31,8 @@ array(11) {
+   ["subjectKeyIdentifier"]=>
+   string(59) "B0:A7:FF:F9:41:15:DE:23:39:BD:DD:31:0F:97:A0:B2:A2:74:E0:FC"
+   ["authorityKeyIdentifier"]=>
+-  string(115) "DirName:/C=RO/ST=Romania/L=Craiova/O=Sergiu/OU=Sergiu SRL/CN=Sergiu CA/emailAddress=n_sergiu@hotmail.com
+-serial:00
+-"
++  string(%d) "DirName:/C=RO/ST=Romania/L=Craiova/O=Sergiu/OU=Sergiu SRL/CN=Sergiu CA/emailAddress=n_sergiu@hotmail.com
++serial:00%A"
+   ["keyUsage"]=>
+   string(71) "Digital Signature, Non Repudiation, Key Encipherment, Data Encipherment"
+   ["nsBaseUrl"]=>
+diff --git a/ext/openssl/tests/cve2013_4073.phpt b/ext/openssl/tests/cve2013_4073.phpt
+index c88021b0ae..5cd05ab040 100644
+--- a/ext/openssl/tests/cve2013_4073.phpt
++++ b/ext/openssl/tests/cve2013_4073.phpt
+@@ -9,11 +9,10 @@ $info = openssl_x509_parse($cert);
+ var_export($info['extensions']);
+ 
+ ?>
+---EXPECT--
++--EXPECTF--
+ array (
+   'basicConstraints' => 'CA:FALSE',
+   'subjectKeyIdentifier' => '88:5A:55:C0:52:FF:61:CD:52:A3:35:0F:EA:5A:9C:24:38:22:F7:5C',
+   'keyUsage' => 'Digital Signature, Non Repudiation, Key Encipherment',
+-  'subjectAltName' => 'DNS:altnull.python.org' . "\0" . 'example.com, email:null@python.org' . "\0" . 'user@example.org, URI:http://null.python.org' . "\0" . 'http://example.org, IP Address:192.0.2.1, IP Address:2001:DB8:0:0:0:0:0:1
+-',
++  'subjectAltName' => 'DNS:altnull.python.org' . "\0" . 'example.com, email:null@python.org' . "\0" . 'user@example.org, URI:http://null.python.org' . "\0" . 'http://example.org, IP Address:192.0.2.1, IP Address:2001:DB8:0:0:0:0:0:1%A',
+ )
+diff --git a/ext/openssl/tests/openssl_x509_parse_basic.phpt b/ext/openssl/tests/openssl_x509_parse_basic.phpt
+index b80c1f71f1..38915157f3 100644
+--- a/ext/openssl/tests/openssl_x509_parse_basic.phpt
++++ b/ext/openssl/tests/openssl_x509_parse_basic.phpt
+@@ -153,10 +153,9 @@ array(16) {
+     ["subjectKeyIdentifier"]=>
+     string(59) "DB:7E:40:72:BD:5C:35:85:EC:29:29:81:12:E8:62:68:6A:B7:3F:7D"
+     ["authorityKeyIdentifier"]=>
+-    string(202) "keyid:DB:7E:40:72:BD:5C:35:85:EC:29:29:81:12:E8:62:68:6A:B7:3F:7D
++    string(%d) "keyid:DB:7E:40:72:BD:5C:35:85:EC:29:29:81:12:E8:62:68:6A:B7:3F:7D
+ DirName:/C=BR/ST=Rio Grande do Sul/L=Porto Alegre/CN=Henrique do N. Angelo/emailAddress=hnangelo@php.net
+-serial:AE:C5:56:CC:72:37:50:A2
+-"
++serial:AE:C5:56:CC:72:37:50:A2%A"
+     ["basicConstraints"]=>
+     string(7) "CA:TRUE"
+   }
+@@ -301,10 +300,9 @@ array(16) {
+     ["subjectKeyIdentifier"]=>
+     string(59) "DB:7E:40:72:BD:5C:35:85:EC:29:29:81:12:E8:62:68:6A:B7:3F:7D"
+     ["authorityKeyIdentifier"]=>
+-    string(202) "keyid:DB:7E:40:72:BD:5C:35:85:EC:29:29:81:12:E8:62:68:6A:B7:3F:7D
++    string(%d) "keyid:DB:7E:40:72:BD:5C:35:85:EC:29:29:81:12:E8:62:68:6A:B7:3F:7D
+ DirName:/C=BR/ST=Rio Grande do Sul/L=Porto Alegre/CN=Henrique do N. Angelo/emailAddress=hnangelo@php.net
+-serial:AE:C5:56:CC:72:37:50:A2
+-"
++serial:AE:C5:56:CC:72:37:50:A2%A"
+     ["basicConstraints"]=>
+     string(7) "CA:TRUE"
+   }
+-- 
+2.31.1
+
+From dabea364207985e67e138e70106b6977952c2729 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 11:55:47 +0200
+Subject: [PATCH 05/24] Use different cipher in openssl_seal() test
+
+RC4 is insecure and not supported in newer versions.
+
+(cherry picked from commit 046b36bcf8c062375c9f5e2a763d6144c2a484b4)
+---
+ ext/openssl/tests/openssl_seal_basic.phpt | 25 ++++++++++++-----------
+ 1 file changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/ext/openssl/tests/openssl_seal_basic.phpt b/ext/openssl/tests/openssl_seal_basic.phpt
+index 111bf6f094..588efa707b 100644
+--- a/ext/openssl/tests/openssl_seal_basic.phpt
++++ b/ext/openssl/tests/openssl_seal_basic.phpt
+@@ -9,23 +9,24 @@ $a = 1;
+ $b = array(1);
+ $c = array(1);
+ $d = array(1);
++$method = "AES-128-ECB";
+ 
+-var_dump(openssl_seal($a, $b, $c, $d));
+-var_dump(openssl_seal($a, $a, $a, array()));
+-var_dump(openssl_seal($c, $c, $c, 1));
+-var_dump(openssl_seal($b, $b, $b, ""));
++var_dump(openssl_seal($a, $b, $c, $d, $method));
++var_dump(openssl_seal($a, $a, $a, array(), $method));
++var_dump(openssl_seal($c, $c, $c, 1, $method));
++var_dump(openssl_seal($b, $b, $b, "", $method));
+ 
+ // tests with cert
+ $data = "openssl_open() test";
+ $pub_key = "file://" . __DIR__ . "/public.key";
+ $wrong = "wrong";
+ 
+-var_dump(openssl_seal($data, $sealed, $ekeys, array($pub_key)));                  // no output
+-var_dump(openssl_seal($data, $sealed, $ekeys, array($pub_key, $pub_key)));        // no output
+-var_dump(openssl_seal($data, $sealed, $ekeys, array($pub_key, $wrong)));
+-var_dump(openssl_seal($data, $sealed, $ekeys, $pub_key));
+-var_dump(openssl_seal($data, $sealed, $ekeys, array()));
+-var_dump(openssl_seal($data, $sealed, $ekeys, array($wrong)));
++var_dump(openssl_seal($data, $sealed, $ekeys, array($pub_key), $method));                  // no output
++var_dump(openssl_seal($data, $sealed, $ekeys, array($pub_key, $pub_key), $method));        // no output
++var_dump(openssl_seal($data, $sealed, $ekeys, array($pub_key, $wrong), $method));
++var_dump(openssl_seal($data, $sealed, $ekeys, $pub_key, $method));
++var_dump(openssl_seal($data, $sealed, $ekeys, array(), $method));
++var_dump(openssl_seal($data, $sealed, $ekeys, array($wrong), $method));
+ 
+ echo "Done\n";
+ ?>
+@@ -41,8 +42,8 @@ NULL
+ 
+ Warning: openssl_seal() expects parameter 1 to be string, array given in %s on line %d
+ NULL
+-int(19)
+-int(19)
++int(32)
++int(32)
+ 
+ Warning: openssl_seal(): not a public key (2th member of pubkeys) in %s on line %d
+ bool(false)
+-- 
+2.31.1
+
+From 55123a11413921e991929fdd3cdab3b855617d11 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 11:58:46 +0200
+Subject: [PATCH 06/24] Don't test legacy algorithms in SPKI tests
+
+MD4 and RMD160 may not be available on newer OpenSSL versions.
+
+(cherry picked from commit 9695936341c49ea0efec5bdf24acbcdf59e2a7f8)
+---
+ ext/openssl/tests/openssl_spki_export_basic.phpt   |  4 ----
+ .../tests/openssl_spki_export_challenge_basic.phpt | 14 --------------
+ ext/openssl/tests/openssl_spki_new_basic.phpt      |  8 --------
+ ext/openssl/tests/openssl_spki_verify_basic.phpt   |  7 -------
+ 4 files changed, 33 deletions(-)
+
+diff --git a/ext/openssl/tests/openssl_spki_export_basic.phpt b/ext/openssl/tests/openssl_spki_export_basic.phpt
+index 4085d2d5d8..c03954390b 100644
+--- a/ext/openssl/tests/openssl_spki_export_basic.phpt
++++ b/ext/openssl/tests/openssl_spki_export_basic.phpt
+@@ -19,14 +19,12 @@ foreach ($key_sizes as $key_size) {
+ 
+ /* array of available hashings to test */
+ $algo = array(
+-    OPENSSL_ALGO_MD4,
+     OPENSSL_ALGO_MD5,
+     OPENSSL_ALGO_SHA1,
+     OPENSSL_ALGO_SHA224,
+     OPENSSL_ALGO_SHA256,
+     OPENSSL_ALGO_SHA384,
+     OPENSSL_ALGO_SHA512,
+-    OPENSSL_ALGO_RMD160
+ );
+ 
+ /* loop over key sizes for test */
+@@ -56,5 +54,3 @@ function _uuid() {
+ \-\-\-\-\-BEGIN PUBLIC KEY\-\-\-\-\-.*\-\-\-\-\-END PUBLIC KEY\-\-\-\-\-
+ \-\-\-\-\-BEGIN PUBLIC KEY\-\-\-\-\-.*\-\-\-\-\-END PUBLIC KEY\-\-\-\-\-
+ \-\-\-\-\-BEGIN PUBLIC KEY\-\-\-\-\-.*\-\-\-\-\-END PUBLIC KEY\-\-\-\-\-
+-\-\-\-\-\-BEGIN PUBLIC KEY\-\-\-\-\-.*\-\-\-\-\-END PUBLIC KEY\-\-\-\-\-
+-\-\-\-\-\-BEGIN PUBLIC KEY\-\-\-\-\-.*\-\-\-\-\-END PUBLIC KEY\-\-\-\-\-
+diff --git a/ext/openssl/tests/openssl_spki_export_challenge_basic.phpt b/ext/openssl/tests/openssl_spki_export_challenge_basic.phpt
+index f44e60ec62..06308bf10c 100644
+--- a/ext/openssl/tests/openssl_spki_export_challenge_basic.phpt
++++ b/ext/openssl/tests/openssl_spki_export_challenge_basic.phpt
+@@ -21,14 +21,12 @@ foreach ($key_sizes as $key_size) {
+ 
+ /* array of available hashings to test */
+ $algo = array(
+-    OPENSSL_ALGO_MD4,
+     OPENSSL_ALGO_MD5,
+     OPENSSL_ALGO_SHA1,
+     OPENSSL_ALGO_SHA224,
+     OPENSSL_ALGO_SHA256,
+     OPENSSL_ALGO_SHA384,
+     OPENSSL_ALGO_SHA512,
+-    OPENSSL_ALGO_RMD160
+ );
+ 
+ /* loop over key sizes for test */
+@@ -89,15 +87,3 @@ string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+ bool\(false\)
+ string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+ bool\(false\)
+-string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+-bool\(false\)
+-string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+-bool\(false\)
+-string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+-bool\(false\)
+-string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+-bool\(false\)
+-string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+-bool\(false\)
+-string\(36\) \"[0-9a-f]{8}\-([0-9a-f]{4}\-){3}[0-9a-f]{12}\"
+-bool\(false\)
+diff --git a/ext/openssl/tests/openssl_spki_new_basic.phpt b/ext/openssl/tests/openssl_spki_new_basic.phpt
+index cb54747fe0..8378bd1ac6 100644
+--- a/ext/openssl/tests/openssl_spki_new_basic.phpt
++++ b/ext/openssl/tests/openssl_spki_new_basic.phpt
+@@ -18,14 +18,12 @@ foreach ($key_sizes as $key_size) {
+ 
+ /* array of available hashings to test */
+ $algo = array(
+-    OPENSSL_ALGO_MD4,
+     OPENSSL_ALGO_MD5,
+     OPENSSL_ALGO_SHA1,
+     OPENSSL_ALGO_SHA224,
+     OPENSSL_ALGO_SHA256,
+     OPENSSL_ALGO_SHA384,
+     OPENSSL_ALGO_SHA512,
+-    OPENSSL_ALGO_RMD160
+ );
+ 
+ /* loop over key sizes for test */
+@@ -53,21 +51,15 @@ string(478) "%s"
+ string(478) "%s"
+ string(478) "%s"
+ string(478) "%s"
+-string(478) "%s"
+-string(474) "%s"
+-string(830) "%s"
+ string(830) "%s"
+ string(830) "%s"
+ string(830) "%s"
+ string(830) "%s"
+ string(830) "%s"
+ string(830) "%s"
+-string(826) "%s"
+-string(1510) "%s"
+ string(1510) "%s"
+ string(1510) "%s"
+ string(1510) "%s"
+ string(1510) "%s"
+ string(1510) "%s"
+ string(1510) "%s"
+-string(1506) "%s"
+diff --git a/ext/openssl/tests/openssl_spki_verify_basic.phpt b/ext/openssl/tests/openssl_spki_verify_basic.phpt
+index c760d0cb83..35badcda37 100644
+--- a/ext/openssl/tests/openssl_spki_verify_basic.phpt
++++ b/ext/openssl/tests/openssl_spki_verify_basic.phpt
+@@ -25,7 +25,6 @@ $algo = array(
+     OPENSSL_ALGO_SHA256,
+     OPENSSL_ALGO_SHA384,
+     OPENSSL_ALGO_SHA512,
+-    OPENSSL_ALGO_RMD160
+ );
+ 
+ /* loop over key sizes for test */
+@@ -80,9 +79,3 @@ bool(true)
+ bool(false)
+ bool(true)
+ bool(false)
+-bool(true)
+-bool(false)
+-bool(true)
+-bool(false)
+-bool(true)
+-bool(false)
+-- 
+2.31.1
+
+From dace8e9ff28889d110cc4617b91caca0d722238f Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 12:48:02 +0200
+Subject: [PATCH 07/24] Only report provided ciphers in
+ openssl_get_cipher_methods()
+
+With OpenSSL 3 ciphers may be registered, but not provided. Make
+sure that openssl_get_cipher_methods() only returns provided
+ciphers, so that "in_array openssl_get_cipher_methods" style
+checks continue working as expected.
+
+(cherry picked from commit a80ae97d3176aded77ee422772608a026380fc1a)
+---
+ ext/openssl/openssl.c     | 34 +++++++++++++++++++++++++++++++++-
+ ext/openssl/php_openssl.h |  4 +++-
+ 2 files changed, 36 insertions(+), 2 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 2f2a7981da..e0b3772a29 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -6393,6 +6393,31 @@ PHP_FUNCTION(openssl_get_md_methods)
+ }
+ /* }}} */
+ 
++#if PHP_OPENSSL_API_VERSION >= 0x30000
++static void php_openssl_add_cipher_name(const char *name, void *arg)
++{
++	size_t len = strlen(name);
++	zend_string *str = zend_string_alloc(len, 0);
++	zend_str_tolower_copy(ZSTR_VAL(str), name, len);
++	add_next_index_str((zval*)arg, str);
++}
++
++static void php_openssl_add_cipher_or_alias(EVP_CIPHER *cipher, void *arg)
++{
++	EVP_CIPHER_names_do_all(cipher, php_openssl_add_cipher_name, arg);
++}
++
++static void php_openssl_add_cipher(EVP_CIPHER *cipher, void *arg)
++{
++	php_openssl_add_cipher_name(EVP_CIPHER_get0_name(cipher), arg);
++}
++
++static int php_openssl_compare_func(const void *a, const void *b)
++{
++	return string_compare_function(&((Bucket *)a)->val, &((Bucket *)b)->val);
++}
++#endif
++
+ /* {{{ proto array openssl_get_cipher_methods([bool aliases = false])
+    Return array of available cipher methods */
+ PHP_FUNCTION(openssl_get_cipher_methods)
+@@ -6403,9 +6428,16 @@ PHP_FUNCTION(openssl_get_cipher_methods)
+ 		return;
+ 	}
+ 	array_init(return_value);
++#if PHP_OPENSSL_API_VERSION >= 0x30000
++	EVP_CIPHER_do_all_provided(NULL,
++		aliases ? php_openssl_add_cipher_or_alias : php_openssl_add_cipher,
++		return_value);
++	zend_hash_sort(Z_ARRVAL_P(return_value), php_openssl_compare_func, 1);
++#else
+ 	OBJ_NAME_do_all_sorted(OBJ_NAME_TYPE_CIPHER_METH,
+-		aliases ? php_openssl_add_method_or_alias: php_openssl_add_method,
++		aliases ? php_openssl_add_method_or_alias : php_openssl_add_method,
+ 		return_value);
++#endif
+ }
+ /* }}} */
+ 
+diff --git a/ext/openssl/php_openssl.h b/ext/openssl/php_openssl.h
+index 7926b475e7..29d64171d9 100644
+--- a/ext/openssl/php_openssl.h
++++ b/ext/openssl/php_openssl.h
+@@ -41,8 +41,10 @@ extern zend_module_entry openssl_module_entry;
+ #define PHP_OPENSSL_API_VERSION 0x10001
+ #elif OPENSSL_VERSION_NUMBER < 0x10100000L
+ #define PHP_OPENSSL_API_VERSION 0x10002
+-#else
++#elif OPENSSL_VERSION_NUMBER < 0x30000000L
+ #define PHP_OPENSSL_API_VERSION 0x10100
++#else
++#define PHP_OPENSSL_API_VERSION 0x30000
+ #endif
+ #endif
+ 
+-- 
+2.31.1
+
+From 514a7e50e1bdc5d409c3d66c1593f0ce1a859b8e Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 12:05:02 +0200
+Subject: [PATCH 08/24] Avoid RC4 use in another test
+
+(cherry picked from commit 503146aa87e48f075f47a093ed7868e323814a66)
+---
+ ext/openssl/tests/openssl_open_basic.phpt | 11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
+
+diff --git a/ext/openssl/tests/openssl_open_basic.phpt b/ext/openssl/tests/openssl_open_basic.phpt
+index d564bcf8e8..e19f07e7b1 100644
+--- a/ext/openssl/tests/openssl_open_basic.phpt
++++ b/ext/openssl/tests/openssl_open_basic.phpt
+@@ -8,15 +8,16 @@ $data = "openssl_open() test";
+ $pub_key = "file://" . __DIR__ . "/public.key";
+ $priv_key = "file://" . __DIR__ . "/private_rsa_1024.key";
+ $wrong = "wrong";
++$method = "AES-128-ECB";
+ 
+-openssl_seal($data, $sealed, $ekeys, array($pub_key, $pub_key, $pub_key));
+-openssl_open($sealed, $output, $ekeys[0], $priv_key);
++openssl_seal($data, $sealed, $ekeys, array($pub_key, $pub_key, $pub_key), $method);
++openssl_open($sealed, $output, $ekeys[0], $priv_key, $method);
+ var_dump($output);
+-openssl_open($sealed, $output2, $ekeys[1], $wrong);
++openssl_open($sealed, $output2, $ekeys[1], $wrong, $method);
+ var_dump($output2);
+-openssl_open($sealed, $output3, $ekeys[2], $priv_key);
++openssl_open($sealed, $output3, $ekeys[2], $priv_key, $method);
+ var_dump($output3);
+-openssl_open($sealed, $output4, $wrong, $priv_key);
++openssl_open($sealed, $output4, $wrong, $priv_key, $method);
+ var_dump($output4);
+ ?>
+ --EXPECTF--
+-- 
+2.31.1
+
+From bcc416e4449c78361eefec90c6339839cc198bde Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Thu, 5 Aug 2021 11:50:11 +0200
+Subject: [PATCH 09/24] Relax error check
+
+The precise error is version-dependent, just check that there
+is some kind of error reported.
+
+(cherry picked from commit cd8bf0b6bd23e03bdc8d069df53a2d976809a916)
+---
+ ext/openssl/tests/bug80747.phpt | 8 +++-----
+ 1 file changed, 3 insertions(+), 5 deletions(-)
+
+diff --git a/ext/openssl/tests/bug80747.phpt b/ext/openssl/tests/bug80747.phpt
+index 327c916688..3f319b4b24 100644
+--- a/ext/openssl/tests/bug80747.phpt
++++ b/ext/openssl/tests/bug80747.phpt
+@@ -14,11 +14,9 @@ $conf = array(
+     'private_key_bits' => 511,
+ );
+ var_dump(openssl_pkey_new($conf));
+-while ($e = openssl_error_string()) {
+-    echo $e, "\n";
+-}
++var_dump(openssl_error_string() !== false);
+ 
+ ?>
+---EXPECTF--
++--EXPECT--
+ bool(false)
+-error:%s:key size too small
++bool(true)
+-- 
+2.31.1
+
+From 269c9b3cff4808d7cb62dde957429c26b7d2ac46 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Thu, 5 Aug 2021 14:59:16 +0200
+Subject: [PATCH 10/24] Add test for openssl_dh_compute_key()
+
+This function was not tested at all :(
+
+(cherry picked from commit 7168f71e00676172e7fcf710adfc07eccd6714e6)
+---
+ ext/openssl/tests/openssl_dh_compute_key.phpt | 29 +++++++++++++++++++
+ 1 file changed, 29 insertions(+)
+ create mode 100644 ext/openssl/tests/openssl_dh_compute_key.phpt
+
+diff --git a/ext/openssl/tests/openssl_dh_compute_key.phpt b/ext/openssl/tests/openssl_dh_compute_key.phpt
+new file mode 100644
+index 0000000000..8730f4b57d
+--- /dev/null
++++ b/ext/openssl/tests/openssl_dh_compute_key.phpt
+@@ -0,0 +1,29 @@
++--TEST--
++openssl_dh_compute_key()
++--FILE--
++<?php
++
++$privateKey = <<<'KEY'
++-----BEGIN PRIVATE KEY-----
++MIICJgIBADCCARcGCSqGSIb3DQEDATCCAQgCggEBANn6weB11zG7izhfzM4qsITZ
++3q/ORkF6+h3RTn7sh8Ji1MpHt3zHcPfdYFvs7V5SJfNN5Xv9L62RN8GwgxwRWIJr
++8VBHfL3LyZNMMgnGBGJR0qmoM48iNd8i2ggZYj+H8WVh2y6tGw1YsDI3AFHpZFkN
++TvCT1JHl2JfNEgOgSryBO84KDEWLxWaN/4Nqa9x5R0fxKMLjpWNRzEBBKcVeEHIZ
++gzl7VKVJEpYC336sjYJE19ZD0O/gWl+q4WeRpDazDi6LDLZgnoDrUgbNAXtDETKL
++gKOnYq+iwRWCQicQmaQvGXntmgdriExVacrRnH8o09ioxcVdtPG8WuLeqJczCvsC
++AQIEggEEAoIBAH1yv00aZkw/7IIAJL1fZUrpVeO3xKIQDl982HOKS32+o2mUJWbc
++DuDMIOvqiUEltEnFQOqDaJue0ucseJdH5Q9JHlSIhuUQiPB/JfEcPlb2QYzXHuAE
++fWS94X0wiSxYgKXIL0XceA3yg5bYhDSR3DntdJrbboyYHt/QGQ8WCWiYEa402ovI
++x+r7k3BlGxah33HeuqhMCFAfFvWUhLaj85QEmjHTjVMKeeTlNfBS+nscbCcZvLXd
++qanvRxYYGdOhgLTcJe/iUsxmAWVTiqrid8MEvtFrenanawTgnPXAp5WtYTCGcsiQ
++TBG24ND/tnZpPoPz/Rwlpo1IL4IbvKGRsfU=
++-----END PRIVATE KEY-----
++KEY;
++
++$publicKey = hex2bin("29ECC536A85A4AFAD7D63E50545C68CE44A834396886E9A7BAC27E3A08A14C05259BA6E9940FDC512457155A60CAFACD8E43897E1B537A282D39697B75357197B5E3AD7F1826C0216604496AFAEF8999FBCE336C148166AE23E77EC66C0611235110FA8D6180A26425154959FACEC18FEE3EDA68E9355627820C14B44B486C9547ECE62BE72D56A7FAC4747AFCF201D8A4155F63A076234D6BC04DE27E7A7849BF8956E3DB6E51C043CB6FC66889ADE1F8DE756E9194838E8EF8A5CF9C0DD553282DE8A3130CA7752C22C191E5C352AC3BD77EF9270BF37BC807BBDB3F39AE7966B013723E71EAF41082A056D994F64B428183C5BAFEE9C7A41CABCEA868FC34");
++
++echo bin2hex(openssl_dh_compute_key($publicKey, openssl_get_privatekey($privateKey))), "\n";
++
++?>
++--EXPECT--
++b0049944fa5d36f364dd02e675dde50f8c2d67481c5cf0fe2f248d383eec1d38c23d5ed2644fbef2676bcd6ce148361ca82619c8f93e10506cb89d0a1bdaa0f0bc6f68cef0f7cb6d97d43e8dda3c7a5c5a98ebd2342a605ce530fd46a0602d28d4afc48e92088d0bc42194ca8682a85317f812d81b86cd284eed405df2f76aae84ccd560856e8a3d0ce4f591394bca02eb8a1984ebb41bb19714fb8b579bcafd36a9051d51d075f66229893289d8a0c918bfd222f17803cc532d2cf93bb2a567953323ca409beb3237faae9c6fdfc671594324953badd07dd4770ee09fd19f90045654c5709e92aa614b83594c2f62a8bc3c7e786e54bc1259a0a737c70dd4cc
+-- 
+2.31.1
+
+From 6f81d18232ee8e17c2f299dc3008727b420ce114 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 14:54:59 +0200
+Subject: [PATCH 11/24] Use different algorithm in pkcs7 tests
+
+The default of OPENSSL_CIPHER_RC2_40 is no longer (non-legacy)
+supported in OpenSSL 3, specify a newer cipher instead.
+
+We should probably either change the default (if acceptable) or
+make the parameter required.
+
+(cherry picked from commit 563b3e3472d7c5e3502fb49ef023b6e18ed0f22a)
+---
+ .../tests/openssl_pkcs7_decrypt_basic.phpt    |  3 +-
+ .../tests/openssl_pkcs7_encrypt_basic.phpt    | 31 +++++++------------
+ 2 files changed, 14 insertions(+), 20 deletions(-)
+
+diff --git a/ext/openssl/tests/openssl_pkcs7_decrypt_basic.phpt b/ext/openssl/tests/openssl_pkcs7_decrypt_basic.phpt
+index 937180a22e..ed2b8be6fb 100644
+--- a/ext/openssl/tests/openssl_pkcs7_decrypt_basic.phpt
++++ b/ext/openssl/tests/openssl_pkcs7_decrypt_basic.phpt
+@@ -19,8 +19,9 @@ $single_cert = "file://" . __DIR__ . "/cert.crt";
+ $headers = array("test@test", "testing openssl_pkcs7_encrypt()");
+ $wrong = "wrong";
+ $empty = "";
++$cipher = OPENSSL_CIPHER_AES_128_CBC;
+ 
+-openssl_pkcs7_encrypt($infile, $encrypted, $single_cert, $headers);
++openssl_pkcs7_encrypt($infile, $encrypted, $single_cert, $headers, 0, $cipher);
+ var_dump(openssl_pkcs7_decrypt($encrypted, $outfile, $single_cert, $privkey));
+ var_dump(openssl_pkcs7_decrypt($encrypted, $outfile, openssl_x509_read($single_cert), $privkey));
+ var_dump(openssl_pkcs7_decrypt($encrypted, $outfile, $single_cert, $wrong));
+diff --git a/ext/openssl/tests/openssl_pkcs7_encrypt_basic.phpt b/ext/openssl/tests/openssl_pkcs7_encrypt_basic.phpt
+index f823462f9e..e38a006d0c 100644
+--- a/ext/openssl/tests/openssl_pkcs7_encrypt_basic.phpt
++++ b/ext/openssl/tests/openssl_pkcs7_encrypt_basic.phpt
+@@ -20,21 +20,20 @@ $headers = array("test@test", "testing openssl_pkcs7_encrypt()");
+ $empty_headers = array();
+ $wrong = "wrong";
+ $empty = "";
++$cipher = OPENSSL_CIPHER_AES_128_CBC;
+ 
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, openssl_x509_read($single_cert), $headers));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, openssl_x509_read($single_cert), $headers, 0, $cipher));
+ var_dump(openssl_pkcs7_decrypt($outfile, $outfile2, $single_cert, $privkey));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $assoc_headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $empty_headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $wrong));
+-var_dump(openssl_pkcs7_encrypt($wrong, $outfile, $single_cert, $headers));
+-var_dump(openssl_pkcs7_encrypt($empty, $outfile, $single_cert, $headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $empty, $single_cert, $headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $wrong, $headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $empty, $headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $empty));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, $multi_certs, $headers));
+-var_dump(openssl_pkcs7_encrypt($infile, $outfile, array_map('openssl_x509_read', $multi_certs) , $headers));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $assoc_headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, $single_cert, $empty_headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($wrong, $outfile, $single_cert, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($empty, $outfile, $single_cert, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $empty, $single_cert, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, $wrong, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, $empty, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, $multi_certs, $headers, 0, $cipher));
++var_dump(openssl_pkcs7_encrypt($infile, $outfile, array_map('openssl_x509_read', $multi_certs), $headers, 0, $cipher));
+ 
+ if (file_exists($outfile)) {
+     echo "true\n";
+@@ -51,17 +50,11 @@ bool(true)
+ bool(true)
+ bool(true)
+ bool(true)
+-
+-Warning: openssl_pkcs7_encrypt() expects parameter 4 to be array, string given in %s on line %d
+-bool(false)
+ bool(false)
+ bool(false)
+ bool(false)
+ bool(false)
+ bool(false)
+-
+-Warning: openssl_pkcs7_encrypt() expects parameter 4 to be array, string given in %s on line %d
+-bool(false)
+ bool(true)
+ bool(true)
+ true
+-- 
+2.31.1
+
+From 9f9df4446699cd09cd70046f8bee66272aca2dac Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Thu, 5 Aug 2021 17:07:44 +0200
+Subject: [PATCH 12/24] Use larger key size for DSA/DH tests
+
+OpenSSL 3 validates allowed sizes strictly, pick minimum sizes
+that are supported.
+
+(cherry picked from commit 1cf4fb739f7a4fa8404a4c0958f13d04eae519d4)
+---
+ ext/openssl/tests/bug73711.cnf  |  3 ---
+ ext/openssl/tests/bug73711.phpt | 11 ++++++++---
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+ delete mode 100644 ext/openssl/tests/bug73711.cnf
+
+diff --git a/ext/openssl/tests/bug73711.cnf b/ext/openssl/tests/bug73711.cnf
+deleted file mode 100644
+index 0d27d910d4..0000000000
+--- a/ext/openssl/tests/bug73711.cnf
++++ /dev/null
+@@ -1,3 +0,0 @@
+-[ req ]
+-default_bits = 384
+-
+diff --git a/ext/openssl/tests/bug73711.phpt b/ext/openssl/tests/bug73711.phpt
+index c5f5575e2c..7beb020a4c 100644
+--- a/ext/openssl/tests/bug73711.phpt
++++ b/ext/openssl/tests/bug73711.phpt
+@@ -6,9 +6,14 @@ if (!extension_loaded("openssl")) die("skip openssl not loaded");
+ ?>
+ --FILE--
+ <?php
+-$cnf = __DIR__ . DIRECTORY_SEPARATOR . 'bug73711.cnf';
+-var_dump(openssl_pkey_new(["private_key_type" => OPENSSL_KEYTYPE_DSA, 'config' => $cnf]));
+-var_dump(openssl_pkey_new(["private_key_type" => OPENSSL_KEYTYPE_DH, 'config' => $cnf]));
++var_dump(openssl_pkey_new([
++    "private_key_type" => OPENSSL_KEYTYPE_DSA,
++    "private_key_bits" => 1024,
++]));
++var_dump(openssl_pkey_new([
++    "private_key_type" => OPENSSL_KEYTYPE_DH,
++    "private_key_bits" => 512,
++]));
+ echo "DONE";
+ ?>
+ --EXPECTF--
+-- 
+2.31.1
+
+From 261db4fde8b2de3d0b39cac5d376ef425aad7ef2 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Wed, 4 Aug 2021 13:54:26 +0200
+Subject: [PATCH 13/24] Skip some tests if cipher not available
+
+(cherry picked from commit d23a8b33abc3cd7e516563877a3f698b7a94ac10)
+---
+ ext/openssl/tests/bug71917.phpt              |  1 +
+ ext/openssl/tests/bug72362.phpt              |  1 +
+ ext/openssl/tests/openssl_decrypt_basic.phpt | 15 ++++++++++-----
+ 3 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/ext/openssl/tests/bug71917.phpt b/ext/openssl/tests/bug71917.phpt
+index a68cf0162c..0cc518c4ef 100644
+--- a/ext/openssl/tests/bug71917.phpt
++++ b/ext/openssl/tests/bug71917.phpt
+@@ -3,6 +3,7 @@ Bug #71917: openssl_open() returns junk on envelope < 16 bytes
+ --SKIPIF--
+ <?php
+ if (!extension_loaded("openssl")) die("skip openssl not loaded");
++if (!in_array('rc4', openssl_get_cipher_methods())) die('skip rc4 not available');
+ ?>
+ --FILE--
+ <?php
+diff --git a/ext/openssl/tests/bug72362.phpt b/ext/openssl/tests/bug72362.phpt
+index cd6ec1e838..b73cac7425 100644
+--- a/ext/openssl/tests/bug72362.phpt
++++ b/ext/openssl/tests/bug72362.phpt
+@@ -3,6 +3,7 @@ Bug #72362: OpenSSL Blowfish encryption is incorrect for short keys
+ --SKIPIF--
+ <?php
+ if (!extension_loaded("openssl")) die("skip openssl not loaded");
++if (!in_array('bf-ecb', openssl_get_cipher_methods())) die('skip bf-ecb not available');
+ ?>
+ --FILE--
+ <?php
+diff --git a/ext/openssl/tests/openssl_decrypt_basic.phpt b/ext/openssl/tests/openssl_decrypt_basic.phpt
+index 4175e703d2..e846b42e78 100644
+--- a/ext/openssl/tests/openssl_decrypt_basic.phpt
++++ b/ext/openssl/tests/openssl_decrypt_basic.phpt
+@@ -24,10 +24,15 @@ $padded_data = $data . str_repeat(' ', 16 - (strlen($data) % 16));
+ $encrypted = openssl_encrypt($padded_data, $method, $password, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $iv);
+ $output = openssl_decrypt($encrypted, $method, $password, OPENSSL_RAW_DATA|OPENSSL_ZERO_PADDING, $iv);
+ var_dump(rtrim($output));
+-// if we want to prefer variable length cipher setting
+-$encrypted = openssl_encrypt($data, "bf-ecb", $password, OPENSSL_DONT_ZERO_PAD_KEY);
+-$output = openssl_decrypt($encrypted, "bf-ecb", $password, OPENSSL_DONT_ZERO_PAD_KEY);
+-var_dump($output);
++
++if (in_array("bf-ecb", openssl_get_cipher_methods())) {
++    // if we want to prefer variable length cipher setting
++    $encrypted = openssl_encrypt($data, "bf-ecb", $password, OPENSSL_DONT_ZERO_PAD_KEY);
++    $output = openssl_decrypt($encrypted, "bf-ecb", $password, OPENSSL_DONT_ZERO_PAD_KEY);
++    var_dump($output === $data);
++} else {
++    var_dump(true);
++}
+ 
+ // It's okay to pass $tag for a non-authenticated cipher.
+ // It will be populated with null in that case.
+@@ -39,5 +44,5 @@ var_dump($tag);
+ string(45) "openssl_encrypt() and openssl_decrypt() tests"
+ string(45) "openssl_encrypt() and openssl_decrypt() tests"
+ string(45) "openssl_encrypt() and openssl_decrypt() tests"
+-string(45) "openssl_encrypt() and openssl_decrypt() tests"
++bool(true)
+ NULL
+-- 
+2.31.1
+
+From 93c0873333a8b257edb082d3f106fdef67495c44 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Fri, 6 Aug 2021 10:35:49 +0200
+Subject: [PATCH 14/24] Generate pkcs12_read test inputs on the fly
+
+The old p12_with_extra_certs.p12 file uses an unsupported something.
+
+(cherry picked from commit 5843ba518cfb9ac6ae6d6a69629239cbf77d4cfb)
+---
+ ext/openssl/tests/bug74022_2.phpt             |  10 ++--
+ .../tests/openssl_pkcs12_read_basic.phpt      |  46 ++++++++++--------
+ ext/openssl/tests/p12_with_extra_certs.p12    | Bin 3205 -> 0 bytes
+ 3 files changed, 31 insertions(+), 25 deletions(-)
+ delete mode 100644 ext/openssl/tests/p12_with_extra_certs.p12
+
+diff --git a/ext/openssl/tests/bug74022_2.phpt b/ext/openssl/tests/bug74022_2.phpt
+index 07cb683274..4220149db2 100644
+--- a/ext/openssl/tests/bug74022_2.phpt
++++ b/ext/openssl/tests/bug74022_2.phpt
+@@ -12,11 +12,13 @@ function test($p12_contents, $password) {
+     var_dump(count($cert_data['extracerts']));
+ }
+ 
+-$p12_base64 = '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';
++$cert = file_get_contents(__DIR__ . "/public.crt");
++$priv = file_get_contents(__DIR__ . "/private.crt");
++$extracert = file_get_contents(__DIR__ . "/cert.crt");
++$pass = "qwerty";
++openssl_pkcs12_export($cert, $p12, $priv, $pass, array('extracerts' => [$extracert, $extracert]));
+ 
+-$p12 = base64_decode($p12_base64);
+-
+-test($p12, 'qwerty');
++test($p12, $pass);
+ ?>
+ ===DONE===
+ --EXPECT--
+diff --git a/ext/openssl/tests/openssl_pkcs12_read_basic.phpt b/ext/openssl/tests/openssl_pkcs12_read_basic.phpt
+index b81b4d9dac..8cb2b41fd7 100644
+--- a/ext/openssl/tests/openssl_pkcs12_read_basic.phpt
++++ b/ext/openssl/tests/openssl_pkcs12_read_basic.phpt
+@@ -4,10 +4,12 @@ openssl_pkcs12_read() tests
+ <?php if (!extension_loaded("openssl")) print "skip"; ?>
+ --FILE--
+ <?php
+-$p12_file = __DIR__ . "/p12_with_extra_certs.p12";
+-$p12 = file_get_contents($p12_file);
+-$certs = array();
++
++$cert = file_get_contents(__DIR__ . "/public.crt");
++$priv = file_get_contents(__DIR__ . "/private.crt");
++$extracert = file_get_contents(__DIR__ . "/cert.crt");
+ $pass = "qwerty";
++openssl_pkcs12_export($cert, $p12, $priv, $pass, array('extracerts' => $extracert));
+ 
+ var_dump(openssl_pkcs12_read("", $certs, ""));
+ var_dump(openssl_pkcs12_read($p12, $certs, ""));
+@@ -73,24 +75,26 @@ MK80GEnRQIkB7uZVk+r0HusK
+   ["extracerts"]=>
+   array(1) {
+     [0]=>
+-    string(1111) "-----BEGIN CERTIFICATE-----
+-MIIDBjCCAe4CCQDaL5/+UVeXuTANBgkqhkiG9w0BAQsFADBFMQswCQYDVQQGEwJB
+-VTETMBEGA1UECAwKU29tZS1TdGF0ZTEhMB8GA1UECgwYSW50ZXJuZXQgV2lkZ2l0
+-cyBQdHkgTHRkMB4XDTE1MDYxMDEyNDAwNVoXDTE2MDYwOTEyNDAwNVowRTELMAkG
+-A1UEBhMCQVUxEzARBgNVBAgMClNvbWUtU3RhdGUxITAfBgNVBAoMGEludGVybmV0
+-IFdpZGdpdHMgUHR5IEx0ZDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
+-AL/IF7bW0vpEg5A054SDqTi5pkSeie6nyIT77qCAVI5PMlhNjxuqDIlLpCWonvKb
+-LMRtp7t24BsQBRgQgps8mtfRr0gV1qq9HMfDj2bZdGcTShZN/M/BFATwxaNRTHl9
+-ey8zxGcLd4aFFBlVhXHYdBXg/PG/oxJMAFuMwa+KxSP6Mqp1FlOZtvUUieQcToMf
+-Mh8Lbr4g/yHFj5lgWIJ2fmJjHJZ4wf9QBeGUrVqqxzSDEL9f0PGy+grqSHoIzLr3
+-+uhvhoI85nCyZs9+lrELuQKqbiZ8Q6Vmj6JGt3miNBFVTbBpP9GK8sVuVQwgqd8p
+-C3e8hHqv7vwF+s0zjiZ+rCcCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAdpTtiyDJ
+-0wLB18iunXCMUJpjc/HVYEp5P9vl2E/bcZfGns/8KxNHoe9mgJycr3mwjCjMjVx2
+-L/9q/8XoT02aBncwAx4oZ2H0qfjZppaUSnSc1Uv+dsldDC2mZvJgwXN7jtQmU5P3
+-cspFHuJoYK8AqYJqlO6E4L9uRF7dLEliUnrBpF4BxziwskTquRX+zgD+fmk0L5O8
+-qqvm8btWCxfng+qD7UHFWbUQ2IegZ3VrBWJ2XsxOvokMM4HoHVb0BZgq8Dvu0XJ9
+-EriEQkcydtrRKtlcWHLKcJuNUnkw2qfj+F8mmdaZib8Apa1UCkt0ZlpyYO3V2ejY
+-WIjafwJYrv6f5g==
++    string(1249) "-----BEGIN CERTIFICATE-----
++MIIDbDCCAtWgAwIBAgIJAK7FVsxyN1CiMA0GCSqGSIb3DQEBBQUAMIGBMQswCQYD
++VQQGEwJCUjEaMBgGA1UECBMRUmlvIEdyYW5kZSBkbyBTdWwxFTATBgNVBAcTDFBv
++cnRvIEFsZWdyZTEeMBwGA1UEAxMVSGVucmlxdWUgZG8gTi4gQW5nZWxvMR8wHQYJ
++KoZIhvcNAQkBFhBobmFuZ2Vsb0BwaHAubmV0MB4XDTA4MDYzMDEwMjg0M1oXDTA4
++MDczMDEwMjg0M1owgYExCzAJBgNVBAYTAkJSMRowGAYDVQQIExFSaW8gR3JhbmRl
++IGRvIFN1bDEVMBMGA1UEBxMMUG9ydG8gQWxlZ3JlMR4wHAYDVQQDExVIZW5yaXF1
++ZSBkbyBOLiBBbmdlbG8xHzAdBgkqhkiG9w0BCQEWEGhuYW5nZWxvQHBocC5uZXQw
++gZ8wDQYJKoZIhvcNAQEBBQADgY0AMIGJAoGBAMteno+QK1ulX4/WDAVBYfoTPRTz
++e4SZLwgael4jwWTytj+8c5nNllrFELD6WjJzfjaoIMhCF4w4I2bkWR6/PTqrvnv+
++iiiItHfKvJgYqIobUhkiKmWa2wL3mgqvNRIqTrTC4jWZuCkxQ/ksqL9O/F6zk+aR
++S1d+KbPaqCR5Rw+lAgMBAAGjgekwgeYwHQYDVR0OBBYEFNt+QHK9XDWF7CkpgRLo
++Ymhqtz99MIG2BgNVHSMEga4wgauAFNt+QHK9XDWF7CkpgRLoYmhqtz99oYGHpIGE
++MIGBMQswCQYDVQQGEwJCUjEaMBgGA1UECBMRUmlvIEdyYW5kZSBkbyBTdWwxFTAT
++BgNVBAcTDFBvcnRvIEFsZWdyZTEeMBwGA1UEAxMVSGVucmlxdWUgZG8gTi4gQW5n
++ZWxvMR8wHQYJKoZIhvcNAQkBFhBobmFuZ2Vsb0BwaHAubmV0ggkArsVWzHI3UKIw
++DAYDVR0TBAUwAwEB/zANBgkqhkiG9w0BAQUFAAOBgQCP1GUnStC0TBqngr3Kx+zS
++UW8KutKO0ORc5R8aV/x9LlaJrzPyQJgiPpu5hXogLSKRIHxQS3X2+Y0VvIpW72LW
++PVKPhYlNtO3oKnfoJGKin0eEhXRZMjfEW/kznY+ZZmNifV2r8s+KhNAqI4PbClvn
++4vh8xF/9+eVEj+hM+0OflA==
+ -----END CERTIFICATE-----
+ "
+   }
+
+-- 
+2.31.1
+
+From 64bedf19c7caa47193c22f6fbb134574eb0cf2dd Mon Sep 17 00:00:00 2001
+From: Jakub Zelenka <bukka@php.net>
+Date: Sun, 8 Aug 2021 20:54:46 +0100
+Subject: [PATCH 15/24] Make CertificateGenerator not dependent on external
+ config in OpenSSL 3.0
+
+(cherry picked from commit c90c9c7545427d9d35cbac45c4ec896f54619744)
+---
+ ext/openssl/tests/CertificateGenerator.inc | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/ext/openssl/tests/CertificateGenerator.inc b/ext/openssl/tests/CertificateGenerator.inc
+index b409376058..6fe9b4e9a8 100644
+--- a/ext/openssl/tests/CertificateGenerator.inc
++++ b/ext/openssl/tests/CertificateGenerator.inc
+@@ -65,7 +65,10 @@ class CertificateGenerator
+             ),
+             null,
+             $this->caKey,
+-            2
++            2,
++            [
++                'config' => self::CONFIG,
++            ]
+         );
+     }
+ 
+@@ -101,6 +104,7 @@ class CertificateGenerator
+ [ req ]
+ distinguished_name = req_distinguished_name
+ default_md = sha256
++default_bits = 1024
+ 
+ [ req_distinguished_name ]
+ 
+@@ -124,8 +128,9 @@ CONFIG;
+             ];
+ 
+             $this->lastKey = self::generateKey($keyLength);
++            $csr = openssl_csr_new($dn, $this->lastKey, $config);
+             $this->lastCert = openssl_csr_sign(
+-                openssl_csr_new($dn, $this->lastKey, $config),
++                $csr,
+                 $this->ca,
+                 $this->caKey,
+                 /* days */ 2,
+@@ -139,7 +144,7 @@ CONFIG;
+             openssl_x509_export($this->lastCert, $certText);
+ 
+             $keyText = '';
+-            openssl_pkey_export($this->lastKey, $keyText);
++            openssl_pkey_export($this->lastKey, $keyText, null, $config);
+ 
+             file_put_contents($file, $certText . PHP_EOL . $keyText);
+         } finally {
+-- 
+2.31.1
+
+From f2c252b9a083c01eff3f665a406efe5b44f323a3 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Tue, 10 Aug 2021 11:50:18 +0200
+Subject: [PATCH 16/24] Fork openssl_error_string() test for OpenSSL
+
+The used error code differ signficantly, so use a separate test
+file.
+
+openssl_encrypt() no longer throws an error for invalid key length,
+which looks like an upstream bug.
+
+(cherry picked from commit e5f53e1ca13bfe8abd0f6037c98b59d2dac5744f)
+---
+ ext/openssl/tests/openssl_error_string_basic.phpt | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/ext/openssl/tests/openssl_error_string_basic.phpt b/ext/openssl/tests/openssl_error_string_basic.phpt
+index cdf558e9a5..f9f0e7062f 100644
+--- a/ext/openssl/tests/openssl_error_string_basic.phpt
++++ b/ext/openssl/tests/openssl_error_string_basic.phpt
+@@ -1,7 +1,10 @@
+ --TEST--
+-openssl_error_string() tests
++openssl_error_string() tests (OpenSSL < 3.0)
+ --SKIPIF--
+-<?php if (!extension_loaded("openssl")) print "skip"; ?>
++<?php
++if (!extension_loaded("openssl")) print "skip";
++if (OPENSSL_VERSION_NUMBER >= 0x30000000) die('skip For OpenSSL < 3.0');
++?>
+ --FILE--
+ <?php
+ // helper function to check openssl errors
+-- 
+2.31.1
+
+From dc1751ad95ebb04e756809e837feb9aac7a2fefe Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Sun, 8 Aug 2021 17:39:06 +0200
+Subject: [PATCH 17/24] Use OpenSSL NCONF APIs (#7337)
+
+(cherry picked from commit 94bc5fce261a4a56a545bdfb25d5c2452a07de08)
+---
+ ext/openssl/openssl.c | 66 +++++++++++++++++++++++--------------------
+ 1 file changed, 36 insertions(+), 30 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index e0b3772a29..666616e7c5 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -835,8 +835,8 @@ int php_openssl_get_ssl_stream_data_index()
+ static char default_ssl_conf_filename[MAXPATHLEN];
+ 
+ struct php_x509_request { /* {{{ */
+-	LHASH_OF(CONF_VALUE) * global_config;	/* Global SSL config */
+-	LHASH_OF(CONF_VALUE) * req_config;		/* SSL config for this request */
++	CONF *global_config;	/* Global SSL config */
++	CONF *req_config;		/* SSL config for this request */
+ 	const EVP_MD * md_alg;
+ 	const EVP_MD * digest;
+ 	char	* section_name,
+@@ -1048,13 +1048,13 @@ static time_t php_openssl_asn1_time_to_time_t(ASN1_UTCTIME * timestr) /* {{{ */
+ }
+ /* }}} */
+ 
+-static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, LHASH_OF(CONF_VALUE) * config) /* {{{ */
++static inline int php_openssl_config_check_syntax(const char * section_label, const char * config_filename, const char * section, CONF *config) /* {{{ */
+ {
+ 	X509V3_CTX ctx;
+ 
+ 	X509V3_set_ctx_test(&ctx);
+-	X509V3_set_conf_lhash(&ctx, config);
+-	if (!X509V3_EXT_add_conf(config, &ctx, (char *)section, NULL)) {
++	X509V3_set_nconf(&ctx, config);
++	if (!X509V3_EXT_add_nconf(config, &ctx, (char *)section, NULL)) {
+ 		php_openssl_store_errors();
+ 		php_error_docref(NULL, E_WARNING, "Error loading %s section %s of %s",
+ 				section_label,
+@@ -1066,17 +1066,24 @@ static inline int php_openssl_config_check_syntax(const char * section_label, co
+ }
+ /* }}} */
+ 
+-static char *php_openssl_conf_get_string(
+-		LHASH_OF(CONF_VALUE) *conf, const char *group, const char *name) {
+-	char *str = CONF_get_string(conf, group, name);
+-	if (str == NULL) {
+-		/* OpenSSL reports an error if a configuration value is not found.
+-		 * However, we don't want to generate errors for optional configuration. */
+-		ERR_clear_error();
+-	}
++static char *php_openssl_conf_get_string(CONF *conf, const char *group, const char *name) {
++	/* OpenSSL reports an error if a configuration value is not found.
++	 * However, we don't want to generate errors for optional configuration. */
++	ERR_set_mark();
++	char *str = NCONF_get_string(conf, group, name);
++	ERR_pop_to_mark();
+ 	return str;
+ }
+ 
++static long php_openssl_conf_get_number(CONF *conf, const char *group, const char *name) {
++	/* Same here, ignore errors. */
++	long res = 0;
++	ERR_set_mark();
++	NCONF_get_number(conf, group, name, &res);
++	ERR_pop_to_mark();
++	return res;
++}
++
+ static int php_openssl_add_oid_section(struct php_x509_request * req) /* {{{ */
+ {
+ 	char * str;
+@@ -1088,7 +1095,7 @@ static int php_openssl_add_oid_section(struct php_x509_request * req) /* {{{ */
+ 	if (str == NULL) {
+ 		return SUCCESS;
+ 	}
+-	sktmp = CONF_get_section(req->req_config, str);
++	sktmp = NCONF_get_section(req->req_config, str);
+ 	if (sktmp == NULL) {
+ 		php_openssl_store_errors();
+ 		php_error_docref(NULL, E_WARNING, "problem loading oid section %s", str);
+@@ -1159,13 +1166,13 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
+ 
+ 	SET_OPTIONAL_STRING_ARG("config", req->config_filename, default_ssl_conf_filename);
+ 	SET_OPTIONAL_STRING_ARG("config_section_name", req->section_name, "req");
+-	req->global_config = CONF_load(NULL, default_ssl_conf_filename, NULL);
+-	if (req->global_config == NULL) {
++	req->global_config = NCONF_new(NULL);
++	if (!NCONF_load(req->global_config, default_ssl_conf_filename, NULL)) {
+ 		php_openssl_store_errors();
+ 	}
+-	req->req_config = CONF_load(NULL, req->config_filename, NULL);
+-	if (req->req_config == NULL) {
+-		php_openssl_store_errors();
++
++	req->req_config = NCONF_new(NULL);
++	if (!NCONF_load(req->req_config, req->config_filename, NULL)) {
+ 		return FAILURE;
+ 	}
+ 
+@@ -1189,8 +1196,7 @@ static int php_openssl_parse_config(struct php_x509_request * req, zval * option
+ 	SET_OPTIONAL_STRING_ARG("req_extensions", req->request_extensions_section,
+ 		php_openssl_conf_get_string(req->req_config, req->section_name, "req_extensions"));
+ 	SET_OPTIONAL_LONG_ARG("private_key_bits", req->priv_key_bits,
+-		CONF_get_number(req->req_config, req->section_name, "default_bits"));
+-
++		php_openssl_conf_get_number(req->req_config, req->section_name, "default_bits"));
+ 	SET_OPTIONAL_LONG_ARG("private_key_type", req->priv_key_type, OPENSSL_KEYTYPE_DEFAULT);
+ 
+ 	if (optional_args && (item = zend_hash_str_find(Z_ARRVAL_P(optional_args), "encrypt_key", sizeof("encrypt_key")-1)) != NULL) {
+@@ -1270,11 +1276,11 @@ static void php_openssl_dispose_config(struct php_x509_request * req) /* {{{ */
+ 		req->priv_key = NULL;
+ 	}
+ 	if (req->global_config) {
+-		CONF_free(req->global_config);
++		NCONF_free(req->global_config);
+ 		req->global_config = NULL;
+ 	}
+ 	if (req->req_config) {
+-		CONF_free(req->req_config);
++		NCONF_free(req->req_config);
+ 		req->req_config = NULL;
+ 	}
+ }
+@@ -3134,12 +3140,12 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
+ 	STACK_OF(CONF_VALUE) * dn_sk, *attr_sk = NULL;
+ 	char * str, *dn_sect, *attr_sect;
+ 
+-	dn_sect = CONF_get_string(req->req_config, req->section_name, "distinguished_name");
++	dn_sect = NCONF_get_string(req->req_config, req->section_name, "distinguished_name");
+ 	if (dn_sect == NULL) {
+ 		php_openssl_store_errors();
+ 		return FAILURE;
+ 	}
+-	dn_sk = CONF_get_section(req->req_config, dn_sect);
++	dn_sk = NCONF_get_section(req->req_config, dn_sect);
+ 	if (dn_sk == NULL) {
+ 		php_openssl_store_errors();
+ 		return FAILURE;
+@@ -3148,7 +3154,7 @@ static int php_openssl_make_REQ(struct php_x509_request * req, X509_REQ * csr, z
+ 	if (attr_sect == NULL) {
+ 		attr_sk = NULL;
+ 	} else {
+-		attr_sk = CONF_get_section(req->req_config, attr_sect);
++		attr_sk = NCONF_get_section(req->req_config, attr_sect);
+ 		if (attr_sk == NULL) {
+ 			php_openssl_store_errors();
+ 			return FAILURE;
+@@ -3554,8 +3560,8 @@ PHP_FUNCTION(openssl_csr_sign)
+ 		X509V3_CTX ctx;
+ 
+ 		X509V3_set_ctx(&ctx, cert, new_cert, csr, NULL, 0);
+-		X509V3_set_conf_lhash(&ctx, req.req_config);
+-		if (!X509V3_EXT_add_conf(req.req_config, &ctx, req.extensions_section, new_cert)) {
++		X509V3_set_nconf(&ctx, req.req_config);
++		if (!X509V3_EXT_add_nconf(req.req_config, &ctx, req.extensions_section, new_cert)) {
+ 			php_openssl_store_errors();
+ 			goto cleanup;
+ 		}
+@@ -3638,10 +3644,10 @@ PHP_FUNCTION(openssl_csr_new)
+ 					X509V3_CTX ext_ctx;
+ 
+ 					X509V3_set_ctx(&ext_ctx, NULL, NULL, csr, NULL, 0);
+-					X509V3_set_conf_lhash(&ext_ctx, req.req_config);
++					X509V3_set_nconf(&ext_ctx, req.req_config);
+ 
+ 					/* Add extensions */
+-					if (req.request_extensions_section && !X509V3_EXT_REQ_add_conf(req.req_config,
++					if (req.request_extensions_section && !X509V3_EXT_REQ_add_nconf(req.req_config,
+ 								&ext_ctx, req.request_extensions_section, csr))
+ 					{
+ 						php_openssl_store_errors();
+-- 
+2.31.1
+
+From df4e7dcc8121c444ff315e31d06182f164e686ed Mon Sep 17 00:00:00 2001
+From: Jakub Zelenka <bukka@php.net>
+Date: Sun, 12 Sep 2021 20:30:02 +0100
+Subject: [PATCH 18/24] Make OpenSSL tests less dependent on system config
+
+It fixes dependencies on system config if running tests with OpenSSL 3.0
+
+(cherry picked from commit 43f0141d74c1db6e792f3b625ea7f4ae57ff338f)
+---
+ ext/openssl/tests/bug52093.phpt | 6 +++---
+ ext/openssl/tests/bug72165.phpt | 5 +++--
+ ext/openssl/tests/bug73711.phpt | 3 +++
+ ext/openssl/tests/ecc.phpt      | 3 +++
+ 4 files changed, 12 insertions(+), 5 deletions(-)
+
+diff --git a/ext/openssl/tests/bug52093.phpt b/ext/openssl/tests/bug52093.phpt
+index 63eaceb5ac..162945f914 100644
+--- a/ext/openssl/tests/bug52093.phpt
++++ b/ext/openssl/tests/bug52093.phpt
+@@ -14,10 +14,10 @@ $dn = array(
+     "commonName" => "Henrique do N. Angelo",
+     "emailAddress" => "hnangelo@php.net"
+ );
+-
++$options = ['config' => __DIR__ . DIRECTORY_SEPARATOR . 'openssl.cnf'];
+ $privkey = openssl_pkey_new();
+-$csr = openssl_csr_new($dn, $privkey);
+-$cert = openssl_csr_sign($csr, null, $privkey, 365, [], PHP_INT_MAX);
++$csr = openssl_csr_new($dn, $privkey, $options);
++$cert = openssl_csr_sign($csr, null, $privkey, 365, $options, PHP_INT_MAX);
+ var_dump(openssl_x509_parse($cert)['serialNumber']);
+ ?>
+ --EXPECT--
+diff --git a/ext/openssl/tests/bug72165.phpt b/ext/openssl/tests/bug72165.phpt
+index 93b3c3d4a8..7b38827c37 100644
+--- a/ext/openssl/tests/bug72165.phpt
++++ b/ext/openssl/tests/bug72165.phpt
+@@ -6,8 +6,9 @@ if (!extension_loaded("openssl")) die("skip");
+ ?>
+ --FILE--
+ <?php
+-$var0 = array(0 => "hello", 1 => "world");
+-$var2 = openssl_csr_new(array(0),$var0,null,array(0));
++$var0 = [0 => "hello", 1 => "world"];
++$options = ['config' => __DIR__ . DIRECTORY_SEPARATOR . 'openssl.cnf'];
++$var2 = openssl_csr_new([0], $var0, $options, [0]);
+ ?>
+ ==DONE==
+ --EXPECTF--
+diff --git a/ext/openssl/tests/bug73711.phpt b/ext/openssl/tests/bug73711.phpt
+index 7beb020a4c..b6ac4871a3 100644
+--- a/ext/openssl/tests/bug73711.phpt
++++ b/ext/openssl/tests/bug73711.phpt
+@@ -6,13 +6,16 @@ if (!extension_loaded("openssl")) die("skip openssl not loaded");
+ ?>
+ --FILE--
+ <?php
++$config = __DIR__ . DIRECTORY_SEPARATOR . 'openssl.cnf';
+ var_dump(openssl_pkey_new([
+     "private_key_type" => OPENSSL_KEYTYPE_DSA,
+     "private_key_bits" => 1024,
++    'config' => $config,
+ ]));
+ var_dump(openssl_pkey_new([
+     "private_key_type" => OPENSSL_KEYTYPE_DH,
+     "private_key_bits" => 512,
++    'config' => $config,
+ ]));
+ echo "DONE";
+ ?>
+diff --git a/ext/openssl/tests/ecc.phpt b/ext/openssl/tests/ecc.phpt
+index 41567e9b32..6c09238003 100644
+--- a/ext/openssl/tests/ecc.phpt
++++ b/ext/openssl/tests/ecc.phpt
+@@ -4,9 +4,11 @@ openssl_*() with OPENSSL_KEYTYPE_EC
+ <?php if (!extension_loaded("openssl") || !defined("OPENSSL_KEYTYPE_EC")) print "skip"; ?>
+ --FILE--
+ <?php
++$config =  __DIR__ . DIRECTORY_SEPARATOR . 'openssl.cnf';
+ $args = array(
+     "curve_name" => "secp384r1",
+     "private_key_type" => OPENSSL_KEYTYPE_EC,
++    "config" => $config,
+ );
+ echo "Testing openssl_pkey_new\n";
+ $key1 = openssl_pkey_new($args);
+@@ -15,6 +17,7 @@ var_dump($key1);
+ $argsFailed = array(
+     "curve_name" => "invalid_cuve_name",
+     "private_key_type" => OPENSSL_KEYTYPE_EC,
++    "config" => $config,
+ );
+ 
+ $keyFailed = openssl_pkey_new($argsFailed);
+-- 
+2.31.1
+
+From 03f65a015256933426d2c87b399a4c4620b4c85c Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Fri, 6 Aug 2021 11:15:18 +0200
+Subject: [PATCH 19/24] Do not special case export of EC keys
+
+All other private keys are exported in PKCS#8 format, while EC
+keys use traditional format. Switch them to use PKCS#8 format as
+well.
+
+As the OpenSSL docs say:
+
+> PEM_write_bio_PrivateKey_traditional() writes out a private key
+> in the "traditional" format with a simple private key marker and
+> should only be used for compatibility with legacy programs.
+
+(cherry picked from commit f2d3e75933fa155a5281c824263780dbc660ecb1)
+---
+ UPGRADING                                     |  4 +++
+ ext/openssl/openssl.c                         | 36 ++++---------------
+ .../tests/openssl_pkey_export_basic.phpt      |  6 +++-
+ 3 files changed, 15 insertions(+), 31 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 666616e7c5..4af0942209 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -4647,21 +4647,9 @@ PHP_FUNCTION(openssl_pkey_export_to_file)
+ 			cipher = NULL;
+ 		}
+ 
+-		switch (EVP_PKEY_base_id(key)) {
+-#ifdef HAVE_EVP_PKEY_EC
+-			case EVP_PKEY_EC:
+-				pem_write = PEM_write_bio_ECPrivateKey(
+-						bio_out, EVP_PKEY_get0_EC_KEY(key), cipher,
+-						(unsigned char *)passphrase, (int)passphrase_len, NULL, NULL);
+-				break;
+-#endif
+-			default:
+-				pem_write = PEM_write_bio_PrivateKey(
+-						bio_out, key, cipher,
+-						(unsigned char *)passphrase, (int)passphrase_len, NULL, NULL);
+-				break;
+-		}
+-
++		pem_write = PEM_write_bio_PrivateKey(
++				bio_out, key, cipher,
++				(unsigned char *)passphrase, (int)passphrase_len, NULL, NULL);
+ 		if (pem_write) {
+ 			/* Success!
+ 			 * If returning the output as a string, do so now */
+@@ -4724,21 +4712,9 @@ PHP_FUNCTION(openssl_pkey_export)
+ 			cipher = NULL;
+ 		}
+ 
+-		switch (EVP_PKEY_base_id(key)) {
+-#ifdef HAVE_EVP_PKEY_EC
+-			case EVP_PKEY_EC:
+-				pem_write = PEM_write_bio_ECPrivateKey(
+-						bio_out, EVP_PKEY_get0_EC_KEY(key), cipher,
+-						(unsigned char *)passphrase, (int)passphrase_len, NULL, NULL);
+-				break;
+-#endif
+-			default:
+-				pem_write = PEM_write_bio_PrivateKey(
+-						bio_out, key, cipher,
+-						(unsigned char *)passphrase, (int)passphrase_len, NULL, NULL);
+-				break;
+-		}
+-
++		pem_write = PEM_write_bio_PrivateKey(
++				bio_out, key, cipher,
++				(unsigned char *)passphrase, (int)passphrase_len, NULL, NULL);
+ 		if (pem_write) {
+ 			/* Success!
+ 			 * If returning the output as a string, do so now */
+diff --git a/ext/openssl/tests/openssl_pkey_export_basic.phpt b/ext/openssl/tests/openssl_pkey_export_basic.phpt
+index d71f8da9a3..47a82d7873 100644
+--- a/ext/openssl/tests/openssl_pkey_export_basic.phpt
++++ b/ext/openssl/tests/openssl_pkey_export_basic.phpt
+@@ -46,7 +46,11 @@ var_dump(is_resource($key));
+ --EXPECTF--
+ resource(%d) of type (OpenSSL key)
+ bool(true)
+------BEGIN EC PRIVATE KEY-----%a-----END EC PRIVATE KEY-----
++-----BEGIN PRIVATE KEY-----
++MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgs+Sqh7IzteDBiS5K
++PfTvuWuyt9YkrkuoyiW/6bag6NmhRANCAAQ+riFshYe8HnWt1avx6OuNajipU1ZW
++6BgW0+D/EtDDSYeQg9ngO8qyo5M6cyh7ORtKZVUy7DP1+W+eocaZC+a6
++-----END PRIVATE KEY-----
+ bool(true)
+ bool(true)
+ resource(%d) of type (OpenSSL key)
+-- 
+2.31.1
+
+From 038c33feab7e6138f7977224897118dbb8059a55 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Thu, 5 Aug 2021 10:29:50 +0200
+Subject: [PATCH 20/24] Use EVP_PKEY APIs for key generation
+
+Use high level API instead of deprecated low level API.
+
+(cherry picked from commit 13313d9b1b9fa014fe6f92c496477e28f4f11772)
+---
+ ext/openssl/openssl.c | 210 ++++++++++++++++++++----------------------
+ 1 file changed, 100 insertions(+), 110 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 4af0942209..588aa3902f 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -3995,140 +3995,130 @@ static EVP_PKEY * php_openssl_evp_from_zval(
+ }
+ /* }}} */
+ 
++static int php_openssl_get_evp_pkey_type(int key_type) {
++	switch (key_type) {
++	case OPENSSL_KEYTYPE_RSA:
++		return EVP_PKEY_RSA;
++#if !defined(NO_DSA)
++	case OPENSSL_KEYTYPE_DSA:
++		return EVP_PKEY_DSA;
++#endif
++#if !defined(NO_DH)
++	case OPENSSL_KEYTYPE_DH:
++		return EVP_PKEY_DH;
++#endif
++#ifdef HAVE_EVP_PKEY_EC
++	case OPENSSL_KEYTYPE_EC:
++		return EVP_PKEY_EC;
++#endif
++	default:
++		return -1;
++	}
++}
++
+ /* {{{ php_openssl_generate_private_key */
+ static EVP_PKEY * php_openssl_generate_private_key(struct php_x509_request * req)
+ {
+-	char * randfile = NULL;
+-	int egdsocket, seeded;
+-	EVP_PKEY * return_val = NULL;
+-
+ 	if (req->priv_key_bits < MIN_KEY_LENGTH) {
+ 		php_error_docref(NULL, E_WARNING, "private key length is too short; it needs to be at least %d bits, not %d",
+ 				MIN_KEY_LENGTH, req->priv_key_bits);
+ 		return NULL;
+ 	}
+ 
+-	randfile = php_openssl_conf_get_string(req->req_config, req->section_name, "RANDFILE");
++	int type = php_openssl_get_evp_pkey_type(req->priv_key_type);
++	if (type < 0) {
++		php_error_docref(NULL, E_WARNING, "Unsupported private key type");
++		return NULL;
++	}
++
++	int egdsocket, seeded;
++	char *randfile = php_openssl_conf_get_string(req->req_config, req->section_name, "RANDFILE");
+ 	php_openssl_load_rand_file(randfile, &egdsocket, &seeded);
++	PHP_OPENSSL_RAND_ADD_TIME();
+ 
+-	if ((req->priv_key = EVP_PKEY_new()) != NULL) {
+-		switch(req->priv_key_type) {
+-			case OPENSSL_KEYTYPE_RSA:
+-				{
+-					RSA* rsaparam;
+-#if OPENSSL_VERSION_NUMBER < 0x10002000L
+-					/* OpenSSL 1.0.2 deprecates RSA_generate_key */
+-					PHP_OPENSSL_RAND_ADD_TIME();
+-					rsaparam = (RSA*)RSA_generate_key(req->priv_key_bits, RSA_F4, NULL, NULL);
+-#else
+-					{
+-						BIGNUM *bne = (BIGNUM *)BN_new();
+-						if (BN_set_word(bne, RSA_F4) != 1) {
+-							BN_free(bne);
+-							php_error_docref(NULL, E_WARNING, "failed setting exponent");
+-							return NULL;
+-						}
+-						rsaparam = RSA_new();
+-						PHP_OPENSSL_RAND_ADD_TIME();
+-						if (rsaparam == NULL || !RSA_generate_key_ex(rsaparam, req->priv_key_bits, bne, NULL)) {
+-							php_openssl_store_errors();
+-							RSA_free(rsaparam);
+-							rsaparam = NULL;
+-						}
+-						BN_free(bne);
+-					}
+-#endif
+-					if (rsaparam && EVP_PKEY_assign_RSA(req->priv_key, rsaparam)) {
+-						return_val = req->priv_key;
+-					} else {
+-						php_openssl_store_errors();
+-					}
+-				}
+-				break;
++	EVP_PKEY *key = NULL;
++	EVP_PKEY *params = NULL;
++	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(type, NULL);
++	if (!ctx) {
++		php_openssl_store_errors();
++		goto cleanup;
++	}
++
++	if (type != EVP_PKEY_RSA) {
++		if (EVP_PKEY_paramgen_init(ctx) <= 0) {
++			php_openssl_store_errors();
++			goto cleanup;
++		}
++
++		switch (type) {
+ #if !defined(NO_DSA)
+-			case OPENSSL_KEYTYPE_DSA:
+-				PHP_OPENSSL_RAND_ADD_TIME();
+-				{
+-					DSA *dsaparam = DSA_new();
+-					if (dsaparam && DSA_generate_parameters_ex(dsaparam, req->priv_key_bits, NULL, 0, NULL, NULL, NULL)) {
+-						DSA_set_method(dsaparam, DSA_get_default_method());
+-						if (DSA_generate_key(dsaparam)) {
+-							if (EVP_PKEY_assign_DSA(req->priv_key, dsaparam)) {
+-								return_val = req->priv_key;
+-							} else {
+-								php_openssl_store_errors();
+-							}
+-						} else {
+-							php_openssl_store_errors();
+-							DSA_free(dsaparam);
+-						}
+-					} else {
+-						php_openssl_store_errors();
+-					}
+-				}
+-				break;
++		case EVP_PKEY_DSA:
++			if (EVP_PKEY_CTX_set_dsa_paramgen_bits(ctx, req->priv_key_bits) <= 0) {
++				php_openssl_store_errors();
++				goto cleanup;
++			}
++			break;
+ #endif
+ #if !defined(NO_DH)
+-			case OPENSSL_KEYTYPE_DH:
+-				PHP_OPENSSL_RAND_ADD_TIME();
+-				{
+-					int codes = 0;
+-					DH *dhparam = DH_new();
+-					if (dhparam && DH_generate_parameters_ex(dhparam, req->priv_key_bits, 2, NULL)) {
+-						DH_set_method(dhparam, DH_get_default_method());
+-						if (DH_check(dhparam, &codes) && codes == 0 && DH_generate_key(dhparam)) {
+-							if (EVP_PKEY_assign_DH(req->priv_key, dhparam)) {
+-								return_val = req->priv_key;
+-							} else {
+-								php_openssl_store_errors();
+-							}
+-						} else {
+-							php_openssl_store_errors();
+-							DH_free(dhparam);
+-						}
+-					} else {
+-						php_openssl_store_errors();
+-					}
+-				}
+-				break;
++		case EVP_PKEY_DH:
++			if (EVP_PKEY_CTX_set_dh_paramgen_prime_len(ctx, req->priv_key_bits) <= 0) {
++				php_openssl_store_errors();
++				goto cleanup;
++			}
++			break;
+ #endif
+ #ifdef HAVE_EVP_PKEY_EC
+-			case OPENSSL_KEYTYPE_EC:
+-				{
+-					EC_KEY *eckey;
+-					if (req->curve_name == NID_undef) {
+-						php_error_docref(NULL, E_WARNING, "Missing configuration value: 'curve_name' not set");
+-						return NULL;
+-					}
+-					eckey = EC_KEY_new_by_curve_name(req->curve_name);
+-					if (eckey) {
+-						EC_KEY_set_asn1_flag(eckey, OPENSSL_EC_NAMED_CURVE);
+-						if (EC_KEY_generate_key(eckey) &&
+-							EVP_PKEY_assign_EC_KEY(req->priv_key, eckey)) {
+-							return_val = req->priv_key;
+-						} else {
+-							EC_KEY_free(eckey);
+-						}
+-					}
+-				}
+-				break;
++		case EVP_PKEY_EC:
++			if (req->curve_name == NID_undef) {
++				php_error_docref(NULL, E_WARNING, "Missing configuration value: \"curve_name\" not set");
++				goto cleanup;
++			}
++
++			if (EVP_PKEY_CTX_set_ec_paramgen_curve_nid(ctx, req->curve_name) <= 0 ||
++					EVP_PKEY_CTX_set_ec_param_enc(ctx, OPENSSL_EC_NAMED_CURVE) <= 0) {
++				php_openssl_store_errors();
++				goto cleanup;
++			}
++			break;
+ #endif
+-			default:
+-				php_error_docref(NULL, E_WARNING, "Unsupported private key type");
++		EMPTY_SWITCH_DEFAULT_CASE()
+ 		}
+-	} else {
++
++		if (EVP_PKEY_paramgen(ctx, &params) <= 0) {
++			php_openssl_store_errors();
++			goto cleanup;
++		}
++
++		EVP_PKEY_CTX_free(ctx);
++		ctx = EVP_PKEY_CTX_new(params, NULL);
++		if (!ctx) {
++			php_openssl_store_errors();
++			goto cleanup;
++		}
++	}
++
++	if (EVP_PKEY_keygen_init(ctx) <= 0) {
+ 		php_openssl_store_errors();
++		goto cleanup;
+ 	}
+ 
+-	php_openssl_write_rand_file(randfile, egdsocket, seeded);
++	if (type == EVP_PKEY_RSA && EVP_PKEY_CTX_set_rsa_keygen_bits(ctx, req->priv_key_bits) <= 0) {
++		php_openssl_store_errors();
++		goto cleanup;
++	}
+ 
+-	if (return_val == NULL) {
+-		EVP_PKEY_free(req->priv_key);
+-		req->priv_key = NULL;
+-		return NULL;
++	if (EVP_PKEY_keygen(ctx, &key) <= 0) {
++		php_openssl_store_errors();
++		goto cleanup;
+ 	}
+ 
+-	return return_val;
++	req->priv_key = key;
++
++cleanup:
++	php_openssl_write_rand_file(randfile, egdsocket, seeded);
++	EVP_PKEY_free(params);
++	EVP_PKEY_CTX_free(ctx);
++	return key;
+ }
+ /* }}} */
+ 
+-- 
+2.31.1
+
+From cc5ad532e6672ac74007caa83f2fb7796f69510b Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Mon, 9 Aug 2021 10:26:12 +0200
+Subject: [PATCH 21/24] Extract EC key initialization
+
+(cherry picked from commit 14d7c7e9aee5ab55a92ddc626b7b81c130ea7618)
+---
+ ext/openssl/openssl.c | 239 ++++++++++++++++++++++--------------------
+ 1 file changed, 125 insertions(+), 114 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 588aa3902f..5671311508 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -4372,8 +4372,126 @@ static zend_bool php_openssl_pkey_init_dh(DH *dh, zval *data)
+ }
+ /* }}} */
+ 
+-/* {{{ proto resource openssl_pkey_new([array configargs])
+-   Generates a new private key */
++#ifdef HAVE_EVP_PKEY_EC
++static int php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, int *is_private) {
++	EC_GROUP *group = NULL;
++	EC_POINT *pnt = NULL;
++	BIGNUM *d = NULL;
++	zval *bn;
++	zval *x;
++	zval *y;
++
++	if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "curve_name", sizeof("curve_name") - 1)) != NULL &&
++			Z_TYPE_P(bn) == IS_STRING) {
++		int nid = OBJ_sn2nid(Z_STRVAL_P(bn));
++		if (nid != NID_undef) {
++			group = EC_GROUP_new_by_curve_name(nid);
++			if (!group) {
++				php_openssl_store_errors();
++				goto clean_exit;
++			}
++			EC_GROUP_set_asn1_flag(group, OPENSSL_EC_NAMED_CURVE);
++			EC_GROUP_set_point_conversion_form(group, POINT_CONVERSION_UNCOMPRESSED);
++			if (!EC_KEY_set_group(eckey, group)) {
++				php_openssl_store_errors();
++				goto clean_exit;
++			}
++		}
++	}
++
++	if (group == NULL) {
++		php_error_docref(NULL, E_WARNING, "Unknown curve name");
++		goto clean_exit;
++	}
++
++	// The public key 'pnt' can be calculated from 'd' or is defined by 'x' and 'y'
++	*is_private = 0;
++	if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "d", sizeof("d") - 1)) != NULL &&
++			Z_TYPE_P(bn) == IS_STRING) {
++		*is_private = 1;
++		d = BN_bin2bn((unsigned char*) Z_STRVAL_P(bn), Z_STRLEN_P(bn), NULL);
++		if (!EC_KEY_set_private_key(eckey, d)) {
++			php_openssl_store_errors();
++			goto clean_exit;
++		}
++		// Calculate the public key by multiplying the Point Q with the public key
++		// P = d * Q
++		pnt = EC_POINT_new(group);
++		if (!pnt || !EC_POINT_mul(group, pnt, d, NULL, NULL, NULL)) {
++			php_openssl_store_errors();
++			goto clean_exit;
++		}
++
++		BN_free(d);
++	} else if ((x = zend_hash_str_find(Z_ARRVAL_P(data), "x", sizeof("x") - 1)) != NULL &&
++			Z_TYPE_P(x) == IS_STRING &&
++			(y = zend_hash_str_find(Z_ARRVAL_P(data), "y", sizeof("y") - 1)) != NULL &&
++			Z_TYPE_P(y) == IS_STRING) {
++		pnt = EC_POINT_new(group);
++		if (pnt == NULL) {
++			php_openssl_store_errors();
++			goto clean_exit;
++		}
++		if (!EC_POINT_set_affine_coordinates_GFp(
++				group, pnt, BN_bin2bn((unsigned char*) Z_STRVAL_P(x), Z_STRLEN_P(x), NULL),
++				BN_bin2bn((unsigned char*) Z_STRVAL_P(y), Z_STRLEN_P(y), NULL), NULL)) {
++			php_openssl_store_errors();
++			goto clean_exit;
++		}
++	}
++
++	if (pnt != NULL) {
++		if (!EC_KEY_set_public_key(eckey, pnt)) {
++			php_openssl_store_errors();
++			goto clean_exit;
++		}
++		EC_POINT_free(pnt);
++		pnt = NULL;
++	}
++
++	if (!EC_KEY_check_key(eckey)) {
++		PHP_OPENSSL_RAND_ADD_TIME();
++		EC_KEY_generate_key(eckey);
++		php_openssl_store_errors();
++	}
++	if (EC_KEY_check_key(eckey)) {
++		return 1;
++	} else {
++		php_openssl_store_errors();
++	}
++
++clean_exit:
++	BN_free(d);
++	EC_POINT_free(pnt);
++	EC_GROUP_free(group);
++	return 0;
++}
++
++static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, int *is_private) {
++	EVP_PKEY *pkey = EVP_PKEY_new();
++	if (!pkey) {
++		php_openssl_store_errors();
++		return NULL;
++	}
++
++	EC_KEY *ec = EC_KEY_new();
++	if (!ec) {
++		EVP_PKEY_free(pkey);
++		return NULL;
++	}
++
++	if (!php_openssl_pkey_init_legacy_ec(ec, data, is_private)
++			|| !EVP_PKEY_assign_EC_KEY(pkey, ec)) {
++		php_openssl_store_errors();
++		EVP_PKEY_free(pkey);
++		EC_KEY_free(ec);
++		return NULL;
++	}
++
++	return pkey;
++}
++#endif
++
+ PHP_FUNCTION(openssl_pkey_new)
+ {
+ 	struct php_x509_request req;
+@@ -4454,119 +4572,12 @@ PHP_FUNCTION(openssl_pkey_new)
+ #ifdef HAVE_EVP_PKEY_EC
+ 		} else if ((data = zend_hash_str_find(Z_ARRVAL_P(args), "ec", sizeof("ec") - 1)) != NULL &&
+ 			Z_TYPE_P(data) == IS_ARRAY) {
+-			EC_KEY *eckey = NULL;
+-			EC_GROUP *group = NULL;
+-			EC_POINT *pnt = NULL;
+-			BIGNUM *d = NULL;
+-			pkey = EVP_PKEY_new();
+-			if (pkey) {
+-				eckey = EC_KEY_new();
+-				if (eckey) {
+-					EC_GROUP *group = NULL;
+-					zval *bn;
+-					zval *x;
+-					zval *y;
+-
+-					if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "curve_name", sizeof("curve_name") - 1)) != NULL &&
+-							Z_TYPE_P(bn) == IS_STRING) {
+-						int nid = OBJ_sn2nid(Z_STRVAL_P(bn));
+-						if (nid != NID_undef) {
+-							group = EC_GROUP_new_by_curve_name(nid);
+-							if (!group) {
+-								php_openssl_store_errors();
+-								goto clean_exit;
+-							}
+-							EC_GROUP_set_asn1_flag(group, OPENSSL_EC_NAMED_CURVE);
+-							EC_GROUP_set_point_conversion_form(group, POINT_CONVERSION_UNCOMPRESSED);
+-							if (!EC_KEY_set_group(eckey, group)) {
+-								php_openssl_store_errors();
+-								goto clean_exit;
+-							}
+-						}
+-					}
+-
+-					if (group == NULL) {
+-						php_error_docref(NULL, E_WARNING, "Unknown curve_name");
+-						goto clean_exit;
+-					}
+-
+-					// The public key 'pnt' can be calculated from 'd' or is defined by 'x' and 'y'
+-					if ((bn = zend_hash_str_find(Z_ARRVAL_P(data), "d", sizeof("d") - 1)) != NULL &&
+-							Z_TYPE_P(bn) == IS_STRING) {
+-						d = BN_bin2bn((unsigned char*) Z_STRVAL_P(bn), Z_STRLEN_P(bn), NULL);
+-						if (!EC_KEY_set_private_key(eckey, d)) {
+-							php_openssl_store_errors();
+-							goto clean_exit;
+-						}
+-						// Calculate the public key by multiplying the Point Q with the public key
+-						// P = d * Q
+-						pnt = EC_POINT_new(group);
+-						if (!pnt || !EC_POINT_mul(group, pnt, d, NULL, NULL, NULL)) {
+-							php_openssl_store_errors();
+-							goto clean_exit;
+-						}
+-
+-						BN_free(d);
+-					} else if ((x = zend_hash_str_find(Z_ARRVAL_P(data), "x", sizeof("x") - 1)) != NULL &&
+-							Z_TYPE_P(x) == IS_STRING &&
+-							(y = zend_hash_str_find(Z_ARRVAL_P(data), "y", sizeof("y") - 1)) != NULL &&
+-							Z_TYPE_P(y) == IS_STRING) {
+-						pnt = EC_POINT_new(group);
+-						if (pnt == NULL) {
+-							php_openssl_store_errors();
+-							goto clean_exit;
+-						}
+-						if (!EC_POINT_set_affine_coordinates_GFp(
+-								group, pnt, BN_bin2bn((unsigned char*) Z_STRVAL_P(x), Z_STRLEN_P(x), NULL),
+-								BN_bin2bn((unsigned char*) Z_STRVAL_P(y), Z_STRLEN_P(y), NULL), NULL)) {
+-							php_openssl_store_errors();
+-							goto clean_exit;
+-						}
+-					}
+-
+-					if (pnt != NULL) {
+-						if (!EC_KEY_set_public_key(eckey, pnt)) {
+-							php_openssl_store_errors();
+-							goto clean_exit;
+-						}
+-						EC_POINT_free(pnt);
+-						pnt = NULL;
+-					}
+-
+-					if (!EC_KEY_check_key(eckey)) {
+-						PHP_OPENSSL_RAND_ADD_TIME();
+-						EC_KEY_generate_key(eckey);
+-						php_openssl_store_errors();
+-					}
+-					if (EC_KEY_check_key(eckey) && EVP_PKEY_assign_EC_KEY(pkey, eckey)) {
+-						EC_GROUP_free(group);
+-						RETURN_RES(zend_register_resource(pkey, le_key));
+-					} else {
+-						php_openssl_store_errors();
+-					}
+-				} else {
+-					php_openssl_store_errors();
+-				}
+-			} else {
+-				php_openssl_store_errors();
+-			}
+-clean_exit:
+-			if (d != NULL) {
+-				BN_free(d);
+-			}
+-			if (pnt != NULL) {
+-				EC_POINT_free(pnt);
+-			}
+-			if (group != NULL) {
+-				EC_GROUP_free(group);
+-			}
+-			if (eckey != NULL) {
+-				EC_KEY_free(eckey);
+-			}
+-			if (pkey != NULL) {
+-				EVP_PKEY_free(pkey);
++			int is_private;
++			pkey = php_openssl_pkey_init_ec(data, &is_private);
++			if (!pkey) {
++				RETURN_FALSE;
+ 			}
+-			RETURN_FALSE;
++			RETURN_RES(zend_register_resource(pkey, le_key));
+ #endif
+ 		}
+ 	}
+-- 
+2.31.1
+
+From 7c3f98fb5000b95419848b3b2519b677e8852f3f Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Mon, 9 Aug 2021 12:01:35 +0200
+Subject: [PATCH 22/24] Test calculation of EC public key from private key
+
+(cherry picked from commit 246698671f941b2034518ab04f35009b2da77bb1)
+---
+ ext/openssl/tests/ecc.phpt | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/ext/openssl/tests/ecc.phpt b/ext/openssl/tests/ecc.phpt
+index 6c09238003..ecc34a3330 100644
+--- a/ext/openssl/tests/ecc.phpt
++++ b/ext/openssl/tests/ecc.phpt
+@@ -36,6 +36,16 @@ $d2 = openssl_pkey_get_details($key2);
+ // Compare array
+ var_dump($d1 === $d2);
+ 
++// Check that the public key info is computed from the private key if it is missing.
++$d1_priv = $d1;
++unset($d1_priv["ec"]["x"]);
++unset($d1_priv["ec"]["y"]);
++
++$key3 = openssl_pkey_new($d1_priv);
++var_dump($key3);
++$d3 = openssl_pkey_get_details($key3);
++var_dump($d1 === $d3);
++
+ $dn = array(
+     "countryName" => "BR",
+     "stateOrProvinceName" => "Rio Grande do Sul",
+@@ -94,6 +104,8 @@ string(9) "secp384r1"
+ bool(true)
+ resource(%d) of type (OpenSSL key)
+ bool(true)
++resource(%d) of type (OpenSSL key)
++bool(true)
+ Testing openssl_csr_new with key generation
+ NULL
+ resource(%d) of type (OpenSSL key)
+-- 
+2.31.1
+
+From 3b17fa3a6a34fd169c34e3d1dbb315c4c691c649 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Mon, 9 Aug 2021 11:12:20 +0200
+Subject: [PATCH 23/24] Use param API for creating EC keys
+
+Rather than the deprecated low level APIs.
+
+(cherry picked from commit f9e701cde813fad4e1f647e63750c0b9bdeadb4e)
+---
+ ext/openssl/openssl.c | 101 ++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 101 insertions(+)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 5671311508..5a76057c5f 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -57,6 +57,11 @@
+ #include <openssl/rand.h>
+ #include <openssl/ssl.h>
+ #include <openssl/pkcs12.h>
++#include <openssl/cms.h>
++#if PHP_OPENSSL_API_VERSION >= 0x30000
++#include <openssl/core_names.h>
++#include <openssl/param_build.h>
++#endif
+ 
+ /* Common */
+ #include <time.h>
+@@ -4373,6 +4378,7 @@ static zend_bool php_openssl_pkey_init_dh(DH *dh, zval *data)
+ /* }}} */
+ 
+ #ifdef HAVE_EVP_PKEY_EC
++#if PHP_OPENSSL_API_VERSION < 0x30000
+ static int php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, int *is_private) {
+ 	EC_GROUP *group = NULL;
+ 	EC_POINT *pnt = NULL;
+@@ -4450,6 +4456,7 @@ static int php_openssl_pkey_init_legacy_ec(EC_KEY *eckey, zval *data, int *is_pr
+ 	}
+ 
+ 	if (!EC_KEY_check_key(eckey)) {
++		*is_private = true;
+ 		PHP_OPENSSL_RAND_ADD_TIME();
+ 		EC_KEY_generate_key(eckey);
+ 		php_openssl_store_errors();
+@@ -4466,8 +4473,101 @@ clean_exit:
+ 	EC_GROUP_free(group);
+ 	return 0;
+ }
++#endif
+ 
+ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, int *is_private) {
++#if PHP_OPENSSL_API_VERSION >= 0x30000
++	BIGNUM *d = NULL, *x = NULL, *y = NULL;
++	EC_GROUP *group = NULL;
++	EC_POINT *pnt = NULL;
++	char *pnt_oct = NULL;
++	EVP_PKEY *param_key = NULL, *pkey = NULL;
++	EVP_PKEY_CTX *ctx = EVP_PKEY_CTX_new_id(EVP_PKEY_EC, NULL);
++	OSSL_PARAM *params = NULL;
++	OSSL_PARAM_BLD *bld = OSSL_PARAM_BLD_new();
++	zval *curve_name_zv = zend_hash_str_find(Z_ARRVAL_P(data), "curve_name", sizeof("curve_name") - 1);
++
++	OPENSSL_PKEY_SET_BN(data, d);
++	OPENSSL_PKEY_SET_BN(data, x);
++	OPENSSL_PKEY_SET_BN(data, y);
++
++	if (!ctx || !bld || !curve_name_zv || Z_TYPE_P(curve_name_zv) != IS_STRING) {
++		goto cleanup;
++	}
++
++	int nid = OBJ_sn2nid(Z_STRVAL_P(curve_name_zv));
++	group = EC_GROUP_new_by_curve_name(nid);
++	if (!group) {
++		php_error_docref(NULL, E_WARNING, "Unknown curve name");
++		goto cleanup;
++	}
++
++	OSSL_PARAM_BLD_push_utf8_string(
++		bld, OSSL_PKEY_PARAM_GROUP_NAME, Z_STRVAL_P(curve_name_zv), Z_STRLEN_P(curve_name_zv));
++
++	if (d) {
++		OSSL_PARAM_BLD_push_BN(bld, OSSL_PKEY_PARAM_PRIV_KEY, d);
++
++		pnt = EC_POINT_new(group);
++		if (!pnt || !EC_POINT_mul(group, pnt, d, NULL, NULL, NULL)) {
++			goto cleanup;
++		}
++	} else if (x && y) {
++		/* OpenSSL does not allow setting EC_PUB_X/EC_PUB_Y, so convert to encoded format. */
++		pnt = EC_POINT_new(group);
++		if (!pnt || !EC_POINT_set_affine_coordinates(group, pnt, x, y, NULL)) {
++			goto cleanup;
++		}
++	}
++
++	if (pnt) {
++		size_t pnt_oct_len =
++			EC_POINT_point2buf(group, pnt, POINT_CONVERSION_COMPRESSED, &pnt_oct, NULL);
++		if (!pnt_oct_len) {
++			goto cleanup;
++		}
++
++		OSSL_PARAM_BLD_push_octet_string(bld, OSSL_PKEY_PARAM_PUB_KEY, pnt_oct, pnt_oct_len);
++	}
++
++	params = OSSL_PARAM_BLD_to_param(bld);
++	if (!params) {
++		goto cleanup;
++	}
++
++	if (EVP_PKEY_fromdata_init(ctx) <= 0 ||
++			EVP_PKEY_fromdata(ctx, &param_key, EVP_PKEY_KEYPAIR, params) <= 0) {
++		goto cleanup;
++	}
++
++	EVP_PKEY_CTX_free(ctx);
++	ctx = EVP_PKEY_CTX_new(param_key, NULL);
++	if (EVP_PKEY_check(ctx)) {
++		*is_private = d != NULL;
++		EVP_PKEY_up_ref(param_key);
++		pkey = param_key;
++	} else {
++		*is_private = 1;
++		PHP_OPENSSL_RAND_ADD_TIME();
++		if (EVP_PKEY_keygen_init(ctx) <= 0 || EVP_PKEY_keygen(ctx, &pkey) <= 0) {
++			goto cleanup;
++		}
++	}
++
++cleanup:
++	php_openssl_store_errors();
++	EVP_PKEY_free(param_key);
++	EVP_PKEY_CTX_free(ctx);
++	OSSL_PARAM_free(params);
++	OSSL_PARAM_BLD_free(bld);
++	EC_POINT_free(pnt);
++	EC_GROUP_free(group);
++	OPENSSL_free(pnt_oct);
++	BN_free(d);
++	BN_free(x);
++	BN_free(y);
++	return pkey;
++#else
+ 	EVP_PKEY *pkey = EVP_PKEY_new();
+ 	if (!pkey) {
+ 		php_openssl_store_errors();
+@@ -4489,6 +4589,7 @@ static EVP_PKEY *php_openssl_pkey_init_ec(zval *data, int *is_private) {
+ 	}
+ 
+ 	return pkey;
++#endif
+ }
+ #endif
+ 
+-- 
+2.31.1
+
+From 76efdaf49ccfb4462ce9493c04b5542570f72907 Mon Sep 17 00:00:00 2001
+From: Nikita Popov <nikita.ppv@gmail.com>
+Date: Mon, 9 Aug 2021 14:19:33 +0200
+Subject: [PATCH 24/24] Extract public key portion via PEM roundtrip
+
+The workaround with cloning the X509_REQ no longer works in
+OpenSSL 3. Instead extract the public key portion by round
+tripping through PEM.
+
+(cherry picked from commit 26a51e8d7a6026f6bd69813d044785d154a296a3)
+---
+ ext/openssl/openssl.c | 41 +++++++++++++++++++----------------------
+ 1 file changed, 19 insertions(+), 22 deletions(-)
+
+diff --git a/ext/openssl/openssl.c b/ext/openssl/openssl.c
+index 5a76057c5f..00ab6dc73a 100644
+--- a/ext/openssl/openssl.c
++++ b/ext/openssl/openssl.c
+@@ -3727,6 +3727,20 @@ PHP_FUNCTION(openssl_csr_get_subject)
+ }
+ /* }}} */
+ 
++static EVP_PKEY *php_openssl_extract_public_key(EVP_PKEY *priv_key)
++{
++	/* Extract public key portion by round-tripping through PEM. */
++	BIO *bio = BIO_new(BIO_s_mem());
++	if (!bio || !PEM_write_bio_PUBKEY(bio, priv_key)) {
++		BIO_free(bio);
++		return NULL;
++	}
++
++	EVP_PKEY *pub_key = PEM_read_bio_PUBKEY(bio, NULL, NULL, NULL);
++	BIO_free(bio);
++	return pub_key;
++}
++
+ /* {{{ proto mixed openssl_csr_get_public_key(mixed csr)
+ 	Returns the subject of a CERT or FALSE on error */
+ PHP_FUNCTION(openssl_csr_get_public_key)
+@@ -3734,42 +3748,25 @@ PHP_FUNCTION(openssl_csr_get_public_key)
+ 	zval * zcsr;
+ 	zend_bool use_shortnames = 1;
+ 	zend_resource *csr_resource;
+-
+-	X509_REQ *orig_csr, *csr;
++	X509_REQ *csr;
+ 	EVP_PKEY *tpubkey;
+ 
+ 	if (zend_parse_parameters(ZEND_NUM_ARGS(), "z|b", &zcsr, &use_shortnames) == FAILURE) {
+ 		return;
+ 	}
+ 
+-	orig_csr = php_openssl_csr_from_zval(zcsr, 0, &csr_resource);
++	csr = php_openssl_csr_from_zval(zcsr, 0, &csr_resource);
+ 
+-	if (orig_csr == NULL) {
++	if (csr == NULL) {
+ 		RETURN_FALSE;
+ 	}
+ 
+-#if PHP_OPENSSL_API_VERSION >= 0x10100
+-	/* Due to changes in OpenSSL 1.1 related to locking when decoding CSR,
+-	 * the pub key is not changed after assigning. It means if we pass
+-	 * a private key, it will be returned including the private part.
+-	 * If we duplicate it, then we get just the public part which is
+-	 * the same behavior as for OpenSSL 1.0 */
+-	csr = X509_REQ_dup(orig_csr);
+-#else
+-	csr = orig_csr;
+-#endif
+-
+ 	/* Retrieve the public key from the CSR */
+-	tpubkey = X509_REQ_get_pubkey(csr);
+-
+-	if (csr != orig_csr) {
+-		/* We need to free the duplicated CSR */
+-		X509_REQ_free(csr);
+-	}
++	tpubkey = php_openssl_extract_public_key(X509_REQ_get_pubkey(csr));
+ 
+ 	if (!csr_resource) {
+ 		/* We also need to free the original CSR if it was freshly created */
+-		X509_REQ_free(orig_csr);
++		X509_REQ_free(csr);
+ 	}
+ 
+ 	if (tpubkey == NULL) {
+-- 
+2.31.1
+
