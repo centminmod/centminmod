@@ -1,0 +1,87 @@
+From dad5b771fba02359facd7be0cd2fd0896cdc91ae Mon Sep 17 00:00:00 2001
+From: "Christoph M. Becker" <cmbecker69@gmx.de>
+Date: Mon, 31 Oct 2022 17:20:23 +0100
+Subject: [PATCH 1/2] Fix #81740: PDO::quote() may return unquoted string
+
+`sqlite3_snprintf()` expects its first parameter to be `int`; we need
+to avoid overflow.
+
+(cherry picked from commit 921b6813da3237a83e908998483f46ae3d8bacba)
+(cherry picked from commit 7cb160efe19d3dfb8b92629805733ea186b55050)
+---
+ ext/pdo_sqlite/sqlite_driver.c     |  3 +++
+ ext/pdo_sqlite/tests/bug81740.phpt | 17 +++++++++++++++++
+ 2 files changed, 20 insertions(+)
+ create mode 100644 ext/pdo_sqlite/tests/bug81740.phpt
+
+diff --git a/ext/pdo_sqlite/sqlite_driver.c b/ext/pdo_sqlite/sqlite_driver.c
+index 481b62de97..56d15ae2c0 100644
+--- a/ext/pdo_sqlite/sqlite_driver.c
++++ b/ext/pdo_sqlite/sqlite_driver.c
+@@ -232,6 +232,9 @@ static char *pdo_sqlite_last_insert_id(pdo_dbh_t *dbh, const char *name, size_t
+ /* NB: doesn't handle binary strings... use prepared stmts for that */
+ static int sqlite_handle_quoter(pdo_dbh_t *dbh, const char *unquoted, size_t unquotedlen, char **quoted, size_t *quotedlen, enum pdo_param_type paramtype )
+ {
++	if (unquotedlen > (INT_MAX - 3) / 2) {
++		return 0;
++	}
+ 	*quoted = safe_emalloc(2, unquotedlen, 3);
+ 	sqlite3_snprintf(2*unquotedlen + 3, *quoted, "'%q'", unquoted);
+ 	*quotedlen = strlen(*quoted);
+diff --git a/ext/pdo_sqlite/tests/bug81740.phpt b/ext/pdo_sqlite/tests/bug81740.phpt
+new file mode 100644
+index 0000000000..99fb07c304
+--- /dev/null
++++ b/ext/pdo_sqlite/tests/bug81740.phpt
+@@ -0,0 +1,17 @@
++--TEST--
++Bug #81740 (PDO::quote() may return unquoted string)
++--SKIPIF--
++<?php
++if (!extension_loaded('pdo_sqlite')) print 'skip not loaded';
++if (getenv("SKIP_SLOW_TESTS")) die("skip slow test");
++?>
++--INI--
++memory_limit=-1
++--FILE--
++<?php
++$pdo = new PDO("sqlite::memory:");
++$string = str_repeat("a", 0x80000000);
++var_dump($pdo->quote($string));
++?>
++--EXPECT--
++bool(false)
+-- 
+2.38.1
+
+From 3a800d9c39caca74158a0aa7a2e268cb5ebac701 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Mon, 19 Dec 2022 09:24:02 +0100
+Subject: [PATCH 2/2] NEWS
+
+(cherry picked from commit 7328f3a0344806b846bd05657bdce96e47810bf0)
+(cherry picked from commit dbfbd99e91701c0a5613133c06305fd70545e9ad)
+---
+ NEWS | 6 ++++++
+ 1 file changed, 6 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index eded1b91d6..b7d4bf3082 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,12 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 8.0.27
++
++- PDO/SQLite:
++  . Fixed bug #81740 (PDO::quote() may return unquoted string).
++    (CVE-2022-31631) (cmb)
++
+ Backported from 7.4.32
+ 
+ - Core:
+-- 
+2.38.1
+
