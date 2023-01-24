@@ -6,12 +6,14 @@ export LC_ALL=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LANGUAGE=en_US.UTF-8
 export LC_CTYPE=en_US.UTF-8
+# disable systemd pager so it doesn't pipe systemctl output to less
+export SYSTEMD_PAGER=''
 ###############################################################
 # written by George Liu (eva2000) centminmod.com
 ###############################################################
 # variables
 ###############################################################
-ACMEVER='1.0.85'
+ACMEVER='1.0.88'
 DT=$(date +"%d%m%y-%H%M%S")
 ACMEDEBUG='n'
 ACMEDEBUG_LOG='y'
@@ -477,7 +479,7 @@ check_cfdns_api() {
 
 #####################
 check_domains() {
-  if [ -d /root/.acme.sh ]; then
+  if [ -d "${ACMECERTHOME}" ]; then
    echo "----------------------------------------------"
    echo "check domain DNS"
    echo "----------------------------------------------"
@@ -509,7 +511,7 @@ check_domains() {
 
 #####################
 checkdate() {
-  if [ -d /root/.acme.sh ]; then
+  if [ -d "${ACMECERTHOME}" ]; then
    echo "----------------------------------------------"
    echo "nginx installed"
    echo "----------------------------------------------"
@@ -539,6 +541,7 @@ checkdate() {
    echo "----------------------------------------------"
    for ca in $(find ${ACMECERTHOME} -name '*.cer'| egrep -v 'fullchain.cer|ca.cer'); do
     if [ -f $ca ]; then
+      # cert info
       expiry=$(openssl x509 -enddate -noout -in $ca | cut -d'=' -f2 | awk '{print $2 " " $1 " " $4}')
       fingerprint=$(openssl x509 -fingerprint -noout -in $ca | sed 's|:||g' | awk -F "=" '// {print $2}')
       epochExpirydate=$(date -d"${expiry}" +%s)
@@ -556,6 +559,10 @@ checkdate() {
         echo "https://crt.sh/?sha1=${fingerprint}"
       fi
       echo "certificate expires in $daysToExpire days on $expiry"
+      if [ -f "$conf" ]; then
+        getauth_method=$(grep -i 'Le_Webroot' "$conf")
+        echo "Letsencrypt validation method: $getauth_method"
+      fi
       if [[ "$checkRevokeCaa" -eq 1 ]]; then
         echo "certificate should be renewed ASAP due to CAA bug"
         echo "https://community.letsencrypt.org/t/2020-02-29-caa-rechecking-bug/114591"
@@ -787,8 +794,8 @@ install_acme() {
   else
   ./acme.sh --install --days $RENEWDAYS
   fi
-  if [ -f "/root/.acme.sh/acme.sh.env" ]; then
-    . "/root/.acme.sh/acme.sh.env"
+  if [ -f "${ACMECERTHOME}acme.sh.env" ]; then
+    . "${ACMECERTHOME}acme.sh.env"
   fi
   "$ACMEBINARY" -h
   echo
@@ -833,8 +840,8 @@ update_acme() {
   else
   ./acme.sh --install --days $RENEWDAYS
   fi
-  if [ -f "/root/.acme.sh/acme.sh.env" ]; then
-    . "/root/.acme.sh/acme.sh.env"
+  if [ -f "${ACMECERTHOME}acme.sh.env" ]; then
+    . "${ACMECERTHOME}acme.sh.env"
   fi
   "$ACMEBINARY" -v
   if [[ "$QUITEOUTPUT" != 'quite' ]]; then
@@ -863,7 +870,7 @@ setup_acme() {
 #####################
 check_acmeinstall() {
   # check if acme.sh is installed
-  if [[ ! -d /root/.acme.sh || ! -f /root/.acme.sh/acme.sh.env ]]; then
+  if [[ ! -d "${ACMECERTHOME}" || ! -f ${ACMECERTHOME}acme.sh.env ]]; then
     echo
     echo "acme.sh missing... installing acme.sh now..."
     install_acme
@@ -934,9 +941,11 @@ fi
     #       ADD_BACKLOG=" backlog=$SET_NGINXBACKLOG"
     #   fi
     # fi
-    if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -o reuseport )" != 'reuseport' ]]; then
+    if [[ "$(grep -rn listen /usr/local/nginx/conf/conf.d/*.conf | grep -v '#' | grep 443 | grep ' ssl' | grep ' http2' | grep -m1 -o reuseport )" != 'reuseport' ]]; then
       # check if reuseport is supported for listen 443 port - only needs to be added once globally for all nginx vhosts
-      NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+      if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
+        NGXVHOST_CHECKREUSEPORT=$(grep --color -Ro SO_REUSEPORT /usr/src/kernels | head -n1 | awk -F ":" '{print $2}')
+      fi
       if [[ "$NGXVHOST_CHECKREUSEPORT" = 'SO_REUSEPORT' ]] || [[ "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
         ADD_REUSEPORT=' reuseport'
       else
@@ -990,6 +999,9 @@ switch_httpsdefault() {
 echo "sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x# server {| server {|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+  echo "sed -i \"s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
+fi
 echo "sed -i \"s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   return 302 https://${vhostname}\$request_uri;|   return 302 https://${vhostname}\$request_uri;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
 echo "sed -i \"s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf\""
@@ -999,6 +1011,9 @@ echo "sed -i \"s|#x# }| }|\" \"/usr/local/nginx/conf/conf.d/${vhostname}.ssl.con
 sed -i 's|^##x# HTTPS-DEFAULT|#x# HTTPS-DEFAULT|g' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x# server {| server {|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   $DEDI_LISTEN|   $DEDI_LISTEN|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+  sed -i "s|#x#   $DEDI_LISTEN_V6|   $DEDI_LISTEN_V6|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+fi
 sed -i "s|#x#   server_name ${vhostname} www.${vhostname};|   server_name ${vhostname} www.${vhostname};|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   return 302 https:\/\/${vhostname}\$request_uri;|   return 302 https:\/\/${vhostname}\$request_uri;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "s|#x#   root /home/nginx/domains/${vhostname}/public;|   root /home/nginx/domains/${vhostname}/public;|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1007,9 +1022,10 @@ sed -i "s|#x# }| }|" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
 # remove duplicates
 sed -i '/^# Centmin Mod Getting Started Guide/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
-sed -i '/^# must read http:\/\/centminmod.com\/getstarted.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# must read https:\/\/centminmod.com\/getstarted.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# For HTTP\/2 SSL Setup/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
-sed -i '/^# read http:\/\/centminmod.com\/nginx_configure_https_ssl_spdy.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# read https:\/\/centminmod.com\/nginx_configure_https_ssl_spdy.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/^# read https:\/\/centminmod.com\/letsencrypt-freessl.html/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# redirect from www to non-www  forced SSL/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# uncomment, save file and restart Nginx to enable/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# if unsure use return 302 before using return 301/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
@@ -1018,6 +1034,7 @@ sed -i "/^#   server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/co
 sed -i '/^#    return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^# }/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^#       listen   80;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
+sed -i '/#       listen   \[::\]:80;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i "/^#       server_name ${vhostname} www.${vhostname};/d" "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 sed -i '/^#       return 302 https:\/\/$server_name$request_uri;/d' "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"
 
@@ -1118,12 +1135,61 @@ sslvhostsetup_mainhostname() {
 # any new nginx vhosts created via centmin.sh menu option 2 or
 # /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
 # SECOND_IP ip address set in the nginx vhost's listen directive
+#
+# also check if system can resolve to a public IPv6 address to determine
+# if nginx vhost should support IPv6 listen directive
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo
+  echo "VPS_IPSIX_CHECK_DISABLE=$VPS_IPSIX_CHECK_DISABLE"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] ]]; then
+  IP_SYSTEM_CHECK_V4=$(curl -4s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv4 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  IP_SYSTEM_CHECK_V6=$(curl -6s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv6 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  if [ ! -f /usr/bin/ipcalc ]; then
+    yum -q -y install ipcalc
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  elif [ -f /usr/bin/ipcalc ]; then
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  fi
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "IP_SYSTEM_VALIDATE_V4=$IP_SYSTEM_VALIDATE_V4"
+  echo "IP_SYSTEM_VALIDATE_V6=$IP_SYSTEM_VALIDATE_V6"
+fi
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  # if VPS_IPSIX_CHECK_DISABLE=y then set default ipv4 listener
+  # if VPS_IPSIX_CHECK_DISABLE != y then set listeners based on
+  # IP_SYSTEM_VALIDATE_V4 and IP_SYSTEM_VALIDATE_V6 values where
+  # 0 = valid and 1 = not valid
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
+    DEDI_LISTEN=""
+  fi
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+    DEDI_LISTEN_V6="listen   [::]:80;"
+    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
+    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
+    DEDI_LISTEN_V6=""
+  else
+    DEDI_LISTEN_V6=""
+  fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "DEDI_LISTEN=$DEDI_LISTEN"
+  echo "DEDI_LISTEN_V6=$DEDI_LISTEN_V6"
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl ]; then
@@ -1298,6 +1364,7 @@ cat > "${MAIN_HOSTNAMEVHOSTSSLFILE}"<<ESS
 # if unsure use return 302 before using return 301
 # server {
 #       listen   ${DEDI_IP}80;
+#       $DEDI_LISTEN_V6
 #       server_name ${vhostname} www.${vhostname};
 #       return 302 https://\${vhostname}\$request_uri;
 # }
@@ -1505,12 +1572,61 @@ sslvhostsetup() {
 # any new nginx vhosts created via centmin.sh menu option 2 or
 # /usr/bin/nv or centmin.sh menu option 22, will have pre-defined
 # SECOND_IP ip address set in the nginx vhost's listen directive
+#
+# also check if system can resolve to a public IPv6 address to determine
+# if nginx vhost should support IPv6 listen directive
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo
+  echo "VPS_IPSIX_CHECK_DISABLE=$VPS_IPSIX_CHECK_DISABLE"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] ]]; then
+  IP_SYSTEM_CHECK_V4=$(curl -4s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv4 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  IP_SYSTEM_CHECK_V6=$(curl -6s${CURL_TIMEOUTS} -A "${CURL_AGENT} Nginx Vhost Listener IPv6 CHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r '.ip')
+  if [ ! -f /usr/bin/ipcalc ]; then
+    yum -q -y install ipcalc
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  elif [ -f /usr/bin/ipcalc ]; then
+    IP_SYSTEM_VALIDATE_V4=$(/usr/bin/ipcalc -s4c "$IP_SYSTEM_CHECK_V4" >/dev/null 2>&1; echo $?)
+    IP_SYSTEM_VALIDATE_V6=$(/usr/bin/ipcalc -s6c "$IP_SYSTEM_CHECK_V6" >/dev/null 2>&1; echo $?)
+  fi
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "IP_SYSTEM_VALIDATE_V4=$IP_SYSTEM_VALIDATE_V4"
+  echo "IP_SYSTEM_VALIDATE_V6=$IP_SYSTEM_VALIDATE_V6"
+fi
 if [[ -z "$SECOND_IP" ]]; then
   DEDI_IP=""
-  DEDI_LISTEN=""
+  # if VPS_IPSIX_CHECK_DISABLE=y then set default ipv4 listener
+  # if VPS_IPSIX_CHECK_DISABLE != y then set listeners based on
+  # IP_SYSTEM_VALIDATE_V4 and IP_SYSTEM_VALIDATE_V6 values where
+  # 0 = valid and 1 = not valid
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" = [yY] ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -eq '0' ]]; then
+    DEDI_LISTEN="listen   80;"
+    echo "DEDI_LISTEN=\"listen   80;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V4" -ne '0' ]]; then
+    DEDI_LISTEN=""
+  fi
+  if [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -eq '0' ]]; then
+    DEDI_LISTEN_V6="listen   [::]:80;"
+    echo "DEDI_LISTEN_V6=\"listen   [::]:80;\""
+    DEDI_LISTEN_HTTPS_V6="listen   [::]:443 ssl http2;"
+    echo "DEDI_LISTEN_HTTPS_V6=\"listen   [::]:443 ssl http2;\""
+  elif [[ "$VPS_IPSIX_CHECK_DISABLE" != [yY] && "$IP_SYSTEM_VALIDATE_V6" -ne '0' ]]; then
+    DEDI_LISTEN_V6=""
+  else
+    DEDI_LISTEN_V6=""
+  fi
 elif [[ "$SECOND_IP" ]]; then
   DEDI_IP=$(echo $(echo ${SECOND_IP}:))
   DEDI_LISTEN="listen   ${DEDI_IP}80;"
+fi
+if [[ "$VPS_IPSIX_CHECK_DISABLE_DEBUG" = [yY] ]]; then
+  echo "DEDI_LISTEN=$DEDI_LISTEN"
+  echo "DEDI_LISTEN_V6=$DEDI_LISTEN_V6"
 fi
 
 if [ ! -f /usr/local/nginx/conf/ssl_include.conf ]; then
@@ -1546,7 +1662,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/letsencrypt-freessl.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1554,6 +1670,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-wp1"<<ESU
 ##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
+#x#   $DEDI_LISTEN_V6
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
 #x#   root /home/nginx/domains/$vhostname/public;
@@ -1602,7 +1719,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/letsencrypt-freessl.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1610,6 +1727,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf-nonwp1"<<ESV
 ##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
+#x#   $DEDI_LISTEN_V6
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
 #x#   root /home/nginx/domains/$vhostname/public;
@@ -1633,7 +1751,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # Centmin Mod Getting Started Guide
 # must read https://centminmod.com/getstarted.html
 # For HTTP/2 SSL Setup
-# read https://centminmod.com/nginx_configure_https_ssl_spdy.html
+# read https://centminmod.com/letsencrypt-freessl.html
 
 # redirect from www to non-www  forced SSL
 # uncomment, save file and restart Nginx to enable
@@ -1641,6 +1759,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 ##x# HTTPS-DEFAULT
 #x# server {
 #x#   $DEDI_LISTEN
+#x#   $DEDI_LISTEN_V6
 #x#   server_name ${vhostname} www.${vhostname};
 #x#   return 302 https://${vhostname}\$request_uri;
 #x#   root /home/nginx/domains/$vhostname/public;
@@ -1649,6 +1768,7 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
@@ -1754,12 +1874,14 @@ cat > "/usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf"<<ESS
 # if unsure use return 302 before using return 301
 # server {
 #       listen   ${DEDI_IP}80;
+#       $DEDI_LISTEN_V6
 #       server_name ${vhostname} www.${vhostname};
 #       return 302 https://${vhostname}\$request_uri;
 # }
 
 server {
   listen ${DEDI_IP}443 $LISTENOPT;
+  $DEDI_LISTEN_HTTPS_V6
   server_name $vhostname www.$vhostname;
 
   include /usr/local/nginx/conf/ssl/${vhostname}/${vhostname}.crt.key.conf;
@@ -2134,7 +2256,7 @@ issue_acme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -2448,7 +2570,7 @@ reissue_acme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -2669,7 +2791,7 @@ reissue_acme_only() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -2980,7 +3102,7 @@ renew_acme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -3346,7 +3468,7 @@ webroot_issueacme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -3667,7 +3789,7 @@ webroot_reissueacme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -4026,7 +4148,7 @@ webroot_renewacme() {
     fi
     # dual cert routine end
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
@@ -4384,7 +4506,7 @@ issue_acmedns() {
       echo "rm -rf ${ACMECERTHOME}/${vhostname}" >> "${CENTMINLOGDIR}/centminmod_${DT}_nginx_addvhost_nv-remove-cmds-${vhostname}.log"
     fi
     # allow it to be repopulated each time with $vhostname
-    # rm -rf /root/.acme.sh/reload.sh
+    # rm -rf "${ACMECERTHOME}reload.sh"
     echo
     echo "letsencrypt ssl certificate setup completed"
     echo "ssl certs located at: /usr/local/nginx/conf/ssl/${vhostname}"
