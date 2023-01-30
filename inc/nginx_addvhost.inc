@@ -89,6 +89,7 @@ check_dns() {
         if [[ -z "$ISCF_ACHECK" && "$LOCAL_VHOST_ACHECK" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
+          cecho "Cloudflare users: public Cloudflare IP won't match server IP, so ignore this & continue" $boldyellow
           echo
           read -ep "Abort this Nginx vhost domain setup to setup updated DNS A record(s) first? [y/n]: " letabort
           if [[ "$letabort" = [yY] ]]; then
@@ -164,6 +165,7 @@ check_dns() {
         if [[ -z "$ISCF_AWWWCHECK" && "$LOCAL_VHOST_AWWWCHECK" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
+          cecho "Cloudflare users: public Cloudflare IP won't match server IP, so ignore this & continue" $boldyellow
           echo
           read -ep "Abort this Nginx vhost domain setup to setup updated DNS A record(s) first? [y/n]: " letabort
           if [[ "$letabort" = [yY] ]]; then
@@ -248,6 +250,7 @@ check_dns() {
         if [[ -z "$ISCF_ACHECK" && "$LOCAL_VHOST_ACHECK" != '0' ]]; then
           echo
           cecho "!! Error: DNS A record IP doesn't match any found on this server" $boldyellow
+          cecho "Cloudflare users: public Cloudflare IP won't match server IP, so ignore this & continue" $boldyellow
           echo
           read -ep "Abort this Nginx vhost domain setup to setup updated DNS A record(s) first? [y/n]: " letabort
           if [[ "$letabort" = [yY] ]]; then
