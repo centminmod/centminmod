@@ -318,7 +318,7 @@ ngx_httppush_patch() {
     NGINX_PUSHBASE=$NGINX_VERSION
     echo "$DETECT_NGXVER"
   fi
-  if [[ "$NGINX_HTTPPUSH" = [yY] && "$DETECT_NGXVER" -ge '1011012' ]]; then
+  if [[ "$NGINX_HTTPPUSHx" = [yY] && "$DETECT_NGXVER" -ge '1011012' ]]; then
     NGX_HTTPPUSHDIR='http2-push-nginx-module'
     if [[ -d "${DIR_TMP}/${NGX_HTTPPUSHDIR}" || ! -d "${DIR_TMP}/${NGX_HTTPPUSHDIR}" ]]; then
       rm -rf "${DIR_TMP}/${NGX_HTTPPUSHDIR}"

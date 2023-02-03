@@ -523,7 +523,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     ngx_prioritizechacha_patch
   fi
 
-  if [[ "$NGINX_HTTPPUSH" = [yY] ]]; then
+  if [[ "$NGINX_HTTPPUSHx" = [yY] ]]; then
     NGINX_HTTP2='y'
     ngx_httppush_patch
     HTTP_PUSHOPT=' --add-module=../http2-push-nginx-module'
