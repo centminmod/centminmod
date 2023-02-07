@@ -226,9 +226,15 @@ MDB_CONTINENT=$(echo "$MDB_GEOIP" | jq -r '.continent')
 if [[ "$MDB_COUNTRY" = 'CN' ]]; then
     echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
     rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 else
     echo "rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB"
     rpm --import https://yum.mariadb.org/RPM-GPG-KEY-MariaDB
+    # https://mariadb.com/kb/en/gpg/#rpm-source-key-pre-2023
+    echo "rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY"
+    rpm --import https://supplychain.mariadb.com/MariaDB-Server-GPG-KEY
 fi
 
 ###############################################################################
