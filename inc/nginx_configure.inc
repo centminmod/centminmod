@@ -6,6 +6,10 @@ mercurial_check() {
   elif [[ ! -f /usr/bin/hg ]]; then
     if [[ "$CENTOS_SEVEN" -eq '7' ]]; then
       yum -y localinstall https://centminmod.com/centminmodparts/mercurial/centos7/mercurial-4.9-1.x86_64.rpm
+    elif [[ "$CENTOS_EIGHT" -eq '8' ]]; then
+      yum -y install mercurial
+    elif [[ "$CENTOS_NINE" -eq '9' ]]; then
+      yum -y install mercurial
     fi
   fi
 }
