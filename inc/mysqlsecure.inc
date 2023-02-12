@@ -14,20 +14,20 @@ securemysql() {
   if [[ "$(systemctl is-active mariadb)" != 'active' ]]; then
     systemctl start mariadb
   fi
-THEMYSQLPASS=$(/usr/bin/openssl rand -base64 24 | tr -dc 'a-zA-Z0-9')
+THEMYSQLPASS=$(/usr/bin/openssl rand -base64 26 | tr -dc 'a-zA-Z0-9')
 
 # mysql -e "DELETE FROM mysql.user WHERE User=""; FLUSH PRIVILEGES;"
 # mysqladmin -u root password $THEMYSQLPASS
 
-CHECK_FOR_MARIADB_TENFOUR=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
+CHECK_FOR_MARIADB_TENFOUR_ABOVE=$(rpm -qa | grep -i MariaDB-server | head -n1 | cut -d '-' -f3 | cut -d . -f1,2)
 
-if [[ "$CHECK_FOR_MARIADB_TENFOUR" = '10.4' ]]; then
+if [[ "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.4' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.5' || "$CHECK_FOR_MARIADB_TENFOUR_ABOVE" = '10.6' ]]; then
   echo
-  mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-check-users-before.log"
+  mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-before.log"
   echo
   mysql -e "ALTER USER root@localhost IDENTIFIED VIA mysql_native_password USING PASSWORD('$THEMYSQLPASS')"  >/dev/null 2>&1
   echo
-  mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-check-users-after.log"
+  mysql -e "select concat(user, '@', host, ' => ', json_detailed(priv)) from mysql.global_priv;" > "${CENTMINLOGDIR}/mariadb10.4-or-above-check-users-after.log"
   echo
 else
   mysql -e "DROP USER ''@'localhost';" >/dev/null 2>&1
