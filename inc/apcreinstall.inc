@@ -1,4 +1,12 @@
-function funct_apcreinstall {
+funct_apcreinstall() {
+      echo
+      cecho "* APC Cache is no longer supported" $boldyellow
+      cecho "* APC Cache does not perform better than Zend Opcache defaults" $boldyellow
+      echo
+      exit 0
+}
+
+function funct_apcreinstall_disabled {
 
 if [[ -f ${CONFIGSCANDIR}/zendopcache.ini ]]; then
     echo ""

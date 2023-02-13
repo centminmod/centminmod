@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='273'
+SCRIPT_INCREMENTVER='274'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -3355,10 +3355,10 @@ else
             cecho "3).  NSD setup domain name DNS" $boldgreen
             cecho "4).  Nginx Upgrade / Downgrade" $boldgreen
             cecho "5).  PHP Upgrade / Downgrade" $boldgreen
-            cecho "6).  XCache Re-install" $boldgreen
-            cecho "7).  APC Cache Re-install" $boldgreen
-            cecho "8).  XCache Install" $boldgreen
-            cecho "9).  APC Cache Install" $boldgreen
+            cecho "6).  Option Being Revised (TBA)" $boldgreen
+            cecho "7).  Option Being Revised (TBA)" $boldgreen
+            cecho "8).  Option Being Revised (TBA)" $boldgreen
+            cecho "9).  Option Being Revised (TBA)" $boldgreen
             cecho "10). Memcached Server Re-install" $boldgreen
             cecho "11). MariaDB MySQL Upgrade & Management" $boldgreen
             cecho "12). Zend OpCache Install/Re-install" $boldgreen

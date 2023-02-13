@@ -6,7 +6,15 @@ apcdevfix() {
   cd APC-3.1.13
 }
 
-function funct_apcsourceinstall {
+funct_apcsourceinstall() {
+      echo
+      cecho "* APC Cache is no longer supported" $boldyellow
+      cecho "* APC Cache does not perform better than Zend Opcache defaults" $boldyellow
+      echo
+      exit 0
+}
+
+function funct_apcsourceinstall_disabled {
 
     echo "*************************************************"
     cecho "* Installing Alternative PHP Cache" $boldgreen

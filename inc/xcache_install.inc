@@ -1,4 +1,13 @@
-function funct_installxcache {
+funct_installxcache() {
+      echo
+      cecho "* XCache is no longer supported" $boldyellow
+      cecho "* XCache developers no longer keep it up to date" $boldyellow
+      cecho "* XCache does not perform better than Zend Opcache defaults" $boldyellow
+      echo
+      exit 0
+}
+
+function funct_installxcache_disbaled {
         if [[ "$PHP_INSTALL" = [yY] ]]; then
 funct_xcachesourceinstall
 
