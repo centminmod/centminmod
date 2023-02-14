@@ -707,7 +707,7 @@ php_patches() {
       # PHP bug #79971 https://bugs.php.net/bug.php?id=79971
       # PHP bug #81719 https://bugs.php.net/bug.php?id=81719
       # PHP bug #81720 https://bugs.php.net/bug.php?id=81720
-      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740'
+      phpseven_bugids='77423 80672 80710 81122 76452 81211 81026 79971 81719 81720 81726 81727 81738 81740 81744 81746 cve-2023-0662'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7234-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7234-${bugid}.patch" ]]; then
           echo
@@ -754,7 +754,7 @@ php_patches() {
     fi
     if [[ "$PHPMUVER" = '7.3' || "$PHPMVER" = '7.3' ]] && [[ "$PHPVER_ID" -ge '70300' && "$PHPVER_ID" -le '70333' ]]; then
       # backport security bug patch for php 7.3
-      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740'
+      phpseven_bugids='81026 81719 81720 pcre1038 81726 81727 81738 81740 81744 81746 cve-2023-0662'
       for bugid in $phpseven_bugids; do
         if [[ ! -f "php7331-${bugid}.patch" && -f "$CUR_DIR/patches/php/php7331-${bugid}.patch" ]]; then
           echo
@@ -825,7 +825,7 @@ php_patches() {
   fi
   if [[ "$PHPVER_ID" -ge '70433' && "$PHPVER_ID" -le '70434' ]]; then
     # for 7.4.33 to 7.4.34 only
-    phpseven_bugids='81740'
+    phpseven_bugids='81740 81744 81746 cve-2023-0662'
     for bugid in $phpseven_bugids; do
       if [[ ! -f "php742-${bugid}.patch" && -f "$CUR_DIR/patches/php/php742-${bugid}.patch" ]]; then
         echo
