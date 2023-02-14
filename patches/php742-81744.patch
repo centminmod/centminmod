@@ -1,0 +1,188 @@
+From 7437aaae38cf4b3357e7580f9e22fd4a403b6c23 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tim=20D=C3=BCsterhus?= <tim@bastelstu.be>
+Date: Mon, 23 Jan 2023 21:15:24 +0100
+Subject: [PATCH 1/7] crypt: Fix validation of malformed BCrypt hashes
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+PHP’s implementation of crypt_blowfish differs from the upstream Openwall
+version by adding a “PHP Hack”, which allows one to cut short the BCrypt salt
+by including a `$` character within the characters that represent the salt.
+
+Hashes that are affected by the “PHP Hack” may erroneously validate any
+password as valid when used with `password_verify` and when comparing the
+return value of `crypt()` against the input.
+
+The PHP Hack exists since the first version of PHP’s own crypt_blowfish
+implementation that was added in 1e820eca02dcf322b41fd2fe4ed2a6b8309f8ab5.
+
+No clear reason is given for the PHP Hack’s existence. This commit removes it,
+because BCrypt hashes containing a `$` character in their salt are not valid
+BCrypt hashes.
+
+(cherry picked from commit c840f71524067aa474c00c3eacfb83bd860bfc8a)
+---
+ ext/standard/crypt_blowfish.c                 |  8 --
+ .../tests/crypt/bcrypt_salt_dollar.phpt       | 82 +++++++++++++++++++
+ 2 files changed, 82 insertions(+), 8 deletions(-)
+ create mode 100644 ext/standard/tests/crypt/bcrypt_salt_dollar.phpt
+
+diff --git a/ext/standard/crypt_blowfish.c b/ext/standard/crypt_blowfish.c
+index c1f945f29ed..aa7e1bc2e68 100644
+--- a/ext/standard/crypt_blowfish.c
++++ b/ext/standard/crypt_blowfish.c
+@@ -376,7 +376,6 @@ static unsigned char BF_atoi64[0x60] = {
+ #define BF_safe_atoi64(dst, src) \
+ { \
+ 	tmp = (unsigned char)(src); \
+-	if (tmp == '$') break; /* PHP hack */ \
+ 	if ((unsigned int)(tmp -= 0x20) >= 0x60) return -1; \
+ 	tmp = BF_atoi64[tmp]; \
+ 	if (tmp > 63) return -1; \
+@@ -404,13 +403,6 @@ static int BF_decode(BF_word *dst, const char *src, int size)
+ 		*dptr++ = ((c3 & 0x03) << 6) | c4;
+ 	} while (dptr < end);
+ 
+-	if (end - dptr == size) {
+-		return -1;
+-	}
+-
+-	while (dptr < end) /* PHP hack */
+-		*dptr++ = 0;
+-
+ 	return 0;
+ }
+ 
+diff --git a/ext/standard/tests/crypt/bcrypt_salt_dollar.phpt b/ext/standard/tests/crypt/bcrypt_salt_dollar.phpt
+new file mode 100644
+index 00000000000..32e335f4b08
+--- /dev/null
++++ b/ext/standard/tests/crypt/bcrypt_salt_dollar.phpt
+@@ -0,0 +1,82 @@
++--TEST--
++bcrypt correctly rejects salts containing $
++--FILE--
++<?php
++for ($i = 0; $i < 23; $i++) {
++	$salt = '$2y$04$' . str_repeat('0', $i) . '$';
++	$result = crypt("foo", $salt);
++	var_dump($salt);
++	var_dump($result);
++	var_dump($result === $salt);
++}
++?>
++--EXPECT--
++string(8) "$2y$04$$"
++string(2) "*0"
++bool(false)
++string(9) "$2y$04$0$"
++string(2) "*0"
++bool(false)
++string(10) "$2y$04$00$"
++string(2) "*0"
++bool(false)
++string(11) "$2y$04$000$"
++string(2) "*0"
++bool(false)
++string(12) "$2y$04$0000$"
++string(2) "*0"
++bool(false)
++string(13) "$2y$04$00000$"
++string(2) "*0"
++bool(false)
++string(14) "$2y$04$000000$"
++string(2) "*0"
++bool(false)
++string(15) "$2y$04$0000000$"
++string(2) "*0"
++bool(false)
++string(16) "$2y$04$00000000$"
++string(2) "*0"
++bool(false)
++string(17) "$2y$04$000000000$"
++string(2) "*0"
++bool(false)
++string(18) "$2y$04$0000000000$"
++string(2) "*0"
++bool(false)
++string(19) "$2y$04$00000000000$"
++string(2) "*0"
++bool(false)
++string(20) "$2y$04$000000000000$"
++string(2) "*0"
++bool(false)
++string(21) "$2y$04$0000000000000$"
++string(2) "*0"
++bool(false)
++string(22) "$2y$04$00000000000000$"
++string(2) "*0"
++bool(false)
++string(23) "$2y$04$000000000000000$"
++string(2) "*0"
++bool(false)
++string(24) "$2y$04$0000000000000000$"
++string(2) "*0"
++bool(false)
++string(25) "$2y$04$00000000000000000$"
++string(2) "*0"
++bool(false)
++string(26) "$2y$04$000000000000000000$"
++string(2) "*0"
++bool(false)
++string(27) "$2y$04$0000000000000000000$"
++string(2) "*0"
++bool(false)
++string(28) "$2y$04$00000000000000000000$"
++string(2) "*0"
++bool(false)
++string(29) "$2y$04$000000000000000000000$"
++string(2) "*0"
++bool(false)
++string(30) "$2y$04$0000000000000000000000$"
++string(60) "$2y$04$000000000000000000000u2a2UpVexIt9k3FMJeAVr3c04F5tcI8K"
++bool(false)
+-- 
+2.39.1
+
+From ed0281b588a6840cb95f3134a4e68847a3be5bb7 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Tim=20D=C3=BCsterhus?= <tim@bastelstu.be>
+Date: Mon, 23 Jan 2023 22:13:57 +0100
+Subject: [PATCH 2/7] crypt: Fix possible buffer overread in php_crypt()
+
+(cherry picked from commit a92acbad873a05470af1a47cb785a18eadd827b5)
+---
+ ext/standard/crypt.c                                   | 1 +
+ ext/standard/tests/password/password_bcrypt_short.phpt | 8 ++++++++
+ 2 files changed, 9 insertions(+)
+ create mode 100644 ext/standard/tests/password/password_bcrypt_short.phpt
+
+diff --git a/ext/standard/crypt.c b/ext/standard/crypt.c
+index 92430b69f77..04487f3fe5a 100644
+--- a/ext/standard/crypt.c
++++ b/ext/standard/crypt.c
+@@ -151,6 +151,7 @@ PHPAPI zend_string *php_crypt(const char *password, const int pass_len, const ch
+ 		} else if (
+ 				salt[0] == '$' &&
+ 				salt[1] == '2' &&
++				salt[2] != 0 &&
+ 				salt[3] == '$') {
+ 			char output[PHP_MAX_SALT_LEN + 1];
+ 
+diff --git a/ext/standard/tests/password/password_bcrypt_short.phpt b/ext/standard/tests/password/password_bcrypt_short.phpt
+new file mode 100644
+index 00000000000..085bc8a2390
+--- /dev/null
++++ b/ext/standard/tests/password/password_bcrypt_short.phpt
+@@ -0,0 +1,8 @@
++--TEST--
++Test that password_hash() does not overread buffers when a short hash is passed
++--FILE--
++<?php
++var_dump(password_verify("foo", '$2'));
++?>
++--EXPECT--
++bool(false)
+-- 
+2.39.1
+
