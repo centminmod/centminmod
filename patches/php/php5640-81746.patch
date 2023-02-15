@@ -1,0 +1,100 @@
+From d43aca084651d395d1191a9751e2ea90036df09e Mon Sep 17 00:00:00 2001
+From: Niels Dossche <7771979+nielsdos@users.noreply.github.com>
+Date: Fri, 27 Jan 2023 19:28:27 +0100
+Subject: [PATCH 3/8] Fix array overrun when appending slash to paths
+
+Fix it by extending the array sizes by one character. As the input is
+limited to the maximum path length, there will always be place to append
+the slash. As the php_check_specific_open_basedir() simply uses the
+strings to compare against each other, no new failures related to too
+long paths are introduced.
+We'll let the DOM and XML case handle a potentially too long path in the
+library code.
+
+(cherry picked from commit ec10b28d64decbc54aa1e585dce580f0bd7a5953)
+(cherry picked from commit 887cd0710ad856a0d22c329b6ea6c71ebd8621ae)
+---
+ ext/dom/document.c            | 2 +-
+ ext/xmlreader/php_xmlreader.c | 2 +-
+ main/fopen_wrappers.c         | 6 +++---
+ 3 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/ext/dom/document.c b/ext/dom/document.c
+index 1970c38574..7cf4464cec 100644
+--- a/ext/dom/document.c
++++ b/ext/dom/document.c
+@@ -1498,7 +1498,7 @@ static xmlDocPtr dom_document_parser(zval *id, int mode, char *source, int sourc
+ 	int validate, recover, resolve_externals, keep_blanks, substitute_ent;
+ 	int resolved_path_len;
+ 	int old_error_reporting = 0;
+-	char *directory=NULL, resolved_path[MAXPATHLEN];
++	char *directory=NULL, resolved_path[MAXPATHLEN + 1];
+ 
+ 	if (id != NULL) {
+ 		intern = (dom_object *)zend_object_store_get_object(id TSRMLS_CC);
+diff --git a/ext/xmlreader/php_xmlreader.c b/ext/xmlreader/php_xmlreader.c
+index 31208d8667..7948b4ca89 100644
+--- a/ext/xmlreader/php_xmlreader.c
++++ b/ext/xmlreader/php_xmlreader.c
+@@ -1044,7 +1044,7 @@ PHP_METHOD(xmlreader, XML)
+ 	xmlreader_object *intern = NULL;
+ 	char *source, *uri = NULL, *encoding = NULL;
+ 	int resolved_path_len, ret = 0;
+-	char *directory=NULL, resolved_path[MAXPATHLEN];
++	char *directory=NULL, resolved_path[MAXPATHLEN + 1];
+ 	xmlParserInputBufferPtr inputbfr;
+ 	xmlTextReaderPtr reader;
+ 
+diff --git a/main/fopen_wrappers.c b/main/fopen_wrappers.c
+index af9c558b04..1554aaa1e6 100644
+--- a/main/fopen_wrappers.c
++++ b/main/fopen_wrappers.c
+@@ -141,10 +141,10 @@ PHPAPI ZEND_INI_MH(OnUpdateBaseDir)
+ */
+ PHPAPI int php_check_specific_open_basedir(const char *basedir, const char *path TSRMLS_DC)
+ {
+-	char resolved_name[MAXPATHLEN];
+-	char resolved_basedir[MAXPATHLEN];
++	char resolved_name[MAXPATHLEN + 1];
++	char resolved_basedir[MAXPATHLEN + 1];
+ 	char local_open_basedir[MAXPATHLEN];
+-	char path_tmp[MAXPATHLEN];
++	char path_tmp[MAXPATHLEN + 1];
+ 	char *path_file;
+ 	int resolved_basedir_len;
+ 	int resolved_name_len;
+-- 
+2.31.1
+
+From d0db454c4ab17e2a64f9c06b5bc5b1001ddb9110 Mon Sep 17 00:00:00 2001
+From: Remi Collet <remi@remirepo.net>
+Date: Mon, 13 Feb 2023 11:46:47 +0100
+Subject: [PATCH 4/8] NEWS
+
+(cherry picked from commit 614468ce4056c0ef93aae09532dcffdf65b594b5)
+---
+ NEWS | 8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+diff --git a/NEWS b/NEWS
+index 3d026cf70c..5e74b7547a 100644
+--- a/NEWS
++++ b/NEWS
+@@ -1,6 +1,14 @@
+ PHP                                                                        NEWS
+ |||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+ 
++Backported from 8.0.28
++
++- Core:
++  . Fixed bug #81744 (Password_verify() always return true with some hash).
++    (CVE-2023-0567). (Tim Düsterhus)
++  . Fixed bug #81746 (1-byte array overrun in common path resolve code).
++    (CVE-2023-0568). (Niels Dossche)
++
+ Backported from 8.0.27
+ 
+ - PDO/SQLite:
+-- 
+2.31.1
+
