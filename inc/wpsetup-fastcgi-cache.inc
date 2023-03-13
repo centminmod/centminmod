@@ -886,7 +886,6 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
   <li>Latest Centmin Mod version - <a href="https://centminmod.com" target="_blank">https://centminmod.com</a></li>
   <li>Centmin Mod FAQ - <a href="https://centminmod.com/faq.html" target="_blank">https://centminmod.com/faq.html</a></li>
   <li>Change Log - <a href="https://centminmod.com/changelog.html" target="_blank">https://centminmod.com/changelog.html</a></li>
-  <li>Google+ Page latest news <a href="https://centminmod.com/gpage" target="_blank">https://centminmod.com/gpage</a></li>
   <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank">https://community.centminmod.com/</a></li>
   <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank">https://twitter.com/centminmod</a></li>
   <li>Centmin Mod Facebook Page <a href="https://www.facebook.com/centminmodcom" target="_blank">https://www.facebook.com/centminmodcom</a></li>
@@ -3576,7 +3575,7 @@ if [[ "$wpscache" = 'redis' ]]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
-        sed -i "s|#try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
+        sed -i "s|  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|  try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|#include /usr/local/nginx/conf/php-wpsc.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
         sed -i "s|#include /usr/local/nginx/conf/php-rediscache.conf;|include /usr/local/nginx/conf/php-rediscache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.conf
     fi
@@ -3584,7 +3583,7 @@ if [[ "$wpscache" = 'redis' ]]; then
         sed -i "s|^  #include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|  include /usr/local/nginx/conf/wpincludes/${vhostname}/rediscache_${vhostname}.conf;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|^  include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|  #include /usr/local/nginx/conf/wpincludes/${vhostname}/wpsupercache_${vhostname}.conf|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|try_files /wp-content/cache/supercache/\$http_host|#try_files /wp-content/cache/supercache/\$http_host|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
-        sed -i "s|#try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
+        sed -i "s|  #try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|  try_files \$uri \$uri/ ${WPSUBDIR}/index.php?\$args;|" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|include /usr/local/nginx/conf/php-wpsc.conf;|#include /usr/local/nginx/conf/php-wpsc.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
         sed -i "s|#include /usr/local/nginx/conf/php-rediscache.conf;|include /usr/local/nginx/conf/php-rediscache.conf;|g" /usr/local/nginx/conf/conf.d/${vhostname}.ssl.conf
     fi
