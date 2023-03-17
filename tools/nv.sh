@@ -965,8 +965,6 @@ cat > "/home/nginx/domains/$vhostname/public/index.html" <<END
                 </li>
                 <li>Change Log - <a href="https://centminmod.com/changelog.html" target="_blank" rel="noopener">https://centminmod.com/changelog.html</a>
                 </li>
-                <li>Google+ Page latest news <a href="https://plus.google.com/u/0/b/104831941868856035845/104831941868856035845" target="_blank" rel="noopener">Centmin Mod Google+</a>
-                </li>
                 <li>Centmin Mod Community Forum <a href="https://community.centminmod.com/" target="_blank" rel="noopener">https://community.centminmod.com/</a>
                 </li>
                 <li>Centmin Mod Twitter <a href="https://twitter.com/centminmod" target="_blank" rel="noopener">https://twitter.com/centminmod</a>
