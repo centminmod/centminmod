@@ -21,7 +21,7 @@ export SYSTEMD_PAGER=''
 DT=$(date +"%d%m%y-%H%M%S")
 DMOTD_USER=$(whoami)
 DMOTD_HOSTNAME=$(uname -n)
-DMOTD_RELEASE=$(cat /etc/redhat-release | sed -e 's| (Core)||' -e 's| release||')
+DMOTD_RELEASE=$(cat /etc/redhat-release | tr -d '()' | cut -d' ' -f1,4)
 PSA=$(ps -Afl | wc -l)
 DMOTD_CURRENTUSER=$(users | wc -w)
 CMSCRIPT_GITDIR='/usr/local/src/centminmod'
@@ -29,6 +29,12 @@ CONFIGSCANBASE='/etc/centminmod'
 CENTMINLOGDIR='/root/centminlogs'
 SSHLOGIN_KERNELCHECK='n'
 FORCE_IPVFOUR='y' # curl/wget commands through script force IPv4
+
+# Set cache timeout in minutes
+CACHE_TIMEOUT=60
+# Set cache file path
+CACHE_FILE="/tmp/nginx_version_cache"
+CACHE_PHP_FILE="/tmp/php_version_cache"
 ###########################################################
 # Setup Colours
 black='\E[30;40m'
@@ -71,6 +77,11 @@ fi
 if [[ "$(id -u)" -eq '0' && ! -d "$CENTMINLOGDIR" ]]; then
   mkdir -p $CENTMINLOGDIR
 fi
+if [ -f /etc/almalinux-release ]; then
+  DMOTD_RELEASE=$(cat /etc/almalinux-release | tr -d '()' | cut -d' ' -f1,3)
+elif [ -f /etc/rockylinux-release ]; then
+  DMOTD_RELEASE=$(cat /etc/rockylinux-release | tr -d '()' | cut -d' ' -f1,3)
+fi
 
 # time of day
 HOUR=$(date +"%H")
@@ -90,9 +101,10 @@ upMins=$((uptime/60%60))
 upSecs=$((uptime%60))
 
 #System load
-LOAD1=$(cat /proc/loadavg | awk {'print $1'})
-LOAD5=$(cat /proc/loadavg | awk {'print $2'})
-LOAD15=$(cat /proc/loadavg | awk {'print $3'})
+LOADAVG=$(cat /proc/loadavg)
+LOAD1=$(echo $LOADAVG | awk {'print $1'})
+LOAD5=$(echo $LOADAVG | awk {'print $2'})
+LOAD15=$(echo $LOADAVG | awk {'print $3'})
 
 #System Info
 MEM=$(free -m)
@@ -143,27 +155,64 @@ echo "
 fi
 }
 
+# Function to retrieve the latest NGINX version
+get_latest_nginx_version() {
+  curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log"
+}
 
 ngxver_checker() {
   if [[ "$(which nginx >/dev/null 2>&1; echo $?)" = '0' ]]; then
     if [[ "$DMOTD_NGINXCHECK_DEBUG" = [yY] ]]; then
-        LASTEST_NGINXVERS_CURL=$(curl -${ipv_forceopt}siL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log")
-        LATEST_NGINXSTABLEVER_CURL=$(curl -${ipv_forceopt}siL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | tee -a "${CENTMINLOGDIR}/cmm-login-nginxver-check-debug_${DT}.log")
-        LASTEST_NGINXVERS=$(echo "$LASTEST_NGINXVERS_CURL" | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
-        LATEST_NGINXSTABLEVER=$(echo "$LATEST_NGINXSTABLEVER_CURL" | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+        # Check if the cache file exists
+        if [ -f "$CACHE_FILE" ]; then
+            # Calculate the time difference in minutes between now and the cache file's last modification time
+            CACHE_AGE=$(( ( $(date +%s) - $(stat -c %Y "$CACHE_FILE") ) / 60 ))
+        
+            # Check if the cache has expired
+            if [ $CACHE_AGE -gt $CACHE_TIMEOUT ]; then
+                # Cache expired, fetch the latest version and update the cache file
+                LATEST_NGINXVERS=$(get_latest_nginx_version)
+                echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
+            else
+                # Cache still valid, read the value from the cache file
+                LATEST_NGINXVERS=$(cat "$CACHE_FILE")
+            fi
+        else
+            # Cache file does not exist, fetch the latest version and create the cache file
+            LATEST_NGINXVERS=$(get_latest_nginx_version)
+            echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
+        fi
     else
-        LASTEST_NGINXVERS=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n1 2>&1)
-        LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
+        # Check if the cache file exists
+        if [ -f "$CACHE_FILE" ]; then
+            # Calculate the time difference in minutes between now and the cache file's last modification time
+            CACHE_AGE=$(( ( $(date +%s) - $(stat -c %Y "$CACHE_FILE") ) / 60 ))
+        
+            # Check if the cache has expired
+            if [ $CACHE_AGE -gt $CACHE_TIMEOUT ]; then
+                # Cache expired, fetch the latest version and update the cache file
+                LATEST_NGINXVERS=$(get_latest_nginx_version)
+                echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
+            else
+                # Cache still valid, read the value from the cache file
+                LATEST_NGINXVERS=$(cat "$CACHE_FILE")
+            fi
+        else
+            # Cache file does not exist, fetch the latest version and create the cache file
+            LATEST_NGINXVERS=$(get_latest_nginx_version)
+            echo "$LATEST_NGINXVERS" > "$CACHE_FILE"
+        fi
+        # LATEST_NGINXSTABLEVER=$(curl -${ipv_forceopt}sL --connect-timeout 10 https://nginx.org/en/download.html 2>&1 | egrep -o "nginx\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "nginx-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | head -n2 | tail -1)
     fi
     CURRENT_NGINXVERS=$(nginx -v 2>&1 | awk '{print $3}' | awk -F '/' '{print $2}')
-    if [[ "$CURRENT_NGINXVERS" != "$LASTEST_NGINXVERS" ]]; then
+    if [[ "$CURRENT_NGINXVERS" != "$LATEST_NGINXVERS" ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       cecho "* Nginx Update May Be Available via centmin.sh menu option 4" $boldyellow
       cecho "* see https://centminmod.com/nginx.html#nginxupgrade" $boldyellow
       cecho "===============================================================================" $boldgreen
       cecho "* Current Nginx Version:           $CURRENT_NGINXVERS" $boldyellow
-      cecho "* Latest Nginx Mainline Available: $LASTEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
+      cecho "* Latest Nginx Mainline Available: $LATEST_NGINXVERS (centminmod.com/nginxnews)" $boldyellow
       # cecho "* Latest Nginx Stable Available:   $LATEST_NGINXSTABLEVER" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
@@ -171,23 +220,47 @@ ngxver_checker() {
   fi
 }
 
+# Function to retrieve the latest PHP version
+get_latest_php_version() {
+  if [ ! -f /usr/local/bin/getphpver ]; then
+      wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
+      chmod +x /usr/local/bin/getphpver
+  fi
+  if [[ ! "$(grep '81' /usr/local/bin/getphpver)" ]]; then
+      wget -q https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
+      chmod +x /usr/local/bin/getphpver
+  fi
+  if [ ! -f /usr/bin/jq ]; then
+    yum -q -y install jq
+  fi
+  if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
+      TEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')") | tee "${CENTMINLOGDIR}/cmm-login-phpver-check-debug_${DT}.log"
+  else
+    LATEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
+  fi
+  echo "$LATEST_PHPVERS"
+}
+
 phpver_checker() {
   if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
-    if [ ! -f /usr/local/bin/get-php-ver ]; then
-        wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
-        chmod +x /usr/local/bin/getphpver
-    fi
-    if [[ ! "$(grep '81' /usr/local/bin/getphpver)" ]]; then
-        wget -q -4 https://github.com/centminmod/get-php-versions/raw/master/get-php-ver.sh -O /usr/local/bin/getphpver
-        chmod +x /usr/local/bin/getphpver
-    fi
-    if [ ! -f /usr/bin/jq ]; then
-      yum -q -y install jq
-    fi
-    if [[ "$DMOTD_PHPCHECK_DEBUG" = [yY] ]]; then
-      LASTEST_PHPVERS=$(bash -x getphpver "$(php-config --version | awk -F '.' '{print $1$2}')") | tee "${CENTMINLOGDIR}/cmm-login-phpver-check-debug_${DT}.log"
+    # Check if the cache file exists
+    if [ -f "$CACHE_PHP_FILE" ]; then
+      # Calculate the time difference in minutes between now and the cache file's last modification time
+      CACHE_AGE=$(( ( $(date +%s) - $(stat -c %Y "$CACHE_PHP_FILE") ) / 60 ))
+
+      # Check if the cache has expired
+      if [ $CACHE_AGE -gt $CACHE_TIMEOUT ]; then
+        # Cache expired, fetch the latest version and update the cache file
+        LATEST_PHPVERS=$(get_latest_php_version)
+        echo "$LATEST_PHPVERS" > "$CACHE_PHP_FILE"
+      else
+        # Cache still valid, read the value from the cache file
+        LATEST_PHPVERS=$(cat "$CACHE_PHP_FILE")
+      fi
     else
-      LASTEST_PHPVERS=$(getphpver "$(php-config --version | awk -F '.' '{print $1$2}')")
+      # Cache file does not exist, fetch the latest version and create the cache file
+      LATEST_PHPVERS=$(get_latest_php_version)
+      echo "$LATEST_PHPVERS" > "$CACHE_PHP_FILE"
     fi
     CURRENT_PHPVERS=$(php-config --version)
     CURRENT_PHPXZVER_CHECK=$(php-config --version | awk -F '.' '{print $1"."$2}')
@@ -196,15 +269,15 @@ phpver_checker() {
     else
       PHPEXTSION_CHECK='gz'
     fi
-    IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LASTEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
-    if [[ "$CURRENT_PHPVERS" != "$LASTEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
+    IS_PHPTAR_AVAIL=$(curl -sI${ipv_forceopt} --connect-timeout 10 https://www.php.net/distributions/php-${LATEST_PHPVERS}.tar.${PHPEXTSION_CHECK}| head -n1 | grep -o 200)
+    if [[ "$CURRENT_PHPVERS" != "$LATEST_PHPVERS" ]] && [[ "$IS_PHPTAR_AVAIL" -eq '200' ]]; then
       echo
       cecho "===============================================================================" $boldgreen
       cecho "* PHP Update May Be Available via centmin.sh menu option 5" $boldyellow
       cecho "* see https://community.centminmod.com/forums/18/" $boldyellow
       cecho "===============================================================================" $boldgreen
       cecho "* Current PHP Version:        $CURRENT_PHPVERS" $boldyellow
-      cecho "* Latest PHP Branch Version:  $LASTEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
+      cecho "* Latest PHP Branch Version:  $LATEST_PHPVERS (github.com/php/php-src/tags)" $boldyellow
       cecho "===============================================================================" $boldgreen
       echo
     fi
@@ -294,8 +367,13 @@ starttime=$(TZ=UTC date +%s.%N)
 {
 motd_output
 kernel_checks
-ngxver_checker
-phpver_checker
+if [[ "$DMOTD_PHPCHECK" = [yY] && "$(which php-fpm >/dev/null 2>&1; echo $?)" = '0' ]]; then
+  ngxver_checker &
+  phpver_checker &
+  wait
+else
+  ngxver_checker
+fi
 gitenv_askupdate
 } 2>&1 | tee "${CENTMINLOGDIR}/cmm-login-git-checks_${DT}.log"
 
