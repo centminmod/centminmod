@@ -22,29 +22,35 @@ fi
 
 start_limit_burst_adjust() {
   if [[ "$CENTOS_NINE" = '9' || "$CENTOS_EIGHT" = '8' ]]; then
-    nginx_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/nginx.service.d/failure-restart.conf)
-    if [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -eq '15' ]]; then
-      sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
-      systemctl daemon-reload
-    elif [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -lt '5' ]]; then
-      sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
-      systemctl daemon-reload
+    if [ -d /etc/systemd/system/nginx.service.d ]; then
+      nginx_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/nginx.service.d/failure-restart.conf)
+      if [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -eq '15' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
+        systemctl daemon-reload
+      elif [[ -f /etc/systemd/system/nginx.service.d/failure-restart.conf && "${nginx_startlimitburst}" -lt '5' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/nginx.service.d/failure-restart.conf
+        systemctl daemon-reload
+      fi
     fi
-    phpfpm_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/php-fpm.service.d/failure-restart.conf)
-    if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -eq '15' ]]; then
-      sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
-      systemctl daemon-reload
-    elif [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -lt '5' ]]; then
-      sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
-      systemctl daemon-reload
+    if [ -d /etc/systemd/system/php-fpm.service.d ]; then
+      phpfpm_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/php-fpm.service.d/failure-restart.conf)
+      if [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -eq '15' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
+        systemctl daemon-reload
+      elif [[ -f /etc/systemd/system/php-fpm.service.d/failure-restart.conf && "${phpfpm_startlimitburst}" -lt '5' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/php-fpm.service.d/failure-restart.conf
+        systemctl daemon-reload
+      fi
     fi
-    redis_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/redis.service.d/failure-restart.conf)
-    if [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -eq '15' ]]; then
-      sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/redis.service.d/failure-restart.conf
-      systemctl daemon-reload
-    elif [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -lt '5' ]]; then
-      sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/redis.service.d/failure-restart.conf
-      systemctl daemon-reload
+    if [ -d /etc/systemd/system/redis.service.d/ ]; then
+      redis_startlimitburst=$(awk -F '=' '/StartLimitBurst=/ {print $2}' /etc/systemd/system/redis.service.d/failure-restart.conf)
+      if [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -eq '15' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/redis.service.d/failure-restart.conf
+        systemctl daemon-reload
+      elif [[ -f /etc/systemd/system/redis.service.d/failure-restart.conf && "${redis_startlimitburst}" -lt '5' ]]; then
+        sed -i "s|StartLimitBurst=.*|StartLimitBurst=5|" /etc/systemd/system/redis.service.d/failure-restart.conf
+        systemctl daemon-reload
+      fi
     fi
   fi
 }
