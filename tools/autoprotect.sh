@@ -125,6 +125,8 @@ location $PROTECTDIR_PATH/ {
   location ~ ^$PROTECTDIR_PATH/(.+/)?(.+)\.(php|cgi|pl|php3|php4|php5|php6|phtml|shtml)\$ { allow 127.0.0.1; deny all; }
 }
 "
+            elif [[ "$(cat "${PROTECTDIR}/.htaccess" | egrep -i 'cloudflare')" ]]; then
+              echo -e "# Cloudflare bypass $PROTECTDIR\n"
             else
               echo -e "# $PROTECTDIR\nlocation ~* ^$PROTECTDIR_PATH/ { allow 127.0.0.1; deny all; }"
             fi
