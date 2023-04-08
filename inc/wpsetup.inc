@@ -3273,6 +3273,15 @@ echo
 nginx -t
 echo
 
+# check if Centmin Mod fail2ban implementation is running
+# if running, restart fail2ban on new nginx vhost creation
+# to register it's logpathw ith fail2ban
+if systemctl is-active fail2ban >/dev/null 2>&1; then
+  if [ -f "${SCRIPT_DIR}/tools/fail2ban-register-vhost.sh" ]; then
+  "${SCRIPT_DIR}/tools/fail2ban-register-vhost.sh" "${vhostname}"
+  fi
+fi
+
 cmservice php-fpm restart
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
   cmservice pure-ftpd restart

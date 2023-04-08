@@ -1904,6 +1904,15 @@ if [ -f "$FINDUPPERDIR/addons/acmetool.sh" ] && [[ "$sslconfig" = 'le' ]]; then
   echo
 fi
 
+# check if Centmin Mod fail2ban implementation is running
+# if running, restart fail2ban on new nginx vhost creation
+# to register it's logpathw ith fail2ban
+if systemctl is-active fail2ban >/dev/null 2>&1; then
+  if [ -f "${FINDUPPERDIR}/tools/fail2ban-register-vhost.sh" ]; then
+  "${FINDUPPERDIR}/tools/fail2ban-register-vhost.sh" "${vhostname}"
+  fi
+fi
+
 echo 
 if [[ "$PUREFTPD_DISABLED" = [nN] ]]; then
 cecho "-------------------------------------------------------------" $boldyellow
