@@ -2115,6 +2115,24 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
       echo "gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target"
       gcc -c -Q -march=bonnell${PHPEXTRA_CFLAGS} --help=target
       echo
+    elif [[ "$CPU_MARCH" = 'sapphirerapids' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=sapphirerapids${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=sapphirerapids${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=sapphirerapids${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'alderlake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=alderlake${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=alderlake${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=alderlake${PHPEXTRA_CFLAGS} --help=target
+      echo
+    elif [[ "$CPU_MARCH" = 'rocketlake' ]]; then
+      PHP_MTUNEOPT="-m${CCM} -march=rocketlake${FALIGN_FUNCTION_OPT}"
+      echo
+      echo "gcc -c -Q -march=rocketlake${PHPEXTRA_CFLAGS} --help=target"
+      gcc -c -Q -march=rocketlake${PHPEXTRA_CFLAGS} --help=target
+      echo
     elif [[ "$CPU_MARCH" = 'cascadelake' ]]; then
       PHP_MTUNEOPT="-m${CCM} -march=cascadelake${FALIGN_FUNCTION_OPT}"
       echo
@@ -2236,6 +2254,18 @@ if [[ "$GCCINTEL_PHP" = [yY] ]]; then
     fi
     export CXXFLAGS="$CFLAGS"
   elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver2' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
+    CCM=64
+    PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
+    # if only 1 cpu thread use -O2 to keep compile times sane
+    if [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '1' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    elif [[ "$(grep -c "processor" /proc/cpuinfo)" -eq '2' ]]; then
+      export CFLAGS="-O2 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    else
+      export CFLAGS="-O3 $PHP_MTUNEOPT -pipe${SET_PHPEXTRA_CFLAGS}"
+    fi
+    export CXXFLAGS="$CFLAGS"
+  elif [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'AuthenticAMD' && "$CPU_MARCH" = 'znver3' ]] && [[ "$CLANG_PHP" = [nN] ]]; then
     CCM=64
     PHP_MTUNEOPT="-m${CCM} -march=${MARCH_TARGET}"
     # if only 1 cpu thread use -O2 to keep compile times sane
