@@ -2880,7 +2880,7 @@ fi
     fi
   else
     NGINX_NJSOPT=""
-    if [[ " $CENTOS_SEVEN" -eq '7' ]]; then
+    if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         # mold linker does not support LTO
         # https://github.com/rui314/mold
