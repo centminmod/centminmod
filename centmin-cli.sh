@@ -27,7 +27,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='124.00stable'
 SCRIPT_MAJORVER='124'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='73'
+SCRIPT_INCREMENTVER='74'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.s${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -371,7 +371,7 @@ AUTO_GITUPDATE='n'
 LOCALCENTMINMOD_MIRROR='https://centminmod.com'
 #####################################################
 # Timestamp Install
-TS_INSTALL='y'
+TS_INSTALL='n'
 TIME_NGINX='n'
 TIME_PHPCONFIGURE='n'
 TIME_MEMCACHED='n'
