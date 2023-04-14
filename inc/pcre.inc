@@ -1,3 +1,19 @@
+pcredir_check() {
+  is_upgrade=$1
+  PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
+  if [[ ! -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    {
+      nginxpcretarball
+    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
+  elif [[ -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
+    # in case pcre tarball download is incomplete, redownload again
+    rm -rf "${DIR_TMP}/${PCRELINKFILE}"
+    {
+      nginxpcretarball
+    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
+  fi
+}
+
 pcre_two_dir_check() {
   is_upgrade=$1
   PCRETWOLINKDIR=$(tar -tzf "$DIR_TMP/${PCRETWOLINKFILE}" | head -1 | cut -f1 -d"/")
@@ -142,21 +158,5 @@ source_pcreinstall() {
     make$MAKETHREADS
     make install
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_pcre_install.log"
-  fi
-}
-
-pcredir_check() {
-  is_upgrade=$1
-  PCRELINKDIR=$(tar -tzf "$DIR_TMP/${PCRELINKFILE}" | head -1 | cut -f1 -d"/")
-  if [[ ! -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    {
-      nginxpcretarball
-    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
-  elif [[ -f "${DIR_TMP}/${PCRELINKFILE}" || "$(ls -d ${DIR_TMP}/${PCRELINKDIR} >/dev/null 2>&1; echo $?)" != '0' ]]; then
-    # in case pcre tarball download is incomplete, redownload again
-    rm -rf "${DIR_TMP}/${PCRELINKFILE}"
-    {
-      nginxpcretarball
-    } 2>&1 | tee "${CENTMINLOGDIR}/nginx_pcre_download_${DT}.log"
   fi
 }

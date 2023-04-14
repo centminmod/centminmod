@@ -751,12 +751,18 @@ nginxpcretarball() {
     cd "$DIR_TMP"
 
         cecho "Download ${PCRELINKFILE} ..." $boldyellow
+    # consult master file if it exists copy it over rather than re-downloading
+    if [ -f "${MASTER_PCRELINKFILE}" ]; then
+      \cp -f "${MASTER_PCRELINKFILE}" "${PCRELINKFILE}"
+    fi
     if [[ -s "${PCRELINKFILE}" && "$(tar -tzf ${PCRELINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${PCRELINKFILE} Archive found, skipping download..." $boldgreen
     else
         echo "wget -c${ipv_forceopt} --progress=bar ${PCRELINK} -O ${PCRELINKFILE} --tries=3"
         wget -c${ipv_forceopt} --progress=bar "${PCRELINK}" -O "${PCRELINKFILE}" --tries=3
 ERROR=$?
+        # copy download to master copy for reuse without needing to re-download
+        \cp -f "${PCRELINKFILE}" "${MASTER_PCRELINKFILE}"
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRELINKFILE} download failed." $boldgreen
 checklogdetails
@@ -783,13 +789,19 @@ nginxpcretwotarball() {
 
     cd "$DIR_TMP"
 
-        cecho "Download ${PCRETWOLINKFILE} ..." $boldyellow
+    cecho "Download ${PCRETWOLINKFILE} ..." $boldyellow
+    # consult master file if it exists copy it over rather than re-downloading
+    if [ -f "${MASTER_PCRETWOLINKFILE}" ]; then
+      \cp -f "${MASTER_PCRETWOLINKFILE}" "${PCRETWOLINKFILE}"
+    fi
     if [[ -s "${PCRETWOLINKFILE}" && "$(tar -tzf ${PCRETWOLINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "${PCRETWOLINKFILE} Archive found, skipping download..." $boldgreen
     else
         echo "wget -c${ipv_forceopt} --progress=bar ${PCRETWOLINK} -O ${PCRETWOLINKFILE} --tries=3"
         wget -c${ipv_forceopt} --progress=bar "${PCRETWOLINK}" -O "${PCRETWOLINKFILE}" --tries=3
 ERROR=$?
+        # copy download to master copy for reuse without needing to re-download
+        \cp -f "${PCRETWOLINKFILE}" "${MASTER_PCRETWOLINKFILE}"
   if [[ "$ERROR" != '0' ]]; then
   cecho "Error: ${PCRETWOLINKFILE} download failed." $boldgreen
 checklogdetails
