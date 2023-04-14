@@ -1328,18 +1328,13 @@ if [[ "$NGINX_STICKY" = [yY] ]]; then
 fi
 
 # clean up /svr-setup downloads directory of older PHP source tarball/directories
-find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'nginx-1*' ! -name "nginx-${ngver}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'ngx_pagespeed*' ! -name "ngx_pagespeed-${NGXPGSPEED_VER}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" ! -name "incubator-pagespeed-ngx-master" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'incubator-pagespeed-ngx*' ! -name "incubator-pagespeed-ngx-${NGXPGSPEED_VER}*" ! -name "incubator-pagespeed-ngx-master" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'libressl*' ! -name "libressl-${LIBRESSL_VERSION}*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" ! -name "openssl-quic-nginx*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'openssl*' ! -name "openssl-${OPENSSL_VERSION}*" ! -name "openssl-quic-nginx*" \) -exec rm -rf {} \;
-find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -print
-find "$DIR_TMP" -maxdepth 1 \( -name 'pcre-*' ! -name "pcre-${NGINX_PCREVER}*" \) -exec rm -rf {} \;
+for pattern in "nginx-1*" "ngx_pagespeed*" "incubator-pagespeed-ngx*" "libressl*" "openssl*" "pcre-*"; do
+  latest_version=$(ls -v "$DIR_TMP"/"$pattern" 2>/dev/null | tail -n 1)
+  if [ -n "$latest_version" ]; then
+    find "$DIR_TMP" -maxdepth 1 \( -name "$pattern" ! -name "$latest_version" \) -print
+    find "$DIR_TMP" -maxdepth 1 \( -name "$pattern" ! -name "$latest_version" \) -exec rm -rf {} \;
+  fi
+done
 
 # nginx upgrade logs older than 90 days will be gzip compressed to save space 
 # & older logs than 120 days deleted
