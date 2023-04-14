@@ -3360,6 +3360,9 @@ if [[ "$CENTOSVER" > 6 ]]; then
     cd "$DIR_TMP"
 
         cecho "Download ${OPENSSL_LINKFILE} ..." $boldyellow
+    if [ -f "${MASTER_OPENSSL_LINKFILE}" ]; then
+      \cp -f "${MASTER_OPENSSL_LINKFILE}" "${OPENSSL_LINKFILE}"
+    fi
     if [[ -s "${OPENSSL_LINKFILE}" && "$(tar -tzf ${OPENSSL_LINKFILE} >/dev/null 2>&1; echo $?)" -eq '0' ]]; then
         cecho "openssl ${OPENSSL_VERSION} found, skipping download..." $boldgreen
     else
@@ -3373,6 +3376,8 @@ if [[ "$CENTOSVER" > 6 ]]; then
           download_cmd "${OPENSSL_LINK}" "$WGETRETRY"
           ERROR=$?
           echo $ERROR
+          # copy download to master copy for reuse without needing to re-download
+          \cp -f "${OPENSSL_LINKFILE}" "${MASTER_OPENSSL_LINKFILE}"
         fi
 
   if [[ "$ERROR" != '0' ]]; then
