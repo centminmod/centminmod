@@ -466,6 +466,7 @@ fi
 DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
 DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
 DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
+DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
 
 # if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "$DETECTOPENSSL_ONEONE" = '1.1.1' ]] ; then
 if [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1' ]] || [[ "$PRIORITIZE_CHACHA_OPENSSL" = [yY] && "${OPENSSL_VERSION}" = '1.1.1a' ]]; then
@@ -671,7 +672,30 @@ fi
 
 crypto_gcc() {
     if [[ "$CRYPTO_DEVTOOLSETGCC" = [yY] ]]; then
-      if [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
+      if [[ "$NGX_LDMOLD" = [yY] ]]; then
+        mold_check
+        MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
+        export LD="/usr/local/libexec/mold"
+      else
+        MOLD_LINKER_OPT=""
+      fi
+      if [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTWELVE" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        scl_install
+        source /opt/rh/gcc-toolset-12/enable
+        CRYPTODEVTOOLSETTWELVE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETTWELVE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
+      elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
         scl_install
         source /opt/rh/gcc-toolset-11/enable
         CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
@@ -681,11 +705,11 @@ crypto_gcc() {
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then
-            export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc"
-            export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++"
+            export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++${MOLD_LINKER_OPT}"
         else
-            export CC="/opt/rh/gcc-toolset-11/root/usr/bin/gcc"
-            export CXX="/opt/rh/gcc-toolset-11/root/usr/bin/g++"
+            export CC="/opt/rh/gcc-toolset-11/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-11/root/usr/bin/g++${MOLD_LINKER_OPT}"
         fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTEN" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
         scl_install
@@ -697,11 +721,11 @@ crypto_gcc() {
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then
-            export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc"
-            export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++"
+            export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++${MOLD_LINKER_OPT}"
         else
-            export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc"
-            export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++"
+            export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++${MOLD_LINKER_OPT}"
         fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETNINE" = [yY] ]] && [[ ! -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || ! -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         scl_install
@@ -813,6 +837,21 @@ crypto_gcc() {
             export CC="/opt/rh/devtoolset-9/root/usr/bin/gcc"
             export CXX="/opt/rh/devtoolset-9/root/usr/bin/g++"
         fi
+      elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTWELVE" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-12/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-12/root/usr/bin/g++ ]]; then
+        source /opt/rh/gcc-toolset-12/enable
+        CRYPTODEVTOOLSETTWELVE_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
+        CRYPTODEVTOOLSETTWELVE_EXTRAFLAGS=' -fcode-hoisting -Wno-cast-function-type -Wno-format-extra-args -Wformat=0  -Wno-error=implicit-function-declaration -Wno-builtin-declaration-mismatch -Wno-unused-result -Wno-return-local-addr -Wno-maybe-uninitialized -Wno-array-parameter -Wno-alloc-size-larger-than -Wno-address -Wno-array-bounds -Wno-deprecated-declarations -Wno-discarded-qualifiers -Wno-stringop-overread -Wno-stringop-truncation -Wno-missing-field-initializers'
+        which gcc
+        which g++
+        unset CC
+        unset CXX
+        if [[ "$INITIALINSTALL" != [yY] ]]; then
+            export CC="ccache /opt/rh/gcc-toolset-12/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-12/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        else
+            export CC="/opt/rh/gcc-toolset-12/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-12/root/usr/bin/g++${MOLD_LINKER_OPT}"
+        fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETELEVEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-11/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-11/root/usr/bin/g++ ]]; then
         source /opt/rh/gcc-toolset-11/enable
         CRYPTODEVTOOLSETELEVEN_FALLTHROUGH=' -Wimplicit-fallthrough=0 -Wno-implicit-function-declaration -Wno-int-conversion -Wno-unused-result'
@@ -822,11 +861,11 @@ crypto_gcc() {
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then
-            export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc"
-            export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++"
+            export CC="ccache /opt/rh/gcc-toolset-11/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-11/root/usr/bin/g++${MOLD_LINKER_OPT}"
         else
-            export CC="/opt/rh/gcc-toolset-11/root/usr/bin/gcc"
-            export CXX="/opt/rh/gcc-toolset-11/root/usr/bin/g++"
+            export CC="/opt/rh/gcc-toolset-11/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-11/root/usr/bin/g++${MOLD_LINKER_OPT}"
         fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETTEN" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-10/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-10/root/usr/bin/g++ ]]; then
         source /opt/rh/gcc-toolset-10/enable
@@ -837,11 +876,11 @@ crypto_gcc() {
         unset CC
         unset CXX
         if [[ "$INITIALINSTALL" != [yY] ]]; then
-            export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc"
-            export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++"
+            export CC="ccache /opt/rh/gcc-toolset-10/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache /opt/rh/gcc-toolset-10/root/usr/bin/g++${MOLD_LINKER_OPT}"
         else
-            export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc"
-            export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++"
+            export CC="/opt/rh/gcc-toolset-10/root/usr/bin/gcc${MOLD_LINKER_OPT}"
+            export CXX="/opt/rh/gcc-toolset-10/root/usr/bin/g++${MOLD_LINKER_OPT}"
         fi
       elif [[ "$CENTOS_EIGHT" -eq '8' && "$DEVTOOLSETNINE" = [yY] ]] && [[ -f /opt/rh/gcc-toolset-9/root/usr/bin/gcc || -f /opt/rh/gcc-toolset-9/root/usr/bin/g++ ]]; then
         source /opt/rh/gcc-toolset-9/enable
@@ -1057,7 +1096,7 @@ crypto_gcc() {
         
         if [[ "$(uname -m)" = 'x86_64' && "$CPUVENDOR" = 'GenuineIntel' && "$SSECHECK" = '[enabled]' ]]; then
             CCM=64
-            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}${CRYPTODEVTOOLSETELEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS}"
+            CRYPTOGCC_OPT="-m${CCM} -march=${MARCH_TARGET}${CRYPTODEVTOOLSETSEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETSEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETEIGHT_FALLTHROUGH}${CRYPTODEVTOOLSETEIGHT_EXTRAFLAGS}${CRYPTODEVTOOLSETNINE_FALLTHROUGH}${CRYPTODEVTOOLSETNINE_EXTRAFLAGS}${CRYPTODEVTOOLSETTEN_FALLTHROUGH}${CRYPTODEVTOOLSETTEN_EXTRAFLAGS}${CRYPTODEVTOOLSETELEVEN_FALLTHROUGH}${CRYPTODEVTOOLSETELEVEN_EXTRAFLAGS}${CRYPTODEVTOOLSETTWELVE_FALLTHROUGH}${CRYPTODEVTOOLSETTWELVE_EXTRAFLAGS}"
             # if only 1 cpu thread use -O2 to keep compile times sane
             if [[ "$CPUS" = '1' ]]; then
             export CFLAGS="-O2 $CRYPTOGCC_OPT -pipe"
@@ -1150,6 +1189,7 @@ fi
     DETECTOPENSSL_ONEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2)
     DETECTOPENSSL_ONEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-3 | grep -o 1.1.1)
     DETECTOPENSSL_THREEZERO=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.0)
+    DETECTOPENSSL_THREEONE=$(echo $OPENSSL_VERSION  | cut -d . -f1-2 | grep -o 3.1)
     if [[ "$LIBRESSL_SWITCH" = [yY] ]] && [[ "$BORINGSSL_SWITCH" = [nN] ]]; then
         libresslinstallstarttime=$(TZ=UTC date +%s.%N)
 
@@ -1313,6 +1353,9 @@ fi
             elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            elif [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1462,6 +1505,9 @@ fi
             elif [[ "$DETECTOPENSSL_THREEZERO" = '3.0' ]]; then
                 echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
+            elif [[ "$DETECTOPENSSL_THREEONE" = '3.1' ]]; then
+                echo "./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
+                ./Configure --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared ${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl,-rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
             else
                 echo "./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib"
                 ./config --prefix=$STATICLIBSSL --openssldir=$STATICLIBSSL no-shared enable-tlsext${ECNISTP_OPT}${OPENSSL_CFZLIB_OPT} -Wl, -rpath=${OPENSSL_CFZLIB_RPATH}${STATICLIBSSL}/lib
@@ -1506,6 +1552,10 @@ fi
         \cp -Pf /etc/pki/tls/cert.pem /opt/openssl/
         if [[ -f "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" && ! -f /opt/openssl/openssl.cnf ]]; then
             \cp -af "${DIR_TMP}/openssl-${OPENSSL_VERSION}/apps/openssl.cnf" /opt/openssl/openssl.cnf
+        fi
+        if [[ "$NGX_LDMOLD" = [yY] ]]; then
+            echo
+            readelf -p .comment /opt/openssl/bin/openssl
         fi
         crypto_gccunset
         opensslinstallendtime=$(TZ=UTC date +%s.%N)
