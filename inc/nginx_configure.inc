@@ -2920,7 +2920,7 @@ fi
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         # mold linker does not support LTO
         # https://github.com/rui314/mold
-        FLTO_OPT=""
+        FLTO_OPT=" -flto=$(nproc)"
       else
         FLTO_OPT=" -flto=$(nproc)"
       fi
