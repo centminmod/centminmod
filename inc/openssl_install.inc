@@ -675,7 +675,7 @@ crypto_gcc() {
       if [[ "$NGX_LDMOLD" = [yY] ]]; then
         mold_check
         MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
-        export LD="/usr/local/libexec/mold"
+        # export LD="/usr/local/libexec/mold"
       else
         MOLD_LINKER_OPT=""
       fi
