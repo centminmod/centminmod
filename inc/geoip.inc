@@ -39,6 +39,9 @@ ngxgeoipmemtweak() {
 geoiptwolite_phpext_install() {
   initial_installation=$1
   if [[ "$NGINX_GEOIPTWOLITE" = [yY] && -z "$initial_installation" ]]; then
+    if [[ "$INITIALINSTALL" = [yY] ]]; then
+      enable_devtoolset
+    fi
     cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow
     pushd $DIR_TMP
     rm -rf MaxMind-DB-Reader-php

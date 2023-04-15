@@ -61,6 +61,13 @@ enable_devtoolset() {
    CFLAGS=""
 
    if [[ "$GENERAL_DEVTOOLSETGCC" = [yY] ]]; then
+      if [[ "$NGX_LDMOLD" = [yY] ]]; then
+        mold_check
+        MOLD_LINKER_OPT=' -B/usr/local/libexec/mold'
+        export LD="/usr/local/libexec/mold"
+      else
+        MOLD_LINKER_OPT=""
+      fi
       # devtoolset-4 usage for ngx_pagespeed 1.10 branch which doesn't support
       # centos 6 based gcc 4.4.7
       if [[ "$CENTOS_SIX" -eq 6 || "$CENTOS_SEVEN" -eq 7 || "$CENTOS_EIGHT" -eq 8 || "$CENTOS_NINE" -eq 9 ]]; then
@@ -167,11 +174,11 @@ enable_devtoolset() {
          unset CC
          unset CXX
          if [[ "$INITIALINSTALL" != [yY] ]]; then
-            export CC="ccache gcc"
-            export CXX="ccache g++"
+            export CC="ccache gcc${MOLD_LINKER_OPT}"
+            export CXX="ccache g++${MOLD_LINKER_OPT}"
          else
-            export CC="gcc"
-            export CXX="g++"
+            export CC="gcc${MOLD_LINKER_OPT}"
+            export CXX="g++${MOLD_LINKER_OPT}"
          fi
       fi
 
