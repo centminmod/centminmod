@@ -154,7 +154,8 @@ opt_tcp
   cecho "Installing nginx Modules / Prerequisites..." $boldgreen
 
 # pcre2 initial install needs newer GCC
-if [[ "$INITIALINSTALL" = [yY] ]]; then
+if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
+    GENERAL_DEVTOOLSETGCC='y'
     enable_devtoolset
 fi
 

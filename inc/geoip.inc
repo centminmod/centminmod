@@ -40,6 +40,7 @@ geoiptwolite_phpext_install() {
   initial_installation=$1
   if [[ "$NGINX_GEOIPTWOLITE" = [yY] && -z "$initial_installation" ]]; then
     if [[ "$INITIALINSTALL" = [yY] ]]; then
+      GENERAL_DEVTOOLSETGCC='y'
       enable_devtoolset
     fi
     cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow

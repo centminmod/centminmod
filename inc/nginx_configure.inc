@@ -255,6 +255,7 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
 fi
 
 if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
+    GENERAL_DEVTOOLSETGCC='y'
     enable_devtoolset
 fi
 
