@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='297'
+SCRIPT_INCREMENTVER='298'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -2870,6 +2870,9 @@ imagickinstall
 
 echo "geoipphpext"
 geoipphpext
+
+echo "geoiptwolite_phpext_install"
+geoiptwolite_phpext_install
 
 if [[ "$PHPREDIS" = [yY] ]]; then
     echo "redisinstall"

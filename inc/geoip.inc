@@ -37,7 +37,8 @@ ngxgeoipmemtweak() {
 }
 
 geoiptwolite_phpext_install() {
-  if [[ "$NGINX_GEOIPTWOLITE" = [yY] ]]; then
+  initial_installation=$1
+  if [[ "$NGINX_GEOIPTWOLITE" = [yY] && -z "$initial_installation" ]]; then
     cecho "compiling MaxMind DB Reader PHP API extension..." $boldyellow
     pushd $DIR_TMP
     rm -rf MaxMind-DB-Reader-php
@@ -57,6 +58,7 @@ EOF
 }
 
 geoipphpext() {
+    initial_installation=$1
     if [[ "$PHP_INSTALL" = [yY] ]]; then
       # set extra cflags fro devtoolset-7 and devtoolset-8 compatibility
       check_devtoolset_php
@@ -117,7 +119,7 @@ cat > "${CONFIGSCANDIR}/geoip.ini" <<EOF
 extension=geoip.so
 geoip.custom_directory=/usr/share/GeoIP
 EOF
-  geoiptwolite_phpext_install
+  geoiptwolite_phpext_install "$initial_installation"
   else
     echo "Error: geoip php extension not installed. Could not find ${DIR_TMP}/geoip directory" > ${CENTMINLOGDIR}/centminmod_errors_install_${DT}.log
 fi
@@ -193,7 +195,12 @@ geoiptwolite_install() {
   pushd $DIR_TMP
   install_libmaxmindb
 
-  geoiptwolite_phpext_install
+  # not for initial installs
+  if [[ "$INITIALINSTALL" != [yY] ]]; then
+    geoiptwolite_phpext_install
+  else
+    geoiptwolite_phpext_install initial_install
+  fi
 
   if [ ! -f /etc/centminmod/custom_config.inc ]; then
     CHECK_CMM_MM_LICENSE_KEY=''
