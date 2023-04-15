@@ -254,6 +254,10 @@ if [ -f "${CM_INSTALLDIR}/inc/z_custom.inc" ]; then
     source "${CM_INSTALLDIR}/inc/z_custom.inc"
 fi
 
+if [[ "$INITIALINSTALL" = [yY] ]] && [[ "$NGINX_PCRE_TWO" = [yY] || "$NGX_LDMOLD" = [yY] ]]; then
+    enable_devtoolset
+fi
+
 # ensure HTTP/3 UDP port 443 is open
 if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
   if [[ ! "$(grep 'UDP_IN =' /etc/csf/csf.conf | grep -o '443')" ]]; then
