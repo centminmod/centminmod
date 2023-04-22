@@ -1,5 +1,5 @@
 #!/bin/bash
-VER=0.1.2
+VER=0.1.3
 ###############################################################
 # set locale temporarily to english
 # due to some non-english locale issues
@@ -455,7 +455,19 @@ cecho "---------------------------------" $boldyellow
 cecho "Delete MySQL username:" $boldgreen
 cecho "---------------------------------" $boldyellow
 
-read -ep " Enter MySQL username you want to delete: " delmysqluser
+read -t 30 -ep " Enter MySQL username you want to delete (type exit to abort): " delmysqluser
+
+# Check if read command was interrupted by a signal
+if [[ $? -eq 128 ]]; then
+    cecho "Aborted: User interrupted the input" $boldred
+    return
+fi
+
+# Check if the delmysqluser variable is empty and return from the function if it is
+if [[ -z "$delmysqluser" || "$delmysqluser" = 'exit' || "$delmysqluser" = 'EXIT' ]]; then
+    cecho " Aborted: No MySQL username entered" $boldred
+    return
+fi
 
 if [[ "$rootset" = [yY] ]]; then
 
