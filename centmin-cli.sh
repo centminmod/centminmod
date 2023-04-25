@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='305'
+SCRIPT_INCREMENTVER='306'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -2130,7 +2130,40 @@ unsetramdisk() {
     fi
 }
 ###
+create_loopmount() {
+  mnt_options="$1"
 
+  # Create the mount-loop.sh script
+  cat > /usr/local/bin/mount-loop.sh <<EOF
+#!/bin/bash
+mount -o $mnt_options
+EOF
+
+  # Make the script executable
+  chmod +x /usr/local/bin/mount-loop.sh
+
+  # Create the mount-loop.service file
+  cat > /etc/systemd/system/mount-loop.service <<EOF
+[Unit]
+Description=Mount loop device for /tmp
+After=local-fs.target
+Requires=local-fs.target
+
+[Service]
+ExecStart=/usr/local/bin/mount-loop.sh
+ExecStop=/usr/bin/umount /tmp
+Type=oneshot
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+  # Enable the new systemd service
+  systemctl enable mount-loop.service
+}
+
+###
 funct_centmininstall() {
     INITIALINSTALL='y'
     export INITIALINSTALL='y'
@@ -2278,7 +2311,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -2301,7 +2334,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -2324,7 +2357,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -2347,7 +2380,7 @@ elif [[ ! -f /proc/user_beancounters && "$CENTOS_SEVEN" = '7' && "$CHECK_LXD" !=
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp       
        cp -ar /var/tmp_backup/* /tmp
@@ -2369,7 +2402,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
      mount -t tmpfs -o rw,noexec,nosuid tmpfs /tmp
      chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-     echo "tmpfs /tmp tmpfs rw,noexec,nosuid 0 0" >> /etc/fstab
+     create_loopmount "rw,noexec,nosuid tmpfs /tmp"
        cp -ar /var/tmp /var/tmp_backup
      ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -2392,7 +2425,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -2415,7 +2448,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp
        cp -ar /var/tmp_backup/* /tmp
@@ -2438,7 +2471,7 @@ elif [[ ! -f /proc/user_beancounters && "$CHECK_LXD" != [yY] ]]; then
        mount -t ext4 -o loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp
        chmod 1777 /tmp
        cp -ar /tmp_backup/* /tmp
-       echo "/home/usertmp_donotdelete /tmp ext4 loop,rw,noexec,nosuid 0 0" >> /etc/fstab
+       create_loopmount "loop,rw,noexec,nosuid /home/usertmp_donotdelete /tmp"
        cp -ar /var/tmp /var/tmp_backup
        ln -s /tmp /var/tmp       
        cp -ar /var/tmp_backup/* /tmp
