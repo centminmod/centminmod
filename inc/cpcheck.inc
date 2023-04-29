@@ -3618,6 +3618,7 @@ if [[ "$INITIALINSTALL" != [yY] ]]; then
   tcp_bbr_setup
   start_limit_burst_adjust
   fix_pure_ftpd_el8
+  python_alternatives_setup
 fi
 
 }

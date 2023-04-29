@@ -1,3 +1,41 @@
+python_alternatives_setup() {
+    # for EL8+ python unversion configuration
+    # default to Python 3.6
+    if [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_EIGHT" -eq '8' ]]; then
+        echo
+        echo "Install & configure Python ${ALT_PYTHON_VER_LABEL} for EL8"
+        if [[ "$(rpm -qa python${ALT_PYTHON_VER} | grep -qo python${ALT_PYTHON_VER}; echo $?)" -ne 0 ]]; then
+            yum -y install python${ALT_PYTHON_VER}
+        fi
+        if [[ "$(rpm -qa python3-pip | grep -qo python3-pip; echo $?)" -ne 0 ]]; then
+            yum -y install python3-pip
+        fi
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python3')" && ! "$(alternatives --list | egrep -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip3')" ]]; then
+            alternatives --set python /usr/bin/python3
+            alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+            alternatives --set pip /usr/bin/pip3
+            alternatives --list | egrep -i 'pip|python'
+            echo
+        fi
+    elif [[ "$PYTHON_INSTALL_ALTERNATIVES" = [yY] && "$CENTOS_NINE" -eq '9' ]]; then
+        echo
+        echo "Install & configure Python ${ALT_PYTHON_VER_LABEL} for EL9"
+        if [[ "$(rpm -qa python${ALT_PYTHON_VER} | grep -qo python${ALT_PYTHON_VER}; echo $?)" -ne 0 ]]; then
+            yum -y install python${ALT_PYTHON_VER}
+        fi
+        if [[ "$(rpm -qa python3-pip | grep -qo python3-pip; echo $?)" -ne 0 ]]; then
+            yum -y install python3-pip
+        fi
+        if [[ ! "$(alternatives --list | grep -E 'manual.*\/usr\/bin\/python3')" && ! "$(alternatives --list | egrep -i 'pip|python' | grep -E 'manual.*\/usr\/bin\/pip3')" ]]; then
+            alternatives --set python /usr/bin/python3
+            alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+            alternatives --set pip /usr/bin/pip3
+            alternatives --list | egrep -i 'pip|python'
+            echo
+        fi
+    fi
+}
+
 installpythonfuct() {
 
 #ASK "Install Python Update ? [y/n] "

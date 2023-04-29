@@ -434,7 +434,10 @@ ZOPCACHEDFT='y'
 ZOPCACHECACHE_VERSION='7.0.5'   # for PHP <=5.4 https://pecl.php.net/package/ZendOpcache
 ZOPCACHE_OVERRIDE='n'           # ='y'ill override PHP 5.5, 5.6, 7.0 inbuilt Zend OpCache version
 # Python
-PYTHON_VERSION='2.7.10'     # Use this version of Python
+PYTHON_VERSION='2.7.10'       # Use this version of Python for CentOS 7 only
+PYTHON_INSTALL_ALTERNATIVES='n' # For EL8+ to install Python 3.6 and set unversioned binary alternatives
+ALT_PYTHON_VER_LABEL='3.6'    # For EL8+ OSes only i.e. python3.6 binary
+ALT_PYTHON_VER='36'           # For EL8+ OSes only i.e. python36 package
 SIEGE_VERSION='4.1.5'
 
 # custom curl/libcurl RPM for 7.44 and higher
