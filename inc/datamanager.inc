@@ -297,6 +297,3 @@ case "$datamenu_opt" in
 esac
 done
 } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_datamanager_submenu.log"
-
-}
-
