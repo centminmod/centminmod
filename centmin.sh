@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='308'
+SCRIPT_INCREMENTVER='309'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -1467,6 +1467,7 @@ source "${SCRIPT_DIR}/inc/letsdebug.inc"
 source "${SCRIPT_DIR}/inc/google_perftools.inc"
 source "${SCRIPT_DIR}/inc/updater_submenu.inc"
 source "${SCRIPT_DIR}/inc/centminfinish.inc"
+source "${SCRIPT_DIR}/inc/datamanager.inc"
 
 checkcentosver
 mysqltmpdir
@@ -4012,7 +4013,11 @@ EOF
         starttime=$(TZ=UTC date +%s.%N)
         centminlog
         {
-        cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
+          if [[ -d "$SCRIPT_DIR/datamanagement" ]]; then
+            datamanager_menu
+          else
+            cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
+          fi
         echo
         } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_data_transfer.log"
         
