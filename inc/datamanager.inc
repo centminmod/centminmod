@@ -60,7 +60,7 @@ case "$datamenu_opt" in
     echo "2. The destination server and this server's MairaDB MySQL server versions must"
     echo "   be the same major version at least. i.e. MariaDB 10.3 or both"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
@@ -82,9 +82,14 @@ case "$datamenu_opt" in
     echo "tar + zstd compression is optional. If you choose not to use tar + zstd"
     echo "the local backup directories will have uncompressed data backups."
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup
+      read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
+      if [[ "$comp_backup_opt" = [yY] ]]; then
+        "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup comp
+      else
+        "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup
+      fi
     else
       echo "aborting ..."
       exit
@@ -104,9 +109,14 @@ case "$datamenu_opt" in
     echo "using tar + zstd compression is optional. If you choose not to use tar + zstd"
     echo "the local backup directories will have uncompressed data backups."
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      "$SCRIPT_DIR/datamanagement/backups.sh" backup-files
+      read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
+      if [[ "$comp_backup_opt" = [yY] ]]; then
+        "$SCRIPT_DIR/datamanagement/backups.sh" backup-files comp
+      else
+        "$SCRIPT_DIR/datamanagement/backups.sh" backup-files
+      fi
     else
       echo "aborting ..."
       exit
@@ -127,9 +137,14 @@ case "$datamenu_opt" in
     echo "+ mysql system database backups which contain your MySQL users' permissions"
     echo "MariaBackup backup directory can either be uncompressed or tar + zstd compressed"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      "$SCRIPT_DIR/datamanagement/backups.sh" backup-mariabackup
+      read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
+      if [[ "$comp_backup_opt" = [yY] ]]; then
+        "$SCRIPT_DIR/datamanagement/backups.sh" backup-mariabackup comp
+      else
+        "$SCRIPT_DIR/datamanagement/backups.sh" backup-mariabackup
+      fi
     else
       echo "aborting ..."
       exit
@@ -158,7 +173,7 @@ case "$datamenu_opt" in
     echo "a new database name with suffix added _restorecopy_datetimestamp to prevent"
     echo "overwriting the existing database name."
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
     else
@@ -180,7 +195,7 @@ case "$datamenu_opt" in
     echo "to a remote server via SSH at speeds near network and disk line rates using"
     echo "either netcat (nc) or socat compressed tunnel using zstd fast compression levels"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
@@ -202,7 +217,7 @@ case "$datamenu_opt" in
     echo "to a S3 compatible storage provider like Amazon S3, Cloudflare R2, Backblaze"
     echo "DigitalOcean, Vultr, Linode"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
@@ -224,7 +239,7 @@ case "$datamenu_opt" in
     echo "to a S3 compatible storage provider like Amazon S3, Cloudflare R2, Backblaze"
     echo "DigitalOcean, Vultr, Linode"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
@@ -244,7 +259,7 @@ case "$datamenu_opt" in
     echo "Description:"
     echo "This option allows you to download your S3 stored data to this server"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
@@ -264,7 +279,7 @@ case "$datamenu_opt" in
     echo "Description:"
     echo "This option allows you to transfer data between two S3 compatible storage"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
@@ -284,7 +299,7 @@ case "$datamenu_opt" in
     echo "Description:"
     echo "This option will list all your S3 storage buckets registered with the AWS CLI tool"
     echo
-    read -ep "Do you want to continue [y/n]" datamanager_cont
+    read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
       echo "place holder"
     else
