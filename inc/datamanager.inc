@@ -3,10 +3,14 @@
 #######################################################################################
 
 check_for_datatools() {
-  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/backups.sh" && -f "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh" && -f "$SCRIPT_DIR/datamanagement/tunnel-transfer.sh" ]]; then
+  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/backups.sh" && -f "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh" && -f "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" ]]; then
     datatools_found=y
   else
     datatools_found=n
+    ls -lAh "$SCRIPT_DIR/datamanagement/backups.sh"
+    ls -lAh "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh"
+    ls -lAh "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh"
+    echo
     echo "Data management tools not found"
     exit 1
   fi
@@ -296,4 +300,4 @@ case "$datamenu_opt" in
 ;;
 esac
 done
-} 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_datamanager_submenu.log"
+}
