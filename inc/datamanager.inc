@@ -2,6 +2,243 @@
 # Data Management Routines
 #######################################################################################
 
+#######################################################################################
+check_for_awscli_get() {
+  if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
+    curl -4sL https://awscli-get.centminmod.com/awscli-get.sh -o "$SCRIPT_DIR/datamanagement/awscli-get.sh"
+    chmod +x "$SCRIPT_DIR/datamanagement/awscli-get.sh"
+  fi
+  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
+    awscli_get_found=y
+  else
+    awscli_get_found=n
+    ls -lAh "$SCRIPT_DIR/datamanagement/awscli-get.sh"
+    echo
+    echo "awscli-get.sh not found"
+    exit 1
+  fi
+}
+
+#######################################################################################
+check_for_keygen() {
+  if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/keygen.sh" ]]; then
+    curl -4sL https://github.com/centminmod/keygen/raw/master/keygen.sh -o "$SCRIPT_DIR/datamanagement/keygen.sh"
+    chmod +x "$SCRIPT_DIR/datamanagement/keygen.sh"
+  fi
+  if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/keygen.sh" ]]; then
+    keygen_found=y
+  else
+    keygen_found=n
+    ls -lAh "$SCRIPT_DIR/datamanagement/keygen.sh"
+    echo
+    echo "keygen.sh not found"
+    exit 1
+  fi
+}
+
+#######################################################################################
+aws_profiles_submenu() {
+while :
+do
+  # clear
+        # display menu
+  echo
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "     Manage SSH Keys        " $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "1).   List Registered AWS CLI S3 Profiles" $boldgreen
+  cecho "2).   List AWS CLI S3 Profile Configuration" $boldgreen
+  cecho "3).   Create New AWS CLI S3 Profile" $boldgreen
+  cecho "4).   Edit Existing AWS CLI S3 Profile" $boldgreen
+  cecho "5).   Delete Existing AWS CLI S3 Profile" $boldgreen
+  cecho "6).   Export Existing AWS CLI S3 Profile" $boldgreen
+  cecho "7).   Backup All Existing AWS CLI S3 Profiles" $boldgreen
+  cecho "8).   Back to Main menu" $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+
+  read -ep "Enter option [ 1 - 8 ] " awscli_profiles_menu_opt
+  cecho "--------------------------------------------------------" $boldyellow
+
+#########################################################
+
+case "$awscli_profiles_menu_opt" in
+1)
+  {
+    check_for_awscli_get
+    echo
+    echo "List Registered AWS CLI S3 Profiles"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+2)
+  {
+    check_for_awscli_get
+    echo
+    echo "List AWS CLI S3 Profile Configuration"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+3)
+  {
+    check_for_awscli_get
+    echo
+    echo "Create New AWS CLI S3 Profile"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+4)
+  {
+    check_for_awscli_get
+    echo
+    echo "Edit Existing AWS CLI S3 Profile"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+5)
+  {
+    check_for_awscli_get
+    echo
+    echo "Delete Existing AWS CLI S3 Profile"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+6)
+  {
+    check_for_awscli_get
+    echo
+    echo "Export Existing AWS CLI S3 Profile"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+7)
+  {
+    check_for_awscli_get
+    echo
+    echo "Backup All Existing AWS CLI S3 Profiles"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
+;;
+8)
+  break
+;;
+esac
+done
+}
+
+#######################################################################################
+ssh_keys_submenu() {
+while :
+do
+  # clear
+        # display menu
+  echo
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "     Manage SSH Keys        " $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+  cecho "1).   List Registered SSH Keys" $boldgreen
+  cecho "2).   Register Existing SSH Keys" $boldgreen
+  cecho "3).   Create New SSH Key For Remote Host" $boldgreen
+  cecho "4).   Use Existing SSH Key For Remote Host" $boldgreen
+  cecho "5).   Rotate Existing SSH Key For Remote Host" $boldgreen
+  cecho "6).   Delete Existing SSH Key For Remote Host" $boldgreen
+  cecho "7).   Export Existing SSH Key" $boldgreen
+  cecho "8).   Backup All Existing SSH Keys" $boldgreen
+  cecho "9).   Back to Main menu" $boldgreen
+  cecho "--------------------------------------------------------" $boldyellow
+
+  read -ep "Enter option [ 1 - 9 ] " sshkeys_menu_opt
+  cecho "--------------------------------------------------------" $boldyellow
+
+#########################################################
+
+case "$sshkeys_menu_opt" in
+1)
+  {
+    check_for_keygen
+    echo
+    echo "List Registered SSH Keys"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+2)
+  {
+    check_for_keygen
+    echo
+    echo "Register Existing SSH Keys"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+3)
+  {
+    check_for_keygen
+    echo
+    echo "Create New SSH Key For Remote Host"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+4)
+  {
+    check_for_keygen
+    echo
+    echo "Use Existing SSH Key For Remote Host"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+5)
+  {
+    check_for_keygen
+    echo
+    echo "Rotate Existing SSH Key For Remote Host"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+6)
+  {
+    check_for_keygen
+    echo
+    echo "Delete Existing SSH Key For Remote Host"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+7)
+  {
+    check_for_keygen
+    echo
+    echo "Export Existing SSH Key"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+8)
+  {
+    check_for_keygen
+    echo
+    echo "Backup All Existing SSH Keys"
+    echo
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+9)
+  break
+;;
+esac
+done
+}
+
+#######################################################################################
 check_for_datatools() {
   if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/backups.sh" && -f "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh" && -f "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" ]]; then
     datatools_found=y
@@ -16,6 +253,7 @@ check_for_datatools() {
   fi
 }
 
+#######################################################################################
 datamanager_menu() {
 while :
 do
@@ -25,27 +263,49 @@ do
   cecho "--------------------------------------------------------" $boldyellow
   cecho "     Centmin Mod Data Management        " $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "1).  Migrate Centmin Mod Data To New Centmin Mod Server" $boldgreen
-  cecho "2).  Backup Nginx Vhosts Data + MariaBackup MySQL Backups" $boldgreen
-  cecho "3).  Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)" $boldgreen
-  cecho "4).  Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)" $boldgreen
-  cecho "5).  Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)" $boldgreen
-  cecho "6).  Transfer Directory Data To Remote Server Via SSH" $boldgreen
-  cecho "7).  Transfer Directory Data To S3 Compatible Storage" $boldgreen
-  cecho "8).  Transfer Files To S3 Compatible Storage" $boldgreen
-  cecho "9).  Download S3 Compatible Stored Data To Server" $boldgreen
-  cecho "10). S3 To S3 Compatible Storage Transfers" $boldgreen
-  cecho "11). List S3 Storage Buckets" $boldgreen
-  cecho "12). Back to Main menu" $boldgreen
+  cecho "1).   Manage SSH Keys" $boldgreen
+  cecho "2).   Manage AWS CLI S3 Profile Credentials" $boldgreen
+  cecho "3).   Migrate Centmin Mod Data To New Centmin Mod Server" $boldgreen
+  cecho "4).   Backup Nginx Vhosts Data + MariaBackup MySQL Backups" $boldgreen
+  cecho "5).   Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)" $boldgreen
+  cecho "6).   Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)" $boldgreen
+  cecho "7).   Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)" $boldgreen
+  cecho "8).   Transfer Directory Data To Remote Server Via SSH" $boldgreen
+  cecho "9).   Transfer Directory Data To S3 Compatible Storage" $boldgreen
+  cecho "10).  Transfer Files To S3 Compatible Storage" $boldgreen
+  cecho "11).  Download S3 Compatible Stored Data To Server" $boldgreen
+  cecho "12).  S3 To S3 Compatible Storage Transfers" $boldgreen
+  cecho "13).  List S3 Storage Buckets" $boldgreen
+  cecho "14).  Back to Main menu" $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
 
-  read -ep "Enter option [ 1 - 11 ] " datamenu_opt
+  read -ep "Enter option [ 1 - 14 ] " datamenu_opt
   cecho "--------------------------------------------------------" $boldyellow
 
 #########################################################
 
 case "$datamenu_opt" in
 1)
+  {
+    check_for_datatools
+    echo
+    echo "Manage SSH Keys"
+    echo
+    ssh_keys_submenu
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
+;;
+2)
+  {
+    check_for_datatools
+    echo
+    echo "Manage AWS CLI S3 Profile Credentials"
+    echo
+    aws_profiles_submenu
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
+;;
+3)
   {
     check_for_datatools
     echo
@@ -69,9 +329,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_1_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-2)
+4)
   {
     check_for_datatools
     echo
@@ -96,9 +356,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_2_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-3)
+5)
   {
     check_for_datatools
     echo
@@ -123,9 +383,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_3_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-4)
+6)
   {
     check_for_datatools
     echo
@@ -151,9 +411,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_4_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-5)
+7)
   {
     check_for_datatools
     echo
@@ -182,9 +442,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_5_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-6)
+8)
   {
     check_for_datatools
     echo
@@ -204,9 +464,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_6_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-7)
+9)
   {
     check_for_datatools
     echo
@@ -226,9 +486,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_7_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-8)
+10)
   {
     check_for_datatools
     echo
@@ -248,9 +508,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_8_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-9)
+11)
   {
     check_for_datatools
     echo
@@ -268,9 +528,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_9_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-10)
+12)
   {
     check_for_datatools
     echo
@@ -288,9 +548,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_10_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-11)
+13)
   {
     check_for_datatools
     echo
@@ -308,9 +568,9 @@ case "$datamenu_opt" in
     fi
 
 
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_11_datamanger_menu.log"
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
-12)
+14)
   break
 ;;
 esac
