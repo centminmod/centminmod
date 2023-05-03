@@ -1,7 +1,7 @@
 #######################################################################################
 # Data Management Routines
 #######################################################################################
-
+AWSCLI_BIN='/usr/local/bin/aws'
 #######################################################################################
 check_for_awscli_get() {
   if [[ -d "$SCRIPT_DIR/datamanagement" && ! -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
@@ -16,6 +16,15 @@ check_for_awscli_get() {
     echo
     echo "awscli-get.sh not found"
     exit 1
+  fi
+  if [ ! -f "${AWSCLI_BIN}" ]; then
+    echo
+    echo "Installing AWS CLI command line tool ${AWSCLI_BIN}"
+    "$SCRIPT_DIR/datamanagement/awscli-get.sh" install >/dev/null 2>&1 
+  elif [ -f "${AWSCLI_BIN}" ]; then
+    echo
+    echo "Updating AWS CLI command line tool ${AWSCLI_BIN}"
+    "$SCRIPT_DIR/datamanagement/awscli-get.sh" update >/dev/null 2>&1
   fi
 }
 
@@ -44,7 +53,7 @@ do
         # display menu
   echo
   cecho "--------------------------------------------------------" $boldyellow
-  cecho "     Manage SSH Keys        " $boldgreen
+  cecho "     Manage AWS CLI S3 Profile Credentials        " $boldgreen
   cecho "--------------------------------------------------------" $boldyellow
   cecho "1).   List Registered AWS CLI S3 Profiles" $boldgreen
   cecho "2).   List AWS CLI S3 Profile Configuration" $boldgreen
@@ -68,6 +77,7 @@ case "$awscli_profiles_menu_opt" in
     echo
     echo "List Registered AWS CLI S3 Profiles"
     echo
+    ${AWSCLI_BIN} configure list-profiles
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
@@ -78,6 +88,35 @@ case "$awscli_profiles_menu_opt" in
     echo "List AWS CLI S3 Profile Configuration"
     echo
 
+    read -ep "Do you want to continue [y/n]: " aws_cli_profile_listconfig_cont
+    if [[ "$aws_cli_profile_listconfig_cont" != [yY] ]]; then
+      echo
+      echo "exiting ..."
+      exit
+    fi
+
+    while true; do
+      read -ep "Enter AWS CLI S3 Profile Name For Configuration Overview: " input_profile_name
+    
+      echo
+      echo "You entered AWS CLI S3 Profile Name = ${input_profile_name}"
+      echo
+      read -ep "Are these details correct? [y/n/exit]: " input_correct
+    
+      if [[ "$input_correct" =~ ^[yY]$ ]]; then
+        ${AWSCLI_BIN} configure list --profile "${input_profile_name}"
+        break
+      elif [[ "$input_correct" == "exit" ]]; then
+        echo
+        echo "Exiting..."
+        break
+      else
+        echo
+        echo "Please re-enter your details."
+        echo
+      fi
+    done
+
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
 3)
@@ -86,6 +125,64 @@ case "$awscli_profiles_menu_opt" in
     echo
     echo "Create New AWS CLI S3 Profile"
     echo
+    echo "To setup a new AWS CLI S3 Profile, you need to have signed up with a"
+    echo "S3 storage provider like Amazon AWS S3, Backblaze, Cloudflare R2"
+    echo "Linode, Vultr or DigitalOcean S3 object storage provider and obtained"
+    echo "your S3 credentials for Access key ID and Secret Key and your endpoint"
+    echo "url where applicable i.e. Cloudflare R2, Linode, DigitalOcean, Backblaze"
+    echo "all have a their own specific endpoint url to use with their S3 storage."
+    echo
+    echo "The following questions and your input will be used to setup a new AWS"
+    echo "CLI S3 profile."
+    echo
+
+    read -ep "Do you want to continue [y/n]: " aws_cli_profile_create_cont
+    if [[ "$aws_cli_profile_create_cont" != [yY] ]]; then
+      echo
+      echo "exiting ..."
+      exit
+    fi
+
+    while true; do
+      read -ep "Your S3 Storage Provider i.e. aws, cloudflare, digitalocean, backblaze etc : " input_storage_provider
+      read -ep "Desired AWS CLI S3 Profile Name: " input_profile_name
+      read -ep "Endpoint url: i.e. for Cloudflare YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com: " input_endpoint
+      read -ep "Enter AWS_ACCESS_KEY_ID: " input_access_key
+      read -ep "Enter AWS_SECRET_ACCESS_KEY: " input_secret_key
+      read -ep "Enter AWS_DEFAULT_REGION for Cloudflare use r2: " input_default_region
+      read -ep "Enter AWS_DEFAULT_OUTPUT: " input_default_output
+    
+      echo
+      echo "You entered S3 Storage Provide=${input_storage_provider}"
+      echo "You entered AWS CLI S3 Profile Name=${input_profile_name}"
+      echo "Your entered endpoint url=${input_endpoint}"
+      echo "You enter AWS_ACCESS_KEY_ID=${input_access_key}"
+      echo "You enter AWS_SECRET_ACCESS_KEY=${input_secret_key}"
+      echo "You enter AWS_DEFAULT_REGION=${input_default_region}"
+      echo "You enter AWS_DEFAULT_OUTPUT=${input_default_output}"
+      echo
+      read -ep "Are these details correct? [y/n/exit]: " input_correct
+    
+      if [[ "$input_correct" =~ ^[yY]$ ]]; then
+        export AWS_ACCESS_KEY_ID="${input_access_key}"
+        export AWS_SECRET_ACCESS_KEY="${input_secret_key}"
+        export AWS_DEFAULT_REGION="${input_default_region}"
+        export AWS_DEFAULT_OUTPUT="${input_default_output}"
+
+        # setup AWS CLI profile
+        $SCRIPT_DIR/datamanagement/awscli-get.sh install "${input_profile_name}"
+        break
+      elif [[ "$input_correct" == "exit" ]]; then
+        echo
+        echo "Exiting..."
+        break
+      else
+        echo
+        echo "Please re-enter your details."
+        echo
+      fi
+    done
+
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
