@@ -200,7 +200,47 @@ case "$awscli_profiles_menu_opt" in
     check_for_awscli_get
     echo
     echo "Delete Existing AWS CLI S3 Profile"
-    echo
+        echo
+
+    read -ep "Do you want to continue [y/n]: " aws_cli_profile_delete_cont
+    if [[ "$aws_cli_profile_delete_cont" != [yY] ]]; then
+      echo
+      echo "exiting ..."
+      exit
+    fi
+
+    while true; do
+      read -ep "Enter AWS CLI S3 Profile Name To Delete: " input_profile_name
+    
+      echo
+      echo "You entered AWS CLI S3 Profile Name = ${input_profile_name}"
+      echo
+      read -ep "Are these details correct? [y/n/exit]: " input_correct
+    
+      if [[ "$input_correct" =~ ^[yY]$ ]]; then
+        # Remove the profile from the configuration and credentials files
+        aws configure --profile "${input_profile_name}" list  # Ensure the profile exists
+        if [ $? -eq 0 ]; then
+          CONFIG_FILE="${HOME}/.aws/config"
+          CREDENTIALS_FILE="${HOME}/.aws/credentials"
+          timestamp=$(date +%Y%m%d_%H%M%S)
+          sed -i.${timestamp}.bak "/\[profile ${input_profile_name}\]/,/^$/d" "${CONFIG_FILE}"
+          sed -i.${timestamp}.bak "/\[${input_profile_name}\]/,/^$/d" "${CREDENTIALS_FILE}"
+          echo "AWS CLI S3 Profile '${input_profile_name}' deleted."
+        else
+          echo "Profile '${input_profile_name}' not found."
+        fi
+        break
+      elif [[ "$input_correct" == "exit" ]]; then
+        echo
+        echo "Exiting..."
+        break
+      else
+        echo
+        echo "Please re-enter your details."
+        echo
+      fi
+    done
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
@@ -209,7 +249,49 @@ case "$awscli_profiles_menu_opt" in
     check_for_awscli_get
     echo
     echo "Export Existing AWS CLI S3 Profile"
-    echo
+        echo
+
+    read -ep "Do you want to continue [y/n]: " aws_cli_profile_export_cont
+    if [[ "$aws_cli_profile_export_cont" != [yY] ]]; then
+      echo
+      echo "exiting ..."
+      exit
+    fi
+
+    while true; do
+      read -ep "Enter AWS CLI S3 Profile Name to Export: " input_profile_name
+    
+      echo
+      echo "You entered AWS CLI S3 Profile Name = ${input_profile_name}"
+      echo
+      read -ep "Are these details correct? [y/n/exit]: " input_correct
+    
+      if [[ "$input_correct" =~ ^[yY]$ ]]; then
+        timestamp=$(date +%Y%m%d_%H%M%S)
+        mkdir -p /etc/centminmod/awscli/export-profiles
+
+        awk -v profile="profile ${input_profile_name}" '
+          $0 ~ /^\[profile .*\]$/ {flag=0}
+          $0 ~ "^\\[" profile "\\]" {flag=1}
+          flag {print}
+        ' "${HOME}/.aws/config" > "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-config-${timestamp}.conf"
+      
+        sed -n -e "/^\[${input_profile_name}\]/,/^\[/p" "${HOME}/.aws/credentials" > "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-credentials-${timestamp}.conf"
+
+        echo "Exported AWS CLI S3 Profile ${input_profile_name} to "
+        echo "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-config-${timestamp}.conf"
+        echo "/etc/centminmod/awscli/export-profiles/export-profile-${input_profile_name}-credentials-${timestamp}.conf"
+        break
+      elif [[ "$input_correct" == "exit" ]]; then
+        echo
+        echo "Exiting..."
+        break
+      else
+        echo
+        echo "Please re-enter your details."
+        echo
+      fi
+    done
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
@@ -219,6 +301,24 @@ case "$awscli_profiles_menu_opt" in
     echo
     echo "Backup All Existing AWS CLI S3 Profiles"
     echo
+
+    read -ep "Do you want to continue [y/n]: " aws_cli_profiles_backup_cont
+    if [[ "$aws_cli_profiles_backup_cont" != [yY] ]]; then
+      echo
+      echo "exiting ..."
+      exit
+    fi
+
+    timestamp=$(date +%Y%m%d_%H%M%S)
+    backup_directory="/etc/centminmod/awscli/backup-profiles"
+    mkdir -p "${backup_directory}"
+
+    cp "${HOME}/.aws/config" "${backup_directory}/config_backup-${timestamp}.conf"
+    cp "${HOME}/.aws/credentials" "${backup_directory}/credentials_backup-${timestamp}.conf"
+
+    echo "All AWS CLI S3 Profiles backed up to :"
+    echo "${backup_directory}/config_backup-${timestamp}.conf"
+    echo "${backup_directory}/credentials_backup-${timestamp}.conf"
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
