@@ -193,6 +193,61 @@ case "$awscli_profiles_menu_opt" in
     echo "Edit Existing AWS CLI S3 Profile"
     echo
 
+    read -ep "Enter AWS CLI S3 Profile Name to Edit: " edit_profile_name
+    echo "Fetching current configuration for profile ${edit_profile_name} ..."
+    
+    CONFIG_KEYS=("s3.max_concurrent_requests" "s3.multipart_threshold" "s3.multipart_chunksize" "s3.max_bandwidth" "s3.addressing_style" "s3.use_accelerate_endpoint" "s3.disable_ssl" "s3.verify_ssl" "region")
+
+    for key in "${CONFIG_KEYS[@]}"; do
+      value=$(${AWSCLI_BIN} configure get ${key} --profile "${edit_profile_name}")
+      echo "   ${key}: ${value}"
+    done
+
+    while true; do
+      echo
+      echo "Select the configuration option you want to edit:"
+      echo "1)  s3.max_concurrent_requests"
+      echo "2)  s3.multipart_threshold"
+      echo "3)  s3.multipart_chunksize"
+      echo "4)  s3.max_bandwidth"
+      echo "5)  s3.addressing_style"
+      echo "6)  s3.use_accelerate_endpoint (AWS S3 only)"
+      echo "7)  s3.disable_ssl (AWS S3 only)"
+      echo "8)  s3.verify_ssl (AWS S3 only)"
+      echo "9)  region"
+      echo "10) exit"
+    
+      read -ep "Enter the number of the option you want to edit [ 1 - 10 ]: " selected_option
+    
+      if [[ "$selected_option" -eq 10 ]]; then
+        break
+      fi
+    
+      selected_key=${CONFIG_KEYS[selected_option - 1]}
+      read -ep "Enter the new value for ${selected_key}: " new_value
+    
+      echo "You have chosen to update ${selected_key} to ${new_value}"
+      read -ep "Is this the correct update value? [y/n/exit]: " input_correct
+    
+      if [[ "$input_correct" =~ ^[yY]$ ]]; then
+        echo "${AWSCLI_BIN} configure set ${selected_key} \"${new_value}\" --profile \"${edit_profile_name}\""
+        ${AWSCLI_BIN} configure set ${selected_key} "${new_value}" --profile "${edit_profile_name}"
+        echo "Updated ${selected_key} to ${new_value} for profile ${edit_profile_name}"
+        echo
+        echo "Check new value for ${selected_key} = ${new_value} for profile ${edit_profile_name}"
+        echo "${AWSCLI_BIN} configure get ${selected_key} --profile \"${edit_profile_name}\""
+        ${AWSCLI_BIN} configure get ${selected_key} --profile "${edit_profile_name}"
+        break
+      elif [[ "$input_correct" == "exit" ]]; then
+        echo
+        echo "Exiting..."
+        break
+      else
+        echo
+        echo "Please re-enter your details."
+      fi
+    done
+    
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${awscli_profiles_menu_opt}_awscli_profiles_menu.log"
 ;;
 5)
