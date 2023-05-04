@@ -224,6 +224,7 @@ case "$awscli_profiles_menu_opt" in
       fi
     
       selected_key=${CONFIG_KEYS[selected_option - 1]}
+      echo
       read -ep "Enter the new value for ${selected_key}: " new_value
     
       echo "You have chosen to update ${selected_key} to ${new_value}"
@@ -709,12 +710,51 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      while true; do
+        read -ep "Remote server SSH port (default: 22): " remote_port
+        remote_port=${remote_port:-22}
+        read -ep "Remote server SSH username (default: root): " remote_user
+        remote_user=${remote_user:-root}
+        read -ep "Remote server SSH hostname/IP address: " remote_server
+        read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
+        tunnel_method=${tunnel_method:-nc}
+        read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
+        read -ep "Listen port for nc or socat (default: 12345): " listen_port
+        listen_port=${listen_port:-12345}
+        read -ep "Source backup directory: " source_directory
+        read -ep "Remote (destination) backup directory: " remote_directory
+        read -ep "Path to the SSH private key: " private_key
+    
+        echo
+        echo "Please confirm the entered information:"
+        echo "Remote server SSH port: $remote_port"
+        echo "Remote server SSH username: $remote_user"
+        echo "Remote server SSH hostname/IP address: $remote_server"
+        echo "Tunnel method: $tunnel_method"
+        echo "Buffer size: $buffer_size"
+        echo "Listen port: $listen_port"
+        echo "Source backup directory: $source_directory"
+        echo "Remote (destination) backup directory: $remote_directory"
+        echo "Path to the SSH private key: $private_key"
+        echo
+    
+        read -ep "Is the information correct? [y/n]: " confirmation
+    
+        if [[ "$confirmation" =~ ^[yY] ]]; then
+          break
+        else
+          echo
+          echo "Please re-enter the information."
+          echo
+        fi
+      done
+    
+      echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $source_directory -r $remote_directory -k $private_key"
+      "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$source_directory" -r "$remote_directory" -k "$private_key"
     else
       echo "aborting ..."
       exit
     fi
-
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
@@ -731,12 +771,37 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      while true; do
+        read -ep "AWS CLI profile name: " aws_profile
+        read -ep "S3 bucket name: " s3_bucket
+        read -ep "S3 endpoint URL: " s3_endpoint
+        read -ep "Source directory path: " source_directory
+    
+        echo
+        echo "Please confirm the entered information:"
+        echo "AWS CLI profile name: $aws_profile"
+        echo "S3 bucket name: $s3_bucket"
+        echo "S3 endpoint URL: $s3_endpoint"
+        echo "Source directory path: $source_directory"
+        echo
+    
+        read -ep "Is the information correct? [y/n]: " confirmation
+    
+        if [[ "$confirmation" =~ ^[yY] ]]; then
+          break
+        else
+          echo
+          echo "Please re-enter the information."
+          echo
+        fi
+      done
+    
+      echo "aws s3 sync --profile $aws_profile --endpoint-url $s3_endpoint $source_directory s3://$s3_bucket/"
+      aws s3 sync --profile "$aws_profile" --endpoint-url "$s3_endpoint" "$source_directory" "s3://$s3_bucket/"
     else
       echo "aborting ..."
       exit
     fi
-
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
@@ -753,12 +818,52 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      while true; do
+        read -ep "AWS CLI profile name: " aws_profile
+        read -ep "S3 bucket name: " s3_bucket
+        read -ep "S3 endpoint URL: " s3_endpoint
+        read -ep "File path to transfer: " file_path
+
+        read -ep "Do you want to add additional files to transfer? [y/n]: " additional_files
+        if [[ "$additional_files" =~ ^[yY] ]]; then
+          read -ep "How many additional files do you want to transfer? (Enter a number): " num_files
+          for i in $(seq 1 $num_files); do
+            read -ep "File path to transfer (file $i): " additional_file_path
+            file_path="$file_path $additional_file_path"
+          done
+        fi
+
+        echo
+        echo "Please confirm the entered information:"
+        echo "AWS CLI profile name: $aws_profile"
+        echo "S3 bucket name: $s3_bucket"
+        echo "S3 endpoint URL: $s3_endpoint"
+        echo "Files to transfer:"
+        IFS=' ' read -ra file_list <<< "$file_path"
+        for file in "${file_list[@]}"; do
+          echo "  - $file"
+        done
+        echo
+
+        read -ep "Is the information correct? [y/n]: " confirmation
+
+        if [[ "$confirmation" =~ ^[yY] ]]; then
+          break
+        else
+          echo
+          echo "Please re-enter the information."
+          echo
+        fi
+      done
+
+      for single_file in $file_path; do
+        echo "aws s3 cp --profile $aws_profile --endpoint-url $s3_endpoint $single_file s3://$s3_bucket/"
+        aws s3 cp --profile "$aws_profile" --endpoint-url "$s3_endpoint" "$single_file" "s3://$s3_bucket/"
+      done
     else
       echo "aborting ..."
       exit
     fi
-
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
