@@ -878,13 +878,31 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      while true; do
+        read -ep "AWS CLI profile name: " aws_profile
+        read -ep "S3 bucket name: " s3_bucket
+        read -ep "S3 endpoint URL: " s3_endpoint
+        read -ep "Remote S3 file path: " remote_s3_file
+        read -ep "Local directory to download the file: " local_directory
+
+        echo "AWS CLI profile: $aws_profile"
+        echo "S3 bucket name: $s3_bucket"
+        echo "S3 endpoint URL: $s3_endpoint"
+        echo "Remote S3 file path: $remote_s3_file"
+        echo "Local directory: $local_directory"
+
+        read -ep "Are the entered values correct? [y/n]: " confirm_values
+        if [[ "$confirm_values" =~ ^[yY] ]]; then
+          break
+        fi
+      done
+
+      echo "aws s3 cp --profile $aws_profile --endpoint-url $s3_endpoint s3://$s3_bucket/$remote_s3_file $local_directory/"
+      aws s3 cp --profile "$aws_profile" --endpoint-url "$s3_endpoint" "s3://$s3_bucket/$remote_s3_file" "$local_directory/"
     else
       echo "aborting ..."
       exit
     fi
-
-
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
 12)
@@ -898,13 +916,37 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      while true; do
+        read -ep "Source AWS CLI profile name: " src_aws_profile
+        read -ep "Source S3 bucket name: " src_s3_bucket
+        read -ep "Source S3 endpoint URL: " src_s3_endpoint
+        read -ep "Source S3 object path: " src_s3_object_path
+        read -ep "Destination AWS CLI profile name: " dest_aws_profile
+        read -ep "Destination S3 bucket name: " dest_s3_bucket
+        read -ep "Destination S3 endpoint URL: " dest_s3_endpoint
+        read -ep "Destination S3 object path: " dest_s3_object_path
+
+        echo "Source AWS CLI profile: $src_aws_profile"
+        echo "Source S3 bucket name: $src_s3_bucket"
+        echo "Source S3 endpoint URL: $src_s3_endpoint"
+        echo "Source S3 object path: $src_s3_object_path"
+        echo "Destination AWS CLI profile: $dest_aws_profile"
+        echo "Destination S3 bucket name: $dest_s3_bucket"
+        echo "Destination S3 endpoint URL: $dest_s3_endpoint"
+        echo "Destination S3 object path: $dest_s3_object_path"
+
+        read -ep "Are the entered values correct? [y/n]: " confirm_values
+        if [[ "$confirm_values" =~ ^[yY] ]]; then
+          break
+        fi
+      done
+
+      echo "aws s3 cp --profile $src_aws_profile --endpoint-url $src_s3_endpoint s3://$src_s3_bucket/$src_s3_object_path s3://$dest_s3_bucket/$dest_s3_object_path"
+      aws s3 cp --profile "$src_aws_profile" --endpoint-url "$src_s3_endpoint" "s3://$src_s3_bucket/$src_s3_object_path" "s3://$dest_s3_bucket/$dest_s3_object_path"
     else
       echo "aborting ..."
       exit
     fi
-
-
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
 13)
@@ -918,13 +960,14 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      read -ep "Enter the AWS CLI profile name: " aws_profile
+      read -ep "S3 endpoint URL: " s3_endpoint
+      echo "aws s3 ls --profile $aws_profile --endpoint-url $s3_endpoint"
+      aws s3 ls --profile "$aws_profile" --endpoint-url $s3_endpoint
     else
       echo "aborting ..."
       exit
     fi
-
-
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
 14)
