@@ -575,13 +575,240 @@ case "$datamenu_opt" in
     echo
     read -ep "Do you want to continue [y/n]: " datamanager_cont
     if [[ "$datamanager_cont" = [yY] ]]; then
-      echo "place holder"
+      echo
+      echo "Choose the backup method:"
+      echo "1) Backup Nginx Vhosts Data + MariaBackup MySQL Backups"
+      echo "2) Backup Nginx Vhosts Data + Backup MariaDB MySQL With mysqldump"
+      echo
+      read -ep "Enter the backup method (1 or 2): " backup_method
+      
+      case "$backup_method" in
+        1)
+          # Call the code for 4) Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+          {
+            check_for_datatools
+            echo
+            echo "Backup Nginx Vhosts Data + MariaBackup MySQL Backups"
+            echo
+            echo "Description:"
+            echo "This option is for full Nginx vhost data and MariaDB MySQL backups using"
+            echo "tar + zstd compression is optional. If you choose not to use tar + zstd"
+            echo "the local backup directories will have uncompressed data backups."
+            echo
+        
+            read -ep "Do you want to continue [y/n]: " datamanager_cont
+            if [[ "$datamanager_cont" = [yY] ]]; then
+              read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
+              if [[ "$comp_backup_opt" = [yY] ]]; then
+                "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup comp
+              else
+                "$SCRIPT_DIR/datamanagement/backups.sh" backup-all-mariabackup
+              fi
+            else
+              echo "aborting ..."
+              exit
+            fi
+          } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log"
+            if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" ]; then
+              script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log")
+              transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{print $10}' | xargs dirname)
+              # Print the extracted information
+              echo
+              if [ -d "$transfer_backup_dir" ]; then
+                echo "Backup Directory: $transfer_backup_dir"
+              else
+                echo "$transfer_backup_dir directory not found"
+              fi
+              # routine to transfer the derived backup directory names to a remote server via SSH
+              # using $SCRIPT_DIR/datamanagement/tunnel-transfers.sh tool
+              echo
+              read -ep "Do you want to transfer the backup directory to remote server via SSH? [y/n/exit]: " transfer_backup_opt
+              if [[ "$transfer_backup_opt" = [yY] ]]; then
+                # transfer backups
+                echo
+                echo "Transfer $transfer_backup_dir Directory Data To Remote Server Via SSH"
+                echo
+                echo "Description:"
+                echo "Option allows you to specify a full path to directory name for data transfer"
+                echo "to a remote server via SSH at speeds near network and disk line rates using"
+                echo "either netcat (nc) or socat compressed tunnel using zstd fast compression levels"
+                echo
+                read -ep "Do you want to continue [y/n]: " datamanager_cont
+                if [[ "$datamanager_cont" = [yY] ]]; then
+                  while true; do
+                    read -ep "Remote server SSH port (default: 22): " remote_port
+                    remote_port=${remote_port:-22}
+                    read -ep "Remote server SSH username (default: root): " remote_user
+                    remote_user=${remote_user:-root}
+                    read -ep "Remote server SSH hostname/IP address: " remote_server
+                    read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
+                    tunnel_method=${tunnel_method:-nc}
+                    read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
+                    read -ep "Listen port for nc or socat (default: 12345): " listen_port
+                    listen_port=${listen_port:-12345}
+                    read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
+                    read -ep "Remote (destination) backup directory: " remote_directory
+                    read -ep "Path to the SSH private key: " private_key
+                
+                    echo
+                    echo "Please confirm the entered information:"
+                    echo "Remote server SSH port: $remote_port"
+                    echo "Remote server SSH username: $remote_user"
+                    echo "Remote server SSH hostname/IP address: $remote_server"
+                    echo "Tunnel method: $tunnel_method"
+                    echo "Buffer size: $buffer_size"
+                    echo "Listen port: $listen_port"
+                    echo "Source backup directory: $source_directory"
+                    echo "Remote (destination) backup directory: $remote_directory"
+                    echo "Path to the SSH private key: $private_key"
+                    echo
+                
+                    read -ep "Is the information correct? [y/n]: " confirmation
+                
+                    if [[ "$confirmation" =~ ^[yY] ]]; then
+                      break
+                    else
+                      echo
+                      echo "Please re-enter the information."
+                      echo
+                    fi
+                  done
+                
+                  echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $source_directory -r $remote_directory -k $private_key"
+                  "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$source_directory" -r "$remote_directory" -k "$private_key"
+                else
+                  echo "aborting ..."
+                  exit
+                fi
+              elif [[ "$transfer_backup_opt" = 'exit' ]]; then
+                # exit
+                exit
+              else
+                # exit
+                exit
+              fi
+            fi
+        ;;
+        2)
+          # Call the code for 5) Backup Nginx Vhosts Data Only
+          # Call the code for 7) Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)
+          {
+            check_for_datatools
+            echo
+            echo "Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)"
+            echo
+            echo "Vhosts backup:"
+            echo "This option is for full Nginx vhost data backups"
+            echo "using tar + zstd compression is optional. If you choose not to use tar + zstd"
+            echo "the local backup directories will have uncompressed data backups."
+            echo
+            echo "MySQL backup:"
+            echo "For MariaDB MySQL database backups using mysqldump native client"
+            echo "client but uses faster --tab delimited backup option which backups up each MySQL"
+            echo "database table as separate .sql schema structure files + .txt data files rather"
+            echo "than as a single .sql database backup file which contains both schema + data."
+            echo "The .sql database schema only table files are never compressed while .txt data"
+            echo "files can optionally be zstd compressed or left uncompressed."
+            echo
+            echo "The routine generates a restore.sh script in the destination backup directory"
+            echo "The restore.sh can be run to restore each database or all databases on a new"
+            echo "server. If the database name already exists on the server, it will restore to"
+            echo "a new database name with suffix added _restorecopy_datetimestamp to prevent"
+            echo "overwriting the existing database name."
+            echo
+            read -ep "Do you want tar + zstd compress backup [y/n]: " comp_backup_opt
+            if [[ "$comp_backup_opt" = [yY] ]]; then
+              "$SCRIPT_DIR/datamanagement/backups.sh" backup-files comp
+              "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
+            else
+              "$SCRIPT_DIR/datamanagement/backups.sh" backup-files
+              "$SCRIPT_DIR/datamanagement/backups.sh" backup-all
+            fi
+          } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log"
+            if [ -f "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" ]; then
+              # Save the output of the script to a variable
+              script_output=$(cat "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_backupmethod-${backup_method}_datamanger_menu.log" | egrep 'log file generated: |Backup Log saved: |Backup saved to' | sed -e 's|Backup Log saved:|Vhost Backup Log saved:|' -e 's|Backup log file generated|MySQL Backup log file generated|g')
+              
+              # Extract the required information using grep and awk
+              transfer_vhost_backup_dir=$(echo "$script_output" | grep "Vhost Backup Log saved:" | awk '{print $11}' | xargs dirname)
+              transfer_backup_saved_mysql=$(echo "$script_output" | grep "Backup saved to" | head -n 1 | awk '{print $10}')
+              transfer_backup_saved_binlog=$(echo "$script_output" | grep "Backup saved to" | tail -n 1 | awk '{print $10}')
+              
+              # Print the extracted information
+              echo
+              if [ -d "$transfer_vhost_backup_dir" ]; then
+                echo "Vhost Backup Directory: $transfer_vhost_backup_dir"
+              else
+                echo "$vhost_backup_dir directory not found"
+              fi
+              if [ -d "$transfer_backup_saved_mysql" ]; then
+                echo "MySQL Backup Directory: $transfer_backup_saved_mysql"
+              else
+                echo "$backup_saved_mysql directory not found"
+              fi
+              if [ -d "$transfer_backup_saved_binlog" ]; then
+                echo "Binlog Backup Directory: $transfer_backup_saved_binlog"
+              fi
+              # routine to transfer the derived backup directory names to a remote server via SSH
+              # using $SCRIPT_DIR/datamanagement/tunnel-transfers.sh tool
+              echo
+              read -ep "Do you want to transfer the backup directories to remote server via SSH? [y/n/exit]: " transfer_backup_opt
+              if [[ "$transfer_backup_opt" = [yY] ]]; then
+                read -ep "Remote server SSH port (default: 22): " remote_port
+                remote_port=${remote_port:-22}
+                read -ep "Remote server SSH username (default: root): " remote_user
+                remote_user=${remote_user:-root}
+                read -ep "Remote server SSH hostname/IP address: " remote_server
+                read -ep "Tunnel method (nc or socat, default: nc): " tunnel_method
+                tunnel_method=${tunnel_method:-nc}
+                read -ep "Buffer size for socat (in bytes, e.g., 131072 for 128 KB): " buffer_size
+                read -ep "Listen port for nc or socat (default: 12345): " listen_port
+                listen_port=${listen_port:-12345}
+                # read -e -i "$transfer_backup_dir" -p "Source backup directory: " source_directory
+                read -ep "Remote (destination) backup directory: " remote_directory
+                read -ep "Path to the SSH private key: " private_key
+
+                # An associative array containing the directories to transfer and their corresponding subdirectories
+                declare -A directories_to_transfer=(
+                    ["$transfer_vhost_backup_dir"]="${remote_directory}/vhosts"
+                    ["$transfer_backup_saved_mysql"]="${remote_directory}/mysql"
+                    ["$transfer_backup_saved_binlog"]="${remote_directory}/mysql-binlogs"
+                )
+
+                # Iterate over the directories and execute the transfer routine for each directory
+                for transfer_backup_dir in "${!directories_to_transfer[@]}"; do
+                  remote_subdir="${directories_to_transfer[$transfer_backup_dir]}"
+                  # transfer backups
+                  echo
+                  echo "Transfer $transfer_backup_dir Directory Data To Remote Server Via SSH"
+                  echo
+                  read -ep "Do you want to continue [y/n]: " datamanager_cont
+                  if [[ "$datamanager_cont" = [yY] ]]; then                 
+                    echo "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh -p $remote_port -u $remote_user -h $remote_server -m $tunnel_method -b $buffer_size -l $listen_port -s $transfer_backup_dir -r $remote_subdir -k $private_key"
+                    "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" -p "$remote_port" -u "$remote_user" -h "$remote_server" -m "$tunnel_method" -b "$buffer_size" -l "$listen_port" -s "$transfer_backup_dir" -r "$remote_subdir" -k "$private_key"
+                  else
+                    echo "aborting ..."
+                    exit
+                  fi
+                done
+              elif [[ "$transfer_backup_opt" = 'exit' ]]; then
+                # exit
+                exit
+              else
+                # exit
+                exit
+              fi
+            fi
+        ;;
+        *)
+          echo "Invalid option. Aborting migration."
+          exit
+        ;;
+      esac
     else
       echo "aborting ..."
       exit
     fi
-
-
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
 4)
@@ -607,7 +834,6 @@ case "$datamenu_opt" in
       echo "aborting ..."
       exit
     fi
-
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
@@ -693,7 +919,6 @@ case "$datamenu_opt" in
       echo "aborting ..."
       exit
     fi
-
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${datamenu_opt}_datamanger_menu.log"
 ;;
