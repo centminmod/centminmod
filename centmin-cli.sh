@@ -29,7 +29,7 @@ DT=$(date +"%d%m%y-%H%M%S")
 branchname='130.00beta01'
 SCRIPT_MAJORVER='130'
 SCRIPT_MINORVER='00'
-SCRIPT_INCREMENTVER='321'
+SCRIPT_INCREMENTVER='322'
 SCRIPT_VERSIONSHORT="${branchname}"
 SCRIPT_VERSION="${SCRIPT_VERSIONSHORT}.b${SCRIPT_INCREMENTVER}"
 SCRIPT_DATE='31/01/23'
@@ -3985,7 +3985,7 @@ EOF
         starttime=$(TZ=UTC date +%s.%N)
         centminlog
         {
-          if [[ -d "$SCRIPT_DIR/datamanagement" ]]; then
+          if [[ -d "$SCRIPT_DIR/datamanagement" && -f "$SCRIPT_DIR/datamanagement/backups.sh" && -f "$SCRIPT_DIR/datamanagement/mariabackup-restore.sh" && -f "$SCRIPT_DIR/datamanagement/tunnel-transfers.sh" && -f "$SCRIPT_DIR/datamanagement/keygen.sh" && -f "$SCRIPT_DIR/datamanagement/awscli-get.sh" ]]; then
             datamanager_menu
           else
             cecho "Place holder for future feature allowing Centmin Mod To Centmin Mod server data migration" $boldyellow
