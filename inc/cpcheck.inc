@@ -446,7 +446,9 @@ symlink_setup_emailnotify() {
 }
 
 add_versionlocks() {
-  if [[ ! "$(yum versionlock list 2> /dev/null | grep 'LibRaw')" ]]; then
+  if [[ -f /etc/yum/pluginconf.d/versionlock.list && $(grep -c "^LibRaw$" /etc/yum/pluginconf.d/versionlock.list) -eq 0 ]]; then
+    yum -q versionlock LibRaw >/dev/null 2>&1
+  elif [[ ! "$(yum versionlock list 2> /dev/null | grep 'LibRaw')" ]]; then
     yum -q versionlock LibRaw >/dev/null 2>&1
   fi
 }
