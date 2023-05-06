@@ -1446,20 +1446,28 @@ ROF
   fi
   if [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" = '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
-    sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
-    NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    if [[ ! "$(grep 'IPV6 = "1"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+      NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    fi
   elif [[ -f /etc/csf/csf.conf && -f /etc/sysconfig/network && "$(awk -F "=" '/NETWORKING_IPV6/ {print $2}' /etc/sysconfig/network | grep 'yes' >/dev/null 2>&1; echo $?)" != '0' ]] && [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
-    sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
+    if [[ ! "$(grep 'IPV6 = "0"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+    fi
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '0' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '0' ]]; then
     # ensure CSF Firewall has IPV6 = '1' enabled if system has IPv6 networking configured
-    sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
-    NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    if [[ ! "$(grep 'IPV6 = "1"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"1\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+      NGINX_IPV='y'     # for nginx < 1.11.5 IPV6 support
+    fi
   elif [[ "$(cat /proc/sys/net/ipv6/conf/all/disable_ipv6)" -eq '1' && "$(cat /proc/sys/net/ipv6/conf/default/disable_ipv6)" -eq '1' ]]; then
-    sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
-    csf -ra >/dev/null 2>&1
+    if [[ ! "$(grep 'IPV6 = "0"' /etc/csf/csf.conf)" ]]; then
+      sed -i "s|^IPV6 = .*|IPV6 = \"0\"|" /etc/csf/csf.conf
+      csf -ra >/dev/null 2>&1
+    fi
   fi
   if [[ "$DETECH_CHANGES" = [yY] ]]; then
     service network restart >/dev/null 2>&1
