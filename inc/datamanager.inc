@@ -461,21 +461,49 @@ case "$sshkeys_menu_opt" in
     echo "Create New SSH Key For Remote Host"
     echo
     
-    # Prompt user for required input
-    read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
-    read -ep "Remote IP address: " remoteip
-    read -ep "Remote SSH port: " remoteport
-    read -ep "Remote SSH username: " remoteuser
-    read -ep "Key comment (unique identifier): " keycomment
-    read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-  
-    if [ -z "$remotessh_password" ]; then
-      # Call keygen.sh without remotessh_password
-      "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment"
-    else
-      # Call keygen.sh with remotessh_password
-      "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment" "$remotessh_password"
-    fi
+    while true; do
+      # Prompt user for required input
+      read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
+      read -ep "Remote IP address: " remoteip
+      read -ep "Remote SSH port: " remoteport
+      read -ep "Remote SSH username: " remoteuser
+      read -ep "Key comment (unique identifier): " keycomment
+      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+
+      echo "Please confirm the following information:"
+      echo "Key type: $keytype"
+      echo "Remote IP address: $remoteip"
+      echo "Remote SSH port: $remoteport"
+      echo "Remote SSH username: $remoteuser"
+      echo "Key comment: $keycomment"
+      echo "Remote SSH password: ${remotessh_password:-Not provided}"
+
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
+
+      case "$confirm_input" in
+        [Yy]* )
+          if [ -z "$remotessh_password" ]; then
+            # Call keygen.sh without remotessh_password
+            "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment"
+          else
+            # Call keygen.sh with remotessh_password
+            "$SCRIPT_DIR/datamanagement/keygen.sh" gen "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$keycomment" "$remotessh_password"
+          fi
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
+    done
+
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
 ;;
 4)
@@ -483,78 +511,6 @@ case "$sshkeys_menu_opt" in
     check_for_keygen
     echo
     echo "Use Existing SSH Key For Remote Host"
-    echo
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-5)
-  {
-    check_for_keygen
-    echo
-    echo "Rotate Existing SSH Key For Remote Host"
-    echo
-
-    # Prompt user for required input
-    read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
-    read -ep "Remote IP address: " remoteip
-    read -ep "Remote SSH port: " remoteport
-    read -ep "Remote SSH username: " remoteuser
-    read -ep "Old Key comment (unique identifier): " old_keycomment
-    read -ep "New Key comment (unique identifier): " new_keycomment
-    read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-
-    # Call keygen.sh to rotate the SSH key
-    if [ -z "$remotessh_password" ]; then
-      # Call keygen.sh without remotessh_password
-      "$SCRIPT_DIR/datamanagement/keygen.sh" rotate "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment"
-    else
-      # Call keygen.sh with remotessh_password
-      "$SCRIPT_DIR/datamanagement/keygen.sh" rotate "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment" "$remotessh_password"
-    fi
-
-    echo "SSH key rotation completed."
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-6)
-  {
-    check_for_keygen
-    echo
-    echo "Delete Existing SSH Key For Remote Host"
-    echo
-
-    # Prompt user for required input
-    read -ep "Remote IP address: " remoteip
-    read -ep "Remote SSH port: " remoteport
-    read -ep "Remote SSH username: " remoteuser
-    read -ep "Key comment (unique identifier): " keycomment
-    read -ep "Private key path (optional, leave empty if not using a specific key): " private_key_path
-    read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
-
-    # Delete the SSH key from the remote host
-    if [ -z "$private_key_path" ]; then
-      ssh_cmd="ssh"
-    else
-      ssh_cmd="ssh -i $private_key_path"
-    fi
-
-    if [ -z "$remotessh_password" ]; then
-      # Use the provided ssh command without the remotessh_password
-      $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
-    else
-      # Use the provided ssh command with the remotessh_password
-      sshpass -p "$remotessh_password" $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
-    fi
-
-    echo "SSH key deletion completed."
-
-  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
-;;
-7)
-  {
-    check_for_keygen
-    echo
-    echo "Export (Backup) Existing SSH Key"
     echo
 
     # List Registered SSH Keys
@@ -576,23 +532,229 @@ case "$sshkeys_menu_opt" in
       done <<< "$ssh_keys_info"
     fi
 
-    # Prompt user for required input
-    read -ep "Key name (without file extension): " key_name
-    read -ep "Destination path for key backup: " backup_path
+    while true; do
+      # Prompt user for required input
+      read -ep "Key name (without file extension): " key_name
+      read -ep "Remote IP address: " remoteip
+      read -ep "Remote SSH port: " remoteport
+      read -ep "Remote SSH username: " remoteuser
+      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
 
-    # Check if key files exist
-    if [[ -f "/root/.ssh/${key_name}" && -f "/root/.ssh/${key_name}.pub" ]]; then
-      # Create backup directory if it doesn't exist
-      mkdir -p "$backup_path"
+      echo "Please confirm the following information:"
+      echo "Key name: $key_name"
+      echo "Remote IP address: $remoteip"
+      echo "Remote SSH port: $remoteport"
+      echo "Remote SSH username: $remoteuser"
+      echo "Remote SSH password: ${remotessh_password:-N/A}"
 
-      # Backup the specified key files
-      cp "/root/.ssh/${key_name}" "${backup_path}/${key_name}"
-      cp "/root/.ssh/${key_name}.pub" "${backup_path}/${key_name}.pub"
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
 
-      echo "SSH key '$key_name' backed up successfully to $backup_path."
-    else
-      echo "Error: SSH key '$key_name' not found in /root/.ssh/"
-    fi
+      case "$confirm_input" in
+        [Yy]* )
+          if [[ -z "$remotessh_password" ]]; then
+            ssh-copy-id -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
+          else
+            sshpass -p "$remotessh_password" ssh-copy-id -o StrictHostKeyChecking=no -i "/root/.ssh/${key_name}" "${remoteuser}@${remoteip}" -p "${remoteport}"
+          fi
+          echo "SSH key '$key_name' copied to the remote host."
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
+    done
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+5)
+  {
+    check_for_keygen
+    echo
+    echo "Rotate Existing SSH Key For Remote Host"
+    echo
+    
+    while true; do
+      # Prompt user for required input
+      read -ep "Key type (rsa, ecdsa, ed25519): " -i "ed25519" keytype
+      read -ep "Remote IP address: " remoteip
+      read -ep "Remote SSH port: " remoteport
+      read -ep "Remote SSH username: " remoteuser
+      read -ep "Old Key comment (unique identifier): " old_keycomment
+      read -ep "New Key comment (unique identifier): " new_keycomment
+      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+
+      echo "Please confirm the following information:"
+      echo "Key type: $keytype"
+      echo "Remote IP address: $remoteip"
+      echo "Remote SSH port: $remoteport"
+      echo "Remote SSH username: $remoteuser"
+      echo "Old Key comment: $old_keycomment"
+      echo "New Key comment: $new_keycomment"
+      echo "Remote SSH password: ${remotessh_password:-Not provided}"
+
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
+
+      case "$confirm_input" in
+        [Yy]* )
+          if [ -z "$remotessh_password" ]; then
+            # Call keygen.sh without remotessh_password
+            "$SCRIPT_DIR/datamanagement/keygen.sh" rotate "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment"
+          else
+            # Call keygen.sh with remotessh_password
+            "$SCRIPT_DIR/datamanagement/keygen.sh" rotate "$keytype" "$remoteip" "$remoteport" "$remoteuser" "$old_keycomment" "$new_keycomment" "$remotessh_password"
+          fi
+          echo "SSH key rotation completed."
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
+    done
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+6)
+  {
+    check_for_keygen
+    echo
+    echo "Delete Existing SSH Key For Remote Host"
+    echo
+
+    while true; do
+      # Prompt user for required input
+      read -ep "Remote IP address: " remoteip
+      read -ep "Remote SSH port: " remoteport
+      read -ep "Remote SSH username: " remoteuser
+      read -ep "Key comment (unique identifier): " keycomment
+      read -ep "Private key path (optional, leave empty if not using a specific key): " private_key_path
+      read -ep "Remote SSH password (optional, leave empty for manual password entry): " remotessh_password
+
+      echo "Please confirm the following information:"
+      echo "Remote IP address: $remoteip"
+      echo "Remote SSH port: $remoteport"
+      echo "Remote SSH username: $remoteuser"
+      echo "Key comment: $keycomment"
+      echo "Private key path: ${private_key_path:-Not provided}"
+      echo "Remote SSH password: ${remotessh_password:-Not provided}"
+
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
+
+      case "$confirm_input" in
+        [Yy]* )
+          # Delete the SSH key from the remote host
+          if [ -z "$private_key_path" ]; then
+            ssh_cmd="ssh"
+          else
+            ssh_cmd="ssh -i $private_key_path"
+          fi
+
+          if [ -z "$remotessh_password" ]; then
+            # Use the provided ssh command without the remotessh_password
+            $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
+          else
+            # Use the provided ssh command with the remotessh_password
+            sshpass -p "$remotessh_password" $ssh_cmd "${remoteuser}@${remoteip}" -p "${remoteport}" "sed -i '/${keycomment}/d' ~/.ssh/authorized_keys"
+          fi
+
+          echo "SSH key deletion completed."
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
+    done
+
+  } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
+;;
+7)
+  {
+    check_for_keygen
+    echo
+    echo "Export (Backup) Existing SSH Key"
+    echo
+
+    while true; do
+      # List Registered SSH Keys
+      ssh_keys_info=$(ssh-add -l)
+
+      if [[ -z "$ssh_keys_info" ]]; then
+        echo "No SSH keys registered with the system's ssh-agent."
+      else
+        while IFS= read -r line; do
+          fingerprint=$(echo "$line" | awk '{print $2}')
+          echo -n "$line "
+          keyfile=$(grep -rl "$fingerprint" /root/.ssh 2>/dev/null)
+
+          if [[ -n "$keyfile" ]]; then
+            echo "- Key File: $keyfile"
+          else
+            echo "- Key File: Not found"
+          fi
+        done <<< "$ssh_keys_info"
+      fi
+
+      # Prompt user for required input
+      read -ep "Key name (without file extension): " key_name
+      read -ep "Destination path for key backup: " backup_path
+
+      echo "Please confirm the following information:"
+      echo "Key name: $key_name"
+      echo "Destination path for key backup: $backup_path"
+
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
+
+      case "$confirm_input" in
+        [Yy]* )
+          # Check if key files exist
+          if [[ -f "/root/.ssh/${key_name}" && -f "/root/.ssh/${key_name}.pub" ]]; then
+            # Create backup directory if it doesn't exist
+            mkdir -p "$backup_path"
+
+            # Backup the specified key files
+            cp "/root/.ssh/${key_name}" "${backup_path}/${key_name}"
+            cp "/root/.ssh/${key_name}.pub" "${backup_path}/${key_name}.pub"
+
+            echo "SSH key '$key_name' backed up successfully to $backup_path."
+          else
+            echo "Error: SSH key '$key_name' not found in /root/.ssh/"
+          fi
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
+    done
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
 ;;
@@ -603,21 +765,43 @@ case "$sshkeys_menu_opt" in
     echo "Backup All Existing SSH Keys"
     echo
 
-    # Prompt user for required input
-    read -ep "Destination path for SSH keys backup: " backup_path
+    while true; do
+      # Prompt user for required input
+      read -ep "Destination path for SSH keys backup: " backup_path
 
-    # Create backup directory if it doesn't exist
-    mkdir -p "$backup_path"
+      echo "Please confirm the following information:"
+      echo "Destination path for SSH keys backup: $backup_path"
 
-    # Find all private and public key files in /root/.ssh/
-    ssh_key_files=$(find /root/.ssh -type f \( -iname "*.pub" -o ! -iname "known_hosts" -o ! -iname "authorized_keys" -o ! -iname "config" \))
+      read -ep "Is the above information correct? [y/n/exit]: " confirm_input
 
-    # Backup all SSH keys
-    for key_file in $ssh_key_files; do
-      cp "$key_file" "${backup_path}/"
+      case "$confirm_input" in
+        [Yy]* )
+          # Create backup directory if it doesn't exist
+          mkdir -p "$backup_path"
+
+          # Find all private and public key files in /root/.ssh/
+          ssh_key_files=$(find /root/.ssh -type f \( -iname "*.pub" -o ! -iname "known_hosts" -o ! -iname "authorized_keys" -o ! -iname "config" \))
+
+          # Backup all SSH keys
+          for key_file in $ssh_key_files; do
+            cp "$key_file" "${backup_path}/"
+          done
+
+          echo "All SSH keys backed up successfully to $backup_path."
+          break
+          ;;
+        [Nn]* )
+          echo "Please enter the correct information."
+          ;;
+        [Ee][Xx][Ii][Tt] )
+          echo "Exiting the menu."
+          break
+          ;;
+        * )
+          echo "Please answer with 'y', 'n', or 'exit'."
+          ;;
+      esac
     done
-
-    echo "All SSH keys backed up successfully to $backup_path."
 
   } 2>&1 | tee "${CENTMINLOGDIR}/centminmod_${SCRIPT_VERSION}_${DT}_${sshkeys_menu_opt}_sshkeys_menu.log"
 ;;
