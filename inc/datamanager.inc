@@ -447,6 +447,7 @@ case "$sshkeys_menu_opt" in
     read -ep "Enter the path to the existing SSH private key file: " private_key_path
 
     if [[ -f "$private_key_path" ]]; then
+      eval "$(ssh-agent -s)"
       ssh-add "$private_key_path"
       echo "SSH private key registered with the system's ssh-agent."
     else

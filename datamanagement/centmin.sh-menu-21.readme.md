@@ -435,6 +435,74 @@ This option enables you to transfer directory data from your current server to a
 
 After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
 
+For example if you used `centmin.sh` menu `option 21` submenu `option 4` to create a Nginx vhost data + MariaBackup backup file at `/home/databackup/070523-072252/centminmod_backup.tar.zst`. You can transfer the directory contents for `/home/databackup/070523-072252` to a remote server's `/home/remotebackup` directory via SSH.
+
+```
+--------------------------------------------------------
+     Centmin Mod Data Management        
+--------------------------------------------------------
+1).   Manage SSH Keys
+2).   Manage AWS CLI S3 Profile Credentials
+3).   Migrate Centmin Mod Data To New Centmin Mod Server
+4).   Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+5).   Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)
+6).   Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)
+7).   Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)
+8).   Transfer Directory Data To Remote Server Via SSH
+9).   Transfer Directory Data To S3 Compatible Storage
+10).  Transfer Files To S3 Compatible Storage
+11).  Download S3 Compatible Stored Data To Server
+12).  S3 To S3 Compatible Storage Transfers
+13).  List S3 Storage Buckets
+14).  Back to Main menu
+--------------------------------------------------------
+Enter option [ 1 - 14 ] 8
+--------------------------------------------------------
+```
+```
+Transfer Directory Data To Remote Server Via SSH
+
+Description:
+Option allows you to specify a full path to directory name for data transfer
+to a remote server via SSH at speeds near network and disk line rates using
+either netcat (nc) or socat compressed tunnel using zstd fast compression levels
+
+Do you want to continue [y/n]: y
+Remote server SSH port (default: 22): 22
+Remote server SSH username (default: root): root
+Remote server SSH hostname/IP address: 123.123.123.123
+Tunnel method (nc or socat, default: nc): nc
+Buffer size for socat (in bytes, e.g., 131072 for 128 KB): 262144
+Listen port for nc or socat (default: 12345): 12345
+Source backup directory: /home/databackup/070523-072252
+Remote (destination) backup directory: /home/remotebackup
+Path to the SSH private key: /root/.ssh/my1.key
+
+Please confirm the entered information:
+Remote server SSH port: 22
+Remote server SSH username: root
+Remote server SSH hostname/IP address: 123.123.123.123
+Tunnel method: nc
+Buffer size: 262144
+Listen port: 12345
+Source backup directory: /home/databackup/070523-072252
+Remote (destination) backup directory: /home/remotebackup
+Path to the SSH private key: /root/.ssh/my1.key
+
+Is the information correct? [y/n]: y
+/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s /home/databackup/070523-072252 -r /home/remotebackup -k /root/.ssh/my1.key
+ 245MiB 0:00:00 [ 345MiB/s] [=================================================================>] 100%            
+Transfer completed successfully in 1 seconds.
+```
+
+Contents of remote server's `/home/remotebackup/` directory
+
+```
+ls -lAh /home/remotebackup/
+-rw-r--r-- 1 root root 245M May  7 07:23 /home/remotebackup/centminmod_backup.tar.zst
+-rw-r--r-- 1 root root 1.6M May  7 07:23 /home/remotebackup/files-backup_070523-072252.log
+```
+
 ### Submenu Option 9: Transfer Directory Data To S3 Compatible Storage
 
 This option allows you to transfer directory data from your current server to S3 compatible storage. The following information will be required:
