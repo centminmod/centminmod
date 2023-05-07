@@ -245,6 +245,152 @@ After entering the required information, you'll be asked to confirm the details 
 - If you choose to continue, you will be asked, "Do you want tar + zstd compress backup [y/n]:". Enter "y" to create a tar + zstd compressed backup or "n" for an uncompressed backup.
 - After making your selection, the backup process will commence, and the progress will be logged in the specified log file.
 
+For example, the resulting `/home/databackup/070523-072252/centminmod_backup.tar.zst` backup file contains:
+
+1. Nginx Vhosts data, which includes:
+   - Nginx configuration files
+   - Web root directories for each domain
+   - Any additional related files or directories
+2. MariaDB MySQL data backed up using MariaBackup
+   - All the database files and related information required to restore the databases
+
+To restore the data from the backup, follow these steps:
+
+1. Transfer the backup file to the server where you want to restore the data.
+2. Extract the contents of the backup file using the command: 
+   ```
+   tar -I zstd -xvf /home/databackup/070523-072252/centminmod_backup.tar.zst -C /home/restoredata
+   ```
+3. Follow the instructions in the `mariabackup-restore.sh` script located in the extracted backup directory (e.g., `/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`) to restore the MariaDB MySQL databases.
+
+When you extract the backup `centminmod_backup.tar.zst` file to `/home/restoredata`, you'll find backup directories and files which correspond with the relative directory paths to root `/` for `/etc`, `/home`, `/root` and `/usr` respectively.
+
+```
+ls -lAh /home/restoredata/
+total 16K
+drwxr-xr-x 3 root root 4.0K May  7 07:33 etc
+drwxr-xr-x 3 root root 4.0K May  7 07:33 home
+drwxr-xr-x 3 root root 4.0K May  7 07:33 root
+drwxr-xr-x 3 root root 4.0K May  7 07:33 usr
+```
+
+An breakdown of backup directory structure 6 directory levels max deep with the files hidden for easier visual view. Where:
+
+1. `/home/restoredata/etc/centminmod` is the backup data for `/etc/centminmod`
+2. `/home/restoredata/home/databackup/070523-072252/domains_tmp` is the backup data for `/home/nginx/domains` for Nginx vhost directories
+3. `/home/restoredata/home/databackup/070523-072252/mariadb_tmp` is the backup data for `/var/lib/mysql` MySQL data directory which also contains the MariaBackup MySQL data restore script at `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh`
+4. `/home/restoredata/root/tools` is the backup data for `/root/tools`
+5. `/home/restoredata/usr/local/nginx/` is the backup data for `/usr/local/nginx`
+
+```
+tree -d -L 6 /home/restoredata/
+
+/home/restoredata/
+├── etc
+│   └── centminmod
+│       ├── awscli
+│       │   ├── backup-profiles
+│       │   └── export-profiles
+│       ├── cronjobs
+│       └── php.d
+├── home
+│   └── databackup
+│       └── 070523-072252
+│           ├── domains_tmp
+│           │   ├── demodomain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── log4j.domain.com
+│           │   │   ├── backup
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   └── public
+│           │   ├── domain2.com
+│           │   │   ├── backup
+│           │   │   ├── cronjobs
+│           │   │   ├── log
+│           │   │   ├── private
+│           │   │   ├── public
+│           │   │   └── sucuri_data_storage
+│           │   └── domain3.com
+│           │       ├── backup
+│           │       ├── log
+│           │       ├── private
+│           │       └── public
+│           └── mariadb_tmp
+│               ├── mysql
+│               ├── performance_schema
+│               ├── sakila
+│               └── wp3233312196db_24171
+├── root
+│   └── tools
+│       ├── acme.sh
+│       │   ├── deploy
+│       │   ├── dnsapi
+│       │   └── notify
+│       ├── awscli
+│       │   └── aws
+│       │       └── dist
+│       │           ├── awscli
+│       │           ├── cryptography
+│       │           ├── docutils
+│       │           └── lib-dynload
+│       └── keygen
+└── usr
+    └── local
+        └── nginx
+            ├── conf
+            │   ├── acmevhostbackup
+            │   ├── autoprotect
+            │   │   ├── demodomain.com
+            │   │   ├── domain.com
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   ├── conf.d
+            │   ├── phpfpmd
+            │   ├── ssl
+            │   │   ├── cloudflare
+            │   │   ├── log4j.domain.com
+            │   │   ├── domain2.com
+            │   │   └── domain3.com
+            │   └── wpincludes
+            │       └── domain2.com
+            └── html
+
+78 directories
+```
+
+The `/home/restoredata/home/databackup/070523-072252/mariadb_tmp/mariabackup-restore.sh` script has 2 options to restore MariaDB MySQL data either via `copy-back` or `move-back`. 
+
+1. `copy-back`: This option copies the backup files back to the original data directory at `/var/lib/mysql`. The backup files themselves are not altered or removed. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with copying the backup files back to the original data directory at `/var/lib/mysql`.
+2. `move-back`: This option moves the backup files back to the original data directory at `/var/lib/mysql`. Unlike `copy-back`, the backup files are removed from the backup directory. The script checks if the provided backup directory is valid and if the backup and current MariaDB versions match. If everything is fine, it proceeds with moving the backup files back to the original data directory at `/var/lib/mysql`.
+
+Both options involve the following steps:
+
+* The script first checks if the provided directory contains valid MariaBackup data.
+* It then compares the MariaDB version used for the backup with the version running on the current system. The script aborts the restore process if the versions do not match.
+* The MariaDB server is stopped, and the existing data directory is backed up to `/var/lib/mysql-copy-datetimestamp` and then `/var/lib/mysql` data directory is emptied.
+* The ownership of the data directory is changed to `mysql:mysql`.
+* The MariaDB server is started.
+* Depending on the option chosen (`copy-back` or `move-back`), the script copies or moves the backup files back to the original data directory.
+
+`mariabackup-restore.sh` Usage help output:
+
+```
+./mariabackup-restore.sh
+Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
+```
+
+**Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
+
 ### Submenu Option 5: Backup Nginx Vhosts Data Only
 
 - This option allows you to create a backup of Nginx Vhosts data only, without including any MariaDB MySQL data.
