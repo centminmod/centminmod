@@ -514,6 +514,65 @@ This option allows you to transfer directory data from your current server to S3
 
 After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
 
+For example if you used `centmin.sh` menu `option 21` submenu `option 4` to create a Nginx vhost data + MariaBackup backup file at `/home/databackup/070523-072252/centminmod_backup.tar.zst`. You can transfer the directory contents for `/home/databackup/070523-072252` to Cloudflare R2 S3 bucket named `BUCKETNAME`
+
+```
+--------------------------------------------------------
+     Centmin Mod Data Management        
+--------------------------------------------------------
+1).   Manage SSH Keys
+2).   Manage AWS CLI S3 Profile Credentials
+3).   Migrate Centmin Mod Data To New Centmin Mod Server
+4).   Backup Nginx Vhosts Data + MariaBackup MySQL Backups
+5).   Backup Nginx Vhosts Data Only (no MariaDB MySQL backups)
+6).   Backup MariaDB MySQL With MariaBackup Only (no Vhosts Data backups)
+7).   Backup MariaDB MySQL With mysqldump only (no Vhosts Data backups)
+8).   Transfer Directory Data To Remote Server Via SSH
+9).   Transfer Directory Data To S3 Compatible Storage
+10).  Transfer Files To S3 Compatible Storage
+11).  Download S3 Compatible Stored Data To Server
+12).  S3 To S3 Compatible Storage Transfers
+13).  List S3 Storage Buckets
+14).  Back to Main menu
+--------------------------------------------------------
+Enter option [ 1 - 14 ] 9
+--------------------------------------------------------
+```
+```
+Transfer Directory Data To S3 Compatible Storage
+
+Description:
+Option allows you to specify a full path to directory name for data transfer
+to a S3 compatible storage provider like Amazon S3, Cloudflare R2, Backblaze
+DigitalOcean, Vultr, Linode
+
+Do you want to continue [y/n]: y
+AWS CLI profile name: r2
+S3 bucket name: BUCKETNAME
+S3 endpoint URL: https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
+Source directory path: /home/databackup/070523-072252
+
+Please confirm the entered information:
+AWS CLI profile name: r2
+S3 bucket name: BUCKETNAME
+S3 endpoint URL: https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
+Source directory path: /home/databackup/070523-072252
+
+Is the information correct? [y/n]: y
+aws s3 sync --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252 s3://BUCKETNAME/
+upload: ../../../../home/databackup/070523-072252/files-backup_070523-072252.log to s3://BUCKETNAME/files-backup_070523-072252.log
+upload: ../../../../home/databackup/070523-072252/centminmod_backup.tar.zst to s3://BUCKETNAME/centminmod_backup.tar.zst
+```
+
+Contents of Cloudflare R2 S3 bucket named `BUCKETNAME`
+
+```
+aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com s3://BUCKETNAME
+
+2023-05-07 11:40:04  256261518 centminmod_backup.tar.zst
+2023-05-07 11:39:47    1595586 files-backup_070523-072252.log
+```
+
 ### Submenu Option 10: Transfer Files To S3 Compatible Storage
 
 This option enables you to transfer individual files from your current server to S3 compatible storage. The following information will be required:
