@@ -652,12 +652,52 @@ aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarest
 2023-05-07 11:39:47    1595586 files-backup_070523-072252.log
 ```
 
+
+Linode S3 object storage
+
+```
+aws s3 ls --profile linode --endpoint-url=https://us-east-1.linodeobjects.com s3://BUCKETNAME
+```
+
+BackBlaze B2 object storage
+
+```
+aws s3 ls --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com s3://BUCKETNAME
+```
+
+DigitalOcean S3 object storage
+
+```
+aws s3 ls --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com s3://BUCKETNAME
+```
+
 #### Submenu Option 9 Command Line:
 
 You can also use equivalent SSH command line below based on above input prompt values:
 
+
+Cloudflare R2 S3:
+
 ```
 aws s3 sync --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252 s3://BUCKETNAME/
+```
+
+Linode S3 object storage
+
+```
+aws s3 sync --profile linode --endpoint-url=https://us-east-1.linodeobjects.com /home/databackup/070523-072252 s3://BUCKETNAME/
+```
+
+BackBlaze B2 object storage
+
+```
+aws s3 sync --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com /home/databackup/070523-072252 s3://BUCKETNAME/
+```
+
+DigitalOcean S3 object storage
+
+```
+aws s3 sync --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com /home/databackup/070523-072252 s3://BUCKETNAME/
 ```
 
 ### Submenu Option 10: Transfer Files To S3 Compatible Storage
@@ -676,8 +716,29 @@ After entering the information, you will be asked to confirm the entered details
 
 You can also use equivalent SSH command line below based on above input prompt values transferring file `/home/databackup/070523-072252/centminmod_backup.tar.zst` to S3 bucket named `BUCKETNAME`:
 
+
+Cloudflare R2 S3:
+
 ```
 aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
+```
+
+Linode S3 object storage
+
+```
+aws s3 cp --profile linode --endpoint-url=https://us-east-1.linodeobjects.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
+```
+
+BackBlaze B2 object storage
+
+```
+aws s3 cp --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
+```
+
+DigitalOcean S3 object storage
+
+```
+aws s3 cp --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
 ```
 
 ### Submenu Option 11: Download S3 Compatible Stored Data To Server
@@ -696,8 +757,29 @@ After entering the information, you will be asked to confirm the entered details
 
 You can also use equivalent SSH command line below based on above input prompt values downloading file to local directory at `/home/localdirectory`:
 
+
+Cloudflare R2 S3:
+
 ```
 aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
+```
+
+Linode S3 object storage
+
+```
+aws s3 cp --profile linode --endpoint-url=https://us-east-1.linodeobjects.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
+```
+
+BackBlaze B2 object storage
+
+```
+aws s3 cp --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
+```
+
+DigitalOcean S3 object storage
+
+```
+aws s3 cp --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
 ```
 
 ### Submenu Option 12: S3 To S3 Compatible Storage Transfers
@@ -719,8 +801,29 @@ After entering the information, you will be asked to confirm the entered details
 
 You can also use equivalent SSH command line below based on above input prompt values transferring file `centminmod_backup.tar.zst` from `BUCKETNAME1` to `BUCKETNAME2`:
 
+
+Cloudflare R2 S3:
+
 ```
 aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
+```
+
+Linode S3 object storage
+
+```
+aws s3 cp --profile linode --endpoint-url=https://us-east-1.linodeobjects.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
+```
+
+BackBlaze B2 object storage
+
+```
+aws s3 cp --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
+```
+
+DigitalOcean S3 object storage
+
+```
+aws s3 cp --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
 ```
 
 ### Submenu Option 13: List S3 Storage Buckets
@@ -738,8 +841,28 @@ After entering the required information, the script will list all your S3 storag
 
 You can also use equivalent SSH command line below based on above input prompt values:
 
+Cloudflare R2 S3
+
 ```
 aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
+```
+
+Linode S3 object storage
+
+```
+aws s3 ls --profile linode --endpoint-url=https://us-east-1.linodeobjects.com
+```
+
+BackBlaze B2 object storage
+
+```
+aws s3 ls --profile b2 --endpoint-url=https://s3.us-west-001.backblazeb2.com
+```
+
+DigitalOcean S3 object storage
+
+```
+aws s3 ls --profile do --endpoint-url=https://sfo2.digitaloceanspaces.com
 ```
 
 ### Submenu Option 14: Back to Main Menu
