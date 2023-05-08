@@ -25,16 +25,27 @@ This guide provides an overview of centmin.sh menu option 21 in Centmin Mod, whi
     - [7. Backup All Existing AWS CLI S3 Profiles](#7-backup-all-existing-aws-cli-s3-profiles)
     - [8. Back to Main Menu](#8-back-to-main-menu)
   - [Submenu Option 3: Migrate Centmin Mod Data To New Centmin Mod Server](#submenu-option-3-migrate-centmin-mod-data-to-new-centmin-mod-server)
+    * [Submenu Option 3 Command Line:](#submenu-option-3-command-line)
   - [Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups](#submenu-option-4-backup-nginx-vhosts-data--mariabackup-mysql-backups)
+    * [Submenu Option 4 Command Line:](#submenu-option-4-command-line)
   - [Submenu Option 5: Backup Nginx Vhosts Data Only](#submenu-option-5-backup-nginx-vhosts-data-only)
+    * [Submenu Option 5 Command Line:](#submenu-option-5-command-line)
   - [Submenu Option 6: Backup MariaDB MySQL With MariaBackup Only](#submenu-option-6-backup-mariadb-mysql-with-mariabackup-only)
+    * [Submenu Option 6 Command Line:](#submenu-option-6-command-line)
   - [Submenu Option 7: Backup MariaDB MySQL With mysqldump Only](#submenu-option-7-backup-mariadb-mysql-with-mysqldump-only)
+    * [Submenu Option 7 Command Line:](#submenu-option-7-command-line)
   - [Submenu Option 8: Transfer Directory Data To Remote Server Via SSH](#submenu-option-8-transfer-directory-data-to-remote-server-via-ssh)
+    * [Submenu Option 8 Command Line:](#submenu-option-8-command-line)
   - [Submenu Option 9: Transfer Directory Data To S3 Compatible Storage](#submenu-option-9-transfer-directory-data-to-s3-compatible-storage)
+    * [Submenu Option 9 Command Line:](#submenu-option-9-command-line)
   - [Submenu Option 10: Transfer Files To S3 Compatible Storage](#submenu-option-10-transfer-files-to-s3-compatible-storage)
+    * [Submenu Option 10 Command Line:](#submenu-option-10-command-line)
   - [Submenu Option 11: Download S3 Compatible Stored Data To Server](#submenu-option-11-download-s3-compatible-stored-data-to-server)
+    * [Submenu Option 11 Command Line:](#submenu-option-11-command-line)
   - [Submenu Option 12: S3 To S3 Compatible Storage Transfers](#submenu-option-12-s3-to-s3-compatible-storage-transfers)
+    * [Submenu Option 12 Command Line:](#submenu-option-12-command-line)
   - [Submenu Option 13: List S3 Storage Buckets](#submenu-option-13-list-s3-storage-buckets)
+    * [Submenu Option 13 Command Line:](#submenu-option-13-command-line)
   - [Submenu Option 14: Back to Main Menu](#submenu-option-14-back-to-main-menu)
 
 
@@ -237,6 +248,26 @@ When using the "Migrate Centmin Mod Data To New Centmin Mod Server" option, you'
 
 After entering the required information, you'll be asked to confirm the details before proceeding with the migration process.
 
+#### Submenu Option 3 Command Line:
+
+You can also initiate the option at SSH command line which would consist of multiple commands:
+
+With tar + zstd compression:
+
+```
+# backup Nginx vhost data + MariaBackup MySQL data
+{ /usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup comp } 2>&1 | tee backup-all.log
+
+# inspect backup-all.log to get the backup directory location $transfer_backup_dir
+script_output=$(cat backup-all.log)
+transfer_backup_dir=$(echo "$script_output" | grep 'Backup Log saved: ' | awk '{print $10}' | xargs dirname)
+
+# transfer $transfer_backup_dir backup directory to remote server via SSH with root@123.123.123.123 user
+# port 22 using netcat (nc) listening on port 12334 using zstd compressed tunnel with 262144 byte size
+# transfer buffer to remote server's /home/remotebackup directory using SSH private key /root/.ssh/my1.key
+/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s ${transfer_backup_dir} -r /home/remotebackup -k /root/.ssh/my1.key
+```
+
 ### Submenu Option 4: Backup Nginx Vhosts Data + MariaBackup MySQL Backups
 
 - This option allows you to create a backup of both Nginx Vhosts data and MariaDB MySQL data using MariaBackup.
@@ -391,6 +422,22 @@ Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
 
 **Note:** Make sure to adjust the paths in the commands above to match the actual location of your backup files.
 
+#### Submenu Option 4 Command Line:
+
+You can also initiate the option at SSH command line:
+
+With tar + zstd compression:
+
+```
+/usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup comp
+```
+
+Tar without zstd compression:
+
+```
+/usr/local/src/centminmod/datamanagement/backups.sh backup-all-mariabackup
+```
+
 ### Submenu Option 5: Backup Nginx Vhosts Data Only
 
 - This option allows you to create a backup of Nginx Vhosts data only, without including any MariaDB MySQL data.
@@ -398,6 +445,14 @@ Usage: ./mariabackup-restore.sh [copy-back|move-back] /path/to/backup/dir
 - When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with the backup or "n" to abort the process.
 - If you choose to continue, you will be asked, "Do you want tar + zstd compress backup [y/n]:". Enter "y" to create a tar + zstd compressed backup or "n" for an uncompressed backup.
 - After making your selection, the backup process will commence, and the progress will be logged in the specified log file.
+
+#### Submenu Option 5 Command Line:
+
+You can also initiate the option at SSH command line:
+
+```
+/usr/local/src/centminmod/datamanagement/backups.sh backup-files
+```
 
 ### Submenu Option 6: Backup MariaDB MySQL With MariaBackup Only
 
@@ -409,6 +464,14 @@ When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with t
 
 After making your selection, the backup process will commence, and the progress will be logged in the specified log file.
 
+#### Submenu Option 6 Command Line:
+
+You can also initiate the option at SSH command line:
+
+```
+/usr/local/src/centminmod/datamanagement/backups.sh backup-mariabackup
+```
+
 ### Submenu Option 7: Backup MariaDB MySQL With mysqldump Only
 
 This option allows you to create a backup of MariaDB MySQL databases using mysqldump without including any Nginx Vhosts data backups. The backup process uses the faster `--tab` delimited backup option, which creates separate `.sql` schema structure files and `.txt` data files for each MySQL database table, instead of a single `.sql` file containing both schema and data.
@@ -418,6 +481,14 @@ The `.sql` database schema-only table files are not compressed, while the `.txt`
 During the backup, a `restore.sh` script is generated in the destination backup directory, which can be run to restore each database or all databases on a new server. If the database name already exists on the server, the restore process will create a new database with a suffix `_restorecopy_datetimestamp` to prevent overwriting the existing database.
 
 When prompted with "Do you want to continue [y/n]:", enter "y" to proceed with the backup or "n" to abort the process.
+
+#### Submenu Option 7 Command Line:
+
+You can also initiate the option at SSH command line:
+
+```
+/usr/local/src/centminmod/datamanagement/backups.sh backup-all
+```
 
 ### Submenu Option 8: Transfer Directory Data To Remote Server Via SSH
 
@@ -503,6 +574,14 @@ ls -lAh /home/remotebackup/
 -rw-r--r-- 1 root root 1.6M May  7 07:23 /home/remotebackup/files-backup_070523-072252.log
 ```
 
+#### Submenu Option 8 Command Line:
+
+You can also use equivalent SSH command line below based on above input prompt values:
+
+```
+/usr/local/src/centminmod/datamanagement/tunnel-transfers.sh -p 22 -u root -h 123.123.123.123 -m nc -b 262144 -l 12345 -s /home/databackup/070523-072252 -r /home/remotebackup -k /root/.ssh/my1.key
+```
+
 ### Submenu Option 9: Transfer Directory Data To S3 Compatible Storage
 
 This option allows you to transfer directory data from your current server to S3 compatible storage. The following information will be required:
@@ -573,6 +652,14 @@ aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarest
 2023-05-07 11:39:47    1595586 files-backup_070523-072252.log
 ```
 
+#### Submenu Option 9 Command Line:
+
+You can also use equivalent SSH command line below based on above input prompt values:
+
+```
+aws s3 sync --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252 s3://BUCKETNAME/
+```
+
 ### Submenu Option 10: Transfer Files To S3 Compatible Storage
 
 This option enables you to transfer individual files from your current server to S3 compatible storage. The following information will be required:
@@ -585,6 +672,14 @@ This option enables you to transfer individual files from your current server to
 
 After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
 
+#### Submenu Option 10 Command Line:
+
+You can also use equivalent SSH command line below based on above input prompt values transferring file `/home/databackup/070523-072252/centminmod_backup.tar.zst` to S3 bucket named `BUCKETNAME`:
+
+```
+aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com /home/databackup/070523-072252/centminmod_backup.tar.zst s3://BUCKETNAME/
+```
+
 ### Submenu Option 11: Download S3 Compatible Stored Data To Server
 
 This option allows you to download data stored in S3 compatible storage to your current server. The following information will be required:
@@ -596,6 +691,14 @@ This option allows you to download data stored in S3 compatible storage to your 
 5. Local directory to download the file: Enter the local directory path where you want to download the file on your server.
 
 After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
+
+#### Submenu Option 11 Command Line:
+
+You can also use equivalent SSH command line below based on above input prompt values downloading file to local directory at `/home/localdirectory`:
+
+```
+aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com s3://BUCKETNAME/centminmod_backup.tar.zst" /home/localdirectory
+```
 
 ### Submenu Option 12: S3 To S3 Compatible Storage Transfers
 
@@ -612,6 +715,14 @@ This option enables you to transfer data between two S3 compatible storage syste
 
 After entering the information, you will be asked to confirm the entered details. If the information is correct, the script will proceed with the data transfer. If not, you will be prompted to re-enter the information.
 
+#### Submenu Option 12 Command Line:
+
+You can also use equivalent SSH command line below based on above input prompt values transferring file `centminmod_backup.tar.zst` from `BUCKETNAME1` to `BUCKETNAME2`:
+
+```
+aws s3 cp --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com "s3://BUCKETNAME1/centminmod_backup.tar.zst" "s3://BUCKETNAME2/centminmod_backup.tar.zst"
+```
+
 ### Submenu Option 13: List S3 Storage Buckets
 
 This option allows you to list all your S3 storage buckets registered with the AWS CLI tool. The following information will be required:
@@ -622,6 +733,14 @@ To use this option, you will be prompted for the following information:
 2. S3 endpoint URL: Provide the endpoint URL of the S3 compatible storage provider (e.g., Amazon S3, Cloudflare R2, Backblaze, DigitalOcean, Vultr, Linode).
 
 After entering the required information, the script will list all your S3 storage buckets registered with the AWS CLI tool.
+
+#### Submenu Option 13 Command Line:
+
+You can also use equivalent SSH command line below based on above input prompt values:
+
+```
+aws s3 ls --profile r2 --endpoint-url https://YOUR_CF_ACCOUNT_ID.r2.cloudflarestorage.com
+```
 
 ### Submenu Option 14: Back to Main Menu
 
