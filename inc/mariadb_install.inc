@@ -1,8 +1,14 @@
 perdbiinstall() {
     # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
+perdbiinstall() {
+    # PERLDBICHECK=$(rpm -qa perl-DBD-MySQL)
     if [[ $(rpm -q perl-DBD-MySQL >/dev/null 2>&1; echo $?) != '0' ]]; then
-        yum${CACHESKIP} -q -y install perl-DBD-MySQL
+        yum${CACHESKIP} -q -y install perl-DBD-MySQL --disableplugin=priorities
     fi
+    if [[ $(rpm -q net-snmp-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
+        yum${CACHESKIP} -q -y install cyrus-imapd mytop net-snmp net-snmp-agent-libs net-snmp-devel --disableplugin=priorities
+    fi
+}
 }
 
 mysqlinitfix() {

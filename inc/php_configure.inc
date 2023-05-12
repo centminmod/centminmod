@@ -284,7 +284,7 @@ fi
 if [[ "$CENTOS_SEVEN" -eq '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9' ]]; then
   if [[ "$PHPMVER" = 5.5 || "$PHPMUVER" = 5.5 || "$PHPMVER" = 5.6 || "$PHPMUVER" = 5.6 || "$PHPMVER" = 7.0 || "$PHPMUVER" = 7.0 || "$PHPMVER" = 7.1 || "$PHPMUVER" = 7.1 || "$PHPMVER" = 7.2 || "$PHPMUVER" = 7.2 || "$PHPMVER" = 7.3 || "$PHPMUVER" = 7.3 || "$PHPMVER" = 7.4 || "$PHPMUVER" = 7.4 || "$PHPMVER" = 7.5 || "$PHPMUVER" = 7.5 || "$PHPMVER" = 8.0 || "$PHPMUVER" = 8.0 || "$PHPMVER" = 8.1 || "$PHPMUVER" = 8.1 || "$PHPMVER" = 8.2 || "$PHPMUVER" = 8.2 || "$PHPVER_ID" -ge '80000' ]]; then
     if [[ $(rpm -q systemd-devel >/dev/null 2>&1; echo $?) != '0' ]]; then
-      yum -y -q install systemd-devel >/dev/null 2>&1
+      yum -y install systemd-devel --disableplugin=priorities >/dev/null 2>&1
     fi
     FPMSYSTEMD_INTEGRATEOPT=' --with-fpm-systemd'
   else
