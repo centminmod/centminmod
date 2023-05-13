@@ -1325,8 +1325,12 @@ update_nginxconf() {
       # http://hg.nginx.org/nginx/rev/f790816a0e87
       sed -i 's|keepalive_requests .*|keepalive_requests  50000;|' /usr/local/nginx/conf/nginx.conf
     fi
-    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' ]]; then
-      sed -i 's|worker_connections .*|worker_connections  100000;|' /usr/local/nginx/conf/nginx.conf
+    if [[ "$NGX_KEEPALIVEREQUESTS" -eq '50000' ]]; then
+      # http://hg.nginx.org/nginx/rev/f790816a0e87
+      sed -i 's|keepalive_requests .*|keepalive_requests  100000;|' /usr/local/nginx/conf/nginx.conf
+    fi
+    if [[ "$NGX_WRKCON" -eq '4096' || "$NGX_WRKCON" -eq '10000' || "$NGX_WRKCON" -eq '50000' || "$NGX_WRKCON" -eq '80000' || "$NGX_WRKCON" -eq '100000' ]]; then
+      sed -i 's|worker_connections .*|worker_connections  300000;|' /usr/local/nginx/conf/nginx.conf
     fi
     if [[ "$(echo $NGX_KT | grep -o 's')" = 's' ]]; then
       NGX_KT=$(echo $NGX_KT | sed -e 's|s||g')
@@ -3111,7 +3115,7 @@ net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
 net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240

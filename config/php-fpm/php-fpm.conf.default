@@ -171,7 +171,7 @@ pm.max_children = 50
 ; This can be useful to work around memory leaks in 3rd party libraries. For
 ; endless request processing specify '0'. Equivalent to PHP_FCGI_MAX_REQUESTS.
 ; Default Value: 0
-;pm.max_requests = 5000
+;pm.max_requests = 100000
 
 ; The URI to view the FPM status page. If this value is not set, no URI will be
 ; recognized as a status page. By default, the status page shows the following

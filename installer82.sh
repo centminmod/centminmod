@@ -1449,7 +1449,7 @@ net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
 net.core.optmem_max=$TCP_OPTMEM_MAX
-net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
@@ -1516,7 +1516,7 @@ net.ipv4.tcp_wmem=8192 65536 16777216
 net.core.netdev_max_backlog=65536
 net.core.somaxconn=65535
 net.core.optmem_max=8192
-net.ipv4.tcp_fin_timeout=10
+net.ipv4.tcp_fin_timeout=30
 net.ipv4.tcp_keepalive_intvl=30
 net.ipv4.tcp_keepalive_probes=3
 net.ipv4.tcp_keepalive_time=240
@@ -1822,7 +1822,7 @@ cd $INSTALLDIR
 
 # switch from PHP 5.4.41 to 5.6.9 default with Zend Opcache
 PHPVERLATEST=$(curl -${ipv_forceopt}sL https://www.php.net/downloads.php| egrep -o "php\-[0-9.]+\.tar[.a-z]*" | grep -v '.asc' | awk -F "php-" '/.tar.gz$/ {print $2}' | sed -e 's|.tar.gz||g' | uniq | grep '8.2' | head -n1)
-PHPVERLATEST=${PHPVERLATEST:-"8.2.3"}
+PHPVERLATEST=${PHPVERLATEST:-"8.2.6"}
 sed -i "s|^PHP_VERSION='.*'|PHP_VERSION='$PHPVERLATEST'|" centmin.sh
 sed -i "s|ZOPCACHEDFT='n'|ZOPCACHEDFT='y'|" centmin.sh
 
