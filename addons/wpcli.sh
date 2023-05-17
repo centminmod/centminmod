@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ############################################################################
 # Official centminmod.com addon: wpcli.sh installer
 # written by George Liu (eva2000) centminmod.com

@@ -1,4 +1,5 @@
 #/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ####################################################################
 # for configuring /etc/resolv.conf dns
 # written by George Liu (eva2000) centminmod.com

@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ###################################################################
 # opendkim install and configuration for centminmod.com LEMP stack
 # https://community.centminmod.com/posts/29878/

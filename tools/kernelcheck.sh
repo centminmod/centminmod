@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 #################################################################
 # kernelcheck.sh for centminmod.com
 # https://www.cloudlinux.com/all-products/product-overview/kernelcare?campaign=CentminMod

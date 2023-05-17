@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ##########################################################################
 # check centminmod download domain's dns records and whois info
 # keep a log of changes and in future alert to changes as a security 
