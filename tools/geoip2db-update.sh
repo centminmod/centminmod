@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ############################################################
 # update centmin mod 124.00stable & newer's optional
 # geoip2 lite nginx module's database for geoip2 city

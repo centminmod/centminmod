@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 #################################################################
 # add sudo user script as discussed at
 # http://stackoverflow.com/questions/8784761/adding-users-to-sudoers-through-shell-script?lq=1

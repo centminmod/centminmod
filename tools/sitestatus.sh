@@ -1,4 +1,5 @@
 #!/bin/bash
+export PATH="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:/root/bin"
 ################################################################
 # centminmod.com maintenance mode written by George Liu (eva2000)
 # https://community.centminmod.com/threads/sitestatus-maintenance-mode.5599/
