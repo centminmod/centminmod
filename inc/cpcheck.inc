@@ -750,7 +750,7 @@ march_hostcheck() {
   # cpu models causing seg faults for nginx and php-fpm
   # VPS_ASNCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} https://ipinfo.io/org)
   VPS_TOTALMEM=$(($(awk '/MemTotal/ {print $2}' /proc/meminfo)/1024))
-  VPS_VIRTWHAT_GET=$(virt-what)
+  VPS_VIRTWHAT_GET=$(virt-what | xargs | sed -e 's|redhat ||g')
   VPS_VIRTWHAT="${VPS_VIRTWHAT_GET:-d}"
   if [[ "$VPS_GEOIPCHECK_V3" = [yY] ]]; then
     VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v3 | jq -r)
@@ -759,7 +759,7 @@ march_hostcheck() {
     VPS_GEOIPCHECK=$(curl -${ipv_forceopt}s${CURL_TIMEOUTS} -A "$CURL_AGENT VPSCHECK $SCRIPT_VERSION $CURL_CPUMODEL $CURL_CPUSPEED $VPS_VIRTWHAT" https://geoip.centminmod.com/v4 | jq -r)
     VPS_ASNCHECK=$(echo "$VPS_GEOIPCHECK" | jq -r '"\(.asn) \(.asOrganization)"')
   fi
-  if [[ "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
+  if [[ ! -z "${VPS_VIRTWHAT_GET}" && "$(echo "${VPS_ASNCHECK}" | egrep -i -o 'upcloud|linode|digitalocean|vultr|choopa|hetzner|frantech|hostus|ramnode|amazon|google|microsoft|mammoth|contabo|netcup|ibm|softlayer|oracle|alibaba|ovh|leaseweb|scaleway|bluehost|siteground|a2hosting|rackspace|liquidweb')" && "$MARCH_TARGETNATIVE_ALWAYS" != [yY] ]]; then
     MARCH_TARGETNATIVE='n'
     NGX_GSPLITDWARF='n'
     PHP_GSPLITDWARF='n'
