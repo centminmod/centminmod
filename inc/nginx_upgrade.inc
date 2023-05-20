@@ -593,7 +593,7 @@ elif [[ "$CLI_NGINX_VER" ]]; then
     # if doesn't match then auto recompile the statically set
     # OPENSSL_VERSION
     AUTOOPENSSLCHECK=$(nginx -V 2>&1 | grep -Eo "$OPENSSL_VERSION")
-    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+    if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]]; then
         recompileopenssl='y'
     elif [[ "$AUTOOPENSSLCHECK" ]]; then
         recompileopenssl='y'
@@ -773,7 +773,7 @@ fi
         git clone --depth=1 https://github.com/nginx/nginx nginx-master
         mv nginx-master/auto/configure nginx-master/configure
     fi
-    if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+    if [[ "$ngver" = 'quic' ]]; then
         rm -rf nginx-${ngver}*
         mercurial_check
         hg clone -b quic https://hg.nginx.org/nginx-quic nginx-quic
@@ -784,7 +784,7 @@ fi
         git clone --depth=1 https://nginx.googlesource.com/nginx nginx-master-google
         mv nginx-master-google/auto/configure nginx-master-google/configure
     fi
-    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY]   ]]; then
+    if [[ -s "nginx-${ngver}.tar.gz" || "$ngver" = 'master' || "$ngver" = 'master-google' || "$ngver" = 'quic' ]]; then
         cecho "nginx ${ngver} download found, skipping download..." $boldgreen
     else
         download_cmd "https://nginx.org/download/nginx-${ngver}.tar.gz" $WGETRETRY

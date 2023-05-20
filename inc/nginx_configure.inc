@@ -463,7 +463,7 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
-  elif [[ "$ngver" && "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY]   ]]; then
+  elif [[ "$ngver" && "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     NGX_HPACK_OPT=""
     NGINX_HPACK='n'
@@ -631,12 +631,12 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
         HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
       else
         NGINX_SPDY=n
-        if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]]; then
           if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
-            HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
-            # HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
+            HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module'
+            # HTTPTWOOPT=' --with-http_v3_module'
           else
-            HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
+            HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module'
           fi
         else
           HTTPTWOOPT=' --with-http_v2_module'
@@ -1919,12 +1919,12 @@ else
         HTTPTWOOPT=' --with-http_spdy_module --with-http_v2_module'
       else
         NGINX_SPDY=n
-        if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+        if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]]; then
           if [[ "$NGINX_QUIC_DEBUG" = [yY] ]]; then
-            HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
-            # HTTPTWOOPT=' --with-http_v3_module --with-stream_quic_module'
+            HTTPTWOOPT=' --with-debug --with-http_v2_module --with-http_v3_module'
+            # HTTPTWOOPT=' --with-http_v3_module'
           else
-            HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module --with-stream_quic_module'
+            HTTPTWOOPT=' --with-http_v2_module --with-http_v3_module'
           fi
         else
           HTTPTWOOPT=' --with-http_v2_module'
@@ -4630,7 +4630,7 @@ if [[ "$CHECK_LXD" != [yY] ]] && [[ "$AUTOHARDTUNE_NGINXBACKLOG" = [yY] && ! -f 
     grep 'NGX_LISTEN_BACKLOG' "${NGINX_DIRINSTALL}/src/os/unix/ngx_linux_config.h"
 fi
 
-if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
+if [[ "$ngver" = 'quic' ]] || [[ "$NGINX_QUIC_SUPPORT" = [yY] && "$DETECT_NGXVER" -ge '1025000' ]]; then
   # OPENSSLOPT=" --with-openssl=../openssl-quic-nginx"
   OPENSSLOPT=""
 fi
