@@ -293,11 +293,20 @@ ngx_hpack_patch() {
   elif [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -ge '1021000' ]] && [[ "$NGINX_HPACK" = [yY] && "$DETECT_NGXVER" -le "$NGINX_HPACK_ALLOWED_VER" ]]; then
     pushd "${DIR_TMP}/nginx-${NGINX_PUSHBASE}"
     cecho "patching nginx http/2 full HPACK encoding support" $boldyellow
-    cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
-    cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
-    patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
-    echo 
-    echo "patching nginx http/2 full HPACK encoding for nginx 1.21.5+"
+    if [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -lt '1025000' ]]; then
+      cecho "nginx-1.15.3_http2-hpack.patch" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch" $boldyellow
+      patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.15.3_http2-hpack.patch
+      echo 
+      echo "patching nginx http/2 full HPACK encoding for nginx 1.21.5+"
+    elif [[ "$DETECT_NGXVER" -ge '1025000' ]]; then
+      NGINX_DYNAMICTLS='y'
+      cecho "nginx-1.25.0_http2-hpack.patch" $boldyellow
+      cecho "patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.25.0_http2-hpack.patch" $boldyellow
+      patch -p1 < $CUR_DIR/patches/cloudflare/nginx-1.25.0_http2-hpack.patch
+      echo 
+      echo "patching nginx http/2 full HPACK encoding for nginx 1.25.0+"
+    fi
     popd
     NGX_HPACK_OPT=' --with-http_v2_hpack_enc'
   else
@@ -754,8 +763,10 @@ nginx_quic_patches() {
       NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
       ngx_dynamic_tls_message
      elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le "$NGINX_DYNAMICTLS_ALLOWED_VER" ]]; then
-      NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
-      ngx_dynamic_tls_message
+      if [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -lt "1025000" ]]; then
+        NGINXTLSPATCH_NAME='nginx__dynamic_tls_records_1015008.patch'
+        ngx_dynamic_tls_message
+      fi
      fi
      rm -rf "${NGINXTLSPATCH_NAME}"
      if [[ "$DETECT_NGXVER" -le '1011004' && "$DETECT_NGXVER" -ge '1011000' ]]; then
@@ -803,8 +814,10 @@ nginx_quic_patches() {
       fi
      elif [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -le "$NGINX_DYNAMICTLS_ALLOWED_VER" ]]; then
       if [[ -f "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME" && ! "$(grep 'dyn_rec.threshold' src/event/ngx_event_openssl.c)" ]]; then
-        echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
-        patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
+        if [[ "$DETECT_NGXVER" -ge '1021000' && "$DETECT_NGXVER" -lt "1025000" ]]; then
+          echo "patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME""
+          patch -p1 < "$CUR_DIR/patches/cloudflare/$NGINXTLSPATCH_NAME"
+        fi
       fi
      fi
   else

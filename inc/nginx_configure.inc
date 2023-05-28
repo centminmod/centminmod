@@ -371,8 +371,10 @@ if [[ "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]] && [[ "$LIBRESSL_SWIT
   QUICTLS_LD_OPT="-L/opt/openssl-quic/lib${QUICTLS_LD}"
   QUICTLS_CC_OPT='-I/opt/openssl-quic/include '
   QUICTLS_RPATH='/opt/openssl-quic/lib:'
-  NGINX_HPACK='n'
-  NGINX_DYNAMICTLS='n'
+  if [[ "$NGINX_QUIC_HPACK_SUPPORT" != [yY] ]]; then
+    NGINX_HPACK='n'
+    NGINX_DYNAMICTLS='n'
+  fi
   # if [ ! -f /opt/el-compat-quic/bin/openssl ]; then
   #   QUICTLS_LD_OPT=""
   #   QUICTLS_CC_OPT=""
@@ -465,8 +467,10 @@ if [[ "$CENTOS_SEVEN" = '7' || "$CENTOS_EIGHT" -eq '8' || "$CENTOS_NINE" -eq '9'
     NGINX_HPACK='n'
   elif [[ "$ngver" && "$ngver" = 'quic' || "$NGINX_QUIC_SUPPORT" = [yY] ]]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
-    NGX_HPACK_OPT=""
-    NGINX_HPACK='n'
+    if [[ "$NGINX_QUIC_HPACK_SUPPORT" != [yY] ]]; then
+      NGX_HPACK_OPT=""
+      NGINX_HPACK='n'
+    fi
   elif [ "$ngver" ]; then
     DETECT_NGXVER=$(awk '/define nginx_version  / {print $3}' "/svr-setup/nginx-$ngver/src/core/nginx.h")
     echo "$DETECT_NGXVER"
