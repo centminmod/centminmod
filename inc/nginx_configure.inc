@@ -2857,7 +2857,7 @@ fi
       NGINX_NJSOPT=' --add-dynamic-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      git clone --depth=1 https://github.com/nginx/njs
+      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER)
       popd
       # if [ ! -f /usr/bin/hg ]; then
       #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
@@ -2888,7 +2888,7 @@ fi
       NGINX_NJSOPT=' --add-module=../njs/nginx'
       pushd "$DIR_TMP"
       rm -rf njs
-      git clone --depth=1 https://github.com/nginx/njs
+      git clone https://github.com/nginx/njs && (cd njs && git fetch --tags && git checkout tags/$NGINX_NJS_VER)
       popd
       # if [ ! -f /usr/bin/hg ]; then
       #   time $YUMDNFBIN -y install mercurial${DISABLEREPO_DNF}
