@@ -56,7 +56,7 @@ webroot_checks() {
     fi
   
     # Check if the paths match
-    if [[ "$LE_WEBROOT" != "$NGINX_ROOT_PATH" ]]; then
+    if [[ "$LE_WEBROOT" != "$NGINX_ROOT_PATH" ]] && [[ "$LE_WEBROOT" != 'dns_cf' ]]; then
       echo "Error: The root paths in the acme.sh and nginx configurations do not match. Updating the acme.sh configuration..."
       # Make a backup of the original acme.sh configuration
       if [[ "$CHECK_MODE" = 'liverun' ]]; then
